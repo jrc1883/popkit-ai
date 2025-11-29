@@ -105,6 +105,35 @@
       "timeout": 3000,
       "enabled": true,
       "tools": ["*"]
+    },
+    {
+      "name": "knowledge-sync",
+      "event": "SessionStart",
+      "command": "python",
+      "args": ["hooks/knowledge-sync.py"],
+      "description": "Sync external knowledge sources on session start with TTL-based caching",
+      "timeout": 10000,
+      "enabled": true
+    },
+    {
+      "name": "chain-validator",
+      "event": "PreToolUse",
+      "command": "python",
+      "args": ["hooks/chain-validator.py"],
+      "description": "Validate workflow chains before execution",
+      "timeout": 5000,
+      "enabled": true,
+      "tools": ["Task"]
+    },
+    {
+      "name": "chain-metrics",
+      "event": "PostToolUse",
+      "command": "python",
+      "args": ["hooks/chain-metrics.py"],
+      "description": "Track workflow execution metrics including timing and success rates",
+      "timeout": 3000,
+      "enabled": true,
+      "tools": ["Task"]
     }
   ],
   "settings": {

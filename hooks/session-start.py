@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
 """
 Session Start Hook
-Handles session initialization and setup.
+Handles session initialization, setup, and update notifications.
 """
 
 import sys
 import json
 from pathlib import Path
 from datetime import datetime
+
+# Import version check utility
+try:
+    from utils.version import check_for_updates, format_update_notification, get_current_version
+    HAS_VERSION_CHECK = True
+except ImportError:
+    HAS_VERSION_CHECK = False
 
 def create_logs_directory():
     """Create logs directory if it doesn't exist."""
@@ -39,6 +46,35 @@ def log_session_start(data):
     with open(log_file, 'w') as f:
         json.dump(log_data, f, indent=2)
 
+
+def check_plugin_updates():
+    """Check for popkit updates and display notification if available.
+
+    This is non-blocking - any errors are silently ignored.
+    """
+    if not HAS_VERSION_CHECK:
+        return None
+
+    try:
+        has_update, release_info = check_for_updates()
+
+        if has_update and release_info:
+            current = get_current_version()
+            notification = format_update_notification(release_info, current)
+            print(notification, file=sys.stderr)
+
+            return {
+                'update_available': True,
+                'current_version': current,
+                'latest_version': release_info.get('version'),
+                'release_url': release_info.get('url')
+            }
+    except Exception:
+        pass  # Silent failure - never block session start
+
+    return None
+
+
 def main():
     """Main entry point for the hook - JSON stdin/stdout protocol"""
     try:
@@ -48,6 +84,9 @@ def main():
 
         # Log the session start
         log_session_start(data)
+
+        # Check for updates (non-blocking)
+        update_info = check_plugin_updates()
 
         # Print welcome message to stderr
         print("Session started - hooks system active", file=sys.stderr)
@@ -59,6 +98,11 @@ def main():
             "timestamp": datetime.now().isoformat(),
             "session_data": data
         }
+
+        # Include update info if available
+        if update_info:
+            response["update_check"] = update_info
+
         print(json.dumps(response))
 
     except json.JSONDecodeError as e:

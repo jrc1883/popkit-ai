@@ -133,7 +133,24 @@ npm run build
 | `hooks/post-tool-use.py` | Cleanup and validation after tools |
 | `hooks/agent-orchestrator.py` | Agent sequencing and routing logic |
 
-## New Features (v1.3.0)
+## New Features (v1.4.0)
+
+- **Knowledge Sync** (`/popkit:knowledge`): Configurable external documentation syncing with TTL-based caching
+  - Default sources: Claude Code Engineering Blog, Claude Code Documentation
+  - Add/remove sources via terminal command
+  - Automatic sync on session start with 24-hour cache
+  - `pop-knowledge-lookup` skill for agent knowledge queries
+- **Chain Visualization** (`/popkit:chain-viz`): Workflow visualization with validation and metrics
+  - ASCII diagrams showing agent chains
+  - Validation of workflow definitions
+  - Performance metrics tracking (timing, success rates, bottlenecks)
+  - `pop-chain-management` skill for programmatic access
+- **Update Notifier**: Automatic plugin update checks on session start
+  - 24-hour TTL cache to avoid repeated API calls
+  - Non-blocking with silent failure
+  - Clear notification with update command
+
+### v1.3.0
 
 - **Output Validation Layer**: JSON schemas for agent outputs with `output-validator.py` hook
 - **Sync Command** (`/popkit:sync`): Validate plugin integrity (Scan → Compare → Report → Apply)
