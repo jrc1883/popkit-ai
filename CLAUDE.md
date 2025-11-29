@@ -14,16 +14,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```
 .claude-plugin/          Plugin manifest (plugin.json, marketplace.json)
 .mcp.json                MCP server configuration
-agents/                  29 agent definitions with tiered activation
+agents/                  30 agent definitions with tiered activation
   config.json            Agent routing, workflows, confidence thresholds
   tier-1-always-active/  11 core agents (code-reviewer, bug-whisperer, etc.)
-  tier-2-on-demand/      16 specialized agents (including rapid-prototyper)
+  tier-2-on-demand/      17 specialized agents (including power-coordinator)
   feature-workflow/      3 agents for 7-phase feature development
-skills/                  25 reusable skills (SKILL.md format in subdirectories)
-commands/                22 slash commands for workflows
-hooks/                   10 Python hooks (JSON stdin/stdout protocol)
+skills/                  26 reusable skills (SKILL.md format in subdirectories)
+commands/                23 slash commands for workflows
+hooks/                   11 Python hooks (JSON stdin/stdout protocol)
   hooks.json             Hook configuration and event mapping
-output-styles/           8 output format templates
+output-styles/           9 output format templates
+power-mode/              Multi-agent Redis pub/sub orchestration
+  protocol.py            Message types, serialization, guardrails
+  coordinator.py         Mesh brain with objective tracking
+  checkin-hook.py        PostToolUse hook for agent check-ins
+  config.json            Channels, intervals, constraints
 templates/mcp-server/    Template for generating project-specific MCP servers
 tests/                   Plugin self-test definitions
   hooks/                 Hook input/output tests
@@ -132,8 +137,24 @@ npm run build
 | `hooks/pre-tool-use.py` | Safety checks before tool execution |
 | `hooks/post-tool-use.py` | Cleanup and validation after tools |
 | `hooks/agent-orchestrator.py` | Agent sequencing and routing logic |
+| `power-mode/coordinator.py` | Multi-agent mesh network coordinator |
+| `power-mode/checkin-hook.py` | Periodic agent check-ins via Redis |
 
-## New Features (v1.3.0)
+## New Features (v1.4.0)
+
+- **Pop Power Mode** (`/popkit:power-mode`): Multi-agent orchestration via Redis pub/sub
+  - Parallel agent collaboration with shared context
+  - Periodic check-ins every N tool calls (push state, pull insights)
+  - Sync barriers between workflow phases
+  - Coordinator agent manages mesh network
+  - Guardrails prevent "cheating" (unconventional approaches require human approval)
+  - Inspired by ZigBee mesh networks and DeepMind's objective-driven agents
+- **Power Coordinator Agent** (`power-coordinator`): Orchestrates multi-agent collaboration
+- **Check-In Hook** (`power-mode-checkin`): PostToolUse hook for agent check-ins
+- **Power Mode Output Style**: Standardized format for inter-agent communication
+- **Power Mode Skill** (`pop-power-mode`): Activation and configuration skill
+
+### v1.3.0
 
 - **Output Validation Layer**: JSON schemas for agent outputs with `output-validator.py` hook
 - **Sync Command** (`/popkit:sync`): Validate plugin integrity (Scan → Compare → Report → Apply)

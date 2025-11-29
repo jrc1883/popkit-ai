@@ -1,0 +1,681 @@
+#!/usr/bin/env python3
+"""
+Pop Power Mode Check-In Hook
+PostToolUse hook that enables periodic agent check-ins via Redis pub/sub.
+
+This hook fires after every tool use and:
+1. Tracks tool call count
+2. At intervals, pushes agent state to Redis
+3. Pulls relevant insights from other agents
+4. Checks for drift from objective
+5. Injects context for the agent's next action
+"""
+
+import json
+import sys
+import os
+import hashlib
+from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Optional, Any
+
+# Add power-mode to path for imports
+sys.path.insert(0, str(Path(__file__).parent))
+
+try:
+    import redis
+    REDIS_AVAILABLE = True
+except ImportError:
+    REDIS_AVAILABLE = False
+
+try:
+    from protocol import (
+        Message, MessageType, MessageFactory,
+        AgentState, AgentIdentity, Insight, InsightType,
+        Channels, Guardrails
+    )
+    PROTOCOL_AVAILABLE = True
+except ImportError:
+    PROTOCOL_AVAILABLE = False
+
+
+# =============================================================================
+# CONFIGURATION
+# =============================================================================
+
+def load_config() -> Dict:
+    """Load power mode configuration."""
+    config_path = Path(__file__).parent / "config.json"
+    if config_path.exists():
+        with open(config_path) as f:
+            return json.load(f)
+    return {}
+
+
+CONFIG = load_config()
+
+
+# =============================================================================
+# STATE TRACKER
+# =============================================================================
+
+class AgentStateTracker:
+    """
+    Tracks agent state across tool calls.
+    Uses a local file for persistence within a session.
+    """
+
+    STATE_FILE = Path.home() / ".claude" / "power-mode-state.json"
+
+    def __init__(self, agent_id: str, agent_name: str, session_id: str):
+        self.agent_id = agent_id
+        self.agent_name = agent_name
+        self.session_id = session_id
+
+        # Load or initialize state
+        self.state = self._load_state()
+
+    def _load_state(self) -> Dict:
+        """Load state from file or create new."""
+        if self.STATE_FILE.exists():
+            try:
+                with open(self.STATE_FILE) as f:
+                    saved = json.load(f)
+                    # Check if same session
+                    if saved.get("session_id") == self.session_id:
+                        return saved
+            except (json.JSONDecodeError, IOError):
+                pass
+
+        # New state
+        return {
+            "agent_id": self.agent_id,
+            "agent_name": self.agent_name,
+            "session_id": self.session_id,
+            "tool_call_count": 0,
+            "files_touched": [],
+            "tools_used": [],
+            "decisions": [],
+            "blockers": [],
+            "progress": 0.0,
+            "current_task": "",
+            "last_checkin": None,
+            "insights_received": [],
+            "insights_shared": []
+        }
+
+    def _save_state(self):
+        """Save state to file."""
+        self.STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with open(self.STATE_FILE, "w") as f:
+            json.dump(self.state, f, indent=2)
+
+    def record_tool_use(self, tool_name: str, tool_input: Dict, tool_result: Any):
+        """Record a tool use."""
+        self.state["tool_call_count"] += 1
+
+        # Track tool
+        if tool_name not in self.state["tools_used"]:
+            self.state["tools_used"].append(tool_name)
+
+        # Track files
+        if file_path := tool_input.get("file_path"):
+            if file_path not in self.state["files_touched"]:
+                self.state["files_touched"].append(file_path)
+
+        self._save_state()
+
+    def record_decision(self, decision: str, reasoning: str, confidence: float):
+        """Record a decision made by the agent."""
+        self.state["decisions"].append({
+            "decision": decision,
+            "reasoning": reasoning,
+            "confidence": confidence,
+            "timestamp": datetime.now().isoformat()
+        })
+        self._save_state()
+
+    def record_blocker(self, blocker: str):
+        """Record a blocker encountered."""
+        if blocker not in self.state["blockers"]:
+            self.state["blockers"].append(blocker)
+        self._save_state()
+
+    def update_progress(self, progress: float):
+        """Update progress (0.0 to 1.0)."""
+        self.state["progress"] = max(0.0, min(1.0, progress))
+        self._save_state()
+
+    def set_current_task(self, task: str):
+        """Set the current task description."""
+        self.state["current_task"] = task
+        self._save_state()
+
+    def record_checkin(self):
+        """Record that a check-in occurred."""
+        self.state["last_checkin"] = datetime.now().isoformat()
+        self._save_state()
+
+    def record_insight_received(self, insight_id: str):
+        """Record an insight received from another agent."""
+        if insight_id not in self.state["insights_received"]:
+            self.state["insights_received"].append(insight_id)
+        self._save_state()
+
+    def record_insight_shared(self, insight_id: str):
+        """Record an insight shared with other agents."""
+        if insight_id not in self.state["insights_shared"]:
+            self.state["insights_shared"].append(insight_id)
+        self._save_state()
+
+    def should_checkin(self) -> bool:
+        """Check if it's time for a check-in."""
+        interval = CONFIG.get("intervals", {}).get("checkin_every_n_tools", 5)
+        return self.state["tool_call_count"] % interval == 0
+
+    def get_tool_call_count(self) -> int:
+        """Get current tool call count."""
+        return self.state["tool_call_count"]
+
+    def to_agent_state(self) -> AgentState:
+        """Convert to AgentState for protocol."""
+        if not PROTOCOL_AVAILABLE:
+            return None
+
+        identity = AgentIdentity(
+            id=self.agent_id,
+            name=self.agent_name,
+            session_id=self.session_id
+        )
+
+        return AgentState(
+            agent=identity,
+            progress=self.state["progress"],
+            current_task=self.state["current_task"],
+            files_touched=self.state["files_touched"],
+            tools_used=self.state["tools_used"],
+            tool_call_count=self.state["tool_call_count"],
+            decisions=self.state["decisions"],
+            blockers=self.state["blockers"]
+        )
+
+
+# =============================================================================
+# REDIS CLIENT
+# =============================================================================
+
+class PowerModeRedisClient:
+    """Redis client for power mode operations."""
+
+    def __init__(self):
+        self.redis: Optional[redis.Redis] = None
+        self.connected = False
+
+    def connect(self) -> bool:
+        """Connect to Redis."""
+        if not REDIS_AVAILABLE:
+            return False
+
+        try:
+            redis_config = CONFIG.get("redis", {})
+            self.redis = redis.Redis(
+                host=redis_config.get("host", "localhost"),
+                port=redis_config.get("port", 6379),
+                db=redis_config.get("db", 0),
+                password=redis_config.get("password"),
+                socket_timeout=redis_config.get("socket_timeout", 5),
+                decode_responses=True
+            )
+            self.redis.ping()
+            self.connected = True
+            return True
+        except (redis.ConnectionError, redis.TimeoutError):
+            self.connected = False
+            return False
+
+    def push_state(self, agent_id: str, state: Dict):
+        """Push agent state to Redis."""
+        if not self.connected:
+            return
+
+        key = f"pop:state:{agent_id}"
+        self.redis.hset(key, mapping={
+            k: json.dumps(v) if isinstance(v, (dict, list)) else str(v)
+            for k, v in state.items()
+        })
+        self.redis.expire(key, 600)  # 10 min TTL
+
+    def push_insight(self, insight: Dict):
+        """Push an insight to Redis."""
+        if not self.connected:
+            return
+
+        self.redis.lpush("pop:insights", json.dumps(insight))
+        self.redis.ltrim("pop:insights", 0, 99)  # Keep last 100
+
+    def pull_insights(self, tags: List[str], exclude_agent: str, limit: int = 3) -> List[Dict]:
+        """Pull relevant insights from Redis."""
+        if not self.connected:
+            return []
+
+        insights = []
+        all_insights = self.redis.lrange("pop:insights", 0, 99)
+
+        for insight_json in all_insights:
+            try:
+                insight = json.loads(insight_json)
+
+                # Skip own insights
+                if insight.get("from_agent") == exclude_agent:
+                    continue
+
+                # Check tag relevance
+                insight_tags = set(insight.get("relevance_tags", []))
+                if insight_tags & set(tags):
+                    insights.append(insight)
+                    if len(insights) >= limit:
+                        break
+
+            except json.JSONDecodeError:
+                continue
+
+        return insights
+
+    def push_heartbeat(self, agent_id: str, state: AgentState):
+        """Push heartbeat to Redis."""
+        if not self.connected or not PROTOCOL_AVAILABLE:
+            return
+
+        msg = MessageFactory.heartbeat(agent_id, state)
+        self.redis.publish(Channels.heartbeat(), msg.to_json())
+
+    def check_for_messages(self, agent_id: str) -> List[Dict]:
+        """Check for messages directed at this agent."""
+        if not self.connected:
+            return []
+
+        messages = []
+        channel = f"pop:agent:{agent_id}"
+
+        # Use a short-lived pubsub to check for messages
+        pubsub = self.redis.pubsub()
+        pubsub.subscribe(channel)
+
+        # Get any pending messages (non-blocking)
+        while True:
+            msg = pubsub.get_message(timeout=0.1)
+            if msg is None:
+                break
+            if msg["type"] == "message":
+                try:
+                    messages.append(json.loads(msg["data"]))
+                except json.JSONDecodeError:
+                    pass
+
+        pubsub.unsubscribe()
+        return messages
+
+    def get_objective(self) -> Optional[Dict]:
+        """Get the current objective."""
+        if not self.connected:
+            return None
+
+        obj_json = self.redis.get("pop:objective")
+        if obj_json:
+            try:
+                return json.loads(obj_json)
+            except json.JSONDecodeError:
+                pass
+        return None
+
+    def get_patterns(self, context: str) -> List[Dict]:
+        """Get learned patterns for a context."""
+        if not self.connected:
+            return []
+
+        patterns = []
+        all_patterns = self.redis.hgetall("pop:patterns") or {}
+
+        for pattern_id, pattern_json in all_patterns.items():
+            try:
+                pattern = json.loads(pattern_json)
+                if context.lower() in pattern.get("context", "").lower():
+                    patterns.append(pattern)
+            except json.JSONDecodeError:
+                continue
+
+        return patterns
+
+
+# =============================================================================
+# INSIGHT EXTRACTOR
+# =============================================================================
+
+class InsightExtractor:
+    """Extracts insights from tool results."""
+
+    # Patterns that indicate discoveries
+    DISCOVERY_PATTERNS = [
+        ("found", "discovery"),
+        ("exists", "discovery"),
+        ("located", "discovery"),
+        ("discovered", "discovery"),
+        ("using", "pattern"),
+        ("convention", "pattern"),
+        ("error", "blocker"),
+        ("failed", "blocker"),
+        ("cannot", "blocker"),
+        ("permission denied", "blocker"),
+    ]
+
+    def extract(self, tool_name: str, tool_input: Dict, tool_result: Any) -> Optional[Dict]:
+        """Extract insight from tool result if present."""
+        result_str = str(tool_result).lower() if tool_result else ""
+
+        # Check for discovery patterns
+        for keyword, insight_type in self.DISCOVERY_PATTERNS:
+            if keyword in result_str:
+                return self._create_insight(
+                    insight_type=insight_type,
+                    tool_name=tool_name,
+                    tool_input=tool_input,
+                    tool_result=tool_result
+                )
+
+        # File-specific discoveries
+        if tool_name in ["Read", "Glob", "Grep"]:
+            return self._extract_file_insight(tool_name, tool_input, tool_result)
+
+        return None
+
+    def _create_insight(
+        self,
+        insight_type: str,
+        tool_name: str,
+        tool_input: Dict,
+        tool_result: Any
+    ) -> Dict:
+        """Create an insight dictionary."""
+        content = self._summarize_result(tool_name, tool_input, tool_result)
+        tags = self._extract_tags(tool_input, tool_result)
+
+        return {
+            "id": hashlib.md5(f"{content}{datetime.now()}".encode()).hexdigest()[:8],
+            "type": insight_type,
+            "content": content,
+            "relevance_tags": tags,
+            "confidence": 0.7,
+            "timestamp": datetime.now().isoformat()
+        }
+
+    def _extract_file_insight(
+        self,
+        tool_name: str,
+        tool_input: Dict,
+        tool_result: Any
+    ) -> Optional[Dict]:
+        """Extract file-related insights."""
+        file_path = tool_input.get("file_path", tool_input.get("path", ""))
+
+        if not file_path:
+            return None
+
+        # Extract directory/module info
+        path_parts = file_path.split("/")
+
+        # Check for common patterns
+        if "test" in file_path.lower():
+            return {
+                "id": hashlib.md5(f"test-{file_path}".encode()).hexdigest()[:8],
+                "type": "pattern",
+                "content": f"Tests located at: {'/'.join(path_parts[:-1])}",
+                "relevance_tags": ["test", "testing"],
+                "confidence": 0.8,
+                "timestamp": datetime.now().isoformat()
+            }
+
+        if "config" in file_path.lower():
+            return {
+                "id": hashlib.md5(f"config-{file_path}".encode()).hexdigest()[:8],
+                "type": "discovery",
+                "content": f"Configuration at: {file_path}",
+                "relevance_tags": ["config", "configuration"],
+                "confidence": 0.8,
+                "timestamp": datetime.now().isoformat()
+            }
+
+        return None
+
+    def _summarize_result(self, tool_name: str, tool_input: Dict, tool_result: Any) -> str:
+        """Create a concise summary of the tool result."""
+        result_str = str(tool_result)[:200]  # Truncate
+
+        if tool_name == "Read":
+            file_path = tool_input.get("file_path", "unknown")
+            return f"Read {file_path}: {result_str[:50]}..."
+
+        if tool_name == "Glob":
+            pattern = tool_input.get("pattern", "")
+            return f"Found files matching {pattern}"
+
+        if tool_name == "Grep":
+            pattern = tool_input.get("pattern", "")
+            return f"Search for '{pattern}' found matches"
+
+        return f"{tool_name}: {result_str[:100]}"
+
+    def _extract_tags(self, tool_input: Dict, tool_result: Any) -> List[str]:
+        """Extract relevance tags from context."""
+        tags = []
+
+        # From file paths
+        file_path = tool_input.get("file_path", tool_input.get("path", ""))
+        if file_path:
+            parts = file_path.lower().split("/")
+            for part in parts:
+                if part in ["src", "lib", "test", "tests", "docs", "config", "api", "auth", "components"]:
+                    tags.append(part)
+
+        # From patterns
+        pattern = tool_input.get("pattern", "")
+        if pattern:
+            tags.append(pattern.split("*")[0].strip("."))
+
+        return list(set(tags))[:5]  # Max 5 tags
+
+
+# =============================================================================
+# MAIN HOOK
+# =============================================================================
+
+class PowerModeCheckInHook:
+    """Main hook class for power mode check-ins."""
+
+    def __init__(self):
+        self.redis_client = PowerModeRedisClient()
+        self.insight_extractor = InsightExtractor()
+        self.state_tracker: Optional[AgentStateTracker] = None
+        self.guardrails: Optional[Guardrails] = None
+
+    def initialize(self, agent_id: str, agent_name: str, session_id: str):
+        """Initialize the hook for an agent."""
+        self.state_tracker = AgentStateTracker(agent_id, agent_name, session_id)
+        self.redis_client.connect()
+
+        # Load objective and set up guardrails
+        if PROTOCOL_AVAILABLE:
+            objective = self.redis_client.get_objective()
+            if objective:
+                from protocol import Objective
+                self.guardrails = Guardrails(Objective.from_dict(objective))
+
+    def process(self, data: Dict) -> Dict:
+        """Process a PostToolUse event."""
+        tool_name = data.get("tool_name", "")
+        tool_input = data.get("tool_input", {})
+        tool_result = data.get("tool_output", data.get("result", ""))
+
+        # Initialize if needed
+        if not self.state_tracker:
+            agent_id = data.get("agent_id", hashlib.md5(str(data).encode()).hexdigest()[:8])
+            agent_name = data.get("agent_name", "unknown")
+            session_id = data.get("session_id", "default")
+            self.initialize(agent_id, agent_name, session_id)
+
+        # Record tool use
+        self.state_tracker.record_tool_use(tool_name, tool_input, tool_result)
+
+        response = {
+            "status": "success",
+            "decision": "allow",
+            "tool_call_count": self.state_tracker.get_tool_call_count()
+        }
+
+        # Check if it's time for a check-in
+        if self.state_tracker.should_checkin():
+            checkin_result = self._perform_checkin(tool_name, tool_input, tool_result)
+            response["checkin"] = checkin_result
+
+        return response
+
+    def _perform_checkin(self, tool_name: str, tool_input: Dict, tool_result: Any) -> Dict:
+        """Perform a check-in with the coordinator."""
+        checkin = {
+            "performed": True,
+            "timestamp": datetime.now().isoformat(),
+            "insights_pushed": 0,
+            "insights_pulled": 0,
+            "context_injected": []
+        }
+
+        # 1. PUSH: Share state
+        if self.redis_client.connected:
+            agent_state = self.state_tracker.to_agent_state()
+            if agent_state:
+                self.redis_client.push_heartbeat(
+                    self.state_tracker.agent_id,
+                    agent_state
+                )
+                self.redis_client.push_state(
+                    self.state_tracker.agent_id,
+                    self.state_tracker.state
+                )
+
+        # 2. PUSH: Extract and share insights
+        insight = self.insight_extractor.extract(tool_name, tool_input, tool_result)
+        if insight:
+            insight["from_agent"] = self.state_tracker.agent_id
+            self.redis_client.push_insight(insight)
+            self.state_tracker.record_insight_shared(insight["id"])
+            checkin["insights_pushed"] = 1
+
+        # 3. PULL: Get relevant insights from others
+        current_tags = self._get_current_tags()
+        pulled_insights = self.redis_client.pull_insights(
+            tags=current_tags,
+            exclude_agent=self.state_tracker.agent_id,
+            limit=CONFIG.get("limits", {}).get("max_insights_per_pull", 3)
+        )
+
+        for pulled in pulled_insights:
+            self.state_tracker.record_insight_received(pulled["id"])
+            checkin["context_injected"].append({
+                "type": pulled.get("type"),
+                "content": pulled.get("content"),
+                "from": pulled.get("from_agent")
+            })
+
+        checkin["insights_pulled"] = len(pulled_insights)
+
+        # 4. CHECK: Get any messages from coordinator
+        messages = self.redis_client.check_for_messages(self.state_tracker.agent_id)
+        if messages:
+            checkin["coordinator_messages"] = messages
+
+            # Handle course corrections
+            for msg in messages:
+                if msg.get("type") == "COURSE_CORRECT":
+                    checkin["course_correction"] = msg.get("payload", {})
+
+                elif msg.get("type") == "DRIFT_ALERT":
+                    checkin["drift_alert"] = msg.get("payload", {})
+
+        # 5. CHECK: Get pattern recommendations
+        patterns = self.redis_client.get_patterns(self.state_tracker.state.get("current_task", ""))
+        if patterns:
+            checkin["pattern_recommendations"] = patterns[:2]  # Top 2
+
+        # Record check-in
+        self.state_tracker.record_checkin()
+
+        return checkin
+
+    def _get_current_tags(self) -> List[str]:
+        """Get tags representing current work context."""
+        tags = []
+
+        # From files touched
+        for file_path in self.state_tracker.state.get("files_touched", [])[-5:]:
+            parts = file_path.lower().split("/")
+            for part in parts:
+                if part in ["src", "lib", "test", "auth", "api", "components", "config"]:
+                    tags.append(part)
+
+        # From current task
+        task = self.state_tracker.state.get("current_task", "").lower()
+        keywords = ["test", "auth", "api", "config", "database", "ui", "docs"]
+        for kw in keywords:
+            if kw in task:
+                tags.append(kw)
+
+        return list(set(tags))
+
+
+# =============================================================================
+# ENTRY POINT
+# =============================================================================
+
+def main():
+    """Main entry point for the hook."""
+    try:
+        # Read JSON input from stdin
+        input_data = sys.stdin.read()
+        data = json.loads(input_data) if input_data.strip() else {}
+
+        # Check if power mode is enabled
+        if not is_power_mode_enabled():
+            # Pass through without processing
+            print(json.dumps({"status": "skipped", "decision": "allow", "reason": "power mode not enabled"}))
+            return 0
+
+        # Process the hook
+        hook = PowerModeCheckInHook()
+        result = hook.process(data)
+
+        print(json.dumps(result, indent=2))
+        return 0
+
+    except json.JSONDecodeError as e:
+        response = {"status": "error", "error": f"Invalid JSON: {e}", "decision": "allow"}
+        print(json.dumps(response))
+        return 1
+
+    except Exception as e:
+        response = {"status": "error", "error": str(e), "decision": "allow"}
+        print(json.dumps(response))
+        return 1
+
+
+def is_power_mode_enabled() -> bool:
+    """Check if power mode is currently enabled."""
+    # Check environment variable
+    if os.environ.get("POP_POWER_MODE") == "1":
+        return True
+
+    # Check state file
+    state_file = Path.home() / ".claude" / "power-mode-enabled"
+    return state_file.exists()
+
+
+if __name__ == "__main__":
+    sys.exit(main())

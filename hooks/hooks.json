@@ -105,6 +105,17 @@
       "timeout": 3000,
       "enabled": true,
       "tools": ["*"]
+    },
+    {
+      "name": "power-mode-checkin",
+      "event": "PostToolUse",
+      "command": "python",
+      "args": ["power-mode/checkin-hook.py"],
+      "description": "Periodic agent check-ins via Redis pub/sub for multi-agent orchestration",
+      "timeout": 5000,
+      "enabled": true,
+      "tools": ["*"],
+      "condition": "power_mode_enabled"
     }
   ],
   "settings": {
