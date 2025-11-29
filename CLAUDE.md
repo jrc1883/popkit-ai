@@ -133,7 +133,21 @@ npm run build
 | `hooks/post-tool-use.py` | Cleanup and validation after tools |
 | `hooks/agent-orchestrator.py` | Agent sequencing and routing logic |
 
-## New Features (v1.4.0)
+## New Features (v1.5.0)
+
+- **Command Restoration**: Fixed 3 corrupted command files (`knowledge.md`, `chain-viz.md`, `sync.md`) that were accidentally overwritten in v1.4.1
+- **Enhanced Command Structure**: All commands now include:
+  - Architecture Integration tables showing skill/hook/config relationships
+  - Step 0: Parse Arguments section for clear subcommand routing
+  - Structured output formats with markdown tables
+  - Related Components section for discoverability
+- **New Knowledge Subcommand**: Added `/popkit:knowledge search <query>` for searching across cached knowledge
+
+### v1.4.1
+
+- **Command Prefix Fix**: Removed explicit `name:` field from command frontmatter (accidentally corrupted files)
+
+## Previous: v1.4.0
 
 - **Knowledge Sync** (`/popkit:knowledge`): Configurable external documentation syncing with TTL-based caching
   - Default sources: Claude Code Engineering Blog, Claude Code Documentation
