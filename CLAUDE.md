@@ -133,21 +133,28 @@ npm run build
 | `hooks/post-tool-use.py` | Cleanup and validation after tools |
 | `hooks/agent-orchestrator.py` | Agent sequencing and routing logic |
 
-## New Features (v1.5.0)
+## Version History
 
-- **Command Restoration**: Fixed 3 corrupted command files (`knowledge.md`, `chain-viz.md`, `sync.md`) that were accidentally overwritten in v1.4.1
-- **Enhanced Command Structure**: All commands now include:
-  - Architecture Integration tables showing skill/hook/config relationships
-  - Step 0: Parse Arguments section for clear subcommand routing
-  - Structured output formats with markdown tables
-  - Related Components section for discoverability
-- **New Knowledge Subcommand**: Added `/popkit:knowledge search <query>` for searching across cached knowledge
+**Note:** Popkit uses `0.x.y` versioning until stable. Version `1.0.0` will mark API stability.
 
-### v1.4.1
+### v0.6.0 (Current)
 
-- **Command Prefix Fix**: Removed explicit `name:` field from command frontmatter (accidentally corrupted files)
+- **Version Reset**: Moved from 1.5.0 to 0.6.0 to reflect pre-stable status
+- **Meta-Release Command**: Added `/popkit:popkit-release` for automated plugin releases
+- **Command Restoration**: Fixed 3 corrupted command files (`knowledge.md`, `chain-viz.md`, `sync.md`)
+- **Enhanced Command Structure**: All commands now include architecture integration tables
+- **New Knowledge Subcommand**: Added `/popkit:knowledge search <query>`
 
-## Previous: v1.4.0
+### Previous (1.x Legacy)
+
+The 1.x versions were pre-stable releases that have been reset:
+- 1.5.0 → Became 0.6.0
+- 1.4.x → Knowledge sync, chain visualization, update notifier
+- 1.3.x → Output validation, sync command, error tracking
+- 1.2.x → Morning health check, tier 1+2 pattern
+- 1.1.x → Auto-docs, plugin self-testing, routing debugger
+
+## Features (from 1.4.0)
 
 - **Knowledge Sync** (`/popkit:knowledge`): Configurable external documentation syncing with TTL-based caching
   - Default sources: Claude Code Engineering Blog, Claude Code Documentation
