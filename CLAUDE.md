@@ -150,6 +150,10 @@ npm run build
   - Non-blocking with silent failure
   - Clear notification with update command
 
+### v1.4.1
+
+- **Command Prefix Fix**: Removed explicit `name:` field from command frontmatter in `knowledge.md`, `chain-viz.md`, and `sync.md` to ensure proper `/popkit:` prefix registration
+
 ### v1.3.0
 
 - **Output Validation Layer**: JSON schemas for agent outputs with `output-validator.py` hook
