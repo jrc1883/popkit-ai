@@ -19,11 +19,11 @@ agents/                  29 agent definitions with tiered activation
   tier-1-always-active/  11 core agents (code-reviewer, bug-whisperer, etc.)
   tier-2-on-demand/      16 specialized agents (including rapid-prototyper)
   feature-workflow/      3 agents for 7-phase feature development
-skills/                  25 reusable skills (SKILL.md format in subdirectories)
-commands/                22 slash commands for workflows
+skills/                  26 reusable skills (SKILL.md format in subdirectories)
+commands/                23 slash commands for workflows
 hooks/                   10 Python hooks (JSON stdin/stdout protocol)
   hooks.json             Hook configuration and event mapping
-output-styles/           8 output format templates
+output-styles/           9 output format templates
 templates/mcp-server/    Template for generating project-specific MCP servers
 tests/                   Plugin self-test definitions
   hooks/                 Hook input/output tests
@@ -137,7 +137,17 @@ npm run build
 
 **Note:** Popkit uses `0.x.y` versioning until stable. Version `1.0.0` will mark API stability.
 
-### v0.6.0 (Current)
+### v0.6.1 (Current)
+
+- **Context-Aware Recommendations** (`/popkit:next`): Analyzes project state and recommends next actions
+  - Checks git status, TypeScript errors, GitHub issues, TECHNICAL_DEBT.md
+  - Scores and prioritizes recommendations based on context
+  - Supports `quick` and `verbose` modes
+  - Uses `pop-next-action` skill and `next-action-report` output style
+- **Uncertainty Detection**: Hook now suggests `/popkit:next` when user seems unsure
+  - Triggers on phrases like "what should I do", "stuck", "where to go"
+
+### v0.6.0
 
 - **Version Reset**: Moved from 1.5.0 to 0.6.0 to reflect pre-stable status
 - **Meta-Release Command**: Added `/popkit:popkit-release` for automated plugin releases

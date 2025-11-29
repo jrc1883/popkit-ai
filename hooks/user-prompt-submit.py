@@ -96,6 +96,12 @@ class UserPromptSubmitHook:
                 "load-tester": ["load", "performance", "stress", "scalability", "capacity", "benchmark"],
                 "security-tester": ["security", "penetration", "vulnerability", "exploit", "attack", "pen test"],
                 "compatibility-tester": ["compatibility", "cross-platform", "browser", "device", "mobile", "responsive"]
+            },
+            "meta": {
+                "next-action": ["popkit", "what should i", "where to go", "what now", "next steps",
+                               "stuck", "unsure", "lost", "direction", "help me decide",
+                               "don't know what", "what to work on", "where do i start",
+                               "what's next", "recommend", "suggest"]
             }
         }
     
@@ -328,24 +334,37 @@ class UserPromptSubmitHook:
     def enhance_prompt(self, original_prompt: str, detected_agents: Dict, project_context: Dict) -> str:
         """Enhance prompt with context and agent routing information"""
         enhancements = []
-        
+        suggestions = []
+
+        # Check for uncertainty/meta triggers
+        if "meta" in detected_agents and "next-action" in detected_agents.get("meta", {}):
+            suggestions.append("💡 Try `/popkit:next` for context-aware recommendations")
+
         # Add project context
         if project_context.get("has_claude_md"):
             enhancements.append("📋 Local CLAUDE.md context available")
-        
+
         if project_context.get("git_repository"):
             enhancements.append("🔄 Git repository detected")
-        
+
         # Add agent routing info
         if detected_agents:
-            agent_count = sum(len(agents) for agents in detected_agents.values())
-            enhancements.append(f"🤖 {agent_count} specialized agents detected and available")
-        
+            # Count agents excluding meta category
+            agent_count = sum(len(agents) for cat, agents in detected_agents.items() if cat != "meta")
+            if agent_count > 0:
+                enhancements.append(f"🤖 {agent_count} specialized agents detected and available")
+
+        result = original_prompt
+
+        if suggestions:
+            suggestion_text = " | ".join(suggestions)
+            result = f"{result}\n\n<!-- Suggestion: {suggestion_text} -->"
+
         if enhancements:
             enhancement_text = " | ".join(enhancements)
-            return f"{original_prompt}\n\n<!-- System Context: {enhancement_text} -->"
-        
-        return original_prompt
+            result = f"{result}\n\n<!-- System Context: {enhancement_text} -->"
+
+        return result
 
 def main():
     """Main entry point for the hook - JSON stdin/stdout protocol"""
