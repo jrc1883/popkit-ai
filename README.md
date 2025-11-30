@@ -6,9 +6,10 @@ Pop Toolkit - AI-powered development workflows for Claude Code with skills, agen
 
 - **30 Specialized Agents** - 11 Tier-1 always-active + 17 Tier-2 on-demand + 2 feature-workflow
 - **30 Skills** - From brainstorming to power mode to knowledge management
-- **28 Commands** - Full GitHub lifecycle, git operations, power mode orchestration, and more
-- **15 Hooks** - Safety checks, agent orchestration, power mode check-ins, chain validation
+- **28 Commands** - Full GitHub lifecycle, git operations, power mode orchestration
+- **14 Hooks** - Safety checks, agent orchestration, power mode check-ins, chain validation
 - **14 Output Styles** - Consistent templates for commits, PRs, reviews, power mode check-ins
+- **Power Mode** - Multi-agent orchestration (Redis or file-based fallback)
 - **MCP Server Template** - Generate project-specific dev servers with semantic search
 
 ## Installation
@@ -110,6 +111,14 @@ claude plugins add https://github.com/jrc1883/popkit
 | `/popkit:morning` | Morning health check with "Ready to Code" score |
 | `/popkit:generate-morning` | Create project-specific morning command |
 
+### Power Mode
+| Command | Description |
+|---------|-------------|
+| `/popkit:power-init` | Set up Redis for multi-agent orchestration |
+| `/popkit:power-init start/stop` | Start or stop Redis container |
+| `/popkit:power-mode "objective"` | Activate Power Mode with parallel agents |
+| `/popkit:power-mode status` | Check orchestration status |
+
 ### Meta
 | Command | Description |
 |---------|-------------|
@@ -169,6 +178,10 @@ claude plugins add https://github.com/jrc1883/popkit
 - `popkit:session-capture` - Save session state to STATUS.json
 - `popkit:session-resume` - Restore context on startup
 - `popkit:context-restore` - Load previous session context
+
+### Power Mode
+- `popkit:power-mode` - Multi-agent orchestration activation
+- `popkit:power-init` - Redis setup and management (in command)
 
 ### Knowledge & Chains
 - `popkit:knowledge-lookup` - Query cached external knowledge sources
@@ -230,6 +243,38 @@ Generate Tier 2 tooling with:
 /popkit:generate-mcp       # Creates .claude/mcp-servers/[project]-dev/
 /popkit:generate-skills    # Creates .claude/skills/[project]-*
 ```
+
+## Power Mode
+
+Multi-agent orchestration for complex tasks requiring parallel collaboration.
+
+### Two Backend Options
+
+| Mode | Requirements | Agents | Use Case |
+|------|--------------|--------|----------|
+| **Redis** | Docker | 6+ | Production, full orchestration |
+| **File-Based** | None | 2-3 | Development, learning, CI/CD |
+
+### Quick Start
+
+```bash
+# Option 1: File-based (no setup, auto-activates)
+/popkit:power-mode "Build user authentication"
+
+# Option 2: Redis (full power)
+/popkit:power-init start
+/popkit:power-mode "Build user authentication"
+```
+
+### Features
+
+- Periodic check-ins (push state, pull insights)
+- Sync barriers between phases
+- Guardrails prevent unconventional approaches
+- Coordinator manages agent mesh network
+- Human escalation for sensitive operations
+
+See `power-mode/` directory for full documentation.
 
 ## Alignment with Anthropic Best Practices
 

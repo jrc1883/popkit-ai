@@ -109,6 +109,64 @@ This validates:
 5. Push and create a PR
 6. Fill out the PR template
 
+## GitHub Development Workflow
+
+PopKit provides commands that work together for a smooth development cycle:
+
+### Issue-Driven Development
+
+```bash
+# 1. Find or create an issue
+/popkit:issue list                    # See open issues
+/popkit:issue create "Add feature X"  # Create new issue
+
+# 2. Create isolated workspace
+/popkit:worktree create fix-42        # Creates branch + worktree
+
+# 3. Do the work
+# ... make your changes ...
+
+# 4. Commit and finish
+/popkit:commit                        # Auto-generate commit message
+/popkit:finish-branch                 # Choose: merge, PR, keep, or discard
+
+# 5. Clean up after merge
+/popkit:clean-gone                    # Remove stale branches
+```
+
+### Quick PR Flow
+
+```bash
+# One command: branch → commit → push → PR
+/popkit:commit-push-pr feature/auth
+```
+
+### Release Flow
+
+```bash
+# After PRs are merged
+/popkit:release changelog             # Preview what's included
+/popkit:release create v0.8.0         # Tag and publish
+```
+
+### Daily Routine
+
+```bash
+/popkit:morning                       # Health check, "Ready to Code" score
+/popkit:next                          # What should I work on?
+```
+
+### Worktree Best Practices
+
+Worktrees let you work on multiple features simultaneously:
+
+```bash
+/popkit:worktree create feature/auth  # Main feature
+/popkit:worktree create fix/urgent    # Urgent fix in parallel
+/popkit:worktree list                 # See all workspaces
+/popkit:worktree analyze              # Find opportunities
+```
+
 ## Questions?
 
 - Open an issue with the "question" label

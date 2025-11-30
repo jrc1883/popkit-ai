@@ -25,7 +25,7 @@ class PreToolUseHook:
         
         # Load configuration
         self.safety_rules = self.load_safety_rules()
-        self.agent_coordination_rules = self.load_coordination_rules()
+        self.coordination_rules = self.load_coordination_rules()
         self.tool_permissions = self.load_tool_permissions()
         
         # Initialize context database

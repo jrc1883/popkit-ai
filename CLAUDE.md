@@ -68,17 +68,21 @@ agents/                  30 agent definitions with tiered activation
   config.json            Agent routing, workflows, confidence thresholds
   tier-1-always-active/  11 core agents (code-reviewer, bug-whisperer, etc.)
   tier-2-on-demand/      17 specialized agents (including power-coordinator)
-  feature-workflow/      3 agents for 7-phase feature development
-skills/                  26 reusable skills (SKILL.md format in subdirectories)
-commands/                23 slash commands for workflows
-hooks/                   15 Python hooks (JSON stdin/stdout protocol)
+  feature-workflow/      2 agents for 7-phase feature development
+skills/                  30 reusable skills (SKILL.md format in subdirectories)
+commands/                28 slash commands for workflows
+hooks/                   14 Python hooks (JSON stdin/stdout protocol)
   hooks.json             Hook configuration and event mapping
-output-styles/           9 output format templates
-power-mode/              Multi-agent Redis pub/sub orchestration
+output-styles/           14 output format templates
+power-mode/              Multi-agent orchestration (Redis or file-based)
   protocol.py            Message types, serialization, guardrails
   coordinator.py         Mesh brain with objective tracking
+  coordinator_auto.py    Auto-detects Redis vs file-based mode
+  file_fallback.py       File-based fallback (no Redis required)
   checkin-hook.py        PostToolUse hook for agent check-ins
   config.json            Channels, intervals, constraints
+  docker-compose.yml     Redis + Commander Docker setup
+  setup-redis.py         Cross-platform Redis management script
 templates/mcp-server/    Template for generating project-specific MCP servers
 tests/                   Plugin self-test definitions
   hooks/                 Hook input/output tests
@@ -137,9 +141,22 @@ Two-tier approach for daily health checks:
 
 ### Power Mode (Multi-Agent Orchestration)
 
-Redis pub/sub based parallel agent collaboration:
-- Periodic check-ins every N tool calls (push state, pull insights)
+Parallel agent collaboration with two backend options:
+
+**Redis Mode** (Full Power):
+- Real-time pub/sub messaging between agents
 - Sync barriers between workflow phases
+- Supports 6+ parallel agents
+- Requires Docker: `/popkit:power-init start`
+
+**File-Based Mode** (No Dependencies):
+- Uses shared JSON file for coordination
+- Good for 2-3 agents, development, learning
+- Auto-activates when Redis unavailable
+- Zero setup required
+
+Both modes provide:
+- Periodic check-ins every N tool calls (push state, pull insights)
 - Coordinator agent manages mesh network
 - Guardrails prevent "cheating" (unconventional approaches require human approval)
 - Inspired by ZigBee mesh networks and DeepMind's objective-driven agents
@@ -197,13 +214,29 @@ npm run build
 | `hooks/post-tool-use.py` | Cleanup and validation after tools |
 | `hooks/agent-orchestrator.py` | Agent sequencing and routing logic |
 | `power-mode/coordinator.py` | Multi-agent mesh network coordinator |
-| `power-mode/checkin-hook.py` | Periodic agent check-ins via Redis |
+| `power-mode/coordinator_auto.py` | Auto-detects Redis vs file-based mode |
+| `power-mode/file_fallback.py` | File-based fallback (no Redis needed) |
+| `power-mode/checkin-hook.py` | Periodic agent check-ins |
+| `power-mode/setup-redis.py` | Cross-platform Redis management |
 
 ## Version History
 
 **Note:** Popkit uses `0.x.y` versioning until stable. Version `1.0.0` will mark API stability.
 
-### v0.7.0 (Current)
+### v0.7.1 (Current)
+
+- **File-Based Power Mode Fallback**: Multi-agent orchestration without Redis
+  - `file_fallback.py`: Redis-compatible interface using JSON files
+  - `coordinator_auto.py`: Auto-detects Redis vs file-based mode
+  - Zero setup required for development/learning
+  - Good for 2-3 agents without Docker dependency
+- **Power Init Command** (`/popkit:power-init`): Redis setup and management
+  - Docker-based Redis with one command
+  - Redis Commander for debugging (`--debug`)
+  - Cross-platform setup script
+- **Bug Fix**: Fixed `pre-tool-use.py` attribute mismatch (`coordination_rules`)
+
+### v0.7.0
 
 - **Pop Power Mode** (`/popkit:power-mode`): Multi-agent orchestration via Redis pub/sub
   - Parallel agent collaboration with shared context
