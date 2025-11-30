@@ -98,6 +98,26 @@ claude plugins add https://github.com/jrc1883/popkit
 | `/popkit:analyze-project` | Full codebase analysis |
 | `/popkit:setup-precommit` | Configure pre-commit hooks |
 
+### Knowledge & Observability
+| Command | Description |
+|---------|-------------|
+| `/popkit:knowledge` | Manage external knowledge sources with caching |
+| `/popkit:knowledge add <url>` | Add new knowledge source |
+| `/popkit:knowledge refresh` | Force refresh cached knowledge |
+| `/popkit:chain-viz` | Visualize workflow chains with metrics |
+| `/popkit:sync` | Validate and synchronize plugin state |
+| `/popkit:next` | Context-aware action recommendations |
+| `/popkit:morning` | Morning health check with "Ready to Code" score |
+| `/popkit:generate-morning` | Create project-specific morning command |
+
+### Meta
+| Command | Description |
+|---------|-------------|
+| `/popkit:popkit-release` | Release new version of popkit itself |
+| `/popkit:plugin-test` | Run plugin self-tests |
+| `/popkit:routing-debug` | Debug agent selection logic |
+| `/popkit:auto-docs` | Generate and sync documentation |
+
 ## Agents
 
 ### Tier-1 (Always Active)
