@@ -6,6 +6,8 @@ labels: bug
 assignees: ''
 ---
 
+## Priority: [LOW/MEDIUM/HIGH/CRITICAL]
+
 ## Description
 
 A clear description of what the bug is.
@@ -35,8 +37,9 @@ What actually happened.
 Which part of popkit is affected?
 - [ ] Skills (`pop:*`)
 - [ ] Agents
-- [ ] Commands (`/pop:*`)
+- [ ] Commands (`/popkit:*`)
 - [ ] Hooks
+- [ ] Power Mode
 - [ ] Other
 
 ## Error Messages
@@ -44,6 +47,42 @@ Which part of popkit is affected?
 ```
 Paste any error messages here
 ```
+
+---
+
+## PopKit Guidance
+
+<!-- This section helps Claude Code debug and fix this issue -->
+
+### Debugging Workflow
+- [ ] **Use Systematic Debugging** - Invoke `pop-systematic-debugging` skill
+- [ ] **Root Cause Tracing** - Invoke `pop-root-cause-tracing` skill
+- [ ] **Quick Fix** - Issue is straightforward, proceed directly
+
+### Suggested Agents
+- Primary: `bug-whisperer`
+- Supporting: `test-writer-fixer`
+
+### Investigation Areas
+<!-- Where to look for the root cause -->
+- [ ] Hook execution (`hooks/`)
+- [ ] Agent routing (`agents/config.json`)
+- [ ] Skill definition (`skills/`)
+- [ ] Command logic (`commands/`)
+- [ ] Power Mode coordination (`power-mode/`)
+
+### Quality Gates
+- [ ] Fix doesn't break existing tests
+- [ ] Regression test added
+- [ ] TypeScript check passes
+- [ ] Related functionality verified
+
+### Rollback Plan
+<!-- If fix causes issues -->
+- Affected files:
+- Safe rollback: `git checkout <commit> -- <files>`
+
+---
 
 ## Additional Context
 
