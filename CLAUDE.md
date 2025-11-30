@@ -71,7 +71,7 @@ agents/                  30 agent definitions with tiered activation
   feature-workflow/      2 agents for 7-phase feature development
 skills/                  30 reusable skills (SKILL.md format in subdirectories)
 commands/                28 slash commands for workflows
-hooks/                   14 Python hooks (JSON stdin/stdout protocol)
+hooks/                   16 Python hooks (JSON stdin/stdout protocol)
   hooks.json             Hook configuration and event mapping
 output-styles/           14 output format templates
 power-mode/              Multi-agent orchestration (Redis or file-based)
@@ -223,7 +223,28 @@ npm run build
 
 **Note:** Popkit uses `0.x.y` versioning until stable. Version `1.0.0` will mark API stability.
 
-### v0.7.1 (Current)
+### v0.8.0 (Current)
+
+- **Quality Gates Hook** (`quality-gate.py`): Auto-validation after file modifications
+  - Detects project type (TypeScript, build scripts, lint)
+  - High-risk action triggers (config changes, deletions, import/export changes)
+  - Batch threshold (5 edits) and rapid change detection (3+ files)
+  - Interactive failure menu: Fix/Rollback/Continue/Pause
+  - Rollback mechanism with git stash + patch file preservation
+- **Issue Parser** (`github_issues.py`): Parse PopKit Guidance from GitHub issues
+  - Extracts workflow type, phases, agents, quality gates, Power Mode settings
+  - Infers issue type from labels and content
+  - Maps issue types to recommended agents
+- **Issue-Driven Workflow** (`issue-workflow.py`): Activation logic for `/popkit:issue work`
+  - Auto-triggers brainstorming based on issue guidance
+  - Activates Power Mode for epic/complex issues
+  - Generates todos from workflow phases
+  - Tracks phase completion across sessions
+- **Enhanced Issue Templates**: 4 templates with PopKit Guidance sections
+  - Feature Request, Bug Report, Architecture, Research templates
+  - Structured metadata for workflow orchestration
+
+### v0.7.1
 
 - **File-Based Power Mode Fallback**: Multi-agent orchestration without Redis
   - `file_fallback.py`: Redis-compatible interface using JSON files

@@ -23,6 +23,16 @@
       "tools": ["*"]
     },
     {
+      "name": "quality-gate",
+      "event": "PostToolUse",
+      "command": "python",
+      "args": ["hooks/quality-gate.py"],
+      "description": "Validate code integrity after file modifications (tsc, build, lint)",
+      "timeout": 180000,
+      "enabled": true,
+      "tools": ["Write", "Edit", "MultiEdit", "Delete"]
+    },
+    {
       "name": "user-prompt-submit",
       "event": "UserPromptSubmit",
       "command": "python",

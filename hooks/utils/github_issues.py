@@ -1,15 +1,309 @@
 #!/usr/bin/env python3
 """
 GitHub Issues Utility
-Creates GitHub issues from lessons learned and error tracking data.
+Creates and parses GitHub issues with PopKit Guidance sections.
 
-Part of the popkit plugin error tracking system.
+Features:
+- Create issues from lessons learned and error tracking
+- Fetch and parse issues for workflow configuration
+- Extract PopKit Guidance section for orchestration
+
+Part of the popkit plugin system.
 """
 
 import subprocess
 import json
+import re
 from datetime import datetime
 from pathlib import Path
+from typing import Dict, List, Optional, Any
+
+
+# =============================================================================
+# Issue Parsing - PopKit Guidance Section
+# =============================================================================
+
+def fetch_issue(issue_number: int) -> Optional[Dict[str, Any]]:
+    """Fetch issue details from GitHub.
+
+    Args:
+        issue_number: The issue number to fetch
+
+    Returns:
+        Dict with issue data or None if failed
+    """
+    try:
+        result = subprocess.run(
+            ["gh", "issue", "view", str(issue_number), "--json",
+             "number,title,body,labels,state,author"],
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+
+        if result.returncode == 0:
+            return json.loads(result.stdout)
+        else:
+            return None
+    except Exception:
+        return None
+
+
+def parse_popkit_guidance(issue_body: str) -> Dict[str, Any]:
+    """Parse PopKit Guidance section from issue body.
+
+    Extracts workflow configuration from the structured PopKit Guidance section
+    that appears in issue templates.
+
+    Args:
+        issue_body: The full issue body text
+
+    Returns:
+        Dict with parsed workflow configuration:
+        - workflow_type: "brainstorm_first" | "plan_required" | "direct"
+        - phases: List of checked phases
+        - agents: {"primary": [...], "supporting": [...]}
+        - quality_gates: List of checked gates
+        - power_mode: "recommended" | "optional" | "not_needed"
+        - complexity: "small" | "medium" | "large" | "epic"
+    """
+    config = {
+        "workflow_type": "direct",
+        "phases": [],
+        "agents": {"primary": [], "supporting": []},
+        "quality_gates": [],
+        "power_mode": "not_needed",
+        "complexity": "medium",
+        "raw_section": None
+    }
+
+    if not issue_body:
+        return config
+
+    # Find PopKit Guidance section
+    guidance_match = re.search(
+        r'## PopKit Guidance\s*\n(.*?)(?=\n## |\n---|\Z)',
+        issue_body,
+        re.DOTALL | re.IGNORECASE
+    )
+
+    if not guidance_match:
+        return config
+
+    guidance_text = guidance_match.group(1)
+    config["raw_section"] = guidance_text
+
+    # Parse Workflow type
+    if re.search(r'\[x\].*Brainstorm First', guidance_text, re.IGNORECASE):
+        config["workflow_type"] = "brainstorm_first"
+    elif re.search(r'\[x\].*Plan Required', guidance_text, re.IGNORECASE):
+        config["workflow_type"] = "plan_required"
+    elif re.search(r'\[x\].*Direct Implementation', guidance_text, re.IGNORECASE):
+        config["workflow_type"] = "direct"
+
+    # Parse Development Phases
+    phase_patterns = [
+        ("discovery", r'\[x\].*Discovery'),
+        ("architecture", r'\[x\].*Architecture'),
+        ("implementation", r'\[x\].*Implementation'),
+        ("testing", r'\[x\].*Testing'),
+        ("documentation", r'\[x\].*Documentation'),
+        ("review", r'\[x\].*Review'),
+    ]
+    for phase_name, pattern in phase_patterns:
+        if re.search(pattern, guidance_text, re.IGNORECASE):
+            config["phases"].append(phase_name)
+
+    # Parse Suggested Agents
+    agents_match = re.search(
+        r'### Suggested Agents\s*\n(.*?)(?=\n### |\n## |\Z)',
+        guidance_text,
+        re.DOTALL
+    )
+    if agents_match:
+        agents_text = agents_match.group(1)
+
+        # Primary agents - capture everything after "Primary:" until newline
+        primary_match = re.search(r'Primary:\s*(.+?)$', agents_text, re.MULTILINE)
+        if primary_match:
+            # Remove backticks and split by comma
+            agent_str = primary_match.group(1).replace('`', '')
+            agents = [a.strip() for a in agent_str.split(',')]
+            config["agents"]["primary"] = [a for a in agents if a and a != '[agent-name]']
+
+        # Supporting agents - capture everything after "Supporting:" until newline
+        supporting_match = re.search(r'Supporting:\s*(.+?)$', agents_text, re.MULTILINE)
+        if supporting_match:
+            agent_str = supporting_match.group(1).replace('`', '')
+            agents = [a.strip() for a in agent_str.split(',')]
+            config["agents"]["supporting"] = [a for a in agents if a and a != '[agent-name]']
+
+    # Parse Quality Gates
+    gate_patterns = [
+        ("typescript", r'\[x\].*TypeScript'),
+        ("build", r'\[x\].*Build'),
+        ("lint", r'\[x\].*Lint'),
+        ("test", r'\[x\].*Test'),
+        ("review", r'\[x\].*Manual review'),
+    ]
+    for gate_name, pattern in gate_patterns:
+        if re.search(pattern, guidance_text, re.IGNORECASE):
+            config["quality_gates"].append(gate_name)
+
+    # Parse Power Mode recommendation
+    if re.search(r'\[x\].*Recommended.*parallel', guidance_text, re.IGNORECASE):
+        config["power_mode"] = "recommended"
+    elif re.search(r'\[x\].*Optional.*coordination', guidance_text, re.IGNORECASE):
+        config["power_mode"] = "optional"
+    elif re.search(r'\[x\].*Not Needed', guidance_text, re.IGNORECASE):
+        config["power_mode"] = "not_needed"
+
+    # Parse Complexity
+    if re.search(r'\[x\].*Small', guidance_text, re.IGNORECASE):
+        config["complexity"] = "small"
+    elif re.search(r'\[x\].*Medium', guidance_text, re.IGNORECASE):
+        config["complexity"] = "medium"
+    elif re.search(r'\[x\].*Large', guidance_text, re.IGNORECASE):
+        config["complexity"] = "large"
+    elif re.search(r'\[x\].*Epic', guidance_text, re.IGNORECASE):
+        config["complexity"] = "epic"
+
+    return config
+
+
+def get_workflow_config(issue_number: int) -> Dict[str, Any]:
+    """Get complete workflow configuration for an issue.
+
+    Fetches issue from GitHub and parses PopKit Guidance section.
+
+    Args:
+        issue_number: The issue number to fetch
+
+    Returns:
+        Dict with:
+        - issue: Basic issue info (number, title, state, labels)
+        - config: Parsed PopKit Guidance configuration
+        - should_brainstorm: Boolean - should brainstorming be triggered
+        - should_activate_power_mode: Boolean - should Power Mode activate
+        - suggested_phases: List of phases in order
+    """
+    result = {
+        "issue": None,
+        "config": None,
+        "should_brainstorm": False,
+        "should_activate_power_mode": False,
+        "suggested_phases": [],
+        "error": None
+    }
+
+    # Fetch issue
+    issue = fetch_issue(issue_number)
+    if not issue:
+        result["error"] = f"Could not fetch issue #{issue_number}"
+        return result
+
+    result["issue"] = {
+        "number": issue.get("number"),
+        "title": issue.get("title"),
+        "state": issue.get("state"),
+        "labels": [l.get("name") for l in issue.get("labels", [])]
+    }
+
+    # Parse guidance
+    config = parse_popkit_guidance(issue.get("body", ""))
+    result["config"] = config
+
+    # Determine if brainstorming should be triggered
+    result["should_brainstorm"] = config["workflow_type"] == "brainstorm_first"
+
+    # Determine if Power Mode should activate
+    # Activate if: explicitly recommended, OR epic complexity, OR 3+ agents
+    total_agents = len(config["agents"]["primary"]) + len(config["agents"]["supporting"])
+    result["should_activate_power_mode"] = (
+        config["power_mode"] == "recommended" or
+        config["complexity"] == "epic" or
+        total_agents >= 3
+    )
+
+    # Build suggested phase order
+    default_phases = ["discovery", "architecture", "implementation", "testing", "documentation", "review"]
+    if config["phases"]:
+        # Use checked phases in default order
+        result["suggested_phases"] = [p for p in default_phases if p in config["phases"]]
+    else:
+        # Default to implementation-focused if no phases specified
+        result["suggested_phases"] = ["implementation", "testing", "review"]
+
+    return result
+
+
+def infer_issue_type(issue: Dict[str, Any]) -> str:
+    """Infer issue type from title and labels.
+
+    Args:
+        issue: Issue dict with title and labels
+
+    Returns:
+        One of: "bug", "feature", "architecture", "research", "unknown"
+    """
+    title = (issue.get("title") or "").lower()
+    labels = [l.lower() for l in issue.get("labels", [])]
+
+    # Check labels first
+    if "bug" in labels:
+        return "bug"
+    if "architecture" in labels or "epic" in labels:
+        return "architecture"
+    if "research" in labels:
+        return "research"
+    if "enhancement" in labels or "feature" in labels:
+        return "feature"
+
+    # Check title patterns
+    if title.startswith("[bug]") or "bug" in title:
+        return "bug"
+    if title.startswith("[architecture]") or title.startswith("[epic]"):
+        return "architecture"
+    if title.startswith("[research]"):
+        return "research"
+    if title.startswith("[feature]"):
+        return "feature"
+
+    return "unknown"
+
+
+def get_agents_for_issue_type(issue_type: str) -> Dict[str, List[str]]:
+    """Get suggested agents based on issue type.
+
+    Args:
+        issue_type: One of bug, feature, architecture, research
+
+    Returns:
+        Dict with primary and supporting agent lists
+    """
+    agent_map = {
+        "bug": {
+            "primary": ["bug-whisperer"],
+            "supporting": ["test-writer-fixer"]
+        },
+        "feature": {
+            "primary": ["code-architect"],
+            "supporting": ["test-writer-fixer", "documentation-maintainer"]
+        },
+        "architecture": {
+            "primary": ["code-architect", "refactoring-expert"],
+            "supporting": ["migration-specialist", "code-reviewer"]
+        },
+        "research": {
+            "primary": ["researcher-agent"],
+            "supporting": ["code-explorer"]
+        },
+        "unknown": {
+            "primary": [],
+            "supporting": []
+        }
+    }
+    return agent_map.get(issue_type, agent_map["unknown"])
 
 
 def create_issue_from_lesson(lesson: dict) -> dict:
@@ -237,7 +531,73 @@ def save_error_locally(error: dict, status_file: Path = None) -> dict:
 
 
 if __name__ == "__main__":
-    # Test the module
+    import sys
+
+    # Test mode selection
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "parse" and len(sys.argv) > 2:
+            # Test parsing an issue: python github_issues.py parse 11
+            issue_num = int(sys.argv[2])
+            print(f"Fetching and parsing issue #{issue_num}...")
+            result = get_workflow_config(issue_num)
+            print(json.dumps(result, indent=2))
+            sys.exit(0)
+
+        elif sys.argv[1] == "test-parse":
+            # Test parsing with sample body
+            sample_body = """
+## Summary
+Test issue for parsing
+
+## PopKit Guidance
+
+### Workflow
+- [x] **Brainstorm First** - Use `pop-brainstorming` skill
+- [ ] **Plan Required** - Use `/popkit:write-plan`
+- [ ] **Direct Implementation** - Proceed directly
+
+### Development Phases
+- [x] Discovery
+- [x] Architecture
+- [x] Implementation
+- [x] Testing
+- [ ] Documentation
+- [x] Review
+
+### Suggested Agents
+- Primary: `code-architect`, `refactoring-expert`
+- Supporting: `migration-specialist`, `code-reviewer`
+
+### Quality Gates
+- [x] TypeScript check
+- [x] Build verification
+- [x] Lint pass
+- [ ] Test pass
+
+### Power Mode
+- [x] **Recommended** - Multiple agents should work in parallel
+- [ ] **Optional** - Can benefit from coordination
+- [ ] **Not Needed** - Sequential work is fine
+
+### Estimated Complexity
+- [ ] Small
+- [ ] Medium
+- [ ] Large
+- [x] Epic
+"""
+            print("Testing parse_popkit_guidance with sample body...")
+            result = parse_popkit_guidance(sample_body)
+            print(json.dumps(result, indent=2))
+
+            print("\nExpected results:")
+            print("  workflow_type: brainstorm_first")
+            print("  phases: discovery, architecture, implementation, testing, review")
+            print("  primary agents: code-architect, refactoring-expert")
+            print("  power_mode: recommended")
+            print("  complexity: epic")
+            sys.exit(0)
+
+    # Default: test save_lesson_locally
     test_lesson = {
         "type": "routing_gap",
         "context": "ESLint cleanup in test project",
@@ -250,3 +610,8 @@ if __name__ == "__main__":
     print("Testing save_lesson_locally...")
     result = save_lesson_locally(test_lesson)
     print(json.dumps(result, indent=2))
+
+    print("\nUsage:")
+    print("  python github_issues.py                  # Test save_lesson_locally")
+    print("  python github_issues.py test-parse       # Test parsing sample body")
+    print("  python github_issues.py parse <number>   # Parse real issue from GitHub")

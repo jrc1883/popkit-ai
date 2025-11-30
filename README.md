@@ -7,8 +7,10 @@ Pop Toolkit - AI-powered development workflows for Claude Code with skills, agen
 - **30 Specialized Agents** - 11 Tier-1 always-active + 17 Tier-2 on-demand + 2 feature-workflow
 - **30 Skills** - From brainstorming to power mode to knowledge management
 - **28 Commands** - Full GitHub lifecycle, git operations, power mode orchestration
-- **14 Hooks** - Safety checks, agent orchestration, power mode check-ins, chain validation
+- **16 Hooks** - Safety checks, agent orchestration, quality gates, power mode check-ins
 - **14 Output Styles** - Consistent templates for commits, PRs, reviews, power mode check-ins
+- **Quality Gates** - Auto-validation (tsc, build, lint) with rollback on failure
+- **Issue-Driven Workflow** - Parse GitHub issues for automatic orchestration
 - **Power Mode** - Multi-agent orchestration (Redis or file-based fallback)
 - **MCP Server Template** - Generate project-specific dev servers with semantic search
 
@@ -51,11 +53,19 @@ claude plugins add https://github.com/jrc1883/popkit
 
 ```bash
 /popkit:issue create           # Create AI-executable GitHub issue
+/popkit:issue work 11          # Start working on issue (activates workflow)
 /popkit:worktree create fix-123
 /popkit:debug                  # Systematic debugging
 /popkit:pr create              # Submit fix with template
 /popkit:issue close            # Mark complete
 ```
+
+The `/popkit:issue work <number>` command:
+- Parses the PopKit Guidance section from the issue
+- Triggers brainstorming if specified in the issue
+- Activates Power Mode for epic/complex issues
+- Creates todos from the issue phases
+- Suggests appropriate agents
 
 ## Commands Reference
 
@@ -242,6 +252,49 @@ Generate Tier 2 tooling with:
 ```bash
 /popkit:generate-mcp       # Creates .claude/mcp-servers/[project]-dev/
 /popkit:generate-skills    # Creates .claude/skills/[project]-*
+```
+
+## Quality Gates
+
+Automatic code integrity validation after file modifications.
+
+### Triggers
+
+Quality gates run when:
+- **High-risk actions**: Config file changes, deletions, import/export changes
+- **Batch threshold**: After 5 file edits
+- **Rapid changes**: 3+ different files modified quickly
+
+### Validation
+
+Auto-detected based on project files:
+| Project Type | Gate | Command |
+|--------------|------|---------|
+| TypeScript | `tsc --noEmit` | Detects `tsconfig.json` |
+| Build | `npm run build` | Detects `package.json` with build script |
+| Lint | `npm run lint` | Detects `package.json` with lint script |
+
+### Failure Handling
+
+When validation fails, you get options:
+1. **Fix now** (default) - Errors injected into context
+2. **Rollback** - Restore clean state, save patch for recovery
+3. **Continue** - Proceed despite errors (not recommended)
+4. **Pause** - Stop for manual review
+
+### Configuration
+
+Override auto-detection with `.claude/quality-gates.json`:
+
+```json
+{
+  "gates": [
+    {"name": "typescript", "enabled": true},
+    {"name": "lint", "enabled": false},
+    {"name": "custom", "command": "./scripts/validate.sh", "enabled": true}
+  ],
+  "triggers": {"batch_threshold": 10}
+}
 ```
 
 ## Power Mode
