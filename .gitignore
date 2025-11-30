@@ -28,3 +28,14 @@ Thumbs.db
 dist/
 build/
 *.egg-info/
+
+# Development-only content (not distributed with plugin)
+# Uses .local suffix pattern like Claude Code's settings.local.json
+commands.local/
+skills.local/
+agents.local/
+hooks.local/
+
+# Project-specific generated content
+# Output from /popkit:generate-* commands
+.generated/

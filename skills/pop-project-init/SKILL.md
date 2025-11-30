@@ -140,10 +140,20 @@ Initialize empty status:
 Add to .gitignore:
 
 ```
-# Claude Code
+# Claude Code - Runtime/session files
 .claude/logs/
 .claude/STATUS.json
 .worktrees/
+
+# Claude Code - Development-only content (not for distribution)
+# Uses .local suffix pattern like Claude Code's settings.local.json
+commands.local/
+skills.local/
+agents.local/
+hooks.local/
+
+# Claude Code - Generated content from /popkit:generate-* commands
+.generated/
 ```
 
 ### Step 7: Create README Files
