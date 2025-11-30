@@ -4,11 +4,11 @@ Pop Toolkit - AI-powered development workflows for Claude Code with skills, agen
 
 ## Features
 
-- **29 Specialized Agents** - 11 Tier-1 always-active + 15 Tier-2 on-demand + 3 feature-workflow
-- **21 Skills** - From brainstorming to code review to git worktrees
-- **17 Commands** - Full GitHub lifecycle, git operations, and more
-- **10 Hooks** - Safety checks, agent orchestration, session management
-- **8 Output Styles** - Consistent templates for commits, PRs, reviews
+- **30 Specialized Agents** - 11 Tier-1 always-active + 16 Tier-2 on-demand + 3 feature-workflow
+- **29 Skills** - From brainstorming to code review to knowledge management
+- **27 Commands** - Full GitHub lifecycle, git operations, knowledge sync, and more
+- **14 Hooks** - Safety checks, agent orchestration, session management, chain validation
+- **13 Output Styles** - Consistent templates for commits, PRs, reviews, agent handoffs
 - **MCP Server Template** - Generate project-specific dev servers with semantic search
 
 ## Installation
