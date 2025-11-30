@@ -14,7 +14,7 @@ Thank you for your interest in contributing to popkit! This document provides gu
 ```
 .claude-plugin/     Plugin manifest files
 agents/             Agent definitions (tier-1, tier-2, feature-workflow)
-commands/           Slash commands (/pop:*)
+commands/           Slash commands (/popkit:*)
 hooks/              Python hooks for lifecycle events
 skills/             Skill definitions (pop-*/SKILL.md)
 output-styles/      Output format templates
@@ -30,7 +30,7 @@ tests/              Plugin self-tests
 2. Add `SKILL.md` with YAML frontmatter:
    ```yaml
    ---
-   name: pop:yourskill
+   name: popkit:yourskill
    description: "When to use this skill"
    ---
    ```
@@ -43,7 +43,7 @@ tests/              Plugin self-tests
 2. Add YAML frontmatter:
    ```yaml
    ---
-   name: pop:yourcommand
+   name: popkit:yourcommand
    description: Short description
    ---
    ```
@@ -68,7 +68,7 @@ tests/              Plugin self-tests
 - **Markdown**: Use YAML frontmatter with `name:` and `description:` fields
 - **JSON**: 2-space indentation, trailing commas not allowed
 - **Python hooks**: Use `#!/usr/bin/env python3`, JSON stdin/stdout protocol
-- **Naming**: Skills use `pop:name` in frontmatter, `pop-name/` for directories
+- **Naming**: Skills use `popkit:name` in frontmatter, `pop-name/` for directories
 
 ## Commit Messages
 
@@ -92,7 +92,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 Run the built-in test suite:
 ```
-/pop:plugin-test
+/popkit:plugin-test
 ```
 
 This validates:
@@ -104,7 +104,7 @@ This validates:
 
 1. Create a feature branch from `master`
 2. Make your changes
-3. Run `/pop:plugin-test` to verify nothing is broken
+3. Run `/popkit:plugin-test` to verify nothing is broken
 4. Commit with conventional commit message
 5. Push and create a PR
 6. Fill out the PR template
