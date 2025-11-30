@@ -38,7 +38,8 @@
         "feedback-synthesizer",
         "rollback-specialist",
         "data-integrity-agent",
-        "dead-code-eliminator-agent"
+        "dead-code-eliminator-agent",
+        "power-coordinator"
       ]
     },
     "feature-workflow": {
@@ -78,7 +79,13 @@
       "prettier": ["code-reviewer"],
       "format": ["code-reviewer"],
       "style": ["code-reviewer"],
-      "cleanup": ["refactoring-expert", "dead-code-eliminator-agent"]
+      "cleanup": ["refactoring-expert", "dead-code-eliminator-agent"],
+      "power": ["power-coordinator"],
+      "orchestrate": ["power-coordinator"],
+      "coordinate": ["power-coordinator"],
+      "parallel": ["power-coordinator"],
+      "mesh": ["power-coordinator"],
+      "multi-agent": ["power-coordinator"]
     },
 
     "filePatterns": {
