@@ -20,9 +20,9 @@ npm-debug.log
 .DS_Store
 Thumbs.db
 
-# Test artifacts
-Test*/
-test*/
+# Test artifacts (temporary test directories, not docs/test-results)
+/Test[0-9]*/
+/test[0-9]*/
 
 # Build outputs
 dist/
