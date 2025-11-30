@@ -170,6 +170,12 @@ claude plugins add https://github.com/jrc1883/popkit
 - `popkit:session-resume` - Restore context on startup
 - `popkit:context-restore` - Load previous session context
 
+### Knowledge & Chains
+- `popkit:knowledge-lookup` - Query cached external knowledge sources
+- `popkit:chain-management` - Workflow chain validation and metrics
+- `popkit:next-action` - Context-aware recommendation engine
+- `popkit:validation-engine` - Reusable validation patterns
+
 ### Generators
 - `popkit:project-init` - Scaffold new projects
 - `popkit:mcp-generator` - Generate project-specific MCP servers
