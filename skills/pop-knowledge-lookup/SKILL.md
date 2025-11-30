@@ -32,37 +32,33 @@ Default sources (synced automatically):
 
 ### Step 1: List Available Knowledge
 
-```bash
-# Check what knowledge is available
-cat ~/.claude/config/knowledge/sources.json
+Use the **Read tool** to check what knowledge is available:
+```
+Read: ~/.claude/config/knowledge/sources.json
 ```
 
 ### Step 2: Check Cache Freshness
 
+Use bash for SQLite queries (no native equivalent):
 ```bash
-# Query the cache database
 sqlite3 ~/.claude/config/knowledge/cache.db \
   "SELECT source_id, fetched_at, expires_at, status FROM knowledge_cache"
 ```
 
 ### Step 3: Read Specific Content
 
-```bash
-# Read cached content for a specific source
-cat ~/.claude/config/knowledge/content/anthropic-engineering.md
-
-# Or for documentation
-cat ~/.claude/config/knowledge/content/claude-code-docs-overview.md
+Use the **Read tool** to read cached content:
+```
+Read: ~/.claude/config/knowledge/content/anthropic-engineering.md
+Read: ~/.claude/config/knowledge/content/claude-code-docs-overview.md
 ```
 
 ### Step 4: Search Across Sources
 
-```bash
-# Search for specific topic across all cached content
-grep -ri "hooks" ~/.claude/config/knowledge/content/
-
-# Search for a pattern
-grep -ri "MCP" ~/.claude/config/knowledge/content/
+Use the **Grep tool** to search across all cached content:
+```
+Grep: pattern="hooks", path="~/.claude/config/knowledge/content/"
+Grep: pattern="MCP", path="~/.claude/config/knowledge/content/"
 ```
 
 ## Response Format
@@ -89,32 +85,32 @@ When providing information from knowledge sources:
 
 ### Query: "How do hooks work in Claude Code?"
 
-1. Read the hooks documentation:
-```bash
-cat ~/.claude/config/knowledge/content/claude-code-docs-hooks.md
-```
+1. Use the **Read tool** to read the hooks documentation:
+   ```
+   Read: ~/.claude/config/knowledge/content/claude-code-docs-hooks.md
+   ```
 
 2. Extract relevant sections
 3. Provide answer with source attribution
 
 ### Query: "What are best practices for Claude Code?"
 
-1. Read the engineering blog:
-```bash
-cat ~/.claude/config/knowledge/content/anthropic-engineering.md
-```
+1. Use the **Read tool** to read the engineering blog:
+   ```
+   Read: ~/.claude/config/knowledge/content/anthropic-engineering.md
+   ```
 
 2. Look for best practices content
 3. Summarize with examples
 
 ### Query: "Is there something about X in the docs?"
 
-1. Search all sources:
-```bash
-grep -ri "X" ~/.claude/config/knowledge/content/
-```
+1. Use the **Grep tool** to search all sources:
+   ```
+   Grep: pattern="X", path="~/.claude/config/knowledge/content/"
+   ```
 
-2. If found, read the full context
+2. If found, use **Read tool** to get the full context
 3. If not found, inform user and suggest they check directly
 
 ## Handling Stale or Missing Data
