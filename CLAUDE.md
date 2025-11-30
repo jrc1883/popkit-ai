@@ -9,6 +9,56 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Tier 1 (this repo)**: Universal, project-agnostic tools that work anywhere
 - **Tier 2 (generated)**: Project-specific MCP servers, skills, and agents created via `/generate-mcp` and `/generate-skills`
 
+## Core Philosophy
+
+PopKit exists to **orchestrate Claude Code's full power** for real-world development workflows. Claude Code provides raw tools; PopKit chains them together programmatically.
+
+### Key Principles
+
+1. **Full Claude Code Orchestration**
+   - Leverages ALL capabilities: hooks, agents, skills, commands, status line, output styles, MCP servers
+   - Not just using tools, but composing them into coherent workflows
+
+2. **Non-Linear Development Support**
+   - Development isn't linear; there are branches and different paths
+   - Can help new projects (generate PRDs, setup GitHub)
+   - Can analyze existing projects (identify gaps, recommend fixes)
+   - Adapts to any project type (full stack, web, mobile)
+
+3. **Programmatic Chaining**
+   - Simple tasks chained together → orchestrated workflows
+   - Example: GitHub push + feature update as unified `/popkit:commit-push-pr`
+   - Follows Claude Code engineering blog best practices
+   - Context preservation for long-running processes
+
+4. **Tiered Loading**
+   - Don't load all tools at once
+   - Tier 1: Always-active core agents (11)
+   - Tier 2: On-demand specialists activated by triggers (16)
+   - Feature Workflow: 7-phase development agents (3)
+
+5. **Project-Specific Customization ("Chain Combos")**
+   - Base commands work everywhere (Tier 1)
+   - Generate custom versions for specific projects (Tier 2)
+   - Skills/commands that learn and grow with the project
+   - Example: `/popkit:generate-mcp` creates project-specific MCP server
+
+6. **Inter-Agent Communication** (Future)
+   - Pub-sub pattern for parallel agent orchestration
+   - JSON file checkpoints for agent message passing
+   - Structured output styles for inter-agent communication
+   - Future state: Redis cache for high-availability
+
+### Design Goals
+
+| Goal | Implementation |
+|------|----------------|
+| Check GitHub first | Always improve existing code before implementing from scratch |
+| Context preservation | STATUS.json pattern, session capture/restore skills |
+| Confidence-based filtering | 80+ threshold prevents false positives |
+| Progressive disclosure | Load documentation only when needed |
+| Engineering blog alignment | Follow Anthropic's recommended patterns |
+
 ## Repository Structure
 
 ```
