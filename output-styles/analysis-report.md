@@ -2,7 +2,7 @@
 name: analysis-report
 description: Codebase analysis findings with architecture, patterns, and recommendations
 used_by:
-  - researcher-agent
+  - researcher
   - code-explorer
   - /popkit:analyze-project
 ---
@@ -252,7 +252,7 @@ Based on this analysis, these agents would be valuable:
 
 **Scope:** Full codebase
 **Date:** 2025-01-28
-**Analyst:** researcher-agent
+**Analyst:** researcher
 
 ---
 
@@ -344,7 +344,7 @@ Based on this analysis, these agents would be valuable:
 
 ```yaml
 ---
-name: researcher-agent
+name: researcher
 output_style: analysis-report
 ---
 ```

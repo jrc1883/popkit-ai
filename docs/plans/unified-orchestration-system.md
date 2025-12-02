@@ -138,7 +138,7 @@ Standard 10-phase pipeline with artifacts:
 
 | Phase | Agents | Artifacts | Quality Gate |
 |-------|--------|-----------|--------------|
-| 0. Discovery | researcher-agent, code-explorer | `problem_statement.md`, `constraints.md` | Human review |
+| 0. Discovery | researcher, code-explorer | `problem_statement.md`, `constraints.md` | Human review |
 | 1. PRD | - | `PRD.md`, `user_stories.md`, `acceptance_criteria.md` | Human approval |
 | 2. Architecture | code-architect | `ARCHITECTURE.md`, `data_model.md`, `api_spec.md` | Human review |
 | 3. Technical Design | code-architect | `TECHNICAL_SPEC.md`, `file_structure.md` | Human review |
@@ -299,7 +299,7 @@ This epic breaks down into:
 
 ### Suggested Agents
 - Primary: `code-architect`, `refactoring-expert`
-- Supporting: `migration-specialist`, `devops-automator-agent`
+- Supporting: `migration-specialist`, `devops-automator`
 - Quality: `test-writer-fixer`, `code-reviewer`
 
 ### Quality Gates

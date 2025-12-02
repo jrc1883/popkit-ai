@@ -97,7 +97,7 @@ Agent Score Comparison
 query-optimizer:        ████████████████████ 0.85
 performance-optimizer:  █████████░░░░░░░░░░░ 0.45
 cache-optimizer:        ████░░░░░░░░░░░░░░░░ 0.20
-data-integrity-agent:   ██░░░░░░░░░░░░░░░░░░ 0.10
+data-integrity:         ██░░░░░░░░░░░░░░░░░░ 0.10
 ```
 
 ## Troubleshooting

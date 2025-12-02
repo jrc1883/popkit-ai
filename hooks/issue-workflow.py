@@ -31,6 +31,7 @@ from github_issues import (
     infer_issue_type,
     get_agents_for_issue_type
 )
+from flag_parser import parse_work_args
 
 
 class IssueWorkflowHook:
@@ -72,12 +73,22 @@ class IssueWorkflowHook:
     def activate_power_mode(self, config: Dict[str, Any]) -> bool:
         """Activate Power Mode with configuration from issue."""
         try:
+            phases = config.get("suggested_phases", [])
             power_state = {
                 "active": True,
                 "activated_at": datetime.now().isoformat(),
                 "source": f"issue #{config.get('issue_number', 'unknown')}",
+                "active_issue": config.get("issue_number"),
+                "session_id": f"pop-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                # Status line fields
+                "current_phase": phases[0] if phases else "implementation",
+                "phase_index": 1,
+                "total_phases": len(phases) if phases else 1,
+                "progress": 0.0,
+                "phases_completed": [],
+                # Config for reference
                 "config": {
-                    "phases": config.get("suggested_phases", []),
+                    "phases": phases,
                     "agents": config.get("config", {}).get("agents", {}),
                     "quality_gates": config.get("config", {}).get("quality_gates", [])
                 }
@@ -234,6 +245,122 @@ class IssueWorkflowHook:
 
         return result
 
+    def start_work_on_issue(self, issue_number: int, flags: Dict[str, Any] = None) -> Dict[str, Any]:
+        """Start working on an issue with flag support - for /popkit:work command.
+
+        This is the enhanced version of start_issue_workflow that respects
+        command-line flags for Power Mode control.
+
+        Args:
+            issue_number: The issue number to work on
+            flags: Dict from parse_work_args with:
+                - force_power: bool - Force Power Mode ON
+                - force_solo: bool - Force Power Mode OFF
+                - phases: List[str] - Override phases
+                - agents: List[str] - Override agents
+
+        Returns:
+            Dict with workflow configuration and actions to take
+        """
+        flags = flags or {}
+
+        result = {
+            "success": False,
+            "issue_number": issue_number,
+            "workflow": None,
+            "power_mode": False,
+            "power_mode_source": None,
+            "actions": [],
+            "todos": [],
+            "messages": []
+        }
+
+        # Fetch and parse issue
+        workflow = get_workflow_config(issue_number)
+
+        if workflow.get("error"):
+            result["messages"].append(f"Error: {workflow['error']}")
+            return result
+
+        result["workflow"] = workflow
+        result["success"] = True
+
+        # Override phases if specified
+        if flags.get("phases"):
+            workflow["suggested_phases"] = flags["phases"]
+            result["messages"].append(f"Using custom phases: {', '.join(flags['phases'])}")
+
+        # Override agents if specified
+        if flags.get("agents"):
+            workflow["config"]["agents"] = {
+                "primary": flags["agents"][:1] if flags["agents"] else [],
+                "supporting": flags["agents"][1:] if len(flags["agents"]) > 1 else []
+            }
+            result["messages"].append(f"Using custom agents: {', '.join(flags['agents'])}")
+
+        # Determine Power Mode activation (flag priority)
+        should_activate_power = False
+        power_source = "none"
+
+        if flags.get("force_power"):
+            # Flag -p or --power takes highest priority
+            should_activate_power = True
+            power_source = "flag (-p/--power)"
+        elif flags.get("force_solo"):
+            # Flag --solo forces sequential mode
+            should_activate_power = False
+            power_source = "flag (--solo)"
+        elif workflow.get("should_activate_power_mode"):
+            # Use PopKit Guidance recommendation
+            should_activate_power = True
+            config = workflow.get("config", {})
+            power_source = f"PopKit Guidance (power_mode: {config.get('power_mode')}, complexity: {config.get('complexity')})"
+        else:
+            # Default to sequential
+            should_activate_power = False
+            power_source = "default (sequential)"
+
+        result["power_mode"] = should_activate_power
+        result["power_mode_source"] = power_source
+
+        # Determine actions
+        if workflow.get("should_brainstorm"):
+            result["actions"].append({
+                "type": "trigger_skill",
+                "skill": "pop-brainstorming",
+                "reason": "Issue specifies 'Brainstorm First' workflow"
+            })
+            result["messages"].append("Brainstorming recommended before implementation")
+
+        if should_activate_power:
+            result["actions"].append({
+                "type": "activate_power_mode",
+                "reason": power_source
+            })
+            self.activate_power_mode({
+                "issue_number": issue_number,
+                **workflow
+            })
+            result["messages"].append(f"Power Mode activated ({power_source})")
+        else:
+            result["messages"].append(f"Sequential mode ({power_source})")
+
+        # Generate todos from phases
+        result["todos"] = self.generate_todo_list(workflow)
+
+        # Update state
+        self.state["active_issue"] = issue_number
+        self.state["current_phase"] = workflow.get("suggested_phases", ["implementation"])[0]
+        self.state["phases_completed"] = []
+        self.state["activated_at"] = datetime.now().isoformat()
+        self.state["power_mode"] = should_activate_power
+        self.save_state()
+
+        # Add summary message
+        result["messages"].append(self.format_workflow_summary(workflow))
+
+        return result
+
     def complete_phase(self, phase_name: str) -> Dict[str, Any]:
         """Mark a phase as complete and determine next steps.
 
@@ -267,10 +394,17 @@ class IssueWorkflowHook:
             phases = workflow.get("suggested_phases", [])
             completed = set(self.state.get("phases_completed", []))
 
-            for phase in phases:
+            for i, phase in enumerate(phases):
                 if phase not in completed:
                     result["next_phase"] = phase
                     self.state["current_phase"] = phase
+                    # Update power mode state for status line
+                    self._update_power_mode_progress(
+                        current_phase=phase,
+                        phase_index=i + 1,
+                        total_phases=len(phases),
+                        phases_completed=list(completed)
+                    )
                     break
 
             if not result["next_phase"]:
@@ -283,6 +417,28 @@ class IssueWorkflowHook:
 
         self.save_state()
         return result
+
+    def _update_power_mode_progress(
+        self,
+        current_phase: str,
+        phase_index: int,
+        total_phases: int,
+        phases_completed: List[str]
+    ):
+        """Update power mode state file for status line integration."""
+        try:
+            if self.power_mode_state.exists():
+                power_state = json.loads(self.power_mode_state.read_text())
+                if power_state.get("active"):
+                    power_state["current_phase"] = current_phase
+                    power_state["phase_index"] = phase_index
+                    power_state["total_phases"] = total_phases
+                    power_state["phases_completed"] = phases_completed
+                    # Calculate progress as percentage of phases complete
+                    power_state["progress"] = len(phases_completed) / total_phases if total_phases > 0 else 0.0
+                    self.power_mode_state.write_text(json.dumps(power_state, indent=2))
+        except Exception:
+            pass  # Don't fail if status update fails
 
     def get_current_status(self) -> Dict[str, Any]:
         """Get current workflow status."""
@@ -319,6 +475,22 @@ def main():
                 sys.exit(1)
             result = hook.start_issue_workflow(issue_number)
 
+        elif action == "work":
+            # Enhanced version with flag support (for /popkit:work command)
+            args = input_data.get("args", "")
+            flags = parse_work_args(args)
+
+            if flags.get("error"):
+                print(json.dumps({"error": flags["error"]}))
+                sys.exit(1)
+
+            issue_number = flags.get("issue_number")
+            if not issue_number:
+                print(json.dumps({"error": "issue_number required"}))
+                sys.exit(1)
+
+            result = hook.start_work_on_issue(issue_number, flags)
+
         elif action == "complete_phase":
             phase_name = input_data.get("phase_name")
             if not phase_name:
@@ -350,6 +522,20 @@ if __name__ == "__main__":
             result = hook.start_issue_workflow(issue_num)
             print(json.dumps(result, indent=2))
 
+        elif sys.argv[1] == "work" and len(sys.argv) > 2:
+            # Enhanced version with flag support
+            # Usage: python issue-workflow.py work "#4 -p"
+            args = " ".join(sys.argv[2:])
+            flags = parse_work_args(args)
+
+            if flags.get("error"):
+                print(json.dumps({"error": flags["error"]}, indent=2))
+                sys.exit(1)
+
+            hook = IssueWorkflowHook()
+            result = hook.start_work_on_issue(flags["issue_number"], flags)
+            print(json.dumps(result, indent=2))
+
         elif sys.argv[1] == "status":
             hook = IssueWorkflowHook()
             result = hook.get_current_status()
@@ -364,6 +550,8 @@ if __name__ == "__main__":
         else:
             print("Usage:")
             print("  python issue-workflow.py start <issue_number>  # Start working on issue")
+            print("  python issue-workflow.py work #4 -p            # Start with flags (Power Mode)")
+            print("  python issue-workflow.py work #4 --solo        # Start without Power Mode")
             print("  python issue-workflow.py status                # Get current status")
             print("  python issue-workflow.py complete <phase>      # Complete a phase")
     else:

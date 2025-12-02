@@ -135,7 +135,38 @@ Initialize empty status:
 }
 ```
 
-### Step 6: Update .gitignore
+### Step 6: Ask About Power Mode Setup
+
+Offer Power Mode setup for multi-agent orchestration:
+
+**Present options:**
+1. **Redis Mode** - Full parallel agent orchestration (requires Docker)
+2. **File Mode** - Simpler coordination without external dependencies
+3. **Skip** - Set up later with `/popkit:power-init`
+
+**If Redis Mode selected:**
+```bash
+# Copy docker-compose.yml template
+cp power-mode/docker-compose.yml .claude/docker-compose.yml
+echo "[+] docker-compose.yml created"
+echo "Run 'docker compose -f .claude/docker-compose.yml up -d' to start Redis"
+```
+
+**If File Mode selected:**
+```bash
+# Create initial power mode state file
+cat > .claude/power-mode-state.json << 'EOF'
+{
+  "active": false,
+  "session_id": null,
+  "mode": "file",
+  "note": "File-based Power Mode. Activate with /popkit:work #N -p"
+}
+EOF
+echo "[+] Power Mode configured for file-based coordination"
+```
+
+### Step 7: Update .gitignore
 
 Add to .gitignore:
 
@@ -143,6 +174,7 @@ Add to .gitignore:
 # Claude Code - Runtime/session files
 .claude/logs/
 .claude/STATUS.json
+.claude/power-mode-state.json
 .worktrees/
 
 # Claude Code - Development-only content (not for distribution)
@@ -156,7 +188,7 @@ hooks.local/
 .generated/
 ```
 
-### Step 7: Create README Files
+### Step 8: Create README Files
 
 Create README.md in each subdirectory explaining purpose and how to add items.
 
@@ -193,9 +225,10 @@ Project initialized at .claude/
 
 Recommended next steps:
 1. Review and customize CLAUDE.md
-2. Run /analyze-project for codebase analysis
-3. Run /setup-precommit for quality gates
-4. Run /generate-mcp for project-specific MCP server
+2. Run /popkit:analyze-project for codebase analysis
+3. Run /popkit:setup-precommit for quality gates
+4. Run /popkit:power-init start (if Redis Mode was selected)
+5. Run /popkit:issues to see GitHub issues with Power Mode recommendations
 
 Would you like me to run any of these?
 ```
@@ -203,10 +236,12 @@ Would you like me to run any of these?
 ## Integration
 
 **Triggers:**
-- `/init-project` command
+- `/popkit:init-project` command
 - Manual skill invocation
 
 **Followed by:**
-- **/analyze-project** - Deep codebase analysis
-- **/generate-mcp** - Project-specific MCP server
-- **/setup-precommit** - Pre-commit hooks
+- **/popkit:analyze-project** - Deep codebase analysis
+- **/popkit:generate-mcp** - Project-specific MCP server
+- **/popkit:setup-precommit** - Pre-commit hooks
+- **/popkit:power-init** - Start Redis for Power Mode
+- **/popkit:issues** - View issues with orchestration recommendations

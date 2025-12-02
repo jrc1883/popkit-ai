@@ -153,7 +153,7 @@
       "projectName": "Reseller Central",
       "scope": "Full codebase",
       "date": "2025-01-28",
-      "analyst": "researcher-agent",
+      "analyst": "researcher",
       "healthScore": 72,
       "metrics": {
         "architecture": 8,

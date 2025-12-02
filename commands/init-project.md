@@ -1,16 +1,17 @@
 ---
-description: Initialize new project with .claude/ directory structure
+description: Initialize new project with .claude/ directory structure and optional Power Mode setup
 ---
 
 # /popkit:init-project - Project Initialization
 
-Scaffold a new project with complete Claude Code configuration.
+Scaffold a new project with complete Claude Code configuration, including optional Power Mode for multi-agent orchestration.
 
 ## Usage
 
 ```
 /popkit:init-project                  # Initialize current directory
 /popkit:init-project my-app           # Initialize named project
+/popkit:init-project --power          # Initialize with Power Mode setup
 ```
 
 ## Process
@@ -22,7 +23,8 @@ Invokes the **project-init** skill:
 3. Generate CLAUDE.md with project instructions
 4. Initialize STATUS.json for session continuity
 5. Update .gitignore
-6. Report and offer next steps
+6. **Ask about Power Mode setup** (Redis for multi-agent orchestration)
+7. Report and offer next steps
 
 ## What Gets Created
 
@@ -41,27 +43,73 @@ Invokes the **project-init** skill:
 CLAUDE.md             # Project instructions
 ```
 
+## Power Mode Setup (Optional)
+
+When Power Mode is enabled, additional files are created:
+
+```
+.claude/
+├── power-mode-state.json   # Power Mode session state
+└── docker-compose.yml      # Redis container config (if using Docker)
+```
+
+Power Mode provides:
+- Multi-agent orchestration via Redis pub/sub
+- File-based fallback (works without Docker)
+- Status line integration (`[POP] #N Phase: X`)
+- Issue-driven workflows with `/popkit:work #N -p`
+
 ## Example
 
 ```
 /popkit:init-project
 
 Detecting project type...
-✓ Node.js (Next.js 14) detected
+[+] Node.js (Next.js 14) detected
 
 Creating .claude/ structure...
-✓ Directories created
-✓ CLAUDE.md generated
-✓ STATUS.json initialized
-✓ .gitignore updated
+[+] Directories created
+[+] CLAUDE.md generated
+[+] STATUS.json initialized
+[+] .gitignore updated
+
+Would you like to set up Power Mode for multi-agent orchestration?
+  - Redis Mode: Full parallel agents (requires Docker)
+  - File Mode: Simpler coordination (no dependencies)
+  - Skip: Set up later with /popkit:power-init
+
+[User selects Redis Mode]
+
+Setting up Power Mode...
+[+] docker-compose.yml created
+[+] Run 'docker compose up -d' to start Redis
 
 Project initialized!
 
 Recommended next steps:
 1. Review and customize CLAUDE.md
-2. Run /analyze-project for codebase analysis
-3. Run /setup-precommit for quality gates
-4. Run /generate-mcp for project-specific tools
+2. Run /popkit:analyze-project for codebase analysis
+3. Run /popkit:setup-precommit for quality gates
+4. Run /popkit:power-init start to start Redis (if Docker installed)
+5. Run /popkit:issues to see GitHub issues with Power Mode recommendations
 
 Would you like me to run any of these?
 ```
+
+## Architecture Integration
+
+| Component | Integration |
+|-----------|-------------|
+| Project Detection | Analyzes package.json, requirements.txt, go.mod, Cargo.toml |
+| Power Mode State | Writes to `.claude/power-mode-state.json` |
+| Redis Config | Generates `docker-compose.yml` for containerized Redis |
+| Status Line | Configures statusLine in `settings.json` |
+
+## Related Commands
+
+| Command | Relationship |
+|---------|--------------|
+| `/popkit:power-init` | Start/stop Redis after init |
+| `/popkit:analyze-project` | Deep codebase analysis |
+| `/popkit:setup-precommit` | Quality gates setup |
+| `/popkit:work #N -p` | Work on issue with Power Mode |

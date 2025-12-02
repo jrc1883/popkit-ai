@@ -41,7 +41,7 @@
     {
       "name": "deploy keywords route to devops-automator",
       "prompt": "set up CI/CD pipeline for deployment",
-      "expected_agent": "devops-automator-agent",
+      "expected_agent": "devops-automator",
       "min_confidence": 0.4
     },
     {

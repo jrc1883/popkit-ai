@@ -223,7 +223,35 @@ npm run build
 
 **Note:** Popkit uses `0.x.y` versioning until stable. Version `1.0.0` will mark API stability.
 
-### v0.8.0 (Current)
+### v0.9.0 (Current)
+
+- **Power Mode Enhancement with GitHub Issue Integration**
+  - New unified command architecture: `/popkit:work #N -p`, `/popkit:issues`, `/popkit:power`
+  - Power Mode as flag modifier (`-p`/`--power`, `--solo`) on issue commands
+  - Status line integration: `[POP] #N Phase: X (N/M) [####--] %` when active
+- **New Commands**
+  - `commands/work.md`: Work on GitHub issue with optional Power Mode
+  - `commands/issues.md`: List issues with Power Mode recommendations
+  - `commands/power.md`: Shortened Power Mode management (status/stop)
+- **Flag Parsing Utility** (`hooks/utils/flag_parser.py`)
+  - Centralized parsing for `-p`, `--power`, `--solo`, `--phases`, `--agents` flags
+  - Supports `/popkit:work`, `/popkit:issues`, `/popkit:power` commands
+- **Status Line Script** (`power-mode/statusline.py`)
+  - Visual Power Mode indicator with phase progress
+  - ANSI color output for terminal display
+  - Detailed status command (`/popkit:power status`)
+- **Fallback Orchestration** (`generate_orchestration_plan` in github_issues.py)
+  - Auto-generates plan when issue lacks PopKit Guidance
+  - Infers issue type, complexity, phases, and agents from labels/content
+  - Confidence scoring with user guidance suggestions
+- **Enhanced Checkin Hook** (`power-mode/checkin-hook.py`)
+  - Project-local state file preference for status line integration
+  - Merges agent tracking with Power Mode state
+- **Unified Init Flow** (init-project.md, pop-project-init skill)
+  - Power Mode setup option during project initialization
+  - Redis Mode vs File Mode selection
+
+### v0.8.0
 
 - **Quality Gates Hook** (`quality-gate.py`): Auto-validation after file modifications
   - Detects project type (TypeScript, build scripts, lint)
@@ -285,7 +313,7 @@ npm run build
 
 - **Version Reset**: Moved from 1.5.0 to 0.6.0 to reflect pre-stable status
 - **Meta-Release Command**: Added `/popkit:popkit-release` for automated plugin releases
-- **Command Restoration**: Fixed 3 corrupted command files (`knowledge.md`, `chain-viz.md`, `sync.md`)
+- **Command Restoration**: Fixed 3 corrupted command files (`knowledge.md`, `workflow-viz.md`, `sync.md`)
 - **Enhanced Command Structure**: All commands now include architecture integration tables
 - **New Knowledge Subcommand**: Added `/popkit:knowledge search <query>`
 
@@ -305,7 +333,7 @@ The 1.x versions were pre-stable releases that have been reset:
   - Add/remove sources via terminal command
   - Automatic sync on session start with 24-hour cache
   - `pop-knowledge-lookup` skill for agent knowledge queries
-- **Chain Visualization** (`/popkit:chain-viz`): Workflow visualization with validation and metrics
+- **Chain Visualization** (`/popkit:workflow-viz`): Workflow visualization with validation and metrics
   - ASCII diagrams showing agent chains
   - Validation of workflow definitions
   - Performance metrics tracking (timing, success rates, bottlenecks)

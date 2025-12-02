@@ -84,7 +84,7 @@ The `/popkit:issue work <number>` command:
 |---------|-------------|
 | `/popkit:commit` | Auto-generate commit message matching repo style |
 | `/popkit:commit-push-pr` | Full workflow: branch -> commit -> push -> PR |
-| `/popkit:clean-gone` | Remove stale branches after PR merges |
+| `/popkit:prune-branches` | Remove stale branches after PR merges |
 | `/popkit:worktree create <name>` | Create isolated workspace with branch |
 | `/popkit:worktree analyze` | Identify worktree opportunities |
 | `/popkit:finish-branch` | Complete work with 4-option flow |
@@ -115,7 +115,7 @@ The `/popkit:issue work <number>` command:
 | `/popkit:knowledge` | Manage external knowledge sources with caching |
 | `/popkit:knowledge add <url>` | Add new knowledge source |
 | `/popkit:knowledge refresh` | Force refresh cached knowledge |
-| `/popkit:chain-viz` | Visualize workflow chains with metrics |
+| `/popkit:workflow-viz` | Visualize workflow chains with metrics |
 | `/popkit:sync` | Validate and synchronize plugin state |
 | `/popkit:next` | Context-aware action recommendations |
 | `/popkit:morning` | Morning health check with "Ready to Code" score |
@@ -159,7 +159,7 @@ The `/popkit:issue work <number>` command:
 - `rapid-prototyper` - Quick MVP creation
 - `backup-coordinator` - Backup strategies
 - `meta-agent` - Agent configuration
-- `researcher-agent` - Codebase research
+- `researcher` - Codebase research
 - `user-story-writer` - Requirements documentation
 - `devops-automator` - CI/CD automation
 - `bundle-analyzer` - Bundle optimization

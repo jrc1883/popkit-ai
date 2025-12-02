@@ -200,7 +200,7 @@ for wid, agg in data.get('aggregates', {}).items():
 
 ## Related
 
-- `/popkit:chain-viz` command - User-facing visualization
+- `/popkit:workflow-viz` command - User-facing visualization
 - `chain-validator.py` hook - Validation logic
 - `chain-metrics.py` hook - Metrics tracking
 - `agents/config.json` - Workflow definitions

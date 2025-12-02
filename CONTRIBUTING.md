@@ -131,7 +131,7 @@ PopKit provides commands that work together for a smooth development cycle:
 /popkit:finish-branch                 # Choose: merge, PR, keep, or discard
 
 # 5. Clean up after merge
-/popkit:clean-gone                    # Remove stale branches
+/popkit:prune-branches                # Remove stale branches
 ```
 
 ### Quick PR Flow

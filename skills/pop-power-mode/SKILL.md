@@ -264,5 +264,5 @@ unset POP_POWER_MODE
 - `power-coordinator` - Can be invoked as coordinator
 
 **Related skills:**
-- `pop-subagent-driven-development` - Single-session alternative
+- `pop-subagent-dev` - Single-session alternative
 - `pop-executing-plans` - Parallel session alternative

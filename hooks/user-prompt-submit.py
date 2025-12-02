@@ -173,9 +173,9 @@ class UserPromptSubmitHook:
             "where does": {"skill": "pop-root-cause-tracing", "enforcement": "suggest"},
 
             # Verification
-            "verify": {"skill": "pop-verification-before-completion", "enforcement": "suggest"},
-            "confirm": {"skill": "pop-verification-before-completion", "enforcement": "suggest"},
-            "make sure": {"skill": "pop-verification-before-completion", "enforcement": "suggest"},
+            "verify": {"skill": "pop-verify-completion", "enforcement": "suggest"},
+            "confirm": {"skill": "pop-verify-completion", "enforcement": "suggest"},
+            "make sure": {"skill": "pop-verify-completion", "enforcement": "suggest"},
 
             # Brainstorming/Design
             "design": {"skill": "pop-brainstorming", "enforcement": "suggest"},
@@ -418,7 +418,7 @@ class UserPromptSubmitHook:
             "pop-test-driven-development": "test-first approach (RED-GREEN-REFACTOR)",
             "pop-code-review": "code review (giving or receiving feedback)",
             "pop-root-cause-tracing": "tracing data flow to find bug origin",
-            "pop-verification-before-completion": "evidence-based verification before claiming done",
+            "pop-verify-completion": "evidence-based verification before claiming done",
             "pop-brainstorming": "design refinement through Socratic questioning",
         }
 

@@ -13,7 +13,7 @@ from pathlib import Path
 
 
 def print_status(message, status="info"):
-    """Print colored status message."""
+    """Print colored status message (Windows-compatible ASCII)."""
     colors = {
         "info": "\033[94m",      # Blue
         "success": "\033[92m",   # Green
@@ -22,15 +22,16 @@ def print_status(message, status="info"):
         "reset": "\033[0m"
     }
 
+    # ASCII-only icons for Windows compatibility
     icons = {
-        "info": "ℹ",
-        "success": "✓",
-        "warning": "⚠",
-        "error": "✗"
+        "info": "[i]",
+        "success": "[+]",
+        "warning": "[!]",
+        "error": "[x]"
     }
 
     color = colors.get(status, colors["info"])
-    icon = icons.get(status, "•")
+    icon = icons.get(status, "[*]")
     print(f"{color}{icon} {message}{colors['reset']}")
 
 
@@ -94,10 +95,10 @@ def check_redis_running():
 
 
 def check_redis_accessible():
-    """Check if Redis is accessible on localhost:6379."""
+    """Check if Redis is accessible on localhost:16379."""
     try:
         import redis
-        r = redis.Redis(host='localhost', port=6379, db=0, socket_timeout=2)
+        r = redis.Redis(host='localhost', port=16379, db=0, socket_timeout=2)
         r.ping()
         return True
     except Exception:
@@ -237,7 +238,7 @@ def print_status_report(status):
         print_status("Redis container is not running", "warning")
 
     if status["redis_accessible"]:
-        print_status("Redis is accessible on localhost:6379", "success")
+        print_status("Redis is accessible on localhost:16379", "success")
     else:
         print_status("Redis is not accessible", "warning")
 
@@ -286,7 +287,7 @@ def main():
         if check_redis_running():
             print_status("Redis is already running", "info")
             if check_redis_accessible():
-                print_status("Redis is accessible at localhost:6379", "success")
+                print_status("Redis is accessible at localhost:16379", "success")
                 sys.exit(0)
             else:
                 print_status("Redis is running but not accessible", "warning")
@@ -324,7 +325,7 @@ def main():
 
         try:
             import redis
-            r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+            r = redis.Redis(host='localhost', port=16379, db=0, decode_responses=True)
 
             # Test pub/sub
             print_status("Testing Redis pub/sub...", "info")

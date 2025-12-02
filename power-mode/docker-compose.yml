@@ -1,12 +1,10 @@
-version: '3.8'
-
 services:
   redis:
     image: redis:7-alpine
     container_name: popkit-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "16379:6379"  # Using 16379 to avoid conflicts with other Redis instances
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
@@ -23,9 +21,9 @@ services:
     container_name: popkit-redis-commander
     restart: unless-stopped
     environment:
-      - REDIS_HOSTS=local:redis:6379
+      - REDIS_HOSTS=local:redis:6379  # Internal port (container-to-container)
     ports:
-      - "8081:8081"
+      - "18081:8081"  # Using 18081 to avoid conflicts
     depends_on:
       - redis
     networks:

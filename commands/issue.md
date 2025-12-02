@@ -212,7 +212,7 @@ Based on issue content and labels:
 | `[Bug]` label or "bug" in title | bug-whisperer | test-writer-fixer |
 | `[Feature]` label | code-architect | test-writer-fixer |
 | `[Architecture]` label | code-architect | migration-specialist, refactoring-expert |
-| `[Research]` label | researcher-agent | code-explorer |
+| `[Research]` label | researcher | code-explorer |
 | Security keywords | security-auditor | code-reviewer |
 | Performance keywords | performance-optimizer | bundle-analyzer |
 | API keywords | api-designer | documentation-maintainer |

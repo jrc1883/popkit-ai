@@ -174,7 +174,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 Missing from README:
 - `/popkit:knowledge` - Knowledge source management
-- `/popkit:chain-viz` - Workflow chain visualization
+- `/popkit:workflow-viz` - Workflow chain visualization
 - `/popkit:sync` - Plugin synchronization
 - `/popkit:next` - Context-aware recommendations
 - `/popkit:popkit-release` - Plugin release workflow
@@ -191,7 +191,7 @@ Insert after line ~89 (after GitHub Lifecycle section):
 | `/popkit:knowledge` | Manage external knowledge sources with caching |
 | `/popkit:knowledge add <url>` | Add new knowledge source |
 | `/popkit:knowledge refresh` | Force refresh cached knowledge |
-| `/popkit:chain-viz` | Visualize workflow chains with metrics |
+| `/popkit:workflow-viz` | Visualize workflow chains with metrics |
 | `/popkit:sync` | Validate and synchronize plugin state |
 | `/popkit:next` | Context-aware action recommendations |
 | `/popkit:morning` | Morning health check with "Ready to Code" score |
@@ -217,7 +217,7 @@ Expected: Line number showing new section
 git add README.md
 git commit -m "docs: add missing commands to README reference
 
-Adds Knowledge & Observability section with knowledge, chain-viz,
+Adds Knowledge & Observability section with knowledge, workflow-viz,
 sync, next, morning commands. Adds Meta section with plugin management.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)

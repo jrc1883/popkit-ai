@@ -63,31 +63,71 @@ class AgentStateTracker:
     """
     Tracks agent state across tool calls.
     Uses a local file for persistence within a session.
+    Prefers project-local state file for status line integration.
     """
 
-    STATE_FILE = Path.home() / ".claude" / "power-mode-state.json"
+    HOME_STATE_FILE = Path.home() / ".claude" / "power-mode-state.json"
 
     def __init__(self, agent_id: str, agent_name: str, session_id: str):
         self.agent_id = agent_id
         self.agent_name = agent_name
         self.session_id = session_id
 
+        # Determine state file path (project-local preferred)
+        self.STATE_FILE = self._get_state_file_path()
+
         # Load or initialize state
         self.state = self._load_state()
 
+    def _get_state_file_path(self) -> Path:
+        """Get path to power mode state file (project-local preferred)."""
+        # Try project-local first
+        local_state = Path.cwd() / ".claude" / "power-mode-state.json"
+        if local_state.exists():
+            return local_state
+
+        # Check if project .claude directory exists (create state there)
+        local_claude_dir = Path.cwd() / ".claude"
+        if local_claude_dir.exists():
+            return local_state
+
+        # Fall back to home directory
+        return self.HOME_STATE_FILE
+
     def _load_state(self) -> Dict:
-        """Load state from file or create new."""
+        """Load state from file or create new.
+
+        Merges agent tracking data with existing Power Mode state if present.
+        """
+        existing_state = {}
         if self.STATE_FILE.exists():
             try:
                 with open(self.STATE_FILE) as f:
-                    saved = json.load(f)
-                    # Check if same session
-                    if saved.get("session_id") == self.session_id:
-                        return saved
+                    existing_state = json.load(f)
             except (json.JSONDecodeError, IOError):
                 pass
 
-        # New state
+        # If existing state has same session, return agent tracking portion
+        if existing_state.get("session_id") == self.session_id:
+            # Merge: keep Power Mode fields, return agent tracking fields
+            return {
+                # Agent tracking fields
+                "agent_id": existing_state.get("agent_id", self.agent_id),
+                "agent_name": existing_state.get("agent_name", self.agent_name),
+                "session_id": self.session_id,
+                "tool_call_count": existing_state.get("tool_call_count", 0),
+                "files_touched": existing_state.get("files_touched", []),
+                "tools_used": existing_state.get("tools_used", []),
+                "decisions": existing_state.get("decisions", []),
+                "blockers": existing_state.get("blockers", []),
+                "progress": existing_state.get("progress", 0.0),
+                "current_task": existing_state.get("current_task", ""),
+                "last_checkin": existing_state.get("last_checkin"),
+                "insights_received": existing_state.get("insights_received", []),
+                "insights_shared": existing_state.get("insights_shared", [])
+            }
+
+        # New state (agent tracking portion only)
         return {
             "agent_id": self.agent_id,
             "agent_name": self.agent_name,
@@ -105,10 +145,37 @@ class AgentStateTracker:
         }
 
     def _save_state(self):
-        """Save state to file."""
+        """Save state to file.
+
+        Merges agent tracking data with existing Power Mode state to preserve
+        status line fields (active, current_phase, phase_index, etc.).
+        """
         self.STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+        # Load existing state to preserve Power Mode fields
+        existing_state = {}
+        if self.STATE_FILE.exists():
+            try:
+                with open(self.STATE_FILE) as f:
+                    existing_state = json.load(f)
+            except (json.JSONDecodeError, IOError):
+                pass
+
+        # Merge: preserve Power Mode fields, update agent tracking fields
+        merged_state = existing_state.copy()
+        merged_state.update(self.state)
+
+        # Preserve Power Mode status line fields from existing state
+        power_mode_fields = [
+            "active", "activated_at", "source", "active_issue",
+            "current_phase", "phase_index", "total_phases", "phases_completed", "config"
+        ]
+        for field in power_mode_fields:
+            if field in existing_state:
+                merged_state[field] = existing_state[field]
+
         with open(self.STATE_FILE, "w") as f:
-            json.dump(self.state, f, indent=2)
+            json.dump(merged_state, f, indent=2)
 
     def record_tool_use(self, tool_name: str, tool_input: Dict, tool_result: Any):
         """Record a tool use."""
@@ -672,9 +739,31 @@ def is_power_mode_enabled() -> bool:
     if os.environ.get("POP_POWER_MODE") == "1":
         return True
 
-    # Check state file
-    state_file = Path.home() / ".claude" / "power-mode-enabled"
-    return state_file.exists()
+    # Check project-local state file first
+    local_state = Path.cwd() / ".claude" / "power-mode-state.json"
+    if local_state.exists():
+        try:
+            with open(local_state) as f:
+                state = json.load(f)
+                if state.get("active"):
+                    return True
+        except (json.JSONDecodeError, IOError):
+            pass
+
+    # Check home state file
+    home_state = Path.home() / ".claude" / "power-mode-state.json"
+    if home_state.exists():
+        try:
+            with open(home_state) as f:
+                state = json.load(f)
+                if state.get("active"):
+                    return True
+        except (json.JSONDecodeError, IOError):
+            pass
+
+    # Check legacy enabled flag
+    enabled_file = Path.home() / ".claude" / "power-mode-enabled"
+    return enabled_file.exists()
 
 
 if __name__ == "__main__":

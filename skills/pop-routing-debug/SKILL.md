@@ -97,7 +97,7 @@ Step 2: Keyword Matching
     - query-optimizer: weight 0.3
   "database" matches:
     - query-optimizer: weight 0.5
-    - data-integrity-agent: weight 0.2
+    - data-integrity: weight 0.2
   "query" matches:
     - query-optimizer: weight 0.6
   "performance" matches:
@@ -107,7 +107,7 @@ Step 2: Keyword Matching
 Step 3: Score Aggregation
   query-optimizer: 0.3 + 0.5 + 0.6 + 0.3 = 1.7 → normalized 0.85
   performance-optimizer: 0.4 + 0.5 = 0.9 → normalized 0.45
-  data-integrity-agent: 0.2 → normalized 0.10
+  data-integrity: 0.2 → normalized 0.10
 
 Step 4: Final Selection
   Winner: query-optimizer (0.85)

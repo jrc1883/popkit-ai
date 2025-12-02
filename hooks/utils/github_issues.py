@@ -175,6 +175,7 @@ def get_workflow_config(issue_number: int) -> Dict[str, Any]:
     """Get complete workflow configuration for an issue.
 
     Fetches issue from GitHub and parses PopKit Guidance section.
+    Falls back to auto-generated plan if no guidance is present.
 
     Args:
         issue_number: The issue number to fetch
@@ -182,10 +183,12 @@ def get_workflow_config(issue_number: int) -> Dict[str, Any]:
     Returns:
         Dict with:
         - issue: Basic issue info (number, title, state, labels)
-        - config: Parsed PopKit Guidance configuration
+        - config: Parsed PopKit Guidance configuration (or generated fallback)
         - should_brainstorm: Boolean - should brainstorming be triggered
         - should_activate_power_mode: Boolean - should Power Mode activate
         - suggested_phases: List of phases in order
+        - generated: Boolean - True if config was auto-generated
+        - needs_guidance: Boolean - True if user should add PopKit Guidance
     """
     result = {
         "issue": None,
@@ -193,6 +196,8 @@ def get_workflow_config(issue_number: int) -> Dict[str, Any]:
         "should_brainstorm": False,
         "should_activate_power_mode": False,
         "suggested_phases": [],
+        "generated": False,
+        "needs_guidance": False,
         "error": None
     }
 
@@ -209,9 +214,39 @@ def get_workflow_config(issue_number: int) -> Dict[str, Any]:
         "labels": [l.get("name") for l in issue.get("labels", [])]
     }
 
-    # Parse guidance
+    # Parse guidance from issue body
     config = parse_popkit_guidance(issue.get("body", ""))
-    result["config"] = config
+
+    # Check if PopKit Guidance was found
+    if config.get("raw_section"):
+        # Use parsed guidance
+        result["config"] = config
+        result["generated"] = False
+    else:
+        # No PopKit Guidance - generate fallback plan
+        fallback = generate_orchestration_plan({
+            "title": issue.get("title"),
+            "body": issue.get("body"),
+            "labels": result["issue"]["labels"]
+        })
+
+        # Merge fallback into config format
+        config = {
+            "workflow_type": "direct",  # Default for generated plans
+            "phases": fallback["phases"],
+            "agents": fallback["agents"],
+            "quality_gates": fallback["quality_gates"],
+            "power_mode": fallback["power_mode"],
+            "complexity": fallback["complexity"],
+            "raw_section": None,  # Indicates auto-generated
+            "generated": True,
+            "issue_type": fallback["issue_type"],
+            "confidence": fallback["confidence"],
+            "reason": fallback["reason"]
+        }
+        result["config"] = config
+        result["generated"] = True
+        result["needs_guidance"] = fallback["needs_guidance"]
 
     # Determine if brainstorming should be triggered
     result["should_brainstorm"] = config["workflow_type"] == "brainstorm_first"
@@ -228,7 +263,7 @@ def get_workflow_config(issue_number: int) -> Dict[str, Any]:
     # Build suggested phase order
     default_phases = ["discovery", "architecture", "implementation", "testing", "documentation", "review"]
     if config["phases"]:
-        # Use checked phases in default order
+        # Use checked phases (or generated phases) in default order
         result["suggested_phases"] = [p for p in default_phases if p in config["phases"]]
     else:
         # Default to implementation-focused if no phases specified
@@ -295,7 +330,7 @@ def get_agents_for_issue_type(issue_type: str) -> Dict[str, List[str]]:
             "supporting": ["migration-specialist", "code-reviewer"]
         },
         "research": {
-            "primary": ["researcher-agent"],
+            "primary": ["researcher"],
             "supporting": ["code-explorer"]
         },
         "unknown": {
@@ -304,6 +339,155 @@ def get_agents_for_issue_type(issue_type: str) -> Dict[str, List[str]]:
         }
     }
     return agent_map.get(issue_type, agent_map["unknown"])
+
+
+def get_default_phases(issue_type: str) -> List[str]:
+    """Get default phases based on issue type.
+
+    Args:
+        issue_type: One of bug, feature, architecture, research
+
+    Returns:
+        List of phase names in order
+    """
+    phase_map = {
+        "bug": ["discovery", "implementation", "testing"],
+        "feature": ["discovery", "architecture", "implementation", "testing", "review"],
+        "architecture": ["discovery", "architecture", "implementation", "testing", "documentation", "review"],
+        "research": ["discovery", "documentation", "review"],
+        "unknown": ["implementation", "testing", "review"]
+    }
+    return phase_map.get(issue_type, phase_map["unknown"])
+
+
+def infer_complexity(issue: Dict[str, Any]) -> str:
+    """Infer complexity from issue labels and content.
+
+    Args:
+        issue: Issue dict with title, body, and labels
+
+    Returns:
+        One of: "small", "medium", "large", "epic"
+    """
+    title = (issue.get("title") or "").lower()
+    body = (issue.get("body") or "").lower()
+    labels = [l.lower() for l in issue.get("labels", [])]
+
+    # Check labels for explicit complexity
+    if "epic" in labels:
+        return "epic"
+    if "large" in labels or "complex" in labels:
+        return "large"
+    if "small" in labels or "quick-win" in labels or "good-first-issue" in labels:
+        return "small"
+
+    # Check for complexity indicators in title/body
+    # Epic indicators
+    epic_keywords = ["architecture", "refactor entire", "major rewrite", "system-wide", "epic"]
+    if any(kw in title or kw in body for kw in epic_keywords):
+        return "epic"
+
+    # Large indicators
+    large_keywords = ["multiple components", "several files", "database migration", "api redesign"]
+    if any(kw in title or kw in body for kw in large_keywords):
+        return "large"
+
+    # Small indicators
+    small_keywords = ["typo", "simple fix", "minor", "update text", "rename"]
+    if any(kw in title or kw in body for kw in small_keywords):
+        return "small"
+
+    # Default to medium
+    return "medium"
+
+
+def generate_orchestration_plan(issue: Dict[str, Any]) -> Dict[str, Any]:
+    """Auto-generate orchestration plan when issue lacks PopKit Guidance.
+
+    Analyzes the issue to infer type, complexity, phases, and agents.
+    Used as a fallback when no PopKit Guidance section is present.
+
+    Args:
+        issue: Issue dict with number, title, body, labels
+
+    Returns:
+        Dict with:
+        - generated: True (indicates this was auto-generated)
+        - needs_guidance: True if inference confidence is low
+        - issue_type: Inferred issue type
+        - complexity: Inferred complexity
+        - phases: List of suggested phases
+        - agents: Dict with primary and supporting agents
+        - power_mode: "recommended" | "optional" | "not_needed"
+        - quality_gates: List of suggested gates
+        - confidence: Float indicating inference confidence
+        - reason: Explanation of inference
+    """
+    result = {
+        "generated": True,
+        "needs_guidance": False,
+        "issue_type": "unknown",
+        "complexity": "medium",
+        "phases": [],
+        "agents": {"primary": [], "supporting": []},
+        "power_mode": "not_needed",
+        "quality_gates": [],
+        "confidence": 0.0,
+        "reason": ""
+    }
+
+    # Infer issue type
+    issue_type = infer_issue_type(issue)
+    result["issue_type"] = issue_type
+
+    # Infer complexity
+    complexity = infer_complexity(issue)
+    result["complexity"] = complexity
+
+    # Get phases for issue type
+    result["phases"] = get_default_phases(issue_type)
+
+    # Get agents for issue type
+    result["agents"] = get_agents_for_issue_type(issue_type)
+
+    # Determine Power Mode recommendation
+    total_agents = len(result["agents"]["primary"]) + len(result["agents"]["supporting"])
+    if complexity == "epic" or total_agents >= 3:
+        result["power_mode"] = "recommended"
+    elif complexity == "large" or total_agents >= 2:
+        result["power_mode"] = "optional"
+    else:
+        result["power_mode"] = "not_needed"
+
+    # Set default quality gates
+    result["quality_gates"] = ["typescript", "lint", "test"]
+
+    # Calculate confidence
+    # Higher confidence if we can clearly identify issue type and complexity
+    confidence = 0.5  # Base confidence for auto-generation
+
+    if issue_type != "unknown":
+        confidence += 0.2
+        result["reason"] = f"Inferred issue type: {issue_type}"
+
+    if complexity != "medium":
+        confidence += 0.1
+        result["reason"] += f", complexity: {complexity}"
+
+    # Check if labels provide clear indication
+    labels = issue.get("labels", [])
+    if labels:
+        confidence += 0.1
+        result["reason"] += f" (from labels: {', '.join(labels)})"
+
+    result["confidence"] = min(confidence, 1.0)
+
+    # If confidence is too low, suggest user provides guidance
+    if confidence < 0.5 or issue_type == "unknown":
+        result["needs_guidance"] = True
+        result["reason"] = "Low confidence inference. Consider adding PopKit Guidance section to the issue."
+
+    return result
 
 
 def create_issue_from_lesson(lesson: dict) -> dict:

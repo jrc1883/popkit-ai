@@ -68,7 +68,7 @@ This research should be completed within: [X hours/days]
 - [ ] Recommendation - Propose path forward
 
 ### Suggested Agents
-- Primary: `researcher-agent`, `code-explorer`
+- Primary: `researcher`, `code-explorer`
 - Supporting: `documentation-maintainer`
 
 ### Output Location
