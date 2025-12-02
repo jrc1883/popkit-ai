@@ -74,7 +74,9 @@ class QualityGateHook:
             "file_edit_count": 0,
             "recent_files": [],
             "recent_file_count": 0,
-            "last_checkpoint": None
+            "last_checkpoint": None,
+            # Session-only flaky test tracking
+            "test_results": []  # List of {"test_name": str, "passed": bool, "timestamp": str}
         }
 
     def save_state(self):
@@ -328,6 +330,10 @@ class QualityGateHook:
             results["gates"].append(gate_result)
             results["duration"] += gate_result["duration"]
 
+            # Track test results for flaky detection
+            if gate["name"] == "test":
+                self.track_test_result("test_suite", gate_result["success"])
+
             if not gate_result["success"]:
                 results["passed"] = False
                 results["total_errors"] += len(gate_result["errors"])
@@ -338,6 +344,13 @@ class QualityGateHook:
                     fail_fast = self.config.get("options", {}).get("fail_fast", True)
                 if fail_fast:
                     break
+
+        # Check for flaky tests and add warning
+        flaky_tests = self.check_flaky_tests()
+        if flaky_tests:
+            results["flaky_tests"] = flaky_tests
+            flaky_warning = self.format_flaky_warning(flaky_tests)
+            print(flaky_warning, file=sys.stderr)
 
         return results
 
@@ -390,6 +403,97 @@ class QualityGateHook:
                     errors.append({"message": line})
 
         return errors[:10]  # Limit to first 10 errors
+
+    # =========================================================================
+    # Flaky Test Tracking (Session-Only)
+    # =========================================================================
+
+    def track_test_result(self, test_name: str, passed: bool):
+        """Track a test result for flaky detection (session-only)."""
+        test_results = self.state.get("test_results", [])
+        test_results.append({
+            "test_name": test_name,
+            "passed": passed,
+            "timestamp": datetime.now().isoformat()
+        })
+
+        # Keep only last 50 results (session memory limit)
+        if len(test_results) > 50:
+            test_results = test_results[-50:]
+
+        self.state["test_results"] = test_results
+        self.save_state()
+
+    def check_flaky_tests(self) -> List[Dict[str, Any]]:
+        """Check for flaky tests based on session history.
+
+        Returns list of potentially flaky tests with their pass rates.
+        A test is considered flaky if it has >20% variance (passes sometimes, fails sometimes).
+        """
+        flaky_tests = []
+        test_results = self.state.get("test_results", [])
+
+        if len(test_results) < 3:
+            return []  # Not enough data
+
+        # Group results by test name
+        by_test = {}
+        for result in test_results:
+            name = result.get("test_name", "unknown")
+            if name not in by_test:
+                by_test[name] = {"passed": 0, "failed": 0, "total": 0}
+            by_test[name]["total"] += 1
+            if result.get("passed"):
+                by_test[name]["passed"] += 1
+            else:
+                by_test[name]["failed"] += 1
+
+        # Find flaky tests (20-80% pass rate = flaky)
+        for name, stats in by_test.items():
+            if stats["total"] >= 2:  # Need at least 2 runs
+                pass_rate = stats["passed"] / stats["total"]
+                if 0.2 <= pass_rate <= 0.8:
+                    flaky_tests.append({
+                        "test_name": name,
+                        "pass_rate": round(pass_rate * 100, 1),
+                        "passed": stats["passed"],
+                        "failed": stats["failed"],
+                        "total": stats["total"]
+                    })
+
+        return flaky_tests
+
+    def format_flaky_warning(self, flaky_tests: List[Dict]) -> str:
+        """Format flaky test warning for display."""
+        if not flaky_tests:
+            return ""
+
+        lines = [
+            "",
+            "=" * 60,
+            "Warning: Potentially Flaky Tests Detected",
+            "=" * 60,
+            ""
+        ]
+
+        for test in flaky_tests:
+            lines.append(f"  {test['test_name']}")
+            lines.append(f"    Pass rate: {test['pass_rate']}% ({test['passed']}/{test['total']} runs)")
+            lines.append("")
+
+        lines.extend([
+            "Flaky tests pass inconsistently and may indicate:",
+            "  - Race conditions or timing issues",
+            "  - State pollution between tests",
+            "  - Order-dependent test execution",
+            "",
+            "Tip: Use condition-based waiting instead of setTimeout.",
+            "See: /skill:pop-test-driven-development (Condition-Based Waiting section)",
+            "-" * 60,
+            ""
+        ])
+
+        return '\n'.join(lines)
 
     # =========================================================================
     # Failure Handling

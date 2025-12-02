@@ -51,6 +51,31 @@ You MUST complete each phase before proceeding to the next.
 
 **BEFORE attempting ANY fix:**
 
+#### Special Case: Test Failures - Check for Flakiness First
+
+**For ANY test failure, check if the test itself is the problem:**
+
+```
+Test fails → Is it flaky? → Run 5x locally
+  ├─ Passes 5/5: Not your code, not flaky - investigate as normal bug
+  ├─ Fails 5/5: Consistent failure - investigate as normal bug
+  └─ Mixed results (e.g., 3/5): FLAKY TEST - fix the test first
+```
+
+**Flaky test investigation checklist:**
+
+| Check | How | Fix |
+|-------|-----|-----|
+| **Isolated or connected?** | Run single test vs full suite | If fails alone but passes in suite (or vice versa): state pollution |
+| **Timing-dependent?** | Look for `setTimeout`, `sleep`, hardcoded delays | Use condition-based waiting (see `pop-test-driven-development` skill) |
+| **Environment-specific?** | Run in CI vs local, different machines | Mock environment variables, isolate external dependencies |
+| **Order-dependent?** | Run tests in different order | Add proper setup/teardown, don't share state between tests |
+| **Race condition?** | Look for async operations without proper waits | Add proper async/await, use polling for state changes |
+
+**If test is flaky:** Fix the test BEFORE debugging the code. A flaky test proves nothing.
+
+**Then continue with normal investigation:**
+
 1. **Read Error Messages Carefully**
    - Don't skip past errors or warnings
    - They often contain the exact solution
@@ -237,3 +262,11 @@ From debugging sessions:
 - Random fixes approach: 2-3 hours of thrashing
 - First-time fix rate: 95% vs 40%
 - New bugs introduced: Near zero vs common
+
+---
+
+## Cross-References
+
+- **Flaky test fixes:** See `pop-test-driven-development` skill (Condition-Based Waiting section)
+- **Root cause tracing:** See `pop-root-cause-tracing` skill (backward tracing through call stack)
+- **Defense in depth:** See `pop-defense-in-depth` skill (multi-layer validation to prevent bugs)

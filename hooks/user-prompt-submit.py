@@ -28,7 +28,8 @@ class UserPromptSubmitHook:
         self.keyword_patterns = self.load_keyword_patterns()
         self.security_filters = self.load_security_filters()
         self.agent_registry = self.load_agent_registry()
-        
+        self.skill_triggers = self.load_skill_triggers()
+
         # Initialize context memory
         self.context_db = self.init_context_db()
         
@@ -133,7 +134,73 @@ class UserPromptSubmitHook:
             with open(registry_file, 'r') as f:
                 return json.load(f)
         return {}
-    
+
+    def load_skill_triggers(self) -> Dict[str, Dict[str, Any]]:
+        """Load skill triggers for skill awareness
+
+        Maps keywords to skills with enforcement levels:
+        - suggest: Show reminder (default)
+        - require: Would block execution (for future use with skill_enforcement config)
+        """
+        return {
+            # Debugging/Bug Fixing
+            "bug": {"skill": "pop-systematic-debugging", "enforcement": "suggest"},
+            "debug": {"skill": "pop-systematic-debugging", "enforcement": "suggest"},
+            "error": {"skill": "pop-systematic-debugging", "enforcement": "suggest"},
+            "broken": {"skill": "pop-systematic-debugging", "enforcement": "suggest"},
+            "not working": {"skill": "pop-systematic-debugging", "enforcement": "suggest"},
+            "fails": {"skill": "pop-systematic-debugging", "enforcement": "suggest"},
+            "crash": {"skill": "pop-systematic-debugging", "enforcement": "suggest"},
+
+            # Testing
+            "test": {"skill": "pop-test-driven-development", "enforcement": "suggest"},
+            "testing": {"skill": "pop-test-driven-development", "enforcement": "suggest"},
+            "flaky": {"skill": "pop-test-driven-development", "enforcement": "suggest"},
+            "unit test": {"skill": "pop-test-driven-development", "enforcement": "suggest"},
+            "integration test": {"skill": "pop-test-driven-development", "enforcement": "suggest"},
+            "tdd": {"skill": "pop-test-driven-development", "enforcement": "suggest"},
+
+            # Code Review Feedback
+            "review feedback": {"skill": "pop-code-review", "enforcement": "suggest"},
+            "pr comments": {"skill": "pop-code-review", "enforcement": "suggest"},
+            "reviewer said": {"skill": "pop-code-review", "enforcement": "suggest"},
+            "code review": {"skill": "pop-code-review", "enforcement": "suggest"},
+            "requested changes": {"skill": "pop-code-review", "enforcement": "suggest"},
+
+            # Root Cause
+            "root cause": {"skill": "pop-root-cause-tracing", "enforcement": "suggest"},
+            "trace": {"skill": "pop-root-cause-tracing", "enforcement": "suggest"},
+            "where does": {"skill": "pop-root-cause-tracing", "enforcement": "suggest"},
+
+            # Verification
+            "verify": {"skill": "pop-verification-before-completion", "enforcement": "suggest"},
+            "confirm": {"skill": "pop-verification-before-completion", "enforcement": "suggest"},
+            "make sure": {"skill": "pop-verification-before-completion", "enforcement": "suggest"},
+
+            # Brainstorming/Design
+            "design": {"skill": "pop-brainstorming", "enforcement": "suggest"},
+            "architect": {"skill": "pop-brainstorming", "enforcement": "suggest"},
+            "plan": {"skill": "pop-brainstorming", "enforcement": "suggest"},
+            "approach": {"skill": "pop-brainstorming", "enforcement": "suggest"},
+        }
+
+    def detect_skills(self, prompt: str) -> Dict[str, Dict[str, Any]]:
+        """Detect which skills should be suggested based on keywords"""
+        detected = {}
+        prompt_lower = prompt.lower()
+
+        for trigger, skill_info in self.skill_triggers.items():
+            if trigger in prompt_lower:
+                skill_name = skill_info["skill"]
+                if skill_name not in detected:
+                    detected[skill_name] = {
+                        "enforcement": skill_info["enforcement"],
+                        "matched_triggers": []
+                    }
+                detected[skill_name]["matched_triggers"].append(trigger)
+
+        return detected
+
     def init_context_db(self) -> sqlite3.Connection:
         """Initialize context memory database"""
         db_path = self.config_dir / 'context-memory.db'
@@ -297,10 +364,13 @@ class UserPromptSubmitHook:
         
         # Agent detection
         detected_agents = self.detect_agents(prompt)
-        
+
+        # Skill detection (for skill awareness reminders)
+        detected_skills = self.detect_skills(prompt)
+
         # Project context
         project_context = self.get_project_context()
-        
+
         # Store context
         self.store_context(prompt, detected_agents, project_context)
         
@@ -326,35 +396,56 @@ class UserPromptSubmitHook:
             "action": "continue",
             "session_id": self.session_id,
             "detected_agents": detected_agents,
+            "detected_skills": detected_skills,
             "project_context": project_context,
             "orchestration_result": orchestration_result,
-            "enhanced_prompt": self.enhance_prompt(prompt, detected_agents, project_context)
+            "enhanced_prompt": self.enhance_prompt(prompt, detected_agents, detected_skills, project_context)
         }
     
-    def enhance_prompt(self, original_prompt: str, detected_agents: Dict, project_context: Dict) -> str:
-        """Enhance prompt with context and agent routing information"""
+    def enhance_prompt(self, original_prompt: str, detected_agents: Dict, detected_skills: Dict, project_context: Dict) -> str:
+        """Enhance prompt with context, skill reminders, and agent routing information"""
         enhancements = []
         suggestions = []
+        skill_reminders = []
 
         # Check for uncertainty/meta triggers
         if "meta" in detected_agents and "next-action" in detected_agents.get("meta", {}):
-            suggestions.append("💡 Try `/popkit:next` for context-aware recommendations")
+            suggestions.append("Try `/popkit:next` for context-aware recommendations")
+
+        # Add skill reminders based on detected skills
+        skill_descriptions = {
+            "pop-systematic-debugging": "bug investigation (4-phase root cause analysis)",
+            "pop-test-driven-development": "test-first approach (RED-GREEN-REFACTOR)",
+            "pop-code-review": "code review (giving or receiving feedback)",
+            "pop-root-cause-tracing": "tracing data flow to find bug origin",
+            "pop-verification-before-completion": "evidence-based verification before claiming done",
+            "pop-brainstorming": "design refinement through Socratic questioning",
+        }
+
+        for skill_name, skill_info in detected_skills.items():
+            description = skill_descriptions.get(skill_name, skill_name)
+            skill_reminders.append(f"/skill:{skill_name} - {description}")
 
         # Add project context
         if project_context.get("has_claude_md"):
-            enhancements.append("📋 Local CLAUDE.md context available")
+            enhancements.append("Local CLAUDE.md context available")
 
         if project_context.get("git_repository"):
-            enhancements.append("🔄 Git repository detected")
+            enhancements.append("Git repository detected")
 
         # Add agent routing info
         if detected_agents:
             # Count agents excluding meta category
             agent_count = sum(len(agents) for cat, agents in detected_agents.items() if cat != "meta")
             if agent_count > 0:
-                enhancements.append(f"🤖 {agent_count} specialized agents detected and available")
+                enhancements.append(f"{agent_count} specialized agents detected")
 
         result = original_prompt
+
+        # Add skill reminders as HTML comments (visible to Claude but not disruptive)
+        if skill_reminders:
+            skill_text = "\n".join(f"  - {r}" for r in skill_reminders)
+            result = f"{result}\n\n<!-- SKILL REMINDER: Based on your request, consider using:\n{skill_text}\n-->"
 
         if suggestions:
             suggestion_text = " | ".join(suggestions)
@@ -388,6 +479,7 @@ def main():
             "reason": None,
             "session_id": result.get("session_id"),
             "detected_agents": result.get("detected_agents", {}),
+            "detected_skills": result.get("detected_skills", {}),
             "project_context": result.get("project_context", {}),
             "enhanced_prompt": result.get("enhanced_prompt", user_prompt)
         }
@@ -400,6 +492,10 @@ def main():
                 print(f"   - {issue}", file=sys.stderr)
         else:
             # Debug information to stderr
+            if result.get("detected_skills"):
+                skill_names = list(result["detected_skills"].keys())
+                print(f"📚 Skills suggested: {', '.join(skill_names)}", file=sys.stderr)
+
             if result.get("detected_agents"):
                 agent_summary = []
                 for category, agents in result["detected_agents"].items():

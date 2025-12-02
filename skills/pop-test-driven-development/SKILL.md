@@ -263,6 +263,130 @@ Before marking work complete:
 
 Can't check all boxes? You skipped TDD. Start over.
 
+## Condition-Based Waiting
+
+Flaky tests often use arbitrary delays:
+
+```typescript
+// BAD - Guessing at timing
+await page.click('#submit');
+await sleep(2000);  // Hope it's enough
+expect(await page.textContent('#result')).toBe('Success');
+```
+
+**Replace with condition polling:**
+
+```typescript
+// GOOD - Wait for actual state
+await page.click('#submit');
+await waitForCondition(
+  () => page.textContent('#result') === 'Success',
+  { timeout: 5000, interval: 100 }
+);
+```
+
+**Implementation pattern:**
+
+```typescript
+async function waitForCondition(
+  check: () => boolean | Promise<boolean>,
+  options: { timeout: number; interval: number }
+): Promise<void> {
+  const start = Date.now();
+  while (Date.now() - start < options.timeout) {
+    if (await check()) return;
+    await sleep(options.interval);
+  }
+  throw new Error('Condition not met within timeout');
+}
+```
+
+**When to use:**
+- DOM element appears/changes
+- API response arrives
+- State updates propagate
+- File written to disk
+- Process completes
+
+**Determinism check:** Run test 5x locally. Must pass 5/5. If not, fix the wait condition.
+
+---
+
+## Testing Anti-Patterns to Avoid
+
+### Anti-Pattern 1: Mocking What You're Testing
+
+```typescript
+// BAD - Tests the mock, not the code
+const mockCalculator = { add: jest.fn().mockReturnValue(5) };
+expect(mockCalculator.add(2, 3)).toBe(5);
+// Proves nothing about real Calculator
+```
+
+**Fix:** Test real implementation. Mock only external dependencies.
+
+### Anti-Pattern 2: Test-Only Methods in Production
+
+```typescript
+// BAD - Pollutes production with test scaffolding
+class UserService {
+  private users: User[] = [];
+
+  // Added just for tests
+  _resetForTesting() { this.users = []; }
+  _getUsersForTesting() { return this.users; }
+}
+```
+
+**Fix:** Use proper test isolation (fresh instance per test, dependency injection).
+
+### Anti-Pattern 3: Over-Specific Implementation Assertions
+
+```typescript
+// BAD - Tests implementation, not behavior
+test('saves user', () => {
+  saveUser(user);
+  expect(db.query).toHaveBeenCalledWith(
+    'INSERT INTO users (id, name) VALUES (?, ?)',
+    [user.id, user.name]
+  );
+});
+```
+
+**Fix:** Test observable behavior (user exists after save), not SQL string matching.
+
+### Anti-Pattern 4: Sleep-Based Waits
+
+```typescript
+// BAD - Arbitrary timing
+await submitForm();
+await sleep(1000);  // "Should be enough"
+expect(result).toBeDefined();
+```
+
+**Fix:** Use condition-based waiting (see section above).
+
+### Anti-Pattern 5: Incomplete Mocks
+
+```typescript
+// BAD - Missing fields the code depends on
+const mockResponse = { data: { id: 1 } };
+// Real API returns { data: { id, name, email, createdAt } }
+// Code breaks on response.data.email
+```
+
+**Fix:** Mock complete shapes. Use TypeScript to enforce completeness.
+
+---
+
+## Cross-References
+
+- **Flaky test debugging:** See `pop-systematic-debugging` skill (Phase 1: Flaky Test Branch)
+- **Code review for tests:** See `pop-code-review` skill (reviews test quality too)
+- **Defense layers for tests:** See `pop-defense-in-depth` skill (test isolation guards)
+
+---
+
 ## Final Rule
 
 ```

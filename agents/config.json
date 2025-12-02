@@ -145,5 +145,23 @@
       "75": "Highly confident",
       "100": "Absolutely certain"
     }
+  },
+
+  "skill_enforcement": {
+    "description": "Per-skill enforcement levels: 'suggest' (default) or 'require' (blocks until used)",
+    "default_level": "suggest",
+    "skills": {
+      "pop-systematic-debugging": "suggest",
+      "pop-test-driven-development": "suggest",
+      "pop-code-review": "suggest",
+      "pop-root-cause-tracing": "suggest",
+      "pop-verification-before-completion": "suggest",
+      "pop-brainstorming": "suggest"
+    },
+    "notes": {
+      "suggest": "Skill reminder shown in HTML comments, Claude can proceed without using it",
+      "require": "Execution blocked until skill is invoked (future: not yet implemented)",
+      "usage": "Override in project's .claude/config.json or set POPKIT_SKILL_ENFORCEMENT env var"
+    }
   }
 }
