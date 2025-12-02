@@ -39,3 +39,6 @@ hooks.local/
 # Project-specific generated content
 # Output from /popkit:generate-* commands
 .generated/
+
+# Power Mode state files (generated during multi-agent orchestration)
+power-mode/.claude/
