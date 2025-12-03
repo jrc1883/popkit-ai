@@ -18,6 +18,34 @@ from pathlib import Path
 import urllib.request
 import urllib.error
 
+# Load .env file if available (for API keys)
+def _load_dotenv():
+    """Load environment variables from .env files."""
+    # Check multiple locations for .env
+    env_locations = [
+        Path.cwd() / ".env",                          # Project root
+        Path(__file__).parent.parent.parent / ".env", # PopKit root
+        Path.home() / ".claude" / ".env",             # User claude config
+    ]
+
+    for env_path in env_locations:
+        if env_path.exists():
+            try:
+                with open(env_path) as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith("#") and "=" in line:
+                            key, value = line.split("=", 1)
+                            key = key.strip()
+                            value = value.strip().strip('"').strip("'")
+                            if key and key not in os.environ:
+                                os.environ[key] = value
+                break  # Use first .env found
+            except Exception:
+                pass
+
+_load_dotenv()
+
 # =============================================================================
 # CONFIGURATION
 # =============================================================================

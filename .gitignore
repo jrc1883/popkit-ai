@@ -42,3 +42,8 @@ hooks.local/
 
 # Power Mode state files (generated during multi-agent orchestration)
 power-mode/.claude/
+
+# Environment files (contain API keys)
+.env
+.env.local
+*.env
