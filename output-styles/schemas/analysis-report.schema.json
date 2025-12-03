@@ -2,6 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Analysis Report",
   "description": "Schema for validating codebase analysis findings",
+  "strict": true,
   "type": "object",
   "required": [
     "projectName",
@@ -147,7 +148,7 @@
       "description": "Agent name or action for follow-up"
     }
   },
-  "additionalProperties": true,
+  "additionalProperties": false,
   "examples": [
     {
       "projectName": "Reseller Central",

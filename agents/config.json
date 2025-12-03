@@ -261,6 +261,58 @@
     }
   },
 
+  "tool_choice": {
+    "description": "Claude API tool_choice parameter for forcing specific tool execution",
+    "modes": {
+      "auto": "Let Claude choose the best tool (default)",
+      "required": "Force tool use, Claude must use a tool",
+      "specific": "Force use of a specific tool by name"
+    },
+    "workflow_steps": {
+      "git-commit": {
+        "description": "Git commit workflow",
+        "steps": [
+          { "action": "gather_status", "tool_choice": "auto" },
+          { "action": "stage_files", "tool_choice": { "type": "tool", "name": "Bash" } },
+          { "action": "create_commit", "tool_choice": { "type": "tool", "name": "Bash" } }
+        ]
+      },
+      "file-edit": {
+        "description": "Read before edit enforcement",
+        "steps": [
+          { "action": "read_file", "tool_choice": { "type": "tool", "name": "Read" } },
+          { "action": "edit_file", "tool_choice": { "type": "tool", "name": "Edit" } }
+        ]
+      },
+      "verification": {
+        "description": "Run verification commands",
+        "steps": [
+          { "action": "run_tests", "tool_choice": { "type": "tool", "name": "Bash" } },
+          { "action": "run_lint", "tool_choice": { "type": "tool", "name": "Bash" } }
+        ]
+      }
+    },
+    "skill_requirements": {
+      "pop-verify-completion": {
+        "required_tools": ["Bash"],
+        "description": "Must run verification commands before claiming completion"
+      },
+      "pop-test-driven-development": {
+        "required_tools": ["Bash", "Write", "Edit"],
+        "description": "Must run tests and write code"
+      },
+      "pop-session-capture": {
+        "required_tools": ["Write"],
+        "description": "Must write STATUS.json"
+      }
+    },
+    "notes": {
+      "usage": "Hooks can read this config and pass tool_choice to API calls",
+      "override": "Commands can override with --tool=<name> flag",
+      "enforcement": "Currently advisory - full enforcement requires hook implementation"
+    }
+  },
+
   "thinking": {
     "description": "Extended thinking configuration per model and agent",
     "models": {

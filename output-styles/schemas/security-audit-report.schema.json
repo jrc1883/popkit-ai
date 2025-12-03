@@ -2,6 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Security Audit Report",
   "description": "Schema for validating security vulnerability assessments",
+  "strict": true,
   "type": "object",
   "required": [
     "auditDate",
@@ -173,7 +174,7 @@
       "description": "When the next audit should occur"
     }
   },
-  "additionalProperties": true,
+  "additionalProperties": false,
   "examples": [
     {
       "projectName": "User API Endpoints",

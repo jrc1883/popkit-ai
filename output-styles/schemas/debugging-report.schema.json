@@ -2,6 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Debugging Report",
   "description": "Schema for validating bug investigation and root cause analysis outputs",
+  "strict": true,
   "type": "object",
   "required": [
     "issueTitle",
@@ -138,7 +139,7 @@
       }
     }
   },
-  "additionalProperties": true,
+  "additionalProperties": false,
   "examples": [
     {
       "issueTitle": "Profile page crashes for new users",

@@ -3,6 +3,7 @@
   "$id": "power-mode-checkin.schema.json",
   "title": "Power Mode Check-In",
   "description": "Schema for multi-agent check-in messages in Pop Power Mode",
+  "strict": true,
   "type": "object",
   "required": ["agent_id", "agent_name", "session_id", "tool_call_count", "timestamp", "progress"],
   "properties": {
