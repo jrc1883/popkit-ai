@@ -19,6 +19,7 @@ Manage the popkit plugin itself - run tests, generate docs, and validate integri
 | `test` | Run plugin self-tests (default) |
 | `docs` | Generate and update documentation |
 | `sync` | Validate plugin integrity |
+| `detect` | Detect conflicts with other plugins |
 
 ---
 
@@ -258,6 +259,115 @@ Run `/popkit:plugin sync apply` to apply these fixes.
 
 ---
 
+## Subcommand: detect
+
+Detect conflicts between popkit and other installed Claude Code plugins.
+
+```
+/popkit:plugin detect                 # Full conflict report
+/popkit:plugin detect --quick         # One-line summary
+/popkit:plugin detect --json          # JSON output
+```
+
+### When It Runs
+
+- **On-demand**: Run `/popkit:plugin detect` for full analysis
+- **In morning routine**: Quick check included in `/popkit:morning`
+- **NOT at session start**: No automatic startup checks (performance)
+
+### Conflict Categories
+
+| Type | Severity | Description |
+|------|----------|-------------|
+| Command Collision | HIGH | Same command name in multiple plugins |
+| Skill Collision | MEDIUM | Same skill name in multiple plugins |
+| Hook Collision | MEDIUM | Same event, overlapping tools |
+| Routing Overlap | LOW | Same keywords to different agents |
+
+### Process
+
+1. **Scan Plugins**: Find all plugins in `~/.claude/plugins/`
+2. **Load Manifests**: Read `plugin.json` from each plugin
+3. **Extract Components**: Scan commands, skills, hooks, agents
+4. **Compare**: Check for name collisions and overlaps
+5. **Report**: Generate conflict report by severity
+
+### Output
+
+```
+/popkit:plugin detect
+
+Plugin Conflict Report
+==================================================
+
+Plugins Scanned: 3
+  - popkit: 16 commands, 30 skills
+  - other-plugin: 5 commands, 10 skills
+  - another-plugin: 3 commands, 8 skills
+
+Conflicts Found: 2
+  High:   1
+  Medium: 1
+  Low:    0
+
+[HIGH] Conflicts:
+  - Command 'commit' defined in multiple plugins: popkit, other-plugin
+
+[MEDIUM] Conflicts:
+  - Skill 'code-review' defined in multiple plugins: popkit, another-plugin
+
+Recommendations:
+  - Rename or prefix conflicting commands
+  - Consider uninstalling conflicting plugin
+  - Check plugin priorities in settings
+```
+
+### Quick Mode
+
+```
+/popkit:plugin detect --quick
+
+Plugin Conflicts: 2 (1 HIGH, 1 medium)
+```
+
+Or if no conflicts:
+
+```
+Plugin Conflicts: None (3 plugins, all compatible)
+```
+
+### Options
+
+| Flag | Description |
+|------|-------------|
+| `--quick` | One-line summary only |
+| `--json` | Output as JSON |
+| `--plugins <dir>` | Override plugins directory |
+
+### Integration with Morning
+
+The morning routine includes a quick plugin conflict check:
+
+```
++==================================================================+
+|                  Morning Development Status                       |
++==================================================================+
+| Ready to Code: 85/100                                             |
++------------------------------------------------------------------+
+| ...                                                               |
+| Plugin Conflicts:    None detected                                |
+| ...                                                               |
++==================================================================+
+```
+
+If conflicts are detected:
+
+```
+| Plugin Conflicts:    2 (1 HIGH!) - run /popkit:plugin detect     |
+```
+
+---
+
 ## Examples
 
 ```bash
@@ -276,6 +386,11 @@ Run `/popkit:plugin sync apply` to apply these fixes.
 # Validate plugin integrity
 /popkit:plugin sync
 /popkit:plugin sync apply
+
+# Detect plugin conflicts
+/popkit:plugin detect
+/popkit:plugin detect --quick
+/popkit:plugin detect --json
 ```
 
 ---
@@ -288,6 +403,8 @@ Run `/popkit:plugin sync apply` to apply these fixes.
 | Plugin Test Skill | `skills/pop-plugin-test/SKILL.md` |
 | Auto-Docs Skill | `skills/pop-auto-docs/SKILL.md` |
 | Validation Engine | `skills/pop-validation-engine/SKILL.md` |
+| Plugin Detector | `hooks/utils/plugin_detector.py` |
+| Conflict Report Style | `output-styles/conflict-report.md` |
 | Documentation | CLAUDE.md, README.md |
 
 ## Related Commands
@@ -295,4 +412,5 @@ Run `/popkit:plugin sync apply` to apply these fixes.
 | Command | Purpose |
 |---------|---------|
 | `/popkit:debug routing` | Debug agent routing issues |
-| `/popkit:morning` | Includes plugin health check |
+| `/popkit:morning` | Includes plugin conflict check |
+| `/popkit:nightly` | End-of-day cleanup and maintenance |

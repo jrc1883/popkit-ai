@@ -11,7 +11,16 @@ End-to-end feature development using the 7-phase workflow.
 ```
 /popkit:feature-dev [feature-name]
 /popkit:feature-dev "user authentication"
+/popkit:feature-dev "payment integration" -T  # With extended thinking
 ```
+
+## Flags
+
+| Flag | Description |
+|------|-------------|
+| `-T`, `--thinking` | Enable extended thinking for architecture decisions and design phases |
+| `--no-thinking` | Disable extended thinking (use default) |
+| `--think-budget N` | Set thinking token budget (default: 10000) |
 
 ## The 7 Phases
 

@@ -107,6 +107,9 @@ Invokes the **pop-analyze-project** skill:
 | `--quick` | Quick summary only (5-10 lines) |
 | `--focus <area>` | Focus analysis: `arch`, `deps`, `quality`, `patterns` |
 | `--output <file>` | Save analysis to file |
+| `-T`, `--thinking` | Enable extended thinking for deep analysis |
+| `--no-thinking` | Disable extended thinking (use default) |
+| `--think-budget N` | Set thinking token budget (default: 10000) |
 
 ---
 
@@ -185,6 +188,9 @@ Next Steps:
 | `--name <name>` | Custom server name (default: project name) |
 | `--minimal` | Generate minimal toolset (health + git only) |
 | `--no-install` | Skip npm install step |
+| `-T`, `--thinking` | Enable extended thinking for semantic tool generation |
+| `--no-thinking` | Disable extended thinking (use default) |
+| `--think-budget N` | Set thinking token budget (default: 10000) |
 
 ---
 

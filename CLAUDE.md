@@ -73,7 +73,7 @@ skills/                  30 reusable skills (SKILL.md format in subdirectories)
 commands/                15 slash commands for workflows (consolidated with subcommands)
 hooks/                   17 Python hooks (JSON stdin/stdout protocol)
   hooks.json             Hook configuration and event mapping
-  utils/                 Stateless utilities (message_builder.py, context_carrier.py, stateless_hook.py, mcp_detector.py)
+  utils/                 Stateless utilities (message_builder.py, context_carrier.py, stateless_hook.py, mcp_detector.py, routine_storage.py, plugin_detector.py)
   pre_tool_use_stateless.py  Stateless safety checks
   post_tool_use_stateless.py Stateless result processing
 output-styles/           15+ output format templates (includes schemas/)
@@ -129,6 +129,15 @@ Model-specific thinking configuration with flag overrides:
 | Haiku 4.5 | Enabled | 5k tokens | `--no-thinking` to disable |
 
 **Flags:** `-T`, `--thinking`, `--no-thinking`, `--think-budget N`
+
+**Commands with Thinking Support:**
+- `/popkit:debug` - Deep code debugging and analysis
+- `/popkit:design brainstorm` - Complex design exploration
+- `/popkit:plan write` - Detailed implementation planning
+- `/popkit:feature-dev` - Architecture decisions and design phases
+- `/popkit:issue work` - Complex issue analysis
+- `/popkit:project analyze` - Deep codebase analysis
+- `/popkit:project mcp` - Semantic tool generation
 
 **Example:** `/popkit:design brainstorm -T` enables thinking on Opus
 
@@ -218,33 +227,67 @@ Three skills manage state between sessions (invoke via Skill tool):
 - `pop-session-resume`: Restores context on startup
 - `pop-context-restore`: Loads previous session
 
-### Morning Routine (Generic + Generator)
+### Unified Routine Management (Morning + Nightly)
 
-Two-tier approach for daily health checks:
-- `/popkit:morning`: Generic check (git, tests, lint) - works on any project
-- `/popkit:morning generate`: Creates project-specific `[prefix]:morning` with:
-  - Service health checks (detected ports, databases)
-  - Framework-specific validations
-  - Domain checks (API keys, external services)
+Day-bracketing workflow with numbered routine slots:
+- `/popkit:morning`: Start-of-day health check → "Ready to Code" score (0-100)
+- `/popkit:nightly`: End-of-day cleanup → "Sleep Score" (0-100)
 
-"Ready to Code" score (0-100) helps prioritize morning fixes.
+**Routine System:**
+
+| Routine | ID | Location | Mutable |
+|---------|-----|----------|---------|
+| PopKit Universal | `pk` | Built into plugin | No (use flags for variation) |
+| Project-Specific | `<prefix>-1` to `<prefix>-5` | `.claude/popkit/routines/` | Yes |
+
+**Subcommands (both commands):**
+
+| Subcommand | Description |
+|------------|-------------|
+| (default) | Run configured default routine |
+| `run [id]` | Run specific routine by ID |
+| `quick` | One-line summary |
+| `generate` | Create new project-specific routine |
+| `list` | List available routines |
+| `set <id>` | Set default routine |
+| `edit <id>` | Edit project routine |
+| `delete <id>` | Delete project routine |
+
+**Storage Structure:**
+```
+.claude/popkit/
+├── config.json              # Project prefix, defaults
+├── state.json               # Session state
+└── routines/
+    ├── morning/
+    │   └── rc-1/            # Project routine folder
+    │       ├── routine.md   # Main definition
+    │       ├── config.json  # Routine settings
+    │       └── checks/      # Check scripts
+    └── nightly/
+        └── rc-1/
+            ├── routine.md
+            ├── config.json
+            └── scripts/     # Cleanup scripts
+```
+
+**Prefix Algorithm:** First letter of each word ("Reseller Central" → `rc`)
 
 **MCP Detection** (`hooks/utils/mcp_detector.py`):
 
-The generator auto-detects existing MCP infrastructure before generating commands:
+The generator auto-detects MCP infrastructure before generating routines:
 
-| Detection | Result | Command Size |
-|-----------|--------|--------------|
-| MCP + health tools | `mcp_wrapper` recommendation | 10-20 lines |
-| MCP, no health tools | `hybrid` recommendation | Mixed |
-| No MCP | `bash` recommendation | 100+ lines |
-
-MCP health tools detected: `morning_routine`, `check_*`, `*_health`, `*_status`, `ping_*`, `verify_*`
+| Detection | Recommendation | Routine Size |
+|-----------|----------------|--------------|
+| MCP + health tools | MCP wrapper | 10-20 lines |
+| MCP, no health tools | Hybrid | Mixed |
+| No MCP | Bash-based | 100+ lines |
 
 **Generator Flags:**
-- `--detect`: Preview MCP detection without generating
-- `--bash`: Force bash-based generation (skip MCP)
-- `--mcp-wrapper`: Force MCP wrapper generation
+- `--detect`: Preview stack detection without generating
+- `--bash`: Force bash-based generation
+- `--nightly`: Also generate nightly counterpart (morning)
+- `--morning`: Also generate morning counterpart (nightly)
 
 ### Power Mode (Multi-Agent Orchestration)
 
@@ -366,12 +409,35 @@ npm run build
 | `hooks/utils/flag_parser.py` | Centralized command flag parsing |
 | `hooks/utils/github_issues.py` | GitHub issue guidance parsing |
 | `hooks/utils/mcp_detector.py` | MCP infrastructure detection for morning generator |
+| `hooks/utils/routine_storage.py` | Project routine CRUD and config management |
+| `hooks/utils/plugin_detector.py` | Plugin conflict detection utility |
 
 ## Version History
 
 **Note:** Popkit uses `0.x.y` versioning until stable. Version `1.0.0` will mark API stability.
 
-### v0.9.4 (Current) - Platform Integration Completion
+### v0.9.5 (Current) - Unified Routine Management System
+
+- **Unified Routine Management** - Single command interface for morning/nightly routines:
+  - Numbered routine slots (`pk`, `rc-1`, `rc-2`, etc.) instead of separate slash commands
+  - Subcommands: `run`, `list`, `set`, `edit`, `delete`, `generate`, `quick`
+  - Project config stored in `.claude/popkit/config.json`
+  - Routine folders with `routine.md`, `config.json`, and check/script files
+  - Prefix algorithm: First letter of each word ("Reseller Central" → `rc`)
+  - Maximum 5 custom routines per type (morning/nightly)
+- **Routine Storage Utility** - New `hooks/utils/routine_storage.py`:
+  - Project detection and prefix generation
+  - Config management (load, save, initialize)
+  - Routine CRUD operations (create, list, get, delete)
+  - Startup banner formatting
+- **Plugin Conflict Detection** - New `hooks/utils/plugin_detector.py`:
+  - Detects command, skill, hook, and routing conflicts
+  - Severity levels: HIGH, MEDIUM, LOW
+  - Quick summary and full report modes
+  - Integration with `/popkit:plugin detect` and morning routine
+- **GitHub Issues Created** - #28-#34 tracking routine management implementation
+
+### v0.9.4 - Platform Integration Completion
 
 - **Closed Platform Issues** - Completed 7 of 14 Claude Platform integration issues:
   - #14: Effort Parameter (config + documentation)

@@ -52,12 +52,27 @@ description: End of day cleanup and status summary
 
 ## Sleep Score
 
+### Point Breakdown (100 Total)
+
+| Check | Points | Criteria |
+|-------|--------|----------|
+| No uncommitted changes | 30 | **Critical** - caps score at 49 if fails |
+| Session state saved | 20 | STATUS.json updated within last hour |
+| Git maintenance done | 15 | No orphans, gc run recently |
+| Security audit clean | 15 | No critical/high vulnerabilities |
+| Caches under limit | 10 | < 500MB total cache size |
+| Logs rotated | 10 | No logs older than 7 days |
+
+### Score Interpretation
+
 | Score | Status | Meaning |
 |-------|--------|---------|
-| 90-100 | 🟢 Safe | Can close, all saved |
-| 70-89 | 🟡 Caution | Uncommitted changes |
-| 50-69 | 🟠 Warning | Important work not saved |
-| 0-49 | 🔴 Danger | Risk of losing work |
+| 80-100 | Safe to Sleep | Everything is clean, safe to close |
+| 60-79 | Minor Cleanup | Recommended cleanup before leaving |
+| 40-59 | Cleanup Needed | Should cleanup before leaving |
+| 0-39 | Do Not Leave | Uncommitted work or critical issues |
+
+**Note:** Uncommitted changes automatically cap the score at 49.
 
 ## Checks Performed
 
@@ -101,3 +116,56 @@ Conditions for "No":
 - Uncommitted changes exist
 - Background processes running
 - Unsaved work detected
+
+## Quick Mode Format
+
+One-line summary for `/popkit:nightly quick`:
+
+```
+Nightly: 85/100 | Uncommitted (clean) | State (saved) | Caches (234MB) | Security (ok)
+Sleep safe - session captured, no blockers
+```
+
+Or with issues:
+
+```
+Nightly: 42/100 | Uncommitted (3 files!) | State (not saved) | Caches (1.2GB) | Security (2 high)
+DO NOT LEAVE - uncommitted changes will be lost
+```
+
+## ASCII Dashboard Format (--dashboard)
+
+```
++==================================================================+
+|                    Nightly Development Status                     |
++==================================================================+
+| Sleep Score: 85/100                                               |
++------------------------------------------------------------------+
+| Uncommitted:         Clean                                        |
+| Session State:       Saved (30m ago)                              |
+| Git Maintenance:     Done                                         |
+| Security:            0 critical, 0 high                           |
+| Cache Size:          234 MB                                       |
+| Old Logs:            0 files                                      |
++------------------------------------------------------------------+
+| Tomorrow's Focus:                                                 |
+| 1. Complete password reset flow                                   |
+| 2. Email template styling                                         |
++==================================================================+
+```
+
+## Integration with Morning
+
+The nightly report feeds into the next morning's report:
+
+```
+Morning Report - [Project Name]
+
+From Last Night:
+  Sleep Score: 85/100
+  Session: Saved
+  Focus: User authentication
+
+Ready to Code Score: 90/100
+...
+```

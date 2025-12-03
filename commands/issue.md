@@ -222,6 +222,9 @@ Start working on an issue with intelligent Power Mode detection.
 | `--solo` | `-s` | Force sequential mode (no Power Mode) |
 | `--phases` | | Override phases: `--phases explore,implement,test` |
 | `--agents` | | Override agents: `--agents reviewer,tester` |
+| `--thinking` | `-T` | Enable extended thinking for complex analysis |
+| `--no-thinking` | | Disable extended thinking (use default) |
+| `--think-budget` | | Set thinking token budget (default: 10000) |
 
 ### Power Mode Decision Priority
 

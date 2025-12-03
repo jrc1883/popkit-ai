@@ -1,6 +1,6 @@
 ---
 name: mcp-generator
-description: "Use when setting up project-specific development tools or after analyzing a codebase - generates custom MCP server with semantic search, project-aware tools, and health monitoring capabilities"
+description: "Use when setting up project-specific development tools or after analyzing a codebase - generates custom MCP server with semantic search, project-aware tools, and health monitoring capabilities. Do NOT use if generic popkit commands are sufficient or for small projects where MCP server overhead isn't justified - stick with built-in tools for simple workflows."
 ---
 
 # MCP Server Generator
