@@ -111,6 +111,43 @@ def format_runtime(activated_at: str) -> str:
         return "?"
 
 
+def format_streaming_indicator(state: Dict[str, Any]) -> str:
+    """Format streaming indicator for status line.
+
+    Args:
+        state: Power Mode state dict
+
+    Returns:
+        Streaming indicator string or empty if no active streams
+    """
+    streaming = state.get("streaming", {})
+    active_streams = streaming.get("active_streams", 0)
+
+    if active_streams == 0:
+        return ""
+
+    # Animation frames for streaming
+    frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
+    # Use seconds to cycle through frames
+    frame_index = int(datetime.now().timestamp() * 4) % len(frames)
+    spinner = frames[frame_index]
+
+    agents = streaming.get("agents_streaming", [])
+    tool = streaming.get("latest_tool", "")
+
+    if agents:
+        agent_display = agents[0][:8]  # First 8 chars of first agent
+        if len(agents) > 1:
+            agent_display += f"+{len(agents)-1}"
+    else:
+        agent_display = ""
+
+    if tool:
+        return f"{Colors.CYAN}{spinner}{Colors.RESET} {agent_display}:{tool}"
+    else:
+        return f"{Colors.CYAN}{spinner}{Colors.RESET} {active_streams} stream{'s' if active_streams > 1 else ''}"
+
+
 def format_status_line(state: Dict[str, Any]) -> str:
     """Format the status line output.
 
@@ -129,6 +166,11 @@ def format_status_line(state: Dict[str, Any]) -> str:
     # [POP] indicator
     pop_indicator = f"{Colors.YELLOW}{Colors.BOLD}[POP]{Colors.RESET}"
     components.append(pop_indicator)
+
+    # Streaming indicator (if active)
+    streaming_indicator = format_streaming_indicator(state)
+    if streaming_indicator:
+        components.append(streaming_indicator)
 
     # Issue number (if present)
     issue_num = state.get("active_issue")
@@ -223,6 +265,27 @@ def format_detailed_status(state: Dict[str, Any]) -> str:
 
     for phase in phases_completed:
         lines.append(f"  - {phase}")
+
+    # Streaming info (Issue #23)
+    streaming = state.get("streaming", {})
+    active_streams = streaming.get("active_streams", 0)
+    total_chunks = streaming.get("total_chunks", 0)
+
+    if active_streams > 0 or total_chunks > 0:
+        lines.extend([
+            "",
+            "Streaming:",
+            f"  Active: {active_streams} stream{'s' if active_streams != 1 else ''}",
+            f"  Total chunks: {total_chunks}",
+        ])
+
+        agents_streaming = streaming.get("agents_streaming", [])
+        if agents_streaming:
+            lines.append(f"  Agents: {', '.join(agents_streaming[:3])}")
+
+        latest_tool = streaming.get("latest_tool")
+        if latest_tool:
+            lines.append(f"  Latest tool: {latest_tool}")
 
     lines.extend([
         "",

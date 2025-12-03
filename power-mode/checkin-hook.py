@@ -32,11 +32,17 @@ try:
     from protocol import (
         Message, MessageType, MessageFactory,
         AgentState, AgentIdentity, Insight, InsightType,
-        Channels, Guardrails
+        Channels, Guardrails, StreamChunk
     )
     PROTOCOL_AVAILABLE = True
 except ImportError:
     PROTOCOL_AVAILABLE = False
+
+try:
+    from stream_manager import StreamManager, get_manager
+    STREAM_MANAGER_AVAILABLE = True
+except ImportError:
+    STREAM_MANAGER_AVAILABLE = False
 
 
 # =============================================================================
@@ -124,7 +130,12 @@ class AgentStateTracker:
                 "current_task": existing_state.get("current_task", ""),
                 "last_checkin": existing_state.get("last_checkin"),
                 "insights_received": existing_state.get("insights_received", []),
-                "insights_shared": existing_state.get("insights_shared", [])
+                "insights_shared": existing_state.get("insights_shared", []),
+                # Streaming fields (Issue #23)
+                "active_streams": existing_state.get("active_streams", {}),
+                "completed_streams": existing_state.get("completed_streams", 0),
+                "total_stream_chunks": existing_state.get("total_stream_chunks", 0),
+                "total_stream_bytes": existing_state.get("total_stream_bytes", 0)
             }
 
         # New state (agent tracking portion only)
@@ -141,7 +152,12 @@ class AgentStateTracker:
             "current_task": "",
             "last_checkin": None,
             "insights_received": [],
-            "insights_shared": []
+            "insights_shared": [],
+            # Streaming fields (Issue #23)
+            "active_streams": {},
+            "completed_streams": 0,
+            "total_stream_chunks": 0,
+            "total_stream_bytes": 0
         }
 
     def _save_state(self):
@@ -234,6 +250,53 @@ class AgentStateTracker:
         if insight_id not in self.state["insights_shared"]:
             self.state["insights_shared"].append(insight_id)
         self._save_state()
+
+    # =========================================================================
+    # STREAMING METHODS (Issue #23)
+    # =========================================================================
+
+    def start_stream(self, session_id: str, tool_name: str):
+        """Record start of a streaming session."""
+        self.state["active_streams"][session_id] = {
+            "tool_name": tool_name,
+            "started_at": datetime.now().isoformat(),
+            "chunks": 0,
+            "bytes": 0
+        }
+        self._save_state()
+
+    def record_stream_chunk(self, session_id: str, content: str):
+        """Record a streaming chunk."""
+        if session_id in self.state["active_streams"]:
+            self.state["active_streams"][session_id]["chunks"] += 1
+            self.state["active_streams"][session_id]["bytes"] += len(content)
+            self.state["total_stream_chunks"] += 1
+            self.state["total_stream_bytes"] += len(content)
+            self._save_state()
+
+    def end_stream(self, session_id: str, error: Optional[str] = None):
+        """Record end of a streaming session."""
+        if session_id in self.state["active_streams"]:
+            stream_info = self.state["active_streams"].pop(session_id)
+            self.state["completed_streams"] += 1
+            if error:
+                self.record_blocker(f"Stream error ({session_id}): {error}")
+            self._save_state()
+            return stream_info
+        return None
+
+    def get_active_stream_count(self) -> int:
+        """Get count of active streams."""
+        return len(self.state.get("active_streams", {}))
+
+    def get_stream_stats(self) -> Dict:
+        """Get streaming statistics."""
+        return {
+            "active_streams": len(self.state.get("active_streams", {})),
+            "completed_streams": self.state.get("completed_streams", 0),
+            "total_chunks": self.state.get("total_stream_chunks", 0),
+            "total_bytes": self.state.get("total_stream_bytes", 0)
+        }
 
     def should_checkin(self) -> bool:
         """Check if it's time for a check-in."""
@@ -412,6 +475,54 @@ class PowerModeRedisClient:
                 continue
 
         return patterns
+
+    # =========================================================================
+    # STREAMING METHODS (Issue #23)
+    # =========================================================================
+
+    def publish_stream_start(self, agent_id: str, session_id: str, tool_name: str):
+        """Publish stream start message."""
+        if not self.connected or not PROTOCOL_AVAILABLE:
+            return
+
+        msg = Message(
+            id=hashlib.md5(f"stream-start-{session_id}".encode()).hexdigest()[:12],
+            type=MessageType.STREAM_START,
+            from_agent=agent_id,
+            to_agent="coordinator",
+            payload={
+                "session_id": session_id,
+                "tool_name": tool_name,
+                "started_at": datetime.now().isoformat()
+            }
+        )
+        self.redis.publish(Channels.coordinator(), msg.to_json())
+
+    def publish_stream_chunk(self, chunk: 'StreamChunk'):
+        """Publish a stream chunk."""
+        if not self.connected or not PROTOCOL_AVAILABLE:
+            return
+
+        msg = chunk.to_message()
+        self.redis.publish(Channels.coordinator(), msg.to_json())
+
+    def publish_stream_end(self, agent_id: str, session_id: str, error: Optional[str] = None):
+        """Publish stream end message."""
+        if not self.connected or not PROTOCOL_AVAILABLE:
+            return
+
+        msg = Message(
+            id=hashlib.md5(f"stream-end-{session_id}".encode()).hexdigest()[:12],
+            type=MessageType.STREAM_END if not error else MessageType.STREAM_ERROR,
+            from_agent=agent_id,
+            to_agent="coordinator",
+            payload={
+                "session_id": session_id,
+                "ended_at": datetime.now().isoformat(),
+                "error": error
+            }
+        )
+        self.redis.publish(Channels.coordinator(), msg.to_json())
 
 
 # =============================================================================
@@ -696,6 +807,109 @@ class PowerModeCheckInHook:
                 tags.append(kw)
 
         return list(set(tags))
+
+    # =========================================================================
+    # STREAMING METHODS (Issue #23)
+    # =========================================================================
+
+    def start_stream(self, tool_name: str) -> str:
+        """
+        Start a new streaming session.
+
+        Args:
+            tool_name: Name of the tool being streamed
+
+        Returns:
+            Session ID for the stream
+        """
+        if not self.state_tracker:
+            return ""
+
+        # Generate session ID
+        session_id = hashlib.md5(
+            f"{self.state_tracker.agent_id}{tool_name}{datetime.now().isoformat()}".encode()
+        ).hexdigest()[:8]
+
+        # Track locally
+        self.state_tracker.start_stream(session_id, tool_name)
+
+        # Publish to coordinator
+        self.redis_client.publish_stream_start(
+            self.state_tracker.agent_id,
+            session_id,
+            tool_name
+        )
+
+        return session_id
+
+    def send_chunk(self, session_id: str, content: str, chunk_index: int, is_final: bool = False) -> bool:
+        """
+        Send a streaming chunk.
+
+        Args:
+            session_id: Stream session ID
+            content: Chunk content
+            chunk_index: Index of this chunk
+            is_final: Whether this is the final chunk
+
+        Returns:
+            True if sent successfully
+        """
+        if not self.state_tracker:
+            return False
+
+        # Track locally
+        self.state_tracker.record_stream_chunk(session_id, content)
+
+        # Publish to coordinator
+        if PROTOCOL_AVAILABLE:
+            chunk = StreamChunk(
+                session_id=session_id,
+                agent_id=self.state_tracker.agent_id,
+                chunk_index=chunk_index,
+                content=content,
+                tool_name=self.state_tracker.state.get("active_streams", {}).get(session_id, {}).get("tool_name"),
+                is_final=is_final
+            )
+            self.redis_client.publish_stream_chunk(chunk)
+
+        return True
+
+    def end_stream(self, session_id: str, error: Optional[str] = None) -> Dict:
+        """
+        End a streaming session.
+
+        Args:
+            session_id: Stream session ID
+            error: Optional error message
+
+        Returns:
+            Stream summary statistics
+        """
+        if not self.state_tracker:
+            return {}
+
+        # Get stream info before ending
+        stream_info = self.state_tracker.end_stream(session_id, error)
+
+        # Publish to coordinator
+        self.redis_client.publish_stream_end(
+            self.state_tracker.agent_id,
+            session_id,
+            error
+        )
+
+        return stream_info or {}
+
+    def get_stream_status(self) -> Dict:
+        """Get current streaming status for status line."""
+        if not self.state_tracker:
+            return {}
+
+        return {
+            "streaming": self.state_tracker.get_stream_stats(),
+            "agent_id": self.state_tracker.agent_id if self.state_tracker else None
+        }
 
 
 # =============================================================================

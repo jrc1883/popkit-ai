@@ -49,6 +49,18 @@ class MessageType(Enum):
     HUMAN_REQUIRED = "HUMAN_REQUIRED"  # Need human decision
     BOUNDARY_ALERT = "BOUNDARY_ALERT"  # Agent approaching limits
 
+    # Streaming (Issue #23)
+    STREAM_START = "STREAM_START"      # Agent opens stream session
+    STREAM_CHUNK = "STREAM_CHUNK"      # Incremental data chunk
+    STREAM_END = "STREAM_END"          # Stream session complete
+    STREAM_ERROR = "STREAM_ERROR"      # Stream failure
+
+    # Embeddings (Issue #19)
+    EMBEDDING_REQUEST = "EMBEDDING_REQUEST"    # Request embedding computation
+    EMBEDDING_RESULT = "EMBEDDING_RESULT"      # Return computed embedding
+    SIMILARITY_QUERY = "SIMILARITY_QUERY"      # Find similar content
+    SIMILARITY_RESULT = "SIMILARITY_RESULT"    # Return similarity results
+
 
 class InsightType(Enum):
     """Types of insights agents can share."""
@@ -181,6 +193,65 @@ class Message:
         d = json.loads(json_str)
         d['type'] = MessageType(d['type'])
         return cls(**d)
+
+
+@dataclass
+class StreamChunk:
+    """
+    Represents a streaming data chunk (Issue #23).
+
+    Used for real-time streaming updates during tool execution.
+    """
+    session_id: str                  # Unique stream session ID
+    agent_id: str                    # Source agent
+    chunk_index: int                 # Sequence number (0-based)
+    content: str                     # Partial content
+    tool_name: Optional[str] = None  # Tool being executed
+    is_final: bool = False           # Last chunk in stream
+    timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+    def to_message(self) -> Message:
+        """Convert to a Message for pub/sub transmission."""
+        return Message(
+            id=f"{self.session_id}:{self.chunk_index}",
+            type=MessageType.STREAM_CHUNK,
+            from_agent=self.agent_id,
+            to_agent="coordinator",
+            payload={
+                "session_id": self.session_id,
+                "chunk_index": self.chunk_index,
+                "content": self.content,
+                "tool_name": self.tool_name,
+                "is_final": self.is_final,
+                "metadata": self.metadata
+            },
+            timestamp=self.timestamp
+        )
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary."""
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> 'StreamChunk':
+        """Create from dictionary."""
+        return cls(**d)
+
+    @classmethod
+    def from_message(cls, msg: Message) -> 'StreamChunk':
+        """Create from a Message payload."""
+        payload = msg.payload
+        return cls(
+            session_id=payload["session_id"],
+            agent_id=msg.from_agent,
+            chunk_index=payload["chunk_index"],
+            content=payload["content"],
+            tool_name=payload.get("tool_name"),
+            is_final=payload.get("is_final", False),
+            timestamp=msg.timestamp,
+            metadata=payload.get("metadata", {})
+        )
 
 
 # =============================================================================

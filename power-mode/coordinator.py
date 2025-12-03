@@ -26,8 +26,9 @@ from protocol import (
     Message, MessageType, MessageFactory,
     Objective, AgentState, Insight, InsightType,
     AgentIdentity, Guardrails, Channels,
-    create_objective
+    create_objective, StreamChunk
 )
+from stream_manager import StreamManager, StreamSession
 
 
 # =============================================================================
@@ -375,6 +376,12 @@ class PowerModeCoordinator:
         self.pattern_learner = PatternLearner()
         self.guardrails = Guardrails(objective)
 
+        # Streaming support (Issue #23)
+        self.stream_manager = StreamManager(
+            on_chunk=self._on_stream_chunk,
+            on_session_complete=self._on_stream_complete
+        )
+
         # Redis connection
         self.redis: Optional[redis.Redis] = None
         self.pubsub: Optional[redis.client.PubSub] = None
@@ -496,6 +503,11 @@ class PowerModeCoordinator:
             MessageType.SYNC_ACK: self._handle_sync_ack,
             MessageType.HUMAN_REQUIRED: self._handle_human_required,
             MessageType.BOUNDARY_ALERT: self._handle_boundary_alert,
+            # Streaming handlers (Issue #23)
+            MessageType.STREAM_START: self._handle_stream_start,
+            MessageType.STREAM_CHUNK: self._handle_stream_chunk,
+            MessageType.STREAM_END: self._handle_stream_end,
+            MessageType.STREAM_ERROR: self._handle_stream_error,
         }
 
         handler = handlers.get(msg.type)
@@ -662,6 +674,112 @@ class PowerModeCoordinator:
                     "suggestion": violation.get("suggestion")
                 }
             ))
+
+    # =========================================================================
+    # STREAM HANDLERS (Issue #23)
+    # =========================================================================
+
+    def _handle_stream_start(self, msg: Message):
+        """Handle stream start message from agent."""
+        agent_id = msg.from_agent
+        payload = msg.payload
+
+        # Start tracking session
+        session_id = self.stream_manager.start_session(
+            agent_id=agent_id,
+            tool_name=payload.get("tool_name"),
+            metadata=payload.get("metadata", {})
+        )
+
+        # Store session mapping in Redis for other agents
+        if self.redis:
+            self.redis.hset(
+                f"pop:streams:{self.session_id}",
+                agent_id,
+                json.dumps({
+                    "session_id": session_id,
+                    "tool_name": payload.get("tool_name"),
+                    "started_at": datetime.now().isoformat()
+                })
+            )
+
+        # Broadcast stream start to interested agents
+        self._broadcast(Message(
+            id=hashlib.md5(f"stream-start-{session_id}".encode()).hexdigest()[:12],
+            type=MessageType.STREAM_START,
+            from_agent="coordinator",
+            to_agent="*",
+            payload={
+                "agent_id": agent_id,
+                "session_id": session_id,
+                "tool_name": payload.get("tool_name")
+            }
+        ))
+
+    def _handle_stream_chunk(self, msg: Message):
+        """Handle stream chunk from agent."""
+        try:
+            chunk = StreamChunk.from_message(msg)
+            self.stream_manager.add_chunk(chunk)
+        except Exception as e:
+            print(f"Error handling stream chunk: {e}", file=sys.stderr)
+
+    def _handle_stream_end(self, msg: Message):
+        """Handle stream end message."""
+        payload = msg.payload
+        session_id = payload.get("session_id")
+
+        if session_id:
+            session = self.stream_manager.end_session(session_id)
+
+            if session and self.redis:
+                # Clean up Redis tracking
+                self.redis.hdel(f"pop:streams:{self.session_id}", msg.from_agent)
+
+                # Store completed stream summary
+                self.redis.hset(
+                    f"pop:streams:completed:{self.session_id}",
+                    session_id,
+                    json.dumps(session.to_dict())
+                )
+
+    def _handle_stream_error(self, msg: Message):
+        """Handle stream error message."""
+        payload = msg.payload
+        session_id = payload.get("session_id")
+        error = payload.get("error", "Unknown error")
+
+        if session_id:
+            self.stream_manager.end_session(session_id, error=error)
+
+        # Log the error
+        print(f"Stream error from {msg.from_agent}: {error}", file=sys.stderr)
+
+    def _on_stream_chunk(self, chunk: StreamChunk):
+        """Callback when chunk is added to stream manager."""
+        # Update status line state
+        self.stream_manager.save_state()
+
+        # Forward to interested agents if configured
+        if CONFIG.get("streaming", {}).get("broadcast_chunks"):
+            self._broadcast(chunk.to_message())
+
+    def _on_stream_complete(self, session: StreamSession):
+        """Callback when stream session completes."""
+        # Update status line state
+        self.stream_manager.save_state()
+
+        # Create insight from completed stream if substantial
+        if session.chunk_count > 5:
+            insight = Insight(
+                id=hashlib.md5(f"stream-{session.session_id}".encode()).hexdigest()[:12],
+                type=InsightType.PATTERN,
+                from_agent=session.agent_id,
+                content=f"Completed {session.tool_name or 'tool'} stream: {session.content_length} bytes in {session.chunk_count} chunks",
+                relevance_tags=[session.tool_name or "stream"],
+                confidence=0.7
+            )
+            self.insight_pool.add(insight)
 
     def _check_agent_health(self):
         """Check agent health and handle failures."""

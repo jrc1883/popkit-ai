@@ -61,6 +61,45 @@ Grep: pattern="hooks", path="~/.claude/config/knowledge/content/"
 Grep: pattern="MCP", path="~/.claude/config/knowledge/content/"
 ```
 
+### Step 5: Semantic Search (If Available)
+
+When embeddings are initialized, use semantic similarity for better results:
+
+```python
+# Check if semantic search is available
+from hooks.utils.embedding_store import EmbeddingStore
+from hooks.utils.voyage_client import is_available
+
+store = EmbeddingStore()
+if is_available() and store.count("knowledge") > 0:
+    # Semantic search available
+    from hooks.utils.voyage_client import embed_query
+
+    query_embedding = embed_query("how do hooks work")
+    results = store.search(
+        query_embedding,
+        source_type="knowledge",
+        top_k=5,
+        min_similarity=0.7
+    )
+
+    for result in results:
+        print(f"[{result.similarity:.2f}] {result.record.source_id}")
+        print(f"  {result.record.content[:100]}...")
+```
+
+**Hybrid Search Strategy:**
+1. Try semantic search first (if embeddings available)
+2. Fall back to Grep for keyword matching
+3. Combine results with weighted scoring:
+   - Semantic score: 70% weight
+   - Keyword match: 30% weight
+
+**Initialize Embeddings:**
+```bash
+python hooks/utils/embedding_init.py --force
+```
+
 ## Response Format
 
 When providing information from knowledge sources:
