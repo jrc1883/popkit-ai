@@ -275,7 +275,21 @@ npm run build
 
 **Note:** Popkit uses `0.x.y` versioning until stable. Version `1.0.0` will mark API stability.
 
-### v0.9.3 (Current) - Claude Platform Feature Integration
+### v0.9.4 (Current) - Platform Integration Completion
+
+- **Closed Platform Issues** - Completed 7 of 14 Claude Platform integration issues:
+  - #14: Effort Parameter (config + documentation)
+  - #15: Extended Thinking Configuration (flags, model defaults)
+  - #16: Context Token Monitoring (hook with thresholds)
+  - #17: Tool Description Enhancement (19 skills updated)
+  - #18: Stop Reason Handling (truncation detection)
+  - #21: tool_choice Parameter (workflow enforcement)
+  - #24: JSON Schema strict Mode (5 schemas updated)
+- **Documentation** - Added "Claude Platform Integration" section to CLAUDE.md
+- **Testing** - Added skill description validation tests
+- **Bug Fix** - `--think-budget N` now correctly implies thinking enabled
+
+### v0.9.3 - Claude Platform Feature Integration
 
 - **Effort Parameter Configuration** - Added `effort` section to `agents/config.json`
   - Per-agent effort levels (low/medium/high) based on 80% scenario analysis

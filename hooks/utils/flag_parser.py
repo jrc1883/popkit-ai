@@ -278,9 +278,13 @@ def parse_thinking_flags(args: str) -> Dict[str, Any]:
         result["force_thinking"] = False
 
     # Parse --think-budget flag
+    # Note: specifying a budget implies thinking should be enabled
     budget_match = re.search(r'--think-budget\s+(\d+)', args)
     if budget_match:
         result["budget_tokens"] = int(budget_match.group(1))
+        # If budget specified but no explicit enable/disable, enable thinking
+        if result["force_thinking"] is None:
+            result["force_thinking"] = True
 
     return result
 
