@@ -8,6 +8,7 @@ Integrates with /popkit:issue work <number> to:
 3. Determine if Power Mode should activate
 4. Create todos from phases
 5. Suggest agents based on issue type and guidance
+6. Run quality gates at phase transitions (Issue #11)
 
 This hook ties together:
 - Issue Parser (github_issues.py)
@@ -20,6 +21,7 @@ Part of Issue #11 - Unified Orchestration System
 import os
 import sys
 import json
+import subprocess
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any
@@ -33,6 +35,16 @@ from github_issues import (
 )
 from flag_parser import parse_work_args
 
+# Import quality gate hook for phase transitions
+sys.path.insert(0, str(Path(__file__).parent))
+try:
+    from importlib import import_module
+    quality_gate_module = import_module("quality-gate")
+    QualityGateHook = quality_gate_module.QualityGateHook
+    QUALITY_GATES_AVAILABLE = True
+except ImportError:
+    QUALITY_GATES_AVAILABLE = False
+
 
 class IssueWorkflowHook:
     """Manages issue-driven workflow activation."""
@@ -42,12 +54,17 @@ class IssueWorkflowHook:
         self.claude_dir = self.cwd / ".claude"
         self.state_file = self.claude_dir / "issue-workflow-state.json"
         self.power_mode_state = self.claude_dir / "power-mode-state.json"
+        self.phase_checkpoints_dir = self.claude_dir / "phase-checkpoints"
 
-        # Ensure directory exists
+        # Ensure directories exist
         self.claude_dir.mkdir(exist_ok=True)
+        self.phase_checkpoints_dir.mkdir(exist_ok=True)
 
         # Load state
         self.state = self.load_state()
+
+        # Initialize quality gate hook if available
+        self.quality_gate = QualityGateHook() if QUALITY_GATES_AVAILABLE else None
 
     def load_state(self) -> Dict[str, Any]:
         """Load workflow state from file."""
@@ -361,11 +378,15 @@ class IssueWorkflowHook:
 
         return result
 
-    def complete_phase(self, phase_name: str) -> Dict[str, Any]:
+    def complete_phase(self, phase_name: str, force: bool = False) -> Dict[str, Any]:
         """Mark a phase as complete and determine next steps.
+
+        Runs quality gates before allowing phase transition. If gates fail,
+        the transition is blocked unless force=True.
 
         Args:
             phase_name: Name of the phase to complete
+            force: If True, proceed despite gate failures (not recommended)
 
         Returns:
             Dict with next phase and any actions to take
@@ -374,7 +395,9 @@ class IssueWorkflowHook:
             "completed": phase_name,
             "next_phase": None,
             "actions": [],
-            "messages": []
+            "messages": [],
+            "gate_results": None,
+            "blocked": False
         }
 
         # Load current workflow state
@@ -382,38 +405,78 @@ class IssueWorkflowHook:
             result["messages"].append("No active issue workflow")
             return result
 
+        # Determine next phase first (before gates)
+        workflow = get_workflow_config(self.state["active_issue"])
+        if workflow.get("error"):
+            result["messages"].append(f"Warning: Could not fetch issue: {workflow['error']}")
+            return result
+
+        phases = workflow.get("suggested_phases", [])
+        completed = set(self.state.get("phases_completed", []))
+
+        # Find next phase
+        next_phase = None
+        next_phase_index = 0
+        for i, phase in enumerate(phases):
+            if phase not in completed and phase != phase_name:
+                next_phase = phase
+                next_phase_index = i
+                break
+
+        # Run quality gates before transition (Issue #11)
+        if next_phase:
+            gate_results = self.run_phase_transition_gates(phase_name, next_phase)
+            result["gate_results"] = gate_results
+
+            if not gate_results["passed"] and not force:
+                result["blocked"] = True
+                result["messages"].append(
+                    f"Phase transition blocked: quality gates failed. "
+                    f"Fix errors or use force=True to proceed anyway."
+                )
+                return result
+
+            if not gate_results["passed"] and force:
+                result["messages"].append(
+                    "WARNING: Proceeding despite gate failures (force=True)"
+                )
+
         # Mark phase complete
         if phase_name not in self.state.get("phases_completed", []):
             self.state["phases_completed"].append(phase_name)
 
-        # Determine next phase
-        workflow = get_workflow_config(self.state["active_issue"])
-        if workflow.get("error"):
-            result["messages"].append(f"Warning: Could not fetch issue: {workflow['error']}")
-        else:
-            phases = workflow.get("suggested_phases", [])
-            completed = set(self.state.get("phases_completed", []))
+        # Proceed with transition
+        completed = set(self.state.get("phases_completed", []))
 
-            for i, phase in enumerate(phases):
-                if phase not in completed:
-                    result["next_phase"] = phase
-                    self.state["current_phase"] = phase
-                    # Update power mode state for status line
-                    self._update_power_mode_progress(
-                        current_phase=phase,
-                        phase_index=i + 1,
-                        total_phases=len(phases),
-                        phases_completed=list(completed)
-                    )
-                    break
+        if next_phase:
+            result["next_phase"] = next_phase
+            self.state["current_phase"] = next_phase
 
-            if not result["next_phase"]:
-                result["messages"].append("All phases complete!")
+            # Create checkpoint at phase boundary
+            checkpoint = self.create_phase_checkpoint(next_phase)
+            if checkpoint:
                 result["actions"].append({
-                    "type": "deactivate_power_mode",
-                    "reason": "All phases complete"
+                    "type": "checkpoint_created",
+                    "path": checkpoint,
+                    "phase": next_phase
                 })
-                self.deactivate_power_mode()
+
+            # Update power mode state for status line
+            self._update_power_mode_progress(
+                current_phase=next_phase,
+                phase_index=next_phase_index + 1,
+                total_phases=len(phases),
+                phases_completed=list(completed)
+            )
+
+            result["messages"].append(f"Transitioned to phase: {next_phase}")
+        else:
+            result["messages"].append("All phases complete!")
+            result["actions"].append({
+                "type": "deactivate_power_mode",
+                "reason": "All phases complete"
+            })
+            self.deactivate_power_mode()
 
         self.save_state()
         return result
@@ -439,6 +502,187 @@ class IssueWorkflowHook:
                     self.power_mode_state.write_text(json.dumps(power_state, indent=2))
         except Exception:
             pass  # Don't fail if status update fails
+
+    # =========================================================================
+    # Phase-Transition Quality Gates (Issue #11)
+    # =========================================================================
+
+    def create_phase_checkpoint(self, phase_name: str) -> Optional[str]:
+        """Create a checkpoint at phase boundary.
+
+        Creates a git patch file containing all changes since the last checkpoint.
+        This allows rollback to the start of a phase if gates fail.
+
+        Args:
+            phase_name: Name of the phase being started
+
+        Returns:
+            Path to checkpoint file or None if creation failed
+        """
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        issue_num = self.state.get("active_issue", "unknown")
+        checkpoint_name = f"issue-{issue_num}-{phase_name}-{timestamp}.patch"
+        checkpoint_path = self.phase_checkpoints_dir / checkpoint_name
+
+        try:
+            # Capture all uncommitted changes
+            result = subprocess.run(
+                "git diff HEAD",
+                shell=True,
+                capture_output=True,
+                text=True,
+                cwd=str(self.cwd)
+            )
+
+            if result.stdout:
+                checkpoint_path.write_text(result.stdout)
+                print(f"Phase checkpoint created: {checkpoint_name}", file=sys.stderr)
+                return str(checkpoint_path)
+            else:
+                # No changes to checkpoint - that's OK
+                print(f"Phase checkpoint: no uncommitted changes", file=sys.stderr)
+                return None
+        except Exception as e:
+            print(f"Warning: Could not create phase checkpoint: {e}", file=sys.stderr)
+            return None
+
+    def run_phase_transition_gates(self, from_phase: str, to_phase: str) -> Dict[str, Any]:
+        """Run quality gates before allowing phase transition.
+
+        Executes configured quality gates (tsc, build, lint, etc.) and
+        blocks the transition if gates fail.
+
+        Args:
+            from_phase: The phase being completed
+            to_phase: The phase being started
+
+        Returns:
+            Dict with:
+            - passed: bool - whether all gates passed
+            - gates: list of gate results
+            - can_proceed: bool - whether to proceed with transition
+            - action: str - "proceed", "fix", "rollback", or "blocked"
+        """
+        result = {
+            "passed": True,
+            "gates": [],
+            "can_proceed": True,
+            "action": "proceed",
+            "from_phase": from_phase,
+            "to_phase": to_phase
+        }
+
+        # Skip if quality gates not available
+        if not self.quality_gate:
+            print("Quality gates not available - proceeding without validation", file=sys.stderr)
+            return result
+
+        # Run all enabled quality gates
+        print(f"Running quality gates before {from_phase} → {to_phase} transition...", file=sys.stderr)
+        gate_results = self.quality_gate.run_all_gates()
+
+        result["gates"] = gate_results.get("gates", [])
+        result["passed"] = gate_results.get("passed", True)
+
+        if result["passed"]:
+            print(f"All quality gates passed ({gate_results.get('duration', 0):.1f}s)", file=sys.stderr)
+            return result
+
+        # Gates failed - determine action
+        result["can_proceed"] = False
+        result["action"] = "blocked"
+
+        # Format error message
+        failed_gates = [g for g in result["gates"] if not g.get("success")]
+        error_count = sum(len(g.get("errors", [])) for g in failed_gates)
+
+        print(f"\nPhase transition blocked: {len(failed_gates)} gate(s) failed with {error_count} error(s)", file=sys.stderr)
+        print(f"Cannot proceed from '{from_phase}' to '{to_phase}' until issues are resolved.", file=sys.stderr)
+
+        for gate in failed_gates:
+            print(f"\n  {gate['name']}:", file=sys.stderr)
+            for error in gate.get("errors", [])[:3]:
+                if "file" in error:
+                    print(f"    {error['file']}:{error.get('line', '?')} - {error['message']}", file=sys.stderr)
+                else:
+                    print(f"    {error['message']}", file=sys.stderr)
+
+        print("\nOptions:", file=sys.stderr)
+        print("  1. Fix the errors and retry phase completion", file=sys.stderr)
+        print("  2. Use '/popkit:issue phase rollback' to restore checkpoint", file=sys.stderr)
+        print("  3. Use '/popkit:issue phase force' to proceed anyway (not recommended)", file=sys.stderr)
+
+        return result
+
+    def rollback_to_phase_start(self, phase_name: str) -> Dict[str, Any]:
+        """Rollback to the checkpoint at the start of a phase.
+
+        Finds the most recent checkpoint for the given phase and restores it.
+
+        Args:
+            phase_name: Name of the phase to rollback to
+
+        Returns:
+            Dict with rollback status and details
+        """
+        result = {
+            "success": False,
+            "phase": phase_name,
+            "checkpoint": None,
+            "message": ""
+        }
+
+        # Find most recent checkpoint for this phase
+        issue_num = self.state.get("active_issue", "unknown")
+        pattern = f"issue-{issue_num}-{phase_name}-*.patch"
+
+        checkpoints = list(self.phase_checkpoints_dir.glob(pattern))
+        if not checkpoints:
+            result["message"] = f"No checkpoint found for phase '{phase_name}'"
+            return result
+
+        # Get most recent (sorted by filename which includes timestamp)
+        latest = sorted(checkpoints)[-1]
+        result["checkpoint"] = str(latest)
+
+        try:
+            # First, save current changes as a recovery file
+            recovery_path = self.phase_checkpoints_dir / f"recovery-{datetime.now().strftime('%Y%m%d-%H%M%S')}.patch"
+            current_diff = subprocess.run(
+                "git diff HEAD",
+                shell=True,
+                capture_output=True,
+                text=True,
+                cwd=str(self.cwd)
+            )
+            if current_diff.stdout:
+                recovery_path.write_text(current_diff.stdout)
+                print(f"Current changes saved to: {recovery_path}", file=sys.stderr)
+
+            # Reset to clean state
+            subprocess.run("git checkout .", shell=True, cwd=str(self.cwd), check=True)
+            subprocess.run("git clean -fd", shell=True, cwd=str(self.cwd), check=True)
+
+            # Apply the checkpoint patch
+            subprocess.run(
+                f"git apply {latest}",
+                shell=True,
+                cwd=str(self.cwd),
+                check=True
+            )
+
+            result["success"] = True
+            result["message"] = f"Rolled back to start of phase '{phase_name}'"
+            print(f"Rollback successful. Restored to checkpoint: {latest.name}", file=sys.stderr)
+
+        except subprocess.CalledProcessError as e:
+            result["message"] = f"Rollback failed: {e}"
+            print(f"Rollback failed: {e}", file=sys.stderr)
+        except Exception as e:
+            result["message"] = f"Rollback failed: {e}"
+            print(f"Rollback failed: {e}", file=sys.stderr)
+
+        return result
 
     def get_current_status(self) -> Dict[str, Any]:
         """Get current workflow status."""
@@ -496,7 +740,15 @@ def main():
             if not phase_name:
                 print(json.dumps({"error": "phase_name required"}))
                 sys.exit(1)
-            result = hook.complete_phase(phase_name)
+            force = input_data.get("force", False)
+            result = hook.complete_phase(phase_name, force=force)
+
+        elif action == "rollback_phase":
+            phase_name = input_data.get("phase_name")
+            if not phase_name:
+                print(json.dumps({"error": "phase_name required"}))
+                sys.exit(1)
+            result = hook.rollback_to_phase_start(phase_name)
 
         elif action == "status":
             result = hook.get_current_status()
@@ -543,8 +795,15 @@ if __name__ == "__main__":
 
         elif sys.argv[1] == "complete" and len(sys.argv) > 2:
             phase = sys.argv[2]
+            force = "--force" in sys.argv or "-f" in sys.argv
             hook = IssueWorkflowHook()
-            result = hook.complete_phase(phase)
+            result = hook.complete_phase(phase, force=force)
+            print(json.dumps(result, indent=2))
+
+        elif sys.argv[1] == "rollback" and len(sys.argv) > 2:
+            phase = sys.argv[2]
+            hook = IssueWorkflowHook()
+            result = hook.rollback_to_phase_start(phase)
             print(json.dumps(result, indent=2))
 
         else:
@@ -553,6 +812,8 @@ if __name__ == "__main__":
             print("  python issue-workflow.py work #4 -p            # Start with flags (Power Mode)")
             print("  python issue-workflow.py work #4 --solo        # Start without Power Mode")
             print("  python issue-workflow.py status                # Get current status")
-            print("  python issue-workflow.py complete <phase>      # Complete a phase")
+            print("  python issue-workflow.py complete <phase>      # Complete a phase (runs quality gates)")
+            print("  python issue-workflow.py complete <phase> -f   # Complete phase, ignore gate failures")
+            print("  python issue-workflow.py rollback <phase>      # Rollback to phase checkpoint")
     else:
         main()

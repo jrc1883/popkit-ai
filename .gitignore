@@ -47,3 +47,6 @@ power-mode/.claude/
 .env
 .env.local
 *.env
+
+# Phase checkpoints (local working files)
+.claude/phase-checkpoints/
