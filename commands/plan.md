@@ -9,8 +9,16 @@ Create and execute comprehensive implementation plans with exact file paths, cod
 ## Usage
 
 ```
-/popkit:plan <subcommand> [options]
+/popkit:plan <subcommand> [options] [flags]
 ```
+
+## Flags
+
+| Flag | Description |
+|------|-------------|
+| `-T`, `--thinking` | Enable extended thinking mode for deeper planning |
+| `--no-thinking` | Disable extended thinking (use default) |
+| `--think-budget N` | Set thinking token budget (default: 10000) |
 
 ## Subcommands
 

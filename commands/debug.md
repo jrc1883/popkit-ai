@@ -9,8 +9,16 @@ Systematic debugging with root cause analysis and agent routing diagnostics.
 ## Usage
 
 ```
-/popkit:debug <subcommand> [options]
+/popkit:debug <subcommand> [options] [flags]
 ```
+
+## Flags
+
+| Flag | Description |
+|------|-------------|
+| `-T`, `--thinking` | Enable extended thinking for deeper root cause analysis |
+| `--no-thinking` | Disable extended thinking (use default) |
+| `--think-budget N` | Set thinking token budget (default: 10000) |
 
 ## Subcommands
 

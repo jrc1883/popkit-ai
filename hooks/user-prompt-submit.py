@@ -16,6 +16,15 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Any
 
+# Import thinking flags parser
+sys.path.insert(0, str(Path(__file__).parent / 'utils'))
+try:
+    from flag_parser import parse_thinking_flags
+except ImportError:
+    def parse_thinking_flags(args):
+        """Fallback if import fails"""
+        return {"force_thinking": None, "budget_tokens": 10000}
+
 class UserPromptSubmitHook:
     def __init__(self):
         self.claude_dir = Path.home() / '.claude'
@@ -361,7 +370,10 @@ class UserPromptSubmitHook:
                 "issues": security_issues,
                 "session_id": self.session_id
             }
-        
+
+        # Parse thinking flags (-T, --thinking, --no-thinking)
+        thinking_flags = parse_thinking_flags(prompt)
+
         # Agent detection
         detected_agents = self.detect_agents(prompt)
 
@@ -397,16 +409,23 @@ class UserPromptSubmitHook:
             "session_id": self.session_id,
             "detected_agents": detected_agents,
             "detected_skills": detected_skills,
+            "thinking_flags": thinking_flags,
             "project_context": project_context,
             "orchestration_result": orchestration_result,
-            "enhanced_prompt": self.enhance_prompt(prompt, detected_agents, detected_skills, project_context)
+            "enhanced_prompt": self.enhance_prompt(prompt, detected_agents, detected_skills, project_context, thinking_flags)
         }
     
-    def enhance_prompt(self, original_prompt: str, detected_agents: Dict, detected_skills: Dict, project_context: Dict) -> str:
-        """Enhance prompt with context, skill reminders, and agent routing information"""
+    def enhance_prompt(self, original_prompt: str, detected_agents: Dict, detected_skills: Dict, project_context: Dict, thinking_flags: Dict = None) -> str:
+        """Enhance prompt with context, skill reminders, thinking mode, and agent routing information"""
         enhancements = []
         suggestions = []
         skill_reminders = []
+        thinking_flags = thinking_flags or {}
+
+        # Handle extended thinking flag
+        if thinking_flags.get("force_thinking") is True:
+            budget = thinking_flags.get("budget_tokens", 10000)
+            enhancements.append(f"Extended thinking mode enabled (budget: {budget} tokens)")
 
         # Check for uncertainty/meta triggers
         if "meta" in detected_agents and "next-action" in detected_agents.get("meta", {}):
@@ -441,6 +460,10 @@ class UserPromptSubmitHook:
                 enhancements.append(f"{agent_count} specialized agents detected")
 
         result = original_prompt
+
+        # Add extended thinking instruction if -T flag was used
+        if thinking_flags.get("force_thinking") is True:
+            result = f"{result}\n\n<!-- THINKING MODE: Extended thinking enabled. Take time to reason through this step by step, exploring the problem space thoroughly before responding. -->"
 
         # Add skill reminders as HTML comments (visible to Claude but not disruptive)
         if skill_reminders:
@@ -480,6 +503,7 @@ def main():
             "session_id": result.get("session_id"),
             "detected_agents": result.get("detected_agents", {}),
             "detected_skills": result.get("detected_skills", {}),
+            "thinking_flags": result.get("thinking_flags", {}),
             "project_context": result.get("project_context", {}),
             "enhanced_prompt": result.get("enhanced_prompt", user_prompt)
         }
@@ -491,6 +515,12 @@ def main():
             for issue in result.get("issues", []):
                 print(f"   - {issue}", file=sys.stderr)
         else:
+            # Show thinking mode if enabled
+            thinking_flags = result.get("thinking_flags", {})
+            if thinking_flags.get("force_thinking") is True:
+                budget = thinking_flags.get("budget_tokens", 10000)
+                print(f"🧠 Extended thinking mode enabled (budget: {budget} tokens)", file=sys.stderr)
+
             # Debug information to stderr
             if result.get("detected_skills"):
                 skill_names = list(result["detected_skills"].keys())

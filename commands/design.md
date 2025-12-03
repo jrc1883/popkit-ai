@@ -9,8 +9,16 @@ Refine ideas into detailed designs and generate product requirements documents.
 ## Usage
 
 ```
-/popkit:design <subcommand> [topic]
+/popkit:design <subcommand> [topic] [flags]
 ```
+
+## Flags
+
+| Flag | Description |
+|------|-------------|
+| `-T`, `--thinking` | Enable extended thinking mode for deeper analysis |
+| `--no-thinking` | Disable extended thinking (use default) |
+| `--think-budget N` | Set thinking token budget (default: 10000) |
 
 ## Subcommands
 
