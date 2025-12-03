@@ -238,12 +238,13 @@ unset POP_POWER_MODE
 ## Troubleshooting
 
 **Redis connection failed:**
-- Check Redis is running: `redis-cli ping`
-- Check host/port in config.json
+- Check container running: `docker ps --filter name=popkit-redis`
+- Test connection: `docker exec popkit-redis redis-cli ping`
+- Or Python: `python -c "import redis; print(redis.Redis(port=16379).ping())"`
 
 **Agents not communicating:**
 - Verify power mode enabled
-- Check Redis channels: `redis-cli subscribe pop:broadcast`
+- Check Redis channels: `docker exec popkit-redis redis-cli subscribe pop:broadcast`
 
 **Check-ins not happening:**
 - Verify checkin-hook.py is executable

@@ -188,7 +188,7 @@ npm run dev
 |---------|------|---------------|
 | Express API | 5001 | `curl -s localhost:5001/health` |
 | PostgreSQL | 5432 | `pg_isready -h localhost -p 5432` |
-| Redis | 6379 | `redis-cli ping` |
+| Redis | 6379 | `docker exec <container> redis-cli ping` |
 
 ## Start All Services
 
@@ -209,7 +209,7 @@ npm run dev:server
 | Service | Port | Check Command |
 |---------|------|---------------|
 | API Server | 5001 | `curl -s localhost:5001/health` |
-| Redis | 6379 | `redis-cli ping` |
+| Redis | 6379 | `docker exec <container> redis-cli ping` |
 | Database | 5432 | `pg_isready` |
 
 ## Domain Checks

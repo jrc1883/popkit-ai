@@ -70,7 +70,7 @@ Parse the goal into actionable components:
 
 Initialize coordination infrastructure:
 
-1. Verify Redis connection (`redis-cli ping`)
+1. Verify Redis connection (`docker exec popkit-redis redis-cli ping`)
 2. Initialize objective state
 3. Clear stale data from previous sessions
 4. Set up channel subscriptions

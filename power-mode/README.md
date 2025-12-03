@@ -280,8 +280,13 @@ docker port popkit-redis
 
 **Test from host:**
 ```bash
-redis-cli -h localhost -p 6379 ping
+# Via Docker (recommended - no local redis-cli needed)
+docker exec popkit-redis redis-cli ping
 # Should return: PONG
+
+# Or via Python
+python -c "import redis; print(redis.Redis(port=16379).ping())"
+# Should return: True
 ```
 
 ### Port Already in Use
