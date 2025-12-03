@@ -155,6 +155,16 @@
       "enabled": true,
       "tools": ["*"],
       "condition": "power_mode_enabled"
+    },
+    {
+      "name": "context-monitor",
+      "event": "PostToolUse",
+      "command": "python",
+      "args": ["hooks/context-monitor.py"],
+      "description": "Track cumulative tokens and warn before context window exhaustion",
+      "timeout": 3000,
+      "enabled": true,
+      "tools": ["*"]
     }
   ],
   "settings": {
