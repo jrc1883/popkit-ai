@@ -261,6 +261,58 @@
     }
   },
 
+  "model": {
+    "description": "Claude model assignment per agent based on task complexity and cost requirements",
+    "models": ["haiku", "sonnet", "opus"],
+    "default": "sonnet",
+    "agents": {
+      "tier-1-always-active": {
+        "code-reviewer": "sonnet",
+        "bug-whisperer": "opus",
+        "security-auditor": "opus",
+        "test-writer-fixer": "sonnet",
+        "api-designer": "sonnet",
+        "performance-optimizer": "opus",
+        "refactoring-expert": "sonnet",
+        "documentation-maintainer": "haiku",
+        "query-optimizer": "opus",
+        "migration-specialist": "opus",
+        "accessibility-guardian": "sonnet"
+      },
+      "tier-2-on-demand": {
+        "ai-engineer": "opus",
+        "deployment-validator": "sonnet",
+        "feature-prioritizer": "haiku",
+        "rapid-prototyper": "haiku",
+        "backup-coordinator": "sonnet",
+        "meta-agent": "sonnet",
+        "researcher": "sonnet",
+        "user-story-writer": "haiku",
+        "devops-automator": "sonnet",
+        "bundle-analyzer": "sonnet",
+        "log-analyzer": "sonnet",
+        "metrics-collector": "sonnet",
+        "feedback-synthesizer": "haiku",
+        "rollback-specialist": "opus",
+        "data-integrity": "sonnet",
+        "dead-code-eliminator": "sonnet",
+        "power-coordinator": "opus"
+      },
+      "feature-workflow": {
+        "code-explorer": "sonnet",
+        "code-architect": "opus"
+      }
+    },
+    "heuristics": {
+      "haiku": "Writing-focused tasks (docs, comments, user stories), quick prototypes",
+      "sonnet": "Balanced analysis and implementation (review, testing, most development)",
+      "opus": "Deep reasoning (architecture, security audits, complex debugging, migrations)"
+    },
+    "flags": {
+      "--model": "Override model for any agent (e.g., --model opus)"
+    }
+  },
+
   "tool_choice": {
     "description": "Claude API tool_choice parameter for forcing specific tool execution",
     "modes": {

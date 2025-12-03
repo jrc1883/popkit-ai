@@ -142,6 +142,23 @@ Workflow step tool enforcement in `agents/config.json`:
 }
 ```
 
+### Model Assignment per Agent
+
+Different agents use different Claude models based on task complexity:
+
+| Model | Use Case | Agents |
+|-------|----------|--------|
+| `haiku` | Writing, quick tasks | documentation-maintainer, user-story-writer, rapid-prototyper |
+| `sonnet` | Balanced (default) | code-reviewer, test-writer-fixer, api-designer |
+| `opus` | Deep reasoning | bug-whisperer, security-auditor, code-architect, power-coordinator |
+
+**Heuristics:**
+- **Haiku**: Docs, comments, prototypes (fast, cheap)
+- **Sonnet**: Review, testing, most development (balanced)
+- **Opus**: Architecture, security, debugging (thorough)
+
+**Override:** Use `--model opus` to force a specific model for any agent
+
 ### JSON Schema Strict Mode
 
 Output style schemas use `strict: true` for guaranteed valid JSON output.

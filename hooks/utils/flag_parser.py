@@ -290,6 +290,43 @@ def parse_thinking_flags(args: str) -> Dict[str, Any]:
 
 
 # =============================================================================
+# Model Flag Parser
+# =============================================================================
+
+def parse_model_flag(args: str) -> Dict[str, Any]:
+    """Parse model override flag from arguments.
+
+    Supported flags:
+        --model haiku      Use Haiku model
+        --model sonnet     Use Sonnet model
+        --model opus       Use Opus model
+        -m haiku           Short form
+
+    Args:
+        args: Raw argument string from $ARGUMENTS
+
+    Returns:
+        Dict with parsed values:
+        - model: str or None (None = use agent default)
+    """
+    result = {
+        "model": None  # None = use configured default per agent
+    }
+
+    if not args:
+        return result
+
+    args = args.strip()
+
+    # Parse --model or -m flag
+    model_match = re.search(r'(?:--model|-m)\s+(haiku|sonnet|opus)', args, re.IGNORECASE)
+    if model_match:
+        result["model"] = model_match.group(1).lower()
+
+    return result
+
+
+# =============================================================================
 # Generic Flag Utilities
 # =============================================================================
 
@@ -432,4 +469,19 @@ if __name__ == "__main__":
 
     for test in test_cases:
         result = parse_thinking_flags(test)
+        print(f"  '{test}' -> {result}")
+
+    print("\nTesting parse_model_flag:")
+    test_cases = [
+        "",
+        "--model haiku",
+        "--model sonnet",
+        "--model opus",
+        "-m opus",
+        "#4 -p --model opus",  # Combined with other flags
+        "--model HAIKU",  # Case insensitive
+    ]
+
+    for test in test_cases:
+        result = parse_model_flag(test)
         print(f"  '{test}' -> {result}")

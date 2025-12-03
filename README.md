@@ -181,6 +181,7 @@ PopKit leverages Claude API features for optimal performance.
 |---------|-------|
 | **Effort Parameter** | `high` for debugging/security, `low` for docs |
 | **Extended Thinking** | Sonnet: ON, Opus: OFF (use `-T` flag) |
+| **Model Assignment** | `opus` for architecture, `haiku` for docs |
 | **Tool Choice** | Workflow step enforcement |
 | **PDF Support** | Read design docs, generate PDF reports |
 
