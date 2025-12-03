@@ -73,7 +73,7 @@ skills/                  30 reusable skills (SKILL.md format in subdirectories)
 commands/                15 slash commands for workflows (consolidated with subcommands)
 hooks/                   17 Python hooks (JSON stdin/stdout protocol)
   hooks.json             Hook configuration and event mapping
-  utils/                 Stateless utilities (message_builder.py, context_carrier.py, stateless_hook.py)
+  utils/                 Stateless utilities (message_builder.py, context_carrier.py, stateless_hook.py, mcp_detector.py)
   pre_tool_use_stateless.py  Stateless safety checks
   post_tool_use_stateless.py Stateless result processing
 output-styles/           15+ output format templates (includes schemas/)
@@ -229,6 +229,23 @@ Two-tier approach for daily health checks:
 
 "Ready to Code" score (0-100) helps prioritize morning fixes.
 
+**MCP Detection** (`hooks/utils/mcp_detector.py`):
+
+The generator auto-detects existing MCP infrastructure before generating commands:
+
+| Detection | Result | Command Size |
+|-----------|--------|--------------|
+| MCP + health tools | `mcp_wrapper` recommendation | 10-20 lines |
+| MCP, no health tools | `hybrid` recommendation | Mixed |
+| No MCP | `bash` recommendation | 100+ lines |
+
+MCP health tools detected: `morning_routine`, `check_*`, `*_health`, `*_status`, `ping_*`, `verify_*`
+
+**Generator Flags:**
+- `--detect`: Preview MCP detection without generating
+- `--bash`: Force bash-based generation (skip MCP)
+- `--mcp-wrapper`: Force MCP wrapper generation
+
 ### Power Mode (Multi-Agent Orchestration)
 
 Parallel agent collaboration with two backend options:
@@ -348,6 +365,7 @@ npm run build
 | `power-mode/statusline.py` | Visual Power Mode status line display |
 | `hooks/utils/flag_parser.py` | Centralized command flag parsing |
 | `hooks/utils/github_issues.py` | GitHub issue guidance parsing |
+| `hooks/utils/mcp_detector.py` | MCP infrastructure detection for morning generator |
 
 ## Version History
 

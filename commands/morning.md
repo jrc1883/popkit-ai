@@ -150,8 +150,37 @@ Branch: main | Last: feat: add feature (2h ago)
 Create a project-specific morning health check command.
 
 ```
-/popkit:morning generate              # Generate for current project
+/popkit:morning generate              # Auto-detect MCP vs bash
 /popkit:morning generate --nightly    # Also generate nightly cleanup
+/popkit:morning generate --detect     # Show MCP detection only (don't generate)
+/popkit:morning generate --bash       # Force bash-based generation (skip MCP)
+/popkit:morning generate --mcp-wrapper # Force MCP wrapper generation
+```
+
+### MCP-Aware Generation
+
+The generator automatically detects MCP infrastructure and adapts:
+
+| Detection | Action |
+|-----------|--------|
+| MCP + health tools | Generate MCP wrapper commands (10-20 lines) |
+| MCP, no health tools | Generate hybrid commands |
+| No MCP | Generate bash commands (100+ lines) |
+
+**MCP Detection Checks:**
+- `@modelcontextprotocol/sdk` in package.json
+- `.mcp.json` configuration file
+- MCP server directories (`packages/*/mcp/`, etc.)
+- Health tool patterns (`morning_routine`, `check_*`, etc.)
+
+**Use `--detect` to preview without generating:**
+```
+/popkit:morning generate --detect
+
+MCP Infrastructure Detected!
+Server: mcp__project-dev
+Health Tools: morning_routine, check_database, check_api
+Recommendation: Generate MCP wrapper commands
 ```
 
 ### What Gets Detected

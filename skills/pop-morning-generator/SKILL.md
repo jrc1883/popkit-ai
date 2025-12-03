@@ -23,6 +23,76 @@ Generate a project-specific morning health check command based on the project's 
 
 ## Detection Process
 
+### Step 0: Detect MCP Infrastructure
+
+Before detecting tech stack, check for existing MCP server infrastructure:
+
+```bash
+# Check for MCP SDK in package.json
+grep -q "@modelcontextprotocol/sdk" package.json 2>/dev/null && echo "MCP SDK: Found"
+
+# Check for .mcp.json configuration
+test -f .mcp.json && echo "MCP Config: Found"
+
+# Check for MCP server directories
+ls -d packages/*/mcp packages/*/src/mcp **/mcp-server 2>/dev/null && echo "MCP Directories: Found"
+```
+
+**Decision Tree:**
+
+```
+Has MCP SDK or .mcp.json?
+  │
+  ├─ YES → Has health-related MCP tools?
+  │         │
+  │         ├─ YES → Generate MCP wrapper commands (Step 5)
+  │         │        - Minimal 10-20 line wrappers
+  │         │        - Call mcp__server__tool directly
+  │         │        - Skip bash-based checks
+  │         │
+  │         └─ NO → Generate hybrid commands
+  │                  - MCP for available tools
+  │                  - Bash for missing checks
+  │
+  └─ NO → Generate bash-based commands (Step 1-4)
+          - Full tech stack detection
+          - Comprehensive bash scripts
+```
+
+**MCP Health Tool Detection:**
+
+Look for these patterns in MCP tool names:
+- `morning_routine`, `nightly_routine` - Daily health routines
+- `check_*` (check_database, check_api, etc.) - Explicit checks
+- `*_health`, `*_status` - Status queries
+- `ping_*`, `verify_*` - Connectivity tests
+
+**Example MCP Detection Output:**
+
+```
+MCP Infrastructure Detected!
+
+Server: mcp__reseller-central-dev
+SDK Version: ^1.0.0
+Config: .mcp.json
+
+Health-Related Tools (8):
+  ✓ morning_routine - Daily health check
+  ✓ check_api - API server status
+  ✓ check_database - Database connectivity
+  ✓ check_redis - Redis connection
+  ✓ check_ebay_connection - eBay API status
+  ✓ nightly_routine - Sleep score
+  ✓ system_overview - Full system status
+  ✓ verify_oauth - OAuth token status
+
+Recommendation: Generate MCP wrapper commands
+
+Proceed with MCP wrapper generation? [Y/n]
+```
+
+If MCP is detected with health tools, skip to **Step 5: Generate MCP Wrapper Commands**.
+
 ### Step 1: Detect Tech Stack
 
 Analyze project for frameworks and services:
@@ -267,6 +337,69 @@ Would you like me to also generate /[prefix]:nightly?
 - Quick issue detection
 - Consistent development startup
 - Team-wide morning routine
+
+### Step 5: Generate MCP Wrapper Commands (If MCP Detected)
+
+When MCP infrastructure is detected with health tools, generate minimal wrapper commands instead of bash scripts:
+
+**Template: `.claude/commands/[prefix]:morning.md`**
+
+```markdown
+---
+description: Morning health check via MCP (Ready to Code score 0-100)
+---
+
+# /[prefix]:morning - [Project] Morning Check
+
+Run the MCP-based morning health check.
+
+## Implementation
+
+Run the `mcp__[server]__morning_routine` MCP tool.
+
+If unavailable, run individual checks:
+- `mcp__[server]__check_database`
+- `mcp__[server]__check_api`
+- `mcp__[server]__check_redis`
+
+Display the Ready to Code score and any issues.
+```
+
+**Benefits of MCP Wrappers:**
+
+| Aspect | MCP Wrapper | Bash Command |
+|--------|-------------|--------------|
+| Lines of code | 10-20 | 100-200+ |
+| Maintenance | Auto-syncs with MCP | Manual updates |
+| Error handling | Structured JSON | Text parsing |
+| Extensibility | Add to MCP server | Edit markdown |
+| Agent integration | Direct tool calls | Shell out |
+
+**Post-Generation (MCP Mode):**
+
+```
+Morning command generated! (MCP Wrapper Mode)
+
+Created:
+  .claude/commands/[prefix]:morning.md  (15 lines)
+
+MCP Server Detected: mcp__[server-name]
+Health Tools Available: 8
+
+The generated command calls these MCP tools:
+  ✓ morning_routine (primary)
+  ✓ check_database (fallback)
+  ✓ check_api (fallback)
+  ✓ check_redis (fallback)
+
+Benefits:
+  - 15 lines vs 200+ bash lines
+  - Structured JSON responses
+  - Auto-syncs with MCP server updates
+
+You can now run:
+  /[prefix]:morning
+```
 
 ## Customization
 
