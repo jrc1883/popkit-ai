@@ -63,26 +63,94 @@ Files to Read:
 
 ### Phase 3: Questions
 
-**Goal:** Clarify requirements
+**Goal:** Clarify requirements using curated project templates
+
+This phase uses the **pop-project-templates** skill to provide research-backed technology options.
+
+#### Template Selection
+
+First, determine the project type using `AskUserQuestion`:
 
 ```
-A few questions to clarify the implementation:
+Use AskUserQuestion tool with:
+- question: "What type of project are you building?"
+- header: "Project Type"
+- options:
+  - label: "SaaS Backend API"
+    description: "Backend API with auth, billing, multi-tenancy"
+  - label: "ML/AI Service"
+    description: "Machine learning inference API with model serving"
+  - label: "CLI Tool"
+    description: "Command-line application with distribution"
+  - label: "Full-Stack Web App"
+    description: "Complete web app with frontend, backend, database"
+- multiSelect: false
+```
 
-1. Which OAuth providers should we support?
-   a) Google only
-   b) Google + GitHub
-   c) All major providers
+#### Load Template Questions
 
-2. Should we support email/password as well?
-   a) Yes
-   b) No, OAuth only
+Based on selection, load template from `skills/pop-project-templates/templates/<type>.json`.
 
-3. Where should users be redirected after login?
-   a) Dashboard
-   b) Previous page
-   c) Custom URL
+Each template provides curated questions with:
+- Research-backed options (npm downloads, GitHub stars, benchmarks)
+- Pros/cons for each choice
+- "When to use" guidance
+- Popularity metrics
 
-> 1b, 2a, 3a
+#### Example Questions (SaaS API Template)
+
+```
+Use AskUserQuestion tool with questions from template:
+
+[Tab: Runtime]
+"Which runtime/framework should we use for the API server?"
+- Node.js + Fastify: Fastest Node framework, TypeScript-native
+- Node.js + Express: Most popular, massive ecosystem
+- Python + FastAPI: ML integration, auto-docs
+- Bun + Hono: Fastest runtime, modern stack
+
+[Tab: Database]
+"Which database should we use?"
+- PostgreSQL: Most capable RDBMS, JSON support
+- MySQL / PlanetScale: Battle-tested, horizontal scaling
+- MongoDB: Document database, flexible schema
+- SQLite (Turso): Edge deployment, zero-config
+
+[Tab: Auth]
+"How should we handle authentication?"
+- Clerk: Pre-built UI, org support
+- Auth0: Enterprise SSO, compliance
+- Supabase Auth: PostgreSQL RLS integration
+- Lucia: Self-hosted, full control
+
+[Tab: Billing]
+"How should we handle payments?"
+- Stripe: Industry standard, best API
+- Paddle: Merchant of Record, handles taxes
+- LemonSqueezy: Built for digital products
+- None (MVP): Add billing later
+```
+
+#### Custom Project Type
+
+If user selects "Custom" or project doesn't fit templates:
+- Fall back to dynamic question generation
+- Use context from Phase 1-2 to infer relevant questions
+- Questions may be less curated but more tailored
+
+#### Store Decisions
+
+Save all answers for use in Phase 4 (Architecture):
+```json
+{
+  "template": "saas-api",
+  "decisions": {
+    "runtime": "node-fastify",
+    "database": "postgresql",
+    "auth": "clerk",
+    "billing": "stripe"
+  }
+}
 ```
 
 ### Phase 4: Architecture
@@ -195,9 +263,14 @@ Which option?
 | Agent: code-architect | Phase 4 - Architecture design |
 | Agent: code-reviewer | Phase 6 - Code review |
 | Skill: pop-brainstorming | Phase 1 - Discovery and ideation |
+| Skill: pop-project-templates | Phase 3 - Curated technology choices |
 | Skill: pop-writing-plans | Phase 5 - Implementation plan generation |
 | Skill: pop-executing-plans | Phase 5 - Plan execution |
 | Skill: pop-finish-branch | Phase 7 - Completion workflow |
+| Templates: saas-api.json | SaaS backend API template |
+| Templates: ml-service.json | ML/AI service template |
+| Templates: cli-tool.json | CLI application template |
+| Templates: fullstack.json | Full-stack web app template |
 | Command: /popkit:worktree | Creates isolated workspace |
 | Command: /popkit:plan | Generates implementation plans |
 | Command: /popkit:review | Final quality check |
