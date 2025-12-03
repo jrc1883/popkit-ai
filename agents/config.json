@@ -210,5 +210,88 @@
       "require": "Execution blocked until skill is invoked (future: not yet implemented)",
       "usage": "Override in project's .claude/config.json or set POPKIT_SKILL_ENFORCEMENT env var"
     }
+  },
+
+  "effort": {
+    "description": "Claude API effort parameter per agent. Set based on what 80% of scenarios require.",
+    "levels": ["low", "medium", "high"],
+    "default": "medium",
+    "agents": {
+      "tier-1-always-active": {
+        "code-reviewer": "medium",
+        "bug-whisperer": "high",
+        "security-auditor": "high",
+        "test-writer-fixer": "medium",
+        "api-designer": "medium",
+        "performance-optimizer": "high",
+        "refactoring-expert": "medium",
+        "documentation-maintainer": "low",
+        "query-optimizer": "high",
+        "migration-specialist": "high",
+        "accessibility-guardian": "medium"
+      },
+      "tier-2-on-demand": {
+        "ai-engineer": "high",
+        "deployment-validator": "medium",
+        "feature-prioritizer": "low",
+        "rapid-prototyper": "low",
+        "backup-coordinator": "medium",
+        "meta-agent": "medium",
+        "researcher": "medium",
+        "user-story-writer": "low",
+        "devops-automator": "medium",
+        "bundle-analyzer": "medium",
+        "log-analyzer": "medium",
+        "metrics-collector": "medium",
+        "feedback-synthesizer": "low",
+        "rollback-specialist": "high",
+        "data-integrity": "medium",
+        "dead-code-eliminator": "medium",
+        "power-coordinator": "high"
+      },
+      "feature-workflow": {
+        "code-explorer": "medium",
+        "code-architect": "high"
+      }
+    },
+    "notes": {
+      "high": "80% of tasks require deep analysis (debugging, security, architecture)",
+      "medium": "Balanced - handles most common scenarios effectively",
+      "low": "80% of tasks are straightforward (writing, organizing, quick prototypes)"
+    }
+  },
+
+  "thinking": {
+    "description": "Extended thinking configuration per model and agent",
+    "models": {
+      "sonnet": {
+        "enabled": true,
+        "default_budget_tokens": 10000,
+        "notes": "Extended thinking ON by default for Sonnet"
+      },
+      "opus": {
+        "enabled": false,
+        "flag_enabled": true,
+        "notes": "Thinking OFF by default, enable with -T flag"
+      },
+      "haiku": {
+        "enabled": true,
+        "default_budget_tokens": 5000,
+        "notes": "Haiku 4.5 now supports extended thinking"
+      }
+    },
+    "flags": {
+      "-T": "Force thinking on for any model",
+      "--thinking": "Alias for -T",
+      "--no-thinking": "Force thinking off"
+    },
+    "high_thinking_agents": [
+      "code-architect",
+      "power-coordinator"
+    ],
+    "high_thinking_skills": [
+      "pop-brainstorming",
+      "pop-writing-plans"
+    ]
   }
 }

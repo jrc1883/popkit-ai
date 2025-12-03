@@ -240,6 +240,52 @@ def parse_power_args(args: str) -> Dict[str, Any]:
 
 
 # =============================================================================
+# Thinking Flag Parser
+# =============================================================================
+
+def parse_thinking_flags(args: str) -> Dict[str, Any]:
+    """Parse extended thinking flags from arguments.
+
+    Supported flags:
+        -T, --thinking      Force extended thinking on
+        --no-thinking       Force extended thinking off
+        --think-budget N    Set thinking budget tokens (default: 10000)
+
+    Args:
+        args: Raw argument string from $ARGUMENTS
+
+    Returns:
+        Dict with parsed values:
+        - force_thinking: bool or None (None = use default per model)
+        - budget_tokens: int (default 10000)
+    """
+    result = {
+        "force_thinking": None,  # None = use model default
+        "budget_tokens": 10000
+    }
+
+    if not args:
+        return result
+
+    args = args.strip()
+
+    # Check for force thinking on (-T or --thinking)
+    if re.search(r'\s-T(?:\s|$)', f" {args}") or re.search(r'--thinking(?:\s|$)', args):
+        result["force_thinking"] = True
+
+    # Check for force thinking off (--no-thinking)
+    if re.search(r'--no-thinking(?:\s|$)', args):
+        result["force_thinking"] = False
+
+    # Parse --think-budget flag
+    budget_match = re.search(r'--think-budget\s+(\d+)', args)
+    if budget_match:
+        result["budget_tokens"] = int(budget_match.group(1))
+
+    return result
+
+
+# =============================================================================
 # Generic Flag Utilities
 # =============================================================================
 
@@ -368,4 +414,18 @@ if __name__ == "__main__":
 
     for test in test_cases:
         result = parse_power_args(test)
+        print(f"  '{test}' -> {result}")
+
+    print("\nTesting parse_thinking_flags:")
+    test_cases = [
+        "",
+        "-T",
+        "--thinking",
+        "--no-thinking",
+        "-T --think-budget 20000",
+        "#4 -p -T",  # Combined with other flags
+    ]
+
+    for test in test_cases:
+        result = parse_thinking_flags(test)
         print(f"  '{test}' -> {result}")

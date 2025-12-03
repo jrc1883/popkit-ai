@@ -227,7 +227,27 @@ npm run build
 
 **Note:** Popkit uses `0.x.y` versioning until stable. Version `1.0.0` will mark API stability.
 
-### v0.9.2 (Current) - Deep Command Consolidation
+### v0.9.3 (Current) - Claude Platform Feature Integration
+
+- **Effort Parameter Configuration** - Added `effort` section to `agents/config.json`
+  - Per-agent effort levels (low/medium/high) based on 80% scenario analysis
+  - High effort: bug-whisperer, security-auditor, performance-optimizer, query-optimizer, migration-specialist, ai-engineer, power-coordinator, rollback-specialist, code-architect
+  - Low effort: documentation-maintainer, feature-prioritizer, rapid-prototyper, user-story-writer, feedback-synthesizer
+  - All others default to medium
+- **Extended Thinking Configuration** - Added `thinking` section to `agents/config.json`
+  - Sonnet: Thinking enabled by default (10k tokens)
+  - Opus: Thinking off by default, enable with `-T` flag
+  - Haiku 4.5: Thinking enabled (5k tokens)
+  - Flags: `-T`/`--thinking`, `--no-thinking`, `--think-budget N`
+- **Thinking Flag Parser** - Added `parse_thinking_flags()` to `hooks/utils/flag_parser.py`
+- **Platform Integration Issues** - Created 14 GitHub issues (#14-#27) tracking:
+  - Effort parameter (#14), Extended thinking (#15), Context token monitoring (#16)
+  - Tool descriptions (#17), Stop reason handling (#18), Embeddings (#19)
+  - PDF support (#20), tool_choice (#21), Stateless messages (#22)
+  - Fine-grained streaming (#23), JSON Schema strict (#24)
+  - Future: Model per agent (#25), Computer use (#26), Code execution (#27)
+
+### v0.9.2 - Deep Command Consolidation
 
 - **Further Consolidation** - Reduced 22 commands to 15 via additional subcommand merging
   - `/popkit:ci` (new) from `run` + `release` → `run list/view/rerun/watch/cancel/download/logs`, `release create/list/view/edit/delete/changelog`
