@@ -51,3 +51,25 @@ Start by understanding the current project context, then ask questions one at a 
 - **Explore alternatives** - Always propose 2-3 approaches before settling
 - **Incremental validation** - Present design in sections, validate each
 - **Be flexible** - Go back and clarify when something doesn't make sense
+
+## PDF Input Support
+
+When provided with a PDF file path (design doc, spec, or requirements), read it first:
+
+```
+User: Here's the design doc: /path/to/design.pdf
+```
+
+**Process PDF input:**
+1. Use Read tool to analyze the PDF content
+2. Extract key requirements, constraints, and goals
+3. Identify areas that need clarification
+4. Use extracted context to inform the brainstorming process
+
+**When reading design PDFs:**
+- Look for: objectives, user stories, constraints, success criteria
+- Note gaps: missing acceptance criteria, unclear requirements
+- Identify: dependencies, technical constraints, timeline pressures
+- Flag: ambiguities that need clarification during brainstorming
+
+This allows brainstorming to start from existing documentation rather than from scratch.

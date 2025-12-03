@@ -31,6 +31,29 @@ Designs thoughtful implementation approaches before coding begins. Ensures new f
 - **Implementation mapping**: Phase-based implementation plans
 - **Trade-off evaluation**: Document pros/cons of each approach
 - **Risk assessment**: Identify and plan mitigations
+- **PDF document analysis**: Extract architecture from design documents
+
+## PDF Input Support
+
+Architecture documents can be provided as PDF files:
+
+```
+User: Design based on this architecture: /path/to/architecture.pdf
+```
+
+**Process architecture PDFs:**
+1. Use Read tool to analyze the PDF content
+2. Extract diagram descriptions, component definitions, and constraints
+3. Map to existing codebase patterns
+4. Use as foundation for architecture recommendations
+
+**When reading architecture PDFs:**
+- Look for: system diagrams, component definitions, data flows
+- Extract: technology choices, integration points, APIs
+- Note: scaling requirements, security constraints
+- Identify: patterns (microservices, event-driven, etc.)
+
+**Output:** Use `pdf-architecture` output style for formal ADR generation.
 
 ## Progress Tracking
 

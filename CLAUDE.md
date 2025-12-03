@@ -150,6 +150,28 @@ Output style schemas use `strict: true` for guaranteed valid JSON output.
 
 Hooks detect truncation (`max_tokens`) and warn users with recovery suggestions.
 
+### PDF Support
+
+Claude can read PDF files directly. PopKit leverages this for:
+
+**Input Support** - Skills that accept PDF file paths:
+- `pop-brainstorming`: Read design docs, PRDs, specifications
+- `pop-executing-plans`: Read implementation plans, PRDs
+- `code-architect`: Analyze architecture diagrams, ADRs
+
+**Output Styles** - PDF-formatted output templates:
+- `pdf-report`: Formal analysis report for stakeholders
+- `pdf-prd`: Product requirements document
+- `pdf-architecture`: Architecture decision record (ADR)
+
+**Usage:** Provide PDF path in user message:
+```
+User: Analyze this design: /path/to/design.pdf
+User: Execute plan from: /path/to/implementation.pdf
+```
+
+Use `document-skills:pdf` to generate actual PDF files from output.
+
 ## Key Architectural Patterns
 
 ### Agent Routing (agents/config.json)

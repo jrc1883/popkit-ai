@@ -59,6 +59,28 @@ After all tasks complete and verified:
 
 **Ask for clarification rather than guessing.**
 
+## PDF Input Support
+
+Plans can be provided as PDF files:
+
+```
+User: Execute this plan: /path/to/implementation-plan.pdf
+```
+
+**Process PDF plans:**
+1. Use Read tool to analyze the PDF content
+2. Extract tasks, steps, and verification criteria
+3. Convert to internal task list format
+4. Proceed with standard execution process
+
+**When reading plan PDFs:**
+- Look for: numbered tasks, code blocks, file paths
+- Extract: exact commands, expected outputs
+- Note: dependencies between tasks
+- Identify: verification steps for each phase
+
+PRD PDFs can also be processed to understand requirements context before execution.
+
 ## When to Revisit Earlier Steps
 
 **Return to Review (Step 1) when:**
