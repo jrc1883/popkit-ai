@@ -43,10 +43,11 @@ hooks.local/
 # Power Mode state files (generated during multi-agent orchestration)
 power-mode/.claude/
 
+# Local Claude Code project state (created when using PopKit on this repo)
+.claude/
+
 # Environment files (contain API keys)
 .env
 .env.local
 *.env
 
-# Phase checkpoints (local working files)
-.claude/phase-checkpoints/
