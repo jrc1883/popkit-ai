@@ -102,6 +102,54 @@ This is a **configuration-only plugin** - no build or lint commands exist. All c
 
 **Self-testing available:** Run `/popkit:plugin-test` to validate plugin integrity.
 
+## Claude Platform Integration
+
+PopKit leverages Claude API platform features for optimal performance. Configuration is in `agents/config.json`.
+
+### Effort Parameter
+
+Controls compute allocation per agent based on what 80% of scenarios require:
+
+| Level | When to Use | Agents |
+|-------|-------------|--------|
+| `high` | Deep analysis, critical decisions | bug-whisperer, security-auditor, code-architect, power-coordinator |
+| `medium` | Balanced scenarios (default) | code-reviewer, test-writer-fixer, api-designer |
+| `low` | Straightforward tasks | documentation-maintainer, rapid-prototyper, user-story-writer |
+
+### Extended Thinking
+
+Model-specific thinking configuration with flag overrides:
+
+| Model | Default | Budget | Override |
+|-------|---------|--------|----------|
+| Sonnet | Enabled | 10k tokens | `--no-thinking` to disable |
+| Opus | Disabled | - | `-T` or `--thinking` to enable |
+| Haiku 4.5 | Enabled | 5k tokens | `--no-thinking` to disable |
+
+**Flags:** `-T`, `--thinking`, `--no-thinking`, `--think-budget N`
+
+**Example:** `/popkit:design brainstorm -T` enables thinking on Opus
+
+### Tool Choice
+
+Workflow step tool enforcement in `agents/config.json`:
+
+```json
+"git-commit": {
+  "steps": [
+    { "action": "stage_files", "tool_choice": { "type": "tool", "name": "Bash" } }
+  ]
+}
+```
+
+### JSON Schema Strict Mode
+
+Output style schemas use `strict: true` for guaranteed valid JSON output.
+
+### Stop Reason Handling
+
+Hooks detect truncation (`max_tokens`) and warn users with recovery suggestions.
+
 ## Key Architectural Patterns
 
 ### Agent Routing (agents/config.json)
