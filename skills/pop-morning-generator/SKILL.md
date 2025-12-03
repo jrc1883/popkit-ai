@@ -87,11 +87,25 @@ Health-Related Tools (8):
   ✓ verify_oauth - OAuth token status
 
 Recommendation: Generate MCP wrapper commands
-
-Proceed with MCP wrapper generation? [Y/n]
 ```
 
-If MCP is detected with health tools, skip to **Step 5: Generate MCP Wrapper Commands**.
+When MCP is detected, use AskUserQuestion:
+
+```
+Use AskUserQuestion tool with:
+- question: "MCP health tools detected. How should we generate the morning command?"
+- header: "Generator"
+- options:
+  - label: "MCP Wrapper"
+    description: "Minimal 10-20 line wrapper calling MCP tools (recommended)"
+  - label: "Bash Script"
+    description: "Full bash-based checks (100+ lines, ignore MCP)"
+  - label: "Hybrid"
+    description: "MCP for available tools, bash for gaps"
+- multiSelect: false
+```
+
+If MCP wrapper selected, skip to **Step 5: Generate MCP Wrapper Commands**.
 
 ### Step 1: Detect Tech Stack
 
@@ -322,8 +336,20 @@ Health checks included:
 
 You can now run:
   /[prefix]:morning
+```
 
-Would you like me to also generate /[prefix]:nightly?
+Then use AskUserQuestion to offer nightly generation:
+
+```
+Use AskUserQuestion tool with:
+- question: "Would you like to also generate the nightly cleanup command?"
+- header: "Nightly"
+- options:
+  - label: "Yes, generate"
+    description: "Create /[prefix]:nightly for end-of-day cleanup"
+  - label: "No, skip"
+    description: "I'll generate it later if needed"
+- multiSelect: false
 ```
 
 ## Integration

@@ -96,15 +96,23 @@ git commit -m "feat: add specific feature"
 
 ## Execution Handoff
 
-After saving the plan, offer execution choice:
+After saving the plan, use AskUserQuestion to offer execution choice:
 
-**"Plan complete and saved to `docs/plans/<filename>.md`. Two execution options:**
+```
+Use AskUserQuestion tool with:
+- question: "Plan saved. How would you like to execute it?"
+- header: "Execution"
+- options:
+  - label: "Subagent-Driven"
+    description: "Execute in this session with fresh subagent per task"
+  - label: "Parallel Session"
+    description: "Open new session with executing-plans skill"
+  - label: "Later"
+    description: "Save for now, I'll execute it manually"
+- multiSelect: false
+```
 
-**1. Subagent-Driven (this session)** - I dispatch fresh subagent per task, review between tasks, fast iteration
-
-**2. Parallel Session (separate)** - Open new session with executing-plans, batch execution with checkpoints
-
-**Which approach?"**
+**NEVER present as plain text** like "1. Subagent, 2. Parallel... type 1 or 2".
 
 **If Subagent-Driven chosen:**
 - Use subagent-driven-development skill

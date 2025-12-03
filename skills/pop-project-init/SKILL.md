@@ -146,12 +146,23 @@ Initialize empty status:
 
 ### Step 6: Ask About Power Mode Setup
 
-Offer Power Mode setup for multi-agent orchestration:
+Offer Power Mode setup for multi-agent orchestration using AskUserQuestion:
 
-**Present options:**
-1. **Redis Mode** - Full parallel agent orchestration (requires Docker)
-2. **File Mode** - Simpler coordination without external dependencies
-3. **Skip** - Set up later with `/popkit:power init`
+```
+Use AskUserQuestion tool with:
+- question: "Would you like to set up Power Mode for multi-agent orchestration?"
+- header: "Power Mode"
+- options:
+  - label: "Redis Mode"
+    description: "Full parallel agent orchestration (requires Docker)"
+  - label: "File Mode"
+    description: "Simpler coordination without external dependencies"
+  - label: "Skip"
+    description: "Set up later with /popkit:power init"
+- multiSelect: false
+```
+
+**NEVER present as plain text** like "1. Redis, 2. File, 3. Skip".
 
 **If Redis Mode selected:**
 ```bash
@@ -227,19 +238,22 @@ Create README.md in each subdirectory explaining purpose and how to add items.
 
 ## Post-Init Recommendations
 
-After initialization:
+After initialization, present next steps using AskUserQuestion:
 
 ```
-Project initialized at .claude/
-
-Recommended next steps:
-1. Review and customize CLAUDE.md
-2. Run /popkit:project analyze for codebase analysis
-3. Run /popkit:project setup for quality gates (pre-commit hooks)
-4. Run /popkit:power init start (if Redis Mode was selected)
-5. Run /popkit:issue list to see GitHub issues with Power Mode recommendations
-
-Would you like me to run any of these?
+Use AskUserQuestion tool with:
+- question: "Project initialized. What would you like to do next?"
+- header: "Next Step"
+- options:
+  - label: "Analyze codebase"
+    description: "Run /popkit:project analyze for deep codebase analysis"
+  - label: "Setup quality gates"
+    description: "Run /popkit:project setup for pre-commit hooks"
+  - label: "View issues"
+    description: "Run /popkit:issue list to see GitHub issues"
+  - label: "Done for now"
+    description: "I'll customize CLAUDE.md manually"
+- multiSelect: false
 ```
 
 ## Integration

@@ -58,6 +58,27 @@ PopKit exists to **orchestrate Claude Code's full power** for real-world develop
 | Confidence-based filtering | 80+ threshold prevents false positives |
 | Progressive disclosure | Load documentation only when needed |
 | Engineering blog alignment | Follow Anthropic's recommended patterns |
+| Interactive prompts | Always use AskUserQuestion for user decisions |
+
+### User Interaction Standard
+
+**All PopKit skills and commands MUST use `AskUserQuestion`** for user decisions:
+
+```
+Use AskUserQuestion tool with:
+- question: Clear question ending with "?"
+- header: Short label (max 12 chars)
+- options: 2-4 choices with labels and descriptions
+- multiSelect: false (unless multiple selections make sense)
+```
+
+**NEVER present options as plain text** like "1. Option A, 2. Option B - type 1 or 2".
+
+Benefits:
+- Arrow key navigation for selection
+- Prevents typos in user responses
+- Consistent UX across all PopKit features
+- "Other" option always available for custom input
 
 ## Repository Structure
 

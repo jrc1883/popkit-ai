@@ -11,19 +11,32 @@ Help turn ideas into fully formed designs and specs through natural collaborativ
 
 Start by understanding the current project context, then ask questions one at a time to refine the idea. Once you understand what you're building, present the design in small sections (200-300 words), checking after each section whether it looks right so far.
 
+## User Interaction Pattern
+
+**ALWAYS use AskUserQuestion** for decisions and clarifications:
+
+```
+Use AskUserQuestion tool with:
+- question: Clear, specific question ending with "?"
+- header: Short label (max 12 chars): "Approach", "Auth", "Database"
+- options: 2-4 choices with labels and descriptions
+- multiSelect: false (unless multiple selections make sense)
+```
+
+**NEVER present options as plain text** like "1. Option A, 2. Option B - type 1 or 2".
+
 ## The Process
 
 **Understanding the idea:**
 - Check out the current project state first (files, docs, recent commits)
-- Ask questions one at a time to refine the idea
-- Prefer multiple choice questions when possible, but open-ended is fine too
+- Ask questions one at a time to refine the idea using AskUserQuestion
 - Only one question per message - if a topic needs more exploration, break it into multiple questions
 - Focus on understanding: purpose, constraints, success criteria
 
 **Exploring approaches:**
-- Propose 2-3 different approaches with trade-offs
-- Present options conversationally with your recommendation and reasoning
-- Lead with your recommended option and explain why
+- Propose 2-3 different approaches with trade-offs using AskUserQuestion
+- Each option should have a clear label and description explaining trade-offs
+- Lead with your recommended option by listing it first
 
 **Presenting the design:**
 - Once you believe you understand what you're building, present the design
@@ -46,7 +59,7 @@ Start by understanding the current project context, then ask questions one at a 
 ## Key Principles
 
 - **One question at a time** - Don't overwhelm with multiple questions
-- **Multiple choice preferred** - Easier to answer than open-ended when possible
+- **Always use AskUserQuestion** - Interactive prompts, never plain text options
 - **YAGNI ruthlessly** - Remove unnecessary features from all designs
 - **Explore alternatives** - Always propose 2-3 approaches before settling
 - **Incremental validation** - Present design in sections, validate each

@@ -34,13 +34,27 @@ For each task:
 When batch complete:
 - Show what was implemented
 - Show verification output
-- Say: "Ready for feedback."
+- Use AskUserQuestion for feedback:
+
+```
+Use AskUserQuestion tool with:
+- question: "Batch complete. How should I proceed?"
+- header: "Feedback"
+- options:
+  - label: "Continue"
+    description: "Looks good, proceed to next batch"
+  - label: "Revise"
+    description: "I have feedback on this batch first"
+  - label: "Pause"
+    description: "Stop here, I'll review more carefully"
+- multiSelect: false
+```
 
 ### Step 4: Continue
-Based on feedback:
-- Apply changes if needed
-- Execute next batch
-- Repeat until complete
+Based on selection:
+- **Continue**: Execute next batch
+- **Revise**: Wait for feedback, apply changes, then continue
+- **Pause**: Stop execution, preserve progress
 
 ### Step 5: Complete Development
 

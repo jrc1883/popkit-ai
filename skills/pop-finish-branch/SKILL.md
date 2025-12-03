@@ -48,20 +48,25 @@ Or ask: "This branch split from main - is that correct?"
 
 ### Step 3: Present Options
 
-Present exactly these 4 options:
+**ALWAYS use AskUserQuestion** - never present plain text numbered options:
 
 ```
-Implementation complete. What would you like to do?
-
-1. Merge back to <base-branch> locally
-2. Push and create a Pull Request
-3. Keep the branch as-is (I'll handle it later)
-4. Discard this work
-
-Which option?
+Use AskUserQuestion tool with:
+- question: "Implementation complete. What would you like to do?"
+- header: "Complete"
+- options:
+  - label: "Merge locally"
+    description: "Merge back to <base-branch> and clean up"
+  - label: "Create PR"
+    description: "Push and create a Pull Request for review"
+  - label: "Keep as-is"
+    description: "Keep the branch, I'll handle it later"
+  - label: "Discard"
+    description: "Delete this work permanently"
+- multiSelect: false
 ```
 
-**Don't add explanation** - keep options concise.
+**NEVER present as plain text** like "1. Merge, 2. PR... type 1 or 2".
 
 ### Step 4: Execute Choice
 
