@@ -73,7 +73,9 @@ skills/                  30 reusable skills (SKILL.md format in subdirectories)
 commands/                15 slash commands for workflows (consolidated with subcommands)
 hooks/                   17 Python hooks (JSON stdin/stdout protocol)
   hooks.json             Hook configuration and event mapping
-  utils/                 Helper modules (flag_parser.py, github_issues.py)
+  utils/                 Stateless utilities (message_builder.py, context_carrier.py, stateless_hook.py)
+  pre_tool_use_stateless.py  Stateless safety checks
+  post_tool_use_stateless.py Stateless result processing
 output-styles/           15+ output format templates (includes schemas/)
 power-mode/              Multi-agent orchestration (Redis or file-based)
   protocol.py            Message types, serialization, guardrails
@@ -248,6 +250,43 @@ Both modes provide:
 - Coordinator agent manages mesh network
 - Guardrails prevent "cheating" (unconventional approaches require human approval)
 - Inspired by ZigBee mesh networks and DeepMind's objective-driven agents
+
+### Stateless Message Composition
+
+Hooks follow a stateless pattern for reliability, testability, and error recovery:
+
+**Message Builder** (`hooks/utils/message_builder.py`):
+- Pure functions for composing Claude API messages
+- `build_user_message()`, `build_assistant_message()`: Basic messages
+- `build_tool_use_message()`, `build_tool_result_message()`: Tool interactions
+- `merge_tool_uses()`, `merge_tool_results()`: Parallel tool handling
+- `rebuild_from_history()`: Reconstruct messages for retry/debugging
+
+**Context Carrier** (`hooks/utils/context_carrier.py`):
+- Immutable `HookContext` dataclass
+- Explicit state passing between hooks (no SQLite or env vars)
+- JSON serialization for persistence between turns
+- `create_context()`, `update_context()`, `serialize_context()`
+
+**Stateless Hook Base** (`hooks/utils/stateless_hook.py`):
+- `StatelessHook` ABC for building hooks
+- No hidden state or external dependencies
+- Full context in, full context out
+
+**Example:**
+```python
+from stateless_hook import StatelessHook
+from context_carrier import HookContext
+
+class MySafetyHook(StatelessHook):
+    def process(self, ctx: HookContext) -> HookContext:
+        # Pure function - no external state
+        if self._is_dangerous(ctx.tool_input):
+            return self.update_context(ctx, hook_output=("safety", {"action": "block"}))
+        return self.update_context(ctx, hook_output=("safety", {"action": "continue"}))
+```
+
+**Tests:** 58 tests in `tests/hooks/` covering message building, context passing, and integration.
 
 ## Installing popkit for Development
 
