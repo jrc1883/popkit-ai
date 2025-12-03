@@ -1,5 +1,5 @@
 ---
-description: Morning health check via MCP (Ready to Code score 0-100)
+description: Morning health check and project-specific generator - Ready to Code score 0-100
 ---
 
 # /popkit:morning - Morning Health Check
@@ -9,17 +9,29 @@ Start your day with a comprehensive project health assessment.
 ## Usage
 
 ```
+/popkit:morning [subcommand] [options]
+```
+
+## Subcommands
+
+| Subcommand | Description |
+|------------|-------------|
+| (default) | Full morning health report |
+| `quick` | Compact one-line summary |
+| `generate` | Create project-specific morning command |
+
+---
+
+## Default: Health Report
+
+```
 /popkit:morning           # Full morning report
 /popkit:morning quick     # Compact summary only
 ```
 
-## Output Style
+### Process
 
-Uses `output-styles/morning-report.md` for formatting.
-
-## Process
-
-### Step 1: Git Status
+#### Step 1: Git Status
 
 ```bash
 git status --porcelain
@@ -34,7 +46,7 @@ Checks:
 - Last 3 commits
 - Remote sync status
 
-### Step 2: Code Quality (if configured)
+#### Step 2: Code Quality (if configured)
 
 Detect and run quality tools if present:
 
@@ -55,7 +67,7 @@ npm test 2>&1 | tail -10
 
 Note: Skip checks for tools not configured in the project.
 
-### Step 3: Service Health (Power Mode)
+#### Step 3: Service Health (Power Mode)
 
 Check if Redis is available for Power Mode:
 
@@ -70,12 +82,7 @@ docker ps --filter name=popkit-redis --format "{{.Names}}" 2>/dev/null
 python -c "import redis; r = redis.Redis(host='localhost', port=6379); r.ping()" 2>/dev/null
 ```
 
-Service status:
-- Docker: running/not installed
-- Redis: running/stopped/not configured
-- Power Mode: ready/unavailable
-
-### Step 4: Calculate Ready to Code Score
+#### Step 4: Calculate Ready to Code Score
 
 | Check | Points | Criteria |
 |-------|--------|----------|
@@ -87,11 +94,9 @@ Service status:
 
 **Total: 100 points**
 
-Projects without certain tools get full points for those checks (don't penalize simpler projects).
+Projects without certain tools get full points for those checks.
 
-Note: Service health (Redis/Power Mode) is informational only and doesn't affect score.
-
-### Step 5: Generate Recommendations
+#### Step 5: Generate Recommendations
 
 Based on issues found:
 - "Pull latest changes" if behind remote
@@ -99,176 +104,133 @@ Based on issues found:
 - "Fix type errors" if TypeScript fails
 - "Fix lint issues" if ESLint fails
 - "Fix failing tests" if tests fail
-- "Start Redis: /popkit:power-init start" if Redis not running (when Power Mode available)
+- "Start Redis: /popkit:power init" if Redis not running
 
-### Step 6: Output Report
-
-Use the morning-report output style:
+### Output Format
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│ 🌅 Morning Report - [Project Name]                          │
-│ [Date] [Time]                                               │
-├─────────────────────────────────────────────────────────────┤
-│ Ready to Code Score: [XX/100] 🟢/🟡/🟠/🔴                   │
-├─────────────────────────────────────────────────────────────┤
-│ Git Status                                                   │
-│ Branch: main                                                 │
-│ Last commit: abc123 - feat: add feature (2 hours ago)       │
-│ Working tree: clean                                         │
-│ Remote sync: up to date                                     │
-├─────────────────────────────────────────────────────────────┤
-│ Code Quality                                                 │
-│ TypeScript: ✓ No errors                                     │
-│ Lint: ✓ Clean                                               │
-│ Tests: ✓ All passing                                        │
-├─────────────────────────────────────────────────────────────┤
-│ Services (Power Mode)                                        │
-│ Docker: ✓ Running                                           │
-│ Redis: ✓ Running (localhost:6379)                          │
-│ Power Mode: ✓ Ready                                         │
-├─────────────────────────────────────────────────────────────┤
-│ Recommendations                                              │
-│ None - you're ready to code!                                │
-└─────────────────────────────────────────────────────────────┘
-```
+Morning Report - [Project Name]
+[Date]
 
-If Redis not running:
-
-```
-├─────────────────────────────────────────────────────────────┤
-│ Services (Power Mode)                                        │
-│ Docker: ✓ Running                                           │
-│ Redis: ✗ Not running                                        │
-│ Power Mode: ⚠ Unavailable                                   │
-├─────────────────────────────────────────────────────────────┤
-│ Recommendations                                              │
-│ 1. Start Redis: /popkit:power-init start                    │
-└─────────────────────────────────────────────────────────────┘
-```
-
-If Docker not installed:
-
-```
-├─────────────────────────────────────────────────────────────┤
-│ Services (Power Mode)                                        │
-│ Docker: ✗ Not installed                                     │
-│ Redis: - (requires Docker)                                  │
-│ Power Mode: - (requires Docker)                             │
-└─────────────────────────────────────────────────────────────┘
-```
-
-## Quick Mode
-
-For quick status (with `quick` argument):
-
-```
-Morning Report: 85/100 🟢
-✓ Git (clean) | ⚠ Lint (2 warnings) | ✓ Tests (passing) | ✓ Power Mode
-Branch: main | Last: feat: add feature (2h ago)
-```
-
-With Redis down:
-
-```
-Morning Report: 85/100 🟢
-✓ Git (clean) | ✓ Lint | ✓ Tests | ⚠ Power Mode (Redis down)
-Branch: main | Last: feat: add feature (2h ago)
-Tip: /popkit:power-init start
-```
-
-## Project-Specific Extension
-
-For project-specific health checks (database, services, etc.), use `/popkit:generate-morning` to create a customized version that includes:
-- Service health checks (Redis, database, etc.)
-- Framework-specific checks (Next.js, Express, etc.)
-- Domain-specific validations (API keys, etc.)
-
-## Examples
-
-**Full report:**
-```
-/popkit:morning
-
-🌅 Morning Report - my-project
-2025-01-15 09:00
-
-Ready to Code Score: 75/100 🟡
-
-Git Status:
-  Branch: feature/auth
-  Last commit: abc123 - feat: add login
-  Uncommitted: 3 files modified
-  Remote: up to date
-
-Code Quality:
-  TypeScript: 2 errors
-  Lint: clean
-  Tests: 45/45 passing
-
-Services (Power Mode):
-  Docker: running
-  Redis: running (localhost:6379)
-  Power Mode: ready
-
-Recommendations:
-1. Fix 2 TypeScript errors before committing
-2. Commit or stash your current changes
-```
-
-**Quick mode:**
-```
-/popkit:morning quick
-
-Morning: 75/100 🟡 | ⚠ TS (2 errors) | ✓ Lint | ✓ Tests | ✓ Power Mode
-Branch: feature/auth | 3 uncommitted files
-```
-
-**With Redis unavailable:**
-```
-/popkit:morning
-
-🌅 Morning Report - my-project
-2025-01-15 09:00
-
-Ready to Code Score: 100/100 🟢
+Ready to Code Score: [XX/100]
 
 Git Status:
   Branch: main
-  Last commit: def456 - docs: update readme
+  Last commit: abc123 - feat: add feature
   Working tree: clean
   Remote: up to date
 
 Code Quality:
-  TypeScript: no errors
-  Lint: clean
-  Tests: all passing
+  TypeScript: No errors
+  Lint: Clean
+  Tests: All passing
 
 Services (Power Mode):
-  Docker: running
-  Redis: not running
-  Power Mode: unavailable
+  Docker: Running
+  Redis: Running (localhost:6379)
+  Power Mode: Ready
 
 Recommendations:
-1. Start Redis for Power Mode: /popkit:power-init start
+  None - you're ready to code!
 ```
+
+### Quick Mode
+
+```
+/popkit:morning quick
+
+Morning: 85/100 | Git (clean) | Lint (2 warnings) | Tests (passing) | Power Mode
+Branch: main | Last: feat: add feature (2h ago)
+```
+
+---
+
+## Subcommand: generate
+
+Create a project-specific morning health check command.
+
+```
+/popkit:morning generate              # Generate for current project
+/popkit:morning generate --nightly    # Also generate nightly cleanup
+```
+
+### What Gets Detected
+
+| Category | Examples |
+|----------|----------|
+| Frameworks | Next.js, Express, Vue, Django, FastAPI |
+| Databases | PostgreSQL, MongoDB, Supabase, Prisma |
+| Cache | Redis, Memcached |
+| Services | Docker, eBay API, Stripe, AWS |
+| Quality | TypeScript, ESLint, Jest, Pytest |
+
+### Process
+
+1. Detect tech stack (frameworks, databases, services)
+2. Identify health check requirements
+3. Determine project command prefix
+4. Generate `.claude/commands/[prefix]:morning.md`
+5. Report findings and offer customization
+
+### Example Output
+
+```
+/popkit:morning generate
+
+Analyzing project...
+
+Tech Stack Detected:
+  Framework: Next.js 14
+  Database: Supabase (local, port 54322)
+  Cache: Redis (port 6379)
+  Quality: TypeScript, ESLint, Jest
+
+Project Prefix: "genesis" (from package.json)
+
+Generating .claude/commands/genesis:morning.md...
+
+Health checks configured:
+  - Next.js dev server (port 3000)
+  - Supabase services (ports 54321-54334)
+  - Redis connection
+  - TypeScript validation
+  - Jest test suite
+
+Command created!
+
+You can now run:
+  /genesis:morning         # Full report
+  /genesis:morning quick   # Quick status
+```
+
+### Generated Command Features
+
+- **Service Health Checks**: Port availability, process status, connection testing
+- **Git Integration**: Branch info, uncommitted changes, remote sync
+- **Quality Gates**: TypeScript errors, lint status, test results
+- **Ready to Code Score**: 0-100 with color-coded status
+
+---
+
+## Output Style
+
+Uses `output-styles/morning-report.md` for formatting.
 
 ## Architecture Integration
 
 | Component | Integration Point |
 |-----------|------------------|
-| **Morning Report Output Style** | `output-styles/morning-report.md` defines format |
-| **Git Tools** | Bash commands for git status, log, remote |
-| **Quality Checks** | TypeScript, ESLint, Test detection and execution |
-| **Power Mode Integration** | Checks Redis status via `setup-redis.py status` |
-| **Recommendations** | Context-aware suggestions including Power Mode setup |
-| **Score Calculation** | 100-point system for codebase readiness |
+| **Morning Report Output Style** | `output-styles/morning-report.md` |
+| **Git Tools** | Bash commands for git status |
+| **Quality Checks** | TypeScript, ESLint, Test detection |
+| **Power Mode Integration** | Redis status check |
+| **Score Calculation** | 100-point system |
+| **Generator Skill** | `pop-morning-generator` |
 
 ## Related Commands
 
 | Command | Purpose |
 |---------|---------|
-| `/popkit:power-init` | Setup Redis for Power Mode |
-| `/popkit:power-mode` | Activate multi-agent orchestration |
-| `/popkit:generate-morning` | Create project-specific morning check |
-| `/popkit:next` | Get context-aware next action recommendations |
+| `/popkit:power init` | Setup Redis for Power Mode |
+| `/popkit:power` | Manage multi-agent orchestration |
+| `/popkit:next` | Get context-aware recommendations |

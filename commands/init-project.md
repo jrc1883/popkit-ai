@@ -88,10 +88,9 @@ Project initialized!
 
 Recommended next steps:
 1. Review and customize CLAUDE.md
-2. Run /popkit:analyze-project for codebase analysis
-3. Run /popkit:setup-precommit for quality gates
-4. Run /popkit:power-init start to start Redis (if Docker installed)
-5. Run /popkit:issues to see GitHub issues with Power Mode recommendations
+2. Run /popkit:morning for project health check
+3. Run /popkit:power init start to start Redis (if Docker installed)
+4. Run /popkit:issue list to see GitHub issues with Power Mode recommendations
 
 Would you like me to run any of these?
 ```
@@ -109,7 +108,6 @@ Would you like me to run any of these?
 
 | Command | Relationship |
 |---------|--------------|
-| `/popkit:power-init` | Start/stop Redis after init |
-| `/popkit:analyze-project` | Deep codebase analysis |
-| `/popkit:setup-precommit` | Quality gates setup |
-| `/popkit:work #N -p` | Work on issue with Power Mode |
+| `/popkit:power init` | Start/stop Redis after init |
+| `/popkit:morning` | Project health check |
+| `/popkit:issue work #N -p` | Work on issue with Power Mode |

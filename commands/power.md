@@ -1,10 +1,10 @@
 ---
-description: Power Mode management - check status, stop orchestration, or start with custom objective
+description: Multi-agent Power Mode orchestration - start, stop, status, and Redis initialization
 ---
 
 # /popkit:power - Power Mode Management
 
-Shortened command for Power Mode status and control. Full functionality available via `/popkit:power-mode`.
+Manage multi-agent orchestration via Redis pub/sub for complex tasks requiring parallel agent collaboration.
 
 ## Usage
 
@@ -14,15 +14,26 @@ Shortened command for Power Mode status and control. Full functionality availabl
 
 ## Subcommands
 
-### status
+| Subcommand | Description |
+|------------|-------------|
+| `status` | Check current Power Mode status (default) |
+| `start` | Start Power Mode with objective |
+| `stop` | Stop Power Mode gracefully |
+| `init` | Initialize Redis infrastructure |
 
-Check current Power Mode status:
+---
+
+## Subcommand: status (default)
+
+Check current Power Mode status.
 
 ```
+/popkit:power
 /popkit:power status
 ```
 
-Output when active:
+### Output When Active
+
 ```
 [+] POWER MODE ACTIVE
 
@@ -49,32 +60,112 @@ Patterns Learned: 3
 
 Commands:
   /popkit:power stop    Stop Power Mode
-  /popkit:work #11      Continue current issue
+  /popkit:issue work #11      Continue current issue
 ```
 
-Output when inactive:
+### Output When Inactive
+
 ```
 [i] POWER MODE INACTIVE
 
 No active Power Mode session.
 
 To start Power Mode:
-  /popkit:work #N -p     Work on issue with Power Mode
-  /popkit:power "task"   Start with custom objective
-  /popkit:issues --power List issues recommending Power Mode
+  /popkit:issue work #N -p     Work on issue with Power Mode
+  /popkit:power start "task"   Start with custom objective
+  /popkit:issue list --power   List issues recommending Power Mode
 
 Redis Status: localhost:16379 [OK]
 ```
 
-### stop
+---
 
-Stop Power Mode gracefully:
+## Subcommand: start
+
+Start Power Mode with an objective.
+
+```
+/popkit:power start "Build user authentication with tests"
+/popkit:power start "Create REST API" --phases explore,design,implement,test
+/popkit:power start "Refactor database layer" --agents reviewer,architect,tester
+```
+
+### Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `[objective]` | Task description (required) |
+| `--phases` | Comma-separated phase names (default: explore,design,implement,test,review) |
+| `--agents` | Comma-separated agent names to use |
+| `--timeout` | Max runtime in minutes (default: 30) |
+
+### Prerequisites
+
+**Redis must be running:**
+```bash
+# Check Redis
+/popkit:power init
+
+# Start if needed
+/popkit:power init start
+```
+
+### Process
+
+1. **Check Prerequisites**: Verify Redis connection
+2. **Parse Objective**: Extract description, success criteria, phases, boundaries
+3. **Start Coordinator**: Enable power mode and start coordinator process
+4. **Display Configuration**: Show phases, agents, boundaries
+5. **Begin Orchestration**: Dispatch initial agents
+
+### Output
+
+```
+POWER MODE ACTIVATED
+
+Session: abc123
+Objective: Build user authentication with tests
+
+Phases:
+1. explore   - Analyze codebase and requirements
+2. design    - Plan implementation
+3. implement - Build the feature
+4. test      - Write and run tests
+5. review    - Final review
+
+Boundaries:
+  Files: src/auth/**, tests/auth/**
+  Protected: .env*, secrets/
+  Human approval: deploy, push main
+
+Check-ins: Every 5 tool calls
+Timeout: 30 minutes
+
+Redis: localhost:6379 [OK]
+Channels: pop:broadcast, pop:insights, pop:heartbeat
+
+Ready to orchestrate. Agents will check in periodically.
+```
+
+---
+
+## Subcommand: stop
+
+Stop Power Mode gracefully.
 
 ```
 /popkit:power stop
 ```
 
-Output:
+### Process
+
+1. Send stop signal to coordinator
+2. Wait for active agents to complete current tool call
+3. Save session state
+4. Clean up Redis channels
+
+### Output
+
 ```
 [+] STOPPING POWER MODE
 
@@ -97,71 +188,107 @@ Session transcript saved to:
   ~/.claude/power-mode-sessions/abc123.json
 
 Resume later with:
-  /popkit:work #11
+  /popkit:issue work #11
 ```
 
-### Custom Objective (no issue)
+---
 
-Start Power Mode with a custom objective (not tied to GitHub issue):
+## Subcommand: init
+
+Initialize Redis infrastructure for Power Mode.
 
 ```
-/popkit:power "Build user authentication with OAuth"
-/popkit:power "Refactor database layer" --phases design,implement,test
+/popkit:power init              # Check status and setup if needed
+/popkit:power init start        # Start Redis
+/popkit:power init stop         # Stop Redis
+/popkit:power init restart      # Restart Redis
+/popkit:power init debug        # Start with Redis Commander (http://localhost:8081)
+/popkit:power init test         # Test Redis connectivity
 ```
 
-Output:
+### Prerequisites
+
+- Docker installed and running
+- Docker Compose (V1 or V2)
+
+If Docker is not installed:
+- **macOS**: Install Docker Desktop from https://docs.docker.com/desktop/mac/install/
+- **Windows**: Install Docker Desktop from https://docs.docker.com/desktop/windows/install/
+- **Linux**: Install Docker Engine from https://docs.docker.com/engine/install/
+
+### Init Subcommands
+
+#### Default (status + auto-start)
+
 ```
-[+] POWER MODE ACTIVATED
+/popkit:power init
 
-Objective: Build user authentication with OAuth
-Source: Custom (no GitHub issue)
+Checking Docker availability...
+Docker is installed and running
+Starting Redis container...
+Redis container started
+Waiting for Redis to be healthy...
+Redis is running and accessible
 
-Configuration:
-  Phases: explore -> design -> implement -> test -> review
-  Agents: Auto-selected based on objective
-  Timeout: 30 minutes
+Ready for Power Mode!
 
-Redis: localhost:16379 [OK]
-Status line: [POP] Phase: explore (1/5) [----------] 0%
-
-Starting Phase 1: Explore...
+Next steps:
+1. Run /popkit:power start "objective" to activate
+2. Run /popkit:power init debug to open Redis Commander
 ```
 
-## Options for Custom Objective
-
-| Option | Description |
-|--------|-------------|
-| `--phases` | Override phases: `--phases design,implement,test` |
-| `--agents` | Specify agents: `--agents reviewer,tester` |
-| `--timeout` | Max runtime: `--timeout 45` (minutes) |
-
-## Examples
+#### start
 
 ```bash
-# Check status
-/popkit:power status
-
-# Stop Power Mode
-/popkit:power stop
-
-# Start with custom objective
-/popkit:power "Add dark mode toggle"
-
-# Custom objective with specific phases
-/popkit:power "Optimize database queries" --phases analyze,implement,test
-
-# Custom objective with specific agents
-/popkit:power "Security audit" --agents security-auditor
+cd power-mode/
+python setup-redis.py start
 ```
 
-## Relationship to Other Commands
+Pulls Redis 7 Alpine image, creates container, exposes port 6379, creates persistent volume.
 
-| Command | Relationship |
-|---------|--------------|
-| `/popkit:power-mode` | Full alias - same functionality |
-| `/popkit:work #N` | Start Power Mode from GitHub issue |
-| `/popkit:issues` | List issues to find candidates |
-| `/popkit:init` | Set up Power Mode (Redis) |
+#### stop
+
+```bash
+cd power-mode/
+python setup-redis.py stop
+```
+
+Gracefully stops Redis container (data persists in volume).
+
+#### debug
+
+```
+/popkit:power init debug
+
+Starting Redis Commander at http://localhost:8081
+
+Inspect:
+- Active pub/sub subscriptions
+- Agent heartbeats
+- Message queues
+- Insight pool
+```
+
+#### test
+
+```
+/popkit:power init test
+```
+
+Verifies Redis connectivity, pub/sub functionality, and all Power Mode channels.
+
+### Redis Channels
+
+| Channel | Purpose |
+|---------|---------|
+| pop:broadcast | Messages to all agents |
+| pop:heartbeat | Agent health checks |
+| pop:results | Task completion results |
+| pop:insights | Shared discoveries between agents |
+| pop:coordinator | Coordinator commands |
+| pop:human | Requests for human decisions |
+
+---
 
 ## Status Line Integration
 
@@ -178,12 +305,69 @@ Components:
 - Progress bar - Visual completion
 - Commands hint - Quick reference
 
+---
+
+## Examples
+
+```bash
+# Check Power Mode status
+/popkit:power
+/popkit:power status
+
+# Initialize Redis
+/popkit:power init
+/popkit:power init start
+
+# Start with custom objective
+/popkit:power start "Add dark mode toggle"
+
+# Custom objective with specific phases
+/popkit:power start "Optimize database queries" --phases analyze,implement,test
+
+# Custom objective with specific agents
+/popkit:power start "Security audit" --agents security-auditor
+
+# Stop Power Mode
+/popkit:power stop
+
+# Debug Redis
+/popkit:power init debug
+```
+
+---
+
+## File-Based Fallback
+
+Power Mode works without Redis using file-based coordination:
+- Uses shared JSON file for coordination
+- Good for 2-3 agents, development, learning
+- Auto-activates when Redis unavailable
+- Zero setup required
+
+---
+
+## Skill Reference
+
+This command activates the `pop-power-mode` skill. For detailed documentation see: `skills/pop-power-mode/SKILL.md`
+
 ## Architecture Integration
 
 | Component | Integration |
 |-----------|-------------|
-| Status Check | `power-mode/coordinator.py` |
-| Stop Signal | Redis pub/sub or file-based |
-| State File | `~/.claude/power-mode-state.json` |
-| Session Log | `~/.claude/power-mode-sessions/` |
-| Status Line | `power-mode/statusline.py` |
+| **Coordinator** | `power-mode/coordinator.py` |
+| **Auto-Coordinator** | `power-mode/coordinator_auto.py` |
+| **File Fallback** | `power-mode/file_fallback.py` |
+| **Check-In Hook** | `power-mode/checkin-hook.py` |
+| **Status Line** | `power-mode/statusline.py` |
+| **Config** | `power-mode/config.json` |
+| **Docker Setup** | `power-mode/docker-compose.yml` |
+| **Setup Script** | `power-mode/setup-redis.py` |
+| **State File** | `~/.claude/power-mode-state.json` |
+
+## Related Commands
+
+| Command | Purpose |
+|---------|---------|
+| `/popkit:issue work #N -p` | Work on issue with Power Mode |
+| `/popkit:issue list --power` | List issues recommending Power Mode |
+| `/popkit:morning` | Includes Redis health check |

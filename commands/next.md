@@ -59,13 +59,13 @@ Use the `next-action-report` output style for consistent formatting.
 ## Recommended Actions
 
 ### 1. Commit Your Current Work
-**Command:** `/popkit:commit`
+**Command:** `/popkit:git commit`
 **Why:** You have 5 uncommitted files including auth.ts and routes/
 **What it does:** Auto-generates commit message matching repo style
 **Benefit:** Clean working directory, changes safely versioned
 
 ### 2. Push to Remote
-**Command:** `git push` or include in `/popkit:commit-push-pr`
+**Command:** `/popkit:git push` or `/popkit:git pr`
 **Why:** Branch is 2 commits ahead of origin
 **What it does:** Syncs local work to remote
 **Benefit:** Backup, collaboration, CI triggers
@@ -80,10 +80,10 @@ Use the `next-action-report` output style for consistent formatting.
 
 | If you want to... | Use this command |
 |-------------------|------------------|
-| Commit changes | `/popkit:commit` |
-| Review code | `/popkit:review` |
+| Commit changes | `/popkit:git commit` |
+| Review code | `/popkit:git review` |
 | Get project health | `/popkit:morning` |
-| Plan a feature | `/popkit:brainstorm` |
+| Plan a feature | `/popkit:design` |
 | Debug an issue | `/popkit:debug` |
 ```
 

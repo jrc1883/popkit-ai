@@ -27,7 +27,7 @@ PopKit exists to **orchestrate Claude Code's full power** for real-world develop
 
 3. **Programmatic Chaining**
    - Simple tasks chained together → orchestrated workflows
-   - Example: GitHub push + feature update as unified `/popkit:commit-push-pr`
+   - Example: GitHub push + feature update as unified `/popkit:git pr`
    - Follows Claude Code engineering blog best practices
    - Context preservation for long-running processes
 
@@ -70,10 +70,11 @@ agents/                  30 agent definitions with tiered activation
   tier-2-on-demand/      17 specialized agents (including power-coordinator)
   feature-workflow/      2 agents for 7-phase feature development
 skills/                  30 reusable skills (SKILL.md format in subdirectories)
-commands/                28 slash commands for workflows
-hooks/                   16 Python hooks (JSON stdin/stdout protocol)
+commands/                15 slash commands for workflows (consolidated with subcommands)
+hooks/                   17 Python hooks (JSON stdin/stdout protocol)
   hooks.json             Hook configuration and event mapping
-output-styles/           14 output format templates
+  utils/                 Helper modules (flag_parser.py, github_issues.py)
+output-styles/           15+ output format templates (includes schemas/)
 power-mode/              Multi-agent orchestration (Redis or file-based)
   protocol.py            Message types, serialization, guardrails
   coordinator.py         Mesh brain with objective tracking
@@ -132,7 +133,7 @@ Three skills manage state between sessions (invoke via Skill tool):
 
 Two-tier approach for daily health checks:
 - `/popkit:morning`: Generic check (git, tests, lint) - works on any project
-- `/popkit:generate-morning`: Creates project-specific `[prefix]:morning` with:
+- `/popkit:morning generate`: Creates project-specific `[prefix]:morning` with:
   - Service health checks (detected ports, databases)
   - Framework-specific validations
   - Domain checks (API keys, external services)
@@ -147,7 +148,7 @@ Parallel agent collaboration with two backend options:
 - Real-time pub/sub messaging between agents
 - Sync barriers between workflow phases
 - Supports 6+ parallel agents
-- Requires Docker: `/popkit:power-init start`
+- Requires Docker: `/popkit:power init start`
 
 **File-Based Mode** (No Dependencies):
 - Uses shared JSON file for coordination
@@ -218,24 +219,44 @@ npm run build
 | `power-mode/file_fallback.py` | File-based fallback (no Redis needed) |
 | `power-mode/checkin-hook.py` | Periodic agent check-ins |
 | `power-mode/setup-redis.py` | Cross-platform Redis management |
+| `power-mode/statusline.py` | Visual Power Mode status line display |
+| `hooks/utils/flag_parser.py` | Centralized command flag parsing |
+| `hooks/utils/github_issues.py` | GitHub issue guidance parsing |
 
 ## Version History
 
 **Note:** Popkit uses `0.x.y` versioning until stable. Version `1.0.0` will mark API stability.
 
-### v0.9.0 (Current)
+### v0.9.2 (Current) - Deep Command Consolidation
+
+- **Further Consolidation** - Reduced 22 commands to 15 via additional subcommand merging
+  - `/popkit:ci` (new) from `run` + `release` → `run list/view/rerun/watch/cancel/download/logs`, `release create/list/view/edit/delete/changelog`
+  - `/popkit:design` (new) from `brainstorm` + `prd` → `brainstorm`, `prd` subcommands
+  - `/popkit:debug` enhanced with `code` (default) + `routing` subcommands (merged `routing-debug`)
+  - `/popkit:plugin` (new) from `auto-docs` + `sync` + `plugin-test` → `test`, `docs`, `sync` subcommands
+  - `/popkit:git` enhanced with `pr` management (`list/view/merge/checkout/diff/ready/update`) + `review` subcommand
+- **Removed Redundancy** - Merged `pr` and `review` into `git` command
+- **Final Count** - 15 top-level commands with comprehensive subcommand structure
+
+### v0.9.1 - Initial Command Consolidation
+
+- **Command Consolidation** - Reduced 31 commands to 22 via subcommand pattern
+  - `/popkit:morning` + `generate-morning` → `/popkit:morning` with `generate` subcommand
+  - `/popkit:power` + `power-mode` + `power-init` → `/popkit:power` with `status`, `start`, `stop`, `init` subcommands
+  - `/popkit:issue` + `issues` + `work` → `/popkit:issue` with `list`, `view`, `create`, `work`, `close`, `comment`, `edit`, `link` subcommands
+  - `/popkit:plan` (new) from `write-plan` + `execute-plan` → `write`, `execute`, `list`, `view` subcommands
+  - `/popkit:git` (new) from `commit` + `commit-push-pr` + `prune-branches` + `finish-branch` → `commit`, `push`, `pr`, `prune`, `finish` subcommands
+- **Improved Discoverability** - Related commands grouped under parent command
+- **Consistent Patterns** - All commands now follow subcommand structure
+
+### v0.9.0
 
 - **Power Mode Enhancement with GitHub Issue Integration**
-  - New unified command architecture: `/popkit:work #N -p`, `/popkit:issues`, `/popkit:power`
+  - New unified command architecture: `/popkit:issue work #N -p`
   - Power Mode as flag modifier (`-p`/`--power`, `--solo`) on issue commands
   - Status line integration: `[POP] #N Phase: X (N/M) [####--] %` when active
-- **New Commands**
-  - `commands/work.md`: Work on GitHub issue with optional Power Mode
-  - `commands/issues.md`: List issues with Power Mode recommendations
-  - `commands/power.md`: Shortened Power Mode management (status/stop)
 - **Flag Parsing Utility** (`hooks/utils/flag_parser.py`)
   - Centralized parsing for `-p`, `--power`, `--solo`, `--phases`, `--agents` flags
-  - Supports `/popkit:work`, `/popkit:issues`, `/popkit:power` commands
 - **Status Line Script** (`power-mode/statusline.py`)
   - Visual Power Mode indicator with phase progress
   - ANSI color output for terminal display
@@ -279,15 +300,15 @@ npm run build
   - `coordinator_auto.py`: Auto-detects Redis vs file-based mode
   - Zero setup required for development/learning
   - Good for 2-3 agents without Docker dependency
-- **Power Init Command** (`/popkit:power-init`): Redis setup and management
+- **Power Init** (now `/popkit:power init`): Redis setup and management
   - Docker-based Redis with one command
-  - Redis Commander for debugging (`--debug`)
+  - Redis Commander for debugging (`init debug`)
   - Cross-platform setup script
 - **Bug Fix**: Fixed `pre-tool-use.py` attribute mismatch (`coordination_rules`)
 
 ### v0.7.0
 
-- **Pop Power Mode** (`/popkit:power-mode`): Multi-agent orchestration via Redis pub/sub
+- **Pop Power Mode** (now `/popkit:power start`): Multi-agent orchestration via Redis pub/sub
   - Parallel agent collaboration with shared context
   - Periodic check-ins every N tool calls (push state, pull insights)
   - Sync barriers between workflow phases
@@ -317,55 +338,36 @@ npm run build
 - **Enhanced Command Structure**: All commands now include architecture integration tables
 - **New Knowledge Subcommand**: Added `/popkit:knowledge search <query>`
 
-### Previous (1.x Legacy)
+---
 
-The 1.x versions were pre-stable releases that have been reset:
-- 1.5.0 → Became 0.6.0
-- 1.4.x → Knowledge sync, chain visualization, update notifier
-- 1.3.x → Output validation, sync command, error tracking
-- 1.2.x → Morning health check, tier 1+2 pattern
-- 1.1.x → Auto-docs, plugin self-testing, routing debugger
+## Legacy Version History (1.x → 0.6.0 Reset)
 
-## Features (from 1.4.0)
+> **Note:** Popkit originally started at v1.0.0 but reset to v0.6.0 to indicate pre-stable status.
+> The features below are retained in current versions; this is historical context only.
 
-- **Knowledge Sync** (`/popkit:knowledge`): Configurable external documentation syncing with TTL-based caching
-  - Default sources: Claude Code Engineering Blog, Claude Code Documentation
-  - Add/remove sources via terminal command
-  - Automatic sync on session start with 24-hour cache
-  - `pop-knowledge-lookup` skill for agent knowledge queries
-- **Chain Visualization** (`/popkit:workflow-viz`): Workflow visualization with validation and metrics
-  - ASCII diagrams showing agent chains
-  - Validation of workflow definitions
-  - Performance metrics tracking (timing, success rates, bottlenecks)
-  - `pop-chain-management` skill for programmatic access
-- **Update Notifier**: Automatic plugin update checks on session start
-  - 24-hour TTL cache to avoid repeated API calls
-  - Non-blocking with silent failure
-  - Clear notification with update command
+**v1.5.0** → Reset to **v0.6.0**
 
-### v1.3.0
+**v1.4.0 Features** (now in current):
+- Knowledge sync with TTL-based caching
+- Chain visualization with metrics
+- Update notifier
 
-- **Output Validation Layer**: JSON schemas for agent outputs with `output-validator.py` hook
-- **Sync Command** (`/popkit:sync`): Validate plugin integrity (Scan → Compare → Report → Apply)
-- **Error Tracking**: Lessons learned system with GitHub issue integration
-- **E2E Testing Framework**: 10 end-to-end test scenarios in `tests/e2e/`
-- **Validation Engine Skill** (`pop-validation-engine`): Reusable validation pattern
-- **Enhanced Routing**: Added lint/eslint/prettier/cleanup keywords and config file patterns
+**v1.3.0 Features** (now in current):
+- Output validation layer with JSON schemas
+- Sync command for plugin integrity
+- E2E testing framework
 
-### v1.2.0
+**v1.2.0 Features** (now in current):
+- Morning health check with "Ready to Code" score
+- Morning generator for project-specific commands
+- Tier 1 + Tier 2 pattern
 
-- **Morning Health Check** (`/popkit:morning`): Universal morning routine with "Ready to Code" score
-- **Morning Generator** (`/popkit:generate-morning`): Create project-specific morning commands
-- **Tier 1 + Tier 2 Pattern**: Generic commands that generate project-specific versions
-
-### v1.1.0
-
-- **Auto-Documentation** (`/popkit:auto-docs`): Generate and sync documentation
-- **Plugin Self-Testing** (`/popkit:plugin-test`): Validate all plugin components
-- **Routing Debugger** (`/popkit:routing-debug`): Debug agent selection logic
-- **SKILL.md Format**: Skills now use directory structure (`skills/name/SKILL.md`)
-- **JSON Hook Protocol**: All hooks use stdin/stdout JSON instead of argv
-- **MCP Configuration**: `.mcp.json` for Model Context Protocol integration
+**v1.1.0 Features** (now in current):
+- Auto-documentation generation
+- Plugin self-testing
+- Routing debugger
+- SKILL.md format in directories
+- JSON hook protocol
 
 ## Conventions
 
