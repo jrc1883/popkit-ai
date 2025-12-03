@@ -510,6 +510,44 @@ class PostToolUseHook:
         
         return result
 
+def check_stop_reason(input_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Check and handle Claude API stop reasons.
+
+    Stop reasons:
+    - end_turn: Normal completion
+    - tool_use: Tool execution requested (expected in this context)
+    - max_tokens: Response was truncated
+    - stop_sequence: Custom stop sequence hit
+
+    Returns dict with:
+    - truncated: bool
+    - warning: str or None
+    - suggestion: str or None
+    """
+    result = {
+        "truncated": False,
+        "warning": None,
+        "suggestion": None,
+        "stop_reason": None
+    }
+
+    stop_reason = input_data.get("stop_reason")
+    if not stop_reason:
+        return result
+
+    result["stop_reason"] = stop_reason
+
+    if stop_reason == "max_tokens":
+        result["truncated"] = True
+        result["warning"] = "Response was truncated (max_tokens reached)"
+        result["suggestion"] = "Output may be incomplete. Consider: retry with shorter context, or continue from last point."
+    elif stop_reason == "stop_sequence":
+        result["warning"] = "Custom stop sequence was hit"
+    # end_turn and tool_use are normal, no warnings needed
+
+    return result
+
+
 def main():
     """Main entry point for the hook - JSON stdin/stdout protocol"""
     try:
@@ -521,6 +559,13 @@ def main():
         tool_result = input_data.get("tool_response", {})
         execution_time = input_data.get("execution_time", 0.0)
 
+        # Check stop reason for truncation/issues
+        stop_info = check_stop_reason(input_data)
+        if stop_info["warning"]:
+            print(f"⚠️  {stop_info['warning']}", file=sys.stderr)
+        if stop_info["suggestion"]:
+            print(f"💡 {stop_info['suggestion']}", file=sys.stderr)
+
         if not tool_name:
             response = {"error": "No tool_name provided in input"}
             print(json.dumps(response))
@@ -528,6 +573,9 @@ def main():
 
         hook = PostToolUseHook()
         result = hook.process_tool_completion(tool_name, tool_args, tool_result, execution_time)
+
+        # Add stop reason info to result
+        result["stop_info"] = stop_info
 
         # Build JSON response
         response = {
@@ -537,8 +585,13 @@ def main():
             "analysis": result.get("analysis", {}),
             "followup_agents": result.get("followup_agents", []),
             "recommendations": result.get("recommendations", []),
-            "metrics": result.get("metrics", {})
+            "metrics": result.get("metrics", {}),
+            "stop_info": result.get("stop_info", {})
         }
+
+        # Add truncation warning to recommendations if applicable
+        if stop_info.get("truncated"):
+            response["recommendations"].insert(0, stop_info["suggestion"])
 
         # Output analysis and recommendations to stderr for visibility
         if result["analysis"].get("issues"):

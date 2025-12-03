@@ -351,12 +351,42 @@ class AgentOrchestrator:
         return ' && '.join(commands) if commands else 'claude agent workflow-optimizer-agent'
 
 
+def check_stop_reason(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Check and handle Claude API stop reasons.
+
+    Returns dict with truncation info and recovery suggestions.
+    """
+    result = {
+        "truncated": False,
+        "stop_reason": data.get("stop_reason"),
+        "warning": None,
+        "recovery_action": None
+    }
+
+    stop_reason = result["stop_reason"]
+    if stop_reason == "max_tokens":
+        result["truncated"] = True
+        result["warning"] = "Previous response was truncated"
+        result["recovery_action"] = "continue_from_checkpoint"
+    elif stop_reason == "stop_sequence":
+        result["warning"] = "Custom stop sequence triggered"
+
+    return result
+
+
 def main():
     """Main entry point for hook - JSON stdin/stdout protocol"""
     try:
         # Read JSON input from stdin
         input_data = sys.stdin.read()
         data = json.loads(input_data) if input_data.strip() else {}
+
+        # Check for stop reason issues
+        stop_info = check_stop_reason(data)
+        if stop_info["warning"]:
+            print(f"⚠️  {stop_info['warning']}", file=sys.stderr)
+        if stop_info["truncated"]:
+            print("💡 Consider breaking task into smaller steps", file=sys.stderr)
 
         # Extract prompt from JSON
         prompt = data.get("prompt", data.get("user_prompt", ""))
@@ -382,6 +412,13 @@ def main():
         # Add decision field for hook protocol compliance
         result["decision"] = "allow"
         result["status"] = "success"
+        result["stop_info"] = stop_info
+
+        # If truncated, add recovery recommendation
+        if stop_info["truncated"]:
+            if "recommendations" not in result.get("plan", {}):
+                result["plan"]["recommendations"] = []
+            result["plan"]["recommendations"].insert(0, "Previous response was truncated - consider smaller task scope")
 
         print(json.dumps(result, indent=2))
         return 0
