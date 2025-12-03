@@ -57,7 +57,7 @@ Power Mode provides:
 - Multi-agent orchestration via Redis pub/sub
 - File-based fallback (works without Docker)
 - Status line integration (`[POP] #N Phase: X`)
-- Issue-driven workflows with `/popkit:work #N -p`
+- Issue-driven workflows with `/popkit:issue work #N -p`
 
 ## Example
 
@@ -76,7 +76,7 @@ Creating .claude/ structure...
 Would you like to set up Power Mode for multi-agent orchestration?
   - Redis Mode: Full parallel agents (requires Docker)
   - File Mode: Simpler coordination (no dependencies)
-  - Skip: Set up later with /popkit:power-init
+  - Skip: Set up later with /popkit:power init
 
 [User selects Redis Mode]
 
@@ -108,6 +108,7 @@ Would you like me to run any of these?
 
 | Command | Relationship |
 |---------|--------------|
+| `/popkit:project` | Post-init analysis, MCP generation, quality setup |
 | `/popkit:power init` | Start/stop Redis after init |
 | `/popkit:morning` | Project health check |
 | `/popkit:issue work #N -p` | Work on issue with Power Mode |

@@ -131,9 +131,18 @@ Initialize empty status:
     "allowBash": true,
     "allowFileOperations": true,
     "allowGit": true
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "python power-mode/statusline.py",
+    "padding": 0
   }
 }
 ```
+
+**Note:** The statusLine configuration enables Power Mode status display when active. It shows:
+- `[POP] #N Phase: X (N/M) [####------] 40%` when Power Mode is running
+- Empty when Power Mode is inactive (no visual clutter)
 
 ### Step 6: Ask About Power Mode Setup
 
@@ -142,7 +151,7 @@ Offer Power Mode setup for multi-agent orchestration:
 **Present options:**
 1. **Redis Mode** - Full parallel agent orchestration (requires Docker)
 2. **File Mode** - Simpler coordination without external dependencies
-3. **Skip** - Set up later with `/popkit:power-init`
+3. **Skip** - Set up later with `/popkit:power init`
 
 **If Redis Mode selected:**
 ```bash
@@ -160,7 +169,7 @@ cat > .claude/power-mode-state.json << 'EOF'
   "active": false,
   "session_id": null,
   "mode": "file",
-  "note": "File-based Power Mode. Activate with /popkit:work #N -p"
+  "note": "File-based Power Mode. Activate with /popkit:issue work #N -p"
 }
 EOF
 echo "[+] Power Mode configured for file-based coordination"
@@ -225,10 +234,10 @@ Project initialized at .claude/
 
 Recommended next steps:
 1. Review and customize CLAUDE.md
-2. Run /popkit:analyze-project for codebase analysis
-3. Run /popkit:setup-precommit for quality gates
-4. Run /popkit:power-init start (if Redis Mode was selected)
-5. Run /popkit:issues to see GitHub issues with Power Mode recommendations
+2. Run /popkit:project analyze for codebase analysis
+3. Run /popkit:project setup for quality gates (pre-commit hooks)
+4. Run /popkit:power init start (if Redis Mode was selected)
+5. Run /popkit:issue list to see GitHub issues with Power Mode recommendations
 
 Would you like me to run any of these?
 ```
@@ -240,8 +249,8 @@ Would you like me to run any of these?
 - Manual skill invocation
 
 **Followed by:**
-- **/popkit:analyze-project** - Deep codebase analysis
-- **/popkit:generate-mcp** - Project-specific MCP server
-- **/popkit:setup-precommit** - Pre-commit hooks
-- **/popkit:power-init** - Start Redis for Power Mode
-- **/popkit:issues** - View issues with orchestration recommendations
+- **/popkit:project analyze** - Deep codebase analysis
+- **/popkit:project mcp** - Generate project-specific MCP server
+- **/popkit:project setup** - Configure pre-commit hooks
+- **/popkit:power init** - Start Redis for Power Mode
+- **/popkit:issue list** - View issues with orchestration recommendations
