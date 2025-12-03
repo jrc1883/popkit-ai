@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: "Use when completing tasks, implementing major features, or before merging to verify work meets requirements - reviews implementation against plan or requirements with confidence-based issue filtering (80+ threshold)"
+description: "Confidence-based code review that filters issues to 80+ threshold, eliminating false positives and noise. Reviews implementation against plan or requirements for bugs, quality issues, and project conventions. Use after completing major features, before merging to main, or after each task in multi-step workflows. Do NOT use for quick fixes, single-line changes, or when you need immediate feedback - the thorough review adds overhead best reserved for significant changes."
 ---
 
 # Code Review with Confidence Filtering

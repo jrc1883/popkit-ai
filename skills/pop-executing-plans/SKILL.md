@@ -1,6 +1,6 @@
 ---
 name: executing-plans
-description: "Use when partner provides a complete implementation plan to execute in controlled batches with review checkpoints - loads plan, reviews critically, executes tasks in batches, reports for review between batches"
+description: "Controlled batch execution of implementation plans with review checkpoints between phases. Loads plan, critically reviews for issues, executes tasks in batches, then pauses for architect feedback before continuing. Use when you have a complete implementation plan from brainstorming/writing-plans and want structured execution with quality gates. Do NOT use for ad-hoc implementation, exploratory coding, or when you don't have a formal plan - just implement directly with code review at the end."
 ---
 
 # Executing Plans

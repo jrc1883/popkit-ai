@@ -1,6 +1,6 @@
 ---
 name: brainstorming
-description: "Use when creating or developing anything, before writing code or implementation plans - refines rough ideas into fully-formed designs through structured Socratic questioning, alternative exploration, and incremental validation"
+description: "Collaborative design refinement that transforms rough ideas into fully-formed specifications through Socratic questioning. Explores alternatives, validates incrementally, and presents designs in digestible chunks for feedback. Use before writing code or implementation plans when requirements are unclear or multiple approaches exist. Do NOT use when requirements are already well-defined, you're implementing a known pattern, or making small changes - proceed directly to implementation instead."
 ---
 
 # Brainstorming Ideas Into Designs
