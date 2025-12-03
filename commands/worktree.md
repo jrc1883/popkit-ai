@@ -87,13 +87,60 @@ Clean up stale worktrees:
 
 Removes worktrees with deleted directories.
 
-## Integration
+## Architecture Integration
 
-Uses **popkit:using-git-worktrees** skill for:
-- Directory selection logic
-- .gitignore verification
-- Project setup detection
-- Test verification
+| Component | Integration |
+|-----------|-------------|
+| Skill | `skills/pop-worktrees/SKILL.md` |
+| Git Worktrees | `git worktree add/list/remove/prune` commands |
+| Directory Structure | Creates `.worktrees/` in project root |
+| Branch Management | Creates feature branches with `-b` flag |
+| Project Detection | Detects npm/cargo/pip for dependency installation |
+| Test Verification | Runs detected test framework after setup |
+| .gitignore | Verifies `.worktrees/` is ignored |
+| Safety Checks | Warns on uncommitted changes before removal |
+| Hooks | Can trigger `pre-tool-use.py` for safety validation |
+
+## Executable Commands
+
+### Create Worktree
+```bash
+# Create worktree directory
+mkdir -p .worktrees
+
+# Add worktree with new branch
+git worktree add .worktrees/<name> -b <name>
+
+# Or from specific base branch
+git worktree add .worktrees/<name> -b <name> origin/main
+
+# Setup dependencies
+cd .worktrees/<name> && npm install  # Node.js
+cd .worktrees/<name> && pip install -e .  # Python
+cd .worktrees/<name> && cargo build  # Rust
+```
+
+### List Worktrees
+```bash
+git worktree list
+```
+
+### Remove Worktree
+```bash
+# Check for uncommitted changes first
+cd .worktrees/<name> && git status --porcelain
+
+# Remove worktree
+git worktree remove .worktrees/<name>
+
+# Optionally delete branch
+git branch -d <name>
+```
+
+### Prune Stale
+```bash
+git worktree prune
+```
 
 ## Examples
 

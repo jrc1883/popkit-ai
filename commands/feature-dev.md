@@ -178,13 +178,93 @@ Options:
 Which option?
 ```
 
-## Integration
+## Architecture Integration
 
-The workflow uses these agents and skills:
-- **code-explorer** - Phase 2
-- **code-architect** - Phase 4
-- **code-reviewer** - Phase 6
-- **popkit:brainstorming** - Phase 1
-- **popkit:writing-plans** - Phase 5
-- **popkit:executing-plans** - Phase 5
-- **popkit:finishing-a-development-branch** - Phase 7
+| Component | Integration |
+|-----------|-------------|
+| Agent: code-explorer | Phase 2 - Codebase exploration |
+| Agent: code-architect | Phase 4 - Architecture design |
+| Agent: code-reviewer | Phase 6 - Code review |
+| Skill: pop-brainstorming | Phase 1 - Discovery and ideation |
+| Skill: pop-writing-plans | Phase 5 - Implementation plan generation |
+| Skill: pop-executing-plans | Phase 5 - Plan execution |
+| Skill: pop-finish-branch | Phase 7 - Completion workflow |
+| Command: /popkit:worktree | Creates isolated workspace |
+| Command: /popkit:plan | Generates implementation plans |
+| Command: /popkit:review | Final quality check |
+| Hooks: issue-workflow.py | Phase tracking and status updates |
+| State: power-mode-state.json | Phase progress for status line |
+
+## Executable Commands
+
+### Phase 1: Discovery
+```bash
+# Gather project context
+cat package.json | head -20
+cat README.md | head -50
+git log --oneline -10
+```
+
+### Phase 2: Exploration
+**Invoke agent:**
+```
+Use Task tool with subagent_type="Explore"
+Prompt: "Explore the codebase to understand patterns for [feature]"
+```
+
+### Phase 4: Architecture
+**Invoke agent:**
+```
+Use Task tool with subagent_type="Plan"
+Prompt: "Design architecture for [feature] based on exploration findings"
+```
+
+### Phase 5: Implementation
+```bash
+# Create isolated worktree
+git worktree add .worktrees/feature-<name> -b feature/<name>
+cd .worktrees/feature-<name>
+
+# Install dependencies
+npm install  # or pip install, cargo build
+
+# Verify baseline tests
+npm test
+
+# Generate implementation plan
+# Invoke pop-writing-plans skill
+
+# Execute plan in batches
+# Invoke pop-executing-plans skill
+```
+
+### Phase 6: Review
+**Invoke agent:**
+```
+Use Task tool with subagent_type="code-reviewer"
+Prompt: "Review implementation of [feature] against architecture design"
+```
+
+### Phase 7: Summary
+```bash
+# Check final status
+git status
+npm test
+npm run build
+
+# Options:
+# 1. Merge: git checkout main && git merge feature/<name>
+# 2. PR: gh pr create --title "[Feature] <name>" --body "..."
+# 3. Keep: Leave worktree for more work
+# 4. Discard: git worktree remove .worktrees/feature-<name>
+```
+
+## Related Commands
+
+| Command | Relationship |
+|---------|--------------|
+| `/popkit:design brainstorm` | Use before Phase 1 for complex features |
+| `/popkit:plan write` | Detailed implementation plan (Phase 5) |
+| `/popkit:review` | Code review after implementation |
+| `/popkit:git finish` | Complete and merge branch |
+| `/popkit:issue work` | Start from GitHub issue with phase tracking |

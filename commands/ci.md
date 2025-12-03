@@ -297,14 +297,117 @@ gh release delete v1.2.0
 
 ---
 
+## Executable Commands
+
+### run list
+```bash
+gh run list [--workflow <file>] [--branch <name>] [--status <state>] [-L <limit>]
+```
+
+### run view
+```bash
+gh run view <run-id>
+gh run view <run-id> --log
+gh run view <run-id> --job <job-name>
+```
+
+### run rerun
+```bash
+gh run rerun <run-id>
+gh run rerun <run-id> --failed
+gh run rerun <run-id> --job <job-name>
+```
+
+### run watch
+```bash
+gh run watch <run-id>
+```
+
+### run cancel
+```bash
+gh run cancel <run-id>
+```
+
+### run download
+```bash
+gh run download <run-id>
+gh run download <run-id> --name <artifact-name>
+gh run download <run-id> --dir <directory>
+```
+
+### run logs
+```bash
+gh run view <run-id> --log
+gh run view <run-id> --log --job <job-name>
+gh run view <run-id> --log-failed
+```
+
+### release create
+```bash
+# Get last tag
+LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+# Generate changelog from commits
+if [ -n "$LAST_TAG" ]; then
+    git log ${LAST_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges
+fi
+
+# Create tag and release
+git tag <version>
+git push origin <version>
+gh release create <version> --title "<version>" --notes "<changelog>" [--draft] [--prerelease]
+```
+
+### release list
+```bash
+gh release list [-L <limit>] [--exclude-drafts | --include-drafts]
+```
+
+### release view
+```bash
+gh release view <tag>
+```
+
+### release edit
+```bash
+gh release edit <tag> [--notes "<notes>"] [--draft=<bool>] [--prerelease=<bool>]
+```
+
+### release delete
+```bash
+gh release delete <tag> [--yes]
+# Optionally delete tag:
+git tag -d <tag>
+git push origin :refs/tags/<tag>
+```
+
+### release changelog
+```bash
+# Get last tag
+LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null)
+
+# Generate changelog grouped by type
+git log ${LAST_TAG}..HEAD --pretty=format:"%s" | grep -E "^(feat|fix|docs|perf|refactor|test|chore):"
+```
+
+---
+
 ## Architecture Integration
 
 | Component | Integration |
 |-----------|-------------|
-| Workflow Management | `gh run` commands |
-| Release Management | `gh release` commands |
-| Changelog Generation | Conventional commits parsing |
-| Version Detection | package.json, Cargo.toml, git tags |
+| Workflow Runs | `gh run list/view/rerun/watch/cancel` commands |
+| Workflow Artifacts | `gh run download` for build outputs |
+| Workflow Logs | `gh run view --log` for debugging |
+| Release Creation | `gh release create` with auto-notes |
+| Release Management | `gh release list/view/edit/delete` |
+| Changelog Generation | Parses conventional commits (feat, fix, docs, etc.) |
+| Version Detection | package.json, Cargo.toml, pyproject.toml, git tags |
+| Tag Management | Creates and pushes git tags with releases |
+| Morning Health Check | `/popkit:morning` includes CI status |
+| Quality Gates | Release blocked if CI failing |
+| Commit Convention | Groups changelog by commit type prefix |
+| PR Integration | Includes PR numbers in changelog entries |
 
 ## Related Commands
 

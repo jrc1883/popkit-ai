@@ -767,10 +767,85 @@ Next steps:
 
 ---
 
+## Executable Commands
+
+### brainstorm
+
+**Invokes pop-brainstorming skill:**
+```
+Use Skill tool with skill="popkit:pop-brainstorming"
+```
+
+**Context gathering:**
+```bash
+# Check project type and state
+cat package.json 2>/dev/null | head -20
+cat README.md 2>/dev/null | head -50
+git log --oneline -10
+git status --short
+```
+
+**Document output:**
+```bash
+# Create docs directory if needed
+mkdir -p docs/plans
+
+# Save design document
+# File: docs/plans/YYYY-MM-DD-<topic>-design.md
+```
+
+### prd
+
+**Generate PRD from brainstorming or topic:**
+```bash
+# Create PRD directory
+mkdir -p docs/prd
+
+# Save PRD document
+# File: docs/prd/YYYY-MM-DD-<topic>.md
+```
+
+**From existing design:**
+```bash
+# Read design document
+cat docs/plans/<design-file>.md
+
+# Extract requirements and structure as PRD
+```
+
+### suite (Issue #11)
+
+**Generate complete document suite:**
+```bash
+# Create all directories
+mkdir -p docs/discovery docs/prd docs/architecture
+
+# Generate documents in sequence:
+# 1. docs/discovery/YYYY-MM-DD-<topic>-problem.md
+# 2. docs/prd/YYYY-MM-DD-<topic>-prd.md
+# 3. docs/prd/YYYY-MM-DD-<topic>-stories.md
+# 4. docs/architecture/YYYY-MM-DD-<topic>-architecture.md
+# 5. docs/architecture/YYYY-MM-DD-<topic>-tech-spec.md
+```
+
+**After suite generation:**
+```bash
+# Option 1: Create GitHub issues from user stories
+gh issue create --title "[Feature] <story-title>" --body "<story-content>"
+
+# Option 2: Generate implementation plan
+# Use Skill tool with skill="popkit:pop-writing-plans"
+
+# Option 3: Create worktree for implementation
+git worktree add .worktrees/<feature-name> -b feature/<feature-name>
+```
+
+---
+
 ## Integration with Other Commands
 
 | After Design | Next Step |
-|--------------|-----------|
+|--------------|----------|
 | Design approved | `/popkit:plan write` - Create implementation plan |
 | PRD complete | `/popkit:issue create` - Create issues from requirements |
 | Ready to start | `/popkit:worktree create` - Create isolated workspace |
