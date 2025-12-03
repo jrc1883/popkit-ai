@@ -45,9 +45,3 @@ power-mode/.claude/
 
 # Local Claude Code project state (created when using PopKit on this repo)
 .claude/
-
-# Environment files (contain API keys)
-.env
-.env.local
-*.env
-

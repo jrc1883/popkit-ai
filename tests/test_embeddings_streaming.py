@@ -139,15 +139,29 @@ class TestVoyageClient(unittest.TestCase):
         client = VoyageClient()
         self.assertTrue(client.is_available)
 
-    @patch.dict(os.environ, {}, clear=True)
     def test_client_unavailable_without_key(self):
         """Test client reports unavailable without API key."""
-        # Need to reimport to pick up env change
-        import importlib
         import voyage_client
-        importlib.reload(voyage_client)
 
-        self.assertFalse(voyage_client.is_available())
+        # Save original state
+        orig_client = voyage_client._client
+        orig_api_key = os.environ.get('VOYAGE_API_KEY')
+
+        try:
+            # Clear the API key from environment
+            if 'VOYAGE_API_KEY' in os.environ:
+                del os.environ['VOYAGE_API_KEY']
+
+            # Reset the singleton so a new client is created
+            voyage_client._client = None
+
+            # Now is_available() should return False
+            self.assertFalse(voyage_client.is_available())
+        finally:
+            # Restore original state
+            voyage_client._client = orig_client
+            if orig_api_key:
+                os.environ['VOYAGE_API_KEY'] = orig_api_key
 
     @patch.dict(os.environ, {"VOYAGE_API_KEY": "test-key"})
     def test_embed_single(self):
