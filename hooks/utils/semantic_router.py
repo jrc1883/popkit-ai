@@ -29,7 +29,9 @@ POPKIT_ROOT = Path(__file__).parent.parent.parent
 CONFIG_PATH = POPKIT_ROOT / "agents" / "config.json"
 
 # Default confidence threshold
-DEFAULT_MIN_CONFIDENCE = 0.6
+# Voyage-3.5 embeddings produce lower similarity scores than expected
+# 0.3-0.5 is typical for good matches, 0.5+ is excellent
+DEFAULT_MIN_CONFIDENCE = 0.3
 
 
 # =============================================================================
