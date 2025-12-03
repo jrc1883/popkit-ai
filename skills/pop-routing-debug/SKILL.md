@@ -1,6 +1,6 @@
 ---
 name: routing-debug
-description: "Use when agent routing seems wrong, unexpected agents are selected, or you need to understand why a specific agent was chosen - provides detailed routing analysis and debugging"
+description: "Use when agent routing seems wrong, unexpected agents are selected, or you need to understand why a specific agent was chosen - provides detailed routing analysis and debugging. Shows keyword matches, confidence scores, and competing agents. Do NOT use for general agent questions or when routing is working correctly - just proceed with the selected agent."
 ---
 
 # Routing Debugger

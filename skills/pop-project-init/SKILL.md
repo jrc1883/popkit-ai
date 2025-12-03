@@ -1,6 +1,6 @@
 ---
 name: project-init
-description: "Use when starting a new project or setting up Claude Code integration - initializes .claude/ directory structure including agents, skills, commands, hooks, and project documentation templates"
+description: "Use when starting a new project or setting up Claude Code integration - initializes .claude/ directory structure including agents, skills, commands, hooks, and project documentation templates. Creates CLAUDE.md, STATUS.json, settings.json with optional Power Mode setup. Do NOT use if .claude/ already exists - use analyze-project instead to understand existing configuration."
 ---
 
 # Project Initialization

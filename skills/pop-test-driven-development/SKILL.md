@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-description: "Use when implementing any feature or bugfix, before writing implementation code - write the test first, watch it fail, write minimal code to pass; ensures tests actually verify behavior by requiring failure first"
+description: "RED-GREEN-REFACTOR workflow that writes tests before implementation code. Ensures tests actually verify behavior by requiring them to fail first, then writing minimal code to pass. Use when implementing features, fixing bugs, or when test coverage matters. Do NOT use for exploratory coding, prototypes, or throwaway scripts where test overhead isn't justified."
 ---
 
 # Test-Driven Development (TDD)

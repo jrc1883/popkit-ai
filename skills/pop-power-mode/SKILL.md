@@ -1,6 +1,6 @@
 ---
 name: power-mode
-description: "Activate multi-agent orchestration via Redis pub/sub for complex tasks requiring parallel agent collaboration with shared context, periodic check-ins, and coordinator oversight"
+description: "Multi-agent orchestration system using Redis pub/sub or file-based fallback for parallel agent collaboration. Enables shared context, periodic check-ins, sync barriers between phases, and coordinator oversight. Use for complex tasks benefiting from parallel execution (epics, large refactors, multi-phase features). Do NOT use for simple tasks or sequential workflows - the coordination overhead isn't justified."
 ---
 
 # Pop Power Mode

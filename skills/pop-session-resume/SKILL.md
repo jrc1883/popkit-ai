@@ -1,6 +1,6 @@
 ---
 name: session-resume
-description: "Use at start of new session to restore context from STATUS.json - loads previous state, displays session type, shows what to continue working on"
+description: "Use at start of new session to restore context from STATUS.json - loads previous state, displays session type, shows what to continue working on. Calculates session type (Continuation/Resume/Fresh Start) based on time gap. Do NOT use mid-session or when starting fresh work unrelated to previous session - just begin the new task directly."
 ---
 
 # Session Resume

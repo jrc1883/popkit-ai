@@ -1,6 +1,6 @@
 ---
 name: pop-next-action
-description: "Analyze project state and recommend context-aware next actions with popkit commands"
+description: "Context-aware recommendation engine that analyzes git status, TypeScript errors, GitHub issues, and technical debt to suggest prioritized next actions. Returns specific popkit commands with explanations of why each is relevant. Use when unsure what to work on next, starting a session, or feeling stuck. Do NOT use when you already know what to do - just proceed with that task directly."
 ---
 
 # Next Action Recommendation

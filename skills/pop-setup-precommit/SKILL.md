@@ -1,6 +1,6 @@
 ---
 name: setup-precommit
-description: "Use when setting up code quality automation for a project - configures pre-commit hooks and quality gates including linting, type checking, tests, and commit message validation"
+description: "Use when setting up code quality automation for a project - configures pre-commit hooks and quality gates including linting, type checking, tests, and commit message validation. Supports Node.js (husky), Python (pre-commit), and Rust (cargo-husky). Do NOT use if project already has pre-commit configured - check for existing .husky/ or .pre-commit-config.yaml first."
 ---
 
 # Setup Pre-commit Hooks

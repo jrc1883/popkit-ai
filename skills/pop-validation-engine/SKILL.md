@@ -1,6 +1,6 @@
 ---
 name: pop-validation-engine
-description: Reusable validation pattern for scanning, comparing, reporting, and fixing plugin integrity issues
+description: "Reusable validation pattern for scanning, comparing, reporting, and fixing plugin integrity issues. Implements the Scan-Compare-Report-Apply workflow for checking agents, routing, output styles, and hooks against their schemas. Use when validating plugin structure, debugging configuration issues, or building custom validators. Do NOT use for runtime validation or user input checking - this is specifically for popkit plugin component integrity."
 ---
 
 # Validation Engine Skill

@@ -1,6 +1,6 @@
 ---
 name: pop-knowledge-lookup
-description: "Query cached external knowledge sources for up-to-date context on Claude Code, best practices, and documentation"
+description: "Queries cached external documentation and blog content for authoritative, up-to-date information. Sources include Claude Code docs, engineering blog, and configured knowledge bases with 24-hour TTL caching. Use when you need current information about Claude Code features, hooks, or best practices. Do NOT use for general coding questions - rely on training knowledge or web search instead."
 ---
 
 # Knowledge Lookup

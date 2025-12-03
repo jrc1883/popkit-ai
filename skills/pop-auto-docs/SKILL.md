@@ -1,6 +1,6 @@
 ---
 name: auto-docs
-description: "Use when documentation is stale, incomplete, or needs synchronization with codebase changes - automatically generates and updates plugin documentation including CLAUDE.md, README.md, and component docs"
+description: "Use when documentation is stale, incomplete, or needs synchronization with codebase changes - automatically generates and updates plugin documentation including CLAUDE.md, README.md, and component docs. Scans agents, skills, commands, and hooks to produce accurate counts and descriptions. Do NOT use for user-facing application docs or when you just need to write a single README - handle those directly."
 ---
 
 # Auto-Documentation

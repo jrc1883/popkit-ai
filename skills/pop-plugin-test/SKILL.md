@@ -1,6 +1,6 @@
 ---
 name: plugin-test
-description: "Use when verifying plugin integrity, testing hooks, or validating agent routing - runs comprehensive self-tests to ensure all plugin components function correctly"
+description: "Use when verifying plugin integrity, testing hooks, or validating agent routing - runs comprehensive self-tests to ensure all plugin components function correctly. Tests structure, hooks, agents, skills, and commands against their schemas. Do NOT use for application testing or runtime validation - this is specifically for popkit plugin component verification."
 ---
 
 # Plugin Self-Testing

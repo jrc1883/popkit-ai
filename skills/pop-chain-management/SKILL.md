@@ -1,6 +1,6 @@
 ---
 name: pop-chain-management
-description: "Programmatic access to workflow chain operations including validation, metrics, and visualization"
+description: "Programmatic access to workflow chain operations including validation, metrics, and visualization. Provides APIs for recording workflow runs, tracking step durations, calculating success rates, and identifying bottlenecks. Use when building custom workflow orchestration, analyzing multi-agent performance, or integrating chain tracking into automation. Do NOT use for simple single-agent tasks or when you just want to run an existing workflow - use the workflow command directly instead."
 ---
 
 # Chain Management

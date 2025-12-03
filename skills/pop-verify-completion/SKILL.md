@@ -1,6 +1,6 @@
 ---
 name: verification-before-completion
-description: "Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always"
+description: "Evidence-based verification that requires running actual commands and confirming output before claiming work is complete. Prevents false success claims by enforcing 'evidence before assertions' principle. Use before committing, creating PRs, or stating that something works. Do NOT use for exploratory work or when you explicitly don't need verification - just proceed directly."
 ---
 
 # Verification Before Completion
