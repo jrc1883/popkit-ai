@@ -282,7 +282,7 @@ Starting Phase 1: Discovery...
 
 ## Subcommand: close
 
-Close an issue.
+Close an issue with optional comment or reason.
 
 ```
 /popkit:issue close 45
@@ -291,6 +291,28 @@ Close an issue.
 /popkit:issue close 45 --reason not_planned
 /popkit:issue close 45 --superseded-by 67
 ```
+
+### Flags
+
+| Flag | Description |
+|------|-------------|
+| `--comment` | Add closing comment |
+| `--reason` | `completed` (default) or `not_planned` |
+| `--superseded-by` | Reference replacement issue |
+
+### Process
+
+1. **Parse Arguments**: Extract issue number, comment, reason
+2. **Build Command**: Construct `gh issue close` with options
+3. **Execute**: Run the close command
+4. **Confirm**: Report success to user
+
+**Execute this command:**
+```bash
+gh issue close <number> [--comment "..."] [--reason completed|not_planned]
+```
+
+If `--superseded-by N` is provided, include in comment: "Superseded by #N"
 
 ---
 
@@ -304,6 +326,27 @@ Add comment to issue.
 /popkit:issue comment 45 --phase-update "Completed implementation, moving to testing"
 ```
 
+### Flags
+
+| Flag | Description |
+|------|-------------|
+| `--file` | Read comment body from file |
+| `--phase-update` | Format as phase transition update |
+
+### Process
+
+1. **Parse Arguments**: Extract issue number, comment text or file
+2. **Format Comment**: If `--phase-update`, prefix with "## Phase Update\n\n"
+3. **Execute**: Run `gh issue comment`
+4. **Confirm**: Report success
+
+**Execute this command:**
+```bash
+gh issue comment <number> --body "<comment>"
+# OR with file:
+gh issue comment <number> --body-file <file>
+```
+
 ---
 
 ## Subcommand: edit
@@ -313,19 +356,66 @@ Update issue metadata.
 ```
 /popkit:issue edit 45 --title "New title"
 /popkit:issue edit 45 --label add:priority:high
+/popkit:issue edit 45 --label remove:wontfix
 /popkit:issue edit 45 --assignee @username
 /popkit:issue edit 45 --milestone v1.0
+```
+
+### Flags
+
+| Flag | Description |
+|------|-------------|
+| `--title` | Update issue title |
+| `--label` | Add/remove label (`add:name` or `remove:name`) |
+| `--assignee` | Set assignee |
+| `--milestone` | Set milestone |
+| `--body` | Update issue body |
+
+### Process
+
+1. **Parse Arguments**: Extract issue number and edit flags
+2. **Build Command**: Construct `gh issue edit` with appropriate flags
+3. **Execute**: Run the edit command
+4. **Confirm**: Report changes made
+
+**Execute this command:**
+```bash
+gh issue edit <number> [--title "..."] [--add-label <name>] [--remove-label <name>] [--assignee <user>] [--milestone <name>]
 ```
 
 ---
 
 ## Subcommand: link
 
-Link issue to PR.
+Link issue to PR by adding a comment with the reference.
 
 ```
 /popkit:issue link 45 --pr 67
+/popkit:issue link 45 --closes-pr 67
 ```
+
+### Flags
+
+| Flag | Description |
+|------|-------------|
+| `--pr` | PR number to link (adds reference comment) |
+| `--closes-pr` | PR that closes this issue |
+
+### Process
+
+1. **Parse Arguments**: Extract issue number and PR number
+2. **Format Link**: Create reference comment
+3. **Execute**: Add comment to issue with PR reference
+4. **Confirm**: Report link created
+
+**Execute this command:**
+```bash
+gh issue comment <issue> --body "Related: #<pr>"
+# OR for closing reference:
+gh issue comment <issue> --body "Closes: #<pr>"
+```
+
+Note: GitHub automatically links issues and PRs when referenced in commits/PR descriptions.
 
 ---
 
