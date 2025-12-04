@@ -1,10 +1,10 @@
 ---
-description: Project analysis and setup tools - analyze codebase, generate MCP servers, configure pre-commit hooks, create custom skills
+description: Project tools - initialize, analyze, generate MCP servers, configure pre-commit hooks, create custom skills
 ---
 
 # /popkit:project - Project Analysis & Setup
 
-Tools for understanding, configuring, and customizing projects after initial setup.
+Complete project lifecycle tools: initialization, analysis, configuration, and customization.
 
 ## Usage
 
@@ -16,12 +16,105 @@ Tools for understanding, configuring, and customizing projects after initial set
 
 | Subcommand | Description |
 |------------|-------------|
+| `init` | Initialize .claude/ structure with optional Power Mode |
 | `analyze` | Deep codebase analysis (default) |
 | `embed` | Embed project items for semantic search |
 | `generate` | Full pipeline: analyze → skills → mcp → embed |
 | `mcp` | Generate project-specific MCP server |
 | `setup` | Configure pre-commit hooks and quality gates |
 | `skills` | Generate custom skills from project patterns |
+
+---
+
+## Subcommand: init
+
+Initialize a new project with complete Claude Code configuration, including optional Power Mode for multi-agent orchestration.
+
+```
+/popkit:project init                      # Initialize current directory
+/popkit:project init my-app               # Initialize named project
+/popkit:project init --power              # Initialize with Power Mode setup
+```
+
+### Process
+
+Invokes the **pop-project-init** skill:
+
+1. **Detect Project Type**
+   - Node.js: package.json with react/next/vue/express
+   - Python: requirements.txt, pyproject.toml, setup.py
+   - Rust: Cargo.toml
+   - Go: go.mod
+
+2. **Create Directory Structure**
+   ```
+   .claude/
+   ├── agents/           # Project-specific agents
+   ├── commands/         # Custom slash commands
+   ├── hooks/            # Hook scripts
+   ├── skills/           # Project-specific skills
+   ├── scripts/          # Utility scripts
+   ├── logs/             # Log files
+   ├── plans/            # Implementation plans
+   ├── STATUS.json       # Session state
+   └── settings.json     # Claude settings
+
+   CLAUDE.md             # Project instructions
+   ```
+
+3. **Generate CLAUDE.md**
+   - Project overview (from README.md or package.json)
+   - Development notes (build, test commands)
+   - Architecture patterns (detected from codebase)
+   - Key files for reference
+
+4. **Ask About Power Mode**
+   - **Redis Mode**: Full parallel agents (requires Docker)
+   - **File Mode**: Simpler coordination (no dependencies)
+   - **Skip**: Set up later with `/popkit:power init`
+
+### Output
+
+```
+/popkit:project init
+
+Detecting project type...
+[+] Node.js (Next.js 14) detected
+
+Creating .claude/ structure...
+[+] Directories created
+[+] CLAUDE.md generated
+[+] STATUS.json initialized
+[+] .gitignore updated
+
+Would you like to set up Power Mode for multi-agent orchestration?
+  - Redis Mode: Full parallel agents (requires Docker)
+  - File Mode: Simpler coordination (no dependencies)
+  - Skip: Set up later with /popkit:power init
+
+[User selects Redis Mode]
+
+Setting up Power Mode...
+[+] docker-compose.yml created
+[+] Run 'docker compose up -d' to start Redis
+
+Project initialized!
+
+Recommended next steps:
+1. Review and customize CLAUDE.md
+2. Run /popkit:routine morning for project health check
+3. Run /popkit:power init start to start Redis (if Docker installed)
+4. Run /popkit:issue list to see GitHub issues
+```
+
+### Options
+
+| Flag | Description |
+|------|-------------|
+| `--power` | Auto-select Power Mode (prompts for Redis vs File) |
+| `--redis` | Use Redis Mode (requires Docker) |
+| `--file` | Use File Mode (no dependencies) |
+| `--skip-power` | Skip Power Mode setup entirely |
 
 ---
 
@@ -565,9 +658,9 @@ Skills are now available via the Skill tool.
 
 ## Workflow Integration
 
-This command fits into the project lifecycle:
+This command covers the full project lifecycle:
 
-1. **New Project**: `/popkit:init-project` → Create .claude/ structure
+1. **New Project**: `/popkit:project init` → Create .claude/ structure
 2. **Understand Project**: `/popkit:project analyze` → Codebase analysis
 3. **Configure Quality**: `/popkit:project setup` → Pre-commit hooks
 4. **Enhance Tooling**: `/popkit:project mcp` → Project-specific MCP
@@ -583,6 +676,7 @@ This command fits into the project lifecycle:
 
 | Component | Integration |
 |-----------|-------------|
+| Init Skill | `skills/pop-project-init/SKILL.md` |
 | Analysis Skill | `skills/pop-analyze-project/SKILL.md` |
 | Embed Skill | `skills/pop-embed-project/SKILL.md` |
 | MCP Generator Skill | `skills/pop-mcp-generator/SKILL.md` |
@@ -595,6 +689,6 @@ This command fits into the project lifecycle:
 
 | Command | Purpose |
 |---------|---------|
-| `/popkit:init-project` | Initial project setup |
-| `/popkit:morning` | Daily health check |
+| `/popkit:routine morning` | Daily health check |
+| `/popkit:power init` | Start/stop Redis for Power Mode |
 | `/popkit:next` | Context-aware recommendations |
