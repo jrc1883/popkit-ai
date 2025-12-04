@@ -83,6 +83,9 @@ def router_with_mocks(mock_config, mock_embedding_store, mock_voyage_client):
                         router._config = mock_config
                         router.store = mock_embedding_store
                         router.client = mock_voyage_client
+                        # Set project_path to None to simulate global-only routing
+                        # (tests can override this for project-specific tests)
+                        router.project_path = None
                         return router
 
 
@@ -144,6 +147,32 @@ def test_routing_result_to_dict():
     assert result_dict["method"] == "keyword"
 
 
+def test_routing_result_is_project_item_default():
+    """Test RoutingResult has is_project_item field defaulting to False."""
+    result = RoutingResult(
+        agent="bug-whisperer",
+        confidence=0.9,
+        reason="Bug found",
+        method="semantic"
+    )
+
+    assert result.is_project_item is False
+
+
+def test_routing_result_is_project_item_true():
+    """Test RoutingResult with is_project_item=True."""
+    result = RoutingResult(
+        agent="project-agent",
+        confidence=0.85,
+        reason="Project match",
+        method="semantic",
+        is_project_item=True
+    )
+
+    assert result.is_project_item is True
+    assert result.to_dict()["is_project_item"] is True
+
+
 # =============================================================================
 # Router Initialization Tests
 # =============================================================================
@@ -202,6 +231,27 @@ def test_router_initialization_no_client_when_unavailable():
         with patch('semantic_router.is_available', return_value=False):
             router = SemanticRouter()
             assert router.client is None
+
+
+def test_router_initialization_with_project_path():
+    """Test router accepts explicit project_path parameter."""
+    with patch('semantic_router.CONFIG_PATH') as mock_path:
+        mock_path.exists.return_value = False
+
+        with patch('semantic_router.is_available', return_value=False):
+            router = SemanticRouter(project_path="/explicit/project/path")
+            assert router.project_path == "/explicit/project/path"
+
+
+def test_router_initialization_auto_detects_project():
+    """Test router auto-detects project root when not provided."""
+    with patch('semantic_router.CONFIG_PATH') as mock_path:
+        mock_path.exists.return_value = False
+
+        with patch('semantic_router.is_available', return_value=False):
+            router = SemanticRouter()
+            # Project path is auto-detected (may be None or actual path)
+            assert hasattr(router, 'project_path')
 
 
 # =============================================================================
@@ -388,6 +438,7 @@ def test_semantic_route_with_embeddings(router_with_mocks, sample_embedding):
     # Mock the search results
     mock_record = Mock()
     mock_record.source_id = "bug-whisperer"
+    mock_record.source_type = "agent"  # Global agent, not project-specific
     mock_record.content = "Expert at finding and fixing bugs in code"
 
     mock_search_result = Mock()
@@ -417,6 +468,7 @@ def test_semantic_route_respects_min_confidence(router_with_mocks, sample_embedd
     """Test semantic routing respects minimum confidence threshold."""
     mock_record = Mock()
     mock_record.source_id = "bug-whisperer"
+    mock_record.source_type = "agent"
     mock_record.content = "Bug fixing expert"
 
     mock_search_result = Mock()
@@ -448,6 +500,7 @@ def test_semantic_route_truncates_long_content(router_with_mocks, sample_embeddi
     """Test semantic routing truncates long content in reason."""
     mock_record = Mock()
     mock_record.source_id = "bug-whisperer"
+    mock_record.source_type = "agent"
     mock_record.content = "A" * 100  # Long content
 
     mock_search_result = Mock()
@@ -638,6 +691,7 @@ def test_route_uses_semantic_when_available(router_with_mocks, sample_embedding)
     """Test route uses semantic routing when embeddings available."""
     mock_record = Mock()
     mock_record.source_id = "bug-whisperer"
+    mock_record.source_type = "agent"
     mock_record.content = "Bug expert"
 
     mock_search_result = Mock()
@@ -1013,6 +1067,235 @@ def test_routing_result_method_types():
 
     error_results = router._error_pattern_route("Error message")
     assert all(r.method == "error_pattern" for r in error_results)
+
+
+# =============================================================================
+# Project Routing Tests (Issue #48)
+# =============================================================================
+
+def test_semantic_route_with_project_items(router_with_mocks, sample_embedding):
+    """Test semantic routing recognizes project items and applies boost."""
+    # Mock project-agent record
+    mock_record = Mock()
+    mock_record.source_id = "my-project-agent"
+    mock_record.source_type = "project-agent"
+    mock_record.content = "A project-specific agent for custom tasks"
+
+    mock_search_result = Mock()
+    mock_search_result.record = mock_record
+    mock_search_result.similarity = 0.70
+
+    # Set project path
+    router_with_mocks.project_path = "/test/project"
+
+    # Mock count_project to indicate project has embeddings
+    router_with_mocks.store.count_project.return_value = 5
+    router_with_mocks.store.search_project.return_value = [mock_search_result]
+    router_with_mocks.client.embed_query.return_value = sample_embedding
+
+    results = router_with_mocks._semantic_route("custom task", top_k=3, min_confidence=0.3)
+
+    # Should have project item with boosted confidence
+    assert len(results) == 1
+    assert results[0].agent == "my-project-agent"
+    assert results[0].is_project_item is True
+    # Confidence should be boosted by 0.1 (PROJECT_ITEM_BOOST)
+    # Using pytest.approx for floating point comparison
+    assert results[0].confidence == pytest.approx(0.80)  # 0.70 + 0.10
+
+
+def test_semantic_route_global_items_not_boosted(router_with_mocks, sample_embedding):
+    """Test global agents don't get project boost."""
+    mock_record = Mock()
+    mock_record.source_id = "bug-whisperer"
+    mock_record.source_type = "agent"  # Global agent, not project-agent
+    mock_record.content = "Bug fixing expert"
+
+    mock_search_result = Mock()
+    mock_search_result.record = mock_record
+    mock_search_result.similarity = 0.75
+
+    router_with_mocks.project_path = "/test/project"
+    router_with_mocks.store.count_project.return_value = 5
+    router_with_mocks.store.search_project.return_value = [mock_search_result]
+    router_with_mocks.client.embed_query.return_value = sample_embedding
+
+    results = router_with_mocks._semantic_route("fix bug", top_k=3, min_confidence=0.3)
+
+    assert len(results) == 1
+    assert results[0].is_project_item is False
+    # No boost - confidence stays at 0.75
+    assert results[0].confidence == 0.75
+
+
+def test_semantic_route_generated_items_get_boost(router_with_mocks, sample_embedding):
+    """Test generated items (generated-agent) also get project boost."""
+    mock_record = Mock()
+    mock_record.source_id = "auto-generated-agent"
+    mock_record.source_type = "generated-agent"
+    mock_record.content = "Auto-generated project agent"
+
+    mock_search_result = Mock()
+    mock_search_result.record = mock_record
+    mock_search_result.similarity = 0.60
+
+    router_with_mocks.project_path = "/test/project"
+    router_with_mocks.store.count_project.return_value = 5
+    router_with_mocks.store.search_project.return_value = [mock_search_result]
+    router_with_mocks.client.embed_query.return_value = sample_embedding
+
+    results = router_with_mocks._semantic_route("task", top_k=3, min_confidence=0.3)
+
+    assert len(results) == 1
+    assert results[0].is_project_item is True
+    # Should be boosted
+    assert results[0].confidence == 0.70  # 0.60 + 0.10
+
+
+def test_semantic_route_boost_caps_at_1(router_with_mocks, sample_embedding):
+    """Test project boost doesn't exceed 1.0 confidence."""
+    mock_record = Mock()
+    mock_record.source_id = "high-confidence-agent"
+    mock_record.source_type = "project-agent"
+    mock_record.content = "Very high confidence match"
+
+    mock_search_result = Mock()
+    mock_search_result.record = mock_record
+    mock_search_result.similarity = 0.98  # Very high
+
+    router_with_mocks.project_path = "/test/project"
+    router_with_mocks.store.count_project.return_value = 1
+    router_with_mocks.store.search_project.return_value = [mock_search_result]
+    router_with_mocks.client.embed_query.return_value = sample_embedding
+
+    results = router_with_mocks._semantic_route("query", top_k=3, min_confidence=0.3)
+
+    assert len(results) == 1
+    # Should cap at 1.0, not 1.08
+    assert results[0].confidence == 1.0
+
+
+def test_semantic_route_falls_back_to_global_without_project(router_with_mocks, sample_embedding):
+    """Test semantic routing falls back to global search when no project embeddings."""
+    mock_record = Mock()
+    mock_record.source_id = "bug-whisperer"
+    mock_record.source_type = "agent"
+    mock_record.content = "Bug expert"
+
+    mock_search_result = Mock()
+    mock_search_result.record = mock_record
+    mock_search_result.similarity = 0.80
+
+    router_with_mocks.project_path = None
+    router_with_mocks.store.count.return_value = 10
+    router_with_mocks.store.search.return_value = [mock_search_result]
+    router_with_mocks.client.embed_query.return_value = sample_embedding
+
+    results = router_with_mocks._semantic_route("fix bug", top_k=3, min_confidence=0.3)
+
+    # Should use global search, not project search
+    router_with_mocks.store.search.assert_called_once()
+    assert len(results) == 1
+    assert results[0].confidence == 0.80
+
+
+def test_route_for_project_method(mock_config, sample_embedding):
+    """Test route_for_project temporarily overrides project path."""
+    with patch('semantic_router.CONFIG_PATH') as mock_path:
+        mock_path.exists.return_value = True
+
+        with patch('builtins.open', create=True) as mock_open:
+            mock_open.return_value.__enter__.return_value.read.return_value = json.dumps(mock_config)
+
+            with patch('semantic_router.is_available', return_value=False):
+                router = SemanticRouter(project_path="/original/project")
+                router._config = mock_config
+
+                # Verify original project path
+                assert router.project_path == "/original/project"
+
+                # Call route_for_project with different path
+                results = router.route_for_project(
+                    "bug fix",
+                    project_path="/different/project",
+                    top_k=3
+                )
+
+                # After call, original path should be restored
+                assert router.project_path == "/original/project"
+
+
+def test_route_for_project_restores_path_on_exception(mock_config):
+    """Test route_for_project restores path even if exception occurs."""
+    with patch('semantic_router.CONFIG_PATH') as mock_path:
+        mock_path.exists.return_value = True
+
+        with patch('builtins.open', create=True) as mock_open:
+            mock_open.return_value.__enter__.return_value.read.return_value = json.dumps(mock_config)
+
+            with patch('semantic_router.is_available', return_value=False):
+                router = SemanticRouter(project_path="/original/project")
+                router._config = mock_config
+
+                # Mock route to raise exception
+                original_route = router.route
+                def failing_route(*args, **kwargs):
+                    raise ValueError("Test exception")
+                router.route = failing_route
+
+                try:
+                    router.route_for_project("query", "/different/project")
+                except ValueError:
+                    pass
+
+                # Path should still be restored
+                assert router.project_path == "/original/project"
+
+
+def test_explain_routing_includes_project_info(router_no_embeddings):
+    """Test explain_routing includes project path and embedding count."""
+    router_no_embeddings.project_path = "/test/project"
+
+    with patch.object(router_no_embeddings.store, 'count_project', return_value=5):
+        explanation = router_no_embeddings.explain_routing("bug fix")
+
+    assert "project_path" in explanation
+    assert explanation["project_path"] == "/test/project"
+    assert "project_embedding_count" in explanation
+    assert explanation["project_embedding_count"] == 5
+
+
+def test_explain_routing_project_info_when_no_project(router_no_embeddings):
+    """Test explain_routing handles no project path gracefully."""
+    router_no_embeddings.project_path = None
+
+    explanation = router_no_embeddings.explain_routing("query")
+
+    assert "project_path" in explanation
+    assert explanation["project_path"] is None
+    assert "project_embedding_count" in explanation
+    assert explanation["project_embedding_count"] == 0
+
+
+def test_project_detection_finds_claude_dir(tmp_path):
+    """Test _detect_project_root finds .claude directory."""
+    # Create project structure
+    project_dir = tmp_path / "myproject"
+    claude_dir = project_dir / ".claude"
+    claude_dir.mkdir(parents=True)
+
+    # Create a subdirectory to start from
+    nested_dir = project_dir / "src" / "components"
+    nested_dir.mkdir(parents=True)
+
+    with patch('semantic_router.CONFIG_PATH') as mock_path:
+        mock_path.exists.return_value = False
+
+        with patch('semantic_router.is_available', return_value=False):
+            with patch('pathlib.Path.cwd', return_value=nested_dir):
+                router = SemanticRouter()
+                # Should find the project root with .claude
+                assert router.project_path is not None
 
 
 if __name__ == "__main__":

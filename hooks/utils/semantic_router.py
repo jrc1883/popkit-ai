@@ -4,8 +4,10 @@ Semantic Agent Router
 
 Routes requests to agents using embedding similarity.
 Falls back to keyword matching when embeddings unavailable.
+Supports project-aware routing with priority for project-local items.
 
 Part of PopKit Issue #19 (Embeddings Enhancement).
+Updated for Issue #48 (Project Awareness).
 """
 
 import os
@@ -33,6 +35,9 @@ CONFIG_PATH = POPKIT_ROOT / "agents" / "config.json"
 # 0.3-0.5 is typical for good matches, 0.5+ is excellent
 DEFAULT_MIN_CONFIDENCE = 0.3
 
+# Project item boost (10% boost for project-local items)
+PROJECT_ITEM_BOOST = 0.1
+
 
 # =============================================================================
 # DATA CLASSES
@@ -45,13 +50,15 @@ class RoutingResult:
     confidence: float
     reason: str
     method: str  # "semantic", "keyword", "file_pattern", "error_pattern"
+    is_project_item: bool = False  # True if from project-local embedding
 
     def to_dict(self) -> Dict[str, Any]:
         return {
             "agent": self.agent,
             "confidence": self.confidence,
             "reason": self.reason,
-            "method": self.method
+            "method": self.method,
+            "is_project_item": self.is_project_item
         }
 
 
@@ -65,17 +72,44 @@ class SemanticRouter:
 
     Features:
     - Semantic matching using embeddings
+    - Project-aware routing with priority boost
     - Keyword fallback
     - File pattern matching
     - Error pattern matching
     - Confidence scoring
     """
 
-    def __init__(self):
-        """Initialize the semantic router."""
+    def __init__(self, project_path: Optional[str] = None):
+        """
+        Initialize the semantic router.
+
+        Args:
+            project_path: Optional project root path for project-aware routing.
+                         Auto-detected from cwd if not specified.
+        """
         self.store = EmbeddingStore()
         self.client = VoyageClient() if is_available() else None
         self._config = self._load_config()
+
+        # Set up project awareness
+        if project_path:
+            self.project_path = project_path
+        else:
+            # Auto-detect project root
+            self.project_path = self._detect_project_root()
+
+    def _detect_project_root(self) -> Optional[str]:
+        """Auto-detect project root from cwd."""
+        try:
+            from embedding_project import get_project_root
+            return get_project_root()
+        except ImportError:
+            # Fallback: look for .claude or .git
+            current = Path.cwd()
+            for path in [current] + list(current.parents):
+                if (path / ".claude").is_dir() or (path / ".git").is_dir():
+                    return str(path)
+            return None
 
     def _load_config(self) -> Dict[str, Any]:
         """Load agent routing config."""
@@ -165,15 +199,22 @@ class SemanticRouter:
         Get detailed routing explanation.
 
         Returns:
-            Dictionary with routing details
+            Dictionary with routing details including project context
         """
         context = context or {}
+
+        # Compute project embedding count
+        project_count = 0
+        if self.project_path:
+            project_count = self.store.count_project(self.project_path)
 
         explanation = {
             "query": query,
             "context": context,
+            "project_path": self.project_path,
             "semantic_available": bool(self.client and self.client.is_available),
             "embedding_count": self.store.count("agent"),
+            "project_embedding_count": project_count,
             "methods_tried": [],
             "results": []
         }
@@ -204,6 +245,38 @@ class SemanticRouter:
 
         return explanation
 
+    def route_for_project(
+        self,
+        query: str,
+        project_path: str,
+        top_k: int = 3,
+        min_confidence: float = DEFAULT_MIN_CONFIDENCE,
+        context: Optional[Dict[str, Any]] = None
+    ) -> List[RoutingResult]:
+        """
+        Route with explicit project context.
+
+        Temporarily sets project path for routing, then restores original.
+        Useful when routing for a specific project different from auto-detected.
+
+        Args:
+            query: User request or context
+            project_path: Explicit project root path
+            top_k: Number of agents to return
+            min_confidence: Minimum confidence threshold
+            context: Optional context (file paths, error messages, etc.)
+
+        Returns:
+            List of RoutingResult ordered by confidence
+        """
+        old_path = self.project_path
+        self.project_path = project_path
+
+        try:
+            return self.route(query, top_k=top_k, min_confidence=min_confidence, context=context)
+        finally:
+            self.project_path = old_path
+
     # =========================================================================
     # ROUTING METHODS
     # =========================================================================
@@ -214,29 +287,60 @@ class SemanticRouter:
         top_k: int,
         min_confidence: float
     ) -> List[RoutingResult]:
-        """Route using embedding similarity."""
+        """Route using embedding similarity with project awareness."""
         if not self.client:
             return []
 
         try:
             query_embedding = self.client.embed_query(query)
 
-            results = self.store.search(
-                query_embedding=query_embedding,
-                source_type="agent",
-                top_k=top_k,
-                min_similarity=min_confidence
-            )
-
-            return [
-                RoutingResult(
-                    agent=r.record.source_id,
-                    confidence=r.similarity,
-                    reason=f"Semantic match: {r.record.content[:60]}...",
-                    method="semantic"
+            # Use project-aware search if project path is set
+            if self.project_path and self.store.count_project(self.project_path) > 0:
+                # Search project items + global agents
+                results = self.store.search_project(
+                    query_embedding=query_embedding,
+                    project_path=self.project_path,
+                    source_type=None,  # Search all types
+                    top_k=top_k * 2,  # Get more for filtering
+                    min_similarity=min_confidence,
+                    include_global=True,
+                    global_boost=0.0  # We'll handle boost ourselves
                 )
-                for r in results
-            ]
+
+                # Filter to agent types only
+                agent_types = {"agent", "project-agent", "generated-agent"}
+                results = [r for r in results if r.record.source_type in agent_types]
+            else:
+                # Fall back to global search
+                results = self.store.search(
+                    query_embedding=query_embedding,
+                    source_type="agent",
+                    top_k=top_k,
+                    min_similarity=min_confidence
+                )
+
+            # Convert to RoutingResult with project boost
+            routing_results = []
+            for r in results:
+                is_project = r.record.source_type.startswith("project-") or \
+                             r.record.source_type.startswith("generated-")
+
+                # Apply boost for project items
+                confidence = r.similarity
+                if is_project:
+                    confidence = min(1.0, confidence + PROJECT_ITEM_BOOST)
+
+                routing_results.append(RoutingResult(
+                    agent=r.record.source_id,
+                    confidence=confidence,
+                    reason=f"Semantic match: {r.record.content[:60]}...",
+                    method="semantic",
+                    is_project_item=is_project
+                ))
+
+            # Sort by confidence and return top_k
+            routing_results.sort(key=lambda x: x.confidence, reverse=True)
+            return routing_results[:top_k]
 
         except Exception as e:
             print(f"Semantic routing error: {e}")
