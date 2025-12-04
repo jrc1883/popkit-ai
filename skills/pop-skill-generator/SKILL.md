@@ -11,7 +11,102 @@ Create custom skills tailored to the specific project's patterns, workflows, and
 
 **Core principle:** Capture project wisdom as reusable, teachable skills.
 
-**Trigger:** `/generate-skills` command after project analysis
+**Trigger:** `/popkit:project skills` command after project analysis
+
+## Arguments
+
+| Flag | Description |
+|------|-------------|
+| `--from-analysis` | Use `.claude/analysis.json` for pattern-based generation |
+| `--patterns-only` | Only generate skills for detected patterns (skip generic skills) |
+| `--min-confidence N` | Minimum pattern confidence threshold (default: 0.6) |
+| `--no-embed` | Skip auto-embedding of generated skills |
+
+## Analysis-Driven Generation
+
+When `.claude/analysis.json` exists (from `/popkit:project analyze --json`), the generator uses structured pattern data:
+
+### Step 0: Check for Analysis
+
+```python
+import json
+from pathlib import Path
+
+analysis_path = Path.cwd() / ".claude" / "analysis.json"
+if analysis_path.exists():
+    analysis = json.loads(analysis_path.read_text())
+    patterns = analysis.get("patterns", [])
+    recommended_skills = analysis.get("recommended_skills", [])
+    frameworks = analysis.get("frameworks", [])
+else:
+    # Fall back to manual discovery
+    patterns = []
+    recommended_skills = []
+```
+
+### Pattern-to-Skill Mapping
+
+When analysis is available, generate skills based on detected patterns:
+
+| Pattern | Confidence | Generated Skill |
+|---------|------------|-----------------|
+| `nextjs` + `vercel-config` | >= 0.6 | `project:deploy` - Vercel deployment |
+| `prisma` OR `drizzle` | >= 0.6 | `project:db-migrate` - Database migrations |
+| `supabase` | >= 0.6 | `project:supabase-sync` - Supabase operations |
+| `feature-flags` | >= 0.6 | `project:feature-toggle` - Feature flag management |
+| `docker-compose` | >= 0.6 | `project:docker-dev` - Docker development |
+| `redux` OR `zustand` | >= 0.6 | `project:state-patterns` - State management |
+| `react-query` | >= 0.6 | `project:data-fetching` - Server state |
+| `colocated-tests` | >= 0.6 | `project:testing` - Test conventions |
+| `atomic-design` | >= 0.6 | `project:components` - Component patterns |
+| `express-routes` OR `controller-pattern` | >= 0.6 | `project:api-patterns` - API conventions |
+
+### Generated Skill Format
+
+Skills generated from analysis include detection context:
+
+```markdown
+---
+name: project:deploy
+description: "Deploy to Vercel with preview and production environments. Detected from Next.js + Vercel configuration (confidence: 0.92)."
+---
+
+# Deploy to Vercel
+
+Automates deployment workflow for this project.
+
+## Detected From
+
+- Pattern: `nextjs` (confidence: 0.95)
+- Pattern: `vercel-config` (confidence: 0.90)
+- Files: `vercel.json`, `next.config.js`
+
+## Process
+
+1. Run type check and lint
+2. Run tests
+3. Deploy to preview (PR) or production (main)
+...
+```
+
+### Auto-Embedding After Generation
+
+After writing each SKILL.md, automatically embed for semantic discovery:
+
+```python
+import sys
+sys.path.insert(0, "hooks/utils")
+from embedding_project import auto_embed_item
+
+# After writing skill file
+skill_path = ".claude/skills/project-deploy/SKILL.md"
+success = auto_embed_item(skill_path, "project-skill")
+
+if success:
+    print(f"✓ Embedded: {skill_path}")
+else:
+    print(f"⚠ Embedding skipped (no API key or error)")
+```
 
 ## What Gets Generated
 
@@ -233,14 +328,44 @@ After generating:
 Skills generated at .claude/skills/
 
 Skills created:
-- [project]-patterns.md - Coding patterns (47 patterns found)
-- [project]-testing.md - Test conventions
-- [project]-deployment.md - Deployment workflow
-- [project]-setup.md - Dev environment setup
+✓ [project]-patterns.md - Coding patterns (47 patterns found)
+  └─ Embedded for semantic discovery
+✓ [project]-testing.md - Test conventions
+  └─ Embedded for semantic discovery
+✓ [project]-deployment.md - Deployment workflow
+  └─ Embedded for semantic discovery
+✓ [project]-setup.md - Dev environment setup
+  └─ Embedded for semantic discovery
 
-These skills are now available for this project.
+Embedding Summary:
+- Total skills: 4
+- Successfully embedded: 4
+- Skipped: 0
+
+These skills are now available for this project and discoverable via semantic search.
 
 Would you like me to review and refine any of them?
+```
+
+### When Analysis Available
+
+```
+Analysis-driven skill generation from .claude/analysis.json
+
+Patterns used (confidence >= 0.6):
+- nextjs (0.95) → project:deploy
+- prisma (0.85) → project:db-migrate
+- react-query (0.90) → project:data-fetching
+- colocated-tests (0.75) → project:testing
+
+Skills created:
+✓ project-deploy/SKILL.md - Vercel deployment
+  └─ Detected from: nextjs, vercel-config
+  └─ Embedded for semantic discovery
+✓ project-db-migrate/SKILL.md - Database migrations
+  └─ Detected from: prisma
+  └─ Embedded for semantic discovery
+...
 ```
 
 ## Customization
@@ -249,14 +374,17 @@ Generated skills can be:
 1. Edited to add more patterns
 2. Extended with team-specific conventions
 3. Linked from CLAUDE.md for automatic loading
+4. Re-embedded after changes with `/popkit:project embed`
 
 ## Integration
 
 **Requires:**
-- Project analysis (via analyze-project skill)
+- Project analysis (via analyze-project skill) for pattern-driven generation
+- Voyage AI API key for auto-embedding (optional, but recommended)
 
 **Enables:**
 - Project-specific guidance
 - Consistent coding patterns
 - Faster onboarding
 - Team convention enforcement
+- Semantic discovery of project skills
