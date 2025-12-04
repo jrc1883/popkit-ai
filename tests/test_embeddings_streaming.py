@@ -122,6 +122,251 @@ class TestEmbeddingStore(unittest.TestCase):
             self.assertIn("agent", stats["by_source_type"])
             self.assertIn("skill", stats["by_source_type"])
 
+    def test_project_path_storage(self):
+        """Test storing embeddings with project_path."""
+        from embedding_store import EmbeddingRecord
+
+        # Store a global embedding (no project_path)
+        global_record = EmbeddingRecord(
+            id="global-1",
+            content="Global skill content",
+            embedding=[0.1, 0.2, 0.3],
+            source_type="skill",
+            source_id="global-skill"
+        )
+        self.store.store(global_record)
+
+        # Store a project-local embedding
+        project_record = EmbeddingRecord(
+            id="project-1",
+            content="Project-specific skill",
+            embedding=[0.4, 0.5, 0.6],
+            source_type="project-skill",
+            source_id="my-skill",
+            project_path="/home/user/myproject"
+        )
+        self.store.store(project_record)
+
+        # Retrieve and verify
+        global_retrieved = self.store.get("global-1")
+        self.assertIsNone(global_retrieved.project_path)
+
+        project_retrieved = self.store.get("project-1")
+        self.assertEqual(project_retrieved.project_path, "/home/user/myproject")
+
+    def test_needs_update(self):
+        """Test needs_update() method for incremental embedding."""
+        from embedding_store import EmbeddingRecord
+
+        # Store a record
+        record = EmbeddingRecord(
+            id="update-test-1",
+            content="Original content",
+            embedding=[0.1, 0.2, 0.3],
+            source_type="skill",
+            source_id="test-skill"
+        )
+        self.store.store(record)
+
+        # Same content should not need update
+        self.assertFalse(self.store.needs_update("update-test-1", "Original content"))
+
+        # Different content should need update
+        self.assertTrue(self.store.needs_update("update-test-1", "Modified content"))
+
+        # Non-existent ID should need update
+        self.assertTrue(self.store.needs_update("non-existent", "Any content"))
+
+    def test_search_project(self):
+        """Test project-scoped search."""
+        from embedding_store import EmbeddingRecord
+
+        # Store global items
+        self.store.store(EmbeddingRecord(
+            id="global-skill-1",
+            content="Global debugging skill",
+            embedding=[1.0, 0.0, 0.0, 0.0],
+            source_type="skill",
+            source_id="debug-skill"
+        ))
+
+        # Store project items
+        self.store.store(EmbeddingRecord(
+            id="project-skill-1",
+            content="Project debugging skill",
+            embedding=[0.9, 0.1, 0.0, 0.0],
+            source_type="project-skill",
+            source_id="my-debug",
+            project_path="/home/user/myproject"
+        ))
+
+        # Store items from a different project
+        self.store.store(EmbeddingRecord(
+            id="other-project-1",
+            content="Other project skill",
+            embedding=[0.0, 1.0, 0.0, 0.0],
+            source_type="project-skill",
+            source_id="other-skill",
+            project_path="/home/user/otherproject"
+        ))
+
+        # Search with project scope including global
+        query = [0.95, 0.05, 0.0, 0.0]
+        results = self.store.search_project(
+            query,
+            project_path="/home/user/myproject",
+            include_global=True,
+            top_k=5
+        )
+
+        # Should find global + project items, but not other project
+        result_ids = [r.record.id for r in results]
+        self.assertIn("global-skill-1", result_ids)
+        self.assertIn("project-skill-1", result_ids)
+        self.assertNotIn("other-project-1", result_ids)
+
+        # Search project-only (no global)
+        results_no_global = self.store.search_project(
+            query,
+            project_path="/home/user/myproject",
+            include_global=False,
+            top_k=5
+        )
+
+        result_ids_no_global = [r.record.id for r in results_no_global]
+        self.assertNotIn("global-skill-1", result_ids_no_global)
+        self.assertIn("project-skill-1", result_ids_no_global)
+
+    def test_clear_project(self):
+        """Test clearing project-specific embeddings."""
+        from embedding_store import EmbeddingRecord
+
+        # Store global and project items
+        self.store.store(EmbeddingRecord(
+            id="global-2",
+            content="Global",
+            embedding=[0.1, 0.2],
+            source_type="skill",
+            source_id="global"
+        ))
+
+        self.store.store(EmbeddingRecord(
+            id="project-2",
+            content="Project",
+            embedding=[0.3, 0.4],
+            source_type="project-skill",
+            source_id="proj",
+            project_path="/home/user/myproject"
+        ))
+
+        self.store.store(EmbeddingRecord(
+            id="project-3",
+            content="Project agent",
+            embedding=[0.5, 0.6],
+            source_type="project-agent",
+            source_id="agent",
+            project_path="/home/user/myproject"
+        ))
+
+        # Clear only project-skill type
+        deleted = self.store.clear_project("/home/user/myproject", source_type="project-skill")
+        self.assertEqual(deleted, 1)
+
+        # Project agent should still exist
+        self.assertIsNotNone(self.store.get("project-3"))
+
+        # Global should still exist
+        self.assertIsNotNone(self.store.get("global-2"))
+
+        # Clear all project items
+        deleted_all = self.store.clear_project("/home/user/myproject")
+        self.assertEqual(deleted_all, 1)  # Only project-3 left
+
+        # Global should still exist
+        self.assertIsNotNone(self.store.get("global-2"))
+
+    def test_count_project(self):
+        """Test counting project embeddings."""
+        from embedding_store import EmbeddingRecord
+
+        # Store items
+        for i in range(3):
+            self.store.store(EmbeddingRecord(
+                id=f"count-proj-{i}",
+                content=f"Project item {i}",
+                embedding=[0.1] * 4,
+                source_type="project-skill" if i < 2 else "project-agent",
+                source_id=f"item-{i}",
+                project_path="/test/project"
+            ))
+
+        # Count all project items
+        total = self.store.count_project("/test/project")
+        self.assertEqual(total, 3)
+
+        # Count by type
+        skills = self.store.count_project("/test/project", source_type="project-skill")
+        self.assertEqual(skills, 2)
+
+        agents = self.store.count_project("/test/project", source_type="project-agent")
+        self.assertEqual(agents, 1)
+
+    def test_list_projects(self):
+        """Test listing projects with embeddings."""
+        from embedding_store import EmbeddingRecord
+
+        # Store items for multiple projects
+        self.store.store(EmbeddingRecord(
+            id="list-1",
+            content="Item 1",
+            embedding=[0.1],
+            source_type="project-skill",
+            source_id="s1",
+            project_path="/project/a"
+        ))
+
+        self.store.store(EmbeddingRecord(
+            id="list-2",
+            content="Item 2",
+            embedding=[0.2],
+            source_type="project-agent",
+            source_id="a1",
+            project_path="/project/a"
+        ))
+
+        self.store.store(EmbeddingRecord(
+            id="list-3",
+            content="Item 3",
+            embedding=[0.3],
+            source_type="project-command",
+            source_id="c1",
+            project_path="/project/b"
+        ))
+
+        projects = self.store.list_projects()
+
+        self.assertEqual(len(projects), 2)
+
+        # Find project A
+        proj_a = next((p for p in projects if p["project_path"] == "/project/a"), None)
+        self.assertIsNotNone(proj_a)
+        self.assertEqual(proj_a["count"], 2)
+        self.assertIn("project-skill", proj_a["source_types"])
+        self.assertIn("project-agent", proj_a["source_types"])
+
+        # Find project B
+        proj_b = next((p for p in projects if p["project_path"] == "/project/b"), None)
+        self.assertIsNotNone(proj_b)
+        self.assertEqual(proj_b["count"], 1)
+
+    def test_schema_migration(self):
+        """Test that schema migration adds project_path to existing DBs."""
+        # The migration happens in _init_db, so just verify the column exists
+        with self.store._get_connection() as conn:
+            cursor = conn.execute("PRAGMA table_info(embeddings)")
+            columns = [row[1] for row in cursor.fetchall()]
+            self.assertIn("project_path", columns)
+
 
 # =============================================================================
 # TEST: VOYAGE CLIENT (Issue #19)

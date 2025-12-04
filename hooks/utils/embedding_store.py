@@ -37,11 +37,12 @@ class EmbeddingRecord:
     id: str
     content: str
     embedding: List[float]
-    source_type: str  # "skill", "agent", "knowledge", "insight", "command"
+    source_type: str  # "skill", "agent", "command", "project-skill", "project-agent", "project-command"
     source_id: str
     metadata: Dict[str, Any] = field(default_factory=dict)
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
     embedding_model: str = DEFAULT_EMBEDDING_MODEL
+    project_path: Optional[str] = None  # NULL = global PopKit, path = project-local
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
@@ -119,7 +120,8 @@ class EmbeddingStore:
                     created_at TEXT NOT NULL,
                     embedding_model TEXT DEFAULT 'voyage-3.5',
                     embedding_dim INTEGER,
-                    content_hash TEXT
+                    content_hash TEXT,
+                    project_path TEXT DEFAULT NULL
                 )
             """)
 
@@ -140,6 +142,35 @@ class EmbeddingStore:
 
             conn.commit()
 
+            # Migration: Add project_path column if it doesn't exist (for existing DBs)
+            self._migrate_add_project_path(conn)
+
+    def _migrate_add_project_path(self, conn: sqlite3.Connection) -> None:
+        """Add project_path column to existing databases."""
+        try:
+            # Check if column exists
+            cursor = conn.execute("PRAGMA table_info(embeddings)")
+            columns = [row[1] for row in cursor.fetchall()]
+
+            if "project_path" not in columns:
+                conn.execute("ALTER TABLE embeddings ADD COLUMN project_path TEXT DEFAULT NULL")
+                conn.commit()
+
+            # Create indexes for project-scoped queries
+            conn.execute("""
+                CREATE INDEX IF NOT EXISTS idx_project_path
+                ON embeddings(project_path)
+            """)
+
+            conn.execute("""
+                CREATE INDEX IF NOT EXISTS idx_project_source
+                ON embeddings(project_path, source_type)
+            """)
+
+            conn.commit()
+        except Exception:
+            pass  # Column already exists or other non-critical error
+
     # =========================================================================
     # CRUD OPERATIONS
     # =========================================================================
@@ -157,8 +188,8 @@ class EmbeddingStore:
             conn.execute("""
                 INSERT OR REPLACE INTO embeddings
                 (id, content, embedding, source_type, source_id, metadata,
-                 created_at, embedding_model, embedding_dim, content_hash)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 created_at, embedding_model, embedding_dim, content_hash, project_path)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 record.id,
                 record.content,
@@ -169,7 +200,8 @@ class EmbeddingStore:
                 record.created_at,
                 record.embedding_model,
                 len(record.embedding),
-                content_hash
+                content_hash,
+                record.project_path
             ))
             conn.commit()
 
@@ -200,14 +232,15 @@ class EmbeddingStore:
                     record.created_at,
                     record.embedding_model,
                     len(record.embedding),
-                    content_hash
+                    content_hash,
+                    record.project_path
                 ))
 
             conn.executemany("""
                 INSERT OR REPLACE INTO embeddings
                 (id, content, embedding, source_type, source_id, metadata,
-                 created_at, embedding_model, embedding_dim, content_hash)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 created_at, embedding_model, embedding_dim, content_hash, project_path)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, data)
             conn.commit()
 
@@ -382,6 +415,195 @@ class EmbeddingStore:
         )
 
     # =========================================================================
+    # PROJECT-SCOPED OPERATIONS
+    # =========================================================================
+
+    def needs_update(self, id: str, content: str) -> bool:
+        """
+        Check if content has changed and needs re-embedding.
+
+        Compares content hash to detect changes without loading embeddings.
+
+        Args:
+            id: Record ID to check
+            content: New content to compare
+
+        Returns:
+            True if content has changed or doesn't exist, False if unchanged
+        """
+        new_hash = hashlib.sha256(content.encode()).hexdigest()[:16]
+
+        with self._get_connection() as conn:
+            result = conn.execute(
+                "SELECT content_hash FROM embeddings WHERE id = ?",
+                (id,)
+            ).fetchone()
+
+            if not result:
+                return True  # Doesn't exist, needs embedding
+
+            return result[0] != new_hash
+
+    def search_project(
+        self,
+        query_embedding: List[float],
+        project_path: str,
+        source_type: Optional[str] = None,
+        top_k: int = 5,
+        min_similarity: float = 0.0,
+        include_global: bool = True,
+        global_boost: float = 0.0
+    ) -> List[SearchResult]:
+        """
+        Search embeddings with project scope.
+
+        Project items are searched first, optionally including global PopKit items.
+        Project items get a priority boost to prefer project-specific matches.
+
+        Args:
+            query_embedding: Query vector
+            project_path: Project root path to scope results
+            source_type: Optional filter by source type
+            top_k: Number of results to return
+            min_similarity: Minimum similarity threshold
+            include_global: Whether to include global PopKit items
+            global_boost: Boost to add to global items (negative = deprioritize)
+
+        Returns:
+            List of SearchResult ordered by similarity (descending)
+        """
+        with self._get_connection() as conn:
+            # Build query based on filters
+            if include_global:
+                if source_type:
+                    rows = conn.execute(
+                        """SELECT * FROM embeddings
+                           WHERE (project_path = ? OR project_path IS NULL)
+                           AND source_type = ?""",
+                        (project_path, source_type)
+                    ).fetchall()
+                else:
+                    rows = conn.execute(
+                        """SELECT * FROM embeddings
+                           WHERE project_path = ? OR project_path IS NULL""",
+                        (project_path,)
+                    ).fetchall()
+            else:
+                if source_type:
+                    rows = conn.execute(
+                        """SELECT * FROM embeddings
+                           WHERE project_path = ? AND source_type = ?""",
+                        (project_path, source_type)
+                    ).fetchall()
+                else:
+                    rows = conn.execute(
+                        "SELECT * FROM embeddings WHERE project_path = ?",
+                        (project_path,)
+                    ).fetchall()
+
+        results = []
+        for row in rows:
+            record = self._row_to_record(row)
+            similarity = self._cosine_similarity(query_embedding, record.embedding)
+
+            # Apply boost for global items
+            if record.project_path is None and global_boost != 0.0:
+                similarity += global_boost
+
+            if similarity >= min_similarity:
+                results.append(SearchResult(record=record, similarity=similarity))
+
+        # Sort by similarity descending
+        results.sort(key=lambda x: x.similarity, reverse=True)
+
+        # Add ranks and limit
+        for i, result in enumerate(results[:top_k]):
+            result.rank = i + 1
+
+        return results[:top_k]
+
+    def clear_project(
+        self,
+        project_path: str,
+        source_type: Optional[str] = None
+    ) -> int:
+        """
+        Clear embeddings for a specific project.
+
+        Args:
+            project_path: Project root path
+            source_type: Optional specific source type to clear
+
+        Returns:
+            Number of records deleted
+        """
+        with self._get_connection() as conn:
+            if source_type:
+                cursor = conn.execute(
+                    "DELETE FROM embeddings WHERE project_path = ? AND source_type = ?",
+                    (project_path, source_type)
+                )
+            else:
+                cursor = conn.execute(
+                    "DELETE FROM embeddings WHERE project_path = ?",
+                    (project_path,)
+                )
+            conn.commit()
+            return cursor.rowcount
+
+    def count_project(self, project_path: str, source_type: Optional[str] = None) -> int:
+        """
+        Count embeddings for a specific project.
+
+        Args:
+            project_path: Project root path
+            source_type: Optional filter by source type
+
+        Returns:
+            Number of embeddings for the project
+        """
+        with self._get_connection() as conn:
+            if source_type:
+                result = conn.execute(
+                    """SELECT COUNT(*) FROM embeddings
+                       WHERE project_path = ? AND source_type = ?""",
+                    (project_path, source_type)
+                ).fetchone()
+            else:
+                result = conn.execute(
+                    "SELECT COUNT(*) FROM embeddings WHERE project_path = ?",
+                    (project_path,)
+                ).fetchone()
+
+            return result[0] if result else 0
+
+    def list_projects(self) -> List[Dict[str, Any]]:
+        """
+        List all projects with embeddings.
+
+        Returns:
+            List of project info dictionaries
+        """
+        with self._get_connection() as conn:
+            rows = conn.execute(
+                """SELECT project_path, COUNT(*) as count,
+                          GROUP_CONCAT(DISTINCT source_type) as types
+                   FROM embeddings
+                   WHERE project_path IS NOT NULL
+                   GROUP BY project_path
+                   ORDER BY project_path"""
+            ).fetchall()
+
+        return [
+            {
+                "project_path": row[0],
+                "count": row[1],
+                "source_types": row[2].split(",") if row[2] else []
+            }
+            for row in rows
+        ]
+
+    # =========================================================================
     # STATISTICS
     # =========================================================================
 
@@ -504,6 +726,8 @@ class EmbeddingStore:
 
     def _row_to_record(self, row: tuple) -> EmbeddingRecord:
         """Convert database row to EmbeddingRecord."""
+        # Row columns: id, content, embedding, source_type, source_id, metadata,
+        #              created_at, embedding_model, embedding_dim, content_hash, project_path
         return EmbeddingRecord(
             id=row[0],
             content=row[1],
@@ -512,7 +736,8 @@ class EmbeddingStore:
             source_id=row[4],
             metadata=json.loads(row[5]) if row[5] else {},
             created_at=row[6],
-            embedding_model=row[7] or DEFAULT_EMBEDDING_MODEL
+            embedding_model=row[7] or DEFAULT_EMBEDDING_MODEL,
+            project_path=row[10] if len(row) > 10 else None
         )
 
     def clear(self, source_type: Optional[str] = None) -> int:
