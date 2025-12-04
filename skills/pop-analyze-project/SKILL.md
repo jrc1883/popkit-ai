@@ -11,7 +11,92 @@ Perform deep analysis of a codebase to understand its architecture, patterns, de
 
 **Core principle:** Understand before changing. Map before navigating.
 
-**Trigger:** `/analyze-project` command or when starting work on unfamiliar project
+**Trigger:** `/popkit:project analyze` command or when starting work on unfamiliar project
+
+## Arguments
+
+| Flag | Description |
+|------|-------------|
+| `--json` | Output structured JSON instead of markdown, save to `.claude/analysis.json` |
+| `--quick` | Quick summary only (5-10 lines) |
+| `--focus <area>` | Focus analysis: `arch`, `deps`, `quality`, `patterns` |
+
+## JSON Output Mode
+
+When `--json` flag is provided:
+
+1. **Output Format**: Structured JSON matching `output-styles/schemas/project-analysis.schema.json`
+2. **Save Location**: `.claude/analysis.json`
+3. **Purpose**: Machine-readable output for skill generators and MCP generators
+
+### JSON Output Process
+
+```python
+import sys
+import json
+from datetime import datetime
+from pathlib import Path
+
+# Add pattern detector to path
+sys.path.insert(0, "hooks/utils")
+from pattern_detector import analyze_project, detect_frameworks
+
+# Detect patterns
+project_dir = Path.cwd()
+patterns = analyze_project(project_dir)
+frameworks = detect_frameworks(project_dir)
+
+# Build output
+output = {
+    "project_name": project_dir.name,
+    "project_type": frameworks[0].name if frameworks else "unknown",
+    "analyzed_at": datetime.now().isoformat(),
+    "frameworks": [
+        {"name": p.name, "confidence": p.confidence, "version": ""}
+        for p in frameworks
+    ],
+    "patterns": [
+        {
+            "name": p.name,
+            "category": p.category,
+            "confidence": p.confidence,
+            "examples": p.examples,
+            "description": p.description
+        }
+        for p in patterns if p.category != "framework"
+    ],
+    "recommended_skills": [],  # Populated based on patterns
+    "recommended_agents": [],  # Populated based on analysis
+    "commands": {},  # Extracted from package.json
+    "quality_metrics": {}  # TypeScript, linting, etc.
+}
+
+# Save to .claude/analysis.json
+claude_dir = project_dir / ".claude"
+claude_dir.mkdir(exist_ok=True)
+(claude_dir / "analysis.json").write_text(json.dumps(output, indent=2))
+print(json.dumps(output, indent=2))
+```
+
+### Skill/Agent Recommendation Logic
+
+Based on detected patterns, recommend:
+
+| Pattern | Recommended Skill | Priority |
+|---------|-------------------|----------|
+| nextjs + vercel-config | `project:deploy` | high |
+| prisma OR drizzle | `project:db-migrate` | high |
+| supabase | `project:supabase-sync` | medium |
+| docker-compose | `project:docker-dev` | medium |
+| feature-flags | `project:feature-toggle` | low |
+
+| Pattern | Recommended Agent |
+|---------|-------------------|
+| Large codebase (>100 files) | `performance-optimizer` |
+| React/Vue components | `accessibility-guardian` |
+| API routes | `api-designer` |
+| Security-sensitive | `security-auditor` |
+| Low test coverage | `test-writer-fixer` |
 
 ## Analysis Areas
 
