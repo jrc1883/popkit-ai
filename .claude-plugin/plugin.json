@@ -18,10 +18,10 @@
     "embeddings",
     "semantic-search"
   ],
-  "components": {
-    "commands": 17,
-    "skills": 34,
-    "agents": 30,
-    "hooks": 19
+  "stats": {
+    "commandCount": 17,
+    "skillCount": 34,
+    "agentCount": 30,
+    "hookCount": 19
   }
 }
