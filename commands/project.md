@@ -17,6 +17,7 @@ Tools for understanding, configuring, and customizing projects after initial set
 | Subcommand | Description |
 |------------|-------------|
 | `analyze` | Deep codebase analysis (default) |
+| `embed` | Embed project items for semantic search |
 | `mcp` | Generate project-specific MCP server |
 | `setup` | Configure pre-commit hooks and quality gates |
 | `skills` | Generate custom skills from project patterns |
@@ -110,6 +111,90 @@ Invokes the **pop-analyze-project** skill:
 | `-T`, `--thinking` | Enable extended thinking for deep analysis |
 | `--no-thinking` | Disable extended thinking (use default) |
 | `--think-budget N` | Set thinking token budget (default: 10000) |
+
+---
+
+## Subcommand: embed
+
+Embed project-local items (skills, agents, commands) for semantic search and discovery.
+
+```
+/popkit:project embed                   # Embed all project items
+/popkit:project embed --status          # Show embedding status only
+/popkit:project embed --force           # Re-embed all items
+/popkit:project embed --type skill      # Embed only skills
+```
+
+### Process
+
+Invokes the **pop-embed-project** skill:
+
+1. **Scan Project**
+   - Find all `.claude/skills/*/SKILL.md`
+   - Find all `.claude/agents/*/AGENT.md`
+   - Find all `.claude/commands/*.md`
+   - Find all `.generated/` items
+
+2. **Check for Changes**
+   - Compare content hash with stored embeddings
+   - Skip unchanged items unless `--force`
+
+3. **Embed Items**
+   - Call Voyage API for new/changed items
+   - Respect 3 RPM rate limit (21s delays)
+   - Store with project_path metadata
+
+4. **Report Results**
+   - Items found
+   - Items embedded
+   - Items skipped (unchanged)
+   - Items with errors
+
+### Output
+
+```
+Scanning project: /path/to/project
+
+Found 8 items:
+- 3 project-skill
+- 2 project-agent
+- 3 project-command
+
+Embedding 5 new/changed items...
+Waiting 21s for rate limit...
+
+Embedding complete!
+  Embedded: 5
+  Skipped: 3 (unchanged)
+  Errors: 0
+```
+
+### Status Output
+
+```
+/popkit:project embed --status
+
+Project: /path/to/project
+API Available: Yes
+
+Items Found:    8
+Items Embedded: 8
+Items Stale:    0
+Items Missing:  0
+
+By Type:
+  project-skill: 3/3
+  project-agent: 2/2
+  project-command: 3/3
+```
+
+### Options
+
+| Flag | Description |
+|------|-------------|
+| `--status` | Show embedding status without embedding |
+| `--force`, `-f` | Re-embed all items even if unchanged |
+| `--type <type>` | Filter to type: `skill`, `agent`, `command` |
 
 ---
 
@@ -371,6 +456,7 @@ This command fits into the project lifecycle:
 3. **Configure Quality**: `/popkit:project setup` → Pre-commit hooks
 4. **Enhance Tooling**: `/popkit:project mcp` → Project-specific MCP
 5. **Customize**: `/popkit:project skills` → Project-specific skills
+6. **Enable Discovery**: `/popkit:project embed` → Semantic search for project items
 
 ---
 
@@ -379,9 +465,11 @@ This command fits into the project lifecycle:
 | Component | Integration |
 |-----------|-------------|
 | Analysis Skill | `skills/pop-analyze-project/SKILL.md` |
+| Embed Skill | `skills/pop-embed-project/SKILL.md` |
 | MCP Generator Skill | `skills/pop-mcp-generator/SKILL.md` |
 | Setup Skill | `skills/pop-setup-precommit/SKILL.md` |
 | Skills Generator | `skills/pop-skill-generator/SKILL.md` |
+| Embedding Module | `hooks/utils/embedding_project.py` |
 | MCP Template | `templates/mcp-server/` |
 
 ## Related Commands
