@@ -1,6 +1,23 @@
 ---
 description: GitHub CI/CD management - workflow runs, releases, changelogs, and deployment status
+deprecated: true
+deprecated_in_favor_of: /popkit:git
 ---
+
+> **DEPRECATED:** This command is deprecated. Use `/popkit:git` instead:
+> - `/popkit:ci run list` → `/popkit:git ci list`
+> - `/popkit:ci run view` → `/popkit:git ci view`
+> - `/popkit:ci run rerun` → `/popkit:git ci rerun`
+> - `/popkit:ci run watch` → `/popkit:git ci watch`
+> - `/popkit:ci run cancel` → `/popkit:git ci cancel`
+> - `/popkit:ci run download` → `/popkit:git ci download`
+> - `/popkit:ci run logs` → `/popkit:git ci logs`
+> - `/popkit:ci release create` → `/popkit:git release create`
+> - `/popkit:ci release list` → `/popkit:git release list`
+> - `/popkit:ci release view` → `/popkit:git release view`
+> - `/popkit:ci release edit` → `/popkit:git release edit`
+> - `/popkit:ci release delete` → `/popkit:git release delete`
+> - `/popkit:ci release changelog` → `/popkit:git release changelog`
 
 # /popkit:ci - CI/CD Management
 

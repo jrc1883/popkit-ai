@@ -1,10 +1,10 @@
 ---
-description: Git workflow management - commit, push, PR management, code review, branch cleanup, and development completion
+description: Git workflow management - commit, push, PR, code review, CI/CD runs, releases, branch cleanup
 ---
 
 # /popkit:git - Git Workflow Management
 
-Comprehensive git operations with smart commits, PR management, code review, branch cleanup, and development completion.
+Comprehensive git operations with smart commits, PR management, code review, CI/CD runs, releases, branch cleanup, and development completion.
 
 ## Usage
 
@@ -20,6 +20,8 @@ Comprehensive git operations with smart commits, PR management, code review, bra
 | `push` | Push current branch to remote |
 | `pr` | Pull request management (create, list, view, merge) |
 | `review` | Code review with confidence-based filtering |
+| `ci` | GitHub Actions workflow runs (list, view, rerun, watch) |
+| `release` | GitHub releases (create, list, view, changelog) |
 | `prune` | Remove stale local branches after PR merge |
 | `finish` | Complete development with 4-option flow |
 
@@ -328,6 +330,252 @@ Clean implementation with good test coverage. Two issues found.
 
 ---
 
+## Subcommand: ci
+
+Monitor and manage GitHub Actions workflows.
+
+```
+/popkit:git ci                            # Recent runs (default)
+/popkit:git ci list                       # Same as above
+/popkit:git ci list --workflow ci.yml     # Specific workflow
+/popkit:git ci list --branch main         # By branch
+/popkit:git ci list --status failure      # Failed only
+/popkit:git ci view 234                   # View run details
+/popkit:git ci view 234 --log             # With logs
+/popkit:git ci rerun 233                  # Rerun all jobs
+/popkit:git ci rerun 233 --failed         # Rerun failed only
+/popkit:git ci watch 235                  # Watch running workflow
+/popkit:git ci cancel 235                 # Cancel running workflow
+/popkit:git ci download 234               # Download artifacts
+/popkit:git ci logs 234                   # View logs
+```
+
+### ci list (default for ci)
+
+List workflow runs:
+
+```
+/popkit:git ci                            # Recent runs
+/popkit:git ci list --workflow ci.yml     # Specific workflow
+/popkit:git ci list --branch main         # By branch
+/popkit:git ci list --status failure      # Failed only
+/popkit:git ci list --limit 20            # More results
+```
+
+Output:
+```
+Recent Workflow Runs:
+[ok] CI #234 - main - 2m ago - 3m 45s
+[x] CI #233 - feature/auth - 1h ago - 2m 12s
+[ok] Deploy #89 - main - 2h ago - 5m 30s
+[...] CI #235 - fix/bug - running - 1m 20s
+```
+
+### ci view
+
+View run details:
+
+```
+/popkit:git ci view 234
+/popkit:git ci view 234 --log
+/popkit:git ci view 234 --job build
+```
+
+Output:
+```
+Run #234: CI
+Status: success
+Workflow: ci.yml
+Branch: main
+Commit: abc123 - "feat: add auth"
+Duration: 3m 45s
+Triggered: push
+
+Jobs:
+[ok] build (1m 20s)
+[ok] test (2m 15s)
+[ok] lint (45s)
+```
+
+### ci rerun
+
+Rerun workflow:
+
+```
+/popkit:git ci rerun 233              # Rerun all jobs
+/popkit:git ci rerun 233 --failed     # Rerun failed jobs only
+/popkit:git ci rerun 233 --job test   # Rerun specific job
+```
+
+### ci watch
+
+Watch running workflow with live updates:
+
+```
+/popkit:git ci watch 235
+```
+
+### ci cancel
+
+Cancel running workflow:
+
+```
+/popkit:git ci cancel 235
+```
+
+### ci download
+
+Download artifacts:
+
+```
+/popkit:git ci download 234           # All artifacts
+/popkit:git ci download 234 --name dist
+```
+
+### ci logs
+
+View logs:
+
+```
+/popkit:git ci logs 234               # All logs
+/popkit:git ci logs 234 --job build   # Specific job
+/popkit:git ci logs 234 --failed      # Failed steps only
+```
+
+### Workflow Status Icons
+
+- [ok] success
+- [x] failure
+- [...] in_progress
+- [ ] queued
+- [~] cancelled
+- [!] skipped
+
+---
+
+## Subcommand: release
+
+Create and manage GitHub releases with auto-generated changelogs.
+
+```
+/popkit:git release                       # List releases (default)
+/popkit:git release list                  # Same as above
+/popkit:git release create v1.2.0         # Create release
+/popkit:git release create v1.2.0 --draft # Create as draft
+/popkit:git release view v1.2.0           # View release
+/popkit:git release edit v1.2.0           # Edit release
+/popkit:git release delete v1.2.0         # Delete release
+/popkit:git release changelog             # Preview changelog
+```
+
+### release list (default for release)
+
+List releases:
+
+```
+/popkit:git release                       # All releases
+/popkit:git release list --limit 5        # Recent 5
+/popkit:git release list --draft          # Include drafts
+```
+
+### release create
+
+Create new release:
+
+```
+/popkit:git release create <version>
+/popkit:git release create v1.2.0
+/popkit:git release create v1.2.0 --draft
+/popkit:git release create v1.2.0 --prerelease
+```
+
+**Process:**
+1. Generate changelog from commits since last release
+2. Create git tag
+3. Create GitHub release with notes
+
+**Release Notes Template:**
+```markdown
+## What's Changed
+
+### Features
+- feat: Add user authentication (#45)
+- feat: Add dark mode support (#43)
+
+### Bug Fixes
+- fix: Resolve login validation issue (#44)
+
+### Other Changes
+- chore: Update dependencies
+- docs: Improve API documentation
+
+## Full Changelog
+https://github.com/owner/repo/compare/v1.1.0...v1.2.0
+
+---
+Generated with Claude Code
+```
+
+### release view
+
+View release details:
+
+```
+/popkit:git release view v1.2.0
+```
+
+### release edit
+
+Edit release:
+
+```
+/popkit:git release edit v1.2.0 --notes "Updated notes"
+/popkit:git release edit v1.2.0 --draft false
+/popkit:git release edit v1.2.0 --prerelease true
+```
+
+### release delete
+
+Delete release:
+
+```
+/popkit:git release delete v1.2.0
+/popkit:git release delete v1.2.0 --tag  # Also delete tag
+```
+
+### release changelog
+
+Generate changelog without creating release:
+
+```
+/popkit:git release changelog          # Since last release
+/popkit:git release changelog v1.1.0   # Since specific version
+/popkit:git release changelog --format md
+```
+
+### Version Detection
+
+Automatically detects version from:
+1. Command argument
+2. package.json version
+3. Cargo.toml version
+4. Latest tag + increment
+
+### Changelog Generation
+
+Analyzes commits for:
+- **feat**: New features
+- **fix**: Bug fixes
+- **docs**: Documentation
+- **perf**: Performance
+- **refactor**: Code changes
+- **test**: Tests
+- **chore**: Maintenance
+
+Groups by type and includes PR/issue links.
+
+---
+
 ## Subcommand: prune
 
 Remove stale local branches after PRs are merged.
@@ -466,6 +714,21 @@ Requires typed confirmation. Deletes branch, commits, and worktree.
 
 # Complete development work
 /popkit:git finish
+
+# CI/CD - Check why CI failed
+/popkit:git ci list --status failure
+/popkit:git ci view 233 --log
+/popkit:git ci rerun 233 --failed
+
+# CI/CD - Watch current run
+/popkit:git ci watch
+
+# Releases - Create with auto-generated notes
+/popkit:git release create v1.2.0
+/popkit:git release create v1.3.0 --draft
+
+# View changelog preview
+/popkit:git release changelog
 ```
 
 ---
@@ -508,12 +771,18 @@ gh pr checkout 67
 | Code Review Skill | `skills/pop-code-review/SKILL.md` |
 | Branch Cleanup | Git branch tracking |
 | Finish Flow | `skills/pop-finish-branch/SKILL.md` |
-| GitHub CLI | `gh pr create`, `gh pr list`, etc. |
+| GitHub CLI | `gh pr create`, `gh pr list`, `gh run`, `gh release` |
+| Workflow Runs | `gh run list/view/rerun/watch/cancel` commands |
+| Workflow Artifacts | `gh run download` for build outputs |
+| Release Creation | `gh release create` with auto-notes |
+| Changelog Generation | Parses conventional commits (feat, fix, docs, etc.) |
+| Version Detection | package.json, Cargo.toml, pyproject.toml, git tags |
+| Morning Health Check | `/popkit:morning` includes CI status |
 
 ## Related Commands
 
 | Command | Purpose |
 |---------|---------|
 | `/popkit:worktree` | Git worktree management |
-| `/popkit:plan execute` | Leads to finish flow |
-| `/popkit:ci` | CI/CD status and releases |
+| `/popkit:dev execute` | Leads to finish flow |
+| `/popkit:morning` | Includes CI status check |
