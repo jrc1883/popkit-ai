@@ -90,11 +90,11 @@ agents/                  30 agent definitions with tiered activation
   tier-1-always-active/  11 core agents (code-reviewer, bug-whisperer, etc.)
   tier-2-on-demand/      17 specialized agents (including power-coordinator)
   feature-workflow/      2 agents for 7-phase feature development
-skills/                  30 reusable skills (SKILL.md format in subdirectories)
-commands/                15 slash commands for workflows (consolidated with subcommands)
-hooks/                   17 Python hooks (JSON stdin/stdout protocol)
+skills/                  34 reusable skills (SKILL.md format in subdirectories)
+commands/                17 slash commands for workflows (consolidated with subcommands)
+hooks/                   19 Python hooks (JSON stdin/stdout protocol)
   hooks.json             Hook configuration and event mapping
-  utils/                 Stateless utilities (message_builder.py, context_carrier.py, stateless_hook.py, mcp_detector.py, routine_storage.py, plugin_detector.py)
+  utils/                 17 utility modules (embeddings, routing, message building, context, etc.)
   pre_tool_use_stateless.py  Stateless safety checks
   post_tool_use_stateless.py Stateless result processing
 output-styles/           15+ output format templates (includes schemas/)
@@ -220,6 +220,43 @@ User: Execute plan from: /path/to/implementation.pdf
 ```
 
 Use `document-skills:pdf` to generate actual PDF files from output.
+
+### Semantic Embeddings
+
+PopKit uses Voyage AI embeddings for semantic search and tool discovery:
+
+**Configuration:**
+- API Key: Set `VOYAGE_API_KEY` environment variable
+- Model: `voyage-3.5` (1024 dimensions)
+- Storage: SQLite database at `~/.claude/config/embeddings.db`
+
+**Rate Limits:**
+| Limit | Value | Handling |
+|-------|-------|----------|
+| Requests per minute | 3 | 21-second delay between batches |
+| Items per request | 50 | Automatic batching |
+| Tokens per request | 120,000 | Descriptions typically small |
+
+**Embedding Sources:**
+| Source Type | Location | Priority |
+|-------------|----------|----------|
+| `popkit-skill` | PopKit plugin skills | Base |
+| `popkit-agent` | PopKit plugin agents | Base |
+| `project-skill` | `.claude/skills/*/SKILL.md` | Boosted (+0.1) |
+| `project-agent` | `.claude/agents/*/AGENT.md` | Boosted (+0.1) |
+| `project-command` | `.claude/commands/*.md` | Boosted (+0.1) |
+| `mcp-tool` | MCP server tool definitions | Base |
+
+**Key Files:**
+- `hooks/utils/voyage_client.py` - API client with retry logic
+- `hooks/utils/embedding_store.py` - SQLite persistence layer
+- `hooks/utils/embedding_project.py` - Project item scanning and embedding
+- `hooks/utils/semantic_router.py` - Semantic search with project awareness
+
+**Commands:**
+- `/popkit:project embed` - Embed project-local items
+- `/popkit:project embed --status` - Show embedding status
+- `/popkit:project generate` - Full pipeline including embedding
 
 ## Key Architectural Patterns
 
@@ -432,12 +469,42 @@ npm run build
 | `hooks/utils/mcp_detector.py` | MCP infrastructure detection for morning generator |
 | `hooks/utils/routine_storage.py` | Project routine CRUD and config management |
 | `hooks/utils/plugin_detector.py` | Plugin conflict detection utility |
+| `hooks/utils/voyage_client.py` | Voyage AI embedding API client |
+| `hooks/utils/embedding_store.py` | SQLite embedding storage with project support |
+| `hooks/utils/embedding_project.py` | Project item embedding and scanning |
+| `hooks/utils/semantic_router.py` | Semantic search with project priority |
+| `hooks/utils/pattern_detector.py` | Code pattern detection utilities |
 
 ## Version History
 
 **Note:** Popkit uses `0.x.y` versioning until stable. Version `1.0.0` will mark API stability.
 
-### v0.9.5 (Current) - Unified Routine Management System
+### v0.9.6 (Current) - Embeddings Enhancement & Semantic Routing
+
+- **Semantic Embeddings System** - Project-local embedding infrastructure:
+  - `hooks/utils/voyage_client.py` - Voyage AI API client with rate limiting
+  - `hooks/utils/embedding_store.py` - SQLite storage with project_path support
+  - `hooks/utils/embedding_project.py` - Project item embedding (skills, agents, commands)
+  - `hooks/utils/semantic_router.py` - Semantic search with project priority boost
+  - `hooks/utils/pattern_detector.py` - 6 detection functions for code patterns
+- **Generator Improvements** - Analysis-driven generation:
+  - `pop-analyze-project` - JSON output mode (`--json`) with structured analysis
+  - `pop-skill-generator` - Consumes analysis, auto-embeds generated skills
+  - `pop-mcp-generator` - Semantic tool descriptions, auto-embedding
+- **New Skills** - Embedding management:
+  - `pop-embed-content` - Project item embedding with rate limiting
+  - `pop-embed-project` - Incremental project embedding
+- **MCP Server Template** - Semantic search support:
+  - `templates/mcp-server/src/search/embeddings.ts` - Embedding loader
+  - `templates/mcp-server/src/search/semantic.ts` - Cosine similarity search
+  - Hybrid search combining semantic and keyword matching
+- **New Command Subcommands**:
+  - `/popkit:project embed` - Embed project items for semantic discovery
+  - `/popkit:project generate` - Full pipeline: analyze → skills → mcp → embed
+- **JSON Schema** - `output-styles/schemas/project-analysis.schema.json`
+- **GitHub Issues Closed** - #45-55 (Phase 1-3 of Embeddings Enhancement)
+
+### v0.9.5 - Unified Routine Management System
 
 - **Unified Routine Management** - Single command interface for morning/nightly routines:
   - Numbered routine slots (`pk`, `rc-1`, `rc-2`, etc.) instead of separate slash commands
