@@ -1,6 +1,21 @@
 ---
 description: End-of-day cleanup, maintenance, and session state preservation - Sleep Score 0-100
+deprecated: true
+deprecated_in_favor_of: /popkit:routine
 ---
+
+> **DEPRECATED:** This command is deprecated. Use `/popkit:routine nightly` instead:
+> - `/popkit:nightly` → `/popkit:routine nightly`
+> - `/popkit:nightly quick` → `/popkit:routine nightly quick`
+> - `/popkit:nightly cleanup` → `/popkit:routine nightly cleanup`
+> - `/popkit:nightly git` → `/popkit:routine nightly git`
+> - `/popkit:nightly security` → `/popkit:routine nightly security`
+> - `/popkit:nightly backup` → `/popkit:routine nightly backup`
+> - `/popkit:nightly generate` → `/popkit:routine nightly generate`
+> - `/popkit:nightly list` → `/popkit:routine nightly list`
+> - `/popkit:nightly set <id>` → `/popkit:routine nightly set <id>`
+> - `/popkit:nightly edit <id>` → `/popkit:routine nightly edit <id>`
+> - `/popkit:nightly delete <id>` → `/popkit:routine nightly delete <id>`
 
 # /popkit:nightly - Nightly Maintenance
 

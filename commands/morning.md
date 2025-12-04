@@ -1,6 +1,18 @@
 ---
 description: Morning health check and project-specific generator - Ready to Code score 0-100
+deprecated: true
+deprecated_in_favor_of: /popkit:routine
 ---
+
+> **DEPRECATED:** This command is deprecated. Use `/popkit:routine morning` instead:
+> - `/popkit:morning` → `/popkit:routine morning`
+> - `/popkit:morning quick` → `/popkit:routine morning quick`
+> - `/popkit:morning run pk` → `/popkit:routine morning run pk`
+> - `/popkit:morning generate` → `/popkit:routine morning generate`
+> - `/popkit:morning list` → `/popkit:routine morning list`
+> - `/popkit:morning set <id>` → `/popkit:routine morning set <id>`
+> - `/popkit:morning edit <id>` → `/popkit:routine morning edit <id>`
+> - `/popkit:morning delete <id>` → `/popkit:routine morning delete <id>`
 
 # /popkit:morning - Morning Health Check
 
