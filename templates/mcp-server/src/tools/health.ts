@@ -27,8 +27,8 @@ export const healthTools: Tool[] = [
       properties: {},
     },
     async handler(_args, workspacePath) {
-      // Customize port for your project
-      const port = {{DEV_PORT}};
+      // Customize port for your project (replaced by generator)
+      const port = 3000; // {{DEV_PORT}}
       const running = await checkPort(port);
 
       return {
@@ -48,8 +48,8 @@ export const healthTools: Tool[] = [
       properties: {},
     },
     async handler(_args, workspacePath) {
-      // Customize for your database
-      const port = {{DB_PORT}};
+      // Customize for your database (replaced by generator)
+      const port = 5432; // {{DB_PORT}}
 
       try {
         // For PostgreSQL - customize for your database type
