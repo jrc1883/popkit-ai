@@ -11,7 +11,16 @@ Generate a custom MCP (Model Context Protocol) server tailored to the specific p
 
 **Core principle:** Every project deserves tools that understand its unique architecture.
 
-**Trigger:** `/generate-mcp` command after project analysis
+**Trigger:** `/popkit:project mcp` command after project analysis
+
+## Arguments
+
+| Flag | Description |
+|------|-------------|
+| `--from-analysis` | Use `.claude/analysis.json` for tool selection |
+| `--no-embed` | Skip auto-embedding of tools |
+| `--no-semantic` | Don't include semantic search capabilities |
+| `--tools <list>` | Comma-separated list of tools to generate |
 
 ## What Gets Generated
 
@@ -234,13 +243,198 @@ Next steps:
 Would you like me to build and test it?
 ```
 
+## Analysis-Driven Generation
+
+When `.claude/analysis.json` exists (from `/popkit:project analyze --json`), the generator uses structured data:
+
+### Step 0: Check for Analysis
+
+```python
+import json
+from pathlib import Path
+
+analysis_path = Path.cwd() / ".claude" / "analysis.json"
+if analysis_path.exists():
+    analysis = json.loads(analysis_path.read_text())
+    frameworks = analysis.get("frameworks", [])
+    patterns = analysis.get("patterns", [])
+    commands = analysis.get("commands", {})
+else:
+    # Fall back to manual detection
+    frameworks = []
+    patterns = []
+    commands = {}
+```
+
+### Analysis-Informed Tool Selection
+
+| Framework | Generated Tools |
+|-----------|-----------------|
+| `nextjs` | `check_dev_server`, `check_build`, `run_typecheck` |
+| `express` | `check_api_server`, `health_endpoints` |
+| `prisma` | `check_database`, `run_migrations`, `prisma_studio` |
+| `supabase` | `check_supabase`, `supabase_status` |
+| `redis` | `check_redis`, `redis_info` |
+| `docker-compose` | `docker_status`, `docker_logs` |
+
+## Embedding-Friendly Tool Descriptions
+
+Tool descriptions should be detailed enough for semantic matching:
+
+### Before (Too Brief)
+```typescript
+{
+  name: "health:dev-server",
+  description: "Check dev server"
+}
+```
+
+### After (Semantic-Friendly)
+```typescript
+{
+  name: "health:dev-server",
+  description: "Check if the Next.js development server is running and responding on port 3000. Use this to verify the dev environment is working, troubleshoot startup issues, or confirm the app is accessible. Returns status, URL, and response time."
+}
+```
+
+### Description Guidelines
+
+1. **State the action clearly** - "Check if...", "Run...", "Get..."
+2. **Include the target** - "...Next.js development server..."
+3. **Mention common use cases** - "...troubleshoot startup issues..."
+4. **List what it returns** - "Returns status, URL, and response time"
+
+## Auto-Embedding Tools
+
+After generating the MCP server, automatically embed tool descriptions:
+
+### Export Tool Embeddings
+
+```python
+import sys
+import json
+from datetime import datetime
+from pathlib import Path
+
+sys.path.insert(0, "hooks/utils")
+from voyage_client import VoyageClient
+
+def export_tool_embeddings(tools: list, output_path: str):
+    """Export embeddings for semantic search."""
+    client = VoyageClient()
+
+    if not client.is_available:
+        print("⚠ Voyage API not available, skipping embeddings")
+        return False
+
+    descriptions = [t["description"] for t in tools]
+    embeddings = client.embed(descriptions, input_type="document")
+
+    output = {
+        "generated_at": datetime.now().isoformat(),
+        "model": "voyage-3.5",
+        "dimension": len(embeddings[0]) if embeddings else 0,
+        "tools": [
+            {
+                "name": t["name"],
+                "description": t["description"],
+                "embedding": emb
+            }
+            for t, emb in zip(tools, embeddings)
+        ]
+    }
+
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+    Path(output_path).write_text(json.dumps(output, indent=2))
+    print(f"✓ Exported {len(tools)} tool embeddings to {output_path}")
+    return True
+
+# After generating MCP server
+tools = [
+    {"name": "health:dev-server", "description": "Check if the Next.js..."},
+    {"name": "health:database", "description": "Check database connectivity..."},
+    # ... other tools
+]
+
+export_tool_embeddings(tools, ".claude/tool_embeddings.json")
+```
+
+### Register in Embedding Store
+
+Also store in the global embedding database for cross-project discovery:
+
+```python
+from embedding_project import auto_embed_item
+
+# After writing each tool file
+for tool_file in tool_files:
+    success = auto_embed_item(tool_file, "mcp-tool")
+    if success:
+        print(f"  └─ Embedded: {tool_file}")
+```
+
+## Updated Generation Flow
+
+```
+1. Check for .claude/analysis.json
+2. If exists: Use recommended tools from analysis
+3. If not: Fall back to project detection
+4. Generate MCP server with detailed descriptions
+5. Export tool_embeddings.json for semantic search
+6. Register tools in embedding store
+7. Update .claude/settings.json
+8. Report status with embedding summary
+```
+
+## Post-Generation
+
+After generating:
+
+```
+MCP server generated at .claude/mcp-servers/[project]-dev/
+
+Tools created (8):
+✓ health:dev-server - Check Next.js dev server
+  └─ Embedded for semantic search
+✓ health:database - Check PostgreSQL connectivity
+  └─ Embedded for semantic search
+✓ quality:typecheck - Run TypeScript type checking
+  └─ Embedded for semantic search
+✓ quality:lint - Run ESLint checks
+  └─ Embedded for semantic search
+✓ quality:test - Run Jest test suite
+  └─ Embedded for semantic search
+✓ git:status - Get git working tree status
+  └─ Embedded for semantic search
+✓ git:diff - Show staged and unstaged changes
+  └─ Embedded for semantic search
+✓ search:tools - Semantic tool search
+  └─ Embedded for semantic search
+
+Embedding Summary:
+- Tool embeddings: .claude/tool_embeddings.json
+- Total tools: 8
+- Successfully embedded: 8
+- Model: voyage-3.5
+
+Next steps:
+1. cd .claude/mcp-servers/[project]-dev
+2. npm install
+3. npm run build
+4. Restart Claude Code to load MCP server
+
+Would you like me to build and test it?
+```
+
 ## Integration
 
 **Requires:**
-- Project analysis (via analyze-project skill)
+- Project analysis (via analyze-project skill) for best results
+- Voyage AI API key for auto-embedding (optional, but recommended)
 
 **Enables:**
 - Project-specific tools in Claude Code
-- Semantic tool search
-- Health monitoring
-- Custom workflows
+- Semantic tool search with natural language queries
+- Health monitoring with detailed status
+- Custom workflows tailored to your stack
+- Discoverable tools across projects
