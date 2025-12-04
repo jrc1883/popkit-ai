@@ -12,6 +12,7 @@ import os
 import sys
 import json
 import re
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
@@ -299,6 +300,10 @@ def initialize_embeddings(
         if verbose:
             print(f"Cleared {cleared} existing embeddings")
 
+    # Rate limit delay for free tier (3 RPM)
+    # Each type makes 1 API call, so we need 21s between calls to stay under limit
+    rate_limit_delay = 21
+
     # Process skills
     if skills:
         if verbose:
@@ -315,6 +320,12 @@ def initialize_embeddings(
 
     # Process agents
     if agents:
+        # Wait for rate limit if we just embedded skills
+        if skills and results["skills"]["embedded"] > 0:
+            if verbose:
+                print(f"\nWaiting {rate_limit_delay}s for rate limit...")
+            time.sleep(rate_limit_delay)
+
         if verbose:
             print("\nExtracting agents...")
         agent_items = extract_agent_descriptions()
@@ -329,6 +340,12 @@ def initialize_embeddings(
 
     # Process commands
     if commands:
+        # Wait for rate limit if we just embedded agents
+        if agents and results["agents"]["embedded"] > 0:
+            if verbose:
+                print(f"\nWaiting {rate_limit_delay}s for rate limit...")
+            time.sleep(rate_limit_delay)
+
         if verbose:
             print("\nExtracting commands...")
         command_items = extract_command_descriptions()

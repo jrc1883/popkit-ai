@@ -13,7 +13,7 @@ import json
 import re
 from typing import Dict, List, Any, Optional, Tuple
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 # Constants
@@ -432,7 +432,7 @@ def create_routine(
     os.makedirs(os.path.join(routine_path, "checks" if routine_type == "morning" else "scripts"), exist_ok=True)
 
     # Create routine.md
-    now = datetime.utcnow().isoformat() + "Z"
+    now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     routine_content = f"""---
 id: {routine_id}
 name: {name}
