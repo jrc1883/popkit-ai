@@ -19,7 +19,7 @@ Manage GitHub issues with AI-optimized formatting and PopKit workflow guidance.
 | `list` | List repository issues (default) |
 | `view` | View issue details |
 | `create` | Create new issue with template |
-| `work` | Start working on an issue with optional Power Mode |
+| `work` | Start working on an issue (**Tip:** Also available as `/popkit:dev work #N`) |
 | `close` | Close an issue |
 | `comment` | Add comment to issue |
 | `edit` | Update issue metadata |

@@ -1,6 +1,13 @@
 ---
 description: Design and requirements - brainstorming sessions and PRD generation
+deprecated: true
+deprecated_in_favor_of: /popkit:dev
 ---
+
+> **DEPRECATED:** This command is deprecated. Use `/popkit:dev` instead:
+> - `/popkit:design brainstorm` → `/popkit:dev brainstorm`
+> - `/popkit:design prd` → `/popkit:dev prd`
+> - `/popkit:design suite` → `/popkit:dev suite`
 
 # /popkit:design - Design & Requirements
 

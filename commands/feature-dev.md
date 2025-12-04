@@ -1,6 +1,11 @@
 ---
 description: 7-phase feature development workflow - Discovery through Summary
+deprecated: true
+deprecated_in_favor_of: /popkit:dev
 ---
+
+> **DEPRECATED:** This command is deprecated. Use `/popkit:dev` instead:
+> - `/popkit:feature-dev "topic"` → `/popkit:dev "topic"` or `/popkit:dev full "topic"`
 
 # /popkit:feature-dev - Complete Feature Development
 

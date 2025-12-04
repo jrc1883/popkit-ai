@@ -1,6 +1,13 @@
 ---
 description: Implementation planning - write detailed plans and execute them in batches with review checkpoints
+deprecated: true
+deprecated_in_favor_of: /popkit:dev
 ---
+
+> **DEPRECATED:** This command is deprecated. Use `/popkit:dev` instead:
+> - `/popkit:plan` → `/popkit:dev plan`
+> - `/popkit:plan write` → `/popkit:dev plan`
+> - `/popkit:plan execute` → `/popkit:dev execute`
 
 # /popkit:plan - Implementation Planning
 
