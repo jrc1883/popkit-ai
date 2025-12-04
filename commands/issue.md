@@ -1,5 +1,5 @@
 ---
-description: GitHub issue management - create, list, view, work, close, comment with AI-executable format and PopKit Guidance
+description: GitHub issue management - create, list, view, close, comment, edit, link with AI-executable format
 ---
 
 # /popkit:issue - GitHub Issue Management
@@ -19,11 +19,12 @@ Manage GitHub issues with AI-optimized formatting and PopKit workflow guidance.
 | `list` | List repository issues (default) |
 | `view` | View issue details |
 | `create` | Create new issue with template |
-| `work` | Start working on an issue (**Tip:** Also available as `/popkit:dev work #N`) |
 | `close` | Close an issue |
 | `comment` | Add comment to issue |
 | `edit` | Update issue metadata |
 | `link` | Link issue to PR |
+
+> **Note:** To start working on an issue, use `/popkit:dev work #N` instead.
 
 ---
 
@@ -69,8 +70,8 @@ Legend:
   optional    = Power Mode available but not required
   not_needed  = Sequential execution preferred
 
-Hint: Use /popkit:issue work #11 to start working
-      Use /popkit:issue work #11 -p to force Power Mode
+Hint: Use /popkit:dev work #11 to start working
+      Use /popkit:dev work #11 -p to force Power Mode
 ```
 
 ### Process
@@ -196,90 +197,6 @@ This section is parsed by PopKit to:
 3. Schedule quality gates between phases
 4. Route to appropriate agents
 5. Track phase progress
-
----
-
-## Subcommand: work
-
-Start working on an issue with intelligent Power Mode detection.
-
-```
-/popkit:issue work #N [flags]
-/popkit:issue work 4                  # Auto-detect Power Mode from guidance
-/popkit:issue work #4 -p              # Force Power Mode ON
-/popkit:issue work #4 --power         # Same as -p
-/popkit:issue work #4 --solo          # Force sequential mode (no Power Mode)
-/popkit:issue work #4 --phases explore,implement,test
-/popkit:issue work #4 --agents reviewer,tester
-/popkit:issue work #4 -p --phases design,implement
-```
-
-### Flags
-
-| Flag | Short | Description |
-|------|-------|-------------|
-| `--power` | `-p` | Force Power Mode activation |
-| `--solo` | `-s` | Force sequential mode (no Power Mode) |
-| `--phases` | | Override phases: `--phases explore,implement,test` |
-| `--agents` | | Override agents: `--agents reviewer,tester` |
-| `--thinking` | `-T` | Enable extended thinking for complex analysis |
-| `--no-thinking` | | Disable extended thinking (use default) |
-| `--think-budget` | | Set thinking token budget (default: 10000) |
-
-### Power Mode Decision Priority
-
-1. **Command flags override everything:**
-   - `-p` or `--power` -> Force Power Mode ON
-   - `-s` or `--solo` -> Force Power Mode OFF
-2. **If no flags, use PopKit Guidance:**
-   - `power_mode: recommended` -> Power Mode ON
-   - `complexity: epic` -> Power Mode ON
-   - 3+ agents -> Power Mode ON
-3. **If no guidance, auto-generate plan:**
-   - Infer issue type from labels/title
-   - Recommend Power Mode for large/epic complexity
-4. Default to sequential mode
-
-### Process
-
-1. **Parse Arguments**: Extract issue number and flags
-2. **Fetch Issue**: `gh issue view <number> --json number,title,body,labels,state,author`
-3. **Parse PopKit Guidance**: Extract workflow, phases, agents, quality gates
-4. **Determine Power Mode**: Apply decision priority above
-5. **Configure Workflow**: Set phases, agents, boundaries
-6. **Create Todo List**: Generate todos from phases
-7. **Begin Work**: If brainstorming required, invoke skill first
-
-### Output (Power Mode)
-
-```
-[+] POWER MODE - ISSUE #4
-Title: Add user authentication
-Labels: feature, priority:high
-
-Configuration:
-  Source: PopKit Guidance
-  Phases: 5 (discovery -> review)
-  Agents: code-architect, test-writer-fixer
-  Quality Gates: typescript, build, lint, test
-
-Status Line: [POP] #4 Phase: discovery (1/5) [----------] 0%
-
-Starting Phase 1: Discovery...
-```
-
-### Output (Sequential Mode)
-
-```
-[+] WORKING ON ISSUE #4
-Title: Add user authentication
-Mode: Sequential
-
-Phases: 5 (discovery -> review)
-Agent: code-architect
-
-Starting Phase 1: Discovery...
-```
 
 ---
 
@@ -473,15 +390,6 @@ When an issue lacks PopKit Guidance, infer from:
 # Create with specific template
 /popkit:issue create "Refactor auth system" --template architecture
 
-# Start working (auto-detect Power Mode)
-/popkit:issue work 11
-
-# Start working with forced Power Mode
-/popkit:issue work 11 -p
-
-# Start working in sequential mode
-/popkit:issue work 11 --solo
-
 # Close as superseded
 /popkit:issue close 8 --superseded-by 11
 
@@ -522,6 +430,6 @@ gh issue comment 45 --body "..."
 
 | Command | Purpose |
 |---------|---------|
+| `/popkit:dev work #N` | Start working on an issue |
 | `/popkit:power status` | Check Power Mode status |
-| `/popkit:power stop` | Stop Power Mode |
-| `/popkit:pr create` | Create pull request |
+| `/popkit:git pr` | Create pull request |
