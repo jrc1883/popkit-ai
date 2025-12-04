@@ -18,6 +18,7 @@ Tools for understanding, configuring, and customizing projects after initial set
 |------------|-------------|
 | `analyze` | Deep codebase analysis (default) |
 | `embed` | Embed project items for semantic search |
+| `generate` | Full pipeline: analyze → skills → mcp → embed |
 | `mcp` | Generate project-specific MCP server |
 | `setup` | Configure pre-commit hooks and quality gates |
 | `skills` | Generate custom skills from project patterns |
@@ -195,6 +196,121 @@ By Type:
 | `--status` | Show embedding status without embedding |
 | `--force`, `-f` | Re-embed all items even if unchanged |
 | `--type <type>` | Filter to type: `skill`, `agent`, `command` |
+
+---
+
+## Subcommand: generate
+
+Run the full project generation pipeline: analyze → skills → mcp → embed.
+
+```
+/popkit:project generate                # Full pipeline
+/popkit:project generate --no-embed     # Skip embedding step
+/popkit:project generate --no-skills    # Skip skill generation
+/popkit:project generate --no-mcp       # Skip MCP generation
+/popkit:project generate --quick        # Quick analysis
+```
+
+### Process
+
+Invokes multiple skills in sequence:
+
+1. **Analyze Project** (pop-analyze-project)
+   - Run with `--json` flag
+   - Save to `.claude/analysis.json`
+   - Detect patterns, frameworks, commands
+
+2. **Generate Skills** (pop-skill-generator)
+   - Use analysis for pattern-based generation
+   - Create skills for detected patterns
+   - Save to `.claude/skills/`
+
+3. **Generate MCP Server** (pop-mcp-generator)
+   - Use analysis for tool selection
+   - Create project-specific tools
+   - Save to `.claude/mcp-servers/`
+
+4. **Embed Content** (pop-embed-content)
+   - Embed all generated items
+   - Export `tool_embeddings.json`
+   - Enable semantic discovery
+
+### Output
+
+```
+/popkit:project generate
+
+PopKit Project Generation Pipeline
+═══════════════════════════════════
+
+Step 1/4: Analyze Project
+─────────────────────────
+Running analysis with --json output...
+✓ Analysis saved to .claude/analysis.json
+
+Detected:
+  Framework: Next.js 14 (App Router)
+  Database: Supabase
+  Testing: Jest + RTL
+  Patterns: 6 detected
+
+Step 2/4: Generate Skills
+─────────────────────────
+Generating skills from detected patterns...
+✓ project:deploy (nextjs + vercel-config)
+✓ project:db-migrate (supabase)
+✓ project:testing (colocated-tests)
+✓ project:components (feature-based-organization)
+
+Skills saved: 4
+
+Step 3/4: Generate MCP Server
+─────────────────────────────
+Generating MCP server with analysis...
+✓ health:dev-server
+✓ health:database
+✓ quality:typecheck
+✓ quality:lint
+✓ quality:test
+✓ git:status
+✓ git:diff
+✓ search:tools
+
+MCP server saved: .claude/mcp-servers/[project]-dev/
+
+Step 4/4: Embed Content
+───────────────────────
+Embedding generated content...
+✓ Embedded 4 skills
+✓ Embedded 8 tools
+✓ Exported tool_embeddings.json
+
+Pipeline Complete!
+══════════════════
+
+Generated:
+  .claude/analysis.json
+  .claude/skills/ (4 skills)
+  .claude/mcp-servers/[project]-dev/
+  .claude/tool_embeddings.json
+
+Next Steps:
+1. cd .claude/mcp-servers/[project]-dev
+2. npm install && npm run build
+3. Restart Claude Code to load MCP server
+
+Would you like me to build the MCP server now?
+```
+
+### Options
+
+| Flag | Description |
+|------|-------------|
+| `--no-embed` | Skip embedding step |
+| `--no-skills` | Skip skill generation |
+| `--no-mcp` | Skip MCP server generation |
+| `--quick` | Use quick analysis mode |
+| `--force` | Force re-generation even if exists |
 
 ---
 
@@ -457,6 +573,9 @@ This command fits into the project lifecycle:
 4. **Enhance Tooling**: `/popkit:project mcp` → Project-specific MCP
 5. **Customize**: `/popkit:project skills` → Project-specific skills
 6. **Enable Discovery**: `/popkit:project embed` → Semantic search for project items
+
+**One-Command Alternative:**
+- `/popkit:project generate` → Full pipeline (steps 2, 4, 5, 6 combined)
 
 ---
 
