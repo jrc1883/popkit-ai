@@ -175,6 +175,16 @@
       "timeout": 3000,
       "enabled": true,
       "tools": ["Write", "Edit", "MultiEdit"]
+    },
+    {
+      "name": "command-learning",
+      "event": "PostToolUse",
+      "command": "python",
+      "args": ["hooks/command-learning-hook.py"],
+      "description": "Learn from command failures and suggest corrections (Issue #89)",
+      "timeout": 5000,
+      "enabled": true,
+      "tools": ["Bash"]
     }
   ],
   "settings": {
