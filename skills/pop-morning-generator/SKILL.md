@@ -1,6 +1,6 @@
 ---
 name: morning-generator
-description: "Use when you want to create a project-specific morning health check command - analyzes the project's tech stack and generates customized health checks for services, databases, and domain-specific validations. Detects Next.js, Express, Supabase, Redis, etc. and creates appropriate checks. Do NOT use if the generic /popkit:morning is sufficient - only generate custom commands for projects with unique health check requirements."
+description: "Use when you want to create a project-specific morning health check routine - analyzes the project's tech stack and generates customized health checks for services, databases, and domain-specific validations. Detects Next.js, Express, Supabase, Redis, etc. and creates appropriate checks. Do NOT use if the generic /popkit:routine morning is sufficient - only generate custom routines for projects with unique health check requirements."
 ---
 
 # Morning Generator

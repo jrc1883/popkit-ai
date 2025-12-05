@@ -91,7 +91,7 @@ agents/                  30 agent definitions with tiered activation
   tier-2-on-demand/      17 specialized agents (including power-coordinator)
   feature-workflow/      2 agents for 7-phase feature development
 skills/                  34 reusable skills (SKILL.md format in subdirectories)
-commands/                17 slash commands for workflows (consolidated with subcommands)
+commands/                12 slash commands (7 deprecated, consolidated with subcommands)
 hooks/                   19 Python hooks (JSON stdin/stdout protocol)
   hooks.json             Hook configuration and event mapping
   utils/                 17 utility modules (embeddings, routing, message building, context, etc.)
@@ -479,7 +479,23 @@ npm run build
 
 **Note:** Popkit uses `0.x.y` versioning until stable. Version `1.0.0` will mark API stability.
 
-### v0.9.6 (Current) - Embeddings Enhancement & Semantic Routing
+### v0.9.7 (Current) - Command Consolidation
+
+- **Command Consolidation** - Reduced 17 commands to 12 active (7 deprecated):
+  - `/popkit:dev` - New unified development command (absorbs design, plan, feature-dev)
+    - Modes: full, work, brainstorm, plan, execute, quick, prd, suite
+  - `/popkit:git` - Enhanced with ci and release subcommands (absorbs ci)
+  - `/popkit:routine` - New unified routine command (absorbs morning, nightly)
+  - `/popkit:project` - Enhanced with init subcommand (absorbs init-project)
+  - `/popkit:issue` - Simplified (work moved to /popkit:dev work #N)
+- **Deprecated Commands** - Added deprecation notices to:
+  - design.md, plan.md, feature-dev.md → Use /popkit:dev
+  - ci.md → Use /popkit:git ci/release
+  - morning.md, nightly.md → Use /popkit:routine morning/nightly
+  - init-project.md → Use /popkit:project init
+- **GitHub Issues Closed** - #57-62 (Command Consolidation Epic)
+
+### v0.9.6 - Embeddings Enhancement & Semantic Routing
 
 - **Semantic Embeddings System** - Project-local embedding infrastructure:
   - `hooks/utils/voyage_client.py` - Voyage AI API client with rate limiting

@@ -134,10 +134,10 @@ Use the `next-action-report` output style:
 
 | If you want to... | Use this command |
 |-------------------|------------------|
-| Commit changes | `/popkit:commit` |
-| Review code | `/popkit:review` |
-| Get project health | `/popkit:morning` |
-| Plan a feature | `/popkit:brainstorm` |
+| Commit changes | `/popkit:git commit` |
+| Review code | `/popkit:git review` |
+| Get project health | `/popkit:routine morning` |
+| Plan a feature | `/popkit:dev brainstorm` |
 | Debug an issue | `/popkit:debug` |
 
 ## Alternative Paths
@@ -173,9 +173,9 @@ Based on your context, you could also:
 
 ```markdown
 ### 2. Work on Open Issue
-**Command:** `/popkit:issue view [number]` then `/popkit:feature-dev`
+**Command:** `/popkit:dev work #[number]`
 **Why:** Issue #[X] "[title]" is high priority
-**What it does:** 7-phase feature workflow
+**What it does:** Issue-driven development workflow
 **Benefit:** Structured progress on known work
 ```
 
@@ -183,7 +183,7 @@ Based on your context, you could also:
 
 ```markdown
 ### 1. Check Project Health
-**Command:** `/popkit:morning`
+**Command:** `/popkit:routine morning`
 **Why:** No urgent items - good time for health check
 **What it does:** Comprehensive project status with "Ready to Code" score
 **Benefit:** Identify hidden issues before they become urgent
@@ -199,9 +199,9 @@ When called with `quick` argument, provide condensed output:
 **State:** 5 uncommitted | branch synced | TS clean | 3 issues
 
 **Top 3:**
-1. `/popkit:commit` - Commit 5 files (HIGH)
-2. `/popkit:issue view 42` - Work on "Add auth" (MEDIUM)
-3. `/popkit:morning` - Health check (LOW)
+1. `/popkit:git commit` - Commit 5 files (HIGH)
+2. `/popkit:dev work #42` - Work on "Add auth" (MEDIUM)
+3. `/popkit:routine morning` - Health check (LOW)
 ```
 
 ## Error Handling
@@ -211,11 +211,11 @@ When called with `quick` argument, provide condensed output:
 | Not a git repo | Note it, skip git-based recommendations |
 | No package.json | Skip Node-specific checks |
 | gh CLI not available | Skip issue recommendations |
-| Empty project | Recommend `/popkit:init-project` |
+| Empty project | Recommend `/popkit:project init` |
 
 ## Related
 
 - `/popkit:next` command - User-facing wrapper
-- `/popkit:morning` - Detailed health check
-- `/popkit:brainstorm` - For when direction is truly unclear
+- `/popkit:routine morning` - Detailed health check
+- `/popkit:dev brainstorm` - For when direction is truly unclear
 - `user-prompt-submit.py` - Uncertainty trigger patterns

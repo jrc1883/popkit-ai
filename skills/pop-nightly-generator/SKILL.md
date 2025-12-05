@@ -1,6 +1,6 @@
 ---
 name: nightly-generator
-description: "Use when you want to create a project-specific nightly cleanup and maintenance command - analyzes the project's tech stack and generates customized cleanup routines for caches, build artifacts, and domain-specific maintenance. Detects Next.js, Node.js, Python, Rust, etc. and creates appropriate cleanup targets. Do NOT use if the generic /popkit:nightly is sufficient - only generate custom commands for projects with unique cleanup requirements or domain-specific maintenance needs."
+description: "Use when you want to create a project-specific nightly cleanup and maintenance routine - analyzes the project's tech stack and generates customized cleanup routines for caches, build artifacts, and domain-specific maintenance. Detects Next.js, Node.js, Python, Rust, etc. and creates appropriate cleanup targets. Do NOT use if the generic /popkit:routine nightly is sufficient - only generate custom routines for projects with unique cleanup requirements or domain-specific maintenance needs."
 ---
 
 # Nightly Generator

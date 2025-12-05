@@ -6,7 +6,7 @@ version: 1.0.0
 
 # Project Templates Skill
 
-Provides curated, research-backed project templates for `/popkit:feature-dev` Phase 3 (Questions).
+Provides curated, research-backed project templates for `/popkit:dev full` Phase 3 (Questions).
 
 ## Purpose
 
@@ -75,7 +75,7 @@ Each template is a JSON file with this structure:
 
 ### Phase 3 Integration
 
-When `/popkit:feature-dev` reaches Phase 3 (Questions):
+When `/popkit:dev full` reaches Phase 3 (Questions):
 
 1. **Template Selection** - First question asks project type:
    ```
