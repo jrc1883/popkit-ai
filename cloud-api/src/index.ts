@@ -18,6 +18,7 @@ import redisRoutes from './routes/redis';
 import usageRoutes from './routes/usage';
 import embeddingsRoutes from './routes/embeddings';
 import patternsRoutes from './routes/patterns';
+import privacyRoutes from './routes/privacy';
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -64,17 +65,20 @@ app.use('/v1/redis/*', authMiddleware);
 app.use('/v1/usage/*', authMiddleware);
 app.use('/v1/embeddings/*', authMiddleware);
 app.use('/v1/patterns/*', authMiddleware);
+app.use('/v1/privacy/*', authMiddleware);
 
 // Apply rate limiting after auth
 app.use('/v1/redis/*', rateLimitMiddleware);
 app.use('/v1/embeddings/*', rateLimitMiddleware);
 app.use('/v1/patterns/*', rateLimitMiddleware);
+// No rate limit on privacy endpoints (they're rarely called)
 
 // Mount protected routes
 app.route('/v1/redis', redisRoutes);
 app.route('/v1/usage', usageRoutes);
 app.route('/v1/embeddings', embeddingsRoutes);
 app.route('/v1/patterns', patternsRoutes);
+app.route('/v1/privacy', privacyRoutes);
 
 // =============================================================================
 // ERROR HANDLING
