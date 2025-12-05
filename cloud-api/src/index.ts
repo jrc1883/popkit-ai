@@ -16,6 +16,7 @@ import { rateLimitMiddleware } from './middleware/ratelimit';
 import healthRoutes from './routes/health';
 import redisRoutes from './routes/redis';
 import usageRoutes from './routes/usage';
+import embeddingsRoutes from './routes/embeddings';
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -60,13 +61,16 @@ app.route('/v1/health', healthRoutes);
 // Apply auth middleware to /v1/* routes (except health)
 app.use('/v1/redis/*', authMiddleware);
 app.use('/v1/usage/*', authMiddleware);
+app.use('/v1/embeddings/*', authMiddleware);
 
 // Apply rate limiting after auth
 app.use('/v1/redis/*', rateLimitMiddleware);
+app.use('/v1/embeddings/*', rateLimitMiddleware);
 
 // Mount protected routes
 app.route('/v1/redis', redisRoutes);
 app.route('/v1/usage', usageRoutes);
+app.route('/v1/embeddings', embeddingsRoutes);
 
 // =============================================================================
 // ERROR HANDLING

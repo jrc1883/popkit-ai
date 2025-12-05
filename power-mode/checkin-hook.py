@@ -44,6 +44,12 @@ try:
 except ImportError:
     STREAM_MANAGER_AVAILABLE = False
 
+try:
+    from insight_embedder import InsightEmbedder
+    EMBEDDINGS_AVAILABLE = True
+except ImportError:
+    EMBEDDINGS_AVAILABLE = False
+
 
 # =============================================================================
 # CONFIGURATION
@@ -672,8 +678,16 @@ class PowerModeCheckInHook:
     def __init__(self):
         self.redis_client = self._get_redis_client()
         self.insight_extractor = InsightExtractor()
+        self.insight_embedder: Optional['InsightEmbedder'] = None
         self.state_tracker: Optional[AgentStateTracker] = None
         self.guardrails: Optional[Guardrails] = None
+
+        # Initialize embedder if available
+        if EMBEDDINGS_AVAILABLE:
+            try:
+                self.insight_embedder = InsightEmbedder()
+            except Exception:
+                pass
 
     def _get_redis_client(self):
         """
@@ -764,28 +778,76 @@ class PowerModeCheckInHook:
                     self.state_tracker.state
                 )
 
-        # 2. PUSH: Extract and share insights
+        # 2. PUSH: Extract and share insights (with embedding if available)
         insight = self.insight_extractor.extract(tool_name, tool_input, tool_result)
         if insight:
             insight["from_agent"] = self.state_tracker.agent_id
-            self.redis_client.push_insight(insight)
-            self.state_tracker.record_insight_shared(insight["id"])
-            checkin["insights_pushed"] = 1
 
-        # 3. PULL: Get relevant insights from others
-        current_tags = self._get_current_tags()
-        pulled_insights = self.redis_client.pull_insights(
-            tags=current_tags,
-            exclude_agent=self.state_tracker.agent_id,
-            limit=CONFIG.get("limits", {}).get("max_insights_per_pull", 3)
-        )
+            # Try to embed the insight for semantic search
+            if self.insight_embedder and self.insight_embedder.available:
+                try:
+                    insight_id, embed_result = self.insight_embedder.embed_insight(
+                        content=insight["content"],
+                        from_agent=self.state_tracker.agent_id,
+                        insight_type=insight.get("type", "discovery")
+                    )
+
+                    # Update insight with embedding info
+                    insight["id"] = insight_id
+                    insight["embedded"] = embed_result.get("status") == "created"
+                    insight["summary"] = embed_result.get("summary", insight["content"][:50])
+
+                    # Skip if duplicate
+                    if embed_result.get("status") == "duplicate":
+                        checkin["duplicate_insight"] = {
+                            "id": insight_id,
+                            "duplicate_of": embed_result.get("duplicate", {}).get("id"),
+                            "similarity": embed_result.get("duplicate", {}).get("similarity")
+                        }
+                        # Don't push duplicate insights
+                        insight = None
+                except Exception as e:
+                    # Fall back to non-embedded insight
+                    checkin["embedding_error"] = str(e)
+
+            if insight:
+                self.redis_client.push_insight(insight)
+                self.state_tracker.record_insight_shared(insight["id"])
+                checkin["insights_pushed"] = 1
+
+        # 3. PULL: Get relevant insights (semantic search if available)
+        pulled_insights = []
+
+        if self.insight_embedder and self.insight_embedder.available:
+            # Use semantic search for relevance
+            try:
+                context = self._get_current_context()
+                pulled_insights = self.insight_embedder.search_relevant(
+                    context=context,
+                    exclude_agent=self.state_tracker.agent_id,
+                    limit=CONFIG.get("limits", {}).get("max_insights_per_pull", 3)
+                )
+                checkin["search_mode"] = "semantic"
+            except Exception:
+                pass
+
+        # Fall back to tag-based search if semantic didn't work
+        if not pulled_insights:
+            current_tags = self._get_current_tags()
+            pulled_insights = self.redis_client.pull_insights(
+                tags=current_tags,
+                exclude_agent=self.state_tracker.agent_id,
+                limit=CONFIG.get("limits", {}).get("max_insights_per_pull", 3)
+            )
+            checkin["search_mode"] = "tag-based"
 
         for pulled in pulled_insights:
-            self.state_tracker.record_insight_received(pulled["id"])
+            self.state_tracker.record_insight_received(pulled.get("id", "unknown"))
             checkin["context_injected"].append({
                 "type": pulled.get("type"),
-                "content": pulled.get("content"),
-                "from": pulled.get("from_agent")
+                "content": pulled.get("content") or pulled.get("summary"),
+                "similarity": pulled.get("similarity"),
+                "from": pulled.get("from_agent") or pulled.get("from")
             })
 
         checkin["insights_pulled"] = len(pulled_insights)
@@ -832,6 +894,27 @@ class PowerModeCheckInHook:
                 tags.append(kw)
 
         return list(set(tags))
+
+    def _get_current_context(self) -> str:
+        """Get current work context as a string for semantic search."""
+        parts = []
+
+        # Current task
+        task = self.state_tracker.state.get("current_task", "")
+        if task:
+            parts.append(f"Current task: {task}")
+
+        # Recent files
+        files = self.state_tracker.state.get("files_touched", [])[-5:]
+        if files:
+            parts.append(f"Working with files: {', '.join(files)}")
+
+        # Tools used
+        tools = self.state_tracker.state.get("tools_used", [])
+        if tools:
+            parts.append(f"Using: {', '.join(tools)}")
+
+        return " ".join(parts) if parts else "general development"
 
     # =========================================================================
     # STREAMING METHODS (Issue #23)
