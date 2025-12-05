@@ -369,6 +369,29 @@ Both modes provide:
 - Guardrails prevent "cheating" (unconventional approaches require human approval)
 - Inspired by ZigBee mesh networks and DeepMind's objective-driven agents
 
+**State File Location:**
+- Project-local: `.claude/popkit/power-mode-state.json` (preferred)
+- User home fallback: `~/.claude/popkit/power-mode-state.json`
+
+**Status Line Setup (Required for Visual Feedback):**
+
+To see Power Mode status in Claude Code's status line, add to `.claude/settings.json`:
+
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "python",
+    "args": ["~/.claude/plugins/marketplaces/popkit-marketplace/power-mode/statusline.py"],
+    "padding": 0
+  }
+}
+```
+
+Or use the setup command: `/popkit:power init statusline`
+
+When active, displays: `[POP] #N Phase: X (N/M) [####--] %`
+
 ### Stateless Message Composition
 
 Hooks follow a stateless pattern for reliability, testability, and error recovery:

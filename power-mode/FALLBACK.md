@@ -72,7 +72,7 @@ The file-based fallback is **good enough** for most dev scenarios, but has limit
 
 ## State File Structure
 
-File-based mode uses `.claude/power-mode-state.json`:
+File-based mode uses `.claude/popkit/power-mode-state.json`:
 
 ```json
 {
@@ -172,7 +172,7 @@ Output:
 Mode: file
 Redis available: True
 Redis running: False
-File path: /path/to/.claude/power-mode-state.json
+File path: /path/to/.claude/popkit/power-mode-state.json
 
 Start Redis: docker run -d -p 6379:6379 redis
 ```
@@ -252,7 +252,7 @@ time.sleep(0.05)  # 50ms instead of 100ms
 
 ### File Growing Too Large
 
-**Symptom:** `.claude/power-mode-state.json` is >10MB
+**Symptom:** `.claude/popkit/power-mode-state.json` is >10MB
 
 **Cause:** Too many messages not being trimmed
 
@@ -352,7 +352,7 @@ Potential enhancements to file-based mode:
 | Which mode will I use? | **Auto-detected** - file-based if no Redis |
 | Do I need to install Redis? | **No** - file-based works without it |
 | When should I switch to Redis? | When you have **4+ agents** or need **production** reliability |
-| Can I debug file-based mode? | **Yes** - just open `.claude/power-mode-state.json` |
+| Can I debug file-based mode? | **Yes** - just open `.claude/popkit/power-mode-state.json` |
 | Is file-based secure? | **Same as Redis** - local machine only |
 
 **Bottom line:** Start with file-based (zero setup), upgrade to Redis when needed (no code changes).

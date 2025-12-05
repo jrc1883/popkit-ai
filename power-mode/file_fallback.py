@@ -154,12 +154,12 @@ class FileBasedPowerMode:
         Initialize file-based client.
 
         Args:
-            state_file: Path to JSON state file. Defaults to .claude/power-mode-state.json
+            state_file: Path to JSON state file. Defaults to .claude/popkit/power-mode-state.json
         """
         if state_file:
             self.state_file = Path(state_file)
         else:
-            self.state_file = Path.cwd() / ".claude" / "power-mode-state.json"
+            self.state_file = Path.cwd() / ".claude" / "popkit" / "power-mode-state.json"
 
         self.lock_file = self.state_file.with_suffix('.lock')
 

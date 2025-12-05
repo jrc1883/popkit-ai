@@ -63,13 +63,13 @@ def example_2_force_file_mode():
 
     if coordinator.start():
         print(f"✓ Running in file mode: {coordinator.is_file_mode}")
-        print(f"✓ State file: .claude/power-mode-state.json\n")
+        print(f"✓ State file: .claude/popkit/power-mode-state.json\n")
 
         # You can peek at the state file during execution!
         import json
         from pathlib import Path
 
-        state_file = Path(".claude/power-mode-state.json")
+        state_file = Path(".claude/popkit/power-mode-state.json")
         if state_file.exists():
             with open(state_file) as f:
                 state = json.load(f)
@@ -206,7 +206,7 @@ def example_6_cleanup():
     from file_fallback import get_stats, cleanup_old_messages
     from pathlib import Path
 
-    state_file = Path(".claude/power-mode-state.json")
+    state_file = Path(".claude/popkit/power-mode-state.json")
 
     if not state_file.exists():
         print("No state file found (run example 3 first)")
@@ -328,5 +328,5 @@ if __name__ == "__main__":
                 print(f"✗ Example {num} failed: {e}\n")
 
         print("=" * 60)
-        print("Done! Check .claude/power-mode-state.json to see the state")
+        print("Done! Check .claude/popkit/power-mode-state.json to see the state")
         print("=" * 60)

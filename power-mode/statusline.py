@@ -41,13 +41,13 @@ class Colors:
 
 def get_state_file_path() -> Path:
     """Get path to power mode state file."""
-    # Try project-local first
-    local_state = Path.cwd() / ".claude" / "power-mode-state.json"
+    # Try project-local first (.claude/popkit/)
+    local_state = Path.cwd() / ".claude" / "popkit" / "power-mode-state.json"
     if local_state.exists():
         return local_state
 
-    # Fall back to user home
-    home_state = Path.home() / ".claude" / "power-mode-state.json"
+    # Fall back to user home (.claude/popkit/)
+    home_state = Path.home() / ".claude" / "popkit" / "power-mode-state.json"
     return home_state
 
 

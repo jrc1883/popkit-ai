@@ -91,7 +91,7 @@ class AutoCoordinator(PowerModeCoordinator):
                 reason = "redis not running"
 
             print(f"📁 Using file-based fallback for Power Mode ({reason})")
-            print(f"   State file: .claude/power-mode-state.json")
+            print(f"   State file: .claude/popkit/power-mode-state.json")
             print(f"   Limitations: polling (not true pub/sub), single-machine only")
             print()
 
@@ -160,7 +160,7 @@ def get_mode_info() -> dict:
     redis_running = redis_is_running() if redis_available else False
 
     mode = "redis" if redis_running else "file"
-    file_path = str(Path.cwd() / ".claude" / "power-mode-state.json")
+    file_path = str(Path.cwd() / ".claude" / "popkit" / "power-mode-state.json")
 
     if not redis_available:
         recommendation = "Install redis: pip install redis"
@@ -209,7 +209,7 @@ if __name__ == "__main__":
         # Clean up old messages
         from file_fallback import cleanup_old_messages, get_stats
 
-        state_file = Path.cwd() / ".claude" / "power-mode-state.json"
+        state_file = Path.cwd() / ".claude" / "popkit" / "power-mode-state.json"
         if not state_file.exists():
             print("No state file found")
             sys.exit(0)

@@ -94,7 +94,7 @@ class AgentStateTracker:
     Prefers project-local state file for status line integration.
     """
 
-    HOME_STATE_FILE = Path.home() / ".claude" / "power-mode-state.json"
+    HOME_STATE_FILE = Path.home() / ".claude" / "popkit" / "power-mode-state.json"
 
     def __init__(self, agent_id: str, agent_name: str, session_id: str):
         self.agent_id = agent_id
@@ -110,13 +110,13 @@ class AgentStateTracker:
     def _get_state_file_path(self) -> Path:
         """Get path to power mode state file (project-local preferred)."""
         # Try project-local first
-        local_state = Path.cwd() / ".claude" / "power-mode-state.json"
+        local_state = Path.cwd() / ".claude" / "popkit" / "power-mode-state.json"
         if local_state.exists():
             return local_state
 
-        # Check if project .claude directory exists (create state there)
-        local_claude_dir = Path.cwd() / ".claude"
-        if local_claude_dir.exists():
+        # Check if project .claude/popkit directory exists (create state there)
+        local_popkit_dir = Path.cwd() / ".claude" / "popkit"
+        if local_popkit_dir.exists():
             return local_state
 
         # Fall back to home directory
@@ -1160,7 +1160,7 @@ def is_power_mode_enabled() -> bool:
             pass
 
     # Check home state file
-    home_state = Path.home() / ".claude" / "power-mode-state.json"
+    home_state = Path.home() / ".claude" / "popkit" / "power-mode-state.json"
     if home_state.exists():
         try:
             with open(home_state) as f:

@@ -1,5 +1,5 @@
 ---
-description: "start | stop | status | init [redis|file] [--agents N]"
+description: "start | stop | status | init [redis|file|statusline] [--agents N]"
 ---
 
 # /popkit:power - Power Mode Management
@@ -204,6 +204,7 @@ Initialize Redis infrastructure for Power Mode.
 /popkit:power init restart      # Restart Redis
 /popkit:power init debug        # Start with Redis Commander (http://localhost:8081)
 /popkit:power init test         # Test Redis connectivity
+/popkit:power init statusline   # Configure status line display
 ```
 
 ### Prerequisites
@@ -304,6 +305,33 @@ Components:
 - `Phase: X (N/M)` - Current phase and progress
 - Progress bar - Visual completion
 - Commands hint - Quick reference
+
+### Setup Status Line
+
+**Automatic (Recommended):**
+```
+/popkit:power init statusline
+```
+
+This adds the following to your `.claude/settings.json`:
+
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "python",
+    "args": ["~/.claude/plugins/marketplaces/popkit-marketplace/power-mode/statusline.py"],
+    "padding": 0
+  }
+}
+```
+
+**Manual:**
+1. Create or edit `.claude/settings.json` in your user home directory
+2. Add the statusLine configuration above
+3. Restart Claude Code to apply
+
+**State File:** Power Mode state is stored at `.claude/popkit/power-mode-state.json`
 
 ---
 
