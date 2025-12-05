@@ -33,9 +33,11 @@ PopKit exists to **orchestrate Claude Code's full power** for real-world develop
 
 4. **Tiered Loading**
    - Don't load all tools at once
+   <!-- AUTO-GEN:TIER-COUNTS START -->
    - Tier 1: Always-active core agents (11)
-   - Tier 2: On-demand specialists activated by triggers (16)
-   - Feature Workflow: 7-phase development agents (3)
+   - Tier 2: On-demand specialists activated by triggers (17)
+   - Feature Workflow: 7-phase development agents (2)
+   <!-- AUTO-GEN:TIER-COUNTS END -->
 
 5. **Project-Specific Customization ("Chain Combos")**
    - Base commands work everywhere (Tier 1)
@@ -82,6 +84,7 @@ Benefits:
 
 ## Repository Structure
 
+<!-- AUTO-GEN:REPO-STRUCTURE START -->
 ```
 .claude-plugin/          Plugin manifest (plugin.json, marketplace.json)
 .mcp.json                MCP server configuration
@@ -90,11 +93,11 @@ agents/                  30 agent definitions with tiered activation
   tier-1-always-active/  11 core agents (code-reviewer, bug-whisperer, etc.)
   tier-2-on-demand/      17 specialized agents (including power-coordinator)
   feature-workflow/      2 agents for 7-phase feature development
-skills/                  34 reusable skills (SKILL.md format in subdirectories)
-commands/                12 slash commands (7 deprecated, consolidated with subcommands)
-hooks/                   19 Python hooks (JSON stdin/stdout protocol)
+skills/                  35 reusable skills (SKILL.md format in subdirectories)
+commands/                22 slash commands (15 active, 7 deprecated)
+hooks/                   18 Python hooks (JSON stdin/stdout protocol)
   hooks.json             Hook configuration and event mapping
-  utils/                 17 utility modules (embeddings, routing, message building, context, etc.)
+  utils/                 22 utility modules (embeddings, routing, message building, context, etc.)
   pre_tool_use_stateless.py  Stateless safety checks
   post_tool_use_stateless.py Stateless result processing
 output-styles/           15+ output format templates (includes schemas/)
@@ -113,6 +116,7 @@ tests/                   Plugin self-test definitions
   routing/               Agent routing tests
   structure/             File structure validation tests
 ```
+<!-- AUTO-GEN:REPO-STRUCTURE END -->
 
 ## Development Notes
 
@@ -472,6 +476,7 @@ npm run build
 
 ## Key Files for Plugin Behavior
 
+<!-- AUTO-GEN:KEY-FILES START -->
 | File | Purpose |
 |------|---------|
 | `.claude-plugin/plugin.json` | Plugin manifest and activation triggers |
@@ -481,6 +486,7 @@ npm run build
 | `hooks/pre-tool-use.py` | Safety checks before tool execution |
 | `hooks/post-tool-use.py` | Cleanup and validation after tools |
 | `hooks/agent-orchestrator.py` | Agent sequencing and routing logic |
+| `hooks/doc-sync.py` | Detect documentation-impacting changes |
 | `power-mode/coordinator.py` | Multi-agent mesh network coordinator |
 | `power-mode/coordinator_auto.py` | Auto-detects Redis vs file-based mode |
 | `power-mode/file_fallback.py` | File-based fallback (no Redis needed) |
@@ -497,6 +503,9 @@ npm run build
 | `hooks/utils/embedding_project.py` | Project item embedding and scanning |
 | `hooks/utils/semantic_router.py` | Semantic search with project priority |
 | `hooks/utils/pattern_detector.py` | Code pattern detection utilities |
+| `hooks/utils/efficiency_tracker.py` | Token savings and efficiency metrics |
+| `hooks/utils/bug_detector.py` | Error pattern matching and stuck detection |
+<!-- AUTO-GEN:KEY-FILES END -->
 
 ## Version History
 
