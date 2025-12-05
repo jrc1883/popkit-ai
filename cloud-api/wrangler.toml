@@ -1,0 +1,17 @@
+name = "popkit-cloud-api"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+ENVIRONMENT = "development"
+
+# Upstash Redis connection (set via secrets)
+# wrangler secret put UPSTASH_REDIS_REST_URL
+# wrangler secret put UPSTASH_REDIS_REST_TOKEN
+
+# Rate limiting settings
+[vars.rate_limits]
+free_requests_per_minute = 100
+pro_requests_per_minute = 1000
+team_requests_per_minute = 10000

@@ -670,10 +670,35 @@ class PowerModeCheckInHook:
     """Main hook class for power mode check-ins."""
 
     def __init__(self):
-        self.redis_client = PowerModeRedisClient()
+        self.redis_client = self._get_redis_client()
         self.insight_extractor = InsightExtractor()
         self.state_tracker: Optional[AgentStateTracker] = None
         self.guardrails: Optional[Guardrails] = None
+
+    def _get_redis_client(self):
+        """
+        Get the appropriate Redis client (cloud or local).
+
+        Priority:
+        1. If POPKIT_API_KEY is set → PopKit Cloud
+        2. If local Redis available → Local Redis
+        3. Fall back to local-only client
+        """
+        # Check for cloud configuration
+        api_key = os.environ.get("POPKIT_API_KEY")
+        cloud_enabled = os.environ.get("POPKIT_CLOUD_ENABLED", "true").lower() != "false"
+
+        if api_key and cloud_enabled:
+            try:
+                from cloud_client import PopKitCloudClient
+                client = PopKitCloudClient.from_env()
+                if client:
+                    return client
+            except ImportError:
+                pass
+
+        # Fall back to local Redis client
+        return PowerModeRedisClient()
 
     def initialize(self, agent_id: str, agent_name: str, session_id: str):
         """Initialize the hook for an agent."""
