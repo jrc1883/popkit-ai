@@ -36,7 +36,7 @@ PopKit exists to **orchestrate Claude Code's full power** for real-world develop
    <!-- AUTO-GEN:TIER-COUNTS START -->
    - Tier 1: Always-active core agents (11)
    - Tier 2: On-demand specialists activated by triggers (17)
-   - Feature Workflow: 7-phase development agents (2)
+   - Feature Workflow: 7-phase development agents (3)
    <!-- AUTO-GEN:TIER-COUNTS END -->
 
 5. **Project-Specific Customization ("Chain Combos")**
@@ -92,12 +92,12 @@ agents/                  30 agent definitions with tiered activation
   config.json            Agent routing, workflows, confidence thresholds
   tier-1-always-active/  11 core agents (code-reviewer, bug-whisperer, etc.)
   tier-2-on-demand/      17 specialized agents (including power-coordinator)
-  feature-workflow/      2 agents for 7-phase feature development
-skills/                  35 reusable skills (SKILL.md format in subdirectories)
+  feature-workflow/      3 agents for 7-phase feature development
+skills/                  36 reusable skills (SKILL.md format in subdirectories)
 commands/                22 slash commands (15 active, 7 deprecated)
 hooks/                   18 Python hooks (JSON stdin/stdout protocol)
   hooks.json             Hook configuration and event mapping
-  utils/                 22 utility modules (embeddings, routing, message building, context, etc.)
+  utils/                 23 utility modules (embeddings, routing, message building, context, etc.)
   pre_tool_use_stateless.py  Stateless safety checks
   post_tool_use_stateless.py Stateless result processing
 output-styles/           15+ output format templates (includes schemas/)
@@ -505,6 +505,7 @@ npm run build
 | `hooks/utils/pattern_detector.py` | Code pattern detection utilities |
 | `hooks/utils/efficiency_tracker.py` | Token savings and efficiency metrics |
 | `hooks/utils/bug_detector.py` | Error pattern matching and stuck detection |
+| `hooks/utils/doc_sync.py` | Documentation synchronization and drift detection |
 <!-- AUTO-GEN:KEY-FILES END -->
 
 ## Version History

@@ -109,56 +109,104 @@ Test definitions are stored in:
 Generate and synchronize plugin documentation by analyzing the codebase.
 
 ```
-/popkit:plugin docs                   # Full documentation generation
-/popkit:plugin docs check             # Check for documentation drift
-/popkit:plugin docs claude            # Update CLAUDE.md only
-/popkit:plugin docs readme            # Update README.md only
-/popkit:plugin docs components        # Generate component reference
+/popkit:plugin docs                   # Full documentation check and generation
+/popkit:plugin docs --check           # Check for documentation drift only
+/popkit:plugin docs --sync            # Auto-fix drift in auto-generated sections
+/popkit:plugin docs --json            # Output drift report as JSON
 ```
 
 ### Process
 
-1. Scan the plugin structure:
-   - Count agents in `agents/` directories
-   - Extract skill descriptions from `skills/*/SKILL.md`
-   - List commands from `commands/`
-   - Document hooks from `hooks/`
-2. Generate or update documentation files:
-   - CLAUDE.md - Project instructions
-   - README.md - User documentation
-   - docs/components.md - Component reference
-3. Report any drift between code and documentation
+1. **Run doc-sync check** using `hooks/utils/doc_sync.py`:
+   - Compare source counts to CLAUDE.md auto-generated sections
+   - Detect version mismatches between plugin.json and marketplace.json
+   - Identify count drift (agents, skills, commands, hooks, utils)
+
+2. **Invoke skill** based on mode:
+   - `--check`: Run `pop-doc-sync` skill in check mode
+   - `--sync`: Run `pop-doc-sync` skill with `--fix` flag
+   - Default: Check mode with suggestion to run `--sync` if drift found
+
+3. **Report results**:
+   - Show source-of-truth counts
+   - List any drift issues found
+   - Suggest fixes if in check-only mode
 
 ### Options
 
 | Flag | Description |
 |------|-------------|
-| `check` | Only check for drift, don't update files |
-| `claude` | Update CLAUDE.md only |
-| `readme` | Update README.md only |
-| `components` | Generate component reference only |
+| `--check` | Only check for drift, don't update files (default) |
+| `--sync` | Automatically fix drift in auto-generated sections |
+| `--json` | Output results as JSON |
+| `--verbose` | Show all comparisons even when matching |
 
-### Output
+### Output (Check Mode)
 
 ```
 /popkit:plugin docs
 
-Scanning plugin structure...
-- Agents: 29 (11 tier-1, 15 tier-2, 3 feature-workflow)
-- Skills: 22 (21 + auto-docs)
-- Commands: 16 (consolidated with subcommands)
-- Hooks: 10
+Documentation Sync Report
+=========================
 
-Updating CLAUDE.md...
-[ok] Repository structure updated
-[ok] Component counts updated
+Version Sync:
+  plugin.json:      0.9.8
+  marketplace.json: 0.9.8 ✓
 
-Updating README.md...
-[ok] Feature counts updated
-[ok] Installation section current
+Agent Counts:
+  Tier 1: 11, Tier 2: 17, Feature: 3
+  Total: 31
 
-No documentation drift detected.
+Component Counts:
+  Skills: 36
+  Commands: 22 (15 active, 7 deprecated)
+  Hooks: 18
+  Utils: 23
+
+Status: All synchronized ✓
 ```
+
+### Output (Drift Detected)
+
+```
+/popkit:plugin docs
+
+Documentation Sync Report
+=========================
+...
+
+DRIFT DETECTED: 2 issue(s)
+  - skills: source=36, docs=35
+  - utils: source=23, docs=22
+
+Run `/popkit:plugin docs --sync` to automatically update CLAUDE.md.
+```
+
+### Output (Sync Mode)
+
+```
+/popkit:plugin docs --sync
+
+[doc-sync] Fixed 2 drift issues:
+  ✓ Updated skills count: 35 → 36
+  ✓ Updated utils count: 22 → 23
+
+CLAUDE.md has been updated.
+```
+
+### Auto-Generated Sections
+
+The `--sync` mode updates content between these markers in CLAUDE.md:
+
+| Marker | Content Updated |
+|--------|-----------------|
+| `AUTO-GEN:TIER-COUNTS` | Agent tier counts |
+| `AUTO-GEN:REPO-STRUCTURE` | Directory tree with counts |
+| `AUTO-GEN:KEY-FILES` | Key files table |
+
+### Related Skill
+
+This command invokes the `pop-doc-sync` skill. See `skills/pop-doc-sync/SKILL.md` for details.
 
 ---
 
@@ -402,6 +450,8 @@ If conflicts are detected:
 | Test Definitions | `tests/` directory |
 | Plugin Test Skill | `skills/pop-plugin-test/SKILL.md` |
 | Auto-Docs Skill | `skills/pop-auto-docs/SKILL.md` |
+| Doc-Sync Skill | `skills/pop-doc-sync/SKILL.md` |
+| Doc-Sync Utility | `hooks/utils/doc_sync.py` |
 | Validation Engine | `skills/pop-validation-engine/SKILL.md` |
 | Plugin Detector | `hooks/utils/plugin_detector.py` |
 | Conflict Report Style | `output-styles/conflict-report.md` |
