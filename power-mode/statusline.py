@@ -68,6 +68,45 @@ def load_power_mode_state() -> Dict[str, Any]:
         return {"active": False}
 
 
+def load_efficiency_metrics() -> Optional[Dict[str, Any]]:
+    """Load efficiency metrics from file.
+
+    Returns:
+        Metrics dict or None if not found
+    """
+    # Try project-local first
+    local_metrics = Path.cwd() / ".claude" / "popkit" / "efficiency-metrics.json"
+    if local_metrics.exists():
+        try:
+            return json.loads(local_metrics.read_text())
+        except (json.JSONDecodeError, IOError):
+            pass
+
+    # Fall back to home
+    home_metrics = Path.home() / ".claude" / "popkit" / "efficiency-metrics.json"
+    if home_metrics.exists():
+        try:
+            return json.loads(home_metrics.read_text())
+        except (json.JSONDecodeError, IOError):
+            pass
+
+    return None
+
+
+def format_tokens_saved(tokens: int) -> str:
+    """Format token count for display.
+
+    Args:
+        tokens: Number of tokens
+
+    Returns:
+        Formatted string (e.g., "2.4k", "500")
+    """
+    if tokens >= 1000:
+        return f"{tokens/1000:.1f}k"
+    return str(tokens)
+
+
 def format_progress_bar(progress: float, width: int = 10) -> str:
     """Format a progress bar.
 
@@ -109,6 +148,42 @@ def format_runtime(activated_at: str) -> str:
             return f"{minutes}m"
     except Exception:
         return "?"
+
+
+def format_efficiency_indicator(metrics: Optional[Dict[str, Any]]) -> str:
+    """Format efficiency indicator for status line.
+
+    Args:
+        metrics: Efficiency metrics dict
+
+    Returns:
+        Efficiency indicator string or empty if no metrics
+    """
+    if not metrics:
+        return ""
+
+    # Calculate tokens saved using the same formula as efficiency_tracker.py
+    duplicates = metrics.get("duplicates_skipped", 0)
+    patterns = metrics.get("patterns_matched", 0)
+    context_reuse = metrics.get("context_reuse_count", 0)
+    bugs = metrics.get("bugs_detected", 0)
+    stuck = metrics.get("stuck_patterns_detected", 0)
+    insight_lengths = metrics.get("insight_lengths", [])
+
+    # Token estimation constants
+    tokens_saved = (
+        duplicates * 100 +
+        patterns * 500 +
+        context_reuse * 200 +
+        bugs * 300 +
+        stuck * 800 +
+        int(sum(insight_lengths) * 0.25)
+    )
+
+    if tokens_saved == 0:
+        return ""
+
+    return f"~{format_tokens_saved(tokens_saved)} saved"
 
 
 def format_streaming_indicator(state: Dict[str, Any]) -> str:
@@ -195,6 +270,13 @@ def format_status_line(state: Dict[str, Any]) -> str:
     percent = int(progress * 100)
     progress_display = f"{Colors.GREEN}{bar} {percent}%{Colors.RESET}"
     components.append(progress_display)
+
+    # Efficiency indicator (Issue #78)
+    metrics = load_efficiency_metrics()
+    efficiency_indicator = format_efficiency_indicator(metrics)
+    if efficiency_indicator:
+        efficiency_display = f"{Colors.CYAN}{efficiency_indicator}{Colors.RESET}"
+        components.append(efficiency_display)
 
     # Commands hint (dimmed)
     hint = f"{Colors.DIM}(/power status | stop){Colors.RESET}"
@@ -287,6 +369,47 @@ def format_detailed_status(state: Dict[str, Any]) -> str:
         if latest_tool:
             lines.append(f"  Latest tool: {latest_tool}")
 
+    # Efficiency metrics (Issue #78)
+    metrics = load_efficiency_metrics()
+    if metrics:
+        # Calculate tokens saved
+        duplicates = metrics.get("duplicates_skipped", 0)
+        patterns = metrics.get("patterns_matched", 0)
+        context_reuse = metrics.get("context_reuse_count", 0)
+        bugs = metrics.get("bugs_detected", 0)
+        stuck = metrics.get("stuck_patterns_detected", 0)
+        insights_shared = metrics.get("insights_shared", 0)
+        insights_received = metrics.get("insights_received", 0)
+        insight_lengths = metrics.get("insight_lengths", [])
+        tool_calls = metrics.get("tool_calls", 0)
+
+        tokens_saved = (
+            duplicates * 100 +
+            patterns * 500 +
+            context_reuse * 200 +
+            bugs * 300 +
+            stuck * 800 +
+            int(sum(insight_lengths) * 0.25)
+        )
+
+        if tokens_saved > 0 or duplicates > 0 or patterns > 0:
+            lines.extend([
+                "",
+                f"{Colors.CYAN}Efficiency (Issue #78):{Colors.RESET}",
+                f"  Tokens saved: ~{format_tokens_saved(tokens_saved)}",
+                f"  Duplicates skipped: {duplicates}",
+                f"  Patterns matched: {patterns}",
+                f"  Context reuse: {context_reuse}",
+            ])
+
+            if bugs > 0 or stuck > 0:
+                lines.append(f"  Bugs detected: {bugs} | Stuck prevented: {stuck}")
+
+            if insights_shared > 0 or insights_received > 0:
+                lines.append(f"  Insights: {insights_shared} shared, {insights_received} received")
+
+            lines.append(f"  Tool calls: {tool_calls}")
+
     lines.extend([
         "",
         "Commands:",
@@ -327,6 +450,21 @@ def main():
         elif sys.argv[1] == "raw":
             # Output raw JSON state
             print(json.dumps(state, indent=2))
+        elif sys.argv[1] == "stats" or sys.argv[1] == "efficiency":
+            # Output efficiency stats (Issue #78)
+            metrics = load_efficiency_metrics()
+            if metrics:
+                print(json.dumps(metrics, indent=2))
+            else:
+                print(json.dumps({"error": "No efficiency metrics found"}, indent=2))
+        elif sys.argv[1] == "compact":
+            # Output compact efficiency summary
+            metrics = load_efficiency_metrics()
+            indicator = format_efficiency_indicator(metrics)
+            if indicator:
+                print(indicator)
+            else:
+                print("No metrics yet")
         else:
             # Output status line
             status_line = format_status_line(state)

@@ -66,6 +66,20 @@ try:
 except ImportError:
     PATTERN_CLIENT_AVAILABLE = False
 
+try:
+    # Efficiency tracker from hooks/utils
+    from efficiency_tracker import get_tracker as get_efficiency_tracker
+    EFFICIENCY_TRACKER_AVAILABLE = True
+except ImportError:
+    try:
+        # Try alternate import path
+        efficiency_utils = Path(__file__).parent.parent / "hooks" / "utils"
+        sys.path.insert(0, str(efficiency_utils))
+        from efficiency_tracker import get_tracker as get_efficiency_tracker
+        EFFICIENCY_TRACKER_AVAILABLE = True
+    except ImportError:
+        EFFICIENCY_TRACKER_AVAILABLE = False
+
 
 # =============================================================================
 # CONFIGURATION
@@ -700,6 +714,7 @@ class PowerModeCheckInHook:
         self.state_tracker: Optional[AgentStateTracker] = None
         self.guardrails: Optional[Guardrails] = None
         self.tool_history: List[Dict] = []
+        self.efficiency_tracker = None
 
         # Initialize embedder if available
         if EMBEDDINGS_AVAILABLE:
@@ -719,6 +734,13 @@ class PowerModeCheckInHook:
         if BUG_DETECTOR_AVAILABLE:
             try:
                 self.bug_detector = BugDetector(pattern_client=self.pattern_client)
+            except Exception:
+                pass
+
+        # Initialize efficiency tracker (Issue #78)
+        if EFFICIENCY_TRACKER_AVAILABLE:
+            try:
+                self.efficiency_tracker = get_efficiency_tracker()
             except Exception:
                 pass
 
@@ -774,6 +796,10 @@ class PowerModeCheckInHook:
 
         # Record tool use
         self.state_tracker.record_tool_use(tool_name, tool_input, tool_result)
+
+        # Track efficiency (Issue #78)
+        if self.efficiency_tracker:
+            self.efficiency_tracker.record_tool_call()
 
         response = {
             "status": "success",
@@ -837,6 +863,11 @@ class PowerModeCheckInHook:
                             "duplicate_of": embed_result.get("duplicate", {}).get("id"),
                             "similarity": embed_result.get("duplicate", {}).get("similarity")
                         }
+                        # Track efficiency: duplicate skipped (Issue #78)
+                        if self.efficiency_tracker:
+                            self.efficiency_tracker.record_duplicate_skipped(
+                                embed_result.get("duplicate", {}).get("similarity", 0.0)
+                            )
                         # Don't push duplicate insights
                         insight = None
                 except Exception as e:
@@ -847,6 +878,9 @@ class PowerModeCheckInHook:
                 self.redis_client.push_insight(insight)
                 self.state_tracker.record_insight_shared(insight["id"])
                 checkin["insights_pushed"] = 1
+                # Track efficiency: insight shared (Issue #78)
+                if self.efficiency_tracker:
+                    self.efficiency_tracker.record_insight_shared(insight.get("content", ""))
 
         # 3. PULL: Get relevant insights (semantic search if available)
         pulled_insights = []
@@ -882,8 +916,16 @@ class PowerModeCheckInHook:
                 "similarity": pulled.get("similarity"),
                 "from": pulled.get("from_agent") or pulled.get("from")
             })
+            # Track efficiency: insight received (Issue #78)
+            if self.efficiency_tracker:
+                content = pulled.get("content") or pulled.get("summary") or ""
+                self.efficiency_tracker.record_insight_received(content)
 
         checkin["insights_pulled"] = len(pulled_insights)
+
+        # Track efficiency: context reuse via semantic search (Issue #78)
+        if pulled_insights and checkin.get("search_mode") == "semantic" and self.efficiency_tracker:
+            self.efficiency_tracker.record_context_reuse()
 
         # 4. CHECK: Get any messages from coordinator
         messages = self.redis_client.check_for_messages(self.state_tracker.agent_id)
@@ -938,6 +980,14 @@ class PowerModeCheckInHook:
                         "matched_patterns": detection_result.matched_patterns[:2]
                     }
 
+                    # Track efficiency: bugs detected (Issue #78)
+                    if self.efficiency_tracker:
+                        for bug in detection_result.bugs:
+                            if bug.detection_type == "error":
+                                self.efficiency_tracker.record_bug_detected(bug.error_type or "")
+                            elif bug.detection_type == "stuck":
+                                self.efficiency_tracker.record_stuck_pattern()
+
                     # If patterns matched with high similarity, inject hint
                     if detection_result.matched_patterns:
                         best_match = detection_result.matched_patterns[0]
@@ -948,6 +998,12 @@ class PowerModeCheckInHook:
                                 "similarity": best_match.get("similarity"),
                                 "from": "collective_learning"
                             })
+                            # Track efficiency: pattern match (Issue #78)
+                            if self.efficiency_tracker:
+                                self.efficiency_tracker.record_pattern_match(
+                                    best_match.get("id", ""),
+                                    best_match.get("similarity", 0)
+                                )
 
             except Exception as e:
                 checkin["bug_detection_error"] = str(e)
@@ -959,6 +1015,18 @@ class PowerModeCheckInHook:
 
         # Record check-in
         self.state_tracker.record_checkin()
+
+        # 7. EFFICIENCY: Add efficiency summary (Issue #78)
+        if self.efficiency_tracker:
+            try:
+                summary = self.efficiency_tracker.get_summary()
+                checkin["efficiency"] = {
+                    "tokens_estimated_saved": summary["tokens_estimated_saved"],
+                    "efficiency_score": summary["efficiency_score"],
+                    "compact": self.efficiency_tracker.get_compact_summary()
+                }
+            except Exception:
+                pass
 
         return checkin
 
