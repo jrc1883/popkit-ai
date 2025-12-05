@@ -1,5 +1,5 @@
 ---
-description: Git workflow management - commit, push, PR, code review, CI/CD runs, releases, branch cleanup
+description: "commit | push | pr | review | ci | release | prune | finish [--draft, --squash]"
 ---
 
 # /popkit:git - Git Workflow Management

@@ -1,5 +1,5 @@
 ---
-description: Manage external knowledge sources for agent context enrichment
+description: "list | add | remove | sync | search <query>"
 ---
 
 # /popkit:knowledge

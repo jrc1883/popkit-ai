@@ -1,5 +1,5 @@
 ---
-description: Implementation planning - write detailed plans and execute them in batches with review checkpoints
+description: "DEPRECATED → Use /popkit:dev plan|execute"
 deprecated: true
 deprecated_in_favor_of: /popkit:dev
 ---

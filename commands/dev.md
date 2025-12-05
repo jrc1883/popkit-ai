@@ -1,5 +1,5 @@
 ---
-description: Development workflows - brainstorming, planning, implementation, and issue-driven development
+description: "full | work #N | brainstorm | plan | execute | quick | prd | suite [-T, --power]"
 ---
 
 # /popkit:dev - Development Workflows

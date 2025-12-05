@@ -1,5 +1,5 @@
 ---
-description: Morning health check and project-specific generator - Ready to Code score 0-100
+description: "DEPRECATED → Use /popkit:routine morning"
 deprecated: true
 deprecated_in_favor_of: /popkit:routine
 ---

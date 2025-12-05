@@ -1,5 +1,5 @@
 ---
-description: Debugging tools - systematic code debugging and agent routing analysis
+description: "code | routing [--trace, --verbose]"
 ---
 
 # /popkit:debug - Debugging Tools

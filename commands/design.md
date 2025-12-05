@@ -1,5 +1,5 @@
 ---
-description: Design and requirements - brainstorming sessions and PRD generation
+description: "DEPRECATED → Use /popkit:dev brainstorm|prd|suite"
 deprecated: true
 deprecated_in_favor_of: /popkit:dev
 ---

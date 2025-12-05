@@ -1,5 +1,5 @@
 ---
-description: Project tools - initialize, analyze, generate MCP servers, configure pre-commit hooks, create custom skills
+description: "init | analyze | embed | generate | mcp | setup | skills [--power, --json]"
 ---
 
 # /popkit:project - Project Analysis & Setup

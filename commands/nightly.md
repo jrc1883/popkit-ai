@@ -1,5 +1,5 @@
 ---
-description: End-of-day cleanup, maintenance, and session state preservation - Sleep Score 0-100
+description: "DEPRECATED → Use /popkit:routine nightly"
 deprecated: true
 deprecated_in_favor_of: /popkit:routine
 ---

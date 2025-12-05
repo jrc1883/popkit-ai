@@ -1,5 +1,5 @@
 ---
-description: Context-aware recommendations - what should I do next?
+description: "[quick|verbose] - Analyze project state and recommend next actions"
 ---
 
 # /popkit:next

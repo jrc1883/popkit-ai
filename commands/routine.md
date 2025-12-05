@@ -1,5 +1,5 @@
 ---
-description: Day routines - morning health checks and nightly cleanup with project-specific customization
+description: "morning | nightly [run|quick|generate|list|set|edit|delete]"
 ---
 
 # /popkit:routine - Day Routines

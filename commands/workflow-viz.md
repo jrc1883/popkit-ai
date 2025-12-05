@@ -1,5 +1,5 @@
 ---
-description: Visualize workflow chains with validation and performance metrics
+description: "[workflow-name] [--validate, --metrics, --ascii]"
 ---
 
 # /popkit:workflow-viz

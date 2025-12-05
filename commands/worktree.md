@@ -1,5 +1,5 @@
 ---
-description: Manage git worktrees for parallel development - create, list, analyze, remove
+description: "create <branch> | list | analyze | remove [--force]"
 ---
 
 # /popkit:worktree - Git Worktree Management

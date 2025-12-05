@@ -1,5 +1,5 @@
 ---
-description: Plugin management - testing, documentation generation, and integrity validation
+description: "test | docs | sync | detect [--verbose, --json]"
 ---
 
 # /popkit:plugin - Plugin Management

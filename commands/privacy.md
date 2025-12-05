@@ -1,5 +1,5 @@
 ---
-description: Privacy controls - manage consent, data sharing, export, and deletion
+description: "status | consent | export | delete | level [strict|moderate|minimal]"
 ---
 
 # /popkit:privacy - Privacy Controls

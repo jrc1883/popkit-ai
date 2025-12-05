@@ -1,5 +1,5 @@
 ---
-description: 7-phase feature development workflow - Discovery through Summary
+description: "DEPRECATED → Use /popkit:dev full"
 deprecated: true
 deprecated_in_favor_of: /popkit:dev
 ---

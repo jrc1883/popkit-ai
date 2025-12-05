@@ -1,5 +1,5 @@
 ---
-description: Report bugs with automatic context capture and optional issue creation
+description: "report | search | share [--issue, --share]"
 ---
 
 # /popkit:bug - Bug Reporter

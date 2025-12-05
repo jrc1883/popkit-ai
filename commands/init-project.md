@@ -1,5 +1,5 @@
 ---
-description: Initialize new project with .claude/ directory structure and optional Power Mode setup
+description: "DEPRECATED → Use /popkit:project init"
 deprecated: true
 deprecated_in_favor_of: /popkit:project
 ---

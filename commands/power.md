@@ -1,5 +1,5 @@
 ---
-description: Multi-agent Power Mode orchestration - start, stop, status, and Redis initialization
+description: "start | stop | status | init [redis|file] [--agents N]"
 ---
 
 # /popkit:power - Power Mode Management

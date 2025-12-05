@@ -1,5 +1,5 @@
 ---
-description: GitHub CI/CD management - workflow runs, releases, changelogs, and deployment status
+description: "DEPRECATED → Use /popkit:git ci"
 deprecated: true
 deprecated_in_favor_of: /popkit:git
 ---

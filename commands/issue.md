@@ -1,5 +1,5 @@
 ---
-description: GitHub issue management - create, list, view, close, comment, edit, link with AI-executable format
+description: "create | list | view | close | comment | edit | link [--state, --label]"
 ---
 
 # /popkit:issue - GitHub Issue Management
