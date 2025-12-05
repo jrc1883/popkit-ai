@@ -50,6 +50,22 @@ try:
 except ImportError:
     EMBEDDINGS_AVAILABLE = False
 
+try:
+    # Bug detector from hooks/utils
+    import sys
+    hooks_utils = Path(__file__).parent.parent / "hooks" / "utils"
+    sys.path.insert(0, str(hooks_utils))
+    from bug_detector import BugDetector, format_detection_result
+    BUG_DETECTOR_AVAILABLE = True
+except ImportError:
+    BUG_DETECTOR_AVAILABLE = False
+
+try:
+    from pattern_client import PatternClient
+    PATTERN_CLIENT_AVAILABLE = True
+except ImportError:
+    PATTERN_CLIENT_AVAILABLE = False
+
 
 # =============================================================================
 # CONFIGURATION
@@ -679,13 +695,30 @@ class PowerModeCheckInHook:
         self.redis_client = self._get_redis_client()
         self.insight_extractor = InsightExtractor()
         self.insight_embedder: Optional['InsightEmbedder'] = None
+        self.bug_detector: Optional['BugDetector'] = None
+        self.pattern_client: Optional['PatternClient'] = None
         self.state_tracker: Optional[AgentStateTracker] = None
         self.guardrails: Optional[Guardrails] = None
+        self.tool_history: List[Dict] = []
 
         # Initialize embedder if available
         if EMBEDDINGS_AVAILABLE:
             try:
                 self.insight_embedder = InsightEmbedder()
+            except Exception:
+                pass
+
+        # Initialize pattern client for collective search
+        if PATTERN_CLIENT_AVAILABLE:
+            try:
+                self.pattern_client = PatternClient()
+            except Exception:
+                pass
+
+        # Initialize bug detector with pattern client
+        if BUG_DETECTOR_AVAILABLE:
+            try:
+                self.bug_detector = BugDetector(pattern_client=self.pattern_client)
             except Exception:
                 pass
 
@@ -865,7 +898,61 @@ class PowerModeCheckInHook:
                 elif msg.get("type") == "DRIFT_ALERT":
                     checkin["drift_alert"] = msg.get("payload", {})
 
-        # 5. CHECK: Get pattern recommendations
+        # 5. BUG DETECTION: Check for errors and stuck patterns (Issue #72)
+        if self.bug_detector:
+            try:
+                # Convert tool_result to string for detection
+                tool_output = str(tool_result)[:2000] if tool_result else ""
+
+                detection_result = self.bug_detector.detect(
+                    tool_name=tool_name,
+                    tool_input=tool_input,
+                    tool_output=tool_output,
+                    history=self.tool_history
+                )
+
+                # Store tool in history for pattern detection
+                self.tool_history.append({
+                    "tool_name": tool_name,
+                    "tool_input": tool_input,
+                    "tool_output": tool_output[:500]
+                })
+                # Keep only last 20 tools
+                self.tool_history = self.tool_history[-20:]
+
+                if detection_result.detected:
+                    checkin["bug_detection"] = {
+                        "detected": True,
+                        "action": detection_result.action,
+                        "bugs": [
+                            {
+                                "type": b.detection_type,
+                                "error_type": b.error_type,
+                                "message": b.error_message,
+                                "pattern": b.stuck_pattern,
+                                "confidence": b.confidence,
+                                "suggestions": b.suggestions
+                            }
+                            for b in detection_result.bugs
+                        ],
+                        "matched_patterns": detection_result.matched_patterns[:2]
+                    }
+
+                    # If patterns matched with high similarity, inject hint
+                    if detection_result.matched_patterns:
+                        best_match = detection_result.matched_patterns[0]
+                        if best_match.get("similarity", 0) >= 0.7:
+                            checkin["context_injected"].append({
+                                "type": "pattern_hint",
+                                "content": f"[Collective] {best_match.get('solution', '')}",
+                                "similarity": best_match.get("similarity"),
+                                "from": "collective_learning"
+                            })
+
+            except Exception as e:
+                checkin["bug_detection_error"] = str(e)
+
+        # 6. CHECK: Get pattern recommendations
         patterns = self.redis_client.get_patterns(self.state_tracker.state.get("current_task", ""))
         if patterns:
             checkin["pattern_recommendations"] = patterns[:2]  # Top 2
