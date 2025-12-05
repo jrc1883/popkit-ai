@@ -713,6 +713,140 @@ def format_github_issue(ctx: BugContext) -> str:
 
 
 # =============================================================================
+# PATTERN SHARING
+# =============================================================================
+
+def share_bug_pattern(ctx: BugContext) -> Optional[Dict[str, Any]]:
+    """
+    Share bug pattern to collective learning database.
+
+    Anonymizes the bug context and submits it as a pattern.
+    Requires POPKIT_API_KEY environment variable.
+
+    Returns:
+        Result dict with status, pattern_id, or None if sharing failed
+    """
+    import sys
+    import os
+
+    # Try to import pattern client
+    try:
+        power_mode_path = Path(__file__).parent.parent.parent / "power-mode"
+        sys.path.insert(0, str(power_mode_path))
+        from pattern_client import PatternClient, PatternContext
+    except ImportError:
+        return None
+
+    # Check for API key
+    if not os.environ.get("POPKIT_API_KEY"):
+        return None
+
+    try:
+        client = PatternClient()
+
+        # Build trigger from errors and stuck patterns
+        trigger_parts = []
+        if ctx.errors:
+            for error in ctx.errors[:2]:
+                trigger_parts.append(error.message)
+        if ctx.stuck_patterns:
+            trigger_parts.extend(ctx.stuck_patterns[:2])
+        if not trigger_parts:
+            trigger_parts.append(ctx.description)
+
+        trigger = ". ".join(trigger_parts)
+
+        # Build solution from suggestions
+        solution_parts = [ctx.description]
+        if ctx.suggested_actions:
+            solution_parts.extend(ctx.suggested_actions[:3])
+
+        solution = ". ".join(solution_parts)
+
+        # Build context
+        pattern_context = PatternContext(
+            languages=[ctx.project.language] if ctx.project and ctx.project.language else [],
+            frameworks=[ctx.project.framework] if ctx.project and ctx.project.framework else [],
+            error_types=[e.error_type for e in ctx.errors if e.error_type]
+        )
+
+        # Submit pattern (auto-anonymizes)
+        result = client.submit_pattern(
+            trigger=trigger,
+            solution=solution,
+            context=pattern_context,
+            anonymize=True
+        )
+
+        return result
+
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
+
+def search_patterns_for_bug(ctx: BugContext) -> List[Dict[str, Any]]:
+    """
+    Search for patterns that might help with this bug.
+
+    Returns:
+        List of matching patterns with solutions
+    """
+    import sys
+    import os
+
+    # Try to import pattern client
+    try:
+        power_mode_path = Path(__file__).parent.parent.parent / "power-mode"
+        sys.path.insert(0, str(power_mode_path))
+        from pattern_client import PatternClient, PatternContext
+    except ImportError:
+        return []
+
+    # Check for API key
+    if not os.environ.get("POPKIT_API_KEY"):
+        return []
+
+    try:
+        client = PatternClient()
+
+        # Build query from errors and description
+        query_parts = [ctx.description]
+        if ctx.errors:
+            for error in ctx.errors[:2]:
+                query_parts.append(error.message)
+
+        query = " ".join(query_parts)
+
+        # Build context
+        pattern_context = PatternContext(
+            languages=[ctx.project.language] if ctx.project and ctx.project.language else [],
+            frameworks=[ctx.project.framework] if ctx.project and ctx.project.framework else []
+        )
+
+        # Search patterns
+        patterns = client.search_patterns(
+            query=query,
+            context=pattern_context,
+            limit=3,
+            threshold=0.6
+        )
+
+        return [
+            {
+                "id": p.id,
+                "trigger": p.trigger,
+                "solution": p.solution,
+                "similarity": p.similarity,
+                "quality_score": p.quality_score
+            }
+            for p in patterns
+        ]
+
+    except Exception:
+        return []
+
+
+# =============================================================================
 # CLI
 # =============================================================================
 
