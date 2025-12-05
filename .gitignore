@@ -9,6 +9,7 @@ __pycache__/
 # Node (for MCP server template)
 node_modules/
 npm-debug.log
+package-lock.json
 
 # IDE
 .idea/
@@ -19,6 +20,7 @@ npm-debug.log
 # OS
 .DS_Store
 Thumbs.db
+nul
 
 # Test artifacts (temporary test directories, not docs/test-results)
 /Test[0-9]*/
