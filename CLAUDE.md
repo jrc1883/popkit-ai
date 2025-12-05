@@ -479,7 +479,40 @@ npm run build
 
 **Note:** Popkit uses `0.x.y` versioning until stable. Version `1.0.0` will mark API stability.
 
-### v0.9.7 (Current) - Command Consolidation
+### v0.9.8 (Current) - PopKit Cloud & Monetization Foundation
+
+- **PopKit Cloud API** - Cloudflare Workers + Upstash Redis infrastructure:
+  - Deployed at `https://popkit-cloud-api.joseph-cannon.workers.dev`
+  - API Gateway with authentication and rate limiting (#69)
+  - Hosted Redis with user-scoped key isolation (#68)
+  - Embedding-enhanced check-ins with Voyage AI (#70)
+- **Collective Learning System** (#71):
+  - `cloud-api/src/routes/patterns.ts` - Pattern submission with semantic deduplication
+  - `power-mode/pattern_client.py` - Client with anonymization and sharing
+  - 0.92 similarity threshold prevents duplicates
+  - Quality scoring and feedback system
+- **Automatic Bug Detection** (#72):
+  - `hooks/utils/bug_detector.py` - Error pattern matching (20+ patterns)
+  - Stuck behavior detection (same file edited 3+ times)
+  - Integration with check-in hook for auto-hints
+- **Bug Reporting Command** (#73):
+  - `commands/bug.md` - Report, search, and share bug patterns
+  - `hooks/utils/bug_context.py` - Context capture utility
+  - `skills/pop-bug-reporter/` - Interactive bug reporting skill
+- **Analytics Dashboard API** (#74):
+  - `cloud-api/src/routes/analytics.ts` - Efficiency tracking endpoints
+  - Tracks: tokens saved, duplicates skipped, patterns matched
+  - Agent activity metrics, Power Mode session tracking
+  - GET `/v1/analytics/overview` for combined dashboard
+- **Privacy Controls & GDPR Compliance** (#77):
+  - `cloud-api/src/routes/privacy.ts` - Export and deletion endpoints
+  - `hooks/utils/privacy.py` - Comprehensive anonymization pipeline
+  - `commands/privacy.md` - Privacy management command
+  - Three levels: strict, moderate, minimal
+  - Data export and Right to be Forgotten support
+- **GitHub Issues Closed** - #67-74, #77 (PopKit Cloud Epic Phase 1-3)
+
+### v0.9.7 - Command Consolidation
 
 - **Command Consolidation** - Reduced 17 commands to 12 active (7 deprecated):
   - `/popkit:dev` - New unified development command (absorbs design, plan, feature-dev)
