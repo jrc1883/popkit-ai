@@ -525,7 +525,25 @@ npm run build
 
 **Note:** Popkit uses `0.x.y` versioning until stable. Version `1.0.0` will mark API stability.
 
-### v0.9.8 (Current) - PopKit Cloud & Monetization Foundation
+### v0.9.9 (Current) - Self-Improvement & Learning System
+
+- **Platform-Aware Command Learning** (#89):
+  - `hooks/utils/platform_detector.py` - OS/shell detection (Windows/macOS/Linux, CMD/PowerShell/Bash/Git Bash/WSL)
+  - `hooks/utils/command_translator.py` - Cross-platform command mapping (cp→xcopy, ls→dir, etc.)
+  - `hooks/utils/pattern_learner.py` - SQLite-based correction storage with confidence scoring
+  - `hooks/command-learning-hook.py` - PostToolUse hook for failure capture
+  - 81 new tests for platform detection and command translation
+- **Automatic Bug Reporting** (#90):
+  - `hooks/utils/bug_store.py` - SQLite storage with consent levels (strict/moderate/minimal)
+  - `hooks/utils/bug_consent.py` - AskUserQuestion-formatted consent prompts
+  - `hooks/bug_reporter_hook.py` - PostToolUse hook for automatic error detection
+  - GDPR compliance with `export_all()` and `delete_all_data()`
+  - Share status tracking: pending, shared, local_only, never_ask
+  - 52 new tests for bug store and consent handling
+- **Test Cleanup** - Removed orphaned consensus tests (module not merged)
+- **GitHub Issues Closed** - #89, #90 (Self-Improvement Epic child issues)
+
+### v0.9.8 - PopKit Cloud & Monetization Foundation
 
 - **Power Mode v2** (#66) - Auto-activation, visibility, and bug fixes:
   - `hooks/utils/power_detector.py` - Auto-detection of Power Mode suitability
