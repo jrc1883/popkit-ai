@@ -1,29 +1,40 @@
 #!/usr/bin/env python3
 """
-Power Mode Status Line Script
-Displays Power Mode status in Claude Code status line.
+PopKit Status Line Widget System (Issue #79)
 
-Format: [POP] #N Phase: X (N/M) [####------] 40% (/power status | stop)
+Displays configurable widgets in Claude Code status line.
 
-Components:
-- [POP] - Yellow bold indicator when Power Mode is active
-- #N - Issue number (if working on a GitHub issue)
-- Phase: X (N/M) - Current phase and progress
-- Progress bar - Visual completion indicator
-- Commands hint - Quick reference
+Available Widgets:
+- efficiency: Token savings, patterns matched, duplicates skipped
+- power_mode: Power Mode status with issue, phase, agents
+- workflow: Current workflow progress
+- health: Build, test, lint status from morning routine
+
+Configuration in .claude/popkit/config.json:
+{
+  "statusline": {
+    "widgets": ["efficiency", "power_mode"],
+    "compact_mode": true
+  }
+}
 
 Usage:
   Configured in .claude/settings.json as statusLine command
-  Reads state from ~/.claude/power-mode-state.json
+  python statusline.py                 # Full status line
+  python statusline.py --widgets       # List available widgets
+  python statusline.py efficiency      # Single widget output
+  python statusline.py status          # Detailed status
 
 Part of the popkit plugin system.
 """
 
 import json
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List, Callable
+from dataclasses import dataclass
 
 
 # ANSI color codes
@@ -34,10 +45,62 @@ class Colors:
     MAGENTA = "\033[35m"
     CYAN = "\033[36m"
     RED = "\033[31m"
+    WHITE = "\033[37m"
     RESET = "\033[0m"
     BOLD = "\033[1m"
     DIM = "\033[2m"
 
+
+# =============================================================================
+# CONFIGURATION
+# =============================================================================
+
+@dataclass
+class WidgetConfig:
+    """Configuration for status line widgets."""
+    widgets: List[str]
+    compact_mode: bool = True
+    show_hints: bool = True
+    separator: str = " | "
+
+    @classmethod
+    def default(cls) -> 'WidgetConfig':
+        """Get default configuration."""
+        return cls(
+            widgets=["popkit", "efficiency", "power_mode"],
+            compact_mode=True,
+            show_hints=True
+        )
+
+    @classmethod
+    def load(cls) -> 'WidgetConfig':
+        """Load configuration from file."""
+        # Try project-local config
+        local_config = Path.cwd() / ".claude" / "popkit" / "config.json"
+        home_config = Path.home() / ".claude" / "popkit" / "config.json"
+
+        config_file = local_config if local_config.exists() else home_config
+
+        if config_file.exists():
+            try:
+                with open(config_file) as f:
+                    data = json.load(f)
+                    sl_config = data.get("statusline", {})
+                    return cls(
+                        widgets=sl_config.get("widgets", cls.default().widgets),
+                        compact_mode=sl_config.get("compact_mode", True),
+                        show_hints=sl_config.get("show_hints", True),
+                        separator=sl_config.get("separator", " | ")
+                    )
+            except (json.JSONDecodeError, IOError):
+                pass
+
+        return cls.default()
+
+
+# =============================================================================
+# DATA LOADERS
+# =============================================================================
 
 def get_state_file_path() -> Path:
     """Get path to power mode state file."""
@@ -87,6 +150,50 @@ def load_efficiency_metrics() -> Optional[Dict[str, Any]]:
     if home_metrics.exists():
         try:
             return json.loads(home_metrics.read_text())
+        except (json.JSONDecodeError, IOError):
+            pass
+
+    return None
+
+
+def load_workflow_state() -> Optional[Dict[str, Any]]:
+    """Load current workflow state.
+
+    Returns:
+        Workflow state dict or None if not found
+    """
+    # Try project-local STATUS.json
+    local_status = Path.cwd() / ".claude" / "STATUS.json"
+    if local_status.exists():
+        try:
+            with open(local_status) as f:
+                data = json.load(f)
+                return data.get("workflow", {})
+        except (json.JSONDecodeError, IOError):
+            pass
+
+    return None
+
+
+def load_health_state() -> Optional[Dict[str, Any]]:
+    """Load health check state from morning routine.
+
+    Returns:
+        Health state dict or None if not found
+    """
+    # Try project-local health state
+    local_health = Path.cwd() / ".claude" / "popkit" / "health-state.json"
+    if local_health.exists():
+        try:
+            return json.loads(local_health.read_text())
+        except (json.JSONDecodeError, IOError):
+            pass
+
+    # Fall back to home
+    home_health = Path.home() / ".claude" / "popkit" / "health-state.json"
+    if home_health.exists():
+        try:
+            return json.loads(home_health.read_text())
         except (json.JSONDecodeError, IOError):
             pass
 
@@ -221,6 +328,389 @@ def format_streaming_indicator(state: Dict[str, Any]) -> str:
         return f"{Colors.CYAN}{spinner}{Colors.RESET} {agent_display}:{tool}"
     else:
         return f"{Colors.CYAN}{spinner}{Colors.RESET} {active_streams} stream{'s' if active_streams > 1 else ''}"
+
+
+# =============================================================================
+# WIDGET FUNCTIONS (Issue #79)
+# =============================================================================
+
+def widget_popkit(compact: bool = True) -> str:
+    """
+    PopKit branding widget.
+
+    Format: [PopKit] or [PK] in compact mode
+    """
+    if compact:
+        return f"{Colors.YELLOW}{Colors.BOLD}[PK]{Colors.RESET}"
+    return f"{Colors.YELLOW}{Colors.BOLD}[PopKit]{Colors.RESET}"
+
+
+def widget_efficiency(compact: bool = True) -> str:
+    """
+    Efficiency metrics widget.
+
+    Format: ~2.4k saved | P:3 D:12
+    Compact: ~2.4k
+    """
+    metrics = load_efficiency_metrics()
+    if not metrics:
+        return ""
+
+    # Calculate tokens saved
+    duplicates = metrics.get("duplicates_skipped", 0)
+    patterns = metrics.get("patterns_matched", 0)
+    context_reuse = metrics.get("context_reuse_count", 0)
+    bugs = metrics.get("bugs_detected", 0)
+    stuck = metrics.get("stuck_patterns_detected", 0)
+    insight_lengths = metrics.get("insight_lengths", [])
+
+    tokens_saved = (
+        duplicates * 100 +
+        patterns * 500 +
+        context_reuse * 200 +
+        bugs * 300 +
+        stuck * 800 +
+        int(sum(insight_lengths) * 0.25)
+    )
+
+    if tokens_saved == 0 and patterns == 0 and duplicates == 0:
+        return ""
+
+    tokens_str = format_tokens_saved(tokens_saved)
+
+    if compact:
+        return f"{Colors.CYAN}~{tokens_str}{Colors.RESET}"
+
+    # Full format with breakdown
+    parts = [f"~{tokens_str} saved"]
+    if patterns > 0:
+        parts.append(f"P:{patterns}")
+    if duplicates > 0:
+        parts.append(f"D:{duplicates}")
+
+    return f"{Colors.CYAN}{' '.join(parts)}{Colors.RESET}"
+
+
+def widget_power_mode(compact: bool = True) -> str:
+    """
+    Power Mode status widget.
+
+    Format: #45 Phase 3/7 [####----] 40%
+    Compact: #45 3/7 40%
+    """
+    state = load_power_mode_state()
+    if not state.get("active"):
+        return ""
+
+    issue_num = state.get("active_issue")
+    current_phase = state.get("current_phase", "")
+    phase_index = state.get("phase_index", 0)
+    total_phases = state.get("total_phases", 0)
+    progress = state.get("progress", 0.0)
+    percent = int(progress * 100)
+
+    # Agent count
+    agents = state.get("config", {}).get("agents", [])
+    agent_count = len(agents) if agents else 0
+
+    # Insights
+    insights_shared = state.get("insights_shared", 0)
+    insights_received = state.get("insights_received", 0)
+
+    parts = []
+
+    # Issue number
+    if issue_num:
+        parts.append(f"{Colors.MAGENTA}#{issue_num}{Colors.RESET}")
+
+    if compact:
+        # Compact: #45 3/7 40%
+        if total_phases > 0:
+            parts.append(f"{phase_index}/{total_phases}")
+        parts.append(f"{percent}%")
+    else:
+        # Full: Phase 3/7 | Agents: 4 | [####----] 40%
+        if total_phases > 0:
+            parts.append(f"{Colors.BLUE}Phase {phase_index}/{total_phases}{Colors.RESET}")
+        if agent_count > 0:
+            parts.append(f"Agents:{agent_count}")
+        if insights_shared > 0 or insights_received > 0:
+            parts.append(f"{insights_shared}↑{insights_received}↓")
+        bar = format_progress_bar(progress, 8)
+        parts.append(f"{Colors.GREEN}{bar} {percent}%{Colors.RESET}")
+
+    return " ".join(parts)
+
+
+def widget_workflow(compact: bool = True) -> str:
+    """
+    Workflow progress widget.
+
+    Format: feature-dev: Implementation (70%)
+    Compact: impl 70%
+    """
+    workflow = load_workflow_state()
+    if not workflow:
+        return ""
+
+    workflow_type = workflow.get("type", "")
+    current_step = workflow.get("current_step", "")
+    progress = workflow.get("progress", 0.0)
+    percent = int(progress * 100)
+
+    if not workflow_type and not current_step:
+        return ""
+
+    if compact:
+        # Compact: step name abbreviation + percent
+        step_abbrev = current_step[:4].lower() if current_step else ""
+        return f"{Colors.BLUE}{step_abbrev} {percent}%{Colors.RESET}"
+
+    # Full format
+    parts = []
+    if workflow_type:
+        parts.append(workflow_type)
+    if current_step:
+        parts.append(f"{current_step}")
+    parts.append(f"({percent}%)")
+
+    return f"{Colors.BLUE}{': '.join(parts[:2])} {parts[-1]}{Colors.RESET}"
+
+
+def widget_health(compact: bool = True) -> str:
+    """
+    Health status widget from morning routine.
+
+    Format: Build:+ Tests:12/12 Lint:0
+    Compact: +++ or +-+
+    """
+    health = load_health_state()
+    if not health:
+        return ""
+
+    build_ok = health.get("build", {}).get("success", None)
+    tests_pass = health.get("tests", {}).get("passed", 0)
+    tests_total = health.get("tests", {}).get("total", 0)
+    lint_errors = health.get("lint", {}).get("errors", 0)
+    ts_errors = health.get("typescript", {}).get("errors", 0)
+
+    # Check if we have any data
+    if build_ok is None and tests_total == 0 and lint_errors == 0 and ts_errors == 0:
+        return ""
+
+    # Use ASCII-safe characters: + for pass, - for fail, ? for unknown
+    if compact:
+        # Compact: +++ or +-+ (build, tests, lint)
+        build_icon = "+" if build_ok else ("-" if build_ok is False else "?")
+        test_icon = "+" if tests_pass == tests_total and tests_total > 0 else ("-" if tests_pass < tests_total else "?")
+        lint_icon = "+" if lint_errors == 0 else "-"
+
+        build_color = Colors.GREEN if build_ok else Colors.RED
+        test_color = Colors.GREEN if test_icon == "+" else Colors.RED
+        lint_color = Colors.GREEN if lint_icon == "+" else Colors.RED
+
+        return f"{build_color}{build_icon}{Colors.RESET}{test_color}{test_icon}{Colors.RESET}{lint_color}{lint_icon}{Colors.RESET}"
+
+    # Full format
+    parts = []
+    if build_ok is not None:
+        icon = "+" if build_ok else "-"
+        color = Colors.GREEN if build_ok else Colors.RED
+        parts.append(f"Build:{color}{icon}{Colors.RESET}")
+    if tests_total > 0:
+        color = Colors.GREEN if tests_pass == tests_total else Colors.RED
+        parts.append(f"Tests:{color}{tests_pass}/{tests_total}{Colors.RESET}")
+    if lint_errors >= 0:
+        color = Colors.GREEN if lint_errors == 0 else Colors.RED
+        parts.append(f"Lint:{color}{lint_errors}{Colors.RESET}")
+
+    return " ".join(parts)
+
+
+# Widget registry
+WIDGETS: Dict[str, Callable[[bool], str]] = {
+    "popkit": widget_popkit,
+    "efficiency": widget_efficiency,
+    "power_mode": widget_power_mode,
+    "workflow": widget_workflow,
+    "health": widget_health,
+}
+
+
+def get_widget_output(widget_name: str, compact: bool = True) -> str:
+    """Get output for a single widget."""
+    if widget_name in WIDGETS:
+        return WIDGETS[widget_name](compact)
+    return ""
+
+
+def format_widget_status_line(config: Optional[WidgetConfig] = None) -> str:
+    """
+    Format status line using configured widgets.
+
+    Args:
+        config: Widget configuration (loads from file if None)
+
+    Returns:
+        Formatted status line string
+    """
+    if config is None:
+        config = WidgetConfig.load()
+
+    outputs = []
+    for widget_name in config.widgets:
+        output = get_widget_output(widget_name, config.compact_mode)
+        if output:
+            outputs.append(output)
+
+    if not outputs:
+        return ""
+
+    # Add hints if configured
+    if config.show_hints:
+        state = load_power_mode_state()
+        if state.get("active"):
+            outputs.append(f"{Colors.DIM}(/stats | /power stop){Colors.RESET}")
+
+    return config.separator.join(outputs)
+
+
+# =============================================================================
+# WIDGET CONFIGURATION MANAGEMENT (Issue #79)
+# =============================================================================
+
+def save_widget_config(config: WidgetConfig) -> bool:
+    """
+    Save widget configuration to file.
+
+    Args:
+        config: Widget configuration to save
+
+    Returns:
+        True if saved successfully
+    """
+    # Try project-local first, fall back to home
+    local_config = Path.cwd() / ".claude" / "popkit" / "config.json"
+    home_config = Path.home() / ".claude" / "popkit" / "config.json"
+
+    config_file = local_config if local_config.parent.exists() else home_config
+
+    try:
+        # Load existing config or create new
+        existing = {}
+        if config_file.exists():
+            with open(config_file) as f:
+                existing = json.load(f)
+
+        # Update statusline section
+        existing["statusline"] = {
+            "widgets": config.widgets,
+            "compact_mode": config.compact_mode,
+            "show_hints": config.show_hints,
+            "separator": config.separator
+        }
+
+        # Save
+        config_file.parent.mkdir(parents=True, exist_ok=True)
+        with open(config_file, "w") as f:
+            json.dump(existing, f, indent=2)
+
+        return True
+
+    except (IOError, json.JSONDecodeError):
+        return False
+
+
+def enable_widget(widget_name: str) -> bool:
+    """
+    Enable a widget.
+
+    Args:
+        widget_name: Name of widget to enable
+
+    Returns:
+        True if enabled successfully
+    """
+    if widget_name not in WIDGETS:
+        print(f"Unknown widget: {widget_name}")
+        print(f"Available widgets: {', '.join(WIDGETS.keys())}")
+        return False
+
+    config = WidgetConfig.load()
+    if widget_name not in config.widgets:
+        config.widgets.append(widget_name)
+        if save_widget_config(config):
+            print(f"Enabled widget: {widget_name}")
+            return True
+        else:
+            print("Failed to save configuration")
+            return False
+    else:
+        print(f"Widget already enabled: {widget_name}")
+        return True
+
+
+def disable_widget(widget_name: str) -> bool:
+    """
+    Disable a widget.
+
+    Args:
+        widget_name: Name of widget to disable
+
+    Returns:
+        True if disabled successfully
+    """
+    config = WidgetConfig.load()
+    if widget_name in config.widgets:
+        config.widgets.remove(widget_name)
+        if save_widget_config(config):
+            print(f"Disabled widget: {widget_name}")
+            return True
+        else:
+            print("Failed to save configuration")
+            return False
+    else:
+        print(f"Widget not enabled: {widget_name}")
+        return True
+
+
+def set_compact_mode(enabled: bool) -> bool:
+    """
+    Set compact mode.
+
+    Args:
+        enabled: True for compact mode
+
+    Returns:
+        True if set successfully
+    """
+    config = WidgetConfig.load()
+    config.compact_mode = enabled
+    if save_widget_config(config):
+        mode_str = "compact" if enabled else "full"
+        print(f"Set display mode: {mode_str}")
+        return True
+    else:
+        print("Failed to save configuration")
+        return False
+
+
+def reset_widget_config() -> bool:
+    """
+    Reset widget configuration to defaults.
+
+    Returns:
+        True if reset successfully
+    """
+    default = WidgetConfig.default()
+    if save_widget_config(default):
+        print("Reset widget configuration to defaults")
+        print(f"Widgets: {', '.join(default.widgets)}")
+        print(f"Compact mode: {default.compact_mode}")
+        return True
+    else:
+        print("Failed to save configuration")
+        return False
 
 
 def format_status_line(state: Dict[str, Any]) -> str:
@@ -424,11 +914,84 @@ def format_detailed_status(state: Dict[str, Any]) -> str:
     return '\n'.join(lines)
 
 
+def print_help():
+    """Print help message."""
+    print("""
+PopKit Status Line Widget System
+
+Usage:
+  python statusline.py                    Widget-based status line (default)
+  python statusline.py --legacy           Legacy Power Mode status line
+  python statusline.py --widgets          List available widgets
+  python statusline.py <widget>           Output single widget
+  python statusline.py status             Detailed Power Mode status
+  python statusline.py raw                Raw JSON state
+  python statusline.py --help             This help message
+
+Available Widgets:
+  popkit       PopKit branding indicator
+  efficiency   Token savings and pattern matches
+  power_mode   Power Mode issue, phase, progress
+  workflow     Current workflow progress
+  health       Build/test/lint status
+
+Configuration (.claude/popkit/config.json):
+  {
+    "statusline": {
+      "widgets": ["popkit", "efficiency", "power_mode"],
+      "compact_mode": true,
+      "show_hints": true,
+      "separator": " | "
+    }
+  }
+
+Examples:
+  python statusline.py efficiency         Show only efficiency widget
+  python statusline.py --widgets          List available widgets
+  python statusline.py --legacy           Use legacy Power Mode format
+""")
+
+
+def list_widgets():
+    """List available widgets with descriptions."""
+    print("\nAvailable Widgets:")
+    print("-" * 40)
+
+    descriptions = {
+        "popkit": "PopKit branding indicator",
+        "efficiency": "Token savings, patterns matched, duplicates skipped",
+        "power_mode": "Power Mode status with issue, phase, agents",
+        "workflow": "Current workflow progress from STATUS.json",
+        "health": "Build, test, lint status from morning routine",
+    }
+
+    config = WidgetConfig.load()
+
+    for name in WIDGETS.keys():
+        # Use ASCII-safe characters for cross-platform compatibility
+        enabled = "x" if name in config.widgets else " "
+        desc = descriptions.get(name, "")
+
+        # Get sample, but strip ANSI codes for text output
+        sample = get_widget_output(name, compact=True)
+        # Remove ANSI escape sequences for clean display
+        sample_clean = re.sub(r'\033\[[0-9;]*m', '', sample) if sample else ""
+
+        print(f"  [{enabled}] {name:12} - {desc}")
+        if sample_clean:
+            print(f"       Sample: {sample_clean}")
+
+    print()
+    print(f"Current config: {', '.join(config.widgets)}")
+    print(f"Compact mode: {config.compact_mode}")
+    print()
+
+
 def main():
     """Main entry point.
 
     Reads session info from stdin (JSON from Claude Code) if available,
-    then outputs formatted status line.
+    then outputs formatted status line using the widget system.
     """
     # Try to read session info from stdin
     try:
@@ -444,20 +1007,32 @@ def main():
 
     # Check for command-line arguments
     if len(sys.argv) > 1:
-        if sys.argv[1] == "status" or sys.argv[1] == "--detailed":
+        arg = sys.argv[1]
+
+        if arg == "--help" or arg == "-h":
+            print_help()
+
+        elif arg == "--widgets" or arg == "-w":
+            # List available widgets
+            list_widgets()
+
+        elif arg == "status" or arg == "--detailed":
             # Output detailed status
             print(format_detailed_status(state))
-        elif sys.argv[1] == "raw":
+
+        elif arg == "raw":
             # Output raw JSON state
             print(json.dumps(state, indent=2))
-        elif sys.argv[1] == "stats" or sys.argv[1] == "efficiency":
-            # Output efficiency stats (Issue #78)
+
+        elif arg == "stats" or arg == "--stats":
+            # Output efficiency stats JSON (Issue #78)
             metrics = load_efficiency_metrics()
             if metrics:
                 print(json.dumps(metrics, indent=2))
             else:
                 print(json.dumps({"error": "No efficiency metrics found"}, indent=2))
-        elif sys.argv[1] == "compact":
+
+        elif arg == "compact":
             # Output compact efficiency summary
             metrics = load_efficiency_metrics()
             indicator = format_efficiency_indicator(metrics)
@@ -465,14 +1040,69 @@ def main():
                 print(indicator)
             else:
                 print("No metrics yet")
-        else:
-            # Output status line
+
+        elif arg == "--legacy":
+            # Legacy Power Mode status line (for backwards compatibility)
             status_line = format_status_line(state)
             if status_line:
                 print(status_line)
+
+        elif arg == "--full":
+            # Full (non-compact) widget status line
+            config = WidgetConfig.load()
+            config.compact_mode = False
+            status_line = format_widget_status_line(config)
+            if status_line:
+                print(status_line)
+
+        elif arg in WIDGETS:
+            # Single widget output
+            compact = "--full" not in sys.argv
+            output = get_widget_output(arg, compact=compact)
+            if output:
+                print(output)
+
+        elif arg == "enable" and len(sys.argv) > 2:
+            # Enable widget
+            enable_widget(sys.argv[2])
+
+        elif arg == "disable" and len(sys.argv) > 2:
+            # Disable widget
+            disable_widget(sys.argv[2])
+
+        elif arg == "compact":
+            # Toggle or set compact mode
+            if len(sys.argv) > 2:
+                value = sys.argv[2].lower()
+                if value in ("on", "true", "1", "yes"):
+                    set_compact_mode(True)
+                elif value in ("off", "false", "0", "no"):
+                    set_compact_mode(False)
+                else:
+                    # Show compact efficiency summary (legacy)
+                    metrics = load_efficiency_metrics()
+                    indicator = format_efficiency_indicator(metrics)
+                    if indicator:
+                        print(indicator)
+                    else:
+                        print("No metrics yet")
+            else:
+                # Toggle compact mode
+                config = WidgetConfig.load()
+                set_compact_mode(not config.compact_mode)
+
+        elif arg == "reset":
+            # Reset widget config
+            reset_widget_config()
+
+        else:
+            # Unknown argument - show help
+            print(f"Unknown argument: {arg}")
+            print("Use --help for usage information")
+
     else:
-        # Default: output status line
-        status_line = format_status_line(state)
+        # Default: widget-based status line
+        status_line = format_widget_status_line()
         if status_line:
             print(status_line)
 

@@ -1,5 +1,5 @@
 ---
-description: "start | stop | status | init [redis|file|statusline] [--agents N]"
+description: "start | stop | status | init | widgets [redis|file|statusline] [--agents N]"
 ---
 
 # /popkit:power - Power Mode Management
@@ -20,6 +20,7 @@ Manage multi-agent orchestration via Redis pub/sub for complex tasks requiring p
 | `start` | Start Power Mode with objective |
 | `stop` | Stop Power Mode gracefully |
 | `init` | Initialize Redis infrastructure |
+| `widgets` | Manage status line widgets (Issue #79) |
 
 ---
 
@@ -291,20 +292,96 @@ Verifies Redis connectivity, pub/sub functionality, and all Power Mode channels.
 
 ---
 
+## Subcommand: widgets (Issue #79)
+
+Manage status line widgets for real-time metrics display.
+
+```
+/popkit:power widgets                    # List available widgets
+/popkit:power widgets list               # Same as above
+/popkit:power widgets enable <widget>    # Enable a widget
+/popkit:power widgets disable <widget>   # Disable a widget
+/popkit:power widgets compact [on|off]   # Toggle compact mode
+/popkit:power widgets reset              # Reset to default config
+```
+
+### Available Widgets
+
+| Widget | Description | Compact | Full |
+|--------|-------------|---------|------|
+| `popkit` | PopKit branding indicator | `[PK]` | `[PopKit]` |
+| `efficiency` | Token savings (Issue #78) | `~2.4k` | `~2.4k saved P:3 D:12` |
+| `power_mode` | Power Mode status | `#45 3/7 40%` | `#45 Phase 3/7 Agents:4 [####----] 40%` |
+| `workflow` | Workflow progress | `impl 70%` | `feature-dev: Implementation (70%)` |
+| `health` | Build/test/lint status | `✓✓✓` | `Build:✓ Tests:12/12 Lint:0` |
+
+### Examples
+
+```
+# List widgets with current status
+/popkit:power widgets
+
+Output:
+Available Widgets:
+----------------------------------------
+  [✓] popkit       - PopKit branding indicator
+       Sample: [PK]
+  [✓] efficiency   - Token savings, patterns matched
+       Sample: ~2.4k
+  [✓] power_mode   - Power Mode status with issue, phase
+       Sample: #45 3/7 40%
+  [ ] workflow     - Current workflow progress
+  [ ] health       - Build, test, lint status
+
+Current config: popkit, efficiency, power_mode
+Compact mode: true
+
+# Enable health widget
+/popkit:power widgets enable health
+
+# Disable workflow widget
+/popkit:power widgets disable workflow
+
+# Switch to full display mode
+/popkit:power widgets compact off
+```
+
+### Widget Configuration
+
+Configuration is stored in `.claude/popkit/config.json`:
+
+```json
+{
+  "statusline": {
+    "widgets": ["popkit", "efficiency", "power_mode"],
+    "compact_mode": true,
+    "show_hints": true,
+    "separator": " | "
+  }
+}
+```
+
+---
+
 ## Status Line Integration
 
-When Power Mode is active, the status line shows:
+When Power Mode is active, the status line shows configured widgets:
 
+**Default (Widget-Based):**
+```
+[PK] | ~2.4k | #45 3/7 40%
+```
+
+**Legacy Format:**
 ```
 [POP] #11 Phase: implement (3/5) [####------] 40% (/power status | stop)
 ```
 
 Components:
-- `[POP]` - Yellow bold indicator
-- `#11` - Issue number (if from issue)
-- `Phase: X (N/M)` - Current phase and progress
-- Progress bar - Visual completion
-- Commands hint - Quick reference
+- `[PK]` or `[POP]` - PopKit/Power Mode indicator
+- Efficiency metrics - Token savings
+- Issue/Phase info - Current progress
+- Commands hint - Quick reference (optional)
 
 ### Setup Status Line
 
@@ -387,10 +464,14 @@ This command activates the `pop-power-mode` skill. For detailed documentation se
 | **File Fallback** | `power-mode/file_fallback.py` |
 | **Check-In Hook** | `power-mode/checkin-hook.py` |
 | **Status Line** | `power-mode/statusline.py` |
+| **Efficiency Tracker** | `hooks/utils/efficiency_tracker.py` |
 | **Config** | `power-mode/config.json` |
+| **Widget Config** | `.claude/popkit/config.json` (statusline section) |
 | **Docker Setup** | `power-mode/docker-compose.yml` |
 | **Setup Script** | `power-mode/setup-redis.py` |
 | **State File** | `~/.claude/power-mode-state.json` |
+| **Efficiency Metrics** | `.claude/popkit/efficiency-metrics.json` |
+| **Health State** | `.claude/popkit/health-state.json` |
 
 ## Related Commands
 
@@ -398,4 +479,5 @@ This command activates the `pop-power-mode` skill. For detailed documentation se
 |---------|---------|
 | `/popkit:issue work #N -p` | Work on issue with Power Mode |
 | `/popkit:issue list --power` | List issues recommending Power Mode |
-| `/popkit:morning` | Includes Redis health check |
+| `/popkit:stats` | View efficiency metrics (Issue #78) |
+| `/popkit:routine morning` | Includes Redis health check |
