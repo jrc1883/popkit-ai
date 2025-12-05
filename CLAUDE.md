@@ -512,6 +512,8 @@ npm run build
 | `hooks/utils/pattern_detector.py` | Code pattern detection utilities |
 | `hooks/utils/efficiency_tracker.py` | Token savings and efficiency metrics |
 | `hooks/utils/bug_detector.py` | Error pattern matching and stuck detection |
+| `hooks/utils/power_detector.py` | Power Mode auto-activation detection |
+| `power-mode/logger.py` | Session logging with rotation |
 | `hooks/utils/doc_sync.py` | Documentation synchronization and drift detection |
 | `hooks/utils/changelog_generator.py` | Auto-generate changelog from git commits |
 | `power-mode/consensus/protocol.py` | Consensus message types, phases, voting |
@@ -525,6 +527,16 @@ npm run build
 
 ### v0.9.8 (Current) - PopKit Cloud & Monetization Foundation
 
+- **Power Mode v2** (#66) - Auto-activation, visibility, and bug fixes:
+  - `hooks/utils/power_detector.py` - Auto-detection of Power Mode suitability
+  - `power-mode/logger.py` - Session logging with rotation (10 sessions, 5MB max)
+  - Fixed state file location to use git root instead of cwd
+  - Fixed session ID generation using git hash + date for consistency
+  - Fixed JSON serialization of None values in Redis
+  - Added Redis Commander URL to status output
+  - Auto-activation triggers: epic labels, complexity keywords, PopKit Guidance parsing
+  - Confidence-based activation (60%+ suggest, 80%+ auto-enable)
+  - CLI: `python hooks/utils/power_detector.py --issue N --json`
 - **Consensus Protocol** (#86) - Multi-agent democratic decision-making:
   - `power-mode/consensus/protocol.py` - 7-phase consensus state machine
   - `power-mode/consensus/coordinator.py` - Token ring orchestration (IEEE 802.5 inspired)
@@ -568,7 +580,7 @@ npm run build
   - `commands/privacy.md` - Privacy management command
   - Three levels: strict, moderate, minimal
   - Data export and Right to be Forgotten support
-- **GitHub Issues Closed** - #67-74, #77, #82-87 (PopKit Cloud Epic Phase 1-3, Documentation Automation Epic)
+- **GitHub Issues Closed** - #66-74, #77, #82-87 (Power Mode v2, PopKit Cloud Epic Phase 1-3, Documentation Automation Epic)
 
 ### v0.9.7 - Command Consolidation
 

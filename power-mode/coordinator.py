@@ -477,10 +477,36 @@ class PowerModeCoordinator:
 
     def __init__(self, objective: Optional[Objective] = None):
         self.objective = objective
-        self.session_id = hashlib.md5(
-            datetime.now().isoformat().encode()
-        ).hexdigest()[:8]
+        self.session_id = self._generate_session_id()
+        self._init_components(objective)
 
+    def _generate_session_id(self) -> str:
+        """Generate a stable session ID (Issue #66 - bug fix).
+
+        Uses git HEAD hash + date for consistency across agents.
+        Falls back to timestamp-only if not in a git repo.
+        """
+        import subprocess
+
+        try:
+            result = subprocess.run(
+                ["git", "rev-parse", "--short=7", "HEAD"],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            if result.returncode == 0:
+                git_hash = result.stdout.strip()
+                date_str = datetime.now().strftime("%Y%m%d")
+                return hashlib.md5(f"{git_hash}-{date_str}".encode()).hexdigest()[:8]
+        except (subprocess.TimeoutExpired, FileNotFoundError):
+            pass
+
+        # Fallback: timestamp-based
+        return hashlib.md5(datetime.now().isoformat().encode()).hexdigest()[:8]
+
+    def _init_components(self, objective: Optional[Objective]):
+        """Initialize coordinator components after session_id is set."""
         # Documentation barrier (Issue #87) - create first for callback
         doc_barrier_config = CONFIG.get("phases", {}).get("documentation_barrier", {})
         self.documentation_barrier = DocumentationBarrier(doc_barrier_config)

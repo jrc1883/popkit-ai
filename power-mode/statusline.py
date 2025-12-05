@@ -102,10 +102,62 @@ class WidgetConfig:
 # DATA LOADERS
 # =============================================================================
 
+def get_git_root() -> Optional[Path]:
+    """Get the git repository root directory (Issue #66).
+
+    Returns:
+        Path to git root, or None if not in a git repo.
+    """
+    import subprocess
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        if result.returncode == 0:
+            return Path(result.stdout.strip())
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        pass
+    return None
+
+
+def get_project_root() -> Path:
+    """Get project root directory (Issue #66 - bug fix).
+
+    Priority:
+    1. Git repository root (most reliable)
+    2. Directory containing .claude/
+    3. Current working directory (fallback)
+
+    Returns:
+        Path to project root.
+    """
+    # Try git root first
+    git_root = get_git_root()
+    if git_root:
+        return git_root
+
+    # Look for .claude directory walking up from cwd
+    cwd = Path.cwd()
+    for parent in [cwd] + list(cwd.parents):
+        if (parent / ".claude").exists():
+            return parent
+
+    # Fallback to cwd
+    return cwd
+
+
 def get_state_file_path() -> Path:
-    """Get path to power mode state file."""
+    """Get path to power mode state file (Issue #66 - bug fix).
+
+    Uses get_project_root() instead of Path.cwd() for consistency.
+    """
+    project_root = get_project_root()
+
     # Try project-local first (.claude/popkit/)
-    local_state = Path.cwd() / ".claude" / "popkit" / "power-mode-state.json"
+    local_state = project_root / ".claude" / "popkit" / "power-mode-state.json"
     if local_state.exists():
         return local_state
 
@@ -132,13 +184,15 @@ def load_power_mode_state() -> Dict[str, Any]:
 
 
 def load_efficiency_metrics() -> Optional[Dict[str, Any]]:
-    """Load efficiency metrics from file.
+    """Load efficiency metrics from file (Issue #66 - bug fix).
 
     Returns:
         Metrics dict or None if not found
     """
+    project_root = get_project_root()
+
     # Try project-local first
-    local_metrics = Path.cwd() / ".claude" / "popkit" / "efficiency-metrics.json"
+    local_metrics = project_root / ".claude" / "popkit" / "efficiency-metrics.json"
     if local_metrics.exists():
         try:
             return json.loads(local_metrics.read_text())
@@ -157,13 +211,15 @@ def load_efficiency_metrics() -> Optional[Dict[str, Any]]:
 
 
 def load_workflow_state() -> Optional[Dict[str, Any]]:
-    """Load current workflow state.
+    """Load current workflow state (Issue #66 - bug fix).
 
     Returns:
         Workflow state dict or None if not found
     """
+    project_root = get_project_root()
+
     # Try project-local STATUS.json
-    local_status = Path.cwd() / ".claude" / "STATUS.json"
+    local_status = project_root / ".claude" / "STATUS.json"
     if local_status.exists():
         try:
             with open(local_status) as f:
@@ -176,13 +232,15 @@ def load_workflow_state() -> Optional[Dict[str, Any]]:
 
 
 def load_health_state() -> Optional[Dict[str, Any]]:
-    """Load health check state from morning routine.
+    """Load health check state from morning routine (Issue #66 - bug fix).
 
     Returns:
         Health state dict or None if not found
     """
+    project_root = get_project_root()
+
     # Try project-local health state
-    local_health = Path.cwd() / ".claude" / "popkit" / "health-state.json"
+    local_health = project_root / ".claude" / "popkit" / "health-state.json"
     if local_health.exists():
         try:
             return json.loads(local_health.read_text())
@@ -775,8 +833,20 @@ def format_status_line(state: Dict[str, Any]) -> str:
     return " ".join(components)
 
 
+def get_redis_commander_url() -> Optional[str]:
+    """Get the Redis Commander URL if configured.
+
+    Returns:
+        URL string or None if not configured
+    """
+    # Default Redis Commander URL from docker-compose.yml
+    return "http://localhost:18081"
+
+
 def format_detailed_status(state: Dict[str, Any]) -> str:
-    """Format detailed status for /popkit:power status command.
+    """Format detailed status for /popkit:power status command (Issue #66).
+
+    Enhanced with dashboard URL, logs path, and more metrics.
 
     Args:
         state: Power Mode state dict
@@ -792,9 +862,12 @@ def format_detailed_status(state: Dict[str, Any]) -> str:
             "No active Power Mode session.",
             "",
             "To start Power Mode:",
-            "  /popkit:work #N -p     Work on issue with Power Mode",
-            "  /popkit:power \"task\"   Start with custom objective",
-            "  /popkit:issues --power List issues recommending Power Mode",
+            "  /popkit:dev work #N -p   Work on issue with Power Mode",
+            "  /popkit:power start \"task\"   Start with custom objective",
+            "",
+            "Debug Tools:",
+            f"  Redis Commander: {get_redis_commander_url()}",
+            "  /popkit:power init debug   Start Redis Commander",
             ""
         ]
         return '\n'.join(lines)
@@ -900,14 +973,23 @@ def format_detailed_status(state: Dict[str, Any]) -> str:
 
             lines.append(f"  Tool calls: {tool_calls}")
 
+    # Debug Tools (Issue #66 - visibility)
+    lines.extend([
+        "",
+        f"{Colors.YELLOW}Debug Tools:{Colors.RESET}",
+        f"  Redis Commander: {get_redis_commander_url()}",
+        f"  Session logs: ~/.claude/power-mode/logs/{session_id}.log",
+    ])
+
     lines.extend([
         "",
         "Commands:",
         f"  {Colors.CYAN}/popkit:power stop{Colors.RESET}    Stop Power Mode",
+        f"  {Colors.CYAN}/popkit:power init debug{Colors.RESET}  Open Redis Commander",
     ])
 
     if issue_num:
-        lines.append(f"  {Colors.CYAN}/popkit:work #{issue_num}{Colors.RESET}     Continue current issue")
+        lines.append(f"  {Colors.CYAN}/popkit:dev work #{issue_num}{Colors.RESET}   Continue current issue")
 
     lines.append("")
 

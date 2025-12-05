@@ -554,6 +554,111 @@ Power Mode works without Redis using file-based coordination:
 
 ---
 
+## Auto-Activation (Issue #66)
+
+Power Mode can automatically suggest or enable itself based on task analysis.
+
+### Activation Triggers
+
+| Trigger | Confidence | Auto-Enable |
+|---------|------------|-------------|
+| Label: `epic` | +80% | Yes |
+| Label: `power-mode` | +80% | Yes |
+| Label: `complex`, `multi-phase`, `architecture`, `refactor`, `migration` | +30% each | No |
+| PopKit Guidance: Power Mode checkbox | +90% | Yes |
+| PopKit Guidance: 3+ phases | +20% | No |
+| PopKit Guidance: 2+ agents | +15% | No |
+| PopKit Guidance: High complexity | +20% | No |
+| 5+ files estimated | +10-30% | No |
+| Title keywords: epic, migration, refactor, architecture | +15% each | No |
+| Body keywords: comprehensive, multi-agent, parallel | +10% each | No |
+
+### Decision Priority
+
+1. **Explicit flags** (`-p`/`--power` or `--solo`) override everything
+2. **PopKit Guidance section** in issue body
+3. **Issue labels** (epic, complex, etc.)
+4. **Content analysis** (keywords, file counts)
+5. **Default to sequential** mode if confidence < 60%
+
+### Thresholds
+
+| Confidence | Action |
+|------------|--------|
+| 0-59% | Sequential mode (no suggestion) |
+| 60-79% | Suggest Power Mode |
+| 80-100% | Auto-enable Power Mode |
+
+### Detection Files
+
+| File | Purpose |
+|------|---------|
+| `hooks/utils/power_detector.py` | PowerDetector class |
+| `hooks/issue-workflow.py` | Integration with issue work |
+
+### Usage in Commands
+
+```bash
+# Explicit Power Mode
+/popkit:dev work #45 -p
+
+# Explicit Sequential Mode
+/popkit:dev work #45 --solo
+
+# Auto-detection (uses PowerDetector)
+/popkit:dev work #45
+
+# Check what would be detected for an issue
+python hooks/utils/power_detector.py --issue 45 --json
+```
+
+### PowerDetector API
+
+```python
+from hooks.utils.power_detector import PowerDetector, get_power_mode_recommendation
+
+# Analyze an issue
+detector = PowerDetector()
+result = detector.analyze_issue(issue_data)
+
+if result.should_auto_enable:
+    print(f"Auto-enable: {result.reason}")
+elif result.should_suggest:
+    print(f"Suggest: {result.reason}")
+
+# Quick check
+if should_suggest_power_mode(issue_data):
+    print("Power Mode recommended")
+
+# Full API
+recommendation = get_power_mode_recommendation(
+    issue_data=issue_data,
+    task="Refactor the auth system",
+    flags={"power": True}  # Explicit flag overrides
+)
+```
+
+### Example Output
+
+```
+Power Mode Recommendation:
+  Should suggest: True
+  Should auto-enable: True
+  Confidence: 85%
+  Reason: Power Mode recommended: epic issue
+
+Detected signals:
+  - Labels: epic
+  - PopKit Guidance: 5 phases
+  - PopKit Guidance: 3 agents
+  - Estimated files: 12
+
+Suggested phases: explore → design → implement → test → review
+Suggested agents: code-architect, api-designer, test-writer-fixer
+```
+
+---
+
 ## Skill Reference
 
 This command activates the `pop-power-mode` skill. For detailed documentation see: `skills/pop-power-mode/SKILL.md`

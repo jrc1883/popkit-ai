@@ -67,6 +67,17 @@ except ImportError:
     PATTERN_CLIENT_AVAILABLE = False
 
 try:
+    from logger import get_logger, log_checkin, log_info, log_error
+    LOGGER_AVAILABLE = True
+except ImportError:
+    LOGGER_AVAILABLE = False
+    # Stubs if logger not available
+    def get_logger(session_id=None): return None
+    def log_checkin(agent_id, state): pass
+    def log_info(agent_id, message, details=None): pass
+    def log_error(agent_id, message, details=None): pass
+
+try:
     # Efficiency tracker from hooks/utils
     from efficiency_tracker import get_tracker as get_efficiency_tracker
     EFFICIENCY_TRACKER_AVAILABLE = True
@@ -97,6 +108,84 @@ def load_config() -> Dict:
 CONFIG = load_config()
 
 
+def get_git_root() -> Optional[Path]:
+    """Get the git repository root directory.
+
+    Returns:
+        Path to git root, or None if not in a git repo.
+    """
+    import subprocess
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        if result.returncode == 0:
+            return Path(result.stdout.strip())
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        pass
+    return None
+
+
+def get_project_root() -> Path:
+    """Get project root directory (Issue #66 - bug fix).
+
+    Priority:
+    1. Git repository root (most reliable)
+    2. Directory containing .claude/
+    3. Current working directory (fallback)
+
+    Returns:
+        Path to project root.
+    """
+    # Try git root first
+    git_root = get_git_root()
+    if git_root:
+        return git_root
+
+    # Look for .claude directory walking up from cwd
+    cwd = Path.cwd()
+    for parent in [cwd] + list(cwd.parents):
+        if (parent / ".claude").exists():
+            return parent
+
+    # Fallback to cwd
+    return cwd
+
+
+def generate_session_id() -> str:
+    """Generate a stable session ID (Issue #66 - bug fix).
+
+    Uses git HEAD hash + date for consistency across agents.
+    Falls back to timestamp-only if not in a git repo.
+
+    Returns:
+        8-character session ID.
+    """
+    import subprocess
+
+    # Try to get git HEAD hash
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--short=7", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        if result.returncode == 0:
+            git_hash = result.stdout.strip()
+            # Combine with date (not time) for daily session stability
+            date_str = datetime.now().strftime("%Y%m%d")
+            return hashlib.md5(f"{git_hash}-{date_str}".encode()).hexdigest()[:8]
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        pass
+
+    # Fallback: timestamp-based
+    return hashlib.md5(datetime.now().isoformat().encode()).hexdigest()[:8]
+
+
 # =============================================================================
 # STATE TRACKER
 # =============================================================================
@@ -122,14 +211,20 @@ class AgentStateTracker:
         self.state = self._load_state()
 
     def _get_state_file_path(self) -> Path:
-        """Get path to power mode state file (project-local preferred)."""
+        """Get path to power mode state file (Issue #66 - bug fix).
+
+        Uses get_project_root() instead of Path.cwd() for consistency.
+        This ensures state persists correctly when cwd changes.
+        """
+        project_root = get_project_root()
+        local_state = project_root / ".claude" / "popkit" / "power-mode-state.json"
+
         # Try project-local first
-        local_state = Path.cwd() / ".claude" / "popkit" / "power-mode-state.json"
         if local_state.exists():
             return local_state
 
         # Check if project .claude/popkit directory exists (create state there)
-        local_popkit_dir = Path.cwd() / ".claude" / "popkit"
+        local_popkit_dir = project_root / ".claude" / "popkit"
         if local_popkit_dir.exists():
             return local_state
 
@@ -400,13 +495,28 @@ class PowerModeRedisClient:
             return False
 
     def push_state(self, agent_id: str, state: Dict):
-        """Push agent state to Redis."""
+        """Push agent state to Redis (Issue #66 - bug fix).
+
+        Properly handles None values to prevent "None" string in Redis.
+        """
         if not self.connected:
             return
 
         key = f"pop:state:{agent_id}"
+
+        # Serialize values properly, handling None (Issue #66)
+        def serialize_value(v):
+            if v is None:
+                return json.dumps(None)  # Becomes JSON "null"
+            elif isinstance(v, (dict, list)):
+                return json.dumps(v)
+            elif isinstance(v, bool):
+                return json.dumps(v)  # "true"/"false" not "True"/"False"
+            else:
+                return str(v)
+
         self.redis.hset(key, mapping={
-            k: json.dumps(v) if isinstance(v, (dict, list)) else str(v)
+            k: serialize_value(v)
             for k, v in state.items()
         })
         self.redis.expire(key, 600)  # 10 min TTL
@@ -774,6 +884,11 @@ class PowerModeCheckInHook:
         self.state_tracker = AgentStateTracker(agent_id, agent_name, session_id)
         self.redis_client.connect()
 
+        # Initialize session logger (Issue #66 - visibility)
+        if LOGGER_AVAILABLE:
+            get_logger(session_id)
+            log_info(agent_id, f"Agent initialized: {agent_name}")
+
         # Load objective and set up guardrails
         if PROTOCOL_AVAILABLE:
             objective = self.redis_client.get_objective()
@@ -836,6 +951,10 @@ class PowerModeCheckInHook:
                     self.state_tracker.agent_id,
                     self.state_tracker.state
                 )
+
+        # Log check-in (Issue #66 - visibility)
+        if LOGGER_AVAILABLE:
+            log_checkin(self.state_tracker.agent_id, self.state_tracker.state)
 
         # 2. PUSH: Extract and share insights (with embedding if available)
         insight = self.insight_extractor.extract(tool_name, tool_input, tool_result)
@@ -1211,13 +1330,17 @@ def main():
 
 
 def is_power_mode_enabled() -> bool:
-    """Check if power mode is currently enabled."""
+    """Check if power mode is currently enabled (Issue #66 - bug fix).
+
+    Uses get_project_root() for consistent state file location.
+    """
     # Check environment variable
     if os.environ.get("POP_POWER_MODE") == "1":
         return True
 
-    # Check project-local state file first
-    local_state = Path.cwd() / ".claude" / "power-mode-state.json"
+    # Check project-local state file first (Issue #66 - use project root)
+    project_root = get_project_root()
+    local_state = project_root / ".claude" / "popkit" / "power-mode-state.json"
     if local_state.exists():
         try:
             with open(local_state) as f:
