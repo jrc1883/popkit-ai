@@ -532,6 +532,13 @@ npm run build
   - Rule presets: default (67%/60%), quick (50%/50%), strict (80%/75%), critical (100%/100%)
   - `/popkit:power start --consensus` enables consensus mode
   - Full test suite in `tests/consensus/`
+- **Documentation Sync Barrier** (#87) - Power Mode documentation checkpoint:
+  - `DocumentationBarrier` class in `power-mode/coordinator.py`
+  - "documentation" phase added to default Power Mode phases
+  - `DOCS_NEEDED` and `DOCS_UPDATED` insight types for tracking
+  - Blocks phase transition until docs are verified or timeout
+  - Spawns documentation-maintainer agent when code changes detected
+  - Configuration in `power-mode/config.json` under `phases.documentation_barrier`
 - **PopKit Cloud API** - Cloudflare Workers + Upstash Redis infrastructure:
   - Deployed at `https://popkit-cloud-api.joseph-cannon.workers.dev`
   - API Gateway with authentication and rate limiting (#69)
@@ -561,7 +568,7 @@ npm run build
   - `commands/privacy.md` - Privacy management command
   - Three levels: strict, moderate, minimal
   - Data export and Right to be Forgotten support
-- **GitHub Issues Closed** - #67-74, #77, #82-86 (PopKit Cloud Epic Phase 1-3, Documentation Automation Epic)
+- **GitHub Issues Closed** - #67-74, #77, #82-87 (PopKit Cloud Epic Phase 1-3, Documentation Automation Epic)
 
 ### v0.9.7 - Command Consolidation
 

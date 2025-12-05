@@ -120,12 +120,22 @@
       "design",
       "implement",
       "test",
-      "document",
+      "documentation",
       "review"
     ],
     "sync_between_phases": true,
     "allow_phase_skip": false,
-    "phase_timeout_multiplier": 1.5
+    "phase_timeout_multiplier": 1.5,
+    "documentation_barrier": {
+      "enabled": true,
+      "required_agent": "documentation-maintainer",
+      "timeout_seconds": 300,
+      "checks": [
+        "claude_md_updated",
+        "readme_version_match",
+        "no_autogen_drift"
+      ]
+    }
   },
 
   "output": {

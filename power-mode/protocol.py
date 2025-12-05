@@ -69,6 +69,8 @@ class InsightType(Enum):
     PATTERN = "pattern"          # Noticed a convention
     QUESTION = "question"        # Need clarification
     WARNING = "warning"          # Potential issue
+    DOCS_NEEDED = "docs_needed"  # Documentation update required (Issue #87)
+    DOCS_UPDATED = "docs_updated"  # Documentation completed (Issue #87)
 
 
 class BoundaryType(Enum):
@@ -737,7 +739,7 @@ if __name__ == "__main__":
             "Tests pass",
             "Documentation updated"
         ],
-        phases=["explore", "design", "implement", "test", "document"],
+        phases=["explore", "design", "implement", "test", "documentation", "review"],
         file_patterns=["src/auth/**", "tests/auth/**", "docs/auth.md"],
         scope_keywords=["auth", "login", "user", "session"]
     )

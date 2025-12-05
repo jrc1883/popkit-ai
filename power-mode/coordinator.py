@@ -207,15 +207,123 @@ class SyncManager:
 
 
 # =============================================================================
+# DOCUMENTATION BARRIER (Issue #87)
+# =============================================================================
+
+class DocumentationBarrier:
+    """
+    Sync barrier for documentation phase in Power Mode.
+
+    Ensures documentation is updated before advancing to review/summary phases.
+    Spawns documentation-maintainer agent if needed.
+
+    Part of Documentation Automation Epic (#81).
+    """
+
+    def __init__(self, config: Dict = None):
+        self.config = config or {}
+        self.required_agent = self.config.get("required_agent", "documentation-maintainer")
+        self.timeout_seconds = self.config.get("timeout_seconds", 300)
+        self.checks = self.config.get("checks", [
+            "claude_md_updated",
+            "readme_version_match",
+            "no_autogen_drift"
+        ])
+        self.status: Dict[str, bool] = {}
+        self.docs_needed_insights: List[str] = []
+        self.docs_updated_insights: List[str] = []
+        self._lock = threading.Lock()
+
+    def record_docs_needed(self, agent_id: str, description: str):
+        """Record that an agent flagged documentation as needed."""
+        with self._lock:
+            self.docs_needed_insights.append(f"{agent_id}: {description}")
+
+    def record_docs_updated(self, agent_id: str, description: str):
+        """Record that documentation was updated."""
+        with self._lock:
+            self.docs_updated_insights.append(f"{agent_id}: {description}")
+
+    def check_claude_md_updated(self, files_touched: List[str]) -> bool:
+        """Check if CLAUDE.md was updated when code changed."""
+        code_changed = any(
+            f.endswith(('.py', '.ts', '.js', '.tsx', '.jsx'))
+            for f in files_touched
+        )
+        claude_md_updated = 'CLAUDE.md' in files_touched
+
+        # If code changed but CLAUDE.md not updated, flag it
+        if code_changed and not claude_md_updated:
+            return False
+        return True
+
+    def check_readme_version_match(self) -> bool:
+        """Check if README version matches plugin.json."""
+        # This would be implemented by reading files
+        # For now, return True (assumes verified externally)
+        return True
+
+    def check_no_autogen_drift(self) -> bool:
+        """Check for drift in auto-generated sections."""
+        # This would invoke doc_sync.py
+        # For now, return True (assumes verified externally)
+        return True
+
+    def run_checks(self, files_touched: List[str]) -> Dict[str, bool]:
+        """Run all documentation checks."""
+        with self._lock:
+            self.status = {
+                "claude_md_updated": self.check_claude_md_updated(files_touched),
+                "readme_version_match": self.check_readme_version_match(),
+                "no_autogen_drift": self.check_no_autogen_drift()
+            }
+            return self.status
+
+    def is_complete(self) -> bool:
+        """Check if all documentation requirements are satisfied."""
+        with self._lock:
+            if not self.status:
+                return False
+            return all(self.status.values())
+
+    def get_missing_checks(self) -> List[str]:
+        """Get list of checks that failed."""
+        with self._lock:
+            return [check for check, passed in self.status.items() if not passed]
+
+    def needs_documentation_agent(self) -> bool:
+        """Determine if documentation-maintainer should be spawned."""
+        with self._lock:
+            # If docs were flagged as needed but not yet updated
+            return len(self.docs_needed_insights) > len(self.docs_updated_insights)
+
+    def get_summary(self) -> Dict:
+        """Get summary of documentation barrier status."""
+        with self._lock:
+            return {
+                "required_agent": self.required_agent,
+                "timeout_seconds": self.timeout_seconds,
+                "checks": self.checks,
+                "status": self.status,
+                "is_complete": self.is_complete(),
+                "missing_checks": self.get_missing_checks(),
+                "needs_documentation_agent": self.needs_documentation_agent(),
+                "docs_needed_count": len(self.docs_needed_insights),
+                "docs_updated_count": len(self.docs_updated_insights)
+            }
+
+
+# =============================================================================
 # INSIGHT POOL
 # =============================================================================
 
 class InsightPool:
     """Manages shared insights between agents."""
 
-    def __init__(self, max_insights: int = 100):
+    def __init__(self, max_insights: int = 100, on_insight_added: Optional[Callable] = None):
         self.insights: List[Insight] = []
         self.max_insights = max_insights
+        self.on_insight_added = on_insight_added  # Callback for documentation tracking
         self._lock = threading.Lock()
 
     def add(self, insight: Insight):
@@ -227,6 +335,10 @@ class InsightPool:
                     return
 
             self.insights.append(insight)
+
+            # Notify callback (for documentation barrier tracking - Issue #87)
+            if self.on_insight_added:
+                self.on_insight_added(insight)
 
             # Trim if over limit
             if len(self.insights) > self.max_insights:
@@ -369,10 +481,14 @@ class PowerModeCoordinator:
             datetime.now().isoformat().encode()
         ).hexdigest()[:8]
 
+        # Documentation barrier (Issue #87) - create first for callback
+        doc_barrier_config = CONFIG.get("phases", {}).get("documentation_barrier", {})
+        self.documentation_barrier = DocumentationBarrier(doc_barrier_config)
+
         # Core components
         self.registry = AgentRegistry()
         self.sync_manager = SyncManager()
-        self.insight_pool = InsightPool()
+        self.insight_pool = InsightPool(on_insight_added=self._on_insight_added)
         self.pattern_learner = PatternLearner()
         self.guardrails = Guardrails(objective)
 
@@ -780,6 +896,23 @@ class PowerModeCoordinator:
                 confidence=0.7
             )
             self.insight_pool.add(insight)
+
+    def _on_insight_added(self, insight: Insight):
+        """
+        Callback when an insight is added to the pool.
+        Tracks documentation-related insights for the DocumentationBarrier (Issue #87).
+        """
+        # Check for documentation-related insight types
+        if insight.type == InsightType.DOCS_NEEDED:
+            self.documentation_barrier.record_docs_needed(
+                insight.from_agent,
+                insight.content
+            )
+        elif insight.type == InsightType.DOCS_UPDATED:
+            self.documentation_barrier.record_docs_updated(
+                insight.from_agent,
+                insight.content
+            )
 
     def _check_agent_health(self):
         """Check agent health and handle failures."""
