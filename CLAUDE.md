@@ -110,11 +110,18 @@ power-mode/              Multi-agent orchestration (Redis or file-based)
   config.json            Channels, intervals, constraints
   docker-compose.yml     Redis + Commander Docker setup
   setup-redis.py         Cross-platform Redis management script
+  consensus/             Multi-agent consensus protocol (Issue #86)
+    protocol.py          Consensus message types, phases, voting
+    coordinator.py       Consensus session management, token ring
+    triggers.py          8 trigger implementations
+    monitor.py           Conflict detection
+    agent_hook.py        PostToolUse hook for consensus participation
 templates/mcp-server/    Template for generating project-specific MCP servers
 tests/                   Plugin self-test definitions
   hooks/                 Hook input/output tests
   routing/               Agent routing tests
   structure/             File structure validation tests
+  consensus/             Consensus protocol tests
 ```
 <!-- AUTO-GEN:REPO-STRUCTURE END -->
 
@@ -507,6 +514,9 @@ npm run build
 | `hooks/utils/bug_detector.py` | Error pattern matching and stuck detection |
 | `hooks/utils/doc_sync.py` | Documentation synchronization and drift detection |
 | `hooks/utils/changelog_generator.py` | Auto-generate changelog from git commits |
+| `power-mode/consensus/protocol.py` | Consensus message types, phases, voting |
+| `power-mode/consensus/coordinator.py` | Consensus session management, token ring |
+| `power-mode/consensus/triggers.py` | 8 consensus trigger implementations |
 <!-- AUTO-GEN:KEY-FILES END -->
 
 ## Version History
@@ -515,6 +525,13 @@ npm run build
 
 ### v0.9.8 (Current) - PopKit Cloud & Monetization Foundation
 
+- **Consensus Protocol** (#86) - Multi-agent democratic decision-making:
+  - `power-mode/consensus/protocol.py` - 7-phase consensus state machine
+  - `power-mode/consensus/coordinator.py` - Token ring orchestration (IEEE 802.5 inspired)
+  - `power-mode/consensus/triggers.py` - 8 trigger mechanisms for auto-consensus
+  - Rule presets: default (67%/60%), quick (50%/50%), strict (80%/75%), critical (100%/100%)
+  - `/popkit:power start --consensus` enables consensus mode
+  - Full test suite in `tests/consensus/`
 - **PopKit Cloud API** - Cloudflare Workers + Upstash Redis infrastructure:
   - Deployed at `https://popkit-cloud-api.joseph-cannon.workers.dev`
   - API Gateway with authentication and rate limiting (#69)
@@ -544,7 +561,7 @@ npm run build
   - `commands/privacy.md` - Privacy management command
   - Three levels: strict, moderate, minimal
   - Data export and Right to be Forgotten support
-- **GitHub Issues Closed** - #67-74, #77 (PopKit Cloud Epic Phase 1-3)
+- **GitHub Issues Closed** - #67-74, #77, #82-86 (PopKit Cloud Epic Phase 1-3, Documentation Automation Epic)
 
 ### v0.9.7 - Command Consolidation
 

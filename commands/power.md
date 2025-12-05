@@ -1,5 +1,5 @@
 ---
-description: "start | stop | status | init | widgets [redis|file|statusline] [--agents N]"
+description: "start | stop | status | init | widgets | consensus [--consensus, --agents N]"
 ---
 
 # /popkit:power - Power Mode Management
@@ -21,6 +21,7 @@ Manage multi-agent orchestration via Redis pub/sub for complex tasks requiring p
 | `stop` | Stop Power Mode gracefully |
 | `init` | Initialize Redis infrastructure |
 | `widgets` | Manage status line widgets (Issue #79) |
+| `consensus` | Manage consensus mode for multi-agent decisions (Issue #86) |
 
 ---
 
@@ -99,6 +100,8 @@ Start Power Mode with an objective.
 | `--phases` | Comma-separated phase names (default: explore,design,implement,test,review) |
 | `--agents` | Comma-separated agent names to use |
 | `--timeout` | Max runtime in minutes (default: 30) |
+| `--consensus` | Enable consensus mode for multi-agent decision-making |
+| `--consensus-rules` | Preset rules: default, quick, strict, critical |
 
 ### Prerequisites
 
@@ -441,6 +444,106 @@ This adds the following to your `.claude/settings.json`:
 
 ---
 
+## Subcommand: consensus (Issue #86)
+
+Manage consensus mode for structured multi-agent decision-making through democratic voting.
+
+```
+/popkit:power consensus                    # Show consensus status
+/popkit:power consensus status             # Same as above
+/popkit:power consensus enable             # Enable consensus for current session
+/popkit:power consensus disable            # Disable consensus
+/popkit:power consensus rules              # Show current voting rules
+/popkit:power consensus rules <preset>     # Set rules preset
+```
+
+### Consensus Protocol
+
+Inspired by IEEE 802.5 Token Ring and distributed consensus protocols (Raft, PBFT, Paxos).
+
+**Token Ring Protocol:**
+- Ordered turn-taking prevents "everyone talking at once"
+- Round-robin agent sequencing
+- Timeout handling with automatic advancement
+- Dynamic participant join/leave
+
+**7-Phase Consensus State Machine:**
+```
+GATHERING -> PROPOSING -> DISCUSSING -> CONVERGING -> VOTING -> COMMITTED (or ABORTED)
+```
+
+### Trigger Mechanisms
+
+| Trigger | When It Fires |
+|---------|---------------|
+| UserRequestTrigger | Explicit user-initiated ("agents, decide this") |
+| AgentRequestTrigger | Agent detects need for consensus |
+| ConflictTrigger | File or opinion conflicts detected |
+| ThresholdTrigger | Disagreement score exceeds threshold |
+| CheckpointTrigger | Mandatory decision points |
+| PhaseTransitionTrigger | Between Power Mode phases |
+| ScheduledTrigger | Periodic checks during long sessions |
+
+### Rule Presets
+
+| Preset | Quorum | Approval | Use Case |
+|--------|--------|----------|----------|
+| `default` | 67% | 60% | Standard decisions |
+| `quick` | 50% | 50% | Fast, low-stakes decisions |
+| `strict` | 80% | 75% | Important architecture decisions |
+| `critical` | 100% | 100% | Breaking changes, security |
+
+### Examples
+
+```bash
+# Start Power Mode with consensus enabled
+/popkit:power start "Refactor database layer" --consensus
+
+# Use strict consensus for architecture decisions
+/popkit:power start "Redesign API" --consensus --consensus-rules strict
+
+# Check consensus status during session
+/popkit:power consensus status
+
+# Change rules mid-session
+/popkit:power consensus rules critical
+```
+
+### Output (Consensus Active)
+
+```
+[+] CONSENSUS MODE ACTIVE
+
+Current Session: abc123
+Voting Rules: default (67% quorum, 60% approval)
+
+Active Consensus:
+  Topic: "Which database migration approach?"
+  Phase: VOTING (4/6)
+  Participants: 3/4 (code-architect, migration-specialist, query-optimizer)
+  Token Holder: migration-specialist
+
+Proposals:
+  1. "Blue-green deployment with rollback" - 2 votes
+  2. "Incremental migration with feature flags" - 1 vote
+
+Time Remaining: 2m 30s
+```
+
+### Consensus Files
+
+| File | Purpose |
+|------|---------|
+| `power-mode/consensus/protocol.py` | Message types, phases, voting |
+| `power-mode/consensus/coordinator.py` | Session management, token ring |
+| `power-mode/consensus/triggers.py` | 7 trigger implementations |
+| `power-mode/consensus/monitor.py` | Conflict detection |
+| `power-mode/consensus/agent_hook.py` | PostToolUse hook for agents |
+| `power-mode/consensus/config.json` | Rules, timeouts, thresholds |
+| `power-mode/consensus/README.md` | Comprehensive documentation |
+
+---
+
 ## File-Based Fallback
 
 Power Mode works without Redis using file-based coordination:
@@ -472,6 +575,13 @@ This command activates the `pop-power-mode` skill. For detailed documentation se
 | **State File** | `~/.claude/power-mode-state.json` |
 | **Efficiency Metrics** | `.claude/popkit/efficiency-metrics.json` |
 | **Health State** | `.claude/popkit/health-state.json` |
+| **Consensus Protocol** | `power-mode/consensus/protocol.py` |
+| **Consensus Coordinator** | `power-mode/consensus/coordinator.py` |
+| **Consensus Triggers** | `power-mode/consensus/triggers.py` |
+| **Consensus Monitor** | `power-mode/consensus/monitor.py` |
+| **Consensus Agent Hook** | `power-mode/consensus/agent_hook.py` |
+| **Consensus Config** | `power-mode/consensus/config.json` |
+| **Consensus Tests** | `tests/consensus/` |
 
 ## Related Commands
 
