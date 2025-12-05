@@ -165,6 +165,16 @@
       "timeout": 3000,
       "enabled": true,
       "tools": ["*"]
+    },
+    {
+      "name": "doc-sync",
+      "event": "PostToolUse",
+      "command": "python",
+      "args": ["hooks/doc-sync.py"],
+      "description": "Detect documentation-impacting changes and suggest sync (Issue #82)",
+      "timeout": 3000,
+      "enabled": true,
+      "tools": ["Write", "Edit", "MultiEdit"]
     }
   ],
   "settings": {
