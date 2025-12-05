@@ -185,6 +185,16 @@
       "timeout": 5000,
       "enabled": true,
       "tools": ["Bash"]
+    },
+    {
+      "name": "bug-reporter",
+      "event": "PostToolUse",
+      "command": "python",
+      "args": ["hooks/bug_reporter_hook.py"],
+      "description": "Automatic bug detection and logging with privacy-first defaults (Issue #90)",
+      "timeout": 5000,
+      "enabled": true,
+      "tools": ["Bash", "Task"]
     }
   ],
   "settings": {
