@@ -226,6 +226,7 @@ Close an issue with optional comment or reason.
 2. **Build Command**: Construct `gh issue close` with options
 3. **Execute**: Run the close command
 4. **Confirm**: Report success to user
+5. **Prompt Next Action**: Use AskUserQuestion for workflow continuation
 
 **Execute this command:**
 ```bash
@@ -233,6 +234,29 @@ gh issue close <number> [--comment "..."] [--reason completed|not_planned]
 ```
 
 If `--superseded-by N` is provided, include in comment: "Superseded by #N"
+
+### Post-Close Prompt (Required)
+
+After successfully closing an issue, **always use AskUserQuestion** to guide the user's next action:
+
+```
+Use AskUserQuestion tool with:
+- question: "Issue #N closed. What would you like to do next?"
+- header: "Next Action"
+- options:
+  1. label: "Work on next issue"
+     description: "Start working on another open issue"
+  2. label: "View remaining issues"
+     description: "List all open issues (/popkit:issue list)"
+  3. label: "End session"
+     description: "Capture session state and finish"
+- multiSelect: false
+```
+
+**Based on selection:**
+- "Work on next issue" → Fetch open issues, present top 3-5 as options via another AskUserQuestion
+- "View remaining issues" → Execute `/popkit:issue list`
+- "End session" → Invoke `pop-session-capture` skill
 
 ---
 
