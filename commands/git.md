@@ -480,19 +480,40 @@ List releases:
 
 ### release create
 
-Create new release:
+Create new release with automatic changelog generation:
 
 ```
 /popkit:git release create <version>
 /popkit:git release create v1.2.0
 /popkit:git release create v1.2.0 --draft
 /popkit:git release create v1.2.0 --prerelease
+/popkit:git release create v1.2.0 --title "Feature Name"
+/popkit:git release create v1.2.0 --update-docs     # Also update CLAUDE.md
+/popkit:git release create v1.2.0 --changelog-only  # Preview changelog
 ```
 
 **Process:**
-1. Generate changelog from commits since last release
-2. Create git tag
-3. Create GitHub release with notes
+1. Parse commits since last release tag
+2. Generate changelog from conventional commits
+3. If `--update-docs`: Update CLAUDE.md Version History
+4. Create git tag
+5. Create GitHub release with notes
+
+**Changelog Generation (--update-docs):**
+
+Uses `hooks/utils/changelog_generator.py` to:
+1. Parse conventional commits (feat, fix, docs, etc.)
+2. Extract issue numbers from commit messages
+3. Generate formatted CLAUDE.md entry
+4. Insert at correct position in Version History
+
+```bash
+# Preview what would be added to CLAUDE.md
+python hooks/utils/changelog_generator.py --preview
+
+# Generate and update CLAUDE.md
+python hooks/utils/changelog_generator.py --update --version 1.2.0 --title "Feature Name"
+```
 
 **Release Notes Template:**
 ```markdown
@@ -776,6 +797,7 @@ gh pr checkout 67
 | Workflow Artifacts | `gh run download` for build outputs |
 | Release Creation | `gh release create` with auto-notes |
 | Changelog Generation | Parses conventional commits (feat, fix, docs, etc.) |
+| Changelog Generator | `hooks/utils/changelog_generator.py` |
 | Version Detection | package.json, Cargo.toml, pyproject.toml, git tags |
 | Morning Health Check | `/popkit:morning` includes CI status |
 
