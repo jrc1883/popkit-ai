@@ -4,7 +4,31 @@ All notable changes to PopKit are documented in this file.
 
 **Versioning:** PopKit uses `0.x.y` versioning until stable. Version `1.0.0` will mark API stability.
 
-## [0.9.10] - Current
+## [0.9.11] - Current
+
+### Cross-Project Observability
+
+- **Project Registry API** (PopKit Cloud):
+  - `POST /v1/projects/register` - Auto-register projects on session start
+  - `POST /v1/projects/:id/activity` - Track tool calls and agent usage
+  - `GET /v1/projects` - List all registered projects
+  - `GET /v1/projects/summary` - Cross-project statistics
+- **Plugin Client** (`hooks/utils/project_client.py`):
+  - `ProjectClient` class for calling Cloud API
+  - Auto-generates project ID from path hash
+  - Anonymizes paths for privacy
+- **Observe Subcommand** (`/popkit:project observe`):
+  - Cross-project dashboard from monorepo
+  - View all projects, activity, and health scores
+  - `--active` filter for last 24h, `--summary` for quick stats
+- **Hook Integration**:
+  - `session-start.py` - Auto-registers projects with PopKit Cloud
+  - `post-tool-use.py` - Tracks tool usage in PopKit Cloud
+- **Smoke Test Skill** (`pop-smoke-test`):
+  - Quick runtime health verification
+  - Tests plugin loading, hooks, cloud connectivity
+
+## [0.9.10]
 
 ### User Feedback & Vote-Based Prioritization
 

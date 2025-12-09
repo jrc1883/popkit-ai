@@ -21,6 +21,7 @@ import patternsRoutes from './routes/patterns';
 import privacyRoutes from './routes/privacy';
 import analyticsRoutes from './routes/analytics';
 import teamsRoutes from './routes/teams';
+import projectsRoutes from './routes/projects';
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -70,6 +71,7 @@ app.use('/v1/patterns/*', authMiddleware);
 app.use('/v1/privacy/*', authMiddleware);
 app.use('/v1/analytics/*', authMiddleware);
 app.use('/v1/teams/*', authMiddleware);
+app.use('/v1/projects/*', authMiddleware);
 
 // Apply rate limiting after auth
 app.use('/v1/redis/*', rateLimitMiddleware);
@@ -85,6 +87,7 @@ app.route('/v1/patterns', patternsRoutes);
 app.route('/v1/privacy', privacyRoutes);
 app.route('/v1/analytics', analyticsRoutes);
 app.route('/v1/teams', teamsRoutes);
+app.route('/v1/projects', projectsRoutes);
 
 // =============================================================================
 // ERROR HANDLING
