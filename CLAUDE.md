@@ -84,44 +84,37 @@ Benefits:
 
 ## Repository Structure
 
+This is a **monorepo** with npm workspaces:
+
 <!-- AUTO-GEN:REPO-STRUCTURE START -->
 ```
-.claude-plugin/          Plugin manifest (plugin.json, marketplace.json)
-.mcp.json                MCP server configuration
-agents/                  30 agent definitions with tiered activation
-  config.json            Agent routing, workflows, confidence thresholds
-  tier-1-always-active/  11 core agents (code-reviewer, bug-whisperer, etc.)
-  tier-2-on-demand/      17 specialized agents (including power-coordinator)
-  feature-workflow/      3 agents for 7-phase feature development
-skills/                  36 reusable skills (SKILL.md format in subdirectories)
-commands/                15 slash commands
-hooks/                   18 Python hooks (JSON stdin/stdout protocol)
-  hooks.json             Hook configuration and event mapping
-  utils/                 24 utility modules (embeddings, routing, message building, context, etc.)
-  pre_tool_use_stateless.py  Stateless safety checks
-  post_tool_use_stateless.py Stateless result processing
-output-styles/           15+ output format templates (includes schemas/)
-power-mode/              Multi-agent orchestration (Redis or file-based)
-  protocol.py            Message types, serialization, guardrails
-  coordinator.py         Mesh brain with objective tracking
-  coordinator_auto.py    Auto-detects Redis vs file-based mode
-  file_fallback.py       File-based fallback (no Redis required)
-  checkin-hook.py        PostToolUse hook for agent check-ins
-  config.json            Channels, intervals, constraints
-  docker-compose.yml     Redis + Commander Docker setup
-  setup-redis.py         Cross-platform Redis management script
-  consensus/             Multi-agent consensus protocol (Issue #86)
-    protocol.py          Consensus message types, phases, voting
-    coordinator.py       Consensus session management, token ring
-    triggers.py          8 trigger implementations
-    monitor.py           Conflict detection
-    agent_hook.py        PostToolUse hook for consensus participation
-templates/mcp-server/    Template for generating project-specific MCP servers
-tests/                   Plugin self-test definitions
-  hooks/                 Hook input/output tests
-  routing/               Agent routing tests
-  structure/             File structure validation tests
-  consensus/             Consensus protocol tests
+packages/
+  plugin/                  Claude Code plugin (main package)
+    .claude-plugin/        Plugin manifest (plugin.json, marketplace.json)
+    .mcp.json              MCP server configuration
+    agents/                30 agent definitions with tiered activation
+      config.json          Agent routing, workflows, confidence thresholds
+      tier-1-always-active/  11 core agents
+      tier-2-on-demand/    17 specialized agents
+      feature-workflow/    3 agents for 7-phase feature development
+    skills/                36 reusable skills (SKILL.md format)
+    commands/              15 slash commands
+    hooks/                 18 Python hooks (JSON stdin/stdout)
+      hooks.json           Hook configuration
+      utils/               24 utility modules
+    output-styles/         15+ output format templates
+    power-mode/            Multi-agent orchestration
+    templates/mcp-server/  MCP server generator template
+    tests/                 Plugin self-test definitions
+  cloud/                   PopKit Cloud API (Cloudflare Workers)
+    src/                   API routes and middleware
+    wrangler.toml          Cloudflare configuration
+  cloud-billing/           Billing and entitlements
+  cloud-docs/              Cloud documentation
+  cloud-scripts/           Deployment scripts
+  cloud-team/              Team coordination features
+package.json               Root package.json with workspaces
+CHANGELOG.md               Version history
 ```
 <!-- AUTO-GEN:REPO-STRUCTURE END -->
 
@@ -138,12 +131,12 @@ This is a **configuration-only plugin** - no build or lint commands exist. All c
 
 ## Claude Platform Integration
 
-PopKit leverages Claude API platform features for optimal performance. Configuration is in `agents/config.json`.
+PopKit leverages Claude API platform features for optimal performance. Configuration is in `packages/plugin/agents/config.json`.
 
 ### Effort Parameter
 
 Agent compute allocation: `high` (deep analysis), `medium` (default), `low` (quick tasks).
-Configured per-agent in `agents/config.json`.
+Configured per-agent in `packages/plugin/agents/config.json`.
 
 ### Extended Thinking
 
@@ -165,7 +158,7 @@ Use `/popkit:project embed` to embed project items.
 
 ## Key Architectural Patterns
 
-### Agent Routing (agents/config.json)
+### Agent Routing (packages/plugin/agents/config.json)
 
 Agents are routed via three mechanisms:
 1. **Keywords**: "bug" → bug-whisperer, "security" → security-auditor
@@ -198,7 +191,7 @@ Day-bracketing workflow via `/popkit:routine`:
 
 Subcommands: `run`, `quick`, `generate`, `list`, `set`, `edit`, `delete`
 
-See `commands/routine.md` for full documentation.
+See `packages/plugin/commands/routine.md` for full documentation.
 
 ### Power Mode (Multi-Agent Orchestration)
 
@@ -206,16 +199,16 @@ Parallel agent collaboration via `/popkit:power`:
 - **Redis Mode**: Full power, 6+ agents, requires Docker
 - **File-Based Mode**: Zero setup, 2-3 agents, auto-fallback
 
-Use `/popkit:power init` to set up. See `commands/power.md` for details.
+Use `/popkit:power init` to set up. See `packages/plugin/commands/power.md` for details.
 
 ### Stateless Message Composition
 
 Hooks use pure functions for reliability and testability:
-- `hooks/utils/message_builder.py` - Message composition
-- `hooks/utils/context_carrier.py` - Immutable context passing
-- `hooks/utils/stateless_hook.py` - Base class for hooks
+- `packages/plugin/hooks/utils/message_builder.py` - Message composition
+- `packages/plugin/hooks/utils/context_carrier.py` - Immutable context passing
+- `packages/plugin/hooks/utils/stateless_hook.py` - Base class for hooks
 
-See `tests/hooks/` for 58 tests covering this pattern.
+See `packages/plugin/tests/hooks/` for 58 tests covering this pattern.
 
 ## Installing popkit for Development
 
@@ -245,7 +238,7 @@ Verify changes using the built-in test framework:
 
 ## MCP Server Template
 
-Located in `templates/mcp-server/`, this TypeScript template generates project-specific MCP servers with:
+Located in `packages/plugin/templates/mcp-server/`, this TypeScript template generates project-specific MCP servers with:
 - Health checks (dev server, database)
 - Git tools (status, diff, recent commits)
 - Quality tools (typecheck, lint, tests)
@@ -253,49 +246,29 @@ Located in `templates/mcp-server/`, this TypeScript template generates project-s
 
 To build the template locally:
 ```bash
-cd templates/mcp-server
+cd packages/plugin/templates/mcp-server
 npm install
 npm run build
 ```
 
 ## Key Files for Plugin Behavior
 
+All plugin files are in `packages/plugin/`:
+
 <!-- AUTO-GEN:KEY-FILES START -->
 | File | Purpose |
 |------|---------|
-| `.claude-plugin/plugin.json` | Plugin manifest and activation triggers |
-| `.mcp.json` | MCP server and tool configuration |
-| `agents/config.json` | All routing rules, workflows, confidence levels |
-| `hooks/hooks.json` | Hook event configuration |
-| `hooks/pre-tool-use.py` | Safety checks before tool execution |
-| `hooks/post-tool-use.py` | Cleanup and validation after tools |
-| `hooks/agent-orchestrator.py` | Agent sequencing and routing logic |
-| `hooks/doc-sync.py` | Detect documentation-impacting changes |
-| `power-mode/coordinator.py` | Multi-agent mesh network coordinator |
-| `power-mode/coordinator_auto.py` | Auto-detects Redis vs file-based mode |
-| `power-mode/file_fallback.py` | File-based fallback (no Redis needed) |
-| `power-mode/checkin-hook.py` | Periodic agent check-ins |
-| `power-mode/setup-redis.py` | Cross-platform Redis management |
-| `power-mode/statusline.py` | Visual Power Mode status line display |
-| `hooks/utils/flag_parser.py` | Centralized command flag parsing |
-| `hooks/utils/github_issues.py` | GitHub issue guidance parsing |
-| `hooks/utils/mcp_detector.py` | MCP infrastructure detection for morning generator |
-| `hooks/utils/routine_storage.py` | Project routine CRUD and config management |
-| `hooks/utils/plugin_detector.py` | Plugin conflict detection utility |
-| `hooks/utils/voyage_client.py` | Voyage AI embedding API client |
-| `hooks/utils/embedding_store.py` | SQLite embedding storage with project support |
-| `hooks/utils/embedding_project.py` | Project item embedding and scanning |
-| `hooks/utils/semantic_router.py` | Semantic search with project priority |
-| `hooks/utils/pattern_detector.py` | Code pattern detection utilities |
-| `hooks/utils/efficiency_tracker.py` | Token savings and efficiency metrics |
-| `hooks/utils/bug_detector.py` | Error pattern matching and stuck detection |
-| `hooks/utils/power_detector.py` | Power Mode auto-activation detection |
-| `power-mode/logger.py` | Session logging with rotation |
-| `hooks/utils/doc_sync.py` | Documentation synchronization and drift detection |
-| `hooks/utils/changelog_generator.py` | Auto-generate changelog from git commits |
-| `power-mode/consensus/protocol.py` | Consensus message types, phases, voting |
-| `power-mode/consensus/coordinator.py` | Consensus session management, token ring |
-| `power-mode/consensus/triggers.py` | 8 consensus trigger implementations |
+| `packages/plugin/.claude-plugin/plugin.json` | Plugin manifest and activation triggers |
+| `packages/plugin/.mcp.json` | MCP server and tool configuration |
+| `packages/plugin/agents/config.json` | All routing rules, workflows, confidence levels |
+| `packages/plugin/hooks/hooks.json` | Hook event configuration |
+| `packages/plugin/hooks/pre-tool-use.py` | Safety checks before tool execution |
+| `packages/plugin/hooks/post-tool-use.py` | Cleanup and validation after tools |
+| `packages/plugin/power-mode/coordinator.py` | Multi-agent mesh network coordinator |
+| `packages/plugin/power-mode/statusline.py` | Visual Power Mode status line display |
+| `packages/plugin/hooks/utils/` | 24 utility modules (embeddings, routing, etc.) |
+| `packages/cloud/src/index.ts` | Cloud API entry point |
+| `packages/cloud/wrangler.toml` | Cloudflare Workers configuration |
 <!-- AUTO-GEN:KEY-FILES END -->
 
 ## Version History
@@ -318,8 +291,8 @@ When releasing a new version of popkit:
 ### 1. Update Version Numbers
 
 Update version in these files (must match):
-- `.claude-plugin/plugin.json` - Main plugin version
-- `.claude-plugin/marketplace.json` - Marketplace version
+- `packages/plugin/.claude-plugin/plugin.json` - Main plugin version
+- `packages/plugin/.claude-plugin/marketplace.json` - Marketplace version
 
 ### 2. Update Changelog
 
@@ -333,7 +306,7 @@ Add new version section to `CHANGELOG.md`:
 ### 3. Commit and Push
 
 ```bash
-git add .claude-plugin/plugin.json .claude-plugin/marketplace.json CHANGELOG.md
+git add packages/plugin/.claude-plugin/plugin.json packages/plugin/.claude-plugin/marketplace.json CHANGELOG.md
 git commit -m "chore: bump version to X.Y.Z for [feature summary]"
 git push
 ```
