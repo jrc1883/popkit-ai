@@ -23,6 +23,7 @@ import analyticsRoutes from './routes/analytics';
 import teamsRoutes from './routes/teams';
 import projectsRoutes from './routes/projects';
 import agentsRoutes from './routes/agents';
+import workflowsRoutes from './routes/workflows';
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -74,6 +75,7 @@ app.use('/v1/analytics/*', authMiddleware);
 app.use('/v1/teams/*', authMiddleware);
 app.use('/v1/projects/*', authMiddleware);
 app.use('/v1/agents/*', authMiddleware);
+app.use('/v1/workflows/*', authMiddleware);
 
 // Apply rate limiting after auth
 app.use('/v1/redis/*', rateLimitMiddleware);
@@ -92,6 +94,7 @@ app.route('/v1/analytics', analyticsRoutes);
 app.route('/v1/teams', teamsRoutes);
 app.route('/v1/projects', projectsRoutes);
 app.route('/v1/agents', agentsRoutes);
+app.route('/v1/workflows', workflowsRoutes);
 
 // =============================================================================
 // ERROR HANDLING

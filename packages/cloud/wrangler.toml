@@ -14,6 +14,11 @@ ENVIRONMENT = "development"
 # wrangler secret put UPSTASH_VECTOR_REST_URL
 # wrangler secret put UPSTASH_VECTOR_REST_TOKEN
 
+# Upstash Workflow/QStash for durable workflows (Issue #103)
+# wrangler secret put QSTASH_TOKEN
+# Optional: wrangler secret put QSTASH_CURRENT_SIGNING_KEY
+# Optional: wrangler secret put QSTASH_NEXT_SIGNING_KEY
+
 # Rate limiting settings
 [vars.rate_limits]
 free_requests_per_minute = 100

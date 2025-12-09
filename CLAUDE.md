@@ -4,10 +4,45 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**popkit** is a Claude Code plugin providing AI-powered development workflows through skills, agents, commands, and hooks. All commands use the `popkit:` prefix (e.g., `/popkit:commit`, `/popkit:review`). It implements a two-tier architecture:
+**PopKit** is an AI-powered development workflow system. This repository is the **private monorepo** containing all PopKit components.
 
-- **Tier 1 (this repo)**: Universal, project-agnostic tools that work anywhere
-- **Tier 2 (generated)**: Project-specific MCP servers, skills, and agents created via `/generate-mcp` and `/generate-skills`
+### Terminology (Avoid Confusion)
+
+| Term | Meaning |
+|------|---------|
+| **PopKit (this repo)** | Private monorepo where we develop everything |
+| **PopKit Plugin** | The Claude Code plugin users install (public: `jrc1883/popkit-plugin`) |
+| **PopKit Cloud** | Shared backend API (Cloudflare Workers) |
+| **PopKit Platform** | Future vision: model-agnostic orchestrator for multiple IDEs |
+
+### Current Architecture
+
+```
+jrc1883/popkit (PRIVATE - this repo)
+├── packages/plugin/     → Published to jrc1883/popkit-plugin (PUBLIC)
+├── packages/cloud/      → Deployed to Cloudflare Workers
+└── packages/cloud-*/    → Billing, docs, team features
+```
+
+Users install the plugin via: `/plugin install popkit@popkit-plugin`
+
+### Future Vision
+
+PopKit will evolve from a Claude Code plugin to a platform supporting:
+- Multiple AI models (Claude, GPT, Gemini, local LLMs)
+- Multiple IDEs (VS Code, Cursor, Windsurf, JetBrains)
+- Standalone CLI (installable via pip/npm/bun)
+- Shared cloud backend for cross-project learning
+
+The Claude Code plugin is the **first integration** of this platform.
+
+### Plugin Architecture
+
+The plugin implements a two-tier agent system:
+
+- **Tier 1 (always-active)**: Universal, project-agnostic tools that work anywhere
+- **Tier 2 (on-demand)**: Specialized agents activated by triggers
+- **Tier 3 (generated)**: Project-specific MCP servers, skills, and agents created via `/popkit:project generate`
 
 ## Core Philosophy
 

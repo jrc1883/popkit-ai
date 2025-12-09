@@ -45,6 +45,10 @@ export interface Env {
   // Upstash Vector (Issue #101)
   UPSTASH_VECTOR_REST_URL: string;
   UPSTASH_VECTOR_REST_TOKEN: string;
+  // Upstash Workflow/QStash (Issue #103)
+  QSTASH_TOKEN: string;
+  QSTASH_CURRENT_SIGNING_KEY?: string;
+  QSTASH_NEXT_SIGNING_KEY?: string;
 }
 
 export interface Variables {
