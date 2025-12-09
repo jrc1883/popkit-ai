@@ -45,3 +45,17 @@ export {
 
 // Loader exports
 export { loadTask, loadAllTasks, getTaskPath } from './loader.js';
+
+// Storage exports
+export type {
+  StorageAdapter,
+  ResultFilters,
+  RunTracker,
+  ToolCallRecord,
+  TestResultRecord,
+} from './storage/index.js';
+export { SQLiteAdapter } from './storage/index.js';
+
+// Collector exports
+export { MetricsCollector } from './collector.js';
+export type { MetricsCollectorOptions, CompleteRunOptions } from './collector.js';
