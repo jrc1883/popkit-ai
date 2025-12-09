@@ -1,0 +1,33 @@
+{
+  "name": "popkit",
+  "version": "0.9.9",
+  "description": "AI-powered development workflows for Claude Code",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "cloud:dev": "npm run dev --workspace=packages/cloud",
+    "cloud:deploy": "npm run deploy --workspace=packages/cloud",
+    "cloud:build": "npm run build --workspace=packages/cloud",
+    "plugin:test": "echo 'Run /popkit:plugin-test in Claude Code'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jrc1883/popkit.git"
+  },
+  "keywords": [
+    "claude-code",
+    "claude",
+    "plugin",
+    "ai",
+    "development",
+    "workflow"
+  ],
+  "author": "Joseph Cannon",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jrc1883/popkit/issues"
+  },
+  "homepage": "https://github.com/jrc1883/popkit#readme"
+}
