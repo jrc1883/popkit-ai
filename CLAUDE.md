@@ -273,7 +273,7 @@ All plugin files are in `packages/plugin/`:
 
 ## Version History
 
-**Current Version:** 0.9.9 (Self-Improvement & Learning System)
+**Current Version:** 0.9.10 (User Feedback & Vote-Based Prioritization)
 
 See [CHANGELOG.md](CHANGELOG.md) for full version history.
 

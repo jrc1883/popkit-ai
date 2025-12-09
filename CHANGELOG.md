@@ -4,7 +4,31 @@ All notable changes to PopKit are documented in this file.
 
 **Versioning:** PopKit uses `0.x.y` versioning until stable. Version `1.0.0` will mark API stability.
 
-## [0.9.9] - Current
+## [0.9.10] - Current
+
+### User Feedback & Vote-Based Prioritization
+
+- **User Feedback Collection System** (#91):
+  - `hooks/utils/feedback_store.py` - SQLite storage with session tracking and GDPR compliance
+  - `hooks/utils/feedback_triggers.py` - Trigger logic with feedback fatigue prevention
+  - `hooks/feedback_hook.py` - PostToolUse hook for AskUserQuestion-based collection
+  - `skills/pop-feedback-report/` - Analytics skill for viewing statistics
+  - 0-3 rating scale: Harmful (0), Unhelpful (1), Helpful (2), Very Helpful (3)
+  - Session tracking: min 10 tool calls between prompts, max 3 dismissals before pause
+- **Vote-Based Feature Prioritization** (#92):
+  - `hooks/utils/vote_fetcher.py` - GitHub reaction fetching with 1-hour SQLite cache
+  - `hooks/utils/priority_scorer.py` - Combined priority scoring algorithm
+  - Vote weights: 👍 +1, ❤️ +2, 🚀 +3, 👎 -1
+  - Priority formula: votes (35%) + staleness (20%) + labels (30%) + epic (15%)
+  - `/popkit:issue list --votes` - Sort issues by community priority
+  - Updated `pop-next-action` skill with vote integration
+- **Monorepo Structure** (#98):
+  - Converted to npm workspaces monorepo
+  - `packages/plugin/` - Main Claude Code plugin
+  - `packages/cloud/` - PopKit Cloud API (Cloudflare Workers)
+- **GitHub Issues Closed** - #91, #92, #98 (Self-Improvement Epic child issues)
+
+## [0.9.9]
 
 ### Self-Improvement & Learning System
 
