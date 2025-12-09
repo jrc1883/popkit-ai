@@ -4,7 +4,29 @@ All notable changes to PopKit are documented in this file.
 
 **Versioning:** PopKit uses `0.x.y` versioning until stable. Version `1.0.0` will mark API stability.
 
-## [0.9.12] - Current
+## [0.9.13] - Current
+
+### Power Mode Value Metrics (#108)
+
+- **MetricsCollector**: New `power-mode/metrics.py` module for quantifiable metrics
+  - Time metrics: Phase duration, task times, agent active time
+  - Quality metrics: First-pass success rate, code review scores, bugs detected
+  - Coordination metrics: Insights shared, context reuses, sync barrier waits
+  - Resource metrics: Token usage, agent utilization, peak concurrency
+  - Value summary: Overall score (0-100) with rating and highlights
+- **Metrics Command**: `/popkit:power metrics` subcommand for viewing reports
+  - View current session: `/popkit:power metrics`
+  - View specific session: `/popkit:power metrics --session ID`
+  - Compare with baseline: `/popkit:power metrics --compare`
+- **Coordinator Integration**: Automatic metrics collection throughout Power Mode
+  - Agent start/stop tracking
+  - Phase timing instrumentation
+  - Insight sharing counts
+  - Sync barrier wait times
+  - Session save to Redis on stop
+- **CLI Report**: Formatted metrics output at session end
+
+## [0.9.12]
 
 ### Continuous Workflow Loop (#116)
 
