@@ -1,0 +1,98 @@
+{
+  "id": "bouncing-balls",
+  "name": "Bouncing Balls Canvas Animation",
+  "description": "Create an HTML canvas with physics-based bouncing balls. Tests UI generation, animation logic, and state management.",
+  "category": "standard",
+  "language": "javascript",
+  "version": "1.0.0",
+
+  "initialFiles": {
+    "index.html": "<!DOCTYPE html>\n<html>\n<head>\n  <title>Bouncing Balls</title>\n  <style>canvas { border: 1px solid black; }</style>\n</head>\n<body>\n  <canvas id=\"canvas\" width=\"800\" height=\"600\"></canvas>\n  <script src=\"balls.js\"></script>\n</body>\n</html>",
+    "balls.js": "// TODO: Implement bouncing balls animation\n"
+  },
+  "dependencies": [],
+  "setupCommands": [],
+
+  "prompt": "Create a web page with a canvas showing 5 balls bouncing with realistic physics. Requirements:\n1. Each ball should have a random color and size (10-30px radius)\n2. Balls should start at random positions with random velocities\n3. Balls should bounce off the walls (canvas edges) with proper reflection\n4. Balls should collide with each other (basic collision detection)\n5. Use requestAnimationFrame for smooth animation\n6. Add gravity (balls should fall and bounce)",
+
+  "context": "This is a vanilla JavaScript task. No frameworks or build tools required.",
+  "maxTokens": 50000,
+  "timeoutSeconds": 300,
+
+  "tests": [
+    {
+      "id": "file-exists",
+      "name": "balls.js file exists and has content",
+      "type": "unit",
+      "command": "test -s balls.js && echo 'PASS' || echo 'FAIL'",
+      "expectedExitCode": 0,
+      "successPattern": "PASS"
+    },
+    {
+      "id": "canvas-element",
+      "name": "Canvas element is accessed",
+      "type": "unit",
+      "command": "grep -q 'getElementById.*canvas' balls.js && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "animation-loop",
+      "name": "Uses requestAnimationFrame",
+      "type": "unit",
+      "command": "grep -q 'requestAnimationFrame' balls.js && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "ball-count",
+      "name": "Creates 5 balls",
+      "type": "unit",
+      "command": "grep -oE '(5|five)' balls.js | head -1",
+      "successPattern": "5"
+    },
+    {
+      "id": "collision-detection",
+      "name": "Implements collision detection",
+      "type": "unit",
+      "command": "grep -qE '(collision|distance|sqrt)' balls.js && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    }
+  ],
+
+  "qualityChecks": [
+    {
+      "id": "no-errors",
+      "name": "No syntax errors",
+      "type": "custom",
+      "command": "node --check balls.js 2>&1 || true",
+      "weight": 1.0
+    }
+  ],
+
+  "baseline": {
+    "vanilla": {
+      "tokenEstimate": 15000,
+      "toolCallEstimate": 25,
+      "successRate": 0.6,
+      "timeEstimate": 180,
+      "qualityEstimate": 6.5
+    },
+    "popkit": {
+      "tokenEstimate": 10000,
+      "toolCallEstimate": 15,
+      "successRate": 0.85,
+      "timeEstimate": 120,
+      "qualityEstimate": 8.0
+    },
+    "power": {
+      "tokenEstimate": 8000,
+      "toolCallEstimate": 12,
+      "successRate": 0.95,
+      "timeEstimate": 90,
+      "qualityEstimate": 8.5
+    }
+  },
+
+  "tags": ["animation", "canvas", "physics", "ui", "beginner-friendly"],
+  "author": "PopKit Team",
+  "createdAt": "2025-12-09T00:00:00Z"
+}
