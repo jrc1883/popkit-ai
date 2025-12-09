@@ -260,10 +260,27 @@ Then **restart Claude Code** to load the plugin. After restart, `/popkit:` comma
 
 PopKit uses a **split-repo model** to keep the core plugin open-source while keeping cloud services private:
 
-| Repository | Visibility | Contents |
-|------------|------------|----------|
-| `jrc1883/popkit` | **Private** | Full monorepo (plugin + cloud + billing) |
-| `jrc1883/popkit-plugin` | **Public** | Plugin only (auto-synced from monorepo) |
+| Repository | Visibility | Contents | Status |
+|------------|------------|----------|--------|
+| `jrc1883/popkit` | **Private** | Full monorepo (plugin + cloud + billing) | Active |
+| `jrc1883/popkit-plugin` | **Public** | Claude Code plugin | Active |
+| `jrc1883/popkit-mcp` | **Public** | Universal MCP server | Future |
+| `jrc1883/popkit-codex` | **Public** | Codex integration | Future |
+| `jrc1883/popkit-gemini` | **Public** | Gemini integration | Future |
+
+Each public repo is populated via `git subtree split` from the corresponding `packages/` directory.
+
+### Milestone Strategy
+
+| Milestone | Purpose | Issues |
+|-----------|---------|--------|
+| `v1.0.0` | Claude Code plugin ready for community marketplace | phase:now, phase:next |
+| `v1.1.0` | Post-launch polish and user feedback integration | Created as needed |
+| Future | Multi-model, MCP server, platform expansion | phase:future (no milestone) |
+
+Labels:
+- **Priority**: `P0-critical`, `P1-high`, `P2-medium`, `P3-low`
+- **Phase**: `phase:now` (current), `phase:next` (queued), `phase:future` (post-1.0)
 
 ### Publishing Plugin to Public Repo
 
