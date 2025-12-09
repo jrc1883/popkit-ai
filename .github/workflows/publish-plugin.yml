@@ -1,0 +1,174 @@
+# Publish Plugin to Public Repository
+#
+# This workflow syncs packages/plugin/ from the private monorepo to the
+# public jrc1883/popkit-plugin repository for open-source distribution.
+#
+# Triggers:
+# - Manual dispatch (workflow_dispatch) with optional version tag
+# - Push to master when packages/plugin/ changes (optional auto-sync)
+#
+# Required Secrets:
+# - PLUGIN_PUBLIC_REPO_TOKEN: PAT with repo scope for jrc1883/popkit-plugin
+
+name: Publish Plugin
+
+on:
+  # Manual trigger - primary method
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag to create (e.g., v1.0.0). Leave empty for no tag.'
+        required: false
+        type: string
+      dry_run:
+        description: 'Preview changes without pushing'
+        required: false
+        type: boolean
+        default: false
+      target_branch:
+        description: 'Target branch in public repo'
+        required: false
+        type: string
+        default: 'main'
+
+  # Automatic sync on plugin changes (disabled by default - uncomment to enable)
+  # push:
+  #   branches:
+  #     - master
+  #   paths:
+  #     - 'packages/plugin/**'
+  #     - '.github/workflows/publish-plugin.yml'
+
+concurrency:
+  group: publish-plugin
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish to Public Repo
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout monorepo (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for subtree split
+
+      - name: Configure Git
+        run: |
+          git config user.email "claude-code@anthropic.com"
+          git config user.name "PopKit Release Bot"
+
+      - name: Add public repo remote
+        env:
+          GITHUB_TOKEN: ${{ secrets.PLUGIN_PUBLIC_REPO_TOKEN }}
+        run: |
+          git remote add plugin-public \
+            https://x-access-token:${GITHUB_TOKEN}@github.com/jrc1883/popkit-plugin.git
+          echo "Remote added: plugin-public"
+
+      - name: Run subtree split
+        id: split
+        run: |
+          echo "Starting subtree split of packages/plugin/..."
+
+          # Run the split
+          SPLIT_SHA=$(git subtree split --prefix=packages/plugin -b plugin-public-split)
+
+          echo "Split complete: $SPLIT_SHA"
+          echo "sha=$SPLIT_SHA" >> $GITHUB_OUTPUT
+
+          # Count commits in split branch
+          COMMIT_COUNT=$(git rev-list --count plugin-public-split)
+          echo "commit_count=$COMMIT_COUNT" >> $GITHUB_OUTPUT
+          echo "Total commits in split: $COMMIT_COUNT"
+
+      - name: Preview changes (dry run)
+        if: ${{ inputs.dry_run == true }}
+        run: |
+          echo "=== DRY RUN - No changes will be pushed ==="
+          echo ""
+          echo "Source: packages/plugin/"
+          echo "Target: jrc1883/popkit-plugin (${{ inputs.target_branch || 'main' }})"
+          echo "Split SHA: ${{ steps.split.outputs.sha }}"
+          echo "Commits: ${{ steps.split.outputs.commit_count }}"
+          echo ""
+          echo "Recent commits in split:"
+          git log --oneline -10 plugin-public-split
+          echo ""
+          echo "Files in split root:"
+          git ls-tree --name-only plugin-public-split | head -20
+
+      - name: Push to public repository
+        if: ${{ inputs.dry_run != true }}
+        run: |
+          TARGET_BRANCH="${{ inputs.target_branch || 'main' }}"
+          echo "Pushing to jrc1883/popkit-plugin ($TARGET_BRANCH)..."
+
+          git push plugin-public plugin-public-split:$TARGET_BRANCH --force
+
+          echo "Push complete!"
+
+      - name: Create version tag
+        if: ${{ inputs.dry_run != true && inputs.version != '' }}
+        run: |
+          VERSION="${{ inputs.version }}"
+          echo "Creating tag: $VERSION"
+
+          # Create tag on the split branch
+          git tag "$VERSION" plugin-public-split
+
+          # Push tag to public repo
+          git push plugin-public "$VERSION"
+
+          echo "Tag $VERSION pushed to public repo"
+
+      - name: Create GitHub Release
+        if: ${{ inputs.dry_run != true && inputs.version != '' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.PLUGIN_PUBLIC_REPO_TOKEN }}
+        run: |
+          VERSION="${{ inputs.version }}"
+
+          # Generate release notes from recent commits
+          NOTES=$(git log --oneline -20 plugin-public-split | head -10)
+
+          # Create release in public repo
+          gh release create "$VERSION" \
+            --repo jrc1883/popkit-plugin \
+            --title "PopKit $VERSION" \
+            --notes "## What's Changed
+
+          $NOTES
+
+          ## Installation
+
+          \`\`\`
+          /plugin marketplace add jrc1883/popkit-plugin
+          /plugin install popkit@popkit-plugin
+          \`\`\`
+
+          ---
+          Published from private monorepo via GitHub Actions"
+
+      - name: Summary
+        run: |
+          echo "## Publish Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Source | \`packages/plugin/\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Target | \`jrc1883/popkit-plugin\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch | \`${{ inputs.target_branch || 'main' }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commits | ${{ steps.split.outputs.commit_count }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Version | ${{ inputs.version || 'none' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dry Run | ${{ inputs.dry_run }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ inputs.dry_run }}" != "true" ]; then
+            echo "### Installation" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            echo "/plugin marketplace add jrc1883/popkit-plugin" >> $GITHUB_STEP_SUMMARY
+            echo "/plugin install popkit@popkit-plugin" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          fi

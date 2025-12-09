@@ -212,14 +212,54 @@ See `packages/plugin/tests/hooks/` for 58 tests covering this pattern.
 
 ## Installing popkit for Development
 
-To use popkit while developing popkit (chicken-and-egg), install it from GitHub:
+To use popkit while developing popkit (chicken-and-egg), install it from the public plugin repo:
 
 ```
-/plugin marketplace add jrc1883/popkit
-/plugin install popkit@popkit-marketplace
+/plugin marketplace add jrc1883/popkit-plugin
+/plugin install popkit@popkit-plugin
 ```
 
 Then **restart Claude Code** to load the plugin. After restart, `/popkit:` commands will be available.
+
+## Repository Architecture (Public/Private Split)
+
+PopKit uses a **split-repo model** to keep the core plugin open-source while keeping cloud services private:
+
+| Repository | Visibility | Contents |
+|------------|------------|----------|
+| `jrc1883/popkit` | **Private** | Full monorepo (plugin + cloud + billing) |
+| `jrc1883/popkit-plugin` | **Public** | Plugin only (auto-synced from monorepo) |
+
+### Publishing Plugin to Public Repo
+
+When ready to release plugin changes publicly:
+
+```bash
+# Manual publish from CLI
+/popkit:git publish                    # Push current state
+/popkit:git publish --tag v1.0.0       # With version tag
+/popkit:git publish --dry-run          # Preview first
+
+# Or via GitHub Actions
+# Go to Actions → "Publish Plugin" → Run workflow
+```
+
+### How It Works
+
+1. **Development**: Work in `packages/plugin/` within the private monorepo
+2. **Commit**: Changes stay in private repo until you explicitly publish
+3. **Publish**: `git subtree split` extracts plugin and pushes to public repo
+4. **Users Install**: From public `jrc1883/popkit-plugin` via marketplace
+
+### Remote Setup
+
+The `plugin-public` remote is needed for publishing:
+
+```bash
+git remote add plugin-public https://github.com/jrc1883/popkit-plugin.git
+```
+
+This is automatically configured when running `/popkit:git publish` for the first time.
 
 ## The Chicken-and-Egg Problem
 
@@ -269,6 +309,7 @@ All plugin files are in `packages/plugin/`:
 | `packages/plugin/hooks/utils/` | 24 utility modules (embeddings, routing, etc.) |
 | `packages/cloud/src/index.ts` | Cloud API entry point |
 | `packages/cloud/wrangler.toml` | Cloudflare Workers configuration |
+| `.github/workflows/publish-plugin.yml` | GitHub Actions for public repo sync |
 <!-- AUTO-GEN:KEY-FILES END -->
 
 ## Version History
