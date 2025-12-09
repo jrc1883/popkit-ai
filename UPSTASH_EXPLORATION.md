@@ -863,6 +863,84 @@ const similarIssues = await vectorIndex.query({
 
 ---
 
-**Document Version:** 1.0
-**Last Updated:** 2025-12-09
+---
+
+## ADDENDUM: Upstash Workflow (Agents API)
+
+**Added:** 2025-12-08
+**Status:** Discovery - High Priority Investigation
+
+### What is Upstash Workflow?
+
+Upstash Workflow is a **durable functions service** built on top of QStash that provides a **dedicated Agents API** for multi-agent orchestration. Unlike raw QStash (webhooks + scheduling), Workflow provides native patterns for agent coordination.
+
+### Why This Changes the Recommendation
+
+The original document scored QStash at 87% fit for Power Mode. **Workflow scores 100% fit** because it's purpose-built for exactly what Power Mode does manually.
+
+### Native Agent Orchestration Patterns
+
+Workflow provides four built-in patterns that match Power Mode's architecture:
+
+| Pattern | PopKit Equivalent | Workflow Method |
+|---------|-------------------|-----------------|
+| **Prompt Chaining** | 7-phase feature-dev | Sequential `context.agents.task().run()` |
+| **Orchestrator-Workers** | Power Mode coordinator | Native multi-agent task distribution |
+| **Parallelization** | Parallel agent execution | `Promise.all()` with durability |
+| **Evaluator-Optimizer** | Code review + fix loops | Iterative feedback with `context.waitForEvent()` |
+
+### Key Features for Power Mode
+
+1. **`context.waitForEvent()`** - Blocks workflow until external event (human approval, CI completion)
+2. **`context.run()`** - Durable step execution (survives crashes)
+3. **Multi-Agent Tasks** - Manager agent orchestrates specialized worker agents
+4. **Tool Integration** - Compatible with AI SDK and LangChain tools
+5. **Fault Tolerance** - Automatic retries, state persistence
+
+### Workflow vs Redis Pub/Sub
+
+| Current Power Mode | Upstash Workflow |
+|-------------------|------------------|
+| Redis pub/sub for real-time coordination | Native agent message passing |
+| coordinator.py manual orchestration | Built-in orchestrator-workers pattern |
+| Custom sync barriers | `context.waitForEvent()` |
+| State lost on session end | Durable state across restarts |
+| Heartbeat-based health checks | Automatic retry/failover |
+
+### Updated Recommendation
+
+| Service | Original Score | Updated Score | Notes |
+|---------|---------------|---------------|-------|
+| **Upstash Vector** | 97% | 97% | ✅ Already implemented (#101) |
+| **Upstash QStash** | 87% | 70% | Still good for scheduled routines |
+| **Upstash Workflow** | N/A | **100%** | Purpose-built for Power Mode |
+
+### Implementation Impact
+
+**Phase 2 (Vector)**: ✅ Complete - semantic agent discovery working
+
+**Phase 1 (QStash for routines)**: Still valid but lower priority
+
+**Phase 3 (Power Mode)**: **Use Workflow instead of raw QStash + Redis**
+- Replace `coordinator.py` with Workflow's orchestrator-workers pattern
+- Replace Redis pub/sub with Workflow's native agent communication
+- Replace custom sync barriers with `context.waitForEvent()`
+- Gain durability (workflows survive session restarts)
+
+### Current Limitation
+
+Workflow's Agents API is only available in JavaScript/TypeScript SDK. Python parity is planned but not yet available. This aligns well with PopKit Cloud (Cloudflare Workers in TypeScript).
+
+### References
+
+- [Upstash Workflow Getting Started](https://upstash.com/docs/workflow/getstarted)
+- [Workflow Agents Overview](https://upstash.com/docs/workflow/agents/overview)
+- [Agent Patterns Documentation](https://upstash.com/docs/workflow/agents/patterns)
+- [Orchestrator-Workers Pattern](https://upstash.com/docs/workflow/agents/patterns/orchestrator-workers)
+- [Parallelization Pattern](https://upstash.com/docs/workflow/agents/patterns/parallelization)
+
+---
+
+**Document Version:** 1.1
+**Last Updated:** 2025-12-08
 **Author:** Claude Code (popkit exploration task)
