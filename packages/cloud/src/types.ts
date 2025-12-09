@@ -49,8 +49,8 @@ export interface Env {
   QSTASH_TOKEN: string;
   QSTASH_CURRENT_SIGNING_KEY?: string;
   QSTASH_NEXT_SIGNING_KEY?: string;
-  // Anthropic Claude API (Issue #103 Phase 2)
-  ANTHROPIC_API_KEY: string;
+  // Anthropic Claude API (optional - for future headless/background operations)
+  ANTHROPIC_API_KEY?: string;
 }
 
 // =============================================================================

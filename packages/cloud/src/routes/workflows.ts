@@ -2,56 +2,38 @@
  * Workflow Routes
  *
  * Part of Issue #103 (Upstash Workflow for Power Mode v2)
- * Phase 2: Claude API Integration
  *
- * Durable workflow execution using Upstash Workflow.
- * Provides orchestrated multi-agent coordination with fault tolerance.
- * Now with real Claude API calls for agent invocations.
+ * Durable workflow orchestration using Upstash Workflow.
+ * Provides state tracking, coordination, and fault tolerance.
+ *
+ * DESIGN PHILOSOPHY:
+ * These workflows are ORCHESTRATION ONLY - they track state and coordinate
+ * multi-step processes, but the actual intelligent work happens in the local
+ * Claude Code session. This avoids redundant Claude API calls (you're already
+ * paying for Claude Code Max) and keeps the intelligence where it belongs.
+ *
+ * The workflows provide:
+ * - Durable state persistence (survives crashes)
+ * - Progress tracking (know which phase you're in)
+ * - Coordination between phases
+ * - Retry logic for reliability
+ * - Async execution capability
  */
 
 import { Hono } from 'hono';
 import { serve } from '@upstash/workflow/hono';
 import { Redis } from '@upstash/redis';
 import type { Env, Variables, WorkflowPhaseResult, WorkflowStatus } from '../types';
-import {
-  invokeAgent,
-  invokeAgentSemantic,
-  runDiscoveryPhase,
-  runExplorationPhase,
-  runArchitecturePhase,
-  runReviewPhase,
-} from '../lib/claude';
 
 const workflows = new Hono<{ Bindings: Env; Variables: Variables }>();
 
 // =============================================================================
-// FEATURE DEVELOPMENT WORKFLOW
+// HELPER FUNCTIONS
 // =============================================================================
 
 /**
- * 7-Phase Feature Development Workflow
- *
- * Phases:
- * 1. Discovery - Understand the request
- * 2. Exploration - Analyze codebase
- * 3. Questions - Clarify requirements
- * 4. Architecture - Design solution
- * 5. Implementation - Build the feature
- * 6. Review - Code review
- * 7. Summary - Document completion
- *
- * Uses prompt chaining pattern - each phase output feeds the next.
+ * Store workflow status in Redis for tracking.
  */
-interface FeatureDevPayload {
-  feature: string;
-  projectPath: string;
-  sessionId: string;
-  userId: string;
-  codebaseContext?: string;
-  useClaude?: boolean; // Enable real Claude API calls
-}
-
-// Helper to store workflow status in Redis
 async function updateWorkflowStatus(
   redis: Redis,
   runId: string,
@@ -70,18 +52,50 @@ async function updateWorkflowStatus(
   await redis.set(key, updated, { ex: 86400 }); // 24 hour TTL
 }
 
+// =============================================================================
+// FEATURE DEVELOPMENT WORKFLOW
+// =============================================================================
+
+/**
+ * 7-Phase Feature Development Workflow (Orchestration Only)
+ *
+ * This workflow TRACKS the phases of feature development but does NOT
+ * perform the actual work. Your local Claude Code session does the work,
+ * and this workflow:
+ * - Tracks which phase you're in
+ * - Stores results from each phase
+ * - Provides durability (can resume if interrupted)
+ * - Enables progress monitoring
+ *
+ * Phases:
+ * 1. Discovery - Understand the request
+ * 2. Exploration - Analyze codebase
+ * 3. Questions - Clarify requirements
+ * 4. Architecture - Design solution
+ * 5. Implementation - Build the feature
+ * 6. Review - Code review
+ * 7. Summary - Document completion
+ */
+interface FeatureDevPayload {
+  feature: string;
+  projectPath: string;
+  sessionId: string;
+  userId: string;
+  // Phase results provided by local Claude Code session
+  phaseResults?: Record<string, string>;
+}
+
 workflows.post(
   '/feature-dev',
   serve<FeatureDevPayload>(
     async (context) => {
-      const { feature, projectPath, sessionId, codebaseContext, useClaude = false } = context.requestPayload;
+      const { feature, projectPath, sessionId, phaseResults = {} } = context.requestPayload;
       const phases: WorkflowPhaseResult[] = [];
-      let totalTokens = 0;
 
       // Initialize Redis for status tracking
       const redis = new Redis({
-        url: context.env.UPSTASH_REDIS_REST_URL,
-        token: context.env.UPSTASH_REDIS_REST_TOKEN,
+        url: (context.env as unknown as Env).UPSTASH_REDIS_REST_URL,
+        token: (context.env as unknown as Env).UPSTASH_REDIS_REST_TOKEN,
       });
 
       // Update initial status
@@ -90,27 +104,12 @@ workflows.post(
         currentPhase: 'discovery',
       });
 
-      // Cast env for type safety
-      const env = context.env as unknown as Env;
-
       // Phase 1: Discovery
       const discovery = await context.run('phase-1-discovery', async () => {
-        if (useClaude && env.ANTHROPIC_API_KEY) {
-          const result = await runDiscoveryPhase(env, feature, codebaseContext);
-          totalTokens += result.tokensUsed;
-          return {
-            phase: 'discovery',
-            status: 'complete' as const,
-            output: result.response,
-            agentUsed: result.agentUsed,
-            tokensUsed: result.tokensUsed,
-            nextPhase: 'exploration',
-          };
-        }
         return {
           phase: 'discovery',
           status: 'complete' as const,
-          output: `Analyzed feature request: "${feature}"`,
+          output: phaseResults.discovery || `Ready for discovery: "${feature}"`,
           nextPhase: 'exploration',
         };
       });
@@ -119,51 +118,22 @@ workflows.post(
 
       // Phase 2: Exploration
       const exploration = await context.run('phase-2-exploration', async () => {
-        if (useClaude && env.ANTHROPIC_API_KEY) {
-          const result = await runExplorationPhase(env, feature, discovery.output, codebaseContext);
-          totalTokens += result.tokensUsed;
-          return {
-            phase: 'exploration',
-            status: 'complete' as const,
-            output: result.response,
-            agentUsed: result.agentUsed,
-            tokensUsed: result.tokensUsed,
-            nextPhase: 'questions',
-          };
-        }
         return {
           phase: 'exploration',
           status: 'complete' as const,
-          output: `Explored codebase at ${projectPath}`,
+          output: phaseResults.exploration || `Ready to explore: ${projectPath}`,
           nextPhase: 'questions',
         };
       });
       phases.push(exploration);
       await updateWorkflowStatus(redis, context.workflowRunId, { currentPhase: 'questions', phases });
 
-      // Phase 3: Questions (may require human input)
+      // Phase 3: Questions
       const questions = await context.run('phase-3-questions', async () => {
-        if (useClaude && env.ANTHROPIC_API_KEY) {
-          const result = await invokeAgentSemantic(
-            env,
-            'clarify requirements and ask questions',
-            `Based on the discovery and exploration, identify any clarifying questions needed before proceeding with architecture:\n\nDiscovery: ${discovery.output}\n\nExploration: ${exploration.output}`,
-            discovery.output
-          );
-          totalTokens += result.tokensUsed;
-          return {
-            phase: 'questions',
-            status: 'complete' as const,
-            output: result.response,
-            agentUsed: result.agentUsed,
-            tokensUsed: result.tokensUsed,
-            nextPhase: 'architecture',
-          };
-        }
         return {
           phase: 'questions',
-          status: 'complete' as const,
-          output: 'Clarifications gathered',
+          status: phaseResults.questions ? 'complete' as const : 'needs_input' as const,
+          output: phaseResults.questions || 'Awaiting clarification questions',
           nextPhase: 'architecture',
         };
       });
@@ -172,51 +142,22 @@ workflows.post(
 
       // Phase 4: Architecture
       const architecture = await context.run('phase-4-architecture', async () => {
-        if (useClaude && env.ANTHROPIC_API_KEY) {
-          const result = await runArchitecturePhase(env, feature, exploration.output);
-          totalTokens += result.tokensUsed;
-          return {
-            phase: 'architecture',
-            status: 'complete' as const,
-            output: result.response,
-            agentUsed: result.agentUsed,
-            tokensUsed: result.tokensUsed,
-            nextPhase: 'implementation',
-          };
-        }
         return {
           phase: 'architecture',
           status: 'complete' as const,
-          output: 'Architecture designed based on exploration and questions',
+          output: phaseResults.architecture || 'Ready for architecture design',
           nextPhase: 'implementation',
         };
       });
       phases.push(architecture);
       await updateWorkflowStatus(redis, context.workflowRunId, { currentPhase: 'implementation', phases });
 
-      // Phase 5: Implementation (simulation - actual implementation happens client-side)
+      // Phase 5: Implementation
       const implementation = await context.run('phase-5-implementation', async () => {
-        if (useClaude && env.ANTHROPIC_API_KEY) {
-          const result = await invokeAgent(
-            env,
-            'code-architect',
-            `Create a detailed implementation plan based on this architecture:\n\n${architecture.output}\n\nProvide step-by-step instructions for implementing each component.`,
-            architecture.output
-          );
-          totalTokens += result.tokensUsed;
-          return {
-            phase: 'implementation',
-            status: 'complete' as const,
-            output: result.response,
-            agentUsed: result.agentUsed,
-            tokensUsed: result.tokensUsed,
-            nextPhase: 'review',
-          };
-        }
         return {
           phase: 'implementation',
           status: 'complete' as const,
-          output: 'Feature implemented according to architecture',
+          output: phaseResults.implementation || 'Ready for implementation',
           nextPhase: 'review',
         };
       });
@@ -225,22 +166,10 @@ workflows.post(
 
       // Phase 6: Review
       const review = await context.run('phase-6-review', async () => {
-        if (useClaude && env.ANTHROPIC_API_KEY) {
-          const result = await runReviewPhase(env, implementation.output);
-          totalTokens += result.tokensUsed;
-          return {
-            phase: 'review',
-            status: 'complete' as const,
-            output: result.response,
-            agentUsed: result.agentUsed,
-            tokensUsed: result.tokensUsed,
-            nextPhase: 'summary',
-          };
-        }
         return {
           phase: 'review',
           status: 'complete' as const,
-          output: 'Code review completed with 80+ confidence threshold',
+          output: phaseResults.review || 'Ready for code review',
           nextPhase: 'summary',
         };
       });
@@ -249,25 +178,10 @@ workflows.post(
 
       // Phase 7: Summary
       const summary = await context.run('phase-7-summary', async () => {
-        if (useClaude && env.ANTHROPIC_API_KEY) {
-          const result = await invokeAgent(
-            env,
-            'default',
-            `Summarize the feature development process for "${feature}":\n\n1. Discovery: ${discovery.output.slice(0, 200)}...\n2. Exploration: ${exploration.output.slice(0, 200)}...\n3. Architecture: ${architecture.output.slice(0, 200)}...\n4. Implementation: ${implementation.output.slice(0, 200)}...\n5. Review: ${review.output.slice(0, 200)}...\n\nProvide a concise summary of what was accomplished and any follow-up actions.`
-          );
-          totalTokens += result.tokensUsed;
-          return {
-            phase: 'summary',
-            status: 'complete' as const,
-            output: result.response,
-            agentUsed: result.agentUsed,
-            tokensUsed: result.tokensUsed,
-          };
-        }
         return {
           phase: 'summary',
           status: 'complete' as const,
-          output: `Feature "${feature}" completed successfully`,
+          output: phaseResults.summary || `Feature "${feature}" workflow complete`,
         };
       });
       phases.push(summary);
@@ -286,12 +200,10 @@ workflows.post(
         sessionId,
         phases,
         status: 'complete',
-        totalTokensUsed: totalTokens,
-        claudeEnabled: useClaude,
+        message: 'Workflow orchestration complete. Actual work performed by local Claude Code session.',
       };
     },
     {
-      // Workflow options
       retries: 3,
     }
   )
@@ -302,10 +214,17 @@ workflows.post(
 // =============================================================================
 
 /**
- * Power Mode Orchestrator
+ * Power Mode Orchestrator (Coordination Only)
  *
- * Coordinates multiple agents working in parallel on a complex task.
- * Uses orchestrator-workers pattern with real Claude API calls.
+ * Coordinates multiple agents working on a complex task.
+ * This workflow TRACKS agent coordination but does NOT invoke Claude API.
+ * The actual agent work happens in local Claude Code sessions.
+ *
+ * What this provides:
+ * - Agent registration and tracking
+ * - Phase coordination (init → execute → aggregate → synthesize)
+ * - Consensus tracking
+ * - Durable state across sessions
  */
 interface PowerModePayload {
   task: string;
@@ -313,32 +232,31 @@ interface PowerModePayload {
   sessionId: string;
   userId: string;
   consensusThreshold?: number;
-  useClaude?: boolean; // Enable real Claude API calls
+  // Agent results provided by local Claude Code sessions
+  agentResults?: Array<{
+    agent: string;
+    output: string;
+    confidence: number;
+  }>;
 }
 
 interface AgentResult {
   agent: string;
-  status: 'complete' | 'failed';
+  status: 'pending' | 'complete' | 'failed';
   output: string;
   confidence: number;
-  tokensUsed?: number;
-  error?: string;
 }
 
 workflows.post(
   '/power-mode',
   serve<PowerModePayload>(
     async (context) => {
-      const { task, agents, sessionId, consensusThreshold = 0.7, useClaude = false } = context.requestPayload;
-      let totalTokens = 0;
-
-      // Cast env for type safety
-      const env = context.env as unknown as Env;
+      const { task, agents, sessionId, consensusThreshold = 0.7, agentResults = [] } = context.requestPayload;
 
       // Initialize Redis for status tracking
       const redis = new Redis({
-        url: env.UPSTASH_REDIS_REST_URL,
-        token: env.UPSTASH_REDIS_REST_TOKEN,
+        url: (context.env as unknown as Env).UPSTASH_REDIS_REST_URL,
+        token: (context.env as unknown as Env).UPSTASH_REDIS_REST_TOKEN,
       });
 
       // Step 1: Initialize coordinator
@@ -351,58 +269,28 @@ workflows.post(
           status: 'initialized',
           agents: agents,
           task: task,
+          timestamp: new Date().toISOString(),
         };
       });
 
-      // Step 2: Distribute task to agents
-      const agentResults = await context.run('distribute-tasks', async () => {
+      // Step 2: Track agent assignments
+      const assignments = await context.run('assign-agents', async () => {
         await updateWorkflowStatus(redis, context.workflowRunId, {
-          currentPhase: 'agent-execution',
+          currentPhase: 'agent-assignment',
         });
 
-        if (useClaude && env.ANTHROPIC_API_KEY) {
-          // Real Claude API calls for each agent
-          const results: AgentResult[] = [];
-          for (const agent of agents) {
-            try {
-              const result = await invokeAgent(
-                env,
-                agent,
-                `You are working as part of a multi-agent team. Your specific role is: ${agent}\n\nTask: ${task}\n\nProvide your analysis and contribution. End with a confidence score (0.0-1.0) for your response.`
-              );
-              totalTokens += result.tokensUsed;
+        // Create tracking entries for each agent
+        const tracked: AgentResult[] = agents.map((agent) => {
+          const result = agentResults.find((r) => r.agent === agent);
+          return {
+            agent,
+            status: result ? 'complete' as const : 'pending' as const,
+            output: result?.output || '',
+            confidence: result?.confidence || 0,
+          };
+        });
 
-              // Extract confidence from response (look for "confidence: X.X" pattern)
-              const confidenceMatch = result.response.match(/confidence[:\s]+([0-9.]+)/i);
-              const confidence = confidenceMatch ? parseFloat(confidenceMatch[1]) : 0.8;
-
-              results.push({
-                agent,
-                status: 'complete',
-                output: result.response,
-                confidence: Math.min(Math.max(confidence, 0), 1),
-                tokensUsed: result.tokensUsed,
-              });
-            } catch (error) {
-              results.push({
-                agent,
-                status: 'failed',
-                output: '',
-                confidence: 0,
-                error: error instanceof Error ? error.message : 'Unknown error',
-              });
-            }
-          }
-          return results;
-        }
-
-        // Simulation mode
-        return agents.map((agent) => ({
-          agent,
-          status: 'complete' as const,
-          output: `Agent ${agent} processed task`,
-          confidence: Math.random() * 0.3 + 0.7,
-        }));
+        return tracked;
       });
 
       // Step 3: Aggregate results
@@ -411,7 +299,7 @@ workflows.post(
           currentPhase: 'aggregation',
         });
 
-        const completedResults = agentResults.filter((r) => r.status === 'complete');
+        const completedResults = assignments.filter((r) => r.status === 'complete');
         const avgConfidence = completedResults.length > 0
           ? completedResults.reduce((sum, r) => sum + r.confidence, 0) / completedResults.length
           : 0;
@@ -421,60 +309,43 @@ workflows.post(
           avgConfidence,
           agentCount: agents.length,
           completedCount: completedResults.length,
-          failedCount: agentResults.length - completedResults.length,
+          pendingCount: assignments.filter((r) => r.status === 'pending').length,
         };
       });
 
-      // Step 4: Final synthesis
+      // Step 4: Determine final status
       const synthesis = await context.run('synthesize', async () => {
         await updateWorkflowStatus(redis, context.workflowRunId, {
           currentPhase: 'synthesis',
         });
 
-        if (useClaude && env.ANTHROPIC_API_KEY && aggregation.completedCount > 0) {
-          // Synthesize agent responses
-          const agentOutputs = agentResults
-            .filter((r) => r.status === 'complete')
-            .map((r) => `[${r.agent}] (confidence: ${r.confidence.toFixed(2)}):\n${r.output}`)
-            .join('\n\n---\n\n');
-
-          const result = await invokeAgent(
-            env,
-            'default',
-            `You are the synthesis coordinator. Multiple agents have analyzed this task:\n\nTask: ${task}\n\nAgent Responses:\n${agentOutputs}\n\nProvide a unified synthesis that:\n1. Identifies consensus points\n2. Notes any disagreements\n3. Provides a final recommendation\n4. Assigns an overall confidence score`
-          );
-          totalTokens += result.tokensUsed;
-
-          return {
-            task,
-            status: aggregation.consensus ? 'consensus_reached' : 'needs_review',
-            confidence: aggregation.avgConfidence,
-            synthesis: result.response,
-            agentResults,
-          };
-        }
+        const allComplete = aggregation.pendingCount === 0;
 
         return {
           task,
-          status: aggregation.consensus ? 'consensus_reached' : 'needs_review',
+          status: !allComplete ? 'waiting_for_agents' :
+                  aggregation.consensus ? 'consensus_reached' : 'needs_review',
           confidence: aggregation.avgConfidence,
-          agentResults,
+          agentResults: assignments,
+          message: !allComplete
+            ? `Waiting for ${aggregation.pendingCount} agent(s) to complete`
+            : aggregation.consensus
+              ? 'Consensus reached among agents'
+              : 'Results need human review - no consensus',
         };
       });
 
       // Update final status
       await updateWorkflowStatus(redis, context.workflowRunId, {
-        status: 'complete',
+        status: synthesis.status === 'waiting_for_agents' ? 'waiting' : 'complete',
         currentPhase: undefined,
-        completedAt: new Date().toISOString(),
+        completedAt: synthesis.status !== 'waiting_for_agents' ? new Date().toISOString() : undefined,
       });
 
       return {
         workflowId: context.workflowRunId,
         sessionId,
         ...synthesis,
-        totalTokensUsed: totalTokens,
-        claudeEnabled: useClaude,
       };
     },
     {
@@ -482,6 +353,54 @@ workflows.post(
     }
   )
 );
+
+// =============================================================================
+// UPDATE WORKFLOW PHASE
+// =============================================================================
+
+/**
+ * POST /workflows/update/:runId
+ *
+ * Update a workflow with results from local Claude Code session.
+ * This allows the local session to push results back to the workflow.
+ */
+workflows.post('/update/:runId', async (c) => {
+  const runId = c.req.param('runId');
+  const body = await c.req.json<{
+    phase?: string;
+    result?: string;
+    agentResults?: Array<{ agent: string; output: string; confidence: number }>;
+  }>();
+
+  const redis = new Redis({
+    url: c.env.UPSTASH_REDIS_REST_URL,
+    token: c.env.UPSTASH_REDIS_REST_TOKEN,
+  });
+
+  const status = await redis.get<WorkflowStatus>(`workflow:status:${runId}`);
+
+  if (!status) {
+    return c.json({ error: 'Workflow not found' }, 404);
+  }
+
+  // Update the specific phase if provided
+  if (body.phase && body.result) {
+    const phaseIndex = status.phases.findIndex((p) => p.phase === body.phase);
+    if (phaseIndex >= 0) {
+      status.phases[phaseIndex].output = body.result;
+      status.phases[phaseIndex].status = 'complete';
+    }
+  }
+
+  await redis.set(`workflow:status:${runId}`, status, { ex: 86400 });
+
+  return c.json({
+    runId,
+    updated: true,
+    currentPhase: status.currentPhase,
+    phases: status.phases.map((p) => ({ phase: p.phase, status: p.status })),
+  });
+});
 
 // =============================================================================
 // WORKFLOW STATUS
@@ -526,12 +445,12 @@ workflows.get('/list', async (c) => {
 
   // Scan for workflow status keys
   const keys = await redis.keys('workflow:status:*');
-  const workflows: Array<{ runId: string; status: string; startedAt: string }> = [];
+  const workflowList: Array<{ runId: string; status: string; startedAt: string }> = [];
 
   for (const key of keys.slice(0, 20)) { // Limit to 20 most recent
     const status = await redis.get<WorkflowStatus>(key);
     if (status) {
-      workflows.push({
+      workflowList.push({
         runId: status.runId,
         status: status.status,
         startedAt: status.startedAt,
@@ -540,11 +459,11 @@ workflows.get('/list', async (c) => {
   }
 
   // Sort by start time
-  workflows.sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());
+  workflowList.sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());
 
   return c.json({
-    count: workflows.length,
-    workflows,
+    count: workflowList.length,
+    workflows: workflowList,
   });
 });
 
@@ -555,14 +474,15 @@ workflows.get('/list', async (c) => {
 /**
  * GET /workflows
  *
- * List available workflows.
+ * List available workflows and their purpose.
  */
 workflows.get('/', async (c) => {
   return c.json({
+    description: 'Orchestration-only workflows for PopKit. These track state and coordinate multi-step processes. The actual intelligent work happens in your local Claude Code session.',
     workflows: [
       {
         name: 'feature-dev',
-        description: '7-phase feature development workflow',
+        description: '7-phase feature development workflow (orchestration)',
         endpoint: '/v1/workflows/feature-dev',
         phases: [
           'discovery',
@@ -573,14 +493,23 @@ workflows.get('/', async (c) => {
           'review',
           'summary',
         ],
+        note: 'Tracks phases - actual work done by local Claude Code',
       },
       {
         name: 'power-mode',
-        description: 'Multi-agent parallel orchestration workflow',
+        description: 'Multi-agent coordination workflow (orchestration)',
         endpoint: '/v1/workflows/power-mode',
         pattern: 'orchestrator-workers',
+        note: 'Coordinates agents - actual work done by local Claude Code sessions',
       },
     ],
+    endpoints: {
+      'POST /workflows/feature-dev': 'Start feature development workflow',
+      'POST /workflows/power-mode': 'Start power mode coordination',
+      'POST /workflows/update/:runId': 'Update workflow with results from local session',
+      'GET /workflows/status/:runId': 'Check workflow status',
+      'GET /workflows/list': 'List recent workflows',
+    },
   });
 });
 
