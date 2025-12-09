@@ -10,6 +10,10 @@ ENVIRONMENT = "development"
 # wrangler secret put UPSTASH_REDIS_REST_URL
 # wrangler secret put UPSTASH_REDIS_REST_TOKEN
 
+# Upstash Vector for semantic agent search (Issue #101)
+# wrangler secret put UPSTASH_VECTOR_REST_URL
+# wrangler secret put UPSTASH_VECTOR_REST_TOKEN
+
 # Rate limiting settings
 [vars.rate_limits]
 free_requests_per_minute = 100

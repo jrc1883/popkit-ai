@@ -42,6 +42,9 @@ export interface Env {
   UPSTASH_REDIS_REST_TOKEN: string;
   VOYAGE_API_KEY: string;
   ENVIRONMENT: string;
+  // Upstash Vector (Issue #101)
+  UPSTASH_VECTOR_REST_URL: string;
+  UPSTASH_VECTOR_REST_TOKEN: string;
 }
 
 export interface Variables {
