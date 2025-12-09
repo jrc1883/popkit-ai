@@ -6,7 +6,12 @@ labels: research
 assignees: ''
 ---
 
-## Priority: [LOW/MEDIUM/HIGH]
+## Priority & Phase
+
+<!-- Research is typically phase:now or phase:next -->
+**Priority:** `P1-high` | `P2-medium` | `P3-low`
+**Phase:** `phase:now` | `phase:next` | `phase:future`
+**Milestone:** `v1.0.0` | `v2.0.0`
 
 ## Research Question
 

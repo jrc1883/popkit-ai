@@ -6,7 +6,12 @@ labels: architecture, epic
 assignees: ''
 ---
 
-## Priority: [HIGH/CRITICAL]
+## Priority & Phase
+
+<!-- Epics are typically P1/P2 with phase:now or phase:next -->
+**Priority:** `P0-critical` | `P1-high` | `P2-medium`
+**Phase:** `phase:now` | `phase:next` | `phase:future`
+**Milestone:** `v1.0.0` | `v2.0.0`
 
 ## Overview
 

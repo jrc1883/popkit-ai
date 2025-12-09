@@ -6,7 +6,12 @@ labels: enhancement
 assignees: ''
 ---
 
-## Priority: [LOW/MEDIUM/HIGH/CRITICAL]
+## Priority & Phase
+
+<!-- Select ONE from each category -->
+**Priority:** `P0-critical` | `P1-high` | `P2-medium` | `P3-low`
+**Phase:** `phase:now` | `phase:next` | `phase:future`
+**Milestone:** `v1.0.0` | `v2.0.0`
 
 ## Summary
 
