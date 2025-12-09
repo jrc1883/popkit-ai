@@ -4,7 +4,26 @@ All notable changes to PopKit are documented in this file.
 
 **Versioning:** PopKit uses `0.x.y` versioning until stable. Version `1.0.0` will mark API stability.
 
-## [0.9.11] - Current
+## [0.9.12] - Current
+
+### Continuous Workflow Loop (#116)
+
+- **Issue Close Prompt**: After `/popkit:dev work #N` completes, prompts to close the issue
+- **Epic Parent Check**: Auto-detects when all children of an epic are complete
+- **Context-Aware Next Actions**: Presents prioritized open issues as selectable options
+- **Keep in the Loop**: Selecting an issue immediately starts work on it
+- **Phase 8 added to dev.md**: Close & Continue phase for work mode
+- **pop-finish-branch enhanced**: Step 6 for issue close and next actions
+
+### Foundation & Organization
+
+- **Issue Templates Updated**: All templates now include Priority & Phase sections
+- **Milestone Strategy**: v1.0.0 for plugin release, v1.1.0 for post-launch
+- **Multi-Repo Strategy Documented**: Future public repos for MCP, Codex, Gemini
+- **Platform Roadmap Archived**: Moved to `docs/roadmaps/`
+- **Epic #88 Closed**: Self-Improvement system fully operational
+
+## [0.9.11]
 
 ### Cross-Project Observability
 
