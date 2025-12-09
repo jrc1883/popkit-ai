@@ -24,6 +24,7 @@ import teamsRoutes from './routes/teams';
 import projectsRoutes from './routes/projects';
 import agentsRoutes from './routes/agents';
 import workflowsRoutes from './routes/workflows';
+import messagesRoutes from './routes/messages';
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -76,12 +77,14 @@ app.use('/v1/teams/*', authMiddleware);
 app.use('/v1/projects/*', authMiddleware);
 app.use('/v1/agents/*', authMiddleware);
 app.use('/v1/workflows/*', authMiddleware);
+app.use('/v1/messages/*', authMiddleware);
 
 // Apply rate limiting after auth
 app.use('/v1/redis/*', rateLimitMiddleware);
 app.use('/v1/embeddings/*', rateLimitMiddleware);
 app.use('/v1/patterns/*', rateLimitMiddleware);
 app.use('/v1/agents/*', rateLimitMiddleware);
+app.use('/v1/messages/*', rateLimitMiddleware);
 // No rate limit on privacy endpoints (they're rarely called)
 
 // Mount protected routes
@@ -95,6 +98,7 @@ app.route('/v1/teams', teamsRoutes);
 app.route('/v1/projects', projectsRoutes);
 app.route('/v1/agents', agentsRoutes);
 app.route('/v1/workflows', workflowsRoutes);
+app.route('/v1/messages', messagesRoutes);
 
 // =============================================================================
 // ERROR HANDLING
