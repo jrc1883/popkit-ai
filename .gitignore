@@ -6,10 +6,11 @@ __pycache__/
 .Python
 *.py[cod]
 
-# Node (for MCP server template)
+# Node
 node_modules/
 npm-debug.log
-package-lock.json
+# Keep root package-lock.json but ignore nested ones
+packages/*/package-lock.json
 
 # IDE
 .idea/
@@ -31,19 +32,23 @@ dist/
 build/
 *.egg-info/
 
+# Cloudflare Workers
+.wrangler/
+.dev.vars
+
 # Development-only content (not distributed with plugin)
 # Uses .local suffix pattern like Claude Code's settings.local.json
-commands.local/
-skills.local/
-agents.local/
-hooks.local/
+packages/plugin/commands.local/
+packages/plugin/skills.local/
+packages/plugin/agents.local/
+packages/plugin/hooks.local/
 
 # Project-specific generated content
 # Output from /popkit:generate-* commands
 .generated/
 
 # Power Mode state files (generated during multi-agent orchestration)
-power-mode/.claude/
+packages/plugin/power-mode/.claude/
 
 # Local Claude Code project state (created when using PopKit on this repo)
 .claude/
