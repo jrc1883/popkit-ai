@@ -468,6 +468,139 @@ workflows.get('/list', async (c) => {
 });
 
 // =============================================================================
+// SYNC BARRIERS (Issue #103 Phase 3)
+// =============================================================================
+
+interface SyncBarrierData {
+  barrierId: string;
+  requiredAgents: string[];
+  acknowledgedAgents: string[];
+  createdAt: string;
+  expiresAt: string;
+}
+
+/**
+ * POST /workflows/sync/create
+ *
+ * Create a sync barrier for agent coordination.
+ * Agents must acknowledge the barrier before proceeding.
+ */
+workflows.post('/sync/create', async (c) => {
+  const body = await c.req.json<{
+    barrierId: string;
+    requiredAgents: string[];
+    timeoutSeconds?: number;
+  }>();
+
+  const redis = new Redis({
+    url: c.env.UPSTASH_REDIS_REST_URL,
+    token: c.env.UPSTASH_REDIS_REST_TOKEN,
+  });
+
+  const timeout = body.timeoutSeconds || 120;
+  const expiresAt = new Date(Date.now() + timeout * 1000).toISOString();
+
+  const barrier: SyncBarrierData = {
+    barrierId: body.barrierId,
+    requiredAgents: body.requiredAgents,
+    acknowledgedAgents: [],
+    createdAt: new Date().toISOString(),
+    expiresAt,
+  };
+
+  await redis.set(`sync:barrier:${body.barrierId}`, barrier, { ex: timeout });
+
+  return c.json({
+    barrierId: body.barrierId,
+    requiredAgents: body.requiredAgents,
+    expiresAt,
+    status: 'created',
+  });
+});
+
+/**
+ * POST /workflows/sync/ack/:barrierId
+ *
+ * Acknowledge a sync barrier. Returns true when all agents have acknowledged.
+ */
+workflows.post('/sync/ack/:barrierId', async (c) => {
+  const barrierId = c.req.param('barrierId');
+  const body = await c.req.json<{ agentId: string }>();
+
+  const redis = new Redis({
+    url: c.env.UPSTASH_REDIS_REST_URL,
+    token: c.env.UPSTASH_REDIS_REST_TOKEN,
+  });
+
+  const barrier = await redis.get<SyncBarrierData>(`sync:barrier:${barrierId}`);
+
+  if (!barrier) {
+    return c.json({ error: 'Barrier not found or expired' }, 404);
+  }
+
+  // Add agent to acknowledged list
+  if (!barrier.acknowledgedAgents.includes(body.agentId)) {
+    barrier.acknowledgedAgents.push(body.agentId);
+    await redis.set(`sync:barrier:${barrierId}`, barrier);
+  }
+
+  const isComplete = barrier.requiredAgents.every(
+    (agent) => barrier.acknowledgedAgents.includes(agent)
+  );
+
+  return c.json({
+    barrierId,
+    acknowledged: true,
+    isComplete,
+    acknowledgedCount: barrier.acknowledgedAgents.length,
+    requiredCount: barrier.requiredAgents.length,
+    missingAgents: barrier.requiredAgents.filter(
+      (a) => !barrier.acknowledgedAgents.includes(a)
+    ),
+  });
+});
+
+/**
+ * GET /workflows/sync/status/:barrierId
+ *
+ * Check status of a sync barrier.
+ */
+workflows.get('/sync/status/:barrierId', async (c) => {
+  const barrierId = c.req.param('barrierId');
+
+  const redis = new Redis({
+    url: c.env.UPSTASH_REDIS_REST_URL,
+    token: c.env.UPSTASH_REDIS_REST_TOKEN,
+  });
+
+  const barrier = await redis.get<SyncBarrierData>(`sync:barrier:${barrierId}`);
+
+  if (!barrier) {
+    return c.json({
+      barrierId,
+      status: 'not_found',
+      message: 'Barrier not found or expired',
+    }, 404);
+  }
+
+  const isComplete = barrier.requiredAgents.every(
+    (agent) => barrier.acknowledgedAgents.includes(agent)
+  );
+
+  return c.json({
+    barrierId,
+    status: isComplete ? 'complete' : 'waiting',
+    requiredAgents: barrier.requiredAgents,
+    acknowledgedAgents: barrier.acknowledgedAgents,
+    missingAgents: barrier.requiredAgents.filter(
+      (a) => !barrier.acknowledgedAgents.includes(a)
+    ),
+    createdAt: barrier.createdAt,
+    expiresAt: barrier.expiresAt,
+  });
+});
+
+// =============================================================================
 // WORKFLOW INFO
 // =============================================================================
 
@@ -509,6 +642,9 @@ workflows.get('/', async (c) => {
       'POST /workflows/update/:runId': 'Update workflow with results from local session',
       'GET /workflows/status/:runId': 'Check workflow status',
       'GET /workflows/list': 'List recent workflows',
+      'POST /workflows/sync/create': 'Create sync barrier for agent coordination',
+      'POST /workflows/sync/ack/:barrierId': 'Acknowledge sync barrier',
+      'GET /workflows/sync/status/:barrierId': 'Check sync barrier status',
     },
   });
 });
