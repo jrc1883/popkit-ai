@@ -2,11 +2,19 @@
 
 AI-powered development workflows for Claude Code with skills, agents, and automation.
 
-**Version:** 0.9.4 | **Commands:** 15 | **Agents:** 30 | **Skills:** 30
+**Version:** 0.9.9 | **Commands:** 15 | **Agents:** 30 | **Skills:** 36
 
 ## What is PopKit?
 
 PopKit orchestrates Claude Code's full power for real-world development. Instead of raw tools, you get composable workflows that chain together simple tasks into sophisticated processes.
+
+## Monorepo Structure
+
+```
+packages/
+  plugin/     Claude Code plugin (main package)
+  cloud/      PopKit Cloud API (Cloudflare Workers)
+```
 
 ```
 Idea → Brainstorm → Plan → Implement → Review → Ship
@@ -199,24 +207,17 @@ PopKit leverages Claude API features for optimal performance.
 
 ## Version History
 
-### v0.9.4 (Current)
-- PDF support for input/output
-- Redis detection fix
-- Flag parser bug fix
+See [CHANGELOG.md](CHANGELOG.md) for full version history.
 
-### v0.9.3
-- Claude Platform Integration (effort, thinking, tool_choice)
-- JSON Schema strict mode
-- Stop reason handling
+### v0.9.9 (Current)
+- Platform-aware command learning
+- Automatic bug reporting with privacy controls
+- GDPR compliance
 
-### v0.9.2
-- Deep command consolidation (31 → 15 commands)
-- Subcommand patterns for discoverability
-
-### v0.9.0
-- Power Mode with GitHub issue integration
-- Status line integration
-- File-based fallback orchestration
+### v0.9.8
+- PopKit Cloud API (Cloudflare Workers + Upstash Redis)
+- Collective learning system
+- Power Mode v2 with auto-activation
 
 ## License
 
