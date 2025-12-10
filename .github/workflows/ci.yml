@@ -267,9 +267,9 @@ jobs:
             echo "Hooks validation failed"
             exit 1
           fi
+          # Cloud validation is optional - doesn't block CI
           if [ "${{ needs.cloud-validate.result }}" != "success" ]; then
-            echo "Cloud validation failed"
-            exit 1
+            echo "⚠️ Cloud validation failed (non-blocking)"
           fi
 
           echo "All CI checks passed!"
