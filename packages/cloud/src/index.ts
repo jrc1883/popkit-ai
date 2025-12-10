@@ -26,6 +26,7 @@ import agentsRoutes from './routes/agents';
 import workflowsRoutes from './routes/workflows';
 import messagesRoutes from './routes/messages';
 import authRoutes from './routes/auth';
+import billingRoutes from './routes/billing';
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -66,6 +67,9 @@ app.route('/v1/health', healthRoutes);
 // Auth routes (public - no auth required for signup/login)
 app.route('/v1/auth', authRoutes);
 
+// Billing webhook (public - uses Stripe signature verification)
+app.post('/v1/billing/webhook', billingRoutes);
+
 // =============================================================================
 // PROTECTED ROUTES (auth required)
 // =============================================================================
@@ -82,6 +86,7 @@ app.use('/v1/projects/*', authMiddleware);
 app.use('/v1/agents/*', authMiddleware);
 app.use('/v1/workflows/*', authMiddleware);
 app.use('/v1/messages/*', authMiddleware);
+app.use('/v1/billing/*', authMiddleware);
 
 // Apply rate limiting after auth
 app.use('/v1/redis/*', rateLimitMiddleware);
@@ -103,6 +108,7 @@ app.route('/v1/projects', projectsRoutes);
 app.route('/v1/agents', agentsRoutes);
 app.route('/v1/workflows', workflowsRoutes);
 app.route('/v1/messages', messagesRoutes);
+app.route('/v1/billing', billingRoutes);
 
 // =============================================================================
 // ERROR HANDLING

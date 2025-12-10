@@ -79,6 +79,11 @@ export interface Env {
   QSTASH_NEXT_SIGNING_KEY?: string;
   // Anthropic Claude API (optional - for future headless/background operations)
   ANTHROPIC_API_KEY?: string;
+  // Stripe (Issue #130)
+  STRIPE_SECRET_KEY?: string;
+  STRIPE_WEBHOOK_SECRET?: string;
+  STRIPE_PRICE_PRO?: string;
+  STRIPE_PRICE_TEAM?: string;
 }
 
 // =============================================================================
