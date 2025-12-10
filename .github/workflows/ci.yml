@@ -86,7 +86,8 @@ jobs:
           echo "Checking version consistency..."
 
           PLUGIN_VERSION=$(cat packages/plugin/.claude-plugin/plugin.json | python -c "import json,sys; print(json.load(sys.stdin)['version'])")
-          MARKETPLACE_VERSION=$(cat packages/plugin/.claude-plugin/marketplace.json | python -c "import json,sys; print(json.load(sys.stdin)['version'])")
+          # marketplace.json has version inside plugins[0].version
+          MARKETPLACE_VERSION=$(cat packages/plugin/.claude-plugin/marketplace.json | python -c "import json,sys; print(json.load(sys.stdin)['plugins'][0]['version'])")
 
           if [ "$PLUGIN_VERSION" != "$MARKETPLACE_VERSION" ]; then
             echo "Error: Version mismatch!"
