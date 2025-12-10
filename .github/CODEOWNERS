@@ -1,0 +1,90 @@
+# CODEOWNERS - Automatic review assignment
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# When someone opens a pull request that modifies code owned by a code owner,
+# the code owner is automatically requested for review.
+#
+# Each line is a file pattern followed by one or more owners.
+# Order matters - later patterns override earlier ones.
+
+# =============================================================================
+# GLOBAL OWNERSHIP
+# =============================================================================
+
+# Default owner for everything
+* @jrc1883
+
+# =============================================================================
+# PLUGIN CODE
+# =============================================================================
+
+# Plugin core (commands, skills, agents)
+packages/plugin/ @jrc1883
+
+# Hooks and utilities (Python)
+packages/plugin/hooks/ @jrc1883
+
+# Power Mode (multi-agent orchestration)
+packages/plugin/power-mode/ @jrc1883
+
+# MCP Server template
+packages/plugin/templates/mcp-server/ @jrc1883
+
+# =============================================================================
+# CLOUD API
+# =============================================================================
+
+# Cloud API (Cloudflare Workers)
+packages/cloud/ @jrc1883
+
+# Billing and entitlements
+packages/cloud-billing/ @jrc1883
+
+# Team features
+packages/cloud-team/ @jrc1883
+
+# =============================================================================
+# LANDING PAGE
+# =============================================================================
+
+# Astro landing site
+packages/landing/ @jrc1883
+
+# =============================================================================
+# DOCUMENTATION
+# =============================================================================
+
+# All markdown files
+*.md @jrc1883
+
+# Docs directory
+docs/ @jrc1883
+
+# Research docs (special attention)
+docs/research/ @jrc1883
+
+# =============================================================================
+# CONFIGURATION
+# =============================================================================
+
+# Root config files
+package.json @jrc1883
+tsconfig.json @jrc1883
+wrangler.toml @jrc1883
+
+# GitHub configuration
+.github/ @jrc1883
+
+# Claude configuration
+.claude/ @jrc1883
+CLAUDE.md @jrc1883
+
+# =============================================================================
+# SECURITY-SENSITIVE FILES
+# =============================================================================
+
+# These files require extra scrutiny
+.github/workflows/ @jrc1883
+packages/cloud/src/middleware/ @jrc1883
+packages/cloud/src/routes/auth.ts @jrc1883
+packages/cloud/src/routes/billing.ts @jrc1883

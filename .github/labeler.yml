@@ -1,0 +1,84 @@
+# Labeler configuration for PR auto-labeling
+# Used by .github/workflows/auto-label.yml
+#
+# Labels PRs based on files changed
+
+# Plugin code
+plugin:
+  - changed-files:
+      - any-glob-to-any-file:
+          - packages/plugin/**
+
+# Cloud API
+cloud:
+  - changed-files:
+      - any-glob-to-any-file:
+          - packages/cloud/**
+          - packages/cloud-*/**
+
+# Hooks
+hooks:
+  - changed-files:
+      - any-glob-to-any-file:
+          - packages/plugin/hooks/**
+
+# Agents
+agents:
+  - changed-files:
+      - any-glob-to-any-file:
+          - packages/plugin/agents/**
+
+# Skills
+skills:
+  - changed-files:
+      - any-glob-to-any-file:
+          - packages/plugin/skills/**
+
+# Commands
+commands:
+  - changed-files:
+      - any-glob-to-any-file:
+          - packages/plugin/commands/**
+
+# Power Mode
+power-mode:
+  - changed-files:
+      - any-glob-to-any-file:
+          - packages/plugin/power-mode/**
+
+# Documentation
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.md'
+          - docs/**
+
+# CI/CD
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/workflows/**
+          - .github/**
+
+# Configuration
+config:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '*.json'
+          - '*.toml'
+          - '*.yml'
+          - '*.yaml'
+
+# Landing page
+landing:
+  - changed-files:
+      - any-glob-to-any-file:
+          - packages/landing/**
+
+# Tests
+tests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/tests/**'
+          - '**/*.test.*'
+          - '**/*.spec.*'

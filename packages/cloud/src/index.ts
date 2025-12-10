@@ -27,6 +27,7 @@ import workflowsRoutes from './routes/workflows';
 import messagesRoutes from './routes/messages';
 import authRoutes from './routes/auth';
 import billingRoutes from './routes/billing';
+import researchRoutes from './routes/research';
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -87,6 +88,7 @@ app.use('/v1/agents/*', authMiddleware);
 app.use('/v1/workflows/*', authMiddleware);
 app.use('/v1/messages/*', authMiddleware);
 app.use('/v1/billing/*', authMiddleware);
+app.use('/v1/research/*', authMiddleware);
 
 // Apply rate limiting after auth
 app.use('/v1/redis/*', rateLimitMiddleware);
@@ -109,6 +111,7 @@ app.route('/v1/agents', agentsRoutes);
 app.route('/v1/workflows', workflowsRoutes);
 app.route('/v1/messages', messagesRoutes);
 app.route('/v1/billing', billingRoutes);
+app.route('/v1/research', researchRoutes);
 
 // =============================================================================
 // ERROR HANDLING

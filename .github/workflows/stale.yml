@@ -1,0 +1,93 @@
+# Stale Issue Management
+#
+# Automatically marks issues as stale after inactivity and
+# closes them after additional time without response.
+#
+# Part of Issue #147 (Implement issue automation)
+
+name: Stale Issue Management
+
+on:
+  schedule:
+    # Run daily at midnight UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    inputs:
+      debug:
+        description: 'Debug mode - no actual changes'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    name: Mark Stale Issues
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Handle stale issues
+        uses: actions/stale@v9
+        with:
+          # General settings
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          debug-only: ${{ inputs.debug || false }}
+
+          # Stale issue settings
+          days-before-stale: 30
+          days-before-close: 14
+          stale-issue-label: 'stale'
+
+          # Messages
+          stale-issue-message: |
+            This issue has been automatically marked as stale because it has had no activity for 30 days.
+
+            **What happens next:**
+            - If no further activity occurs, this issue will be closed in 14 days
+            - Comment on this issue to remove the stale label
+            - Add the `keep-open` label to prevent auto-closure
+
+            If this issue is still relevant:
+            1. Add a comment explaining the current status
+            2. Add appropriate priority labels (P0-P3)
+            3. Link to any related issues or PRs
+
+            Thank you for your contributions to PopKit!
+
+          close-issue-message: |
+            This issue has been automatically closed due to inactivity.
+
+            If you believe this issue is still relevant, please:
+            1. Reopen this issue with an update
+            2. Create a new issue if the context has changed
+
+            Thank you for your contributions to PopKit!
+
+          # Exempt labels - these issues won't be marked stale
+          exempt-issue-labels: |
+            P0-critical
+            P1-high
+            epic
+            blocked
+            keep-open
+            in-progress
+            security
+
+          # Don't stale PRs (they're more likely to be actively worked on)
+          days-before-pr-stale: -1
+          days-before-pr-close: -1
+
+          # Operations per run (to avoid rate limits)
+          operations-per-run: 30
+
+          # Remove stale label on activity
+          remove-stale-when-updated: true
+
+          # Labels to check for activity
+          only-labels: ''
+
+          # Don't start close countdown until stale label is applied
+          start-date: '2024-01-01'
