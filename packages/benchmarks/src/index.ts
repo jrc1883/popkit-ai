@@ -76,3 +76,28 @@ export type { ClaudeRunnerConfig, ExecutorConfig, BenchmarkRunResult } from './r
 // E2B exports (optional)
 export { isE2BAvailable, defaultE2BConfig } from './e2b/index.js';
 export type { E2BConfig } from './e2b/index.js';
+
+// Report exports
+export {
+  // Formatters
+  type FormatOptions,
+  progressBar,
+  formatPercent,
+  formatNumber,
+  formatDuration,
+  calculateImprovement,
+  MODE_NAMES,
+  getColor,
+  RESET_COLOR,
+  formatResultSummary,
+  createTable,
+  createComparisonBox,
+  // Markdown reports
+  generateResultMarkdown,
+  generateComparisonMarkdown,
+  generateAggregateMarkdown,
+  // HTML reports
+  generateResultHtml,
+  generateComparisonHtml,
+  generateAggregateHtml,
+} from './reports/index.js';
