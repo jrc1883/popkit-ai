@@ -223,7 +223,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd packages/cloud
-          npm ci
+          npm install
 
       - name: TypeScript check
         run: |
