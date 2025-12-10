@@ -17,6 +17,7 @@ import type {
   AuthResponse,
 } from '../types';
 import { createApiKey } from '../middleware/auth';
+import { sendEmail, generateWelcomeEmail } from '../services/email';
 
 const auth = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -225,6 +226,18 @@ auth.post('/signup', async (c) => {
 
   // Create default API key
   const { key: apiKey } = await createApiKey(redis, userId, 'Default Key', 'free');
+
+  // Send welcome email (non-blocking)
+  if (c.env.RESEND_API_KEY) {
+    const welcomeEmail = generateWelcomeEmail({
+      email,
+      apiKey,
+      tier: body.plan || 'free',
+    });
+    sendEmail(c.env.RESEND_API_KEY, welcomeEmail).catch((err) => {
+      console.error('Failed to send welcome email:', err);
+    });
+  }
 
   const response: AuthResponse = {
     user: sanitizeUser(user),

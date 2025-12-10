@@ -9,6 +9,12 @@ import { Hono } from 'hono';
 import { Redis } from '@upstash/redis';
 import Stripe from 'stripe';
 import type { Env, Variables, UserData, Tier } from '../types';
+import {
+  sendEmail,
+  generateReceiptEmail,
+  generatePaymentFailedEmail,
+  generateCancellationEmail,
+} from '../services/email';
 
 const billing = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -192,6 +198,24 @@ billing.post('/webhook', async (c) => {
           }
 
           console.log(`User ${userId} upgraded to ${plan}`);
+
+          // Send receipt email
+          if (c.env.RESEND_API_KEY) {
+            const amount = plan === 'pro' ? '$9.00' : '$29.00';
+            const renewalDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString(
+              'en-US',
+              { month: 'long', day: 'numeric', year: 'numeric' }
+            );
+            const receiptEmail = generateReceiptEmail({
+              email: user.email,
+              amount,
+              plan: plan.charAt(0).toUpperCase() + plan.slice(1),
+              renewalDate,
+            });
+            sendEmail(c.env.RESEND_API_KEY, receiptEmail).catch((err) => {
+              console.error('Failed to send receipt email:', err);
+            });
+          }
         }
       }
       break;
@@ -268,13 +292,50 @@ billing.post('/webhook', async (c) => {
       }
 
       console.log(`User ${userId} subscription cancelled, downgraded to free`);
+
+      // Send cancellation email
+      if (c.env.RESEND_API_KEY) {
+        const endDate = new Date(subscription.current_period_end * 1000).toLocaleDateString(
+          'en-US',
+          { month: 'long', day: 'numeric', year: 'numeric' }
+        );
+        const cancellationEmail = generateCancellationEmail({
+          email: user.email,
+          plan: user.tier === 'team' ? 'Team' : 'Pro',
+          endDate,
+        });
+        sendEmail(c.env.RESEND_API_KEY, cancellationEmail).catch((err) => {
+          console.error('Failed to send cancellation email:', err);
+        });
+      }
       break;
     }
 
     case 'invoice.payment_failed': {
       const invoice = event.data.object as Stripe.Invoice;
       console.warn(`Payment failed for customer ${invoice.customer}`);
-      // TODO: Send email notification
+
+      // Send payment failed email
+      if (c.env.RESEND_API_KEY && invoice.customer) {
+        const customerId = invoice.customer as string;
+        const customer = await stripe.customers.retrieve(customerId);
+        if (!customer.deleted && customer.email) {
+          // Create billing portal session for update
+          const portalSession = await stripe.billingPortal.sessions.create({
+            customer: customerId,
+            return_url: 'https://popkit.dev/dashboard',
+          });
+
+          const paymentFailedEmail = generatePaymentFailedEmail({
+            email: customer.email,
+            plan: 'Pro',
+            updateUrl: portalSession.url,
+          });
+          sendEmail(c.env.RESEND_API_KEY, paymentFailedEmail).catch((err) => {
+            console.error('Failed to send payment failed email:', err);
+          });
+        }
+      }
       break;
     }
 

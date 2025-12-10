@@ -39,6 +39,7 @@ export interface SignupRequest {
   email: string;
   password: string;
   name?: string;
+  plan?: 'free' | 'pro';
 }
 
 export interface LoginRequest {
@@ -84,6 +85,8 @@ export interface Env {
   STRIPE_WEBHOOK_SECRET?: string;
   STRIPE_PRICE_PRO?: string;
   STRIPE_PRICE_TEAM?: string;
+  // Email - Resend (Issue #133)
+  RESEND_API_KEY?: string;
 }
 
 // =============================================================================
