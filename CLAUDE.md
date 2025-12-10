@@ -358,6 +358,19 @@ When ready to release plugin changes publicly:
 3. **Publish**: `git subtree split` extracts plugin and pushes to public repo
 4. **Users Install**: From public `jrc1883/popkit-claude` via marketplace
 
+### Branch Naming Convention
+
+**IMPORTANT**: The private monorepo uses `master`, but the public repo uses `main`.
+
+When publishing manually:
+```bash
+# Correct - push to main branch
+git push plugin-public $(git subtree split --prefix=packages/plugin):main --force
+
+# Wrong - pushing to master creates a separate branch
+git subtree push --prefix=packages/plugin plugin-public master
+```
+
 ### Remote Setup
 
 The `plugin-public` remote is needed for publishing:
