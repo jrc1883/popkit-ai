@@ -17,11 +17,39 @@ export interface ApiKeyData {
 
 export interface UserData {
   id: string;
+  email: string;
+  passwordHash?: string;
+  name?: string;
   githubId?: string;
   githubUsername?: string;
-  email?: string;
   tier: Tier;
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
   createdAt: string;
+  updatedAt?: string;
+}
+
+export interface SessionData {
+  userId: string;
+  createdAt: string;
+  expiresAt: string;
+}
+
+export interface SignupRequest {
+  email: string;
+  password: string;
+  name?: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  user: Omit<UserData, 'passwordHash'>;
+  sessionToken: string;
+  apiKey?: string;
 }
 
 export interface UsageData {

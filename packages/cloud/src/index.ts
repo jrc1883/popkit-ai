@@ -25,6 +25,7 @@ import projectsRoutes from './routes/projects';
 import agentsRoutes from './routes/agents';
 import workflowsRoutes from './routes/workflows';
 import messagesRoutes from './routes/messages';
+import authRoutes from './routes/auth';
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -61,6 +62,9 @@ app.get('/', (c) => {
 
 // Health check (public)
 app.route('/v1/health', healthRoutes);
+
+// Auth routes (public - no auth required for signup/login)
+app.route('/v1/auth', authRoutes);
 
 // =============================================================================
 // PROTECTED ROUTES (auth required)
