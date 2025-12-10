@@ -1,14 +1,18 @@
 # Publish Plugin to Public Repository
 #
 # This workflow syncs packages/plugin/ from the private monorepo to the
-# public jrc1883/popkit-plugin repository for open-source distribution.
+# public jrc1883/popkit-claude repository for open-source distribution.
+#
+# NOTE: This workflow now uses a FILTERED publish approach that excludes
+# implementation code (power-mode, templates, hooks/utils). Only declarative
+# content is published to protect IP.
 #
 # Triggers:
 # - Manual dispatch (workflow_dispatch) with optional version tag
 # - Push to master when packages/plugin/ changes (optional auto-sync)
 #
 # Required Secrets:
-# - PLUGIN_PUBLIC_REPO_TOKEN: PAT with repo scope for jrc1883/popkit-plugin
+# - PLUGIN_PUBLIC_REPO_TOKEN: PAT with repo scope for jrc1883/popkit-claude
 
 name: Publish Plugin
 
@@ -64,62 +68,64 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PLUGIN_PUBLIC_REPO_TOKEN }}
         run: |
           git remote add plugin-public \
-            https://x-access-token:${GITHUB_TOKEN}@github.com/jrc1883/popkit-plugin.git
+            https://x-access-token:${GITHUB_TOKEN}@github.com/jrc1883/popkit-claude.git
           echo "Remote added: plugin-public"
 
-      - name: Run subtree split
-        id: split
+      - name: Prepare filtered plugin content
+        id: prepare
         run: |
-          echo "Starting subtree split of packages/plugin/..."
+          echo "Preparing filtered plugin content..."
 
-          # Run the split
-          SPLIT_SHA=$(git subtree split --prefix=packages/plugin -b plugin-public-split)
+          # Run the prepare script to filter content
+          bash .github/scripts/prepare-public-plugin.sh ./public-plugin-staging
 
-          echo "Split complete: $SPLIT_SHA"
-          echo "sha=$SPLIT_SHA" >> $GITHUB_OUTPUT
+          # Create a new branch with just the filtered content
+          cd public-plugin-staging
+          git init
+          git add .
+          git commit -m "Filtered plugin content for v${{ inputs.version || 'dev' }}"
 
-          # Count commits in split branch
-          COMMIT_COUNT=$(git rev-list --count plugin-public-split)
-          echo "commit_count=$COMMIT_COUNT" >> $GITHUB_OUTPUT
-          echo "Total commits in split: $COMMIT_COUNT"
+          COMMIT_SHA=$(git rev-parse HEAD)
+          echo "sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
+          echo "Prepared content: $COMMIT_SHA"
 
       - name: Preview changes (dry run)
         if: ${{ inputs.dry_run == true }}
         run: |
           echo "=== DRY RUN - No changes will be pushed ==="
           echo ""
-          echo "Source: packages/plugin/"
-          echo "Target: jrc1883/popkit-plugin (${{ inputs.target_branch || 'main' }})"
-          echo "Split SHA: ${{ steps.split.outputs.sha }}"
-          echo "Commits: ${{ steps.split.outputs.commit_count }}"
+          echo "Source: packages/plugin/ (filtered)"
+          echo "Target: jrc1883/popkit-claude (${{ inputs.target_branch || 'main' }})"
+          echo "Prepared SHA: ${{ steps.prepare.outputs.sha }}"
           echo ""
-          echo "Recent commits in split:"
-          git log --oneline -10 plugin-public-split
-          echo ""
-          echo "Files in split root:"
-          git ls-tree --name-only plugin-public-split | head -20
+          echo "Files in filtered content:"
+          ls -la public-plugin-staging/
 
       - name: Push to public repository
         if: ${{ inputs.dry_run != true }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.PLUGIN_PUBLIC_REPO_TOKEN }}
         run: |
           TARGET_BRANCH="${{ inputs.target_branch || 'main' }}"
-          echo "Pushing to jrc1883/popkit-plugin ($TARGET_BRANCH)..."
+          echo "Pushing to jrc1883/popkit-claude ($TARGET_BRANCH)..."
 
-          git push plugin-public plugin-public-split:$TARGET_BRANCH --force
+          cd public-plugin-staging
+          git remote add origin https://x-access-token:${GITHUB_TOKEN}@github.com/jrc1883/popkit-claude.git
+          git push origin HEAD:$TARGET_BRANCH --force
 
           echo "Push complete!"
 
       - name: Create version tag
         if: ${{ inputs.dry_run != true && inputs.version != '' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.PLUGIN_PUBLIC_REPO_TOKEN }}
         run: |
           VERSION="${{ inputs.version }}"
           echo "Creating tag: $VERSION"
 
-          # Create tag on the split branch
-          git tag "$VERSION" plugin-public-split
-
-          # Push tag to public repo
-          git push plugin-public "$VERSION"
+          cd public-plugin-staging
+          git tag "$VERSION"
+          git push origin "$VERSION"
 
           echo "Tag $VERSION pushed to public repo"
 
@@ -130,22 +136,19 @@ jobs:
         run: |
           VERSION="${{ inputs.version }}"
 
-          # Generate release notes from recent commits
-          NOTES=$(git log --oneline -20 plugin-public-split | head -10)
-
           # Create release in public repo
           gh release create "$VERSION" \
-            --repo jrc1883/popkit-plugin \
-            --title "PopKit $VERSION" \
+            --repo jrc1883/popkit-claude \
+            --title "PopKit Claude $VERSION" \
             --notes "## What's Changed
 
-          $NOTES
+          See CHANGELOG.md for details.
 
           ## Installation
 
           \`\`\`
-          /plugin marketplace add jrc1883/popkit-plugin
-          /plugin install popkit@popkit-plugin
+          /plugin marketplace add jrc1883/popkit-claude
+          /plugin install popkit@popkit-claude
           \`\`\`
 
           ---
@@ -157,10 +160,9 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Source | \`packages/plugin/\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| Target | \`jrc1883/popkit-plugin\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Source | \`packages/plugin/\` (filtered) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Target | \`jrc1883/popkit-claude\` |" >> $GITHUB_STEP_SUMMARY
           echo "| Branch | \`${{ inputs.target_branch || 'main' }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| Commits | ${{ steps.split.outputs.commit_count }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Version | ${{ inputs.version || 'none' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Dry Run | ${{ inputs.dry_run }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -168,7 +170,7 @@ jobs:
           if [ "${{ inputs.dry_run }}" != "true" ]; then
             echo "### Installation" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-            echo "/plugin marketplace add jrc1883/popkit-plugin" >> $GITHUB_STEP_SUMMARY
-            echo "/plugin install popkit@popkit-plugin" >> $GITHUB_STEP_SUMMARY
+            echo "/plugin marketplace add jrc1883/popkit-claude" >> $GITHUB_STEP_SUMMARY
+            echo "/plugin install popkit@popkit-claude" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           fi

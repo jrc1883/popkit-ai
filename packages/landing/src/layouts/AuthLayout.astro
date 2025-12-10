@@ -1,0 +1,37 @@
+---
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <title>{title} | PopKit</title>
+  </head>
+  <body class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-900">
+    <div class="w-full max-w-md px-4">
+      <div class="text-center mb-8">
+        <a href="/" class="inline-block">
+          <span class="text-3xl font-bold gradient-text">PopKit</span>
+        </a>
+      </div>
+      <slot />
+      <p class="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
+        By continuing, you agree to our <a href="/terms" class="text-popkit-purple hover:underline">Terms</a> and <a href="/privacy" class="text-popkit-purple hover:underline">Privacy Policy</a>.
+      </p>
+    </div>
+  </body>
+</html>
+
+<style is:global>
+  @import '../styles/global.css';
+</style>

@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | Term | Meaning |
 |------|---------|
 | **PopKit (this repo)** | Private monorepo where we develop everything |
-| **PopKit Plugin** | The Claude Code plugin users install (public: `jrc1883/popkit-plugin`) |
+| **PopKit Plugin** | The Claude Code plugin users install (public: `jrc1883/popkit-claude`) |
 | **PopKit Cloud** | Shared backend API (Cloudflare Workers) |
 | **PopKit Platform** | Future vision: model-agnostic orchestrator for multiple IDEs |
 
@@ -19,12 +19,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```
 jrc1883/popkit (PRIVATE - this repo)
-├── packages/plugin/     → Published to jrc1883/popkit-plugin (PUBLIC)
+├── packages/plugin/     → Published to jrc1883/popkit-claude (PUBLIC, declarative only)
 ├── packages/cloud/      → Deployed to Cloudflare Workers
 └── packages/cloud-*/    → Billing, docs, team features
 ```
 
-Users install the plugin via: `/plugin install popkit@popkit-plugin`
+Users install the plugin via: `/plugin install popkit@popkit-claude`
+
+### Public vs Private Split
+
+The public repo (`jrc1883/popkit-claude`) contains **only declarative content**:
+- Commands (markdown specs)
+- Skills (marketing stubs for premium, full prompts for free)
+- Agents (definitions and routing)
+- Output styles (templates)
+
+Implementation code stays **private** in this repo:
+- `packages/plugin/power-mode/` - Orchestration logic
+- `packages/plugin/templates/` - MCP server implementation
+- `packages/plugin/hooks/utils/` - Premium logic, pattern detection
+- `packages/cloud/` - All cloud API code
 
 ### Future Vision
 
@@ -252,8 +266,8 @@ See `packages/plugin/tests/hooks/` for 58 tests covering this pattern.
 To use popkit while developing popkit (chicken-and-egg), install it from the public plugin repo:
 
 ```
-/plugin marketplace add jrc1883/popkit-plugin
-/plugin install popkit@popkit-plugin
+/plugin marketplace add jrc1883/popkit-claude
+/plugin install popkit@popkit-claude
 ```
 
 Then **restart Claude Code** to load the plugin. After restart, `/popkit:` commands will be available.
@@ -265,7 +279,7 @@ PopKit uses a **split-repo model** to keep the core plugin open-source while kee
 | Repository | Visibility | Contents | Status |
 |------------|------------|----------|--------|
 | `jrc1883/popkit` | **Private** | Full monorepo (plugin + cloud + billing) | Active |
-| `jrc1883/popkit-plugin` | **Public** | Claude Code plugin | Active |
+| `jrc1883/popkit-claude` | **Public** | Claude Code plugin (declarative only) | Active |
 | `jrc1883/popkit-mcp` | **Public** | Universal MCP server | Future |
 | `jrc1883/popkit-codex` | **Public** | Codex integration | Future |
 | `jrc1883/popkit-gemini` | **Public** | Gemini integration | Future |
@@ -303,14 +317,14 @@ When ready to release plugin changes publicly:
 1. **Development**: Work in `packages/plugin/` within the private monorepo
 2. **Commit**: Changes stay in private repo until you explicitly publish
 3. **Publish**: `git subtree split` extracts plugin and pushes to public repo
-4. **Users Install**: From public `jrc1883/popkit-plugin` via marketplace
+4. **Users Install**: From public `jrc1883/popkit-claude` via marketplace
 
 ### Remote Setup
 
 The `plugin-public` remote is needed for publishing:
 
 ```bash
-git remote add plugin-public https://github.com/jrc1883/popkit-plugin.git
+git remote add plugin-public https://github.com/jrc1883/popkit-claude.git
 ```
 
 This is automatically configured when running `/popkit:git publish` for the first time.

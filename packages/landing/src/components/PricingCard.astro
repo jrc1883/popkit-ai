@@ -1,0 +1,54 @@
+---
+interface Props {
+  name: string;
+  price: string;
+  period?: string;
+  description: string;
+  features: string[];
+  cta: string;
+  ctaLink: string;
+  highlighted?: boolean;
+  badge?: string;
+}
+
+const { name, price, period = '/mo', description, features, cta, ctaLink, highlighted = false, badge } = Astro.props;
+---
+
+<div class={`card relative ${highlighted ? 'border-2 border-popkit-purple ring-4 ring-purple-500/20' : ''}`}>
+  {badge && (
+    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2">
+      <span class="bg-popkit-purple text-white text-xs font-semibold px-3 py-1 rounded-full">{badge}</span>
+    </div>
+  )}
+
+  <div class="text-center mb-6">
+    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">{name}</h3>
+    <div class="flex items-baseline justify-center gap-1">
+      <span class="text-4xl font-bold gradient-text">{price}</span>
+      {period && <span class="text-gray-500 dark:text-gray-400">{period}</span>}
+    </div>
+    <p class="text-gray-600 dark:text-gray-400 mt-2">{description}</p>
+  </div>
+
+  <ul class="space-y-3 mb-8">
+    {features.map((feature) => (
+      <li class="flex items-start gap-3">
+        <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <span class="text-gray-600 dark:text-gray-300">{feature}</span>
+      </li>
+    ))}
+  </ul>
+
+  <a
+    href={ctaLink}
+    class={`block w-full text-center py-3 rounded-lg font-semibold transition-colors ${
+      highlighted
+        ? 'bg-popkit-purple text-white hover:bg-purple-700'
+        : 'bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-slate-600'
+    }`}
+  >
+    {cta}
+  </a>
+</div>
