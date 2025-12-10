@@ -216,8 +216,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: packages/cloud/package-lock.json
+          # Note: cache disabled because package-lock.json is gitignored
+          # cache: 'npm'
+          # cache-dependency-path: packages/cloud/package-lock.json
 
       - name: Install dependencies
         run: |
