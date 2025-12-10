@@ -7,14 +7,13 @@
  * This module is optional - benchmarks can run without E2B using Docker fallback.
  */
 
-// Re-export POC for testing
-// Note: These are only available if @e2b/code-interpreter is installed
-
 /**
  * Check if E2B is available
  */
 export async function isE2BAvailable(): Promise<boolean> {
   try {
+    // Dynamic import to avoid requiring E2B package
+    // @ts-expect-error - E2B package is optional
     await import('@e2b/code-interpreter');
     return !!process.env.E2B_API_KEY;
   } catch {

@@ -59,3 +59,20 @@ export { SQLiteAdapter } from './storage/index.js';
 // Collector exports
 export { MetricsCollector } from './collector.js';
 export type { MetricsCollectorOptions, CompleteRunOptions } from './collector.js';
+
+// Runner exports
+export type {
+  SupportedTool,
+  ExecutionResult,
+  TestExecutionResult,
+  QualityExecutionResult,
+  RunnerConfig,
+  ToolRunner,
+  RunnerCapabilities,
+} from './runners/index.js';
+export { ClaudeRunner, BenchmarkExecutor, createExecutor } from './runners/index.js';
+export type { ClaudeRunnerConfig, ExecutorConfig, BenchmarkRunResult } from './runners/index.js';
+
+// E2B exports (optional)
+export { isE2BAvailable, defaultE2BConfig } from './e2b/index.js';
+export type { E2BConfig } from './e2b/index.js';

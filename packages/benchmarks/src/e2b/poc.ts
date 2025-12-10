@@ -18,6 +18,7 @@
 
 async function runPOC() {
   // Dynamic import to avoid requiring E2B for basic usage
+  // @ts-expect-error - E2B package is optional
   const { Sandbox } = await import('@e2b/code-interpreter');
 
   console.log('='.repeat(60));
