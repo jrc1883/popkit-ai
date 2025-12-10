@@ -4,6 +4,17 @@ All notable changes to PopKit are documented in this file.
 
 **Versioning:** PopKit reached `1.0.0` API stability on December 9, 2025.
 
+## [1.1.2] - December 10, 2025
+
+### Bug Fix: Hook Decision Type
+
+- **Fixed**: Hooks now return `"approve"` instead of `"allow"` for decision type
+  - Claude Code expects `"approve"` or `"block"` as valid decision types
+  - `"allow"` was causing "Unknown hook decision type" error
+  - Updated all 3 main hooks: pre-tool-use.py, user-prompt-submit.py, agent-orchestrator.py
+
+---
+
 ## [1.1.1] - December 10, 2025
 
 ### Bug Fix: Hook Path Resolution
