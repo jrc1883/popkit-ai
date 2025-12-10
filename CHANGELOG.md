@@ -4,6 +4,18 @@ All notable changes to PopKit are documented in this file.
 
 **Versioning:** PopKit reached `1.0.0` API stability on December 9, 2025.
 
+## [1.1.0] - December 10, 2025
+
+### Plugin Version Management
+
+- **Version Command**: New `/popkit:plugin version` subcommand for full release workflow
+  - Bump patch/minor/major versions with semantic versioning
+  - Auto-updates plugin.json, marketplace.json, and CHANGELOG.md
+  - Commits, pushes, and publishes to public repo in one command
+  - Supports `--dry-run`, `--no-publish`, `--no-push` options
+
+---
+
 ## [1.0.0] - December 9, 2025
 
 ### PopKit 1.0 - First Stable Release
