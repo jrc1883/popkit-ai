@@ -69,8 +69,7 @@ app.route('/v1/health', healthRoutes);
 // Auth routes (public - no auth required for signup/login)
 app.route('/v1/auth', authRoutes);
 
-// Billing webhook (public - uses Stripe signature verification)
-app.post('/v1/billing/webhook', billingRoutes);
+// Billing webhook is handled within billingRoutes with its own signature verification
 
 // =============================================================================
 // PROTECTED ROUTES (auth required)

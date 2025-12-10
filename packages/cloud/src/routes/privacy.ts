@@ -229,9 +229,9 @@ privacy.get('/settings', async (c) => {
 
   return c.json({
     anonymization_level: settings?.anonymization_level || 'moderate',
-    excluded_projects: JSON.parse(settings?.excluded_projects || '[]'),
-    excluded_patterns: JSON.parse(settings?.excluded_patterns || '[]'),
-    auto_delete_days: parseInt(settings?.auto_delete_days || '90', 10),
+    excluded_projects: JSON.parse(String(settings?.excluded_projects || '[]')),
+    excluded_patterns: JSON.parse(String(settings?.excluded_patterns || '[]')),
+    auto_delete_days: parseInt(String(settings?.auto_delete_days || '90'), 10),
     data_region: settings?.data_region || 'us',
   });
 });

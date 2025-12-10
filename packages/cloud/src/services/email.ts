@@ -43,7 +43,7 @@ export async function sendEmail(
       }),
     });
 
-    const result = await response.json();
+    const result = await response.json() as { id?: string; message?: string };
 
     if (!response.ok) {
       return { success: false, error: result.message || 'Failed to send email' };

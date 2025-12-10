@@ -295,13 +295,16 @@ billing.post('/webhook', async (c) => {
 
       // Send cancellation email
       if (c.env.RESEND_API_KEY) {
-        const endDate = new Date(subscription.current_period_end * 1000).toLocaleDateString(
+        // Access current_period_end via type assertion (Stripe types don't include all properties)
+        const periodEnd = (subscription as unknown as { current_period_end: number }).current_period_end;
+        const endDate = new Date(periodEnd * 1000).toLocaleDateString(
           'en-US',
           { month: 'long', day: 'numeric', year: 'numeric' }
         );
+        // Use the plan that was cancelled, not current tier (which is now 'free')
         const cancellationEmail = generateCancellationEmail({
           email: user.email,
-          plan: user.tier === 'team' ? 'Team' : 'Pro',
+          plan: 'Pro', // subscription was cancelled, so we know it was a paid plan
           endDate,
         });
         sendEmail(c.env.RESEND_API_KEY, cancellationEmail).catch((err) => {

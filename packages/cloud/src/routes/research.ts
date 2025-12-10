@@ -41,6 +41,8 @@ interface ResearchMetadata {
   project: string;
   userId: string;
   teamId?: string;
+  // Index signature for Upstash Vector metadata compatibility
+  [key: string]: unknown;
 }
 
 // =============================================================================

@@ -33,6 +33,8 @@ interface Team {
     shareInsightsAcrossProjects: boolean;
     patternVisibility: 'private' | 'team-only';
   };
+  // Index signature for Redis hgetall compatibility
+  [key: string]: unknown;
 }
 
 interface TeamMember {
@@ -60,6 +62,8 @@ interface TeamSession {
   }>;
   sharedInsights: number;
   filesModified: string[];
+  // Index signature for Redis hgetall compatibility
+  [key: string]: unknown;
 }
 
 // =============================================================================

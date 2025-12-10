@@ -40,6 +40,9 @@ interface ProjectInfo {
   registered_at: string;  // First registration timestamp
   popkit_version: string; // Plugin version
   platform: string;       // win32, darwin, linux
+
+  // Index signature for Redis hgetall compatibility
+  [key: string]: unknown;
 }
 
 /**

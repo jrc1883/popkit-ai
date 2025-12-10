@@ -58,6 +58,8 @@ export interface UsageData {
   bytesSent: number;
   bytesReceived: number;
   lastReset: string;
+  // Index signature for Redis hgetall compatibility
+  [key: string]: unknown;
 }
 
 export interface RateLimitResult {
