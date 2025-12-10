@@ -133,6 +133,45 @@ Benefits:
 - Consistent UX across all PopKit features
 - "Other" option always available for custom input
 
+### AskUserQuestion Enforcement (Issue #159)
+
+Following Anthropic's recommendation from the Hooks Guide:
+> "By encoding these rules as hooks rather than prompting instructions, you turn suggestions into app-level code that executes every time."
+
+Skills can define **required decision points** in `agents/config.json` under `skill_decisions`:
+
+```json
+"skill_decisions": {
+  "skills": {
+    "pop-project-init": {
+      "completion_decisions": [
+        {
+          "id": "next_action",
+          "question": "Project initialized. What would you like to do next?",
+          "header": "Next Step",
+          "options": [
+            {"label": "Analyze codebase", "description": "Run /popkit:project analyze"},
+            {"label": "Done for now", "description": "I'll explore on my own"}
+          ]
+        }
+      ]
+    }
+  }
+}
+```
+
+**How it works:**
+1. `pre-tool-use.py` tracks when a skill is invoked
+2. `post-tool-use.py` checks for pending completion decisions
+3. Reminders are output to stderr when decisions are pending
+4. Decisions are recorded when AskUserQuestion is used
+
+**Implementation files:**
+- `agents/config.json` → `skill_decisions` section (decision definitions)
+- `hooks/utils/skill_state.py` → State tracking and enforcement logic
+- `hooks/pre-tool-use.py` → Skill invocation tracking
+- `hooks/post-tool-use.py` → Pending decision reminders
+
 ## Repository Structure
 
 This is a **monorepo** with npm workspaces:

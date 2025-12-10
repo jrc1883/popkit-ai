@@ -4,6 +4,34 @@ All notable changes to PopKit are documented in this file.
 
 **Versioning:** PopKit reached `1.0.0` API stability on December 9, 2025.
 
+## [1.2.0] - December 10, 2025
+
+### Feature: AskUserQuestion Enforcement (Issue #159)
+
+Following Anthropic's recommendation from the Hooks Guide:
+> "By encoding these rules as hooks rather than prompting instructions, you turn suggestions into app-level code that executes every time."
+
+**New skill decision enforcement mechanism:**
+- Skills can now define required decision points in `agents/config.json` under `skill_decisions`
+- Pre-tool-use hook tracks when skills are invoked
+- Post-tool-use hook outputs reminders for pending completion decisions
+- Ensures consistent UX across all PopKit skills
+
+**Implementation:**
+- New `skill_decisions` section in `agents/config.json`
+- New `hooks/utils/skill_state.py` for state tracking
+- Updated `pre-tool-use.py` with skill invocation tracking
+- Updated `post-tool-use.py` with pending decision reminders
+
+**Skills with enforced decisions:**
+- `pop-project-init`: "What would you like to do next?"
+- `pop-brainstorming`: "Continue to implementation?"
+- `pop-writing-plans`: "Ready to execute?"
+- `pop-executing-plans`: "What's next?"
+- `pop-finish-branch`: "How to integrate?"
+
+---
+
 ## [1.1.2] - December 10, 2025
 
 ### Bug Fix: Hook Decision Type
