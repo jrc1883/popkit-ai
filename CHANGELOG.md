@@ -2,9 +2,67 @@
 
 All notable changes to PopKit are documented in this file.
 
-**Versioning:** PopKit uses `0.x.y` versioning until stable. Version `1.0.0` will mark API stability.
+**Versioning:** PopKit reached `1.0.0` API stability on December 9, 2025.
 
-## [0.9.13] - Current
+## [1.0.0] - December 9, 2025
+
+### PopKit 1.0 - First Stable Release
+
+This release marks the completion of all planned features for PopKit's initial stable release.
+
+#### Major Features
+
+**Benchmarking Framework (Epic #117)**
+- Complete benchmark task schema with Zod validation
+- 5 standard benchmarks: bouncing-balls, todo-app, api-client, binary-search-tree, bug-fix
+- Metrics collection system with SQLite storage adapter
+- E2B.dev integration research and proof-of-concept
+- Cross-tool benchmark runner (ClaudeRunner, BenchmarkExecutor)
+- Dashboard with Markdown and HTML report generators
+
+**Multi-Project Dashboard (#93)**
+- Global project registry with CRUD operations
+- Health score calculation (git, build, tests, issues, activity)
+- Auto-discovery of projects in common locations
+- Project tagging and filtering
+- `/popkit:dashboard` command with switch, refresh, discover subcommands
+
+**Cross-Project Pattern Sharing (#95)**
+- Privacy-first pattern anonymization
+- Cloud API client for community pattern sharing
+- Three sharing levels: private, team, community
+- Pattern types: command, error, workflow, config
+- `pop-pattern-share` skill for interactive sharing
+
+**Quality Assurance (Epic #104)**
+- TypeScript migration for cloud packages
+- Pytest test suite for hooks
+- Linting and code quality tooling
+- Value metrics system for Power Mode
+- Continuous workflow loop with issue close prompts
+
+#### Component Summary
+
+| Component | Count |
+|-----------|-------|
+| Tier 1 Agents | 11 |
+| Tier 2 Agents | 17 |
+| Feature Workflow Agents | 2 |
+| Skills | 43 |
+| Commands | 18 |
+| Hooks | 18 |
+| Output Styles | 15+ |
+
+#### Cloud Integration
+
+- Upstash Vector: Semantic agent search (30 agents indexed)
+- Upstash Redis: Power Mode, rate limiting, workflow status
+- Upstash QStash: Inter-agent communication
+- Upstash Workflow: Durable workflow orchestration
+
+---
+
+## [0.9.13]
 
 ### Power Mode Value Metrics (#108)
 

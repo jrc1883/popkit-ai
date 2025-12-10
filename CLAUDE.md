@@ -368,7 +368,7 @@ All plugin files are in `packages/plugin/`:
 
 ## Version History
 
-**Current Version:** 0.9.12 (Continuous Workflow Loop)
+**Current Version:** 1.0.0 (First Stable Release)
 
 See [CHANGELOG.md](CHANGELOG.md) for full version history.
 
