@@ -4,6 +4,18 @@ All notable changes to PopKit are documented in this file.
 
 **Versioning:** PopKit reached `1.0.0` API stability on December 9, 2025.
 
+## [1.1.1] - December 10, 2025
+
+### Bug Fix: Hook Path Resolution
+
+- **Fixed**: Hooks now use `${CLAUDE_PLUGIN_ROOT}` variable for absolute path resolution
+  - Resolves "can't open file" errors when plugin is installed from marketplace
+  - Hooks previously used relative paths that failed when executed from user's project directory
+  - All 18 hook commands updated to use portable absolute paths
+- **Fallback**: Python hooks already use `Path(__file__)` for self-resolution as safety net
+
+---
+
 ## [1.1.0] - December 10, 2025
 
 ### Plugin Version Management
