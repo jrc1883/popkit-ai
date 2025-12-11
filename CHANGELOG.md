@@ -2,9 +2,34 @@
 
 All notable changes to PopKit are documented in this file.
 
-**Versioning:** PopKit reached `1.0.0` API stability on December 9, 2025.
+**Versioning:** PopKit uses semantic versioning. Currently in preview (0.x) until stable public launch.
 
-## [1.2.0] - December 10, 2025
+## [0.1.0] - December 11, 2025
+
+### Version Rollback to Preview Status
+
+**Breaking Change:** Version rolled back from 1.2.0 to 0.1.0 to correctly signal preview status.
+
+**Rationale:**
+- PopKit is not yet stable for production use
+- 1.x signals "public API stable" which isn't accurate
+- 0.x better communicates "preview" status
+- Many features still being refined before stable release
+
+**Version Scheme Going Forward:**
+```
+0.1.0 - Initial public preview (current)
+0.2.0 - Major feature additions (GitHub polish)
+0.3.0 - Premium features
+0.9.0 - Release candidate
+1.0.0 - Stable public launch
+```
+
+All features from previous 1.x releases are included in this version.
+
+---
+
+## [1.2.0] - December 10, 2025 (Superseded by 0.1.0)
 
 ### Feature: AskUserQuestion Enforcement (Issue #159)
 
