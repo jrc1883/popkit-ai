@@ -1,0 +1,34 @@
+# Release Drafter
+#
+# Automatically drafts release notes based on merged PRs and commits.
+# Groups changes by type (features, bug fixes, docs, etc.)
+#
+# Part of Issue #179 (Add GitHub Actions workflows)
+
+name: Release Drafter
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    types: [opened, reopened, synchronize]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-release-draft:
+    name: Update Release Draft
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Draft release notes
+        uses: release-drafter/release-drafter@v6
+        with:
+          config-name: release-drafter.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
