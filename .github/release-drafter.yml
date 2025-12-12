@@ -64,30 +64,31 @@ categories:
       - 'breaking-change'
 
 # Auto-labeler based on commit/PR title
+# Simplified patterns for better compatibility
 autolabeler:
   - label: 'enhancement'
     title:
-      - '/^feat(\(.+\))?:/i'
-      - '/^feature(\(.+\))?:/i'
+      - '/^feat/i'
+      - '/^feature/i'
   - label: 'bug'
     title:
-      - '/^fix(\(.+\))?:/i'
-      - '/^bugfix(\(.+\))?:/i'
+      - '/^fix/i'
+      - '/^bugfix/i'
   - label: 'documentation'
     title:
-      - '/^docs(\(.+\))?:/i'
+      - '/^docs/i'
   - label: 'refactor'
     title:
-      - '/^refactor(\(.+\))?:/i'
+      - '/^refactor/i'
   - label: 'chore'
     title:
-      - '/^chore(\(.+\))?:/i'
+      - '/^chore/i'
   - label: 'ci'
     title:
-      - '/^ci(\(.+\))?:/i'
+      - '/^ci/i'
   - label: 'performance'
     title:
-      - '/^perf(\(.+\))?:/i'
+      - '/^perf/i'
   - label: 'breaking-change'
     title:
       - '/!:/i'
@@ -140,6 +141,7 @@ sort-by: merge_date
 sort-direction: descending
 
 # Replacers for cleaning up commit messages
+# Note: Using simpler pattern syntax
 replacers:
-  - search: '/\s*\(#\d+\)$/g'
+  - search: '/\(#\d+\)/'
     replace: ''
