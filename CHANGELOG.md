@@ -4,6 +4,25 @@ All notable changes to PopKit are documented in this file.
 
 **Versioning:** PopKit uses semantic versioning. Currently in preview (0.x) until stable public launch.
 
+## [0.2.1] - December 12, 2025
+
+### Bug Fixes (Issue #204)
+
+- **Power Mode State Path**: Standardized all references to `.claude/popkit/power-mode-state.json`
+  - Fixed inconsistent paths in `stream_manager.py`, `quality-gate.py`, `QUICKSTART.md`
+- **Disabled Broken Hook**: `agent-context-integration.py` was importing non-existent module
+  - Added deprecation notice; functionality provided by `semantic_router.py`
+- **Test Expectations**: Updated component counts (62 skills, 52 utils, 24 commands)
+
+### Improvements
+
+- **Feedback Hook Enabled** (#91): Wired `feedback_hook.py` into hooks.json
+- **issue_list.py Wired**: Connected to `/popkit:issue list` command documentation
+- **Assessment Skills** (#192): Added concrete standards for assessor agents
+- **IP Protection** (#193): Added IP scanning skill
+
+---
+
 ## [0.2.0] - December 12, 2025
 
 ### Power Mode Architecture Simplification (Issue #191)
