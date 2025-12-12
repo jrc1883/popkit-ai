@@ -136,8 +136,8 @@ template: |
 change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
 change-title-escapes: '\<*_&'
 
-# Sort changes by merge date
-sort-by: merge_date
+# Sort changes by merge date (valid values: merged_at, title)
+sort-by: merged_at
 sort-direction: descending
 
 # Replacers for cleaning up commit messages
