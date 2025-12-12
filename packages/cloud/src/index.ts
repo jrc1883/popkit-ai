@@ -29,6 +29,7 @@ import authRoutes from './routes/auth';
 import billingRoutes from './routes/billing';
 import researchRoutes from './routes/research';
 import premiumRoutes from './routes/premium';
+import waitlistRoutes from './routes/waitlist';
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -68,6 +69,9 @@ app.route('/v1/health', healthRoutes);
 
 // Auth routes (public - no auth required for signup/login)
 app.route('/v1/auth', authRoutes);
+
+// Waitlist routes (public - no auth required for signup)
+app.route('/v1/waitlist', waitlistRoutes);
 
 // Billing webhook is handled within billingRoutes with its own signature verification
 

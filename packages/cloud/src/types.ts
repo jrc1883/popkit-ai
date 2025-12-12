@@ -89,6 +89,10 @@ export interface Env {
   STRIPE_PRICE_TEAM?: string;
   // Email - Resend (Issue #133)
   RESEND_API_KEY?: string;
+  // Waitlist KV (pre-launch email capture)
+  WAITLIST_KV: KVNamespace;
+  // D1 Database (optional)
+  DB?: D1Database;
 }
 
 // =============================================================================

@@ -24,3 +24,14 @@ ENVIRONMENT = "development"
 free_requests_per_minute = 100
 pro_requests_per_minute = 1000
 team_requests_per_minute = 10000
+
+# KV Namespaces
+[[kv_namespaces]]
+binding = "WAITLIST_KV"
+id = "your-waitlist-kv-id"  # Replace with actual KV namespace ID after creation
+
+# D1 Database (optional, for waitlist analytics)
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "popkit-db"
+# database_id = "your-d1-database-id"
