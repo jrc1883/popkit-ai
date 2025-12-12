@@ -86,8 +86,8 @@ PopKit exists to **orchestrate Claude Code's full power** for real-world develop
    - Tier 1: Always-active core agents (11)
    - Tier 2: On-demand specialists activated by triggers (17)
    - Feature Workflow: 7-phase development agents (2)
-   - Skills: 43 reusable skills
-   - Commands: 18 slash commands
+   - Skills: 55 reusable skills
+   - Commands: 24 slash commands
    <!-- AUTO-GEN:TIER-COUNTS END -->
 
 5. **Project-Specific Customization ("Chain Combos")**
@@ -186,16 +186,18 @@ packages/
       config.json          Agent routing, workflows, confidence thresholds
       tier-1-always-active/  11 core agents
       tier-2-on-demand/    17 specialized agents
-      feature-workflow/    3 agents for 7-phase feature development
-    skills/                36 reusable skills (SKILL.md format)
-    commands/              15 slash commands
-    hooks/                 18 Python hooks (JSON stdin/stdout)
+      feature-workflow/    2 agents for 7-phase feature development
+    skills/                55 reusable skills (SKILL.md format)
+    commands/              24 slash commands
+    hooks/                 23 Python hooks (JSON stdin/stdout)
       hooks.json           Hook configuration
-      utils/               24 utility modules
+      utils/               51 utility modules
     output-styles/         15+ output format templates
     power-mode/            Multi-agent orchestration
     templates/mcp-server/  MCP server generator template
     tests/                 Plugin self-test definitions
+    assets/                Visual assets and VHS tapes
+    scripts/               Utility scripts (sync-readme.py)
   cloud/                   PopKit Cloud API (Cloudflare Workers)
     src/                   API routes and middleware
     wrangler.toml          Cloudflare configuration
@@ -424,12 +426,17 @@ All plugin files are in `packages/plugin/`:
 | `packages/plugin/hooks/hooks.json` | Hook event configuration |
 | `packages/plugin/hooks/pre-tool-use.py` | Safety checks before tool execution |
 | `packages/plugin/hooks/post-tool-use.py` | Cleanup and validation after tools |
+| `packages/plugin/hooks/utils/skill_state.py` | Skill tracking and AskUserQuestion enforcement |
+| `packages/plugin/hooks/utils/skill_context.py` | Skill-to-skill context handoff |
+| `packages/plugin/hooks/utils/context_storage.py` | File/Upstash storage with Redis Streams |
 | `packages/plugin/power-mode/coordinator.py` | Multi-agent mesh network coordinator |
 | `packages/plugin/power-mode/statusline.py` | Visual Power Mode status line display |
-| `packages/plugin/hooks/utils/` | 24 utility modules (embeddings, routing, etc.) |
+| `packages/plugin/hooks/utils/` | 51 utility modules (embeddings, routing, etc.) |
+| `packages/plugin/scripts/sync-readme.py` | Auto-generate README sections |
 | `packages/cloud/src/index.ts` | Cloud API entry point |
 | `packages/cloud/wrangler.toml` | Cloudflare Workers configuration |
 | `.github/workflows/publish-plugin.yml` | GitHub Actions for public repo sync |
+| `.github/workflows/sync-readme.yml` | Auto-sync README on changes |
 <!-- AUTO-GEN:KEY-FILES END -->
 
 ## Version History
