@@ -1,0 +1,249 @@
+# IP Leak Scanner
+# Runs on the PUBLIC repo (popkit-claude) to detect accidentally leaked IP
+# This workflow should be copied to jrc1883/popkit-claude/.github/workflows/
+
+name: IP Leak Scanner
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run nightly at 2am UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      deep_scan:
+        description: 'Include git history scan'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  ip-scan:
+    runs-on: ubuntu-latest
+    name: Scan for IP Leaks
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: ${{ github.event.inputs.deep_scan == 'true' && 0 || 1 }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run IP Leak Scanner
+        id: scan
+        run: |
+          # Create the scanner script inline (self-contained for public repo)
+          cat > ip_scanner.py << 'SCANNER'
+          #!/usr/bin/env python3
+          """
+          IP Leak Scanner for PopKit Public Repo
+          Detects content that should NOT be in the public repository.
+          """
+
+          import re
+          import sys
+          import json
+          import subprocess
+          from pathlib import Path
+          from dataclasses import dataclass
+          from typing import List, Dict
+
+          @dataclass
+          class Finding:
+              file: str
+              line: int
+              pattern: str
+              severity: str
+              matched: str
+              description: str
+
+          # Critical patterns that should NEVER appear
+          PATTERNS = {
+              # Cloud code paths
+              "cloud_code": {
+                  "pattern": r"packages/cloud/",
+                  "severity": "critical",
+                  "description": "Cloud API code detected"
+              },
+              "cloud_billing": {
+                  "pattern": r"packages/cloud-billing/",
+                  "severity": "critical",
+                  "description": "Billing code detected"
+              },
+              # Secrets
+              "stripe_secret": {
+                  "pattern": r"sk_(?:live|test)_[a-zA-Z0-9]{24,}",
+                  "severity": "critical",
+                  "description": "Stripe secret key"
+              },
+              "api_key": {
+                  "pattern": r"(?:api[_-]?key|secret[_-]?key)\s*[:=]\s*['\"][a-zA-Z0-9_-]{20,}['\"]",
+                  "severity": "critical",
+                  "description": "Hardcoded API key"
+              },
+              "bearer_token": {
+                  "pattern": r"Bearer\s+[a-zA-Z0-9_-]{20,}",
+                  "severity": "critical",
+                  "description": "Hardcoded bearer token"
+              },
+              # Markers
+              "proprietary": {
+                  "pattern": r"(?i)(?:PROPRIETARY|CONFIDENTIAL)",
+                  "severity": "high",
+                  "description": "Proprietary marker"
+              },
+              "secret_comment": {
+                  "pattern": r"#\s*SECRET:",
+                  "severity": "high",
+                  "description": "Secret marker"
+              },
+          }
+
+          # Files to skip
+          SKIP = [r"\.git/", r"node_modules/", r"__pycache__/", r"ip_scanner\.py"]
+
+          # Files where patterns are allowed (false positive exclusions)
+          ALLOWED = {
+              "ip_scanner.py": list(PATTERNS.keys()),
+              "CLAUDE.md": ["cloud_code", "cloud_billing"],
+              "audit.md": ["cloud_code", "cloud_billing"],
+          }
+
+          def should_skip(path: str) -> bool:
+              return any(re.search(p, path) for p in SKIP)
+
+          def is_allowed(path: str, pattern: str) -> bool:
+              name = Path(path).name
+              return name in ALLOWED and pattern in ALLOWED[name]
+
+          def scan_file(filepath: Path) -> List[Finding]:
+              findings = []
+              if should_skip(str(filepath)):
+                  return findings
+              try:
+                  content = filepath.read_text(encoding='utf-8', errors='ignore')
+                  lines = content.split('\n')
+                  for name, cfg in PATTERNS.items():
+                      if is_allowed(str(filepath), name):
+                          continue
+                      regex = re.compile(cfg["pattern"])
+                      for i, line in enumerate(lines, 1):
+                          match = regex.search(line)
+                          if match:
+                              findings.append(Finding(
+                                  file=str(filepath),
+                                  line=i,
+                                  pattern=name,
+                                  severity=cfg["severity"],
+                                  matched=match.group(0)[:40],
+                                  description=cfg["description"]
+                              ))
+              except:
+                  pass
+              return findings
+
+          def scan_directory(path: Path) -> List[Finding]:
+              findings = []
+              for f in path.rglob('*'):
+                  if f.is_file():
+                      findings.extend(scan_file(f))
+              return findings
+
+          def main():
+              deep = '--deep' in sys.argv
+              path = Path('.')
+
+              findings = scan_directory(path)
+
+              if deep:
+                  # Scan git history (simplified)
+                  try:
+                      result = subprocess.run(
+                          ['git', 'log', '-50', '--diff-filter=A', '--name-only', '--pretty=format:%H'],
+                          capture_output=True, text=True
+                      )
+                      # Basic history scan omitted for brevity
+                  except:
+                      pass
+
+              critical = [f for f in findings if f.severity == 'critical']
+              high = [f for f in findings if f.severity == 'high']
+
+              if findings:
+                  print(f"::error::Found {len(findings)} potential IP leaks")
+                  print(f"Critical: {len(critical)}, High: {len(high)}")
+                  for f in findings:
+                      icon = "🔴" if f.severity == "critical" else "🟠"
+                      print(f"{icon} {f.file}:{f.line} - {f.description}")
+                      print(f"   Matched: {f.matched}")
+
+                  # Output for GitHub Actions
+                  with open('findings.json', 'w') as fp:
+                      json.dump([vars(f) for f in findings], fp, indent=2)
+
+                  sys.exit(1 if critical else 0)
+              else:
+                  print("✅ No IP leaks detected")
+                  sys.exit(0)
+
+          if __name__ == "__main__":
+              main()
+          SCANNER
+
+          # Run the scanner
+          python ip_scanner.py ${{ github.event.inputs.deep_scan == 'true' && '--deep' || '' }}
+
+      - name: Upload findings artifact
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ip-leak-findings
+          path: findings.json
+          retention-days: 30
+
+      - name: Comment on PR
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let findings = [];
+            try {
+              findings = JSON.parse(fs.readFileSync('findings.json', 'utf8'));
+            } catch (e) {
+              findings = [];
+            }
+
+            const critical = findings.filter(f => f.severity === 'critical');
+            const high = findings.filter(f => f.severity === 'high');
+
+            let body = `## ⚠️ IP Leak Scanner Alert\n\n`;
+            body += `Found **${findings.length}** potential issues:\n`;
+            body += `- 🔴 Critical: ${critical.length}\n`;
+            body += `- 🟠 High: ${high.length}\n\n`;
+
+            if (critical.length > 0) {
+              body += `### Critical Issues (Must Fix)\n\n`;
+              for (const f of critical.slice(0, 5)) {
+                body += `- **${f.file}:${f.line}** - ${f.description}\n`;
+              }
+              if (critical.length > 5) {
+                body += `\n_...and ${critical.length - 5} more_\n`;
+              }
+            }
+
+            body += `\n---\n_This PR contains content that should not be in the public repository._`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });

@@ -1,0 +1,82 @@
+# PopKit Repository Attributes
+# Controls what gets included in git subtree split / archive export
+
+# =============================================================================
+# EXPORT IGNORE - Never include in public repo (via git subtree split)
+# =============================================================================
+
+# Cloud packages (proprietary backend code)
+packages/cloud/** export-ignore
+packages/cloud-billing/** export-ignore
+packages/cloud-team/** export-ignore
+packages/cloud-scripts/** export-ignore
+packages/cloud-docs/** export-ignore
+
+# Environment files (may contain secrets)
+.env export-ignore
+.env.* export-ignore
+# Note: .env.example is NOT ignored (it's safe to share)
+
+# IDE and local config
+.idea/** export-ignore
+.vscode/** export-ignore
+*.code-workspace export-ignore
+
+# Development artifacts
+*.log export-ignore
+*.tmp export-ignore
+.cache/** export-ignore
+
+# Root-level monorepo config (not needed in plugin)
+turbo.json export-ignore
+.turbo/** export-ignore
+
+# This file itself (not needed in plugin-only repo)
+.gitattributes export-ignore
+
+# =============================================================================
+# LINE ENDINGS
+# =============================================================================
+
+# Default to auto line endings
+* text=auto
+
+# Force LF for shell scripts and Python
+*.sh text eol=lf
+*.py text eol=lf
+
+# Force LF for config files
+*.json text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.md text eol=lf
+*.toml text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+
+# =============================================================================
+# DIFF ATTRIBUTES
+# =============================================================================
+
+# Markdown - use plain text diff
+*.md diff=markdown
+
+# JSON - use plain text diff
+*.json diff=json
+
+# Python - use python syntax for diff
+*.py diff=python
+
+# TypeScript/JavaScript
+*.ts diff=typescript
+*.tsx diff=typescript
+*.js diff=javascript
+*.jsx diff=javascript
