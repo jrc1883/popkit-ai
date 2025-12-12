@@ -15,6 +15,7 @@ packages/*/package-lock.json
 # IDE
 .idea/
 .vscode/
+.obsidian/
 *.swp
 *.swo
 
@@ -52,3 +53,6 @@ packages/plugin/power-mode/.claude/
 
 # Local Claude Code project state (created when using PopKit on this repo)
 .claude/
+
+# Runtime logs
+logs/
