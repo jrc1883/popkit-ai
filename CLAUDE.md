@@ -86,7 +86,7 @@ PopKit exists to **orchestrate Claude Code's full power** for real-world develop
    - Tier 1: Always-active core agents (11)
    - Tier 2: On-demand specialists activated by triggers (17)
    - Feature Workflow: 7-phase development agents (2)
-   - Skills: 55 reusable skills
+   - Skills: 62 reusable skills
    - Commands: 24 slash commands
    <!-- AUTO-GEN:TIER-COUNTS END -->
 
@@ -187,11 +187,11 @@ packages/
       tier-1-always-active/  11 core agents
       tier-2-on-demand/    17 specialized agents
       feature-workflow/    2 agents for 7-phase feature development
-    skills/                55 reusable skills (SKILL.md format)
+    skills/                62 reusable skills (SKILL.md format)
     commands/              24 slash commands
     hooks/                 23 Python hooks (JSON stdin/stdout)
       hooks.json           Hook configuration
-      utils/               51 utility modules
+      utils/               52 utility modules
     output-styles/         15+ output format templates
     power-mode/            Multi-agent orchestration
     templates/mcp-server/  MCP server generator template
