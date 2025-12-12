@@ -28,7 +28,7 @@ team_requests_per_minute = 10000
 # KV Namespaces
 [[kv_namespaces]]
 binding = "WAITLIST_KV"
-id = "your-waitlist-kv-id"  # Replace with actual KV namespace ID after creation
+id = "4f0137d8bc334b4b8a7d20098d674d0f"
 
 # D1 Database (optional, for waitlist analytics)
 # [[d1_databases]]
