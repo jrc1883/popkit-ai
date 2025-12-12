@@ -143,25 +143,36 @@ Templates for consistent formatting:
 
 Multi-agent orchestration for complex tasks.
 
-### Two Options
+### Two Tiers
 
-| Mode | Setup | Agents | Best For |
-|------|-------|--------|----------|
-| **File-Based** | None | 2-3 | Development, learning |
-| **Redis** | Docker | 6+ | Production, full power |
+| Tier | Backend | Setup | Max Agents |
+|------|---------|-------|------------|
+| **Pro** | Upstash Cloud | Set env vars | 6+ parallel |
+| **Free** | File-based | None | 2-3 sequential |
+
+**No Docker or local Redis required.**
 
 ### Usage
 
 ```bash
-# File-based (auto-activates, zero setup)
+# Check current mode
+/popkit:power status
+
+# Start a Power Mode session
 /popkit:power start "Build user authentication"
 
-# Redis (full orchestration)
-/popkit:power init start    # Start Redis container
-/popkit:power start "Build user authentication"
-/popkit:power status        # Check progress
-/popkit:power stop          # End session
+# Stop session
+/popkit:power stop
 ```
+
+### Pro Setup (Upstash)
+
+```bash
+export UPSTASH_REDIS_REST_URL="https://your-instance.upstash.io"
+export UPSTASH_REDIS_REST_TOKEN="your-token"
+```
+
+Get free credentials at [upstash.com](https://upstash.com).
 
 ### Features
 
