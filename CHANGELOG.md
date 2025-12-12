@@ -4,6 +4,48 @@ All notable changes to PopKit are documented in this file.
 
 **Versioning:** PopKit uses semantic versioning. Currently in preview (0.x) until stable public launch.
 
+## [0.2.0] - December 12, 2025
+
+### Power Mode Architecture Simplification (Issue #191)
+
+**BREAKING CHANGE:** Removed local Redis/Docker dependency entirely.
+
+- **Zero-Dependency Architecture**:
+  - Pro tier: Upstash Cloud Redis (set env vars, no Docker)
+  - Free tier: File-based coordination (zero setup)
+  - No local Redis, no Docker requirement
+- **Removed Files**:
+  - `power-mode/docker-compose.yml` - Deleted
+  - `power-mode/setup-redis.py` - Deleted
+- **Simplified Mode Selection**:
+  - Removed `PowerMode.REDIS` enum value
+  - Priority now: native → upstash → file
+- **Upstash Adapter Cleanup**:
+  - Removed `LocalRedisClient` class
+  - Removed `LocalPubSub` class
+  - `get_redis_client()` now Upstash-only (no parameters)
+
+### README Redesign (Issue #184)
+
+- **New Plugin README** (`packages/plugin/README.md`):
+  - Hero banner with logo
+  - Badges (version, license, Claude Code Plugin)
+  - Before/After demo GIF placeholder
+  - Progressive disclosure with collapsible sections
+  - Auto-generated command and agent lists
+  - FAQ section
+- **Auto-Sync Markers**: `<!-- AUTO-GEN:COMMANDS -->` and `<!-- AUTO-GEN:AGENTS -->` for automated updates
+- **Research Document**: `docs/research/readme-overhaul-research.md` with competitor analysis
+
+### Other Improvements
+
+- **Skill-to-Skill Context Handoff** (#188): Skills can pass context to subsequent skills
+- **Active Skills Indicator**: Status line shows currently active skills
+- **Windows Compatibility**: Replaced emojis with ASCII in premium features
+- **Pre-Launch Waitlist**: Email capture for premium feature interest
+
+---
+
 ## [0.1.0] - December 11, 2025
 
 ### Version Rollback to Preview Status
