@@ -235,7 +235,7 @@ Configured per-agent in `packages/plugin/agents/config.json`.
 **Flags:** `-T`, `--thinking`, `--no-thinking`, `--think-budget N`
 
 - Sonnet: Enabled by default (10k tokens)
-- Opus: Disabled by default, use `-T` to enable
+- Opus: Enabled by default (10k tokens) - as of Claude Code 2.0.67
 - Haiku: Enabled by default (5k tokens)
 
 ### PDF Support
