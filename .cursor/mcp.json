@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "popkit": {
+      "command": "node",
+      "args": ["C:\\Users\\Josep\\onedrive\\documents\\elshaddai\\popkit\\packages\\universal-mcp\\dist\\index.js"],
+      "env": {
+        "POPKIT_CLIENT": "cursor"
+      }
+    }
+  }
+}
