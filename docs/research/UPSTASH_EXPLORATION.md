@@ -941,6 +941,57 @@ Workflow's Agents API is only available in JavaScript/TypeScript SDK. Python par
 
 ---
 
-**Document Version:** 1.1
-**Last Updated:** 2025-12-08
+---
+
+## ADDENDUM: Upstash Search (Full-Text Search)
+
+**Added:** 2025-12-13
+**Status:** Discovery
+
+### What is Upstash Search?
+
+Upstash Search is a **serverless full-text search database** that complements Vector (semantic embeddings). While Vector finds conceptually similar content, Search provides traditional keyword-based full-text search with metadata filtering.
+
+### Search vs Vector Comparison
+
+| Feature | Upstash Search | Upstash Vector |
+|---------|----------------|----------------|
+| **Query Type** | Full-text (BM25-style) | Semantic (embeddings) |
+| **Best For** | Exact keyword matches | Conceptual similarity |
+| **Use Case** | "Find documents containing 'auth middleware'" | "Find code related to authentication" |
+| **Metadata** | Yes, with filtering | Yes, with filtering |
+| **Reranking** | Built-in advanced reranking | Distance-based scoring |
+| **Index Type** | Inverted index | Vector index (DiskANN) |
+
+### Potential PopKit Use Cases
+
+1. **Exact Code Search**: When users want precise keyword matches
+   - "Find all files containing `useEffect`"
+   - "Search for `console.log` debugging statements"
+
+2. **GitHub Issue/PR Search**: Full-text search across issue history
+   - Better for exact terms than semantic similarity
+
+3. **Changelog Search**: Find specific version mentions or feature names
+
+4. **Hybrid Search**: Combine Search + Vector
+   - Search for keyword matches first
+   - Then use Vector for semantic expansion
+   - Rerank combined results
+
+### Recommendation
+
+**Priority:** 🟡 Medium - Useful addition but Vector covers most semantic needs
+
+**When to Add:**
+- If users request exact keyword search (currently using grep)
+- For PopKit Cloud marketplace search (when it exists)
+- For hybrid search pipelines (Search + Vector fusion)
+
+**Action:** Monitor user feedback; add if keyword search is commonly requested.
+
+---
+
+**Document Version:** 1.2
+**Last Updated:** 2025-12-13
 **Author:** Claude Code (popkit exploration task)
