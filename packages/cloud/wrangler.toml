@@ -3,8 +3,13 @@ main = "src/index.ts"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 
+# Custom domain route (Issue #221)
+routes = [
+  { pattern = "api.thehouseofdeals.com/*", zone_name = "thehouseofdeals.com" }
+]
+
 [vars]
-ENVIRONMENT = "development"
+ENVIRONMENT = "production"
 
 # Upstash Redis connection (set via secrets)
 # wrangler secret put UPSTASH_REDIS_REST_URL
