@@ -26,6 +26,32 @@ jrc1883/popkit (PRIVATE - this repo)
 
 Users install the plugin via: `/plugin install popkit@popkit-claude`
 
+### Cloud Infrastructure
+
+**Live endpoints:**
+- `api.thehouseofdeals.com` → PopKit Cloud API (Cloudflare Worker)
+
+**Stack:**
+| Service | Purpose | Status |
+|---------|---------|--------|
+| Cloudflare Workers | API hosting, edge computing | Active |
+| Upstash Redis | Pattern storage, Power Mode coordination | Active |
+| Upstash Vector | Semantic search, embeddings | Active |
+| Upstash QStash | Scheduled jobs (future) | Available |
+
+**Cloudflare Skills:**
+- `pop-cloudflare-worker-deploy` - Deploy Workers with custom domains
+- `pop-cloudflare-pages-deploy` - Deploy static sites to Pages
+- `pop-cloudflare-dns-manage` - DNS record management
+
+**Environment Variables (Wrangler Secrets):**
+```bash
+wrangler secret put UPSTASH_REDIS_REST_URL
+wrangler secret put UPSTASH_REDIS_REST_TOKEN
+wrangler secret put UPSTASH_VECTOR_REST_URL
+wrangler secret put UPSTASH_VECTOR_REST_TOKEN
+```
+
 ### Public vs Private Split
 
 The public repo (`jrc1883/popkit-claude`) contains **only declarative content**:
@@ -86,7 +112,7 @@ PopKit exists to **orchestrate Claude Code's full power** for real-world develop
    - Tier 1: Always-active core agents (11)
    - Tier 2: On-demand specialists activated by triggers (17)
    - Feature Workflow: 7-phase development agents (2)
-   - Skills: 62 reusable skills
+   - Skills: 66 reusable skills
    - Commands: 24 slash commands
    <!-- AUTO-GEN:TIER-COUNTS END -->
 
@@ -187,11 +213,11 @@ packages/
       tier-1-always-active/  11 core agents
       tier-2-on-demand/    17 specialized agents
       feature-workflow/    2 agents for 7-phase feature development
-    skills/                62 reusable skills (SKILL.md format)
+    skills/                66 reusable skills (SKILL.md format)
     commands/              24 slash commands
     hooks/                 23 Python hooks (JSON stdin/stdout)
       hooks.json           Hook configuration
-      utils/               52 utility modules
+      utils/               60+ utility modules
     output-styles/         15+ output format templates
     power-mode/            Multi-agent orchestration
     templates/mcp-server/  MCP server generator template
@@ -329,15 +355,20 @@ Each public repo is populated via `git subtree split` from the corresponding `pa
 
 ### Milestone Strategy
 
-| Milestone | Purpose | Issues |
-|-----------|---------|--------|
-| `v1.0.0` | Claude Code plugin ready for community marketplace | phase:now, phase:next |
-| `v1.1.0` | Post-launch polish and user feedback integration | Created as needed |
-| Future | Multi-model, MCP server, platform expansion | phase:future (no milestone) |
+| Milestone | Purpose | Key Issues |
+|-----------|---------|------------|
+| `v1.0.0` | Claude Code plugin ready for marketplace | #2 (Marketplace), #224 (Validation) |
+| `v2.0.0` | Multi-model platform expansion | #112 (Universal MCP), #113 (Codex), #114 (Gemini), #115 (Orchestration) |
+
+**v2.0.0 Roadmap:**
+1. Google Gemini Integration (#114)
+2. OpenAI Codex Integration (#113)
+3. Universal MCP Server (#112)
+4. Intelligent Orchestration Layer (#115)
 
 Labels:
 - **Priority**: `P0-critical`, `P1-high`, `P2-medium`, `P3-low`
-- **Phase**: `phase:now` (current), `phase:next` (queued), `phase:future` (post-1.0)
+- **Phase**: `phase:now` (current), `phase:next` (queued), `phase:future` (v2.0+)
 
 ### Publishing Plugin to Public Repo
 
@@ -439,9 +470,55 @@ All plugin files are in `packages/plugin/`:
 | `.github/workflows/sync-readme.yml` | Auto-sync README on changes |
 <!-- AUTO-GEN:KEY-FILES END -->
 
+## Analytics and Observability
+
+### Local Session Tracking
+
+PopKit can track session data locally for analysis:
+
+```
+~/.popkit/
+├── sessions/           # Session logs
+│   └── {date}-{id}.json
+├── patterns/           # Learned patterns
+│   └── learned-patterns.json
+├── metrics/            # Usage statistics
+│   └── usage-stats.json
+└── config/             # User preferences
+    └── settings.json
+```
+
+### Cloud Analytics (Premium)
+
+When connected to PopKit Cloud:
+- Session duration and commands used
+- Agent routing frequency
+- Error rates and recovery patterns
+- Cross-project pattern learning
+
+### Sandbox Testing
+
+Test PopKit workflows in isolated environments:
+1. Use `/popkit:worktree create` for git isolation
+2. Test in separate projects to validate behavior
+3. Capture logs with `/popkit:bug report` for analysis
+4. Compare sessions using local metrics
+
+### Quality Validation
+
+Run comprehensive validation before releases:
+```bash
+/popkit:assess all          # Run all assessors
+/popkit:plugin test         # Test plugin integrity
+/popkit:debug routing       # Verify agent routing
+```
+
+See `docs/plans/2025-12-13-v1-validation-audit-plan.md` for full audit strategy.
+
 ## Version History
 
-**Current Version:** 1.0.0 (First Stable Release)
+**Current Version:** 0.2.1 (Pre-release)
+**Target:** 1.0.0 (Marketplace Release)
 
 See [CHANGELOG.md](CHANGELOG.md) for full version history.
 
