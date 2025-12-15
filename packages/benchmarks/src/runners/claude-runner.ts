@@ -202,6 +202,8 @@ export class ClaudeRunner implements ToolRunner {
           model: streamData.model,
           sessionId: streamData.sessionId,
         } : undefined,
+        // Raw stream-json output for debugging
+        rawStream: claudeResult.rawStream,
       };
     } catch (error) {
       const durationSeconds = (Date.now() - startTime) / 1000;
@@ -326,6 +328,7 @@ export class ClaudeRunner implements ToolRunner {
     tokens: { input: number; output: number; total: number };
     toolCalls: number;
     streamData?: StreamJsonData;
+    rawStream?: string;
   }> {
     // For now, use CLI execution
     // In the future, this could use the API directly for better metrics
@@ -372,6 +375,7 @@ export class ClaudeRunner implements ToolRunner {
       tokens: totalTokens,
       toolCalls: result.toolCalls,
       streamData,
+      rawStream: result.rawStream,
     };
   }
 
@@ -441,6 +445,7 @@ export class ClaudeRunner implements ToolRunner {
       tokens: streamData.usage.inputTokens + streamData.usage.outputTokens,
       toolCalls: streamData.toolCalls.length,
       streamData,
+      rawStream: result.stdout, // Include raw stream-json output for debugging
     };
   }
 

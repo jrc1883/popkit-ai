@@ -64,6 +64,8 @@ export interface ExecutionResult {
     model: string;
     sessionId: string;
   };
+  /** Raw stream-json output from Claude CLI (for debugging/analysis) */
+  rawStream?: string;
 }
 
 /**

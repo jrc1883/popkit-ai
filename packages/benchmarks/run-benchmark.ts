@@ -181,6 +181,11 @@ async function runBenchmark(taskId: string, mode: BenchmarkMode): Promise<void> 
       );
     }
 
+    // Save raw stream-json output for debugging (includes thinking blocks, command expansions, etc.)
+    if (result.rawStream) {
+      await writeFile(join(outputDir, 'stream-raw.jsonl'), result.rawStream);
+    }
+
     // Save raw transcript for transcript_parser.py analysis
     const transcriptLines = result.conversation.map(msg =>
       `[${msg.role}] ${msg.timestamp || ''}\n${msg.content}\n`
