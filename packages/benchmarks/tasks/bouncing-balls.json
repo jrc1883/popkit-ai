@@ -24,7 +24,7 @@
       "id": "file-exists",
       "name": "balls.js file exists and has content",
       "type": "unit",
-      "command": "test -s balls.js && echo 'PASS' || echo 'FAIL'",
+      "command": "node -e \"const fs=require('fs'); const s=fs.statSync('balls.js'); console.log(s.size > 100 ? 'PASS' : 'FAIL')\"",
       "expectedExitCode": 0,
       "successPattern": "PASS"
     },
@@ -32,28 +32,28 @@
       "id": "canvas-element",
       "name": "Canvas element is accessed",
       "type": "unit",
-      "command": "grep -q 'getElementById.*canvas' balls.js && echo 'PASS' || echo 'FAIL'",
+      "command": "node -e \"const fs=require('fs'); const c=fs.readFileSync('balls.js','utf8'); console.log(/getElementById.*canvas|canvas.*getElementById/.test(c) ? 'PASS' : 'FAIL')\"",
       "successPattern": "PASS"
     },
     {
       "id": "animation-loop",
       "name": "Uses requestAnimationFrame",
       "type": "unit",
-      "command": "grep -q 'requestAnimationFrame' balls.js && echo 'PASS' || echo 'FAIL'",
+      "command": "node -e \"const fs=require('fs'); const c=fs.readFileSync('balls.js','utf8'); console.log(/requestAnimationFrame/.test(c) ? 'PASS' : 'FAIL')\"",
       "successPattern": "PASS"
     },
     {
       "id": "ball-count",
       "name": "Creates 5 balls",
       "type": "unit",
-      "command": "grep -oE '(5|five)' balls.js | head -1",
-      "successPattern": "5"
+      "command": "node -e \"const fs=require('fs'); const c=fs.readFileSync('balls.js','utf8'); console.log(/5|five/i.test(c) ? 'PASS' : 'FAIL')\"",
+      "successPattern": "PASS"
     },
     {
       "id": "collision-detection",
       "name": "Implements collision detection",
       "type": "unit",
-      "command": "grep -qE '(collision|distance|sqrt)' balls.js && echo 'PASS' || echo 'FAIL'",
+      "command": "node -e \"const fs=require('fs'); const c=fs.readFileSync('balls.js','utf8'); console.log(/collision|distance|sqrt|Math\\.sqrt/.test(c) ? 'PASS' : 'FAIL')\"",
       "successPattern": "PASS"
     }
   ],

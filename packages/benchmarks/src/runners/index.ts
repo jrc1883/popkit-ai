@@ -20,6 +20,14 @@ export type {
 export { ClaudeRunner } from './claude-runner.js';
 export type { ClaudeRunnerConfig } from './claude-runner.js';
 
+// Config switcher exports
+export {
+  ConfigSwitcher,
+  createConfigSwitcher,
+  isPopKitAvailable,
+} from './config-switcher.js';
+export type { ConfigSwitcherOptions, ConfigSnapshot } from './config-switcher.js';
+
 // Executor exports
 export { BenchmarkExecutor, createExecutor } from './executor.js';
 export type { ExecutorConfig, BenchmarkRunResult } from './executor.js';

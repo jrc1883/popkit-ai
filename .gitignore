@@ -56,3 +56,15 @@ packages/plugin/power-mode/.claude/
 
 # Runtime logs
 logs/
+
+# Sandbox test artifacts and results
+packages/benchmarks/results/
+packages/benchmarks/analysis/
+packages/benchmarks/tasks/real-world/
+packages/benchmarks/tasks/standard/
+packages/benchmarks/hello.txt
+packages/benchmarks/streamtest.txt
+packages/benchmarks/pnpm-lock.yaml
+
+# Temporary build artifacts
+packages/*/build-*.txt

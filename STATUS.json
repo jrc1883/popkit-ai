@@ -1,82 +1,103 @@
 {
-  "session_date": "2025-12-14",
-  "version": "0.2.1",
-  "status": "SANDBOX_TESTING_COMPLETE",
-  "sleep_score": 95,
+  "session_date": "2025-12-15",
+  "version": "0.2.2",
+  "status": "BENCHMARK_INFRASTRUCTURE_IN_PROGRESS",
+  "sleep_score": 65,
 
-  "summary": "Completed Sandbox Testing & Observability Platform (Issues #225-231)",
+  "summary": "Building PopKit Benchmark Suite with workflow testing (Issue #237)",
 
   "completed_this_session": [
-    "Issue #226 - Hook Integration for Telemetry Capture",
-    "Issue #227 - Local Test Runner (local_runner.py)",
-    "Issue #228 - Upstash Telemetry Sync (upstash_telemetry.py)",
-    "Issue #229 - E2B Cloud Sandbox Runner (e2b_runner.py)",
-    "Issue #230 - Test Matrix Definition (test_matrix.json, matrix_loader.py)",
-    "Issue #231 - Analytics Dashboard & Comparison (analytics.py)",
-    "Created pop-sandbox-test skill for interactive testing",
-    "Updated /popkit:plugin test command with sandbox subcommand",
-    "Created comprehensive SETUP.md guide",
-    "User configured E2B_API_KEY as system environment variable"
+    "Version bump 0.2.1 -> 0.2.2",
+    "Extended BenchmarkTask schema with workflow fields",
+    "Added stream-json parsing for full tool call capture",
+    "Created benchmark_responses.py utility for AskUserQuestion handling",
+    "Created 2 PopKit workflow tasks (quick-fix.json, dev-auth.json)",
+    "Documented design in 2025-12-15-popkit-workflow-benchmark-design.md",
+    "Pushed version 0.2.2 to remote",
+    "Published version 0.2.2 to public repo (jrc1883/popkit-claude)",
+    "Validated IP leak scanner (works correctly, blocks with exit code 1)",
+    "Created issue #238: IP leak scanner enforcement bug",
+    "Created issue #239: GitHub metadata caching and 'Check First' pattern",
+    "Added .gitignore entries for sandbox test artifacts",
+    "Clarified cache location pattern (.claude/popkit/, not CLAUDE.md)"
   ],
 
-  "sandbox_testing_platform": {
+  "benchmark_infrastructure": {
+    "status": "partially_complete",
     "components": {
-      "local_runner": "packages/plugin/tests/sandbox/local_runner.py",
-      "e2b_runner": "packages/plugin/tests/sandbox/e2b_runner.py",
-      "test_matrix": "packages/plugin/tests/sandbox/test_matrix.json",
-      "matrix_loader": "packages/plugin/tests/sandbox/matrix_loader.py",
-      "analytics": "packages/plugin/tests/sandbox/analytics.py",
-      "upstash_telemetry": "packages/plugin/hooks/utils/upstash_telemetry.py",
-      "skill": "packages/plugin/skills/pop-sandbox-test/SKILL.md",
-      "setup_guide": "packages/plugin/tests/sandbox/SETUP.md"
+      "task_schema": "packages/benchmarks/src/types.ts - workflow fields added",
+      "claude_runner": "packages/benchmarks/src/runners/claude-runner.ts - stream-json parsing",
+      "response_utility": "packages/plugin/hooks/utils/benchmark_responses.py - created",
+      "workflow_tasks": [
+        "packages/benchmarks/tasks/popkit/quick-fix.json",
+        "packages/benchmarks/tasks/popkit/dev-auth.json"
+      ]
     },
-    "test_counts": {
-      "total": 28,
-      "P0_critical": 10,
-      "P1_high": 15,
-      "P2_medium": 3
-    }
+    "remaining_work": [
+      "Update PopKit skills to check POPKIT_BENCHMARK_MODE",
+      "Modify skills to use benchmark_responses.py",
+      "Test full workflow end-to-end",
+      "Run comparison: vanilla vs popkit mode"
+    ]
   },
 
-  "environment_setup_needed": {
-    "e2b_sdk": "Run: pip install e2b",
-    "terminal_restart": "Restart terminal for E2B_API_KEY to take effect",
-    "verify_command": "python e2b_runner.py --status"
+  "uncommitted_changes": {
+    "count": 13,
+    "modified": [
+      "packages/benchmarks/src/runners/index.ts",
+      "packages/benchmarks/tasks/bouncing-balls.json",
+      "packages/plugin/tests/sandbox/analytics.py",
+      "packages/plugin/tests/sandbox/e2b_runner.py"
+    ],
+    "untracked": [
+      "docs/plans/2025-12-14-real-benchmark-system.md",
+      "packages/benchmarks/analysis/",
+      "packages/benchmarks/results/",
+      "packages/benchmarks/tasks/real-world/",
+      "packages/benchmarks/tasks/standard/"
+    ],
+    "recommendation": "Commit benchmark work or clean up test artifacts"
   },
 
   "open_issues": {
     "phase_now": [
+      "#237 - PopKit Workflow Benchmark Testing (in progress)",
+      "#238 - IP leak scanner enforcement bug (P1, security)",
+      "#239 - GitHub metadata caching pattern (P1, performance)",
       "#224 - v1.0.0 Validation Audit (P0, epic)"
     ],
     "phase_next": [
+      "#220 - PopKit Benchmark Suite (parent of #237)",
       "#223 - User Deployment Command (P2, epic)"
     ],
     "phase_future": [
-      "#220 - PopKit Benchmark Suite",
       "#112-115 - Multi-model/MCP/Orchestration epics"
     ]
   },
 
   "git_state": {
     "branch": "master",
-    "status": "clean",
+    "status": "uncommitted_changes",
     "pushed": true,
-    "commits_today": 7,
-    "last_commit": "7e8f6ae - docs(sandbox): add comprehensive setup guide"
+    "commits_today": 2,
+    "last_commit": "9c45fe1 - chore: bump version to 0.2.2"
   },
 
   "next_steps": [
-    "1. Restart terminal to activate E2B_API_KEY",
-    "2. Run: pip install e2b",
-    "3. Verify: python e2b_runner.py --status",
-    "4. Try running sandbox tests: /popkit:plugin test sandbox",
-    "5. Review #224 (v1.0.0 Validation Audit) for release readiness"
+    "1. Decide: commit benchmark WIP or clean up test artifacts",
+    "2. Update PopKit skills to check POPKIT_BENCHMARK_MODE",
+    "3. Test benchmark workflow end-to-end",
+    "4. Run vanilla vs popkit comparison"
   ],
 
   "notes": [
-    "All sandbox testing infrastructure is in place",
-    "Local runner works without any setup",
-    "E2B and Upstash are optional cloud integrations",
-    "7 commits pushed to origin"
+    "Version 0.2.2 released with benchmark infrastructure",
+    "Version 0.2.2 published to public repo (users can install via /plugin update)",
+    "Stream-JSON parsing captures full tool call data",
+    "Skill-level override chosen over hook-level interception",
+    "IP leak scanner is a differentiating PopKit feature - blocks leaks correctly",
+    "GitHub metadata caching needed to prevent repeated API calls and errors",
+    "Cache data belongs in .claude/popkit/, NOT in CLAUDE.md (keep CLAUDE.md focused)",
+    "Sleep score lowered due to uncommitted changes"
   ]
 }
