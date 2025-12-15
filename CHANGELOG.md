@@ -4,6 +4,33 @@ All notable changes to PopKit are documented in this file.
 
 **Versioning:** PopKit uses semantic versioning. Currently in preview (0.x) until stable public launch.
 
+## [0.2.2] - December 15, 2025
+
+### Benchmark Infrastructure (#237)
+
+- **Benchmark Framework**: Full infrastructure for measuring PopKit value vs baseline Claude Code
+  - Task schema with workflow fields (`workflowType`, `workflowCommand`, `benchmarkResponses`)
+  - Stream-JSON parsing for tool call capture, token usage, and costs
+  - ConfigSwitcher for toggling PopKit modes during benchmarks
+
+- **Workflow Testing Design**: Support for testing PopKit workflows (not just plugin enabled/disabled)
+  - `benchmark_responses.py` utility for auto-answering AskUserQuestion prompts
+  - Standard auto-approve patterns for continuation prompts
+  - Explicit decline patterns to prevent GitHub side effects during tests
+
+### Sandbox Testing (#226-231)
+
+- **E2B Cloud Integration**: Cloud sandbox runner for isolated testing
+- **Telemetry Capture**: Hook-level telemetry sync with Upstash
+- **Analytics Dashboard**: Comparison tools and test matrix definition
+- **Local Test Runner**: Quick local validation without cloud dependency
+
+### Research
+
+- **Entry Point Analysis** (#234): Comprehensive PopKit initialization and workflow analysis
+
+---
+
 ## [0.2.1] - December 12, 2025
 
 ### Bug Fixes (Issue #204)
