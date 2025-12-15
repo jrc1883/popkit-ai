@@ -7,7 +7,7 @@
   "version": "1.0.0",
 
   "workflowType": "popkit",
-  "workflowCommand": "/popkit:dev \"create bouncing balls animation\"",
+  "workflowCommand": "/popkit:dev \"Create a web page with a canvas showing 5 balls bouncing with realistic physics. Requirements: 1. Each ball should have a random color and size (10-30px radius) 2. Balls should start at random positions with random velocities 3. Balls should bounce off the walls (canvas edges) with proper reflection 4. Balls should collide with each other (basic collision detection) 5. Use requestAnimationFrame for smooth animation 6. Add gravity (balls should fall and bounce). This is a vanilla JavaScript task. No frameworks or build tools required.\"",
 
   "benchmarkResponses": {
     "Commit changes": true,
