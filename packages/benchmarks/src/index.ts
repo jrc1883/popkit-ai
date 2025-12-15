@@ -70,8 +70,21 @@ export type {
   ToolRunner,
   RunnerCapabilities,
 } from './runners/index.js';
-export { ClaudeRunner, BenchmarkExecutor, createExecutor } from './runners/index.js';
-export type { ClaudeRunnerConfig, ExecutorConfig, BenchmarkRunResult } from './runners/index.js';
+export {
+  ClaudeRunner,
+  BenchmarkExecutor,
+  createExecutor,
+  ConfigSwitcher,
+  createConfigSwitcher,
+  isPopKitAvailable,
+} from './runners/index.js';
+export type {
+  ClaudeRunnerConfig,
+  ExecutorConfig,
+  BenchmarkRunResult,
+  ConfigSwitcherOptions,
+  ConfigSnapshot,
+} from './runners/index.js';
 
 // E2B exports (optional)
 export { isE2BAvailable, defaultE2BConfig } from './e2b/index.js';

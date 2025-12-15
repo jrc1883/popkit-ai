@@ -47,6 +47,23 @@ export interface ExecutionResult {
   };
   /** Raw logs */
   logs: string[];
+  /** Detailed tool call data (Claude-specific) */
+  toolCallDetails?: Array<{
+    id: string;
+    name: string;
+    input: Record<string, unknown>;
+    timestamp: string;
+  }>;
+  /** API usage details (Claude-specific) */
+  usageDetails?: {
+    costUsd: number;
+    cacheReadTokens: number;
+    cacheCreationTokens: number;
+    durationApiMs: number;
+    numTurns: number;
+    model: string;
+    sessionId: string;
+  };
 }
 
 /**

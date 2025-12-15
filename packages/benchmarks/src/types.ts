@@ -154,6 +154,55 @@ export interface BenchmarkTask {
   createdAt?: string;
   /** Last modification date */
   updatedAt?: string;
+
+  // =============================================================================
+  // PopKit Workflow Testing (Issue #237)
+  // =============================================================================
+
+  /**
+   * Type of workflow to test:
+   * - 'vanilla': No PopKit, raw Claude Code
+   * - 'popkit': PopKit enabled, invoke workflows
+   * - 'power': PopKit Power Mode enabled
+   */
+  workflowType?: BenchmarkMode;
+
+  /**
+   * PopKit command to invoke (e.g., "/popkit:dev full user authentication")
+   * This command is prepended to the prompt when workflowType is 'popkit' or 'power'
+   */
+  workflowCommand?: string;
+
+  /**
+   * Pre-defined responses for AskUserQuestion prompts during workflow execution.
+   * Keys are question headers (e.g., "Auth method"), values are the responses.
+   *
+   * Supported value types:
+   * - string: Single selection (e.g., "OAuth providers")
+   * - string[]: Multi-selection (e.g., ["Google", "GitHub"])
+   * - boolean: Yes/No selection (e.g., true for "Yes")
+   * - { other: string }: Free-text "Other" option
+   */
+  benchmarkResponses?: Record<string, string | string[] | boolean | { other: string }>;
+
+  /**
+   * Regex patterns for prompts that should auto-approve (select first/recommended option).
+   * Defaults to common continuation prompts like "Continue?", "Proceed?"
+   */
+  standardAutoApprove?: string[];
+
+  /**
+   * Regex patterns for prompts that should always decline.
+   * Used to prevent side effects like creating GitHub repos during benchmarks.
+   * Defaults to patterns like "Create.*repo", "Push.*remote"
+   */
+  explicitDeclines?: string[];
+
+  /**
+   * Minimum success rate required for this task (0-1).
+   * Used for statistical validation across multiple runs.
+   */
+  minSuccessRate?: number;
 }
 
 // =============================================================================

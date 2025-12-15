@@ -1,0 +1,63 @@
+{
+  "id": "popkit-quick-fix",
+  "name": "Bug Fix via PopKit Quick Mode",
+  "description": "Fix a simple bug using /popkit:dev quick workflow",
+  "category": "standard",
+  "language": "typescript",
+  "version": "1.0.0",
+
+  "workflowType": "popkit",
+  "workflowCommand": "/popkit:dev quick fix the timezone bug in formatDate utility",
+
+  "prompt": "The formatDate utility in utils/date.ts has a bug - it doesn't account for the user's timezone when displaying dates. The dates are showing in UTC instead of the user's local timezone. Please fix this bug.",
+
+  "benchmarkResponses": {
+    "Commit": true
+  },
+
+  "standardAutoApprove": [
+    "Continue.*",
+    "Proceed.*",
+    "Commit.*",
+    "Run tests.*",
+    "Looks good.*"
+  ],
+
+  "explicitDeclines": [
+    "Create.*repo",
+    "Push.*remote",
+    "Create.*PR"
+  ],
+
+  "initialFiles": {
+    "package.json": "{\n  \"name\": \"date-utils-test\",\n  \"version\": \"1.0.0\",\n  \"type\": \"module\",\n  \"devDependencies\": {\n    \"typescript\": \"^5.0.0\"\n  }\n}",
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"NodeNext\",\n    \"moduleResolution\": \"NodeNext\",\n    \"strict\": true,\n    \"outDir\": \"dist\"\n  },\n  \"include\": [\"src\"]\n}",
+    "src/utils/date.ts": "/**\n * Date formatting utilities\n * BUG: This doesn't account for user timezone\n */\n\nexport interface User {\n  id: string;\n  name: string;\n  timezone?: string;\n}\n\nexport function formatDate(date: Date, user?: User): string {\n  // BUG: Always shows UTC time, ignoring user timezone\n  return date.toISOString();\n}\n\nexport function formatRelativeDate(date: Date): string {\n  const now = new Date();\n  const diffMs = now.getTime() - date.getTime();\n  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));\n  \n  if (diffHours < 1) return 'just now';\n  if (diffHours < 24) return `${diffHours} hours ago`;\n  \n  const diffDays = Math.floor(diffHours / 24);\n  return `${diffDays} days ago`;\n}\n"
+  },
+
+  "dependencies": [],
+
+  "tests": [
+    {
+      "id": "timezone-handling",
+      "name": "Handles user timezone",
+      "type": "unit",
+      "command": "node -e \"const fs=require('fs'); const c=fs.readFileSync('src/utils/date.ts','utf8'); process.exit(c.includes('timezone') && !c.includes('toISOString()') ? 0 : 1)\""
+    },
+    {
+      "id": "typescript-valid",
+      "name": "TypeScript compiles",
+      "type": "unit",
+      "command": "npx tsc --noEmit"
+    }
+  ],
+
+  "qualityChecks": [],
+
+  "timeoutSeconds": 300,
+  "minSuccessRate": 0.8,
+
+  "tags": ["bugfix", "typescript", "quick-mode"],
+  "author": "PopKit",
+  "createdAt": "2025-12-15"
+}

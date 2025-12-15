@@ -7,7 +7,7 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import { mkdtemp, writeFile, readFile, rm, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
 import type {
   ToolRunner,
   RunnerConfig,
@@ -21,6 +21,46 @@ import type {
   BenchmarkMode,
   ConversationMessage,
 } from '../types.js';
+import { ConfigSwitcher, type ConfigSwitcherOptions } from './config-switcher.js';
+
+/**
+ * Parsed stream-json data from Claude CLI
+ */
+export interface StreamJsonData {
+  sessionId: string;
+  model: string;
+  toolCalls: Array<{
+    id: string;
+    name: string;
+    input: Record<string, unknown>;
+    timestamp: string;
+  }>;
+  toolResults: Array<{
+    toolUseId: string;
+    type: string;
+    filePath?: string;
+    content?: string;
+  }>;
+  assistantMessages: string[];
+  usage: {
+    inputTokens: number;
+    outputTokens: number;
+    cacheReadTokens: number;
+    cacheCreationTokens: number;
+    costUsd: number;
+  };
+  durationMs: number;
+  durationApiMs: number;
+  numTurns: number;
+  finalResult: string;
+  initData: {
+    tools: string[];
+    plugins: Array<{ name: string; path: string }>;
+    agents: string[];
+    skills: string[];
+    mcpServers: Array<{ name: string; status: string }>;
+  } | null;
+}
 
 /**
  * Claude Code runner configuration
@@ -34,6 +74,10 @@ export interface ClaudeRunnerConfig extends RunnerConfig {
   anthropicApiKey?: string;
   /** Model to use (default: 'claude-sonnet-4-20250514') */
   model?: string;
+  /** Config switcher options for mode switching */
+  configSwitcher?: ConfigSwitcherOptions;
+  /** Whether to actually switch PopKit config (default: true) */
+  enableConfigSwitching?: boolean;
 }
 
 /**
@@ -45,6 +89,7 @@ export class ClaudeRunner implements ToolRunner {
 
   private config: ClaudeRunnerConfig = {};
   private workDir: string | null = null;
+  private configSwitcher: ConfigSwitcher | null = null;
 
   async isAvailable(): Promise<boolean> {
     try {
@@ -65,11 +110,22 @@ export class ClaudeRunner implements ToolRunner {
       timeoutMs: 300000, // 5 minutes
       maxRetries: 3,
       verbose: false,
+      enableConfigSwitching: true,
       ...config,
     };
 
     // Create temporary working directory
     this.workDir = await mkdtemp(join(tmpdir(), 'popkit-benchmark-'));
+
+    // Initialize config switcher if enabled
+    if (this.config.enableConfigSwitching) {
+      this.configSwitcher = new ConfigSwitcher({
+        ...this.config.configSwitcher,
+        verbose: this.config.verbose,
+      });
+      // Save current state for restoration after benchmark
+      await this.configSwitcher.saveSnapshot();
+    }
   }
 
   async execute(
@@ -88,6 +144,13 @@ export class ClaudeRunner implements ToolRunner {
     logs.push(`[${new Date().toISOString()}] Mode: ${mode}`);
 
     try {
+      // Step 0: Switch PopKit configuration for this mode
+      if (this.configSwitcher) {
+        logs.push(`[${new Date().toISOString()}] Switching PopKit config to mode: ${mode}`);
+        await this.configSwitcher.switchMode(mode);
+        logs.push(`[${new Date().toISOString()}] PopKit config switched successfully`);
+      }
+
       // Step 1: Create task workspace
       const taskDir = join(this.workDir, task.id);
       await this.setupTaskWorkspace(task, taskDir);
@@ -98,7 +161,7 @@ export class ClaudeRunner implements ToolRunner {
       logs.push(`[${new Date().toISOString()}] Prompt built (${prompt.length} chars)`);
 
       // Step 3: Execute with Claude
-      const claudeResult = await this.executeWithClaude(prompt, taskDir, mode);
+      const claudeResult = await this.executeWithClaude(prompt, taskDir, mode, task);
       logs.push(`[${new Date().toISOString()}] Claude execution complete`);
 
       // Step 4: Collect output files
@@ -115,6 +178,7 @@ export class ClaudeRunner implements ToolRunner {
 
       const durationSeconds = (Date.now() - startTime) / 1000;
       const success = testResults.every((t) => t.passed);
+      const streamData = claudeResult.streamData;
 
       return {
         success,
@@ -126,6 +190,18 @@ export class ClaudeRunner implements ToolRunner {
         testResults,
         qualityResults,
         logs,
+        // Detailed tool call data from stream-json
+        toolCallDetails: streamData?.toolCalls,
+        // API usage details from stream-json
+        usageDetails: streamData ? {
+          costUsd: streamData.usage.costUsd,
+          cacheReadTokens: streamData.usage.cacheReadTokens,
+          cacheCreationTokens: streamData.usage.cacheCreationTokens,
+          durationApiMs: streamData.durationApiMs,
+          numTurns: streamData.numTurns,
+          model: streamData.model,
+          sessionId: streamData.sessionId,
+        } : undefined,
       };
     } catch (error) {
       const durationSeconds = (Date.now() - startTime) / 1000;
@@ -150,6 +226,17 @@ export class ClaudeRunner implements ToolRunner {
   }
 
   async cleanup(): Promise<void> {
+    // Restore original PopKit configuration
+    if (this.configSwitcher) {
+      try {
+        await this.configSwitcher.restore();
+      } catch (error) {
+        console.error('[ClaudeRunner] Failed to restore PopKit config:', error);
+      }
+      this.configSwitcher = null;
+    }
+
+    // Clean up working directory
     if (this.workDir) {
       try {
         await rm(this.workDir, { recursive: true, force: true });
@@ -181,9 +268,9 @@ export class ClaudeRunner implements ToolRunner {
     await mkdir(taskDir, { recursive: true });
 
     // Write initial files
-    for (const [path, content] of Object.entries(task.initialFiles)) {
-      const fullPath = join(taskDir, path);
-      const dir = fullPath.substring(0, fullPath.lastIndexOf('/'));
+    for (const [filePath, content] of Object.entries(task.initialFiles)) {
+      const fullPath = join(taskDir, filePath);
+      const dir = dirname(fullPath);
       if (dir !== taskDir) {
         await mkdir(dir, { recursive: true });
       }
@@ -206,17 +293,23 @@ export class ClaudeRunner implements ToolRunner {
       prompt = `${task.context}\n\n${prompt}`;
     }
 
-    // Add mode-specific instructions
-    switch (mode) {
-      case 'vanilla':
-        // No additional instructions for vanilla mode
-        break;
-      case 'popkit':
-        prompt = `[Using PopKit workflows for enhanced development]\n\n${prompt}`;
-        break;
-      case 'power':
-        prompt = `[Using PopKit Power Mode for multi-agent collaboration]\n\n${prompt}`;
-        break;
+    // Add workflow command for PopKit modes (Issue #237)
+    // This invokes PopKit workflows instead of just having the plugin enabled
+    if (task.workflowCommand && (mode === 'popkit' || mode === 'power')) {
+      prompt = `${task.workflowCommand}\n\n${prompt}`;
+    } else {
+      // Add mode-specific instructions (legacy behavior)
+      switch (mode) {
+        case 'vanilla':
+          // No additional instructions for vanilla mode
+          break;
+        case 'popkit':
+          prompt = `[Using PopKit workflows for enhanced development]\n\n${prompt}`;
+          break;
+        case 'power':
+          prompt = `[Using PopKit Power Mode for multi-agent collaboration]\n\n${prompt}`;
+          break;
+      }
     }
 
     return prompt;
@@ -225,18 +318,18 @@ export class ClaudeRunner implements ToolRunner {
   private async executeWithClaude(
     prompt: string,
     workDir: string,
-    _mode: BenchmarkMode
+    mode: BenchmarkMode,
+    task: BenchmarkTask
   ): Promise<{
     conversation: ConversationMessage[];
     tokens: { input: number; output: number; total: number };
     toolCalls: number;
+    streamData?: StreamJsonData;
   }> {
     // For now, use CLI execution
     // In the future, this could use the API directly for better metrics
 
     const conversation: ConversationMessage[] = [];
-    let totalTokens = { input: 0, output: 0, total: 0 };
-    let toolCalls = 0;
 
     // Add user message
     conversation.push({
@@ -248,71 +341,338 @@ export class ClaudeRunner implements ToolRunner {
     if (this.config.useApi) {
       // API-based execution (placeholder)
       throw new Error('API-based execution not yet implemented');
-    } else {
-      // CLI-based execution
-      const result = await this.runClaudeCli(prompt, workDir);
-
-      conversation.push({
-        role: 'assistant',
-        content: result.output,
-        timestamp: new Date().toISOString(),
-        tokens: result.tokens,
-      });
-
-      totalTokens = {
-        input: result.tokens,
-        output: result.tokens * 2, // Estimate
-        total: result.tokens * 3,
-      };
-      toolCalls = result.toolCalls;
     }
+
+    // CLI-based execution with stream-json output
+    const result = await this.runClaudeCli(prompt, workDir, mode, task);
+    const streamData = result.streamData;
+
+    // Add assistant message
+    conversation.push({
+      role: 'assistant',
+      content: result.output,
+      timestamp: new Date().toISOString(),
+      tokens: streamData?.usage.outputTokens || result.tokens,
+    });
+
+    // Use real token counts from streamData if available
+    const totalTokens = streamData ? {
+      input: streamData.usage.inputTokens,
+      output: streamData.usage.outputTokens,
+      total: streamData.usage.inputTokens + streamData.usage.outputTokens,
+    } : {
+      input: result.tokens,
+      output: result.tokens,
+      total: result.tokens * 2,
+    };
 
     return {
       conversation,
       tokens: totalTokens,
-      toolCalls,
+      toolCalls: result.toolCalls,
+      streamData,
     };
   }
 
   private async runClaudeCli(
     prompt: string,
-    workDir: string
+    workDir: string,
+    mode: BenchmarkMode,
+    task: BenchmarkTask
   ): Promise<{
     output: string;
     tokens: number;
     toolCalls: number;
+    streamData?: StreamJsonData;
   }> {
     const cliPath = this.config.cliPath || 'claude';
 
-    // Write prompt to temp file
-    const promptFile = join(workDir, '.benchmark-prompt.txt');
-    await writeFile(promptFile, prompt);
+    // Use stream-json format for full tool call capture
+    // This gives us: tool calls, tool results, model usage, costs, etc.
+    const args = [
+      '--print',
+      '--output-format', 'stream-json',
+      '--verbose',
+      '--permission-mode', 'acceptEdits',
+    ];
 
-    // Run Claude CLI
-    const result = await this.runCommand(
-      cliPath,
-      ['-p', prompt, '--yes'],
-      {
-        cwd: workDir,
-        timeout: this.config.timeoutMs,
-        env: {
-          ...process.env,
-          // Disable interactive features
-          CI: 'true',
-        },
+    // Build environment with benchmark mode flags (Issue #237)
+    const env: Record<string, string | undefined> = {
+      ...process.env,
+      CI: 'true',
+    };
+
+    // For popkit/power modes with workflow testing, set benchmark mode variables
+    if ((mode === 'popkit' || mode === 'power') && task.workflowCommand) {
+      env.POPKIT_BENCHMARK_MODE = 'true';
+
+      // Create response file if benchmarkResponses are defined
+      if (task.benchmarkResponses || task.standardAutoApprove || task.explicitDeclines) {
+        const responseFile = await this.createBenchmarkResponseFile(task, workDir);
+        env.POPKIT_BENCHMARK_RESPONSES = responseFile;
       }
-    );
+    }
 
-    // Parse output for metrics (simplified - real implementation would parse JSON)
-    const output = result.stdout;
-    const tokens = Math.ceil(output.length / 4); // Rough estimate
-    const toolCalls = (output.match(/Tool call:/g) || []).length;
+    // Always use stdin for prompt (cross-platform compatible)
+    const result = await this.runCommandWithStdin(cliPath, args, prompt, {
+      cwd: workDir,
+      timeout: this.config.timeoutMs,
+      env: env as Record<string, string>,
+    });
+
+    // Parse stream-json output
+    const streamData = this.parseStreamJson(result.stdout);
+
+    // Log summary if verbose
+    if (this.config.verbose) {
+      console.log(`[ClaudeRunner] Tool calls: ${streamData.toolCalls.length}`);
+      console.log(`[ClaudeRunner] Tokens: input=${streamData.usage.inputTokens}, output=${streamData.usage.outputTokens}`);
+      console.log(`[ClaudeRunner] Cost: $${streamData.usage.costUsd.toFixed(4)}`);
+    }
 
     return {
-      output,
-      tokens,
-      toolCalls,
+      output: streamData.finalResult,
+      tokens: streamData.usage.inputTokens + streamData.usage.outputTokens,
+      toolCalls: streamData.toolCalls.length,
+      streamData,
     };
+  }
+
+  /**
+   * Parse stream-json output from Claude CLI
+   * Each line is a separate JSON object
+   */
+  private parseStreamJson(output: string): StreamJsonData {
+    const lines = output.trim().split('\n').filter(line => line.trim());
+    const data: StreamJsonData = {
+      sessionId: '',
+      model: '',
+      toolCalls: [],
+      toolResults: [],
+      assistantMessages: [],
+      usage: {
+        inputTokens: 0,
+        outputTokens: 0,
+        cacheReadTokens: 0,
+        cacheCreationTokens: 0,
+        costUsd: 0,
+      },
+      durationMs: 0,
+      durationApiMs: 0,
+      numTurns: 0,
+      finalResult: '',
+      initData: null,
+    };
+
+    for (const line of lines) {
+      try {
+        const event = JSON.parse(line);
+
+        switch (event.type) {
+          case 'system':
+            if (event.subtype === 'init') {
+              data.sessionId = event.session_id;
+              data.model = event.model;
+              data.initData = {
+                tools: event.tools || [],
+                plugins: event.plugins || [],
+                agents: event.agents || [],
+                skills: event.skills || [],
+                mcpServers: event.mcp_servers || [],
+              };
+            }
+            break;
+
+          case 'assistant':
+            if (event.message?.content) {
+              for (const block of event.message.content) {
+                if (block.type === 'tool_use') {
+                  data.toolCalls.push({
+                    id: block.id,
+                    name: block.name,
+                    input: block.input,
+                    timestamp: new Date().toISOString(),
+                  });
+                } else if (block.type === 'text') {
+                  data.assistantMessages.push(block.text);
+                }
+              }
+            }
+            break;
+
+          case 'user':
+            if (event.tool_use_result) {
+              data.toolResults.push({
+                toolUseId: event.message?.content?.[0]?.tool_use_id,
+                type: event.tool_use_result.type,
+                filePath: event.tool_use_result.filePath,
+                content: event.tool_use_result.content,
+              });
+            }
+            break;
+
+          case 'result':
+            data.finalResult = event.result || '';
+            data.durationMs = event.duration_ms || 0;
+            data.durationApiMs = event.duration_api_ms || 0;
+            data.numTurns = event.num_turns || 0;
+
+            if (event.usage) {
+              data.usage.inputTokens = event.usage.input_tokens || 0;
+              data.usage.outputTokens = event.usage.output_tokens || 0;
+              data.usage.cacheReadTokens = event.usage.cache_read_input_tokens || 0;
+              data.usage.cacheCreationTokens = event.usage.cache_creation_input_tokens || 0;
+            }
+            if (event.total_cost_usd) {
+              data.usage.costUsd = event.total_cost_usd;
+            }
+            break;
+        }
+      } catch {
+        // Skip malformed JSON lines
+        if (this.config.verbose) {
+          console.log(`[ClaudeRunner] Skipping malformed JSON line: ${line.substring(0, 100)}...`);
+        }
+      }
+    }
+
+    return data;
+  }
+
+  /**
+   * Create a benchmark response file for PopKit workflow testing (Issue #237)
+   *
+   * This file is read by PopKit skills when POPKIT_BENCHMARK_MODE is set,
+   * allowing them to auto-answer AskUserQuestion prompts during benchmarks.
+   */
+  private async createBenchmarkResponseFile(
+    task: BenchmarkTask,
+    workDir: string
+  ): Promise<string> {
+    const responseData = {
+      // Pre-defined responses for specific question headers
+      responses: task.benchmarkResponses || {},
+
+      // Patterns for prompts that auto-approve (select first/recommended option)
+      // Default patterns cover common continuation prompts
+      standardAutoApprove: task.standardAutoApprove || [
+        'Continue.*',
+        'Proceed.*',
+        'Commit.*',
+        'What.*next.*',
+        'Should I.*',
+        'Do you want.*continue',
+        'Ready to.*',
+      ],
+
+      // Patterns for prompts that always decline (prevent side effects)
+      // These prevent GitHub operations during benchmarks
+      explicitDeclines: task.explicitDeclines || [
+        'Create.*repo',
+        'Create.*repository',
+        'Push.*remote',
+        'Push.*origin',
+        'Create.*issue',
+        'Create.*PR',
+        'Create.*pull.*request',
+        'gh.*create',
+        'git.*push',
+      ],
+    };
+
+    const responseFile = join(workDir, 'benchmark-responses.json');
+    await writeFile(responseFile, JSON.stringify(responseData, null, 2));
+
+    if (this.config.verbose) {
+      console.log(`[ClaudeRunner] Created benchmark response file: ${responseFile}`);
+      console.log(`[ClaudeRunner] Responses: ${Object.keys(responseData.responses).length}`);
+      console.log(`[ClaudeRunner] Auto-approve patterns: ${responseData.standardAutoApprove.length}`);
+      console.log(`[ClaudeRunner] Decline patterns: ${responseData.explicitDeclines.length}`);
+    }
+
+    return responseFile;
+  }
+
+  private runCommandWithStdin(
+    command: string,
+    args: string[],
+    stdin: string,
+    options: {
+      cwd?: string;
+      timeout?: number;
+      env?: Record<string, string>;
+    } = {}
+  ): Promise<{
+    exitCode: number;
+    stdout: string;
+    stderr: string;
+  }> {
+    return new Promise((resolve, reject) => {
+      let stdout = '';
+      let stderr = '';
+
+      // Log command for debugging
+      if (this.config.verbose) {
+        console.log(`[ClaudeRunner] Running: ${command} ${args.join(' ')}`);
+        console.log(`[ClaudeRunner] CWD: ${options.cwd}`);
+        console.log(`[ClaudeRunner] Stdin length: ${stdin.length} chars`);
+      }
+
+      const proc: ChildProcess = spawn(command, args, {
+        cwd: options.cwd,
+        env: options.env || process.env,
+        shell: true,
+        windowsHide: false,
+      });
+
+      const timeout = options.timeout || 30000;
+      const timer = setTimeout(() => {
+        if (process.platform === 'win32' && proc.pid) {
+          spawn('taskkill', ['/pid', proc.pid.toString(), '/f', '/t'], { shell: true });
+        } else {
+          proc.kill();
+        }
+        reject(new Error(`Command timed out after ${timeout}ms`));
+      }, timeout);
+
+      // Write prompt to stdin (ensure it ends with newline)
+      if (proc.stdin) {
+        proc.stdin.write(stdin);
+        if (!stdin.endsWith('\n')) {
+          proc.stdin.write('\n');
+        }
+        proc.stdin.end();
+      }
+
+      proc.stdout?.on('data', (data) => {
+        stdout += data.toString();
+        // Stream output in verbose mode
+        if (this.config.verbose) {
+          process.stdout.write(data);
+        }
+      });
+
+      proc.stderr?.on('data', (data) => {
+        stderr += data.toString();
+        if (this.config.verbose) {
+          process.stderr.write(data);
+        }
+      });
+
+      proc.on('close', (code) => {
+        clearTimeout(timer);
+        resolve({
+          exitCode: code ?? -1,
+          stdout,
+          stderr,
+        });
+      });
+
+      proc.on('error', (error) => {
+        clearTimeout(timer);
+        reject(error);
+      });
+    });
   }
 
   private async collectOutputFiles(
@@ -367,8 +727,8 @@ export class ClaudeRunner implements ToolRunner {
     for (const test of task.tests) {
       const startTime = Date.now();
       try {
-        const [cmd, ...args] = test.command.split(' ');
-        const result = await this.runCommand(cmd, args, {
+        // Run the command as a shell command (handles quotes properly)
+        const result = await this.runCommand(test.command, [], {
           cwd: taskDir,
           timeout: (test.timeoutSeconds || 30) * 1000,
         });
@@ -440,8 +800,8 @@ export class ClaudeRunner implements ToolRunner {
     for (const check of task.qualityChecks) {
       const startTime = Date.now();
       try {
-        const [cmd, ...args] = check.command.split(' ');
-        const result = await this.runCommand(cmd, args, {
+        // Run the command as a shell command (handles quotes properly)
+        const result = await this.runCommand(check.command, [], {
           cwd: taskDir,
           timeout: 60000, // 1 minute for quality checks
         });
@@ -490,15 +850,28 @@ export class ClaudeRunner implements ToolRunner {
       let stdout = '';
       let stderr = '';
 
+      // Log command for debugging
+      if (this.config.verbose) {
+        console.log(`[ClaudeRunner] Running: ${command} ${args.join(' ')}`);
+        console.log(`[ClaudeRunner] CWD: ${options.cwd}`);
+      }
+
       const proc: ChildProcess = spawn(command, args, {
         cwd: options.cwd,
         env: options.env || process.env,
         shell: true,
+        // Windows-specific: don't hide window
+        windowsHide: false,
       });
 
       const timeout = options.timeout || 30000;
       const timer = setTimeout(() => {
-        proc.kill('SIGTERM');
+        // Use taskkill on Windows for more reliable process termination
+        if (process.platform === 'win32' && proc.pid) {
+          spawn('taskkill', ['/pid', proc.pid.toString(), '/f', '/t'], { shell: true });
+        } else {
+          proc.kill();
+        }
         reject(new Error(`Command timed out after ${timeout}ms`));
       }, timeout);
 

@@ -1,0 +1,100 @@
+{
+  "id": "popkit-dev-auth",
+  "name": "User Authentication via PopKit Dev Workflow",
+  "description": "Build OAuth authentication using /popkit:dev full workflow with Google and GitHub providers",
+  "category": "real-world",
+  "language": "typescript",
+  "version": "1.0.0",
+
+  "workflowType": "popkit",
+  "workflowCommand": "/popkit:dev full user authentication with OAuth",
+
+  "prompt": "Create a user authentication system with Google and GitHub OAuth providers. Use NextAuth.js patterns with a session-based approach. Include login/logout components and protected route handling.",
+
+  "benchmarkResponses": {
+    "Auth method": "OAuth providers",
+    "OAuth provider": ["Google", "GitHub"],
+    "Session storage": "JWT",
+    "Database": "In-memory (for testing)",
+    "Additional requirements": {
+      "other": "Include rate limiting on login attempts"
+    }
+  },
+
+  "standardAutoApprove": [
+    "Continue to next phase.*",
+    "Proceed with.*",
+    "Approve.*architecture.*",
+    "Commit.*",
+    "What would you like to do next.*",
+    "Run tests.*"
+  ],
+
+  "explicitDeclines": [
+    "Create.*GitHub.*repo",
+    "Push.*remote",
+    "Create.*issue",
+    "Create.*PR",
+    "Create.*pull.*request"
+  ],
+
+  "initialFiles": {
+    "package.json": "{\n  \"name\": \"auth-benchmark\",\n  \"version\": \"1.0.0\",\n  \"type\": \"module\",\n  \"scripts\": {\n    \"build\": \"tsc\",\n    \"typecheck\": \"tsc --noEmit\"\n  },\n  \"dependencies\": {\n    \"next\": \"14.0.0\",\n    \"react\": \"18.2.0\",\n    \"react-dom\": \"18.2.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"^5.0.0\",\n    \"@types/react\": \"^18.0.0\",\n    \"@types/node\": \"^20.0.0\"\n  }\n}",
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"lib\": [\"dom\", \"dom.iterable\", \"esnext\"],\n    \"allowJs\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"noEmit\": true,\n    \"esModuleInterop\": true,\n    \"module\": \"esnext\",\n    \"moduleResolution\": \"bundler\",\n    \"resolveJsonModule\": true,\n    \"isolatedModules\": true,\n    \"jsx\": \"preserve\",\n    \"incremental\": true,\n    \"plugins\": [{\"name\": \"next\"}],\n    \"paths\": {\"@/*\": [\"./src/*\"]}\n  },\n  \"include\": [\"next-env.d.ts\", \"**/*.ts\", \"**/*.tsx\"],\n  \"exclude\": [\"node_modules\"]\n}",
+    "src/app/page.tsx": "export default function Home() {\n  return (\n    <main>\n      <h1>Auth Benchmark App</h1>\n      <p>Authentication not yet implemented.</p>\n    </main>\n  );\n}\n"
+  },
+
+  "dependencies": [],
+
+  "tests": [
+    {
+      "id": "auth-files-exist",
+      "name": "Authentication files created",
+      "type": "unit",
+      "command": "node -e \"const fs=require('fs'); const files=['src/lib/auth', 'src/components/auth', 'src/app/api/auth']; const exists=files.some(f=>{try{return fs.existsSync(f)||fs.existsSync(f+'.ts')||fs.existsSync(f+'.tsx')}catch{return false}}); process.exit(exists?0:1)\""
+    },
+    {
+      "id": "oauth-providers",
+      "name": "OAuth providers configured",
+      "type": "unit",
+      "command": "node -e \"const fs=require('fs'); const glob=require('path'); function findAuth(dir){try{const files=fs.readdirSync(dir);for(const f of files){const p=glob.join(dir,f);const s=fs.statSync(p);if(s.isDirectory())if(findAuth(p))return true;if(f.endsWith('.ts')||f.endsWith('.tsx')){const c=fs.readFileSync(p,'utf8');if(c.includes('Google')&&c.includes('GitHub'))return true}}}catch{}return false}process.exit(findAuth('src')?0:1)\""
+    },
+    {
+      "id": "typescript-valid",
+      "name": "TypeScript compiles",
+      "type": "unit",
+      "command": "npx tsc --noEmit"
+    }
+  ],
+
+  "qualityChecks": [
+    {
+      "id": "no-secrets",
+      "name": "No hardcoded secrets",
+      "type": "security",
+      "command": "node -e \"const fs=require('fs');const path=require('path');function check(dir){try{const files=fs.readdirSync(dir);for(const f of files){const p=path.join(dir,f);const s=fs.statSync(p);if(s.isDirectory()&&f!=='node_modules')if(!check(p))return false;if(f.endsWith('.ts')||f.endsWith('.tsx')){const c=fs.readFileSync(p,'utf8');if(c.match(/['\\\"](sk_|pk_|secret_)[^'\\\"]*/i))return false}}}catch{}return true}process.exit(check('src')?0:1)\""
+    }
+  ],
+
+  "timeoutSeconds": 600,
+  "minSuccessRate": 0.7,
+
+  "baseline": {
+    "vanilla": {
+      "tokenEstimate": 50000,
+      "toolCallEstimate": 20,
+      "successRate": 0.6,
+      "timeEstimate": 180
+    },
+    "popkit": {
+      "tokenEstimate": 35000,
+      "toolCallEstimate": 15,
+      "successRate": 0.8,
+      "timeEstimate": 150
+    }
+  },
+
+  "tags": ["feature", "typescript", "nextjs", "auth", "oauth"],
+  "author": "PopKit",
+  "createdAt": "2025-12-15"
+}
