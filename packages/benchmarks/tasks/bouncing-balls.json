@@ -6,6 +6,27 @@
   "language": "javascript",
   "version": "1.0.0",
 
+  "workflowType": "popkit",
+  "workflowCommand": "/popkit:dev \"create bouncing balls animation\"",
+
+  "benchmarkResponses": {
+    "Commit changes": true,
+    "What would you like to do next": "Done for now"
+  },
+
+  "standardAutoApprove": [
+    "Continue.*",
+    "Proceed.*",
+    "Commit.*",
+    "What.*next.*"
+  ],
+
+  "explicitDeclines": [
+    "Create.*GitHub.*repo",
+    "Push.*remote",
+    "Create.*PR"
+  ],
+
   "initialFiles": {
     "index.html": "<!DOCTYPE html>\n<html>\n<head>\n  <title>Bouncing Balls</title>\n  <style>canvas { border: 1px solid black; }</style>\n</head>\n<body>\n  <canvas id=\"canvas\" width=\"800\" height=\"600\"></canvas>\n  <script src=\"balls.js\"></script>\n</body>\n</html>",
     "balls.js": "// TODO: Implement bouncing balls animation\n"
