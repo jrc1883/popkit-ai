@@ -76,6 +76,27 @@
       "type": "unit",
       "command": "node -e \"const fs=require('fs'); const c=fs.readFileSync('balls.js','utf8'); console.log(/collision|distance|sqrt|Math\\.sqrt/.test(c) ? 'PASS' : 'FAIL')\"",
       "successPattern": "PASS"
+    },
+    {
+      "id": "no-excessive-damping",
+      "name": "No excessive damping applied every frame",
+      "type": "quality",
+      "command": "node -e \"const fs=require('fs'); const c=fs.readFileSync('balls.js','utf8'); const hasDamping=/(DAMPING|FRICTION)\\s*=\\s*0\\.[0-9]+/.test(c); const appliesEveryFrame=/(this\\.v[xy]|v[xy])\\s*\\*=\\s*(DAMPING|FRICTION)/.test(c) && !/if.*collision|if.*wall|if.*bounce/.test(c); console.log(hasDamping && appliesEveryFrame ? 'FAIL: Damping applied every frame will freeze balls' : 'PASS')\"",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "gravity-vertical-only",
+      "name": "Gravity only affects vertical velocity",
+      "type": "quality",
+      "command": "node -e \"const fs=require('fs'); const c=fs.readFileSync('balls.js','utf8'); const gravityCorrect=/this\\.vy\\s*\\+=\\s*GRAVITY|vy\\s*\\+=\\s*GRAVITY|vy\\s*\\+=\\s*gravity/.test(c); const gravityWrong=/this\\.vx\\s*\\+=\\s*GRAVITY|vx\\s*\\+=\\s*GRAVITY|vx\\s*\\+=\\s*gravity/.test(c); console.log(gravityCorrect && !gravityWrong ? 'PASS' : 'FAIL')\"",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "wall-bounce-reflection",
+      "name": "Wall bounces use proper reflection",
+      "type": "quality",
+      "command": "node -e \"const fs=require('fs'); const c=fs.readFileSync('balls.js','utf8'); const hasReflection=/v[xy]\\s*\\*=\\s*-|v[xy]\\s*=\\s*-v[xy]/.test(c) || /Math\\.abs/.test(c); console.log(hasReflection ? 'PASS' : 'FAIL')\"",
+      "successPattern": "PASS"
     }
   ],
 
@@ -86,6 +107,13 @@
       "type": "custom",
       "command": "node --check balls.js 2>&1 || true",
       "weight": 1.0
+    },
+    {
+      "id": "physics-validation",
+      "name": "Physics implementation quality",
+      "type": "custom",
+      "command": "node -e \"const fs=require('fs'); const c=fs.readFileSync('balls.js','utf8'); let score=10; if(/(DAMPING|FRICTION)\\s*=\\s*0\\.[0-9]+/.test(c) && /(this\\.v[xy]|v[xy])\\s*\\*=\\s*(DAMPING|FRICTION)/.test(c) && !/if.*collision|if.*wall/.test(c)) score-=5; if(!/GRAVITY|gravity/.test(c)) score-=3; if(!/collision|distance/.test(c)) score-=2; console.log('Score: '+score+'/10')\"",
+      "weight": 0.5
     }
   ],
 
