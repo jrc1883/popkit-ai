@@ -4,6 +4,19 @@ All notable changes to PopKit are documented in this file.
 
 **Versioning:** PopKit uses semantic versioning. Currently in preview (0.x) until stable public launch.
 
+## [0.2.3] - December 15, 2025
+
+### Security Fix (Issue #238)
+
+- **IP Leak Scanner Enforcement**: Fixed `/popkit:git publish` workflow to properly respect scanner exit codes
+  - Added exit code checking: Workflow now stops immediately when scanner returns exit code 1
+  - Added `--skip-ip-scan` flag for explicit override when false positives occur
+  - Updated whitelist: Added `SETUP.md`, `secret-patterns.md` to exception list
+  - Enhanced documentation: Added troubleshooting guide and usage examples
+  - Testing: Verified scanner blocks correctly, skip flag works, clean state passes
+
+---
+
 ## [0.2.2] - December 15, 2025
 
 ### Benchmark Infrastructure (#237)
