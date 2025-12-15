@@ -287,29 +287,30 @@ export class ClaudeRunner implements ToolRunner {
   }
 
   private buildPrompt(task: BenchmarkTask, mode: BenchmarkMode): string {
+    // For PopKit/Power modes with a workflow command, instruct Claude to invoke it
+    // This encourages using the SlashCommand tool instead of just seeing it as text
+    if (task.workflowCommand && (mode === 'popkit' || mode === 'power')) {
+      return `Please invoke the command: ${task.workflowCommand}`;
+    }
+
+    // For vanilla or no workflow command, build traditional prompt
     let prompt = task.prompt;
 
     if (task.context) {
       prompt = `${task.context}\n\n${prompt}`;
     }
 
-    // Add workflow command for PopKit modes (Issue #237)
-    // This invokes PopKit workflows instead of just having the plugin enabled
-    if (task.workflowCommand && (mode === 'popkit' || mode === 'power')) {
-      prompt = `${task.workflowCommand}\n\n${prompt}`;
-    } else {
-      // Add mode-specific instructions (legacy behavior)
-      switch (mode) {
-        case 'vanilla':
-          // No additional instructions for vanilla mode
-          break;
-        case 'popkit':
-          prompt = `[Using PopKit workflows for enhanced development]\n\n${prompt}`;
-          break;
-        case 'power':
-          prompt = `[Using PopKit Power Mode for multi-agent collaboration]\n\n${prompt}`;
-          break;
-      }
+    // Add mode-specific instructions (legacy behavior)
+    switch (mode) {
+      case 'vanilla':
+        // No additional instructions for vanilla mode
+        break;
+      case 'popkit':
+        prompt = `[Using PopKit workflows for enhanced development]\n\n${prompt}`;
+        break;
+      case 'power':
+        prompt = `[Using PopKit Power Mode for multi-agent collaboration]\n\n${prompt}`;
+        break;
     }
 
     return prompt;
@@ -395,6 +396,11 @@ export class ClaudeRunner implements ToolRunner {
       '--verbose',
       '--permission-mode', 'acceptEdits',
     ];
+
+    // For PopKit/Power modes, allow SlashCommand tool for workflow invocation
+    if ((mode === 'popkit' || mode === 'power') && task.workflowCommand) {
+      args.push('--allowedTools', 'SlashCommand');
+    }
 
     // Build environment with benchmark mode flags (Issue #237)
     const env: Record<string, string | undefined> = {
