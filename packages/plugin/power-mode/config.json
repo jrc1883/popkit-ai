@@ -11,7 +11,14 @@
     "sync_timeout_seconds": 120,
     "use_insights_file": true,
     "insights_file_path": ".claude/popkit/insights.json",
-    "state_file_path": ".claude/popkit/power-state.json"
+    "state_file_path": ".claude/popkit/power-state.json",
+    "plan_mode": {
+      "enabled": true,
+      "min_claude_code_version": "2.0.70",
+      "timeout_seconds": 300,
+      "auto_approve_on_timeout": false,
+      "notes": "Agents with plan_mode_required=true will present plans for approval before implementing"
+    }
   },
 
   "mode_priority": ["native", "redis", "file"],

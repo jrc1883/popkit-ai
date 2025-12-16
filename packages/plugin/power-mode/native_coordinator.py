@@ -48,6 +48,7 @@ class BackgroundAgent:
     completed_at: Optional[datetime] = None
     result: Optional[Dict] = None
     error: Optional[str] = None
+    plan_mode_required: bool = False  # Claude Code 2.0.70+
 
 
 @dataclass
@@ -190,11 +191,18 @@ class NativeAsyncCoordinator:
     # AGENT MANAGEMENT
     # =========================================================================
 
-    def register_agent(self, agent_id: str, name: str, task: str, phase: str) -> BackgroundAgent:
+    def register_agent(self, agent_id: str, name: str, task: str, phase: str, plan_mode_required: bool = False) -> BackgroundAgent:
         """
         Register a new background agent.
 
         Called when the main agent spawns a background agent via Task tool.
+
+        Args:
+            agent_id: Unique identifier for the agent
+            name: Agent name (e.g., "code-architect")
+            task: Task description
+            phase: Current phase name
+            plan_mode_required: Whether agent must present plan for approval (Claude Code 2.0.70+)
         """
         agent = BackgroundAgent(
             id=agent_id,
@@ -202,7 +210,8 @@ class NativeAsyncCoordinator:
             task=task,
             phase=phase,
             status=AgentStatus.PENDING,
-            started_at=datetime.now()
+            started_at=datetime.now(),
+            plan_mode_required=plan_mode_required
         )
         self.agents[agent_id] = agent
         self._save_state()
@@ -395,6 +404,7 @@ class NativeAsyncCoordinator:
                     "task": a.task,
                     "phase": a.phase,
                     "status": a.status.value,
+                    "plan_mode_required": a.plan_mode_required,
                     "started_at": a.started_at.isoformat() if a.started_at else None,
                     "completed_at": a.completed_at.isoformat() if a.completed_at else None
                 } for aid, a in self.agents.items()
@@ -429,6 +439,7 @@ class NativeAsyncCoordinator:
                     task=adata["task"],
                     phase=adata["phase"],
                     status=AgentStatus(adata["status"]),
+                    plan_mode_required=adata.get("plan_mode_required", False),
                     started_at=datetime.fromisoformat(adata["started_at"]) if adata.get("started_at") else None,
                     completed_at=datetime.fromisoformat(adata["completed_at"]) if adata.get("completed_at") else None
                 )
@@ -530,6 +541,75 @@ def format_status_line(status: Dict) -> str:
         f"{agents.get('completed', 0)} done | "
         f"Insights: {status.get('insights', 0)}"
     )
+
+
+# =============================================================================
+# PLAN MODE HELPERS (Claude Code 2.0.70+)
+# =============================================================================
+
+def get_plan_mode_required(
+    agent_name: str,
+    config: Dict[str, Any],
+    user_override: Optional[bool] = None
+) -> bool:
+    """
+    Determine if an agent should require plan approval before implementing changes.
+
+    Lookup order (first match wins):
+    1. User override flag (--require-plans=True or --trust-agents=False)
+    2. Agent-specific override in config["plan_mode"]["agent_overrides"]
+    3. Tier default from config["plan_mode"]["tier_defaults"]
+    4. Global default from config["plan_mode"]["default"]
+    5. Fallback to False (backward compatible)
+
+    Args:
+        agent_name: Name of the agent (e.g., "code-architect")
+        config: Power Mode configuration dict
+        user_override: Optional user flag (True=require, False=trust, None=use config)
+
+    Returns:
+        bool: Whether this agent should require plan approval
+
+    Examples:
+        >>> get_plan_mode_required("code-architect", config)
+        True  # Tier 2 agent, modifies code
+
+        >>> get_plan_mode_required("code-explorer", config)
+        False  # Tier 1 agent, read-only
+
+        >>> get_plan_mode_required("security-auditor", config, user_override=False)
+        False  # User --trust-agents overrides config
+    """
+    # 1. User override takes absolute precedence
+    if user_override is not None:
+        return user_override
+
+    plan_mode_config = config.get("plan_mode", {})
+
+    # If plan mode is globally disabled, short-circuit
+    if not plan_mode_config.get("enabled", True):
+        return False
+
+    # 2. Check agent-specific override
+    agent_overrides = plan_mode_config.get("agent_overrides", {})
+    if agent_name in agent_overrides:
+        return agent_overrides[agent_name]
+
+    # 3. Check tier default (need to find agent's tier)
+    # For now, use simple heuristic: agents in config.json tiers
+    tier_defaults = plan_mode_config.get("tier_defaults", {})
+
+    # Try to infer tier from agent name patterns
+    # This is simplified - real implementation would lookup agents/config.json
+    if "explorer" in agent_name or "reviewer" in agent_name or "documentation" in agent_name:
+        # Likely tier-1 (read-only, always-active)
+        return tier_defaults.get("tier-1-always-active", False)
+    elif "architect" in agent_name or "migration" in agent_name or "security" in agent_name:
+        # Likely tier-2 (specialized, code-modifying)
+        return tier_defaults.get("tier-2-on-demand", True)
+
+    # 4. Global default
+    return plan_mode_config.get("default", False)
 
 
 # =============================================================================

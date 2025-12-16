@@ -176,6 +176,8 @@ Start Power Mode with an objective.
 | `--timeout` | Max runtime in minutes (default: 30) |
 | `--consensus` | Enable consensus mode for multi-agent decision-making |
 | `--consensus-rules` | Preset rules: default, quick, strict, critical |
+| `--require-plans` | Force ALL agents to present plans for approval before implementing (Claude Code 2.0.70+) |
+| `--trust-agents` | Allow ALL agents to execute directly without plan approval (overrides config) |
 
 ### Prerequisites
 
@@ -230,6 +232,69 @@ State: .claude/popkit/power-state.json
 
 Ready to orchestrate. Spawning first phase agents...
 ```
+
+### Plan Mode (Claude Code 2.0.70+)
+
+Plan Mode ensures agents present implementation plans for user approval before executing code changes, providing safety and transparency for multi-agent workflows.
+
+**How It Works:**
+1. Agent spawned with `plan_mode_required: true`
+2. Agent enters plan mode (via `EnterPlanMode` tool)
+3. Agent presents detailed implementation plan
+4. User reviews and approves (or modifies) plan
+5. Agent exits plan mode and implements approved plan
+
+**Configuration Modes:**
+
+| Mode | Command | Behavior |
+|------|---------|----------|
+| **Config-based** (default) | `/popkit:power start` | Uses `agents/config.json` settings per agent |
+| **Require All** | `/popkit:power start --require-plans` | Forces ALL agents to present plans |
+| **Trust All** | `/popkit:power start --trust-agents` | Allows ALL agents to execute directly |
+
+**Agent Plan Requirements (from `agents/config.json`):**
+
+| Agent Type | Plan Required | Rationale |
+|------------|---------------|-----------|
+| **Tier 1** (always-active) | `false` | Core agents (code-reviewer, documentation-maintainer) - read-only or low-risk |
+| **Tier 2** (on-demand) | `true` | Specialized agents (security-auditor, migration-specialist) - code-modifying, high-risk |
+| **code-explorer** | `false` | Read-only exploration, no code changes |
+| **code-architect** | `true` | Architectural decisions require approval |
+| **bug-whisperer** | `true` | Bug fixes can have unintended consequences |
+| **refactoring-expert** | `true` | Large-scale code changes need review |
+
+**Examples:**
+
+```bash
+# Use configured defaults (recommended)
+/popkit:power start "Refactor authentication system"
+# → code-explorer executes directly (plan_mode_required: false)
+# → security-auditor presents plan (plan_mode_required: true)
+# → code-reviewer executes directly (plan_mode_required: false)
+
+# Force all agents to present plans (high-risk changes)
+/popkit:power start "Migrate to microservices" --require-plans
+# → ALL agents present plans, even read-only ones
+
+# Trust all agents (quick prototyping)
+/popkit:power start "Build demo app" --trust-agents
+# → ALL agents execute directly without plans
+```
+
+**Plan Approval Timeout:**
+- Default: 300 seconds (5 minutes)
+- Configurable in `power-mode/config.json`
+- On timeout: Operation aborts (safe default)
+
+**Benefits:**
+- **Safety**: Review changes before implementation
+- **Learning**: See agent reasoning and approach
+- **Control**: Modify plans before execution
+- **Consensus**: Compare multiple agent plans (when used with `--consensus`)
+
+**Requirements:**
+- Claude Code 2.0.70 or later
+- Automatically disabled on earlier versions (graceful fallback)
 
 ---
 

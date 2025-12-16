@@ -612,5 +612,62 @@
         ]
       }
     }
+  },
+
+  "plan_mode": {
+    "description": "Plan mode configuration for Claude Code 2.0.70+ (Issue #263)",
+    "enabled": true,
+    "default": false,
+    "notes": {
+      "purpose": "Controls whether agents must present implementation plans for user approval before executing changes",
+      "lookup_order": ["user_override", "agent_overrides", "tier_defaults", "default"],
+      "backward_compatible": "Default=false maintains current behavior"
+    },
+    "tier_defaults": {
+      "tier-1-always-active": false,
+      "tier-2-on-demand": true,
+      "feature-workflow": "per-agent",
+      "notes": {
+        "tier-1": "Core agents can execute directly (read-only or low-risk)",
+        "tier-2": "Specialized agents require approval (code-modifying, high-risk)",
+        "feature-workflow": "Varies by agent: code-explorer=false, code-architect=true"
+      }
+    },
+    "agent_overrides": {
+      "code-explorer": false,
+      "code-architect": true,
+      "code-reviewer": false,
+      "bug-whisperer": true,
+      "security-auditor": true,
+      "test-writer-fixer": true,
+      "api-designer": true,
+      "performance-optimizer": true,
+      "refactoring-expert": true,
+      "documentation-maintainer": false,
+      "query-optimizer": true,
+      "migration-specialist": true,
+      "accessibility-guardian": false,
+      "ai-engineer": true,
+      "deployment-validator": false,
+      "feature-prioritizer": false,
+      "rapid-prototyper": true,
+      "backup-coordinator": true,
+      "meta-agent": false,
+      "researcher": false,
+      "user-story-writer": false,
+      "devops-automator": true,
+      "bundle-analyzer": false,
+      "log-analyzer": false,
+      "metrics-collector": false,
+      "feedback-synthesizer": false,
+      "rollback-specialist": true,
+      "data-integrity": true,
+      "dead-code-eliminator": true,
+      "power-coordinator": false,
+      "notes": {
+        "false": "Read-only, analysis, documentation agents - safe to execute directly",
+        "true": "Code-modifying, deployment, security agents - require plan approval"
+      }
+    }
   }
 }

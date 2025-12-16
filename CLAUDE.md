@@ -111,8 +111,8 @@ PopKit exists to **orchestrate Claude Code's full power** for real-world develop
    <!-- AUTO-GEN:TIER-COUNTS START -->
    - Tier 1: Always-active core agents (11)
    - Tier 2: On-demand specialists activated by triggers (17)
-   - Feature Workflow: 7-phase development agents (2)
-   - Skills: 66 reusable skills
+   - Feature Workflow: 7-phase development agents (3)
+   - Skills: 68 reusable skills
    - Commands: 24 slash commands
    <!-- AUTO-GEN:TIER-COUNTS END -->
 
@@ -208,12 +208,12 @@ packages/
   plugin/                  Claude Code plugin (main package)
     .claude-plugin/        Plugin manifest (plugin.json, marketplace.json)
     .mcp.json              MCP server configuration
-    agents/                30 agent definitions with tiered activation
+    agents/                31 agent definitions with tiered activation
       config.json          Agent routing, workflows, confidence thresholds
       tier-1-always-active/  11 core agents
       tier-2-on-demand/    17 specialized agents
-      feature-workflow/    2 agents for 7-phase feature development
-    skills/                66 reusable skills (SKILL.md format)
+      feature-workflow/    3 agents for 7-phase feature development
+    skills/                68 reusable skills (SKILL.md format)
     commands/              24 slash commands
     hooks/                 23 Python hooks (JSON stdin/stdout)
       hooks.json           Hook configuration
@@ -314,8 +314,16 @@ See `packages/plugin/commands/routine.md` for full documentation.
 ### Power Mode (Multi-Agent Orchestration)
 
 Parallel agent collaboration via `/popkit:power`:
-- **Redis Mode**: Full power, 6+ agents, requires Docker
-- **File-Based Mode**: Zero setup, 2-3 agents, auto-fallback
+- **Native Async Mode** (Claude Code 2.0.64+): Zero setup, 5+ agents via background Task tool
+- **Redis Mode** (Pro tier): Full power, 10+ agents, requires Docker
+- **File-Based Mode** (Free tier): Zero setup, 2 agents sequential
+
+**Plan Mode** (Claude Code 2.0.70+): Agents present implementation plans for user approval before executing changes.
+- Use `--require-plans` to force all agents to present plans
+- Use `--trust-agents` to allow all agents to execute directly
+- Default: Configuration-based per agent (Tier 1=execute, Tier 2=plan)
+
+Configuration: `packages/plugin/agents/config.json` → `plan_mode` section defines which agents require plan approval.
 
 Use `/popkit:power init` to set up. See `packages/plugin/commands/power.md` for details.
 
