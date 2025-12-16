@@ -114,3 +114,36 @@ export {
   generateComparisonHtml,
   generateAggregateHtml,
 } from './reports/index.js';
+
+// Behavior validation exports (Issue #258)
+export type {
+  BehaviorCapture,
+  RoutingDecision,
+  AgentInvocation,
+  SkillExecution,
+  PhaseTransition,
+  WorkflowStatus,
+  ToolPattern,
+  SequenceAnalysis,
+  UserDecision,
+  AgentGroup,
+  ToolCall,
+  PerformanceMetrics,
+} from './behavior/schema.js';
+export { BehaviorCaptureService } from './behavior/capture.js';
+export type {
+  BehaviorExpectations,
+  AgentExpectation,
+  SkillExpectation,
+  ToolExpectation,
+  RoutingExpectation,
+  WorkflowExpectation,
+  PerformanceExpectation,
+  DecisionExpectation,
+  SequenceExpectation,
+  BehaviorViolation,
+  ValidationResult,
+  ViolationSeverity,
+} from './validator/expectations.js';
+export { BehaviorValidator } from './validator/validator.js';
+export { BehaviorReportGenerator, generateBehaviorReport } from './validator/report.js';

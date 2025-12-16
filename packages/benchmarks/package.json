@@ -9,7 +9,10 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "benchmark": "tsx run-benchmark.ts",
+    "benchmark:validate": "tsx run-benchmark.ts --validate",
+    "validate:all": "tsx validate-all-tasks.ts"
   },
   "dependencies": {
     "better-sqlite3": "^11.6.0",
