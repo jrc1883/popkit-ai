@@ -948,4 +948,67 @@ export class ClaudeRunner implements ToolRunner {
       });
     });
   }
+
+  /**
+   * Validate behavior against expectations (Issue #258)
+   *
+   * Loads expectation file for the task and runs validation if found.
+   * Returns null if no expectation file exists.
+   */
+  private async validateBehavior(
+    task: BenchmarkTask,
+    behaviorCapture: import('../behavior/schema.js').BehaviorCapture | undefined,
+    logs: string[]
+  ): Promise<{
+    result: import('../validator/expectations.js').ValidationResult;
+    report: string;
+  } | null> {
+    if (!behaviorCapture) {
+      logs.push(`[${new Date().toISOString()}] Behavior validation skipped: no behavior capture`);
+      return null;
+    }
+
+    try {
+      // Look for expectation file in tasks directory
+      const expectationPath = join(
+        process.cwd(),
+        'packages/benchmarks/tasks',
+        `${task.id}.expectations.json`
+      );
+
+      // Check if expectation file exists
+      try {
+        await access(expectationPath);
+      } catch {
+        // Expectation file doesn't exist - skip validation
+        logs.push(`[${new Date().toISOString()}] Behavior validation skipped: no expectation file found`);
+        return null;
+      }
+
+      // Load expectations
+      const expectationContent = await readFile(expectationPath, 'utf-8');
+      const expectations: BehaviorExpectations = JSON.parse(expectationContent);
+
+      logs.push(`[${new Date().toISOString()}] Loaded expectations from ${expectationPath}`);
+
+      // Run validation
+      const validator = new BehaviorValidator(expectations, behaviorCapture);
+      const result = validator.validate();
+
+      // Generate report
+      const report = generateBehaviorReport(result, expectations, behaviorCapture);
+
+      // Save report to working directory (if available)
+      if (this.workDir) {
+        const reportPath = join(this.workDir, task.id, 'behavior-report.md');
+        await writeFile(reportPath, report);
+        logs.push(`[${new Date().toISOString()}] Behavior report saved: ${reportPath}`);
+      }
+
+      return { result, report };
+    } catch (error) {
+      logs.push(`[${new Date().toISOString()}] Behavior validation error: ${error instanceof Error ? error.message : String(error)}`);
+      return null;
+    }
+  }
 }
