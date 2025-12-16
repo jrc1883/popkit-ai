@@ -541,6 +541,10 @@ class PowerModeCoordinator:
             on_session_complete=self._on_stream_complete
         )
 
+        # Batch tracking for status line widget (Issue #253)
+        self.current_batch = 0
+        self._last_agent_count = 0
+
         # Redis connection (Issue #191: supports Upstash or local)
         self.redis: Optional[BaseRedisClient] = None
         self.pubsub: Optional[BasePubSub] = None
@@ -1196,8 +1200,11 @@ class PowerModeCoordinator:
 
     def _on_stream_chunk(self, chunk: StreamChunk):
         """Callback when chunk is added to stream manager."""
+        # Update batch tracking (Issue #253)
+        self._update_batch_tracking()
+
         # Update status line state
-        self.stream_manager.save_state()
+        self.stream_manager.save_state(batch_number=self.current_batch)
 
         # Forward to interested agents if configured
         if CONFIG.get("streaming", {}).get("broadcast_chunks"):
@@ -1206,7 +1213,7 @@ class PowerModeCoordinator:
     def _on_stream_complete(self, session: StreamSession):
         """Callback when stream session completes."""
         # Update status line state
-        self.stream_manager.save_state()
+        self.stream_manager.save_state(batch_number=self.current_batch)
 
         # Create insight from completed stream if substantial
         if session.chunk_count > 5:
@@ -1453,7 +1460,26 @@ class PowerModeCoordinator:
         if self.metrics_collector:
             self.metrics_collector.agent_started(identity.id)
 
+        # Issue #253: Update batch tracking when new agent registers
+        self._update_batch_tracking()
+
         return identity
+
+    def _update_batch_tracking(self):
+        """Update batch number based on active agent count (Issue #253).
+
+        Increments batch number when a new wave of agents spawns (detected by
+        significant increase in active agent count).
+        """
+        current_active = len(self.stream_manager.active_sessions)
+
+        # Increment batch when we get new agents (spawning a new batch)
+        if current_active > self._last_agent_count:
+            self.current_batch += 1
+            self._last_agent_count = current_active
+        elif current_active < self._last_agent_count:
+            # Update tracking but don't decrement batch (agents completing)
+            self._last_agent_count = current_active
 
     def assign_task(self, agent_id: str, task: Dict):
         """Assign a task to an agent."""

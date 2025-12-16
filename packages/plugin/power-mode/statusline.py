@@ -533,6 +533,37 @@ def widget_power_mode(compact: bool = True) -> str:
     return " ".join(parts)
 
 
+def widget_batch_status(compact: bool = True) -> str:
+    """
+    Batch spawning status widget (Issue #253).
+
+    Display batch number and agent information during Power Mode parallel execution.
+
+    Format (compact): Batch:2 Agents:4
+    Format (full): Batch 2 | Code Explorer, Security Auditor (4 agents)
+
+    Returns:
+        Formatted batch status string, or empty if no active batch
+    """
+    state = load_power_mode_state()
+    streaming = state.get("streaming", {})
+    batch_num = state.get("batch_number", 0)
+    agent_names = streaming.get("agents_streaming", [])
+
+    if not batch_num or not agent_names:
+        return ""
+
+    if compact:
+        return f"{Colors.CYAN}Batch:{batch_num} Agents:{len(agent_names)}{Colors.RESET}"
+
+    # Full format with agent names
+    agents_display = ", ".join(agent_names[:3])  # Show first 3
+    if len(agent_names) > 3:
+        agents_display += f" +{len(agent_names) - 3}"
+
+    return f"{Colors.CYAN}Batch {batch_num} | {agents_display} ({len(agent_names)} agents){Colors.RESET}"
+
+
 def widget_workflow(compact: bool = True) -> str:
     """
     Workflow progress widget.
@@ -623,6 +654,7 @@ WIDGETS: Dict[str, Callable[[bool], str]] = {
     "popkit": widget_popkit,
     "efficiency": widget_efficiency,
     "power_mode": widget_power_mode,
+    "batch_status": widget_batch_status,
     "workflow": widget_workflow,
     "health": widget_health,
 }
@@ -1081,6 +1113,7 @@ def list_widgets():
         "popkit": "PopKit branding indicator",
         "efficiency": "Token savings, patterns matched, duplicates skipped",
         "power_mode": "Power Mode status with issue, phase, agents",
+        "batch_status": "Batch spawning status with agent count (Issue #253)",
         "workflow": "Current workflow progress from STATUS.json",
         "health": "Build, test, lint status from morning routine",
     }

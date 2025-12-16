@@ -359,12 +359,13 @@ class StreamManager:
     # STATE PERSISTENCE
     # =========================================================================
 
-    def save_state(self, state_file: Optional[Path] = None) -> None:
+    def save_state(self, state_file: Optional[Path] = None, batch_number: Optional[int] = None) -> None:
         """
         Save streaming state for status line integration.
 
         Args:
             state_file: Path to state file (defaults to .claude/power-mode-state.json)
+            batch_number: Optional batch number for batch status widget (Issue #253)
         """
         state_file = state_file or STATE_FILE
 
@@ -383,6 +384,10 @@ class StreamManager:
         # Update with streaming state
         existing["streaming"] = self.get_status_summary()
         existing["streaming_updated_at"] = datetime.now().isoformat()
+
+        # Update batch number if provided (Issue #253)
+        if batch_number is not None:
+            existing["batch_number"] = batch_number
 
         # Write back
         with open(state_file, "w") as f:
