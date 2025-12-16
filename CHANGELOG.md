@@ -4,6 +4,35 @@ All notable changes to PopKit are documented in this file.
 
 **Versioning:** PopKit uses semantic versioning. Currently in preview (0.x) until stable public launch.
 
+## [0.2.4] - December 16, 2025
+
+### Bug Fixes (Issue #254)
+
+- **Benchmark CLI Windows Support**: Fixed critical bug preventing Claude CLI from starting on Windows
+  - Root cause: `spawn()` without `shell: true` cannot find npm `.cmd` wrappers on Windows
+  - Solution: Added platform-specific shell option to spawn call
+  - Impact: Unblocked benchmark validation framework (#258, #256, #257)
+  - Files: `packages/benchmarks/src/runners/claude-runner.ts:667`
+  - Testing: Created manual reproduction test `test-issue-239.ts`
+  - Documentation: `docs/research/2025-12-16-issue-254-benchmark-cli-bug-fix.md`
+
+### Features (Issue #258)
+
+- **Self-Testing Framework**: Complete implementation of behavioral validation for benchmarks
+  - Phase 1: Test telemetry module with zero-overhead design
+  - Phase 2: Validation engine with severity-based violations (critical/major/minor)
+  - Phase 3: Runner integration with automatic validation
+  - Components: 13 files, ~1,870 lines of code
+  - Documentation: `packages/benchmarks/docs/behavior-validation-guide.md`
+  - Session summary: `docs/sessions/2025-12-16-self-testing-framework-complete.md`
+
+### Research
+
+- **Issue #254 Analysis**: Comprehensive root cause investigation and cross-platform subprocess debugging
+- **Pending Research Branches**: Documented 10 research branches from Claude Code Web sessions
+
+---
+
 ## [0.2.3] - December 15, 2025
 
 ### Security Fix (Issue #238)
