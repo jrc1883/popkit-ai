@@ -15,6 +15,7 @@
  */
 
 import { analyzeBenchmarkSession, compareSessions, generateComparisonReport } from './src/reports/analyzer.js';
+import { analyzeWorkflowMetrics, compareWorkflowMetrics, generateWorkflowMetricsReport } from './src/reports/workflow-metrics.js';
 import { join } from 'node:path';
 
 const args = process.argv.slice(2);
@@ -55,8 +56,23 @@ const comparison = compareSessions(vanilla, popkit);
 const report = generateComparisonReport(comparison);
 console.log(report);
 
-// Also save to file
+// Analyze workflow metrics (Issue #256)
+console.log('\nAnalyzing workflow metrics...\n');
+const vanillaWorkflow = analyzeWorkflowMetrics(vanilla);
+const popkitWorkflow = analyzeWorkflowMetrics(popkit);
+const workflowComparison = compareWorkflowMetrics(vanillaWorkflow, popkitWorkflow);
+
+const workflowReport = generateWorkflowMetricsReport(workflowComparison);
+console.log(workflowReport);
+
+// Save both reports to files
 const { writeFile } = await import('node:fs/promises');
 const outputPath = join(import.meta.dirname, 'results', 'comparison-report.txt');
+const workflowOutputPath = join(import.meta.dirname, 'results', 'workflow-metrics-report.txt');
+
 await writeFile(outputPath, report);
-console.log(`\nReport saved to: ${outputPath}`);
+await writeFile(workflowOutputPath, workflowReport);
+
+console.log(`\nReports saved to:`);
+console.log(`  - ${outputPath}`);
+console.log(`  - ${workflowOutputPath}`);
