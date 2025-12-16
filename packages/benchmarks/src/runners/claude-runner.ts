@@ -664,6 +664,7 @@ export class ClaudeRunner implements ToolRunner {
         env: options.env || process.env,
         stdio: ['pipe', 'pipe', 'pipe'], // Explicit stdio piping for stream-json capture
         windowsHide: false,
+        shell: process.platform === 'win32', // Fix #254: Use shell on Windows to find npm commands in PATH
       });
 
       const timeout = options.timeout || 30000;
