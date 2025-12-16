@@ -68,3 +68,4 @@ packages/benchmarks/pnpm-lock.yaml
 
 # Temporary build artifacts
 packages/*/build-*.txt
+.popkit/
