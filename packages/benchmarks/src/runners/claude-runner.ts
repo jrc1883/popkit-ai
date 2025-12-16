@@ -632,7 +632,7 @@ export class ClaudeRunner implements ToolRunner {
       const proc: ChildProcess = spawn(command, args, {
         cwd: options.cwd,
         env: options.env || process.env,
-        shell: true,
+        stdio: ['pipe', 'pipe', 'pipe'], // Explicit stdio piping for stream-json capture
         windowsHide: false,
       });
 
@@ -870,8 +870,8 @@ export class ClaudeRunner implements ToolRunner {
       const proc: ChildProcess = spawn(command, args, {
         cwd: options.cwd,
         env: options.env || process.env,
-        shell: true,
-        // Windows-specific: don't hide window
+        shell: true, // Needed for shell commands with quotes/pipes in tests
+        stdio: ['pipe', 'pipe', 'pipe'], // Explicit stdio piping (Issue #254)
         windowsHide: false,
       });
 
