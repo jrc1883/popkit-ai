@@ -424,9 +424,13 @@ export class ClaudeRunner implements ToolRunner {
     }
 
     // Build environment with benchmark mode flags (Issue #237)
+    const sessionId = `benchmark-${task.id}-${Date.now()}`;
     const env: Record<string, string | undefined> = {
       ...process.env,
       CI: 'true',
+      // Enable behavior telemetry capture (Issue #258)
+      TEST_MODE: 'true',
+      TEST_SESSION_ID: sessionId,
     };
 
     // For popkit/power modes with workflow testing, set benchmark mode variables
@@ -440,11 +444,15 @@ export class ClaudeRunner implements ToolRunner {
       }
     }
 
+    // Initialize behavior capture service (Issue #258)
+    const captureService = new BehaviorCaptureService(task.id, mode, sessionId);
+
     // Always use stdin for prompt (cross-platform compatible)
     const result = await this.runCommandWithStdin(cliPath, args, prompt, {
       cwd: workDir,
       timeout: this.config.timeoutMs,
       env: env as Record<string, string>,
+      captureService, // Pass capture service to attach to subprocess
     });
 
     // Parse stream-json output
