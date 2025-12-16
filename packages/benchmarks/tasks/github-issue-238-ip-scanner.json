@@ -1,0 +1,176 @@
+{
+  "id": "github-issue-238-ip-scanner",
+  "name": "GitHub IP Leak Scanner Exit Code Enforcement (Issue #238)",
+  "description": "Fix /popkit:git publish command to respect IP scanner exit codes and block on security violations. Small bug fix testing debugging workflow.",
+  "category": "github-issue",
+  "language": "typescript",
+  "version": "1.0.0",
+
+  "githubIssue": {
+    "repo": "jrc1883/popkit",
+    "number": 238,
+    "url": "https://github.com/jrc1883/popkit/issues/238",
+    "title": "IP leak scanner blocks correctly but publish workflow ignores exit code"
+  },
+
+  "initialFiles": {
+    "package.json": "{\"name\": \"ip-scanner-test\", \"version\": \"1.0.0\"}",
+    "README.md": "# IP Leak Scanner Exit Code Fix\n\nThis is a simplified version of PopKit issue #238 for benchmark testing.\n\n## Task\n\nFix the git publish workflow to respect IP scanner exit codes.\n\n## Requirements\n\nSee REQUIREMENTS.md for full specification.\n",
+    "REQUIREMENTS.md": "# IP Leak Scanner Exit Code Fix Requirements\n\n## Scope (Simplified for Benchmark)\n\nImplement ONLY the exit code enforcement fix from issue #238.\n**Skip:** Whitelist configuration, actual IP scanner implementation\n\n## Current Behavior (Bug)\n\nThe publish workflow in `git-publish.sh` runs the IP scanner but **ignores** its exit code:\n\n```bash\n# Current (broken)\npython ip_scanner.py packages/plugin/ --pre-publish\n# Returns exit code 1 but workflow continues anyway\ngit subtree split ...\n```\n\n## Expected Behavior\n\n1. Scanner runs and returns exit code 1 (blocking)\n2. Workflow **stops immediately** and displays findings\n3. User reviews findings\n4. If false positives: User runs with `--skip-ip-scan` flag\n5. If real leaks: User fixes them, then re-runs\n\n## Core Requirements\n\n### 1. Exit Code Enforcement\n\nUpdate `git-publish.sh` to check the scanner's exit code:\n\n```bash\nif [[ \"$SKIP_IP_SCAN\" != \"true\" ]]; then\n    python ip_scanner.py packages/plugin/ --pre-publish\n    if [[ $? -ne 0 ]]; then\n        echo \"❌ Publish blocked by IP leak scanner.\"\n        echo \"Review findings above.\"\n        echo \"To override: ./git-publish.sh --skip-ip-scan\"\n        exit 1\n    fi\nfi\n\n# Continue with git operations only if scanner passed\ngit subtree split ...\n```\n\n### 2. Flag Parsing\n\nAdd support for `--skip-ip-scan` flag:\n\n```bash\nSKIP_IP_SCAN=\"false\"\n\nwhile [[ $# -gt 0 ]]; do\n    case $1 in\n        --skip-ip-scan)\n            SKIP_IP_SCAN=\"true\"\n            shift\n            ;;\n        *)\n            echo \"Unknown option: $1\"\n            exit 1\n            ;;\n    esac\ndone\n```\n\n### 3. Mock IP Scanner\n\nCreate `ip_scanner.py` that simulates detection:\n\n```python\n#!/usr/bin/env python3\nimport sys\nimport argparse\n\ndef main():\n    parser = argparse.ArgumentParser()\n    parser.add_argument('path', help='Path to scan')\n    parser.add_argument('--pre-publish', action='store_true')\n    args = parser.parse_args()\n    \n    # Simulate finding issues\n    print(f\"Scanning {args.path}...\")\n    print(\"Found 2 potential IP leaks:\")\n    print(\"  1. CRITICAL: API key pattern in file.ts:45\")\n    print(\"  2. HIGH: IP address in config.json:12\")\n    print(\"\")\n    print(\"BLOCKED: Found 2 critical/high severity issues.\")\n    \n    # Return exit code 1 to signal blocking\n    sys.exit(1)\n\nif __name__ == '__main__':\n    main()\n```\n\n### 4. Test Script\n\nCreate `test-enforcement.sh` to verify:\n\n```bash\n#!/bin/bash\n\necho \"Test 1: Scanner blocks publish\"\n./git-publish.sh\nif [[ $? -eq 0 ]]; then\n    echo \"FAIL: Should have blocked\"\n    exit 1\nfi\necho \"PASS: Correctly blocked\"\n\necho \"\"\necho \"Test 2: --skip-ip-scan flag allows override\"\n./git-publish.sh --skip-ip-scan\nif [[ $? -ne 0 ]]; then\n    echo \"FAIL: Should have allowed with flag\"\n    exit 1\nfi\necho \"PASS: Correctly allowed override\"\n```\n\n## Files to Create\n\n1. `git-publish.sh` - Main publish workflow with exit code checking\n2. `ip_scanner.py` - Mock scanner that returns exit code 1\n3. `test-enforcement.sh` - Verification tests\n4. `README-SOLUTION.md` - Document the fix\n\n## Success Criteria\n\n1. **Scanner blocks by default** - Exit code 1 stops workflow\n2. **Clear error message** - Shows findings and suggests override\n3. **Override flag works** - `--skip-ip-scan` bypasses check\n4. **Tests pass** - Both test scenarios succeed\n5. **Clean code** - Proper error handling, clear logic\n\n## Quality Expectations\n\n- **Production-ready** - Error handling, user-friendly messages\n- **Testable** - Clear verification of behavior\n- **Documented** - Explain the fix in README-SOLUTION.md\n- **Shell best practices** - Proper quoting, error checks\n\n## Out of Scope (Don't Implement)\n\n- Actual IP leak detection logic\n- Whitelist configuration\n- Integration with PopKit commands\n- Git subtree implementation\n\n## Tips\n\n- Focus on **exit code enforcement** - that's the core bug\n- Make error messages helpful for users\n- Test both blocked and allowed scenarios\n- Document why this matters (prevents credential leaks)\n"
+  },
+
+  "dependencies": [],
+  "setupCommands": ["chmod +x git-publish.sh test-enforcement.sh ip_scanner.py"],
+
+  "prompt": "Fix the IP leak scanner exit code enforcement bug from PopKit issue #238.\n\n**Context:**\nYou're working in a fresh directory. Read REQUIREMENTS.md for the full specification. This is a real bug from the PopKit project where the publish workflow ignores the IP scanner's exit code.\n\n**Core Task:**\nFix `git-publish.sh` to respect the IP scanner's exit code (1 = block, 0 = allow) and add a `--skip-ip-scan` flag for overrides.\n\n**Files to Create:**\n1. `git-publish.sh` - Publish workflow with exit code enforcement\n2. `ip_scanner.py` - Mock scanner (returns exit code 1)\n3. `test-enforcement.sh` - Verification tests\n4. `README-SOLUTION.md` - Document the fix\n\n**Quality Expectations:**\n- Fix the exact bug described (workflow ignoring exit code)\n- Add proper error messages\n- Support `--skip-ip-scan` flag\n- Write tests that verify both blocked and allowed scenarios\n- Document why this matters for security\n\n**Success Criteria:**\nSee REQUIREMENTS.md section \"Success Criteria\" for testable acceptance criteria.\n\nThis is a small, focused bug fix - don't overthink it. The key is making the workflow **stop** when the scanner returns exit code 1.",
+
+  "context": "This is a real PopKit issue (#238) that was found during a publish attempt. The IP scanner correctly detected issues and returned exit code 1, but the workflow continued anyway and published to the public repo. This benchmark tests if the AI can correctly implement exit code enforcement.",
+
+  "executionModes": {
+    "vanilla": {
+      "prompt": "Same as main prompt above"
+    },
+    "popkitQuick": {
+      "command": "/popkit:dev \"Fix the IP leak scanner exit code enforcement bug from PopKit issue #238. Read REQUIREMENTS.md. The publish workflow needs to check the scanner's exit code and stop if it returns 1. Add --skip-ip-scan flag for overrides. Create git-publish.sh (workflow with enforcement), ip_scanner.py (mock scanner), test-enforcement.sh (verification), and README-SOLUTION.md (documentation). Make it production-ready with clear error messages.\"",
+      "responses": {}
+    }
+  },
+
+  "maxTokens": 50000,
+  "timeoutSeconds": 300,
+
+  "tests": [
+    {
+      "id": "publish-script-exists",
+      "name": "git-publish.sh exists",
+      "type": "unit",
+      "command": "test -f git-publish.sh && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "scanner-exists",
+      "name": "ip_scanner.py exists",
+      "type": "unit",
+      "command": "test -f ip_scanner.py && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "test-script-exists",
+      "name": "test-enforcement.sh exists",
+      "type": "unit",
+      "command": "test -f test-enforcement.sh && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "solution-doc-exists",
+      "name": "README-SOLUTION.md exists",
+      "type": "unit",
+      "command": "test -f README-SOLUTION.md && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "has-exit-code-check",
+      "name": "Checks scanner exit code",
+      "type": "unit",
+      "command": "grep -qE '\\$\\?.*-ne.*0' git-publish.sh && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "has-skip-flag",
+      "name": "Supports --skip-ip-scan flag",
+      "type": "unit",
+      "command": "grep -q 'skip-ip-scan' git-publish.sh && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "scanner-returns-1",
+      "name": "Scanner returns exit code 1",
+      "type": "unit",
+      "command": "python3 ip_scanner.py test/ --pre-publish > /dev/null 2>&1; [ $? -eq 1 ] && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "scripts-executable",
+      "name": "Scripts are executable",
+      "type": "unit",
+      "command": "[ -x git-publish.sh ] && [ -x test-enforcement.sh ] && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "publish-blocks-by-default",
+      "name": "Publish blocks when scanner fails",
+      "type": "integration",
+      "command": "bash git-publish.sh > /dev/null 2>&1; [ $? -ne 0 ] && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS",
+      "timeoutSeconds": 10
+    },
+    {
+      "id": "skip-flag-works",
+      "name": "--skip-ip-scan flag bypasses scanner",
+      "type": "integration",
+      "command": "bash git-publish.sh --skip-ip-scan > /dev/null 2>&1; [ $? -eq 0 ] && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS",
+      "timeoutSeconds": 10
+    }
+  ],
+
+  "qualityChecks": [
+    {
+      "id": "error-messages",
+      "name": "Has helpful error messages",
+      "type": "custom",
+      "command": "grep -c '❌\\|BLOCKED\\|Review findings' git-publish.sh",
+      "weight": 0.3,
+      "note": "Should have user-friendly error messages"
+    },
+    {
+      "id": "flag-parsing",
+      "name": "Proper flag parsing",
+      "type": "custom",
+      "command": "grep -c 'while.*case.*shift' git-publish.sh",
+      "weight": 0.3,
+      "note": "Should have proper argument parsing"
+    },
+    {
+      "id": "documentation",
+      "name": "Documents the fix",
+      "type": "custom",
+      "command": "wc -l < README-SOLUTION.md",
+      "weight": 0.2,
+      "note": "Should explain the bug and fix"
+    },
+    {
+      "id": "test-coverage",
+      "name": "Tests both scenarios",
+      "type": "custom",
+      "command": "grep -c 'Test [12]:' test-enforcement.sh",
+      "weight": 0.2,
+      "note": "Should test blocking and override"
+    }
+  ],
+
+  "baseline": {
+    "vanilla": {
+      "tokenEstimate": 20000,
+      "toolCallEstimate": 25,
+      "successRate": 0.70,
+      "timeEstimate": 180,
+      "qualityEstimate": 7.0,
+      "notes": "May miss edge cases, might not implement --skip-ip-scan flag"
+    },
+    "popkit": {
+      "tokenEstimate": 15000,
+      "toolCallEstimate": 18,
+      "successRate": 0.90,
+      "timeEstimate": 120,
+      "qualityEstimate": 8.5,
+      "notes": "Should identify security context, implement proper error handling"
+    }
+  },
+
+  "tags": ["github-issue", "bug-fix", "security", "shell-scripting", "exit-codes", "small-complexity"],
+  "author": "PopKit Benchmark Team",
+  "createdAt": "2025-12-15T00:00:00Z",
+
+  "notes": "This is a REAL PopKit issue (#238) that was discovered during version 0.2.2 publish. The IP scanner correctly detected potential leaks and returned exit code 1, but the publish workflow ignored this and continued. Tests ability to debug workflow logic and implement proper exit code enforcement."
+}
