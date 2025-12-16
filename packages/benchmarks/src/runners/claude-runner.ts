@@ -465,12 +465,16 @@ export class ClaudeRunner implements ToolRunner {
       console.log(`[ClaudeRunner] Cost: $${streamData.usage.costUsd.toFixed(4)}`);
     }
 
+    // Build behavior capture from telemetry events
+    const behaviorCapture = captureService.buildBehaviorCapture();
+
     return {
       output: streamData.finalResult,
       tokens: streamData.usage.inputTokens + streamData.usage.outputTokens,
       toolCalls: streamData.toolCalls.length,
       streamData,
       rawStream: result.stdout, // Include raw stream-json output for debugging
+      behaviorCapture,
     };
   }
 
@@ -637,6 +641,7 @@ export class ClaudeRunner implements ToolRunner {
       cwd?: string;
       timeout?: number;
       env?: Record<string, string>;
+      captureService?: BehaviorCaptureService;
     } = {}
   ): Promise<{
     exitCode: number;
@@ -690,6 +695,15 @@ export class ClaudeRunner implements ToolRunner {
 
       proc.stderr?.on('data', (data) => {
         stderr += data.toString();
+        // Capture telemetry events from stderr (Issue #258)
+        if (options.captureService) {
+          const lines = data.toString().split('\n');
+          for (const line of lines) {
+            if (line.trim()) {
+              options.captureService.processLine(line);
+            }
+          }
+        }
         if (this.config.verbose) {
           process.stderr.write(data);
         }
