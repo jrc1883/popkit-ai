@@ -529,6 +529,7 @@ Manage status line widgets for real-time metrics display.
 | `popkit` | PopKit branding indicator | `[PK]` | `[PopKit]` |
 | `efficiency` | Token savings (Issue #78) | `~2.4k` | `~2.4k saved P:3 D:12` |
 | `power_mode` | Power Mode status | `#45 3/7 40%` | `#45 Phase 3/7 Agents:4 [####----] 40%` |
+| `batch_status` | Batch spawning status (Issue #253) | `Batch:2 Agents:4` | `Batch 2 \| Code Explorer, Security Auditor (4 agents)` |
 | `workflow` | Workflow progress | `impl 70%` | `feature-dev: Implementation (70%)` |
 | `health` | Build/test/lint status | `✓✓✓` | `Build:✓ Tests:12/12 Lint:0` |
 
