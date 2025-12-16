@@ -5,7 +5,7 @@
  */
 
 import { spawn, type ChildProcess } from 'node:child_process';
-import { mkdtemp, writeFile, readFile, rm, readdir } from 'node:fs/promises';
+import { mkdtemp, writeFile, readFile, rm, readdir, access } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import type {
@@ -22,6 +22,10 @@ import type {
   ConversationMessage,
 } from '../types.js';
 import { ConfigSwitcher, type ConfigSwitcherOptions } from './config-switcher.js';
+import { BehaviorCaptureService } from '../behavior/capture.js';
+import { BehaviorValidator } from '../validator/validator.js';
+import { generateBehaviorReport } from '../validator/report.js';
+import type { BehaviorExpectations } from '../validator/expectations.js';
 
 /**
  * Parsed stream-json data from Claude CLI
@@ -176,6 +180,12 @@ export class ClaudeRunner implements ToolRunner {
       const qualityResults = await this.runQualityChecks(task, taskDir);
       logs.push(`[${new Date().toISOString()}] Quality checks complete`);
 
+      // Step 7: Run behavior validation (Issue #258)
+      const behaviorValidation = await this.validateBehavior(task, claudeResult.behaviorCapture, logs);
+      if (behaviorValidation) {
+        logs.push(`[${new Date().toISOString()}] Behavior validation complete: ${behaviorValidation.result.score}/100`);
+      }
+
       const durationSeconds = (Date.now() - startTime) / 1000;
       const success = testResults.every((t) => t.passed);
       const streamData = claudeResult.streamData;
@@ -204,6 +214,9 @@ export class ClaudeRunner implements ToolRunner {
         } : undefined,
         // Raw stream-json output for debugging
         rawStream: claudeResult.rawStream,
+        // Behavior validation results (Issue #258)
+        behaviorValidation: behaviorValidation?.result,
+        behaviorCapture: claudeResult.behaviorCapture,
       };
     } catch (error) {
       const durationSeconds = (Date.now() - startTime) / 1000;
@@ -329,6 +342,7 @@ export class ClaudeRunner implements ToolRunner {
     toolCalls: number;
     streamData?: StreamJsonData;
     rawStream?: string;
+    behaviorCapture?: import('../behavior/schema.js').BehaviorCapture;
   }> {
     // For now, use CLI execution
     // In the future, this could use the API directly for better metrics
@@ -376,6 +390,7 @@ export class ClaudeRunner implements ToolRunner {
       toolCalls: result.toolCalls,
       streamData,
       rawStream: result.rawStream,
+      behaviorCapture: result.behaviorCapture,
     };
   }
 
@@ -389,6 +404,8 @@ export class ClaudeRunner implements ToolRunner {
     tokens: number;
     toolCalls: number;
     streamData?: StreamJsonData;
+    rawStream?: string;
+    behaviorCapture?: import('../behavior/schema.js').BehaviorCapture;
   }> {
     const cliPath = this.config.cliPath || 'claude';
 

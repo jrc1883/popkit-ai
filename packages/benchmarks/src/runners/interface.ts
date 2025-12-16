@@ -10,6 +10,8 @@ import type {
   BenchmarkResult,
   ConversationMessage,
 } from '../types.js';
+import type { ValidationResult } from '../validator/expectations.js';
+import type { BehaviorCapture } from '../behavior/schema.js';
 
 /**
  * Supported AI tools for benchmarking
@@ -66,6 +68,10 @@ export interface ExecutionResult {
   };
   /** Raw stream-json output from Claude CLI (for debugging/analysis) */
   rawStream?: string;
+  /** Behavior validation result (Issue #258) */
+  behaviorValidation?: ValidationResult;
+  /** Captured behavior data (Issue #258) */
+  behaviorCapture?: BehaviorCapture;
 }
 
 /**
