@@ -8,6 +8,7 @@ Responsibilities:
 2. Check for PopKit updates
 3. Register project with PopKit Cloud
 4. Ensure PopKit directories exist (auto-init)
+5. Filter agents based on initial task (Phase 2: Embedding-Based Agent Loading)
 """
 
 import sys
@@ -15,6 +16,9 @@ import json
 import os
 from pathlib import Path
 from datetime import datetime
+
+# Add utils to path
+sys.path.insert(0, str(Path(__file__).parent / "utils"))
 
 # Import version check utility
 try:
@@ -29,6 +33,13 @@ try:
     HAS_PROJECT_CLIENT = True
 except ImportError:
     HAS_PROJECT_CLIENT = False
+
+# Import agent loader for semantic filtering (Phase 2)
+try:
+    from agent_loader import AgentLoader
+    HAS_AGENT_LOADER = True
+except ImportError:
+    HAS_AGENT_LOADER = False
 
 def create_logs_directory():
     """Create logs directory if it doesn't exist."""
@@ -207,6 +218,50 @@ def ensure_popkit_directories():
     return None
 
 
+def load_relevant_agents_for_session(data):
+    """Load relevant agents based on initial user message.
+
+    Part of Phase 2: Embedding-Based Agent Loading.
+    This is non-blocking - any errors are silently ignored.
+
+    Args:
+        data: Session input data
+
+    Returns:
+        dict: Agent loading info, or None on error
+    """
+    if not HAS_AGENT_LOADER:
+        return None
+
+    try:
+        # Get initial user message (if available)
+        messages = data.get('messages', [])
+        user_message = next((m['content'] for m in messages if m['role'] == 'user'), '')
+
+        # If no user message yet, skip agent filtering
+        if not user_message:
+            return None
+
+        # Load relevant agents
+        loader = AgentLoader()
+        relevant_agents = loader.load(user_message, top_k=10)
+
+        # Output debug info to stderr
+        agent_ids = [a['agent_id'] for a in relevant_agents]
+        print(f"Agent filtering: loaded {len(agent_ids)} relevant agents", file=sys.stderr)
+        print(f"  Agents: {', '.join(agent_ids[:5])}{'...' if len(agent_ids) > 5 else ''}", file=sys.stderr)
+
+        return {
+            'loaded_agents': agent_ids,
+            'agent_count': len(relevant_agents),
+            'query_preview': user_message[:100]
+        }
+    except Exception:
+        pass  # Silent failure - never block session start
+
+    return None
+
+
 def main():
     """Main entry point for the hook - JSON stdin/stdout protocol"""
     try:
@@ -236,6 +291,9 @@ def main():
                     parts.append("config.json")
                 print(f"PopKit auto-init: {', '.join(parts)}", file=sys.stderr)
 
+        # Load relevant agents for this session (Phase 2, non-blocking)
+        agent_loading = load_relevant_agents_for_session(data)
+
         # Print welcome message to stderr
         print("Session started - hooks system active", file=sys.stderr)
 
@@ -258,6 +316,10 @@ def main():
         # Include popkit init info if directories were created
         if popkit_init:
             response["popkit_init"] = popkit_init
+
+        # Include agent loading info if available (Phase 2)
+        if agent_loading:
+            response["agent_loading"] = agent_loading
 
         print(json.dumps(response))
 
