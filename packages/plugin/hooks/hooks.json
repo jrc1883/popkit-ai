@@ -4,7 +4,7 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash|Read|Write|Edit|MultiEdit|Grep|Glob|Task|Skill|WebFetch|WebSearch|TodoWrite|NotebookEdit",
+        "matcher": "Bash|Read|Write|Edit|MultiEdit|Grep|Glob|Task|Skill|WebFetch|WebSearch|TodoWrite|NotebookEdit|Settings",
         "hooks": [
           {
             "type": "command",
@@ -31,7 +31,7 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "Bash|Read|Write|Edit|MultiEdit|Grep|Glob|Task|Skill|WebFetch|WebSearch|TodoWrite|NotebookEdit",
+        "matcher": "Bash|Read|Write|Edit|MultiEdit|Grep|Glob|Task|Skill|WebFetch|WebSearch|TodoWrite|NotebookEdit|Settings",
         "hooks": [
           {
             "type": "command",

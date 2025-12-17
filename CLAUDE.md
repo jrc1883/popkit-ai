@@ -274,6 +274,23 @@ Use `document-skills:pdf` to generate PDF output.
 Voyage AI embeddings for tool discovery. Set `VOYAGE_API_KEY` env var.
 Use `/popkit:project embed` to embed project items.
 
+### Claude Code Version Requirements
+
+PopKit features require specific Claude Code versions for full functionality:
+
+| Feature | Minimum Version | Description |
+|---------|-----------------|-------------|
+| **Extended Thinking** | 2.0.67 | Default enabled on Sonnet/Opus/Haiku (10k tokens) |
+| **Native Async Mode** | 2.0.64 | Zero-setup background Task tool (5+ agents) |
+| **Plan Mode** | 2.0.70 | Agent approval workflow before execution |
+| **Configuration Management** | 2.0.71 | `/config` toggle for prompt suggestions |
+| **Settings Alias** | 2.0.71 | `/settings` command alias for `/config` |
+| **MCP Permissions** | 2.0.71 | Fixed `dangerously-skip-permissions` for MCP servers |
+| **Bash Glob Safety** | 2.0.71 | Fixed permission rules for shell glob patterns |
+| **Bedrock Support** | 2.0.71 | `ANTHROPIC_BEDROCK_BASE_URL` environment variable |
+
+**Current Recommendation:** Claude Code 2.0.71+ for full PopKit feature support.
+
 ## Key Architectural Patterns
 
 ### Agent Routing (packages/plugin/agents/config.json)

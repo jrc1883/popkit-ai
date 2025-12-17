@@ -12,6 +12,7 @@ Features:
 
 import json
 import sys
+import os
 import re
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -28,6 +29,20 @@ except ImportError:
 GITHUB_API_URL = "https://api.github.com/repos/jrc1883/popkit/releases/latest"
 CACHE_TTL_HOURS = 24
 REQUEST_TIMEOUT_SECONDS = 5  # Non-blocking timeout
+
+# Claude Code version requirements
+CLAUDE_CODE_REQUIREMENTS = {
+    "extended_thinking": "2.0.67",
+    "native_async_mode": "2.0.64",
+    "plan_mode": "2.0.70",
+    "config_toggle": "2.0.71",
+    "settings_alias": "2.0.71",
+    "mcp_permissions_fix": "2.0.71",
+    "bash_glob_safety": "2.0.71",
+    "bedrock_support": "2.0.71",
+}
+
+POPKIT_MINIMUM_CLAUDE_CODE = "2.0.71"
 
 # Path resolution - works from hooks directory
 HOOKS_DIR = Path(__file__).parent.parent
@@ -203,6 +218,62 @@ def check_for_updates() -> Tuple[bool, Optional[Dict[str, Any]]]:
             pass
 
     return False, None
+
+
+def is_feature_available(feature_name: str, claude_code_version: Optional[str] = None) -> bool:
+    """Check if a PopKit feature is available in the current Claude Code version.
+
+    Args:
+        feature_name: Feature key from CLAUDE_CODE_REQUIREMENTS
+        claude_code_version: Claude Code version to check (from environment if not provided)
+
+    Returns:
+        True if feature is available, False otherwise
+    """
+    if feature_name not in CLAUDE_CODE_REQUIREMENTS:
+        return False
+
+    required_version = CLAUDE_CODE_REQUIREMENTS[feature_name]
+
+    if not claude_code_version:
+        claude_code_version = os.environ.get('CLAUDE_CODE_VERSION')
+
+    if not claude_code_version:
+        return False
+
+    try:
+        current = SemanticVersion(claude_code_version)
+        required = SemanticVersion(required_version)
+        return current >= required
+    except ValueError:
+        return False
+
+
+def meets_minimum_requirements(claude_code_version: Optional[str] = None) -> Tuple[bool, Optional[str]]:
+    """Check if Claude Code version meets PopKit minimum requirements.
+
+    Args:
+        claude_code_version: Claude Code version to check (from environment if not provided)
+
+    Returns:
+        (meets_requirements: bool, error_message: Optional[str])
+    """
+    if not claude_code_version:
+        claude_code_version = os.environ.get('CLAUDE_CODE_VERSION')
+
+    if not claude_code_version:
+        return False, "CLAUDE_CODE_VERSION environment variable not set"
+
+    try:
+        current = SemanticVersion(claude_code_version)
+        minimum = SemanticVersion(POPKIT_MINIMUM_CLAUDE_CODE)
+
+        if current >= minimum:
+            return True, None
+        else:
+            return False, f"PopKit requires Claude Code {POPKIT_MINIMUM_CLAUDE_CODE}+, found {claude_code_version}"
+    except ValueError:
+        return False, f"Invalid Claude Code version format: {claude_code_version}"
 
 
 def format_update_notification(release_info: Dict[str, Any], current_version: str) -> str:

@@ -280,6 +280,38 @@ Remove-Item Env:POPKIT_API_KEY
 ```
 ```
 
+## Claude Code 2.0.71+ Settings Integration
+
+PopKit works seamlessly with Claude Code's new settings management (available in v2.0.71+):
+
+### Managing Prompt Suggestions
+
+Control prompt suggestions visibility:
+
+```bash
+/config                    # Open configuration UI
+/settings                  # Alias for /config (new in 2.0.71)
+```
+
+**PopKit Configuration Options:**
+- Disable prompt suggestions when you prefer to work without recommendations
+- Enable suggestions to get PopKit skill recommendations during development
+- Fine-tune suggestion types by feature category
+
+### Account Settings
+
+Access account-related settings:
+
+```bash
+/settings                  # Opens Claude Code settings panel
+# Then navigate to "PopKit Account" section for:
+# - API key management
+# - Privacy preferences
+# - Data retention policies
+```
+
+**Note:** Requires Claude Code 2.0.71+. For earlier versions, use `/popkit:account` directly.
+
 ## Error Handling
 
 | Error | Response |

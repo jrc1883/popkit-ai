@@ -227,6 +227,43 @@ This action is **permanent and cannot be undone**. You will be asked to confirm 
 
 ---
 
+## Claude Code 2.0.71+ Settings Integration
+
+PopKit privacy settings integrate with Claude Code's native settings system (available in v2.0.71+):
+
+### Quick Settings Access
+
+```bash
+/settings                  # Opens Claude Code settings (new in 2.0.71)
+/config                    # Alias for settings
+```
+
+### Privacy Settings in Claude Code
+
+When you access `/settings` in Claude Code 2.0.71+:
+
+1. Navigate to "PopKit Privacy" section
+2. Available toggles:
+   - **Data Sharing**: Enable/disable collective learning
+   - **Anonymization Level**: Choose between strict, moderate, minimal
+   - **Auto-Delete**: Set retention period (off, 30, 60, 90 days)
+   - **Region**: Select data storage region (us, eu)
+
+### Command-Line Alternative
+
+For CLI-only workflows, continue using `/popkit:privacy` directly:
+
+```bash
+# These still work in all Claude Code versions
+/popkit:privacy status                    # View settings
+/popkit:privacy settings level strict     # Update settings
+/popkit:privacy consent give              # Manage consent
+```
+
+**Note:** `/settings` requires Claude Code 2.0.71+. Earlier versions use `/popkit:privacy` exclusively.
+
+---
+
 ## Architecture Integration
 
 | Component | Integration |
