@@ -39,6 +39,13 @@ try:
 except ImportError:
     SKILL_STATE_AVAILABLE = False
 
+# Import tool filter for context optimization (Issue #275)
+try:
+    from tool_filter import ToolFilter, filter_tools_for_workflow
+    TOOL_FILTER_AVAILABLE = True
+except ImportError:
+    TOOL_FILTER_AVAILABLE = False
+
 class PreToolUseHook:
     def __init__(self):
         self.claude_dir = Path.home() / '.claude'
@@ -506,6 +513,76 @@ class PreToolUseHook:
         tracker.record_tool_use(tool_name)
         return {"tracked": True}
 
+    def determine_workflow(self, tool_name: str, tool_args: Dict[str, Any]) -> str:
+        """
+        Determine workflow from tool context for tool filtering (Issue #275).
+
+        Args:
+            tool_name: Name of tool being invoked
+            tool_args: Tool arguments
+
+        Returns:
+            Workflow name or 'unknown'
+        """
+        # Map tools to workflows
+        workflow_map = {
+            'Edit': 'file-edit',
+            'Write': 'file-edit',
+        }
+
+        # Check if this is a git operation
+        if tool_name == 'Bash':
+            command = tool_args.get('command', '')
+            if 'git' in command:
+                if 'commit' in command or 'add' in command:
+                    return 'git-commit'
+            # Other bash operations get full access
+            return 'full-access'
+
+        return workflow_map.get(tool_name, 'unknown')
+
+    def filter_tools_for_context(self, tool_name: str, tool_args: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Apply tool filtering for context optimization (Issue #275).
+
+        This is currently in passthrough mode - it logs what would be filtered
+        but doesn't actually block anything. Future: enable active filtering.
+
+        Args:
+            tool_name: Name of tool being invoked
+            tool_args: Tool arguments
+
+        Returns:
+            Dict with filtering info
+        """
+        if not TOOL_FILTER_AVAILABLE:
+            return {"filtered": False}
+
+        # Determine workflow
+        workflow = self.determine_workflow(tool_name, tool_args)
+
+        # Get available tools (default set)
+        available_tools = [
+            'Read', 'Write', 'Edit', 'Bash', 'Grep', 'Glob',
+            'Task', 'TodoWrite', 'WebFetch', 'WebSearch', 'AskUserQuestion'
+        ]
+
+        # Apply filtering
+        tool_filter = ToolFilter()
+        filtered_tools = tool_filter.filter(workflow, available_tools)
+
+        # Calculate reduction
+        reduction = len(available_tools) - len(filtered_tools)
+
+        return {
+            "filtered": True,
+            "workflow": workflow,
+            "original_count": len(available_tools),
+            "filtered_count": len(filtered_tools),
+            "reduction": reduction,
+            "filtered_tools": filtered_tools
+        }
+
     def process_tool_request(self, tool_name: str, tool_args: Dict[str, Any]) -> Dict[str, Any]:
         """Main processing function for tool requests"""
         result = {
@@ -526,6 +603,14 @@ class PreToolUseHook:
         # Skill state tracking for AskUserQuestion enforcement (Issue #159)
         skill_tracking = self.track_skill_invocation(tool_name, tool_args)
         result["skill_tracking"] = skill_tracking
+
+        # Tool filtering for context optimization (Issue #275)
+        tool_filtering = self.filter_tools_for_context(tool_name, tool_args)
+        result["tool_filtering"] = tool_filtering
+        if tool_filtering.get("filtered"):
+            # Log filtering info to stderr (passthrough mode - not blocking)
+            print(f"🔧 Tool Filtering (Passthrough): {tool_filtering['workflow']}", file=sys.stderr)
+            print(f"   Tools: {tool_filtering['original_count']} → {tool_filtering['filtered_count']} ({tool_filtering['reduction']} filtered)", file=sys.stderr)
 
         # Safety checks
         safety_violations = self.check_safety_violations(tool_name, tool_args)
