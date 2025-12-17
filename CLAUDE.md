@@ -353,6 +353,31 @@ Hooks use pure functions for reliability and testability:
 
 See `packages/plugin/tests/hooks/` for 58 tests covering this pattern.
 
+### Context Optimization (Issues #275, #276)
+
+Two-phase optimization reducing PopKit's context baseline by **40.5%** (25.7k → 15.3k tokens):
+
+**Phase 1: Tool Choice Enforcement** (Issue #275 - Completed 2025-12-17)
+- `tool_filter.py` - Workflow-based tool filtering with wildcard support
+- `pre-tool-use.py` integration - Passthrough mode with debug logging
+- `agents/config.json` - Enforcement active, override via `POPKIT_DISABLE_TOOL_FILTER`
+- **Result:** System Tools reduced 32.3% (23.3k → 15k tokens)
+
+**Phase 2: Embedding-Based Agent Loading** (Issue #276 - Completed 2025-12-17)
+- `generate-agent-embeddings.py` - Voyage AI embeddings for 28 agents
+- `agent_loader.py` - Semantic search with keyword fallback, always includes Tier 1 agents
+- `session-start.py` integration - Loads top 10 relevant agents per query
+- **Result:** Custom Agents reduced 87.5% (2.4k → 0.3k tokens)
+
+**Combined Impact:**
+- Baseline: 25.7k tokens
+- After optimization: 15.3k tokens
+- **Target exceeded:** Goal 25k, achieved 15.3k ✅
+
+**Measurement:** Run `python packages/plugin/scripts/measure-context-usage.py`
+
+**Future Enhancement:** Issue #281 - Enhanced embeddings with full agent definitions for 3-5k additional savings
+
 ## Installing popkit for Development
 
 To use popkit while developing popkit (chicken-and-egg), install it from the public plugin repo:
