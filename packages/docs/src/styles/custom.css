@@ -1,0 +1,43 @@
+/* PopKit Documentation Custom Styles */
+
+:root {
+  --sl-color-accent-low: #1a1a2e;
+  --sl-color-accent: #16213e;
+  --sl-color-accent-high: #0f3460;
+  --sl-color-white: #e8e8e8;
+  --sl-color-gray-1: #d0d0d0;
+  --sl-color-gray-2: #b0b0b0;
+  --sl-color-gray-3: #909090;
+  --sl-color-gray-4: #707070;
+  --sl-color-gray-5: #505050;
+  --sl-color-gray-6: #303030;
+}
+
+/* Custom hero styling */
+.hero {
+  text-align: center;
+  padding: 4rem 0;
+}
+
+/* Card grid enhancements */
+.card-grid {
+  gap: 1.5rem;
+}
+
+/* Code block styling */
+pre {
+  border-radius: 0.5rem;
+  border: 1px solid var(--sl-color-gray-5);
+}
+
+/* Link styling */
+a {
+  color: var(--sl-color-accent-high);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+a:hover {
+  color: var(--sl-color-accent);
+  text-decoration: underline;
+}
