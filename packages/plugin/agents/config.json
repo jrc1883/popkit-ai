@@ -373,6 +373,8 @@
 
   "tool_choice": {
     "description": "Claude API tool_choice parameter for forcing specific tool execution",
+    "enforcement": "active",
+    "override_flag": "POPKIT_DISABLE_TOOL_FILTER",
     "modes": {
       "auto": "Let Claude choose the best tool (default)",
       "required": "Force tool use, Claude must use a tool",
@@ -385,21 +387,28 @@
           { "action": "gather_status", "tool_choice": "auto" },
           { "action": "stage_files", "tool_choice": { "type": "tool", "name": "Bash" } },
           { "action": "create_commit", "tool_choice": { "type": "tool", "name": "Bash" } }
-        ]
+        ],
+        "required_tools": ["Bash"]
       },
       "file-edit": {
         "description": "Read before edit enforcement",
         "steps": [
           { "action": "read_file", "tool_choice": { "type": "tool", "name": "Read" } },
           { "action": "edit_file", "tool_choice": { "type": "tool", "name": "Edit" } }
-        ]
+        ],
+        "required_tools": ["Read", "Edit"]
       },
       "verification": {
         "description": "Run verification commands",
         "steps": [
           { "action": "run_tests", "tool_choice": { "type": "tool", "name": "Bash" } },
           { "action": "run_lint", "tool_choice": { "type": "tool", "name": "Bash" } }
-        ]
+        ],
+        "required_tools": ["Bash"]
+      },
+      "full-access": {
+        "description": "All tools available",
+        "required_tools": ["*"]
       }
     },
     "skill_requirements": {
@@ -417,9 +426,9 @@
       }
     },
     "notes": {
-      "usage": "Hooks can read this config and pass tool_choice to API calls",
-      "override": "Commands can override with --tool=<name> flag",
-      "enforcement": "Currently advisory - full enforcement requires hook implementation"
+      "usage": "Hooks read this config and filter tools per workflow",
+      "override": "Set POPKIT_DISABLE_TOOL_FILTER=1 to disable filtering",
+      "enforcement": "Active as of 2025-12-17 (Phase 1 complete)"
     }
   },
 
