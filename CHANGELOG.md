@@ -4,6 +4,85 @@ All notable changes to PopKit are documented in this file.
 
 **Versioning:** PopKit uses semantic versioning. Currently in preview (0.x) until stable public launch.
 
+## [0.2.5] - December 17, 2025
+
+### Major Performance Improvement (Issues #275, #276)
+
+- **Context Optimization**: 40.5% reduction in PopKit's context baseline (25.7k → 15.3k tokens)
+  - **Phase 1 - Tool Choice Enforcement** (#275): Reduced System Tools 32.3% (23.3k → 15k tokens)
+    - \`tool_filter.py\` - Workflow-based tool filtering with wildcard support
+    - \`pre-tool-use.py\` integration - Passthrough mode with debug logging
+    - Enforcement active, override via \`POPKIT_DISABLE_TOOL_FILTER\`
+  - **Phase 2 - Embedding-Based Agent Loading** (#276): Reduced Custom Agents 87.5% (2.4k → 0.3k tokens)
+    - \`generate-agent-embeddings.py\` - Voyage AI embeddings for 28 agents
+    - \`agent_loader.py\` - Semantic search with keyword fallback
+    - \`session-start.py\` integration - Loads top 10 relevant agents per query
+    - Always includes Tier 1 agents
+  - Measurement tool: \`scripts/measure-context-usage.py\`
+  - Documentation: \`docs/plans/2025-12-13-context-optimization.md\`
+
+### Features
+
+- **Plan Mode Integration** (#263): Agent approval workflow before execution
+  - Agents present implementation plans for user approval
+  - Configuration-based per agent (Tier 1=execute, Tier 2=plan)
+  - \`--require-plans\` and \`--trust-agents\` flags for override
+  - Requires Claude Code 2.0.70+
+
+- **Power Mode Enhancements** (#253): Multi-agent visibility improvements
+  - Batch status widget for tracking parallel agent progress
+  - Real-time updates via Redis Streams
+  - Widget documentation in power-mode/widgets/
+
+- **Claude Code 2.0.71 Integration** (#271): New settings framework
+  - \`/config\` command support for prompt suggestions
+  - \`/settings\` alias integration
+  - MCP permissions with \`dangerously-skip-permissions\`
+  - Bash glob safety improvements
+  - Bedrock API support via \`ANTHROPIC_BEDROCK_BASE_URL\`
+
+- **Monorepo Workspace Management**: Cross-project context loading
+  - \`/popkit:project reference <name>\` - Load context from sibling projects
+  - \`workspace_config.py\` utility (560 lines)
+    - Auto-detect pnpm, npm, yarn, lerna, PopKit workspaces
+    - Walk-up algorithm to find monorepo root
+    - Interactive project selection
+  - Updated \`/popkit:dashboard\` - Removed non-functional switch subcommand
+  - Documentation: \`CONFIG_SCHEMA.md\`, \`TECH_STACK_ALIGNMENT_ASSESSMENT.md\`
+  - Enables "additive context loading" without directory switching
+
+### Bug Fixes
+
+- **Upstash Redis** (#260): Fixed nested JSON handling in session data
+- **Python Dependencies**: Added documentation for required Python packages (#260)
+- **Labeler Workflow** (#272): Added \`contents:read\` permission to fix GitHub Actions
+
+### Research & Documentation
+
+- **Research Branch Cleanup**: Archived and merged 10 research branches from Claude Code Web sessions
+  - XML usage research for enhanced Claude understanding
+  - Cross-platform architecture vision for PopKit v2.0
+  - Vibe engineering market analysis (#235)
+- **Phase 1 & 2 Documentation**: Complete context optimization implementation notes
+
+### Component Updates
+
+- Skills: 68 (no change)
+- Commands: 24 (no change)
+- Agents: 31 (no change)
+- Hooks: 23 (no change)
+- Utils: 63 (+1: workspace_config.py)
+
+### Impact
+
+- **40% faster context loading** - Reduced token usage enables quicker responses
+- **Smarter agent selection** - Semantic search improves routing accuracy
+- **Enhanced user control** - Plan Mode allows review before execution
+- **Monorepo support** - First-class support for multi-project workflows
+- **Better integrations** - Full Claude Code 2.0.71+ compatibility
+
+---
+
 ## [0.2.4] - December 16, 2025
 
 ### Bug Fixes (Issue #254)
