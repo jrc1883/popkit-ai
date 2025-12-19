@@ -8,6 +8,11 @@ import { spawn, type ChildProcess } from 'node:child_process';
 import { mkdtemp, writeFile, readFile, rm, readdir, access } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+// ESM equivalent of __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 import type {
   ToolRunner,
   RunnerConfig,
@@ -359,6 +364,33 @@ export class ClaudeRunner implements ToolRunner {
     if (this.config.useApi) {
       // API-based execution (placeholder)
       throw new Error('API-based execution not yet implemented');
+    }
+
+    // Power Mode: Use coordinator for multi-agent coordination
+    if (mode === 'power' && task.powerModeConfig) {
+      const result = await this.runPowerModeCoordinator(task, workDir, prompt);
+      const streamData = result.streamData;
+
+      // Add assistant message
+      conversation.push({
+        role: 'assistant',
+        content: result.output,
+        timestamp: new Date().toISOString(),
+        tokens: streamData?.usage.outputTokens || result.tokens,
+      });
+
+      return {
+        conversation,
+        tokens: {
+          input: result.tokens,
+          output: result.tokens,
+          total: result.tokens * 2,
+        },
+        toolCalls: result.toolCalls,
+        streamData,
+        rawStream: result.rawStream,
+        behaviorCapture: result.behaviorCapture,
+      };
     }
 
     // CLI-based execution with stream-json output
@@ -726,6 +758,80 @@ export class ClaudeRunner implements ToolRunner {
     });
   }
 
+  /**
+   * Run Power Mode coordinator for multi-agent collaboration
+   * Issue #484: Use Python coordinator to properly distribute agent contexts
+   */
+  private async runPowerModeCoordinator(
+    task: BenchmarkTask,
+    workDir: string,
+    prompt: string
+  ): Promise<{
+    output: string;
+    tokens: number;
+    toolCalls: number;
+    streamData?: StreamJsonData;
+    rawStream?: string;
+    behaviorCapture?: import('../behavior/schema.js').BehaviorCapture;
+  }> {
+    const resultsDir = dirname(workDir);
+    const taskConfigPath = join(resultsDir, 'task-config.json');
+
+    // Write task config for coordinator
+    await writeFile(taskConfigPath, JSON.stringify(task, null, 2));
+
+    const coordinatorPath = join(
+      dirname(dirname(dirname(__dirname))),
+      'plugin/power-mode/benchmark_coordinator.py'
+    );
+
+    console.log('[PowerMode] Invoking coordinator...');
+    console.log(`[PowerMode] Task: ${task.id}`);
+    console.log(`[PowerMode] Agents: ${task.powerModeConfig?.numAgents}`);
+
+    try {
+      const result = await this.runCommand(
+        'python',
+        [
+          coordinatorPath,
+          '--task-config', taskConfigPath,
+          '--results-dir', resultsDir,
+          '--timeout', String(task.timeoutSeconds || 300)
+        ],
+        '',
+        {
+          cwd: workDir,
+          timeout: (task.timeoutSeconds || 300) * 1000 + 10000, // Add 10s buffer
+        }
+      );
+
+      // Read coordinator result
+      const coordinatorResultPath = join(resultsDir, 'coordinator-result.json');
+      let coordinatorResult: any = {};
+      try {
+        const resultData = await readFile(coordinatorResultPath, 'utf-8');
+        coordinatorResult = JSON.parse(resultData);
+      } catch {
+        // Result file may not exist if coordinator failed early
+      }
+
+      console.log('[PowerMode] Coordination complete');
+      console.log(`[PowerMode] Success: ${coordinatorResult.success}`);
+      console.log(`[PowerMode] Messages: ${coordinatorResult.messageCount || 0}`);
+
+      return {
+        output: `Power Mode coordination completed.\nStream: ${coordinatorResult.streamKey || 'unknown'}\nMessages: ${coordinatorResult.messageCount || 0}\nDuration: ${coordinatorResult.duration || 0}s\nPuzzle Solved: ${coordinatorResult.puzzleSolved || false}`,
+        tokens: 0, // Will be updated from agent transcripts later
+        toolCalls: 0,
+        streamData: undefined,
+        rawStream: result.stdout,
+      };
+    } catch (error) {
+      console.error('[PowerMode] Coordinator failed:', error);
+      throw error;
+    }
+  }
+
   private async collectOutputFiles(
     taskDir: string
   ): Promise<Record<string, string>> {
@@ -848,7 +954,7 @@ export class ClaudeRunner implements ToolRunner {
   ): Promise<QualityExecutionResult[]> {
     const results: QualityExecutionResult[] = [];
 
-    for (const check of task.qualityChecks) {
+    for (const check of task.qualityChecks || []) {
       const startTime = Date.now();
       try {
         // Run the command as a shell command (handles quotes properly)
