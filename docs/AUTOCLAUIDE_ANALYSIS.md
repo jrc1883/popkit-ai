@@ -8,14 +8,73 @@
 
 ## Executive Summary
 
-Auto Claude is an advanced AI coding workstation that combines **task orchestration, long-running agents, merge conflict resolution, and a sophisticated context/memory system**. While PopKit and Auto Claude operate at different abstraction levels (PopKit is a Claude Code plugin, Auto Claude is a standalone Electron IDE), there are significant feature overlaps and strategic opportunities for PopKit to evolve toward Auto Claude's capabilities.
+Auto Claude is an advanced AI coding workstation that combines **task orchestration, long-running agents, merge conflict resolution, and a sophisticated context/memory system**. Both PopKit and Auto Claude orchestrate Claude Code, but at fundamentally different levels:
+
+- **Auto Claude** = Meta-orchestrator that spawns multiple isolated Claude Code CLI instances + Electron UI + graph database
+- **PopKit** = Plugin that enhances a single Claude Code instance with workflows, agents, and skills
+
+### Key Architectural Distinction
+
+Auto Claude uses a 3-level abstraction:
+```
+Electron UI → Python Agent Framework → Multiple Claude Code CLI Instances (up to 12 parallel)
+                                    ↓
+                          FalkorDB Graph Memory (persistence)
+```
+
+PopKit uses a 2-level abstraction:
+```
+Claude Code Plugin (Hooks + Commands + Skills) → Claude Code's Native Tools
+                                              ↓
+                                 File-based Memory (STATUS.json, embeddings)
+```
+
+**Critical difference:** Auto Claude spawns MULTIPLE Claude Code instances to achieve parallelism. PopKit works within the constraints of a SINGLE Claude Code session.
 
 ### Key Insight
-Auto Claude is solving the **"how do I manage 10x more AI-assisted work"** problem. PopKit is solving the **"how do I compose Claude Code's tools into workflows"** problem. These are complementary but different. PopKit could potentially become a foundational layer for Auto Claude-like systems.
+Auto Claude is solving the **"how do I manage 10x more AI-assisted work via multiple parallel Claude Code instances"** problem. PopKit is solving the **"how do I compose Claude Code's tools into workflows within a single session"** problem. These are complementary but at different architectural levels.
 
 ---
 
 ## Part 1: Auto Claude Architecture & Features
+
+### 1.0 Technical Stack (CORRECTED)
+
+**Frontend:** Electron-based desktop application
+
+**Backend:** Python 3.10+ with modular agent pipeline
+
+**How It Invokes Claude:**
+- Uses `@anthropic-ai/claude-code` CLI (not Claude SDK directly)
+- Users run: `npm install -g @anthropic-ai/claude-code` + `claude setup-token`
+- Spawns up to 12 concurrent Claude Code terminal instances
+- Each terminal runs autonomously in isolated git worktrees
+- **This is the key to parallelism:** Multiple Claude Code processes running simultaneously
+
+**Memory/Persistence Layer:**
+- **Database:** FalkorDB (graph database via Docker)
+- **Embeddings:** OpenAI, Voyage AI, Azure, or Ollama (local)
+- **Graph Operations:** Graphiti library for knowledge graph
+- **Hybrid RAG:** Combines vector embeddings + graph relationships
+
+**Three-Phase Agent Pipeline:**
+1. **Spec Creation** → Discovery, requirements, research, planning
+2. **Implementation** → Planner agents create subtasks; coder agents execute with QA loops (up to 50 iterations)
+3. **Merge** → AI-powered conflict resolution back to main
+
+### Why This Matters for PopKit
+
+The fundamental difference is **parallelism strategy**:
+
+| Aspect | Auto Claude | PopKit |
+|--------|------------|--------|
+| **How it calls Claude** | Spawns multiple Claude Code CLI processes | Single Claude Code plugin session |
+| **Parallelism** | OS-level process parallelism (12 terminals) | In-session agent coordination (Power Mode) |
+| **Memory persistence** | FalkorDB (graph DB) | File-based (STATUS.json, Upstash) |
+| **Scale limit** | 12 parallel Claude Code processes | Limited by single session rate limits |
+| **Cost efficiency** | Higher (pays for each Claude instance) | Lower (1 subscription covers all) |
+
+Auto Claude essentially says: "Let's just spawn more Claude Code instances." PopKit says: "Let's orchestrate better within one instance."
 
 ### 1.1 Core System Components
 
@@ -182,9 +241,40 @@ Similar to Auto Claude's long-running agents:
 
 ---
 
-## Part 3: Comparative Analysis
+## Part 3: Marketing & Positioning (PopKit vs Auto Claude)
 
-### 3.1 Architectural Differences
+### 3.0 The Positioning Problem
+
+**Current PopKit positioning (from README):**
+- "30 Agents, 68 Skills, 15+ Commands"
+- Feature-focused (listing what exists)
+
+**What users actually care about:**
+- "Can I get 10x more work done?"
+- "How do I manage multiple complex tasks?"
+- "Will it save me time/money?"
+- "Can I trust the quality?"
+
+**Auto Claude's positioning (from transcript):**
+- "Get 10 times the work done on your projects"
+- "Planning and quality coding and testing you should demand"
+- "Works for all skill levels from Vibe coders to senior developers"
+- "Get things done while you sleep"
+
+### 3.1 What PopKit Should Be Emphasizing (Instead of Agent Counts)
+
+| What PopKit Offers | How to Position It |
+|-------------------|-------------------|
+| 30 intelligent agents + routing | **"30 specialized agents that know when to help"** - auto-routes based on code context |
+| Power Mode coordination | **"Parallel AI workers"** - multiple agents working on different aspects simultaneously |
+| Context optimization (40.5% reduction) | **"Smarter context injection = cheaper per task over time"** |
+| Session persistence | **"Pick up where you left off"** - no context loss between sessions |
+| Git + GitHub integration | **"GitHub-first workflows"** - issues → tasks → PRs automatically |
+| 7-phase feature development | **"Structured development without guesswork"** - plan → build → test → review |
+| Merge conflict handling (coming) | **"Zero merge conflicts"** - AI resolves them automatically |
+| Works inside Claude Code | **"No new tool to learn"** - works inside your existing editor |
+
+### 3.2 Comparative Analysis
 
 | Aspect | Auto Claude | PopKit |
 |--------|------------|--------|
@@ -512,33 +602,79 @@ popkit-cloud/        # Shared backend
 
 ### Key Findings
 
-1. **Auto Claude and PopKit are complementary, not competitive**
-   - Auto Claude = specialized IDE for task orchestration
-   - PopKit = workflow composition layer for Claude Code
+1. **Auto Claude and PopKit use different parallelism strategies**
+   - Auto Claude = Spawn multiple Claude Code CLI processes (OS-level parallelism)
+   - PopKit = Orchestrate within single Claude Code session (software parallelism)
+   - Auto Claude's approach: Higher cost, true parallelism up to 12 tasks
+   - PopKit's approach: Lower cost, coordinated agents within rate limits
 
-2. **Significant feature overlap in core concepts**
-   - Both use agents and long-running tasks
-   - Both implement work tree isolation
-   - Both prioritize context efficiency
-   - Both integrate with GitHub
+2. **Auto Claude has UI layer; PopKit emphasizes smart orchestration**
+   - Auto Claude = Electron UI + FalkorDB graph database
+   - PopKit = Plugin model + file-based memory + embeddings
+   - PopKit's advantage: No new tool to learn, leverages Claude Code's native capabilities
+   - PopKit's challenge: Can't match Auto Claude's visual task board or terminal management
 
-3. **PopKit has clear opportunities to evolve toward Auto Claude's sophistication**
-   - Merge conflict resolution is low-hanging fruit
-   - Memory system upgrade would give 3-5x efficiency gain
-   - Kanban board could be JSON-based and lightweight
-   - Terminal orchestration requires Claude Code platform support
+3. **PopKit describes itself by features, not by outcomes**
+   - Users don't care about "68 skills" - they care about "get work done faster"
+   - Need to reposition around outcomes: "10x productivity within Claude Code"
+   - Should emphasize: parallel workers, smarter context, GitHub integration, quality gates
 
-4. **Long-term vision: PopKit becomes foundational platform**
-   - Extract framework (v2.0.0)
-   - Support multiple IDEs and models
-   - Auto Claude could potentially build on PopKit's orchestration
-   - Opens door for ecosystem play (Cursor, Windsurf, VS Code)
+4. **Both systems solve real problems at different scales**
+   - Auto Claude: For teams/power users needing true parallelism
+   - PopKit: For individuals/teams wanting integrated workflows without context loss
+   - Both acknowledge: "More you use it, cheaper and smarter it gets"
+
+5. **PopKit has unique competitive advantage within Claude Code ecosystem**
+   - No installation burden (plugin, not separate IDE)
+   - One subscription covers everything (not 12 parallel Claude subscriptions)
+   - Integrated with Claude Code's native tools
+   - Could become industry standard for Claude Code workflows
 
 ### Recommended Next Steps
 
-1. **Short-term (0.10.0)**: Add merge conflict resolver agent
-2. **Medium-term (1.5.0)**: Upgrade memory system and add Kanban
-3. **Long-term (2.0.0)**: Extract platform, multi-IDE support
+1. **Immediate (Marketing)**: Reposition PopKit messaging from "68 skills" to outcome-focused benefits
+   - Create comparison table: "PopKit vs Auto Claude vs Raw Claude Code"
+   - Write case studies showing time/cost savings
+   - Emphasize: "No new tool, cheaper at scale, integrated with Claude Code"
+
+2. **Short-term (0.10.0)**: Add merge conflict resolver agent
+   - Differentiate from Auto Claude's approach
+   - Use AI-powered resolution instead of automated merging
+
+3. **Medium-term (1.5.0)**: Upgrade memory system and add visual task tracking
+   - SQLite + embeddings for better context
+   - JSON-based task board (`.claude/popkit/tasks.json`) with GitHub integration
+   - Show learnings/optimizations to user
+
+4. **Long-term (2.0.0)**: Extract platform, multi-IDE support
+   - Become framework that could power other tools
+   - Enable ecosystem play
+
+---
+
+## Appendix: PopKit vs Auto Claude - Quick Reference
+
+### Cost Comparison
+
+| Scenario | Auto Claude | PopKit |
+|----------|------------|--------|
+| Single user, 1 task | $20/month (1x Claude Max) | $20/month (1x Claude Max) |
+| Power user, 6 parallel tasks | $120/month (6x Claude Max) | $20/month (1x Claude Max) |
+| Team of 3, 6 concurrent tasks | $360/month (18x Claude Max) | $60/month (3x Claude Max) |
+
+**PopKit advantage:** Linear cost scaling, not per-task
+
+### Feature Completeness
+
+| Feature | Auto Claude | PopKit | Gap |
+|---------|------------|--------|-----|
+| Task orchestration | ✅ Full Kanban UI | ✅ Via Power Mode | PopKit needs visual board |
+| Parallel execution | ✅ 12 CLI processes | ✅ Agent coordination | Different strategies |
+| Memory/learning | ✅ FalkorDB + vectors | ✅ File + embeddings | PopKit needs SQLite upgrade |
+| Merge conflicts | ✅ Specialized layer | ⏳ Coming | PopKit can do this |
+| UI | ✅ Electron | ✅ Claude Code | Different tradeoffs |
+| Installation | ❌ New tool | ✅ Plugin (zero friction) | PopKit wins |
+| Rate limits | ❌ 12x billing | ✅ Single session | PopKit wins |
 
 ---
 
