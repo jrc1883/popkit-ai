@@ -50,6 +50,9 @@ def spawn_agent(
         subprocess.Popen: The running agent process
     """
 
+    # Use absolute path to power-mode directory so agents can import upstash_adapter
+    power_mode_dir = str(Path(__file__).parent.absolute())
+
     # Build the full prompt with secret context and puzzle
     full_prompt = f"""You are {agent_name} (ID: {agent_id}).
 
@@ -59,29 +62,19 @@ Your secret context (DO NOT share the raw data, only your findings):
 {puzzle_prompt}
 
 Coordination Protocol:
-- Use Upstash Redis Stream: {stream_key}
-- Check in with "I'm analyzing my data..."
-- Ask questions when you need information from other agents
-- Answer questions from other agents
-- Share insights as you discover them
-- The puzzle is solved when you collectively identify the attack vector
+1. IMMEDIATELY check in using the Bash tool to run Python code
+2. Analyze your secret context
+3. Ask questions and share insights with other agents
+4. The puzzle is solved when you collectively identify the attack vector
 
-You can publish messages using Python:
-```python
-import sys
-sys.path.insert(0, '../../../plugin/power-mode')
-from upstash_adapter import get_redis_client
+CRITICAL: You MUST use the Bash tool to publish messages to Redis Stream: {stream_key}
 
-redis = get_redis_client()
-redis.xadd('{stream_key}', {{
-    'agent_id': '{agent_id}',
-    'type': 'check_in',
-    'message': 'Your message here',
-    'timestamp': str(int(time.time() * 1000))
-}}, maxlen=1000)
+To check in and coordinate, use the Bash tool with this Python code:
+```bash
+python -c "import sys; import time; sys.path.insert(0, r'{power_mode_dir}'); from upstash_adapter import get_redis_client; redis = get_redis_client(); redis.xadd('{stream_key}', {{'agent_id': '{agent_id}', 'type': 'check_in', 'message': 'Your message here', 'timestamp': str(int(time.time() * 1000))}}, maxlen=1000); print('Message published')"
 ```
 
-Begin your analysis and coordinate with other agents to solve the puzzle.
+START by running the check-in code above, then analyze your data and coordinate.
 """
 
     # Spawn Claude CLI with the prompt
@@ -90,12 +83,20 @@ Begin your analysis and coordinate with other agents to solve the puzzle.
 
     print(f"  Spawning Claude CLI for {agent_name}...")
     try:
+        # Ensure environment variables are passed to subprocess (especially Upstash creds)
+        env = os.environ.copy()
+
         proc = subprocess.Popen(
-            [claude_cmd, '--print', '--output-format', 'stream-json'],
+            [
+                claude_cmd,
+                '--no-session-persistence',  # Don't save session to disk
+                '--dangerously-skip-permissions'  # Skip tool permission prompts
+            ],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             cwd=work_dir,
+            env=env,
             text=True
         )
 
