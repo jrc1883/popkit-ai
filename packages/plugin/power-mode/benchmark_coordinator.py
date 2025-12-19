@@ -19,6 +19,7 @@ This script:
 import argparse
 import json
 import os
+import platform
 import subprocess
 import sys
 import time
@@ -84,21 +85,43 @@ Begin your analysis and coordinate with other agents to solve the puzzle.
 """
 
     # Spawn Claude CLI with the prompt
-    proc = subprocess.Popen(
-        ['claude', '--print', '--output-format', 'stream-json'],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        cwd=work_dir,
-        text=True
-    )
+    # On Windows, use claude.cmd instead of claude
+    claude_cmd = 'claude.cmd' if platform.system() == 'Windows' else 'claude'
 
-    # Send the prompt
-    if proc.stdin:
-        proc.stdin.write(full_prompt)
-        proc.stdin.close()
+    print(f"  Spawning Claude CLI for {agent_name}...")
+    try:
+        proc = subprocess.Popen(
+            [claude_cmd, '--print', '--output-format', 'stream-json'],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            cwd=work_dir,
+            text=True
+        )
 
-    return proc
+        # Send the prompt
+        if proc.stdin:
+            proc.stdin.write(full_prompt)
+            proc.stdin.close()
+            print(f"  [OK] Prompt sent to {agent_name}")
+
+        # Quick check if process started
+        time.sleep(0.1)
+        if proc.poll() is not None:
+            # Process already exited
+            stdout, stderr = proc.communicate()
+            print(f"  [FAIL] {agent_name} exited immediately!")
+            print(f"    Exit code: {proc.returncode}")
+            if stderr:
+                print(f"    Error: {stderr[:500]}")
+            return None
+
+        print(f"  [OK] {agent_name} process running (PID: {proc.pid})")
+        return proc
+
+    except Exception as e:
+        print(f"  [FAIL] Failed to spawn {agent_name}: {e}")
+        return None
 
 
 def run_power_mode_benchmark(
@@ -188,20 +211,52 @@ def run_power_mode_benchmark(
             timeout=timeout
         )
 
+        if proc is None:
+            print(f"[FAIL] Failed to spawn {agent_name}")
+            continue
+
         agents.append({
             'id': agent_id,
             'name': agent_name,
             'process': proc
         })
 
+    if not agents:
+        return {
+            'success': False,
+            'error': 'No agents spawned successfully',
+            'streamKey': stream_key,
+            'messageCount': 0,
+            'duration': 0
+        }
+
     # Monitor coordination
-    print(f"\nAgents active. Monitoring coordination for up to {timeout}s...")
+    print(f"\nAgents active ({len(agents)} running). Monitoring coordination for up to {timeout}s...")
     print(f"Stream key: {stream_key}\n")
 
     start_time = time.time()
     last_message_count = 0
 
     while time.time() - start_time < timeout:
+        # Check if agents are still running
+        running_agents = []
+        for agent in agents:
+            if agent['process'].poll() is None:
+                running_agents.append(agent)
+            else:
+                print(f"[{int(time.time() - start_time)}s] [WARN] {agent['name']} exited (code: {agent['process'].returncode})")
+                # Try to read stderr
+                try:
+                    stderr = agent['process'].stderr.read() if agent['process'].stderr else ''
+                    if stderr:
+                        print(f"    Error: {stderr[:500]}")
+                except:
+                    pass
+
+        if not running_agents:
+            print(f"\n[FAIL] All agents have exited!")
+            break
+
         # Check Redis stream for new messages
         try:
             messages = redis.xrange(stream_key, '-', '+')
@@ -218,7 +273,7 @@ def run_power_mode_benchmark(
                     if any(keyword in content.lower() for keyword in [
                         'user-agent', 'header manipulation', 'bypass rate limiter'
                     ]):
-                        print(f"\n✓ SOLUTION DETECTED in message {msg_id}")
+                        print(f"\n[SUCCESS] SOLUTION DETECTED in message {msg_id}")
                         print(f"Content: {content[:200]}...")
 
                         # Wait a bit for agents to finish
@@ -267,7 +322,7 @@ def run_power_mode_benchmark(
         time.sleep(2)
 
     # Timeout - kill agents
-    print(f"\n⏱ TIMEOUT after {timeout}s")
+    print(f"\n[TIMEOUT] Reached {timeout}s limit")
     for agent in agents:
         agent['process'].terminate()
 
