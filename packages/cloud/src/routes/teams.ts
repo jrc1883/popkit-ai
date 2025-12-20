@@ -1,3 +1,4 @@
+import { getRedis } from '../services/redis';
 /**
  * Team Coordination Routes
  *
@@ -13,7 +14,6 @@
  */
 
 import { Hono } from 'hono';
-import { Redis } from '@upstash/redis';
 import type { Env, Variables, ApiKeyData } from '../types';
 
 const teams = new Hono<{ Bindings: Env; Variables: Variables }>();
@@ -105,10 +105,7 @@ teams.use('*', requireTeamTier);
  * Create a new team.
  */
 teams.post('/', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const apiKey = c.get('apiKey') as ApiKeyData;
   const body = await c.req.json<{ name: string }>();
@@ -162,10 +159,7 @@ teams.post('/', async (c) => {
  * Get team details.
  */
 teams.get('/:teamId', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const { teamId } = c.req.param();
   const apiKey = c.get('apiKey') as ApiKeyData;
@@ -194,10 +188,7 @@ teams.get('/:teamId', async (c) => {
  * Add a member to the team.
  */
 teams.post('/:teamId/members', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const { teamId } = c.req.param();
   const apiKey = c.get('apiKey') as ApiKeyData;
@@ -246,10 +237,7 @@ teams.post('/:teamId/members', async (c) => {
  * List team members.
  */
 teams.get('/:teamId/members', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const { teamId } = c.req.param();
   const apiKey = c.get('apiKey') as ApiKeyData;
@@ -275,10 +263,7 @@ teams.get('/:teamId/members', async (c) => {
  * Remove a member from the team.
  */
 teams.delete('/:teamId/members/:userId', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const { teamId, userId } = c.req.param();
   const apiKey = c.get('apiKey') as ApiKeyData;
@@ -325,10 +310,7 @@ teams.delete('/:teamId/members/:userId', async (c) => {
  * List active team Power Mode sessions.
  */
 teams.get('/:teamId/sessions', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const { teamId } = c.req.param();
   const apiKey = c.get('apiKey') as ApiKeyData;
@@ -358,10 +340,7 @@ teams.get('/:teamId/sessions', async (c) => {
  * Start or join a team Power Mode session.
  */
 teams.post('/:teamId/sessions', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const { teamId } = c.req.param();
   const apiKey = c.get('apiKey') as ApiKeyData;
@@ -447,10 +426,7 @@ teams.post('/:teamId/sessions', async (c) => {
  * Update session state (agent progress, files modified, etc.)
  */
 teams.patch('/:teamId/sessions/:sessionId', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const { teamId, sessionId } = c.req.param();
   const apiKey = c.get('apiKey') as ApiKeyData;
@@ -534,10 +510,7 @@ teams.patch('/:teamId/sessions/:sessionId', async (c) => {
  * Get team insights pool.
  */
 teams.get('/:teamId/insights', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const { teamId } = c.req.param();
   const apiKey = c.get('apiKey') as ApiKeyData;
@@ -562,10 +535,7 @@ teams.get('/:teamId/insights', async (c) => {
  * Share an insight with the team.
  */
 teams.post('/:teamId/insights', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const { teamId } = c.req.param();
   const apiKey = c.get('apiKey') as ApiKeyData;

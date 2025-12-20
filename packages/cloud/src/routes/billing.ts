@@ -1,3 +1,4 @@
+import { getRedis } from '../services/redis';
 /**
  * Billing Routes - Stripe Integration
  *
@@ -6,7 +7,6 @@
  */
 
 import { Hono } from 'hono';
-import { Redis } from '@upstash/redis';
 import Stripe from 'stripe';
 import type { Env, Variables, UserData, Tier } from '../types';
 import {
@@ -68,10 +68,7 @@ function getTierFromSubscription(status: string, priceId: string, env: Env): Tie
  */
 billing.post('/checkout', async (c) => {
   const stripe = getStripe(c.env);
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   // Get user from auth
   const apiKey = c.get('apiKey');
@@ -144,10 +141,7 @@ billing.post('/checkout', async (c) => {
  */
 billing.post('/webhook', async (c) => {
   const stripe = getStripe(c.env);
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   // Get raw body for signature verification
   const rawBody = await c.req.text();
@@ -356,10 +350,7 @@ billing.post('/webhook', async (c) => {
  */
 billing.get('/portal', async (c) => {
   const stripe = getStripe(c.env);
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   // Get user from auth
   const apiKey = c.get('apiKey');
@@ -396,10 +387,7 @@ billing.get('/portal', async (c) => {
  */
 billing.get('/subscription', async (c) => {
   const stripe = getStripe(c.env);
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   // Get user from auth
   const apiKey = c.get('apiKey');

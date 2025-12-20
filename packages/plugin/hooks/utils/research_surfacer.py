@@ -114,7 +114,7 @@ class ResearchSurfacer:
         """Get or create research manager instance."""
         if self._research_manager is None:
             try:
-                from research_index import ResearchIndexManager
+                from .research_index import ResearchIndexManager
                 self._research_manager = ResearchIndexManager(str(self.project_root))
             except ImportError:
                 return None

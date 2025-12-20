@@ -1,3 +1,4 @@
+import { getRedis } from '../services/redis';
 /**
  * Authentication Routes
  *
@@ -6,7 +7,6 @@
  */
 
 import { Hono } from 'hono';
-import { Redis } from '@upstash/redis';
 import type {
   Env,
   Variables,
@@ -182,10 +182,7 @@ auth.post('/signup', async (c) => {
   const email = body.email.toLowerCase().trim();
 
   // Get Redis client
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   // Check if email already exists
   const existingUserId = await redis.get<string>(`popkit:email:${email}`);
@@ -264,10 +261,7 @@ auth.post('/login', async (c) => {
   const email = body.email.toLowerCase().trim();
 
   // Get Redis client
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   // Look up user by email
   const userId = await redis.get<string>(`popkit:email:${email}`);
@@ -330,10 +324,7 @@ auth.post('/logout', async (c) => {
   const sessionToken = match[1];
 
   // Get Redis client
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   // Delete session
   await redis.del(`popkit:session:${sessionToken}`);
@@ -356,10 +347,7 @@ auth.get('/me', async (c) => {
   const sessionMatch = authHeader.match(/^Bearer ([a-f0-9]{64})$/);
   const apiKeyMatch = authHeader.match(/^Bearer (pk_(live|test)_[a-zA-Z0-9]+)$/);
 
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   let userId: string | null = null;
 

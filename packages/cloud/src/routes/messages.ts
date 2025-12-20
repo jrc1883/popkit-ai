@@ -11,7 +11,7 @@
  */
 
 import { Hono } from 'hono';
-import { Redis } from '@upstash/redis';
+import { getRedis } from '../services/redis';
 import { Client } from '@upstash/qstash';
 import type { Env, Variables } from '../types';
 import type {
@@ -35,15 +35,7 @@ function generateMessageId(): string {
   return `msg_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 }
 
-/**
- * Get Redis client.
- */
-function getRedis(env: Env): Redis {
-  return new Redis({
-    url: env.UPSTASH_REDIS_REST_URL,
-    token: env.UPSTASH_REDIS_REST_TOKEN,
-  });
-}
+
 
 /**
  * Get QStash client.
@@ -191,7 +183,7 @@ app.post('/receive', async (c) => {
       return c.json({ error: 'Invalid message format' }, 400);
     }
 
-    const redis = getRedis(env);
+    const redis = getRedis(c);
     const ttl = getTTL(message);
     const now = new Date();
     const expiresAt = new Date(now.getTime() + ttl * 1000).toISOString();
@@ -265,7 +257,7 @@ app.get('/poll/:agentId', async (c) => {
   }
 
   try {
-    const redis = getRedis(env);
+    const redis = getRedis(c);
 
     // Check both agent-specific and session-wide inboxes
     const agentInbox = inboxKey(agentId);
@@ -344,7 +336,7 @@ app.delete('/clear/:agentId', async (c) => {
   const agentId = c.req.param('agentId');
 
   try {
-    const redis = getRedis(env);
+    const redis = getRedis(c);
     const key = inboxKey(agentId);
 
     await redis.del(key);
@@ -384,7 +376,7 @@ app.post('/broadcast', async (c) => {
       message.id = generateMessageId();
     }
 
-    const redis = getRedis(env);
+    const redis = getRedis(c);
     const ttl = getTTL(message);
     const now = new Date();
     const expiresAt = new Date(now.getTime() + ttl * 1000).toISOString();

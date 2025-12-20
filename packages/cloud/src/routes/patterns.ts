@@ -1,3 +1,4 @@
+import { getRedis } from '../services/redis';
 /**
  * Patterns Routes (Collective Learning)
  *
@@ -8,7 +9,6 @@
  */
 
 import { Hono } from 'hono';
-import { Redis } from '@upstash/redis';
 import type { Env, Variables } from '../types';
 
 // Extend Env for Voyage
@@ -153,10 +153,7 @@ function calculateQualityScore(quality: Pattern['quality']): number {
  * }
  */
 patterns.post('/submit', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const body = await c.req.json<{
     trigger: string;
@@ -280,10 +277,7 @@ patterns.post('/submit', async (c) => {
  * }
  */
 patterns.post('/search', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const body = await c.req.json<{
     query: string;
@@ -400,10 +394,7 @@ patterns.post('/search', async (c) => {
  * Body: { type: 'upvote' | 'downvote' | 'applied' | 'success' }
  */
 patterns.post('/:id/feedback', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const patternId = c.req.param('id');
   const body = await c.req.json<{
@@ -457,10 +448,7 @@ patterns.post('/:id/feedback', async (c) => {
  * GET /patterns/stats
  */
 patterns.get('/stats', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const [totalCount, allPatterns] = await Promise.all([
     redis.get('pop:patterns:total_count'),
@@ -525,10 +513,7 @@ patterns.get('/stats', async (c) => {
  * GET /patterns/top?limit=10
  */
 patterns.get('/top', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const limit = Math.min(parseInt(c.req.query('limit') || '10'), 100);
 

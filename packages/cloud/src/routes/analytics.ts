@@ -1,3 +1,4 @@
+import { getRedis } from '../services/redis';
 /**
  * Analytics Routes
  *
@@ -7,7 +8,6 @@
  */
 
 import { Hono } from 'hono';
-import { Redis } from '@upstash/redis';
 import type { Env, Variables } from '../types';
 
 const analytics = new Hono<{ Bindings: Env; Variables: Variables }>();
@@ -50,10 +50,7 @@ function getToday(): string {
  * }
  */
 analytics.post('/efficiency', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const prefix = getUserPrefix(c);
   const today = getToday();
@@ -128,10 +125,7 @@ analytics.post('/efficiency', async (c) => {
  * GET /analytics/efficiency/summary?days=7
  */
 analytics.get('/efficiency/summary', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const prefix = getUserPrefix(c);
   const days = Math.min(parseInt(c.req.query('days') || '7'), 30);
@@ -226,10 +220,7 @@ analytics.get('/efficiency/summary', async (c) => {
  * }
  */
 analytics.post('/agent', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const prefix = getUserPrefix(c);
   const today = getToday();
@@ -266,10 +257,7 @@ analytics.post('/agent', async (c) => {
  * GET /analytics/agents?days=7
  */
 analytics.get('/agents', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const prefix = getUserPrefix(c);
   const days = Math.min(parseInt(c.req.query('days') || '7'), 30);
@@ -312,10 +300,7 @@ analytics.get('/agents', async (c) => {
  * GET /analytics/patterns?days=7
  */
 analytics.get('/patterns', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const prefix = getUserPrefix(c);
 
@@ -372,10 +357,7 @@ analytics.get('/patterns', async (c) => {
  * }
  */
 analytics.post('/power-mode', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const prefix = getUserPrefix(c);
   const today = getToday();
@@ -422,10 +404,7 @@ analytics.post('/power-mode', async (c) => {
  * GET /analytics/power-mode?days=7
  */
 analytics.get('/power-mode', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const prefix = getUserPrefix(c);
   const days = Math.min(parseInt(c.req.query('days') || '7'), 30);
@@ -487,10 +466,7 @@ analytics.get('/power-mode', async (c) => {
  * GET /analytics/overview?days=7
  */
 analytics.get('/overview', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const prefix = getUserPrefix(c);
   const days = Math.min(parseInt(c.req.query('days') || '7'), 30);

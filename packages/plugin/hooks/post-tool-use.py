@@ -60,6 +60,23 @@ except ImportError:
     def is_test_mode(): return False
     def get_test_session_id(): return None
 
+# Import routine measurement for context tracking
+try:
+    from routine_measurement import (
+        RoutineMeasurementTracker,
+        check_measure_flag
+    )
+    ROUTINE_MEASUREMENT_AVAILABLE = True
+except ImportError:
+    ROUTINE_MEASUREMENT_AVAILABLE = False
+
+# Import XML generation utilities (Phase 1: XML Integration #517)
+try:
+    from xml_generator import generate_findings_xml as xml_gen_findings
+    HAS_XML_GENERATOR = True
+except ImportError:
+    HAS_XML_GENERATOR = False
+
 class PostToolUseHook:
     def __init__(self):
         self.claude_dir = Path.home() / '.claude'
@@ -346,7 +363,73 @@ class PostToolUseHook:
             analysis["followup_needed"].extend(["query_optimization", "security_review"])
         
         return analysis
-    
+
+    def generate_findings_xml(self, tool_name: str, analysis: Dict[str, Any],
+                              followup_agents: List[str], tool_result: Any = None) -> Optional[str]:
+        """
+        Generate XML structured findings for tool results (Phase 1: XML Integration #517).
+
+        Creates XML output that next agents can parse to understand tool execution context.
+        Includes success/error status, quality metrics, issues, and recommendations.
+
+        Args:
+            tool_name: Name of tool that was executed
+            analysis: Result of analyze_tool_result()
+            followup_agents: List of suggested follow-up agents
+            tool_result: Raw tool result (for error extraction)
+
+        Returns:
+            XML string or None if XML generator not available
+
+        Example output:
+            <findings>
+              <tool>Write</tool>
+              <status>success</status>
+              <quality_score>0.8</quality_score>
+              <issues>
+                <issue>Potential secret exposed in code</issue>
+              </issues>
+              <suggestions>
+                <suggestion>Consider running code review</suggestion>
+              </suggestions>
+              <followup_agents>
+                <agent>code-reviewer</agent>
+                <agent>security-auditor</agent>
+              </followup_agents>
+            </findings>
+        """
+        if not HAS_XML_GENERATOR:
+            return None
+
+        try:
+            # Build findings dict for XML generator
+            findings = {
+                "tool": tool_name,
+                "status": "success" if analysis.get("success", True) else "error",
+                "quality_score": analysis.get("quality_score", 0.0),
+                "issues": analysis.get("issues", []),
+                "suggestions": analysis.get("suggestions", []),
+                "followup_agents": followup_agents
+            }
+
+            # Add error details if present
+            if not analysis.get("success", True):
+                if isinstance(tool_result, dict) and "error" in tool_result:
+                    findings["error_message"] = str(tool_result["error"])
+                elif isinstance(tool_result, str) and "error" in tool_result.lower():
+                    # Extract error message from output
+                    error_lines = [line for line in tool_result.split('\n') if 'error' in line.lower()]
+                    if error_lines:
+                        findings["error_message"] = error_lines[0][:200]
+
+            # Generate XML using xml_generator utility
+            xml_output = xml_gen_findings(findings)
+            return xml_output
+
+        except Exception as e:
+            print(f"Warning: XML findings generation failed: {e}", file=sys.stderr)
+            return None
+
     def determine_followup_agents(self, tool_name: str, analysis: Dict[str, Any], project_context: Dict[str, Any]) -> List[str]:
         """Determine which agents should be activated for follow-up"""
         followup_agents = []
@@ -555,6 +638,10 @@ class PostToolUseHook:
         if followup_agents:
             orchestration_result = self.request_followup_orchestration(tool_name, analysis, followup_agents)
             result["orchestration_result"] = orchestration_result
+
+        # Generate XML findings for next agent (Phase 1: XML Integration #517)
+        findings_xml = self.generate_findings_xml(tool_name, analysis, followup_agents, tool_result)
+        result["findings_xml"] = findings_xml
 
         # Track activity in PopKit Cloud (non-blocking)
         self.record_cloud_activity(tool_name, followup_agents)
@@ -876,6 +963,112 @@ def check_stop_reason(input_data: Dict[str, Any]) -> Dict[str, Any]:
     return result
 
 
+def update_agent_expertise(tool_name: str, tool_input: dict, tool_output: str):
+    """Update agent expertise based on tool usage.
+
+    This is the self-improvement mechanism for the agent expertise system.
+    Looks for patterns in tool results and records them.
+
+    Part of Agent Expertise System (Issue #201, Phase 2).
+
+    Args:
+        tool_name: Name of the tool that was used
+        tool_input: Input arguments to the tool
+        tool_output: Output from the tool
+
+    Returns:
+        None (silent failures, non-blocking)
+    """
+    try:
+        # Import here to avoid circular dependencies
+        sys.path.insert(0, str(Path(__file__).parent / "utils"))
+        from expertise_manager import ExpertiseManager, PatternExample
+
+        # Determine which agent is active
+        # NOTE: POPKIT_ACTIVE_AGENT must be set by agent routing system
+        # LIMITATION: This environment variable is not currently set anywhere,
+        # so agent-specific tracking won't work until the routing system is updated.
+        # See Issue #XXX for tracking this limitation.
+        agent_id = os.environ.get('POPKIT_ACTIVE_AGENT')
+        if not agent_id:
+            return  # No active agent identified
+
+        manager = ExpertiseManager(agent_id)
+
+        # Pattern detection logic for pilot agents
+        # code-reviewer: Detects code quality patterns
+        if agent_id == 'code-reviewer':
+            # Look for common review comments in tool output
+            output_lower = tool_output.lower() if isinstance(tool_output, str) else str(tool_output).lower()
+
+            if 'missing error handling' in output_lower or 'unhandled error' in output_lower:
+                manager.record_pattern_occurrence(
+                    category='error-handling',
+                    pattern='wrap async functions in try/catch',
+                    trigger='unhandled promise rejection',
+                    file_path=tool_input.get('file_path'),
+                )
+
+            if 'console.log' in output_lower:
+                manager.record_pattern_occurrence(
+                    category='code-style',
+                    pattern='remove console.log from production',
+                    trigger='console.log detected in code',
+                    file_path=tool_input.get('file_path'),
+                )
+
+            if 'null' in output_lower and 'check' in output_lower:
+                manager.record_pattern_occurrence(
+                    category='error-handling',
+                    pattern='add null checks with optional chaining',
+                    trigger='missing null checks',
+                    file_path=tool_input.get('file_path'),
+                )
+
+        # security-auditor: Detects security patterns
+        elif agent_id == 'security-auditor':
+            output_lower = tool_output.lower() if isinstance(tool_output, str) else str(tool_output).lower()
+
+            if 'password' in output_lower and ('log' in output_lower or 'print' in output_lower):
+                manager.record_issue(
+                    pattern='logging sensitive data',
+                    severity='high',
+                    solution='remove password/token from log statements',
+                    file_path=tool_input.get('file_path'),
+                )
+
+            if 'sql' in output_lower and 'injection' in output_lower:
+                manager.record_issue(
+                    pattern='SQL injection vulnerability',
+                    severity='critical',
+                    solution='use parameterized queries',
+                    file_path=tool_input.get('file_path'),
+                )
+
+        # bug-whisperer: Detects debugging patterns
+        elif agent_id == 'bug-whisperer':
+            output_lower = tool_output.lower() if isinstance(tool_output, str) else str(tool_output).lower()
+
+            if 'race condition' in output_lower:
+                manager.record_pattern_occurrence(
+                    category='concurrency',
+                    pattern='use locks or async/await for shared state',
+                    trigger='race condition detected',
+                    file_path=tool_input.get('file_path'),
+                )
+
+            if 'memory leak' in output_lower:
+                manager.record_pattern_occurrence(
+                    category='performance',
+                    pattern='check for unsubscribed listeners or unclosed resources',
+                    trigger='memory leak detected',
+                    file_path=tool_input.get('file_path'),
+                )
+
+    except Exception:
+        pass  # Silent failure - never block on expertise updates
+
+
 def main():
     """Main entry point for the hook - JSON stdin/stdout protocol"""
     try:
@@ -894,6 +1087,16 @@ def main():
         if stop_info["suggestion"]:
             print(f"💡 {stop_info['suggestion']}", file=sys.stderr)
 
+        # Track tool call for routine measurement if active
+        if ROUTINE_MEASUREMENT_AVAILABLE and check_measure_flag():
+            tracker = RoutineMeasurementTracker()
+            if tracker.is_active():
+                # Construct content from tool result for token estimation
+                content = str(tool_result)
+                if isinstance(tool_result, dict):
+                    content = json.dumps(tool_result)
+                tracker.track_tool_call(tool_name, content, execution_time)
+
         if not tool_name:
             response = {"error": "No tool_name provided in input"}
             print(json.dumps(response))
@@ -901,6 +1104,9 @@ def main():
 
         hook = PostToolUseHook()
         result = hook.process_tool_completion(tool_name, tool_args, tool_result, execution_time)
+
+        # Update agent expertise (Issue #201, Phase 2, non-blocking)
+        update_agent_expertise(tool_name, tool_args, str(tool_result))
 
         # Capture telemetry for sandbox testing (Issue #226)
         # This runs ONLY when POPKIT_TEST_MODE=true, minimal overhead otherwise
@@ -958,7 +1164,8 @@ def main():
             "recommendations": result.get("recommendations", []),
             "metrics": result.get("metrics", {}),
             "stop_info": result.get("stop_info", {}),
-            "workflow_routing": result.get("workflow_routing", {})
+            "workflow_routing": result.get("workflow_routing", {}),
+            "findings_xml": result.get("findings_xml")
         }
 
         # Add truncation warning to recommendations if applicable
@@ -1029,6 +1236,13 @@ def main():
             if workflow_result.get("message"):
                 print(f"   {workflow_result.get('message')}", file=sys.stderr)
             print(f"", file=sys.stderr)
+
+        # Output XML findings for next agent (Phase 1: XML Integration #517)
+        if result.get("findings_xml"):
+            print(f"", file=sys.stderr)
+            print(f"<!-- Tool Findings (XML) -->", file=sys.stderr)
+            print(result["findings_xml"], file=sys.stderr)
+            print(f"<!-- End Tool Findings -->", file=sys.stderr)
 
         print(f"✅ Tool {tool_name} analysis complete", file=sys.stderr)
 

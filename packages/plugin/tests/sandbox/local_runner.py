@@ -316,7 +316,7 @@ class LocalTestRunner:
             # Run setup commands
             for cmd in config.setup_commands:
                 subprocess.run(
-                    cmd, shell=True, cwd=work_dir, env=env,
+                    cmd.split() if isinstance(cmd, str) else cmd, cwd=work_dir, env=env,
                     capture_output=True, timeout=30
                 )
 

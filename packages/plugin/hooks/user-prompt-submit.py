@@ -25,6 +25,15 @@ except ImportError:
         """Fallback if import fails"""
         return {"force_thinking": None, "budget_tokens": 10000}
 
+# Import XML context generation utilities (Phase 1: XML Integration #515)
+try:
+    from context_state import load_context_state, save_context_state, compute_hash
+    from xml_generator import generate_problem_xml, generate_project_context_xml
+    from context_delta import compute_context_delta, extract_new_context, should_send_full_context
+    HAS_XML_CONTEXT = True
+except ImportError:
+    HAS_XML_CONTEXT = False
+
 class UserPromptSubmitHook:
     def __init__(self):
         self.claude_dir = Path.home() / '.claude'
@@ -359,6 +368,102 @@ class UserPromptSubmitHook:
         
         return None
     
+    def generate_xml_context(self, prompt: str, project_context: Dict[str, Any]) -> Optional[str]:
+        """Generate XML context (full or delta) for the current message.
+
+        Args:
+            prompt: User message text
+            project_context: Current project context
+
+        Returns:
+            XML string or None if XML generation is disabled
+        """
+        if not HAS_XML_CONTEXT:
+            return None
+
+        try:
+            # Load current state
+            state = load_context_state(self.session_id)
+
+            # Increment message count
+            state["message_count"] += 1
+            message_number = state["message_count"]
+
+            # Extract new context from user message
+            new_context = extract_new_context(prompt, project_context)
+
+            # Merge new context with existing project context
+            merged_context = {**project_context}
+            for key, value in new_context.items():
+                if isinstance(value, list):
+                    # Merge lists (e.g., stack, issues)
+                    existing = merged_context.get(key, [])
+                    merged_context[key] = list(set(existing + value))
+                elif isinstance(value, dict):
+                    # Merge dicts (e.g., infrastructure)
+                    existing = merged_context.get(key, {})
+                    merged_context[key] = {**existing, **value}
+                else:
+                    # Replace scalar values (e.g., branch)
+                    merged_context[key] = value
+
+            # Determine full vs delta
+            send_full = should_send_full_context(
+                message_number,
+                state["last_full_context_message"]
+            )
+
+            xml_parts = []
+
+            # Generate problem XML (always included)
+            problem_xml = generate_problem_xml(prompt, merged_context)
+            xml_parts.append(problem_xml)
+
+            # Generate project context XML (full or delta)
+            if send_full:
+                # Full context
+                project_xml = generate_project_context_xml(merged_context)
+                xml_parts.append(project_xml)
+
+                # Update state: save full context hash
+                state["last_full_context_message"] = message_number
+                state["context_sent"]["project"] = {
+                    "hash": compute_hash(merged_context),
+                    "sent_at_message": message_number
+                }
+            else:
+                # Delta context
+                previous_context = state.get("context_sent", {}).get("project", {})
+
+                # Compute delta
+                delta = compute_context_delta(project_context, merged_context)
+
+                if delta:
+                    # Generate delta XML (simplified - just include changed fields)
+                    delta_context = {k: v.get("value", None) for k, v in delta.items() if v["type"] != "removed"}
+                    if delta_context:
+                        project_xml = generate_project_context_xml(delta_context)
+                        xml_parts.append(f"<!-- Context Update: {len(delta)} fields changed -->")
+                        xml_parts.append(project_xml)
+
+                    # Update state with new hashes
+                    for field, change in delta.items():
+                        if change["type"] != "removed":
+                            state["context_sent"][field] = {
+                                "hash": compute_hash(change.get("value", {})),
+                                "sent_at_message": message_number
+                            }
+
+            # Save updated state
+            save_context_state(self.session_id, state)
+
+            # Return combined XML
+            return "\n\n".join(xml_parts)
+
+        except Exception as e:
+            print(f"Warning: XML context generation failed: {e}", file=sys.stderr)
+            return None
+
     def process_prompt(self, prompt: str) -> Dict[str, Any]:
         """Main processing function for user prompts"""
         # Security check
@@ -382,6 +487,9 @@ class UserPromptSubmitHook:
 
         # Project context
         project_context = self.get_project_context()
+
+        # Generate XML context (Phase 1: XML Integration #515)
+        xml_context = self.generate_xml_context(prompt, project_context)
 
         # Store context
         self.store_context(prompt, detected_agents, project_context)
@@ -412,11 +520,12 @@ class UserPromptSubmitHook:
             "thinking_flags": thinking_flags,
             "project_context": project_context,
             "orchestration_result": orchestration_result,
-            "enhanced_prompt": self.enhance_prompt(prompt, detected_agents, detected_skills, project_context, thinking_flags)
+            "xml_context": xml_context,
+            "enhanced_prompt": self.enhance_prompt(prompt, detected_agents, detected_skills, project_context, thinking_flags, xml_context)
         }
     
-    def enhance_prompt(self, original_prompt: str, detected_agents: Dict, detected_skills: Dict, project_context: Dict, thinking_flags: Dict = None) -> str:
-        """Enhance prompt with context, skill reminders, thinking mode, and agent routing information"""
+    def enhance_prompt(self, original_prompt: str, detected_agents: Dict, detected_skills: Dict, project_context: Dict, thinking_flags: Dict = None, xml_context: Optional[str] = None) -> str:
+        """Enhance prompt with context, skill reminders, thinking mode, agent routing information, and XML context"""
         enhancements = []
         suggestions = []
         skill_reminders = []
@@ -477,6 +586,10 @@ class UserPromptSubmitHook:
         if enhancements:
             enhancement_text = " | ".join(enhancements)
             result = f"{result}\n\n<!-- System Context: {enhancement_text} -->"
+
+        # Append XML context (Phase 1: XML Integration #515)
+        if xml_context:
+            result = f"{result}\n\n<!-- XML Context (Invisible) -->\n{xml_context}\n<!-- End XML Context -->"
 
         return result
 

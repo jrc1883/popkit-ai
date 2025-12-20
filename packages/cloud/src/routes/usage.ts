@@ -1,3 +1,5 @@
+import { getRedis } from '../services/redis';
+import type { Redis } from '@upstash/redis';
 /**
  * Usage Tracking Routes
  *
@@ -6,7 +8,6 @@
  */
 
 import { Hono } from 'hono';
-import { Redis } from '@upstash/redis';
 import type { Env, Variables, UsageData } from '../types';
 
 const usage = new Hono<{ Bindings: Env; Variables: Variables }>();
@@ -41,10 +42,7 @@ usage.get('/', async (c) => {
     return c.json({ error: 'Unauthorized' }, 401);
   }
 
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const today = new Date().toISOString().split('T')[0];
   const key = `usage:${apiKey.id}:${today}`;
@@ -109,10 +107,7 @@ usage.get('/history', async (c) => {
 
   const days = parseInt(c.req.query('days') || '30', 10);
 
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const history: Array<{
     date: string;
@@ -163,10 +158,7 @@ usage.post('/track', async (c) => {
 
   const { feature, project_id, success } = body;
 
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const today = new Date().toISOString().split('T')[0];
   const month = today.substring(0, 7); // YYYY-MM
@@ -213,10 +205,7 @@ usage.get('/summary', async (c) => {
     return c.json({ error: 'Unauthorized' }, 401);
   }
 
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const today = new Date().toISOString().split('T')[0];
   const month = today.substring(0, 7);
@@ -274,10 +263,7 @@ usage.get('/limits', async (c) => {
 
   const feature = c.req.query('feature') || 'default';
 
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const today = new Date().toISOString().split('T')[0];
   const month = today.substring(0, 7);

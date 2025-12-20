@@ -1,3 +1,4 @@
+import { getRedis } from '../services/redis';
 /**
  * Health Check Routes
  *
@@ -5,7 +6,6 @@
  */
 
 import { Hono } from 'hono';
-import { Redis } from '@upstash/redis';
 import type { Env, Variables } from '../types';
 
 const health = new Hono<{ Bindings: Env; Variables: Variables }>();
@@ -42,10 +42,7 @@ health.get('/detailed', async (c) => {
 
   // Check Redis
   try {
-    const redis = new Redis({
-      url: c.env.UPSTASH_REDIS_REST_URL,
-      token: c.env.UPSTASH_REDIS_REST_TOKEN,
-    });
+    const redis = getRedis(c);
 
     const start = Date.now();
     await redis.ping();

@@ -41,6 +41,14 @@ try:
 except ImportError:
     HAS_AGENT_LOADER = False
 
+# Import XML context generation utilities (Phase 1: XML Integration)
+try:
+    from context_state import clear_context_state, save_context_state, compute_hash
+    from xml_generator import generate_project_context_xml
+    HAS_XML_CONTEXT = True
+except ImportError:
+    HAS_XML_CONTEXT = False
+
 def create_logs_directory():
     """Create logs directory if it doesn't exist."""
     logs_dir = Path("logs")
@@ -218,6 +226,137 @@ def ensure_popkit_directories():
     return None
 
 
+def ensure_pattern_learner_directories():
+    """Ensure pattern learner and research directories exist.
+
+    Creates directories for the three-tier learning system:
+    - Tier 1 (Global): ~/.claude/config/ for command patterns database
+    - Tier 2 (Project): .claude/research/ for project research index
+    - Tier 3 (Project): .claude/expertise/ for agent expertise files
+
+    Part of Agent Expertise System (Issue #201, Phase 1).
+
+    Returns:
+        dict: Status of directory creation, or None on error
+    """
+    try:
+        home = Path.home()
+        cwd = Path(os.getcwd())
+
+        # Global config directory (Tier 1)
+        global_config = home / ".claude" / "config"
+
+        # Project-specific directories (Tier 2 and 3)
+        project_research = cwd / ".claude" / "research"
+        project_expertise = cwd / ".claude" / "expertise"
+
+        dirs_to_create = [
+            global_config,
+            project_research,
+            project_research / "entries",
+            project_expertise,
+        ]
+
+        created = []
+        for d in dirs_to_create:
+            if not d.exists():
+                d.mkdir(parents=True, exist_ok=True)
+                # Use relative path for project dirs, absolute for global
+                try:
+                    if d.is_relative_to(cwd):
+                        created.append(str(d.relative_to(cwd)))
+                    else:
+                        created.append(str(d))
+                except (ValueError, TypeError):
+                    # is_relative_to may fail on some Python versions
+                    created.append(str(d))
+
+        # Initialize research index if missing
+        index_path = project_research / "index.json"
+        index_created = False
+        if not index_path.exists() and project_research.exists():
+            # Create minimal research index structure
+            index_data = {
+                "version": "1.0.0",
+                "created_at": datetime.utcnow().isoformat() + "Z",
+                "updated_at": datetime.utcnow().isoformat() + "Z",
+                "entries": [],
+                "tags": {},
+                "metadata": {
+                    "total_entries": 0,
+                    "entry_types": {
+                        "decision": 0,
+                        "finding": 0,
+                        "learning": 0,
+                        "spike": 0
+                    }
+                }
+            }
+            with open(index_path, 'w') as f:
+                json.dump(index_data, f, indent=2)
+            index_created = True
+
+        if created or index_created:
+            return {
+                'directories_created': created,
+                'index_created': index_created
+            }
+
+        return None  # Nothing needed
+
+    except Exception:
+        pass  # Silent failure - never block session start
+
+    return None
+
+
+def load_agent_expertise():
+    """Load expertise files for relevant agents.
+
+    This is non-blocking - any errors are silently ignored.
+
+    Part of Agent Expertise System (Issue #201, Phase 2).
+
+    Returns:
+        dict: Loaded expertise info, or None on error
+    """
+    try:
+        # Import here to avoid circular dependencies
+        sys.path.insert(0, str(Path(__file__).parent / "utils"))
+        from expertise_manager import ExpertiseManager
+
+        cwd = Path(os.getcwd())
+        expertise_dir = cwd / ".claude" / "expertise"
+
+        if not expertise_dir.exists():
+            return None
+
+        loaded = []
+        for agent_dir in expertise_dir.iterdir():
+            if agent_dir.is_dir():
+                expertise_file = agent_dir / "expertise.yaml"
+                if expertise_file.exists():
+                    agent_id = agent_dir.name
+                    manager = ExpertiseManager(agent_id, cwd)
+                    summary = manager.get_summary()
+                    loaded.append({
+                        'agent_id': agent_id,
+                        'patterns': summary['total_patterns'],
+                        'preferences': summary['total_preferences'],
+                    })
+
+        if loaded:
+            print(f"Agent expertise loaded: {len(loaded)} agents", file=sys.stderr)
+            return {'agents': loaded}
+
+        return None
+
+    except Exception:
+        pass  # Silent failure
+
+    return None
+
+
 def load_relevant_agents_for_session(data):
     """Load relevant agents based on initial user message.
 
@@ -262,6 +401,90 @@ def load_relevant_agents_for_session(data):
     return None
 
 
+def detect_project_context():
+    """Detect project context for XML generation.
+
+    Analyzes the current project to extract:
+    - Project name
+    - Tech stack (from package.json dependencies)
+    - Infrastructure (future: detect from configs)
+    - Current work (git branch, recent issues)
+
+    Returns:
+        dict: Project context with stack, infrastructure, current_work
+    """
+    try:
+        cwd = Path(os.getcwd())
+        context = {
+            "name": cwd.name,
+            "stack": [],
+            "infrastructure": {},
+            "current_work": {}
+        }
+
+        # Detect stack from package.json
+        package_json = cwd / "package.json"
+        if package_json.exists():
+            try:
+                with open(package_json, 'r') as f:
+                    pkg = json.load(f)
+                    deps = {**pkg.get('dependencies', {}), **pkg.get('devDependencies', {})}
+
+                    # Detect frameworks
+                    if 'next' in deps:
+                        context["stack"].append("Next.js")
+                    if 'react' in deps and 'next' not in deps:
+                        context["stack"].append("React")
+                    if 'vue' in deps:
+                        context["stack"].append("Vue")
+                    if 'express' in deps:
+                        context["stack"].append("Express")
+                    if '@supabase/supabase-js' in deps:
+                        context["stack"].append("Supabase")
+                    if 'fastapi' in ' '.join(deps.keys()).lower():
+                        context["stack"].append("FastAPI")
+
+            except (json.JSONDecodeError, IOError):
+                pass
+
+        # Detect Python stack from requirements.txt
+        requirements_txt = cwd / "requirements.txt"
+        if requirements_txt.exists():
+            try:
+                with open(requirements_txt, 'r') as f:
+                    requirements = f.read().lower()
+                    if 'fastapi' in requirements:
+                        context["stack"].append("FastAPI")
+                    if 'django' in requirements:
+                        context["stack"].append("Django")
+                    if 'flask' in requirements:
+                        context["stack"].append("Flask")
+            except IOError:
+                pass
+
+        # Detect current branch
+        try:
+            import subprocess
+            result = subprocess.run(
+                ['git', 'branch', '--show-current'],
+                capture_output=True,
+                text=True,
+                timeout=1,
+                cwd=cwd
+            )
+            if result.returncode == 0:
+                branch = result.stdout.strip()
+                if branch:
+                    context["current_work"]["branch"] = branch
+        except Exception:
+            pass
+
+        return context
+
+    except Exception:
+        return {"name": "unknown", "stack": [], "infrastructure": {}, "current_work": {}}
+
+
 def main():
     """Main entry point for the hook - JSON stdin/stdout protocol"""
     try:
@@ -291,8 +514,68 @@ def main():
                     parts.append("config.json")
                 print(f"PopKit auto-init: {', '.join(parts)}", file=sys.stderr)
 
+        # Ensure pattern learner and research directories (Issue #201, Phase 1)
+        learning_init = ensure_pattern_learner_directories()
+        if learning_init:
+            dirs = learning_init.get('directories_created', [])
+            index = learning_init.get('index_created', False)
+            if dirs or index:
+                parts = []
+                if dirs:
+                    parts.append(f"directories: {len(dirs)}")
+                if index:
+                    parts.append("research index")
+                print(f"Learning systems initialized: {', '.join(parts)}", file=sys.stderr)
+
+        # Load agent expertise files (Issue #201, Phase 2, non-blocking)
+        expertise_loading = load_agent_expertise()
+
         # Load relevant agents for this session (Phase 2, non-blocking)
         agent_loading = load_relevant_agents_for_session(data)
+
+        # Generate initial XML context and save state (Phase 1: XML Integration)
+        xml_context_info = None
+        if HAS_XML_CONTEXT:
+            try:
+                # Get session ID from data
+                session_id = data.get('session_id', 'default')
+
+                # Clear previous session state
+                clear_context_state(session_id)
+
+                # Detect project context
+                project_context = detect_project_context()
+
+                # Generate XML
+                xml_output = generate_project_context_xml(project_context)
+
+                # Save initial state
+                initial_state = {
+                    "context_sent": {
+                        "project": {
+                            "hash": compute_hash(project_context),
+                            "sent_at_message": 0  # Session start, before first message
+                        }
+                    },
+                    "message_count": 0,
+                    "last_full_context_message": 0
+                }
+                save_context_state(session_id, initial_state)
+
+                # Print XML to stderr for visibility
+                print("\n--- Project Context (XML) ---", file=sys.stderr)
+                print(xml_output, file=sys.stderr)
+                print("--- End Project Context ---\n", file=sys.stderr)
+
+                xml_context_info = {
+                    "xml_generated": True,
+                    "state_saved": True,
+                    "project_name": project_context.get("name")
+                }
+
+            except Exception as e:
+                # Silent failure - don't block session start
+                print(f"Warning: XML context generation failed: {e}", file=sys.stderr)
 
         # Print welcome message to stderr
         print("Session started - hooks system active", file=sys.stderr)
@@ -317,9 +600,21 @@ def main():
         if popkit_init:
             response["popkit_init"] = popkit_init
 
+        # Include learning systems init info if directories were created (Issue #201)
+        if learning_init:
+            response["learning_init"] = learning_init
+
+        # Include expertise loading info if available (Issue #201, Phase 2)
+        if expertise_loading:
+            response["expertise_loading"] = expertise_loading
+
         # Include agent loading info if available (Phase 2)
         if agent_loading:
             response["agent_loading"] = agent_loading
+
+        # Include XML context info if generated (Phase 1)
+        if xml_context_info:
+            response["xml_context"] = xml_context_info
 
         print(json.dumps(response))
 

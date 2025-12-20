@@ -908,9 +908,10 @@ class PowerModeCheckInHook:
 
         # Initialize if needed
         if not self.state_tracker:
-            agent_id = data.get("agent_id", hashlib.md5(str(data).encode()).hexdigest()[:8])
-            agent_name = data.get("agent_name", "unknown")
-            session_id = data.get("session_id", "default")
+            # Read from environment variables first (for benchmark coordinator)
+            agent_id = os.environ.get("POWER_MODE_AGENT_ID") or data.get("agent_id", hashlib.md5(str(data).encode()).hexdigest()[:8])
+            agent_name = os.environ.get("POWER_MODE_AGENT_NAME") or data.get("agent_name", "unknown")
+            session_id = os.environ.get("POWER_MODE_SESSION_ID") or data.get("session_id", "default")
             self.initialize(agent_id, agent_name, session_id)
 
         # Record tool use
@@ -942,6 +943,26 @@ class PowerModeCheckInHook:
             "insights_pulled": 0,
             "context_injected": []
         }
+
+        # For benchmark mode: write directly to stream if POWER_MODE_STREAM_KEY is set
+        stream_key = os.environ.get("POWER_MODE_STREAM_KEY")
+        if stream_key and self.redis_client.connected:
+            # Write check-in message directly to benchmark stream
+            try:
+                import time
+                from upstash_adapter import get_redis_client
+                redis = get_redis_client()
+                redis.xadd(stream_key, {
+                    'agent_id': self.state_tracker.agent_id,
+                    'agent_name': self.state_tracker.agent_name,
+                    'type': 'check_in',
+                    'tool_name': tool_name,
+                    'timestamp': str(int(time.time() * 1000)),
+                    'tool_calls': str(self.state_tracker.get_tool_call_count())
+                }, maxlen=1000)
+                checkin["benchmark_stream_write"] = True
+            except Exception as e:
+                checkin["benchmark_stream_error"] = str(e)
 
         # 1. PUSH: Share state
         if self.redis_client.connected:

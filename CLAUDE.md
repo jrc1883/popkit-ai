@@ -323,8 +323,21 @@ Three skills manage state between sessions (invoke via Skill tool):
 Day-bracketing workflow via `/popkit:routine`:
 - `morning`: Health check → "Ready to Code" score (0-100)
 - `nightly`: Cleanup → "Sleep Score" (0-100)
+- `--measure`: Track context usage, duration, and tool breakdown
 
 Subcommands: `run`, `quick`, `generate`, `list`, `set`, `edit`, `delete`
+
+**Routine Measurement** (`--measure` flag):
+Tracks execution metrics for routine optimization:
+- Duration, tool calls, token usage (input/output)
+- Cost estimates (Claude Sonnet 4.5 pricing)
+- Per-tool breakdown (Bash, Read, Grep, etc.)
+- JSON persistence to `.claude/popkit/measurements/`
+
+Implementation:
+- `hooks/utils/routine_measurement.py` - Tracker
+- `hooks/post-tool-use.py` - Auto-capture tool calls
+- `skills/pop-routine-measure/` - Skill + tests
 
 See `packages/plugin/commands/routine.md` for full documentation.
 
@@ -567,7 +580,7 @@ See `docs/plans/2025-12-13-v1-validation-audit-plan.md` for full audit strategy.
 
 ## Version History
 
-**Current Version:** 0.2.1 (Pre-release)
+**Current Version:** 0.2.5 (Pre-release)
 **Target:** 1.0.0 (Marketplace Release)
 
 See [CHANGELOG.md](CHANGELOG.md) for full version history.

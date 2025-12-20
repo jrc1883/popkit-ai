@@ -1,3 +1,5 @@
+import { getRedis } from '../services/redis';
+import type { Redis } from '@upstash/redis';
 /**
  * Rate Limiting Middleware
  *
@@ -5,7 +7,6 @@
  */
 
 import { Context, Next } from 'hono';
-import { Redis } from '@upstash/redis';
 import { Ratelimit } from '@upstash/ratelimit';
 import type { Env, Variables, Tier, RateLimitResult } from '../types';
 
@@ -32,10 +33,7 @@ export async function rateLimitMiddleware(
     return next();
   }
 
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const limit = RATE_LIMITS[apiKeyData.tier] || RATE_LIMITS.free;
 

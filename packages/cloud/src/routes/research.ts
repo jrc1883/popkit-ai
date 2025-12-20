@@ -1,3 +1,4 @@
+import { getRedis } from '../services/redis';
 /**
  * Research Routes - Knowledge Base Management
  *
@@ -10,7 +11,6 @@
 
 import { Hono } from 'hono';
 import { Index } from '@upstash/vector';
-import { Redis } from '@upstash/redis';
 import type { Env, Variables, Tier } from '../types';
 
 // =============================================================================
@@ -96,10 +96,7 @@ research.post('/', async (c) => {
     }, 403);
   }
 
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const body = await c.req.json<Partial<ResearchEntry>>();
 
@@ -211,10 +208,7 @@ research.get('/:id', async (c) => {
     }, 403);
   }
 
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const entryJson = await redis.get<string>(`popkit:research:${userId}:${entryId}`);
   if (!entryJson) {
@@ -245,10 +239,7 @@ research.get('/', async (c) => {
     }, 403);
   }
 
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const type = c.req.query('type');
   const project = c.req.query('project');
@@ -311,10 +302,7 @@ research.delete('/:id', async (c) => {
     }, 403);
   }
 
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   // Get entry first to clean up indexes
   const entryJson = await redis.get<string>(`popkit:research:${userId}:${entryId}`);
@@ -414,10 +402,7 @@ research.post('/search', async (c) => {
   });
 
   // Fetch full entries for results
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   interface SearchResultItem {
     entry: ResearchEntry;
@@ -472,10 +457,7 @@ research.get('/meta/tags', async (c) => {
     }, 403);
   }
 
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   // Get all entry IDs
   const entryIds = await redis.smembers(`popkit:research:${userId}:index`) as string[];
@@ -511,10 +493,7 @@ research.get('/meta/stats', async (c) => {
     }, 403);
   }
 
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   // Get all entry IDs
   const entryIds = await redis.smembers(`popkit:research:${userId}:index`) as string[];

@@ -40,7 +40,7 @@ except ImportError:
 
 POPKIT_CLOUD_URL = os.environ.get(
     "POPKIT_CLOUD_URL",
-    "https://popkit-cloud-api.joseph-cannon.workers.dev/v1"
+    "https://api.thehouseofdeals.com/v1"
 )
 
 # For development/testing, allow override to localhost

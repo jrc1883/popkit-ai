@@ -11,74 +11,27 @@ Configure Netlify deployment for frontend applications. Generates production-rea
 
 **Core principle:** Convention over configuration, with escape hatches when needed.
 
-**Trigger:** `/popkit:deploy setup netlify` command
-
 ## Critical Rules
 
-1. **ALWAYS detect framework first** - Netlify has framework-specific build plugins
-2. **Use deploy previews for PRs** - Automatic with Netlify, but we add custom workflows
-3. **Separate contexts** - Production, deploy-preview, branch-deploy
-4. **Use Netlify Functions** - For serverless API routes
-5. **Edge Functions for performance** - When latency matters
+| Rule | Details |
+|------|---------|
+| **ALWAYS detect framework first** | Netlify has framework-specific build plugins |
+| **Use deploy previews for PRs** | Automatic with Netlify, add custom workflows |
+| **Separate contexts** | Production, deploy-preview, branch-deploy |
+| **Use Netlify Functions** | For serverless API routes |
+| **Edge Functions for performance** | When latency matters |
 
 ## Process
 
 ### Step 1: Detect Framework
 
-```python
-import os
-import json
-from pathlib import Path
+Run detection script to identify project framework and optimal settings.
 
-def detect_framework():
-    """Detect frontend framework for Netlify optimization."""
-    cwd = Path.cwd()
+**Detects:** Next.js, Nuxt, SvelteKit, Astro, Gatsby, Remix, Vite, Create React App, Angular, Vue CLI, Hugo, Jekyll, MkDocs, Docusaurus, or static site
 
-    # Check package.json
-    if (cwd / "package.json").exists():
-        with open(cwd / "package.json") as f:
-            pkg = json.load(f)
+[See detection script](examples/netlify/detect-framework.py)
 
-        deps = {**pkg.get("dependencies", {}), **pkg.get("devDependencies", {})}
-
-        # Framework detection
-        if "next" in deps:
-            return "nextjs"
-        elif "nuxt" in deps:
-            return "nuxt"
-        elif "@sveltejs/kit" in deps:
-            return "sveltekit"
-        elif "astro" in deps:
-            return "astro"
-        elif "gatsby" in deps:
-            return "gatsby"
-        elif "remix" in deps:
-            return "remix"
-        elif "vite" in deps:
-            return "vite"
-        elif "react-scripts" in deps:
-            return "create-react-app"
-        elif "@angular/core" in deps:
-            return "angular"
-        elif "vue" in deps and "vite" not in deps:
-            return "vue-cli"
-
-    # Static site generators
-    if (cwd / "hugo.toml").exists() or (cwd / "config.toml").exists():
-        return "hugo"
-    if (cwd / "_config.yml").exists():
-        return "jekyll"
-    if (cwd / "mkdocs.yml").exists():
-        return "mkdocs"
-    if (cwd / "docusaurus.config.js").exists():
-        return "docusaurus"
-
-    return "static"
-```
-
-### Step 2: Generate netlify.toml
-
-Use AskUserQuestion to confirm settings:
+### Step 2: Ask About Configuration
 
 ```
 Use AskUserQuestion tool with:
@@ -94,384 +47,74 @@ Use AskUserQuestion tool with:
 - multiSelect: false
 ```
 
-### Step 3: Write Configuration Files
+### Step 3: Generate Files
 
-Generate files based on framework and user preferences.
+| File | Purpose |
+|------|---------|
+| `netlify.toml` | Build configuration and deployment settings |
+| `.github/workflows/netlify-preview.yml` | Preview deployments for PRs |
+| `.github/workflows/netlify-production.yml` | Production deployments on main |
+| `docs/NETLIFY_SETUP.md` | Environment variable setup guide |
 
 ## netlify.toml Templates
 
-### Next.js
+[See framework-specific templates](examples/netlify/toml-templates/):
+- **Next.js** - With @netlify/plugin-nextjs runtime
+- **Vite** - SPA fallback, asset caching
+- **Astro** - SSR adapter support
+- **Static** - Hugo/Jekyll with pretty URLs
+- **Functions** - Serverless function routing
+- **Edge** - Edge function middleware
 
-```toml
-# netlify.toml - Next.js configuration
+All templates include:
+- Build command and publish directory
+- Context-specific environments (production, preview)
+- Security headers (X-Frame-Options, CSP)
+- Asset caching headers
+- SPA fallback redirects (where applicable)
 
-[build]
-  command = "npm run build"
-  publish = ".next"
+## GitHub Actions Workflows
 
-# Next.js requires the Netlify Next.js Runtime
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
+[See workflow templates](examples/netlify/workflows/):
+- `netlify-preview.yml` - Deploy previews for PRs with comment
+- `netlify-production.yml` - Production deploy on main branch
 
-# Production context
-[context.production]
-  environment = { NODE_ENV = "production" }
+Both workflows use `nwtgck/actions-netlify@v3` with proper caching and environment separation.
 
-# Deploy preview context
-[context.deploy-preview]
-  environment = { NODE_ENV = "preview" }
+## Netlify Functions
 
-# Headers for security and caching
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Content-Type-Options = "nosniff"
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-    Referrer-Policy = "strict-origin-when-cross-origin"
+[See function examples](examples/netlify/functions/):
+- `hello.ts` - Basic serverless function
+- `api-handler.ts` - API endpoint with validation
+- `edge-middleware.ts` - Edge function with headers
 
-[[headers]]
-  for = "/_next/static/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+**Function configuration:**
+- Directory: `netlify/functions/`
+- Bundler: esbuild (faster than webpack)
+- Runtime: Node.js 20.x
 
-# Redirects for SPA fallback (if needed)
-# [[redirects]]
-#   from = "/*"
-#   to = "/index.html"
-#   status = 200
-```
+## Environment Variables
 
-### Vite (React/Vue/Svelte)
+[See setup guide](examples/netlify/env-setup.md)
 
-```toml
-# netlify.toml - Vite SPA configuration
-
-[build]
-  command = "npm run build"
-  publish = "dist"
-
-[context.production]
-  environment = { NODE_ENV = "production" }
-
-[context.deploy-preview]
-  environment = { NODE_ENV = "preview" }
-
-# SPA fallback - serve index.html for all routes
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-
-# Headers
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Content-Type-Options = "nosniff"
-    X-Frame-Options = "DENY"
-
-[[headers]]
-  for = "/assets/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-```
-
-### Astro
-
-```toml
-# netlify.toml - Astro configuration
-
-[build]
-  command = "npm run build"
-  publish = "dist"
-
-# Astro SSR adapter (if using SSR)
-# [[plugins]]
-#   package = "@astrojs/netlify"
-
-[context.production]
-  environment = { NODE_ENV = "production" }
-
-[[headers]]
-  for = "/_astro/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Content-Type-Options = "nosniff"
-    X-Frame-Options = "DENY"
-```
-
-### Static Site (Hugo/Jekyll)
-
-```toml
-# netlify.toml - Static site configuration
-
-[build]
-  command = "hugo --minify"  # or "jekyll build"
-  publish = "public"         # or "_site" for Jekyll
-
-[context.production]
-  environment = { HUGO_ENV = "production" }
-
-[context.deploy-preview]
-  command = "hugo --buildDrafts --buildFuture"
-
-# Pretty URLs
-[[redirects]]
-  from = "/posts/:year/:month/:slug"
-  to = "/blog/:year/:month/:slug"
-  status = 301
-
-# Headers
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Content-Type-Options = "nosniff"
-    X-Frame-Options = "DENY"
-    Cache-Control = "public, max-age=3600"
-
-[[headers]]
-  for = "/css/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/js/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-```
-
-### With Netlify Functions
-
-```toml
-# netlify.toml - With serverless functions
-
-[build]
-  command = "npm run build"
-  publish = "dist"
-  functions = "netlify/functions"
-
-[functions]
-  node_bundler = "esbuild"
-  included_files = ["./config/**"]
-
-[context.production]
-  environment = { NODE_ENV = "production" }
-
-# API routes to functions
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Content-Type-Options = "nosniff"
-```
-
-### With Edge Functions
-
-```toml
-# netlify.toml - With edge functions
-
-[build]
-  command = "npm run build"
-  publish = "dist"
-
-[[edge_functions]]
-  path = "/api/*"
-  function = "api-handler"
-
-[[edge_functions]]
-  path = "/*"
-  function = "middleware"
-
-[context.production]
-  environment = { NODE_ENV = "production" }
-
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Content-Type-Options = "nosniff"
-```
-
-## GitHub Actions Workflow
-
-### Deploy Preview (PR)
-
-```yaml
-# .github/workflows/netlify-preview.yml
-name: Netlify Preview Deployment
-
-on:
-  pull_request:
-    branches: [main, master]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-        env:
-          NODE_ENV: preview
-
-      - name: Deploy to Netlify
-        id: deploy
-        uses: nwtgck/actions-netlify@v3
-        with:
-          publish-dir: './dist'
-          production-deploy: false
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          deploy-message: "Deploy from GitHub Actions - PR #${{ github.event.number }}"
-          enable-pull-request-comment: true
-          enable-commit-comment: false
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-```
-
-### Production Deployment
-
-```yaml
-# .github/workflows/netlify-production.yml
-name: Netlify Production Deployment
-
-on:
-  push:
-    branches: [main, master]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-        env:
-          NODE_ENV: production
-
-      - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v3
-        with:
-          publish-dir: './dist'
-          production-deploy: true
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          deploy-message: "Production deploy from GitHub Actions"
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-```
-
-## Netlify Functions Example
-
-```typescript
-// netlify/functions/hello.ts
-import type { Handler } from "@netlify/functions";
-
-export const handler: Handler = async (event, context) => {
-  const name = event.queryStringParameters?.name || "World";
-
-  return {
-    statusCode: 200,
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      message: `Hello, ${name}!`,
-      timestamp: new Date().toISOString(),
-    }),
-  };
-};
-```
-
-## Edge Functions Example
-
-```typescript
-// netlify/edge-functions/middleware.ts
-import type { Context } from "@netlify/edge-functions";
-
-export default async (request: Request, context: Context) => {
-  // Add custom header
-  const response = await context.next();
-  response.headers.set("X-Custom-Header", "PopKit");
-
-  return response;
-};
-
-export const config = {
-  path: "/*",
-};
-```
-
-## Environment Variables Template
-
-```markdown
-# Netlify Environment Variables Setup
-
-Required secrets in GitHub Actions:
+### Required GitHub Secrets
 
 | Secret | Description | How to Get |
 |--------|-------------|------------|
 | `NETLIFY_AUTH_TOKEN` | Personal access token | netlify.com/user/applications |
-| `NETLIFY_SITE_ID` | Site ID | Netlify Dashboard → Site Settings → General |
+| `NETLIFY_SITE_ID` | Site ID | Dashboard → Site Settings → General |
 
-## Getting Netlify Site ID
+### Netlify Dashboard Variables
 
-1. Go to Netlify Dashboard
-2. Select your site
-3. Site Settings → General → Site ID
+Configure in Dashboard → Site Settings → Environment Variables:
 
-## Environment Variables in Netlify Dashboard
+| Variable | Contexts | Example |
+|----------|----------|---------|
+| `DATABASE_URL` | Production | Production database |
+| `DATABASE_URL` | Deploy previews | Staging database |
+| `API_SECRET` | All | Shared API secret |
 
-Add these in Netlify Dashboard → Site → Site Settings → Environment Variables:
-
-| Variable | Contexts | Value |
-|----------|----------|-------|
-| `DATABASE_URL` | Production | Your production database |
-| `DATABASE_URL` | Deploy previews | Your staging database |
-| `API_SECRET` | All | Your API secret |
-
-## Scopes and Contexts
-
-Netlify supports different contexts:
-- **production**: Main branch deployments
-- **deploy-preview**: PR preview deployments
-- **branch-deploy**: Other branch deployments
-- **dev**: Local development (netlify dev)
-```
+**Contexts:** production, deploy-preview, branch-deploy, dev
 
 ## Output Format
 
@@ -481,47 +124,34 @@ Netlify Deployment Setup
 
 [1/4] Detecting framework...
       ✓ Detected: Vite + React
-      ✓ Build command: npm run build
-      ✓ Output: dist
+      ✓ Build: npm run build → dist
 
 [2/4] Generating netlify.toml...
-      ✓ Build configuration set
-      ✓ SPA fallback redirect added
-      ✓ Security headers configured
-      ✓ Asset caching headers added
-      → netlify.toml created
+      ✓ SPA fallback redirect
+      ✓ Security headers
+      ✓ Asset caching
+      → netlify.toml
 
 [3/4] Generating workflows...
-      ✓ Preview deployment for PRs
-      ✓ Production deployment on main
       → .github/workflows/netlify-preview.yml
       → .github/workflows/netlify-production.yml
 
-[4/4] Generating env template...
-      → docs/NETLIFY_SETUP.md created
-
-Files Created:
-├── netlify.toml
-├── .github/workflows/netlify-preview.yml
-├── .github/workflows/netlify-production.yml
-└── docs/NETLIFY_SETUP.md
+[4/4] Env template...
+      → docs/NETLIFY_SETUP.md
 
 Required Secrets:
-  NETLIFY_AUTH_TOKEN  - Personal access token from netlify.com
-  NETLIFY_SITE_ID     - From Netlify Dashboard → Site Settings
+  NETLIFY_AUTH_TOKEN
+  NETLIFY_SITE_ID
 
 Quick Commands:
-  netlify link        # Connect to Netlify site
-  netlify dev         # Run local development
-  netlify deploy      # Manual deploy (preview)
-  netlify deploy --prod  # Manual production deploy
+  netlify link         # Connect to site
+  netlify dev          # Local development
+  netlify deploy       # Preview deploy
 
 Would you like to commit these files?
 ```
 
 ## Verification Checklist
-
-After generation, verify:
 
 | Check | Command |
 |-------|---------|
@@ -534,9 +164,7 @@ After generation, verify:
 ## Integration
 
 **Command:** `/popkit:deploy setup netlify`
-
-**Agent:** Uses `devops-automator` for intelligent template selection
-
+**Agent:** `devops-automator`
 **Followed by:**
 - `/popkit:deploy validate` - Pre-deployment checks
 - `/popkit:deploy execute netlify` - Trigger deployment

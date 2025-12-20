@@ -1,3 +1,4 @@
+import { getRedis } from '../services/redis';
 /**
  * Embeddings Routes
  *
@@ -8,7 +9,6 @@
  */
 
 import { Hono } from 'hono';
-import { Redis } from '@upstash/redis';
 import type { Env, Variables } from '../types';
 
 // Extend Env to include Voyage API key
@@ -142,10 +142,7 @@ async function generateQueryEmbedding(
  * Returns: { embedding: number[], tokens: number, cost: number, duplicate?: { id: string, similarity: number } }
  */
 embeddings.post('/insight', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const prefix = getUserPrefix(c);
   const body = await c.req.json<{
@@ -240,10 +237,7 @@ embeddings.post('/insight', async (c) => {
  * Returns: { results: Array<{ id: string, summary: string, similarity: number }>, tokens: number }
  */
 embeddings.post('/search', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const prefix = getUserPrefix(c);
   const body = await c.req.json<{
@@ -328,10 +322,7 @@ embeddings.post('/search', async (c) => {
  * Returns: { created: number, duplicates: number, tokens: number, cost: number }
  */
 embeddings.post('/batch', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const prefix = getUserPrefix(c);
   const body = await c.req.json<{
@@ -428,10 +419,7 @@ embeddings.post('/batch', async (c) => {
  * GET /embeddings/usage
  */
 embeddings.get('/usage', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const prefix = getUserPrefix(c);
   const today = new Date().toISOString().split('T')[0];

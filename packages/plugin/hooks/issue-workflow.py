@@ -553,8 +553,8 @@ class IssueWorkflowHook:
         try:
             # Capture all uncommitted changes
             result = subprocess.run(
-                "git diff HEAD",
-                shell=True,
+                ["git", "diff", "HEAD"],
+
                 capture_output=True,
                 text=True,
                 cwd=str(self.cwd)
@@ -675,8 +675,8 @@ class IssueWorkflowHook:
             # First, save current changes as a recovery file
             recovery_path = self.phase_checkpoints_dir / f"recovery-{datetime.now().strftime('%Y%m%d-%H%M%S')}.patch"
             current_diff = subprocess.run(
-                "git diff HEAD",
-                shell=True,
+                ["git", "diff", "HEAD"],
+
                 capture_output=True,
                 text=True,
                 cwd=str(self.cwd)
@@ -686,13 +686,11 @@ class IssueWorkflowHook:
                 print(f"Current changes saved to: {recovery_path}", file=sys.stderr)
 
             # Reset to clean state
-            subprocess.run("git checkout .", shell=True, cwd=str(self.cwd), check=True)
-            subprocess.run("git clean -fd", shell=True, cwd=str(self.cwd), check=True)
+            subprocess.run(["git", "checkout", "."], cwd=str(self.cwd), check=True)
+            subprocess.run(["git", "clean", "-fd"], cwd=str(self.cwd), check=True)
 
             # Apply the checkpoint patch
-            subprocess.run(
-                f"git apply {latest}",
-                shell=True,
+            subprocess.run(["git", "apply", str(latest)],
                 cwd=str(self.cwd),
                 check=True
             )

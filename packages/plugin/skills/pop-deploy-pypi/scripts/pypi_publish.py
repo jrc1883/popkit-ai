@@ -189,8 +189,7 @@ def validate_package(project_dir: Path = None, test: bool = False) -> Dict[str, 
         ["twine", "check", "dist/*"],
         cwd=project_dir,
         capture_output=True,
-        text=True,
-        shell=True
+        text=True
     )
     if result.returncode != 0 and dist_dir.exists():
         issues.append(f"twine check failed: {result.stdout.strip()}")
@@ -236,11 +235,10 @@ def publish(
 
     start_time = datetime.now()
     result = subprocess.run(
-        " ".join(cmd),
+        cmd,
         cwd=project_dir,
         capture_output=True,
-        text=True,
-        shell=True
+        text=True
     )
     duration = (datetime.now() - start_time).total_seconds()
 

@@ -19,7 +19,6 @@ This script:
 import argparse
 import json
 import os
-import platform
 import subprocess
 import sys
 import time
@@ -50,9 +49,6 @@ def spawn_agent(
         subprocess.Popen: The running agent process
     """
 
-    # Use absolute path to power-mode directory so agents can import upstash_adapter
-    power_mode_dir = str(Path(__file__).parent.absolute())
-
     # Build the full prompt with secret context and puzzle
     full_prompt = f"""You are {agent_name} (ID: {agent_id}).
 
@@ -62,67 +58,47 @@ Your secret context (DO NOT share the raw data, only your findings):
 {puzzle_prompt}
 
 Coordination Protocol:
-1. IMMEDIATELY check in using the Bash tool to run Python code
-2. Analyze your secret context
-3. Ask questions and share insights with other agents
-4. The puzzle is solved when you collectively identify the attack vector
+- Use Upstash Redis Stream: {stream_key}
+- Check in with "I'm analyzing my data..."
+- Ask questions when you need information from other agents
+- Answer questions from other agents
+- Share insights as you discover them
+- The puzzle is solved when you collectively identify the attack vector
 
-CRITICAL: You MUST use the Bash tool to publish messages to Redis Stream: {stream_key}
+You can publish messages using Python:
+```python
+import sys
+sys.path.insert(0, '../../../plugin/power-mode')
+from upstash_adapter import get_redis_client
 
-To check in and coordinate, use the Bash tool with this Python code:
-```bash
-python -c "import sys; import time; sys.path.insert(0, r'{power_mode_dir}'); from upstash_adapter import get_redis_client; redis = get_redis_client(); redis.xadd('{stream_key}', {{'agent_id': '{agent_id}', 'type': 'check_in', 'message': 'Your message here', 'timestamp': str(int(time.time() * 1000))}}, maxlen=1000); print('Message published')"
+redis = get_redis_client()
+redis.xadd('{stream_key}', {{
+    'agent_id': '{agent_id}',
+    'type': 'check_in',
+    'message': 'Your message here',
+    'timestamp': str(int(time.time() * 1000))
+}}, maxlen=1000)
 ```
 
-START by running the check-in code above, then analyze your data and coordinate.
+Begin your analysis and coordinate with other agents to solve the puzzle.
 """
 
     # Spawn Claude CLI with the prompt
-    # On Windows, use claude.cmd instead of claude
-    claude_cmd = 'claude.cmd' if platform.system() == 'Windows' else 'claude'
+    proc = subprocess.Popen(
+        ['claude', '--print', '--output-format', 'stream-json'],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        cwd=work_dir,
+        text=True
+    )
 
-    print(f"  Spawning Claude CLI for {agent_name}...")
-    try:
-        # Ensure environment variables are passed to subprocess (especially Upstash creds)
-        env = os.environ.copy()
+    # Send the prompt
+    if proc.stdin:
+        proc.stdin.write(full_prompt)
+        proc.stdin.close()
 
-        proc = subprocess.Popen(
-            [
-                claude_cmd,
-                '--no-session-persistence',  # Don't save session to disk
-                '--dangerously-skip-permissions'  # Skip tool permission prompts
-            ],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            cwd=work_dir,
-            env=env,
-            text=True
-        )
-
-        # Send the prompt
-        if proc.stdin:
-            proc.stdin.write(full_prompt)
-            proc.stdin.close()
-            print(f"  [OK] Prompt sent to {agent_name}")
-
-        # Quick check if process started
-        time.sleep(0.1)
-        if proc.poll() is not None:
-            # Process already exited
-            stdout, stderr = proc.communicate()
-            print(f"  [FAIL] {agent_name} exited immediately!")
-            print(f"    Exit code: {proc.returncode}")
-            if stderr:
-                print(f"    Error: {stderr[:500]}")
-            return None
-
-        print(f"  [OK] {agent_name} process running (PID: {proc.pid})")
-        return proc
-
-    except Exception as e:
-        print(f"  [FAIL] Failed to spawn {agent_name}: {e}")
-        return None
+    return proc
 
 
 def run_power_mode_benchmark(
@@ -212,52 +188,20 @@ def run_power_mode_benchmark(
             timeout=timeout
         )
 
-        if proc is None:
-            print(f"[FAIL] Failed to spawn {agent_name}")
-            continue
-
         agents.append({
             'id': agent_id,
             'name': agent_name,
             'process': proc
         })
 
-    if not agents:
-        return {
-            'success': False,
-            'error': 'No agents spawned successfully',
-            'streamKey': stream_key,
-            'messageCount': 0,
-            'duration': 0
-        }
-
     # Monitor coordination
-    print(f"\nAgents active ({len(agents)} running). Monitoring coordination for up to {timeout}s...")
+    print(f"\nAgents active. Monitoring coordination for up to {timeout}s...")
     print(f"Stream key: {stream_key}\n")
 
     start_time = time.time()
     last_message_count = 0
 
     while time.time() - start_time < timeout:
-        # Check if agents are still running
-        running_agents = []
-        for agent in agents:
-            if agent['process'].poll() is None:
-                running_agents.append(agent)
-            else:
-                print(f"[{int(time.time() - start_time)}s] [WARN] {agent['name']} exited (code: {agent['process'].returncode})")
-                # Try to read stderr
-                try:
-                    stderr = agent['process'].stderr.read() if agent['process'].stderr else ''
-                    if stderr:
-                        print(f"    Error: {stderr[:500]}")
-                except:
-                    pass
-
-        if not running_agents:
-            print(f"\n[FAIL] All agents have exited!")
-            break
-
         # Check Redis stream for new messages
         try:
             messages = redis.xrange(stream_key, '-', '+')
@@ -274,7 +218,7 @@ def run_power_mode_benchmark(
                     if any(keyword in content.lower() for keyword in [
                         'user-agent', 'header manipulation', 'bypass rate limiter'
                     ]):
-                        print(f"\n[SUCCESS] SOLUTION DETECTED in message {msg_id}")
+                        print(f"\n✓ SOLUTION DETECTED in message {msg_id}")
                         print(f"Content: {content[:200]}...")
 
                         # Wait a bit for agents to finish
@@ -324,7 +268,20 @@ def run_power_mode_benchmark(
 
     # Timeout - kill agents
     print(f"\n[TIMEOUT] Reached {timeout}s limit")
+
+    # Print agent outputs for debugging
+    print("\n[DEBUG] Agent outputs:")
     for agent in agents:
+        try:
+            stdout, stderr = agent['process'].communicate(timeout=5)
+            print(f"\n{agent['name']} (PID {agent['process'].pid}):")
+            if stdout:
+                print(f"  STDOUT: {stdout[:500]}")
+            if stderr:
+                print(f"  STDERR: {stderr[:500]}")
+        except:
+            pass
+
         agent['process'].terminate()
 
     # Collect final stream data

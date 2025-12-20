@@ -8,20 +8,12 @@
  */
 
 import { Hono } from 'hono';
-import { Redis } from '@upstash/redis';
+import { getRedis as getRedisClient } from '../services/redis';
 import type { Env, Variables } from '../types';
 
 const redis = new Hono<{ Bindings: Env; Variables: Variables }>();
 
-/**
- * Get Redis client with user's namespace prefix.
- */
-function getRedis(c: { env: Env }) {
-  return new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
-}
+
 
 /**
  * Get user-scoped key prefix.
@@ -45,7 +37,7 @@ function getUserPrefix(c: { get: (key: string) => unknown }): string {
  * Body: { agent_id: string, state: object, ttl?: number }
  */
 redis.post('/state', async (c) => {
-  const client = getRedis(c);
+  const client = getRedisClient(c);
   const prefix = getUserPrefix(c);
   const body = await c.req.json<{
     agent_id: string;
@@ -69,7 +61,7 @@ redis.post('/state', async (c) => {
  * GET /redis/state/:agent_id
  */
 redis.get('/state/:agent_id', async (c) => {
-  const client = getRedis(c);
+  const client = getRedisClient(c);
   const prefix = getUserPrefix(c);
   const agentId = c.req.param('agent_id');
 
@@ -90,7 +82,7 @@ redis.get('/state/:agent_id', async (c) => {
  * Body: { insight: object }
  */
 redis.post('/insights', async (c) => {
-  const client = getRedis(c);
+  const client = getRedisClient(c);
   const prefix = getUserPrefix(c);
   const body = await c.req.json<{ insight: Record<string, unknown> }>();
 
@@ -110,7 +102,7 @@ redis.post('/insights', async (c) => {
  * Body: { tags: string[], exclude_agent: string, limit?: number }
  */
 redis.post('/insights/search', async (c) => {
-  const client = getRedis(c);
+  const client = getRedisClient(c);
   const prefix = getUserPrefix(c);
   const body = await c.req.json<{
     tags: string[];
@@ -155,7 +147,7 @@ redis.post('/insights/search', async (c) => {
  * GET /redis/messages/:agent_id
  */
 redis.get('/messages/:agent_id', async (c) => {
-  const client = getRedis(c);
+  const client = getRedisClient(c);
   const prefix = getUserPrefix(c);
   const agentId = c.req.param('agent_id');
 
@@ -186,7 +178,7 @@ redis.get('/messages/:agent_id', async (c) => {
  * GET /redis/objective
  */
 redis.get('/objective', async (c) => {
-  const client = getRedis(c);
+  const client = getRedisClient(c);
   const prefix = getUserPrefix(c);
 
   const key = `${prefix}pop:objective`;
@@ -210,7 +202,7 @@ redis.get('/objective', async (c) => {
  * Body: { objective: object, ttl?: number }
  */
 redis.post('/objective', async (c) => {
-  const client = getRedis(c);
+  const client = getRedisClient(c);
   const prefix = getUserPrefix(c);
   const body = await c.req.json<{
     objective: Record<string, unknown>;
@@ -236,7 +228,7 @@ redis.post('/objective', async (c) => {
  * Body: { context: string }
  */
 redis.post('/patterns/search', async (c) => {
-  const client = getRedis(c);
+  const client = getRedisClient(c);
   const prefix = getUserPrefix(c);
   const body = await c.req.json<{ context: string }>();
 
@@ -273,7 +265,7 @@ redis.post('/patterns/search', async (c) => {
  * Body: { channel: string, message: object }
  */
 redis.post('/publish', async (c) => {
-  const client = getRedis(c);
+  const client = getRedisClient(c);
   const prefix = getUserPrefix(c);
   const body = await c.req.json<{
     channel: string;
@@ -307,7 +299,7 @@ redis.post('/publish', async (c) => {
  * Body: { channels: string[], since?: string }
  */
 redis.post('/subscribe', async (c) => {
-  const client = getRedis(c);
+  const client = getRedisClient(c);
   const prefix = getUserPrefix(c);
   const body = await c.req.json<{
     channels: string[];

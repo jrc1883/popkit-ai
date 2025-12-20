@@ -55,7 +55,9 @@ Idea → Brainstorm → Plan → Implement → Review → Ship
 ### Daily Operations
 
 ```bash
-/popkit:morning                 # Health check with "Ready to Code" score
+/popkit:routine morning         # Health check with "Ready to Code" score (0-100)
+/popkit:routine morning --measure # Track context usage and tool breakdown
+/popkit:routine nightly         # End-of-day cleanup with "Sleep Score" (0-100)
 /popkit:next                    # Context-aware recommendations
 /popkit:git prune               # Clean up merged branches
 ```
@@ -75,7 +77,7 @@ All commands use subcommand patterns for discoverability.
 | `/popkit:plugin` | `test`, `docs`, `sync` | Plugin management |
 | `/popkit:debug` | (default), `routing` | Debugging and diagnostics |
 | `/popkit:worktree` | `create`, `list`, `remove`, `analyze` | Git worktree management |
-| `/popkit:morning` | (default), `generate` | Health checks |
+| `/popkit:routine` | `morning`, `nightly`, `run`, `list`, `generate`, `set`, `edit`, `delete` | Day routines with health scores |
 | `/popkit:next` | `quick`, `verbose` | Action recommendations |
 | `/popkit:init-project` | - | Project scaffolding |
 | `/popkit:feature-dev` | - | 7-phase development |
@@ -123,7 +125,7 @@ Skills are invoked via the Skill tool. Key skills:
 |----------|--------|
 | **Development** | `pop-brainstorming`, `pop-writing-plans`, `pop-executing-plans`, `pop-systematic-debugging`, `pop-test-driven-development`, `pop-code-review` |
 | **Quality** | `pop-verify-completion`, `pop-root-cause-tracing`, `pop-defense-in-depth`, `pop-simplify-cascade` |
-| **Session** | `pop-session-capture`, `pop-session-resume`, `pop-context-restore` |
+| **Session** | `pop-session-capture`, `pop-session-resume`, `pop-context-restore`, `pop-routine-measure` |
 | **Power Mode** | `pop-power-mode`, `pop-worktrees`, `pop-finish-branch` |
 | **Generation** | `pop-project-init`, `pop-mcp-generator`, `pop-skill-generator`, `pop-morning-generator` |
 
@@ -181,6 +183,86 @@ Get free credentials at [upstash.com](https://upstash.com).
 - Coordinator manages agent mesh network
 - Guardrails prevent unconventional approaches
 - Human escalation for sensitive operations
+
+## Routine Measurement
+
+Track context window usage, duration, and tool breakdown during routine execution with the `--measure` flag.
+
+### What It Measures
+
+```bash
+/popkit:routine morning --measure
+```
+
+Captures:
+- **Duration**: Total execution time in seconds
+- **Tool Calls**: Number and type of tools invoked (Bash, Read, Grep, etc.)
+- **Token Usage**: Estimated input/output tokens (~4 chars per token)
+- **Cost**: Estimated API cost (Claude Sonnet 4.5 pricing)
+- **Breakdown**: Per-tool statistics (calls, tokens, duration, chars)
+
+### Output Format
+
+```
+======================================================================
+Routine Measurement Report
+======================================================================
+Routine: PopKit Full Validation (p-1)
+Duration: 12.34s
+Tool Calls: 15
+
+Context Usage:
+  Input Tokens:  1,234 (~1k)
+  Output Tokens: 6,789 (~6k)
+  Total Tokens:  8,023 (~8k)
+  Characters:    32,092
+
+Cost Estimate (Claude Sonnet 4.5):
+  Input:  $0.0037
+  Output: $0.1018
+  Total:  $0.1055
+
+Tool Breakdown:
+----------------------------------------------------------------------
+Tool                 Calls    Tokens       Duration   Chars
+----------------------------------------------------------------------
+Bash                 8        3,456        2.34s      13,824
+Read                 4        2,123        1.12s      8,492
+Grep                 2        1,234        0.56s      4,936
+Skill                1        1,210        8.32s      4,840
+======================================================================
+```
+
+### Data Persistence
+
+Measurements are automatically saved as JSON:
+
+```
+.claude/popkit/measurements/
+├── pk_20251219_080000.json       # Universal routine
+├── p-1_20251219_143022.json      # Custom PopKit routine
+└── rc-1_20251219_180000.json     # Project-specific routine
+```
+
+Each JSON file contains:
+- Full measurement data
+- Tool breakdown
+- Timestamp and routine metadata
+- Cost estimates
+
+### Use Cases
+
+- **Optimize Routines**: Identify which tools consume most tokens
+- **Cost Tracking**: Estimate routine execution costs
+- **Performance Analysis**: Compare different routine configurations
+- **Context Budgeting**: Understand context window utilization
+
+### Architecture
+
+- `hooks/utils/routine_measurement.py` - Tracker implementation
+- `hooks/post-tool-use.py` - Automatic tool call capture
+- `skills/pop-routine-measure/` - Skill and test suite
+- Environment variable: `POPKIT_ROUTINE_MEASURE=true`
 
 ## Quality Gates
 

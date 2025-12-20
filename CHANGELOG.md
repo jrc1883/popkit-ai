@@ -23,6 +23,20 @@ All notable changes to PopKit are documented in this file.
 
 ### Features
 
+- **Agent Expertise System** (#201): Three-tier learning system for agent specialization
+  - **Tier 1 - Global Patterns**: Cross-project command corrections (SQLite)
+  - **Tier 2 - Project Research**: Architecture decisions and findings (JSON)
+  - **Tier 3 - Agent Expertise**: Per-agent learnings and preferences (YAML)
+  - Conservative 3+ occurrence threshold before pattern promotion
+  - `/popkit:expertise` command - Manage agent expertise files (list, show, export, clear, stats)
+  - `expertise_manager.py` - Core management with pending pattern tracking (680 lines)
+  - Integration with `session-start.py` and `post-tool-use.py` hooks
+  - Learning metrics in `/popkit:stats --learning`
+  - Pilot agents: code-reviewer, bug-whisperer, security-auditor
+  - Known limitation: Requires `POPKIT_ACTIVE_AGENT` environment variable (to be addressed in future issue)
+  - Comprehensive test coverage (10 tests)
+  - Full architecture document: `docs/plans/2025-12-19-agent-expertise-system-architecture.md`
+
 - **Plan Mode Integration** (#263): Agent approval workflow before execution
   - Agents present implementation plans for user approval
   - Configuration-based per agent (Tier 1=execute, Tier 2=plan)

@@ -34,9 +34,7 @@ from typing import Any, Dict, List, Optional
 def run_command(cmd: str, timeout: int = 30) -> tuple:
     """Run a shell command and return output and success status."""
     try:
-        result = subprocess.run(
-            cmd,
-            shell=True,
+        result = subprocess.run(cmd.split() if isinstance(cmd, str) else cmd,
             capture_output=True,
             text=True,
             timeout=timeout

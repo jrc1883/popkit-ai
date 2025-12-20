@@ -1,3 +1,4 @@
+import { getRedis } from '../services/redis';
 /**
  * Project Registry Routes
  *
@@ -8,7 +9,6 @@
  */
 
 import { Hono } from 'hono';
-import { Redis } from '@upstash/redis';
 import type { Env, Variables } from '../types';
 
 const projects = new Hono<{ Bindings: Env; Variables: Variables }>();
@@ -74,10 +74,7 @@ function getUserPrefix(c: { get: (key: string) => unknown }): string {
  * }
  */
 projects.post('/register', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const prefix = getUserPrefix(c);
   const body = await c.req.json<{
@@ -141,10 +138,7 @@ projects.post('/register', async (c) => {
  * }
  */
 projects.post('/:id/activity', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const prefix = getUserPrefix(c);
   const projectId = c.req.param('id');
@@ -213,10 +207,7 @@ projects.post('/:id/activity', async (c) => {
  * Query: ?active_only=true (only show projects active in last 24h)
  */
 projects.get('/', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const prefix = getUserPrefix(c);
   const activeOnly = c.req.query('active_only') === 'true';
@@ -263,10 +254,7 @@ projects.get('/', async (c) => {
  * GET /projects/summary
  */
 projects.get('/summary', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const prefix = getUserPrefix(c);
 
@@ -332,10 +320,7 @@ projects.get('/summary', async (c) => {
  * GET /projects/:id
  */
 projects.get('/:id', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const prefix = getUserPrefix(c);
   const projectId = c.req.param('id');
@@ -361,10 +346,7 @@ projects.get('/:id', async (c) => {
  * DELETE /projects/:id
  */
 projects.delete('/:id', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const prefix = getUserPrefix(c);
   const projectId = c.req.param('id');

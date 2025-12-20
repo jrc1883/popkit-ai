@@ -1,3 +1,5 @@
+import { getRedis } from '../services/redis';
+import type { Redis } from '@upstash/redis';
 /**
  * Workflow Routes
  *
@@ -22,7 +24,6 @@
 
 import { Hono } from 'hono';
 import { serve } from '@upstash/workflow/hono';
-import { Redis } from '@upstash/redis';
 import type { Env, Variables, WorkflowPhaseResult, WorkflowStatus } from '../types';
 
 const workflows = new Hono<{ Bindings: Env; Variables: Variables }>();
@@ -372,10 +373,7 @@ workflows.post('/update/:runId', async (c) => {
     agentResults?: Array<{ agent: string; output: string; confidence: number }>;
   }>();
 
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const status = await redis.get<WorkflowStatus>(`workflow:status:${runId}`);
 
@@ -414,10 +412,7 @@ workflows.post('/update/:runId', async (c) => {
 workflows.get('/status/:runId', async (c) => {
   const runId = c.req.param('runId');
 
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const status = await redis.get<WorkflowStatus>(`workflow:status:${runId}`);
 
@@ -438,10 +433,7 @@ workflows.get('/status/:runId', async (c) => {
  * List recent workflow runs.
  */
 workflows.get('/list', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   // Scan for workflow status keys
   const keys = await redis.keys('workflow:status:*');
@@ -492,10 +484,7 @@ workflows.post('/sync/create', async (c) => {
     timeoutSeconds?: number;
   }>();
 
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const timeout = body.timeoutSeconds || 120;
   const expiresAt = new Date(Date.now() + timeout * 1000).toISOString();
@@ -527,10 +516,7 @@ workflows.post('/sync/ack/:barrierId', async (c) => {
   const barrierId = c.req.param('barrierId');
   const body = await c.req.json<{ agentId: string }>();
 
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const barrier = await redis.get<SyncBarrierData>(`sync:barrier:${barrierId}`);
 
@@ -568,10 +554,7 @@ workflows.post('/sync/ack/:barrierId', async (c) => {
 workflows.get('/sync/status/:barrierId', async (c) => {
   const barrierId = c.req.param('barrierId');
 
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const barrier = await redis.get<SyncBarrierData>(`sync:barrier:${barrierId}`);
 

@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.2.1-blue?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.2.5-blue?style=flat-square" alt="Version">
   <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License">
   <img src="https://img.shields.io/badge/Claude%20Code-Plugin-purple?style=flat-square" alt="Claude Code Plugin">
 </p>
@@ -174,7 +174,7 @@ Smart git operations with auto-generated messages.
 
 ### `/popkit:routine` - Day Routines
 
-Morning health checks and nightly cleanup.
+Morning health checks and nightly cleanup with token optimization.
 
 | Subcommand | Description |
 |------------|-------------|
@@ -183,14 +183,39 @@ Morning health checks and nightly cleanup.
 
 **Actions:** `run`, `quick`, `generate`, `list`, `set`, `edit`, `delete`
 
-**Flags:** `--simple`, `--full`, `--no-debt`
+**Flags:** `--simple`, `--full`, `--no-debt`, `--measure`, `--optimized`, `--no-cache`
 
 ```bash
 # Examples
-/popkit:routine morning             # Full morning routine
-/popkit:routine morning quick       # One-line summary
-/popkit:routine nightly             # End-of-day cleanup
-/popkit:routine morning generate    # Create custom routine
+/popkit:routine morning                    # Full morning routine
+/popkit:routine morning --optimized        # 40-96% token savings
+/popkit:routine morning --measure          # Track token usage
+/popkit:routine morning quick              # One-line summary
+/popkit:routine nightly                    # End-of-day cleanup
+/popkit:routine morning generate           # Create custom routine
+```
+
+---
+
+### `/popkit:cache` - Cache Management
+
+Manage routine execution cache for token optimization.
+
+| Subcommand | Description |
+|------------|-------------|
+| `clear` | Remove all cache entries (default) |
+| `stats` | Display cache statistics |
+| `list` | List cached entries with expiration |
+| `invalidate <key>` | Remove specific cache entry |
+
+**Keys:** `git_status`, `test_results`, `lint_results`, `type_check`
+
+```bash
+# Examples
+/popkit:cache                       # Clear all cache
+/popkit:cache stats                 # View cache health
+/popkit:cache list                  # List all entries
+/popkit:cache invalidate test_results  # Clear specific entry
 ```
 
 ---
@@ -305,7 +330,8 @@ Parallel agent orchestration.
 | `/popkit:assess` | anthropic | security | performance | ux | architect | docs | all [--fix, --json] |
 | `/popkit:audit` | quarterly | yearly | stale | duplicates | health | ip-leak [--verbose, --fix] |
 | `/popkit:bug` | report | search | share [--issue, --share] |
-| `/popkit:dashboard` | [add|remove|refresh|switch|discover] - Multi-project management |
+| `/popkit:cache` | clear | stats | list | invalidate <key> |
+| `/popkit:dashboard` | [add|remove|refresh|discover] - Multi-project management |
 | `/popkit:debug` | code | routing [--trace, --verbose] |
 | `/popkit:deploy` | init | setup | validate | execute | rollback [--target, --all, --dry-run] |
 | `/popkit:dev` | work #N | brainstorm | plan | execute | prd | suite | "description" [--mode quic |
@@ -317,7 +343,7 @@ Parallel agent orchestration.
 | `/popkit:plugin` | test | docs | sync | detect | version [--verbose, --json] |
 | `/popkit:power` | start | stop | status | init | metrics | widgets | consensus [--consensus, --age |
 | `/popkit:privacy` | status | consent | export | delete | level [strict|moderate|minimal] |
-| `/popkit:project` | init | analyze | board | embed | generate | mcp | setup | skills | observe [--po |
+| `/popkit:project` | init | analyze | board | embed | generate | mcp | setup | skills | observe | ref |
 | `/popkit:research` | list | search | add | tag | show | delete | merge [--type, --project] |
 | `/popkit:routine` | morning | nightly [run|quick|generate|list|set|edit|delete] |
 | `/popkit:security` | scan | list | fix | report [--dry-run, --severity, --fix] |

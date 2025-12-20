@@ -297,7 +297,6 @@ class QualityGateHook:
         try:
             proc = subprocess.run(
                 gate["command"],
-                shell=True,
                 capture_output=True,
                 text=True,
                 timeout=gate.get("timeout", 60),
@@ -588,8 +587,7 @@ class QualityGateHook:
         try:
             # Capture all uncommitted changes (staged and unstaged)
             result = subprocess.run(
-                "git diff HEAD",
-                shell=True,
+                ['git', 'diff', 'HEAD'],
                 capture_output=True,
                 text=True,
                 cwd=str(self.cwd)
@@ -615,8 +613,8 @@ class QualityGateHook:
 
         try:
             # Discard all uncommitted changes
-            subprocess.run("git checkout .", shell=True, cwd=str(self.cwd), check=True)
-            subprocess.run("git clean -fd", shell=True, cwd=str(self.cwd), check=True)
+            subprocess.run(['git', 'checkout', '.'], cwd=str(self.cwd), check=True)
+            subprocess.run(['git', 'clean', '-fd'], cwd=str(self.cwd), check=True)
 
             # Reset state
             self.state["file_edit_count"] = 0
@@ -704,8 +702,7 @@ class QualityGateHook:
         """Run lightweight syntax check only (for Power Mode)."""
         if (self.cwd / "tsconfig.json").exists():
             result = subprocess.run(
-                "npx tsc --noEmit --skipLibCheck",
-                shell=True,
+                ['npx', 'tsc', '--noEmit', '--skipLibCheck'],
                 capture_output=True,
                 text=True,
                 timeout=15,

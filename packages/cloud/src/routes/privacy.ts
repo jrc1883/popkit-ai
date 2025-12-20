@@ -1,3 +1,4 @@
+import { getRedis } from '../services/redis';
 /**
  * Privacy Routes
  *
@@ -7,7 +8,6 @@
  */
 
 import { Hono } from 'hono';
-import { Redis } from '@upstash/redis';
 import type { Env, Variables } from '../types';
 
 const privacy = new Hono<{ Bindings: Env; Variables: Variables }>();
@@ -35,10 +35,7 @@ function getUserPrefix(c: { get: (key: string) => unknown }): string {
  * Returns all user data in JSON format for portability.
  */
 privacy.get('/export', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const prefix = getUserPrefix(c);
 
@@ -98,10 +95,7 @@ privacy.get('/export', async (c) => {
  * Permanently deletes all user data. This action cannot be undone.
  */
 privacy.post('/delete-all', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const body = await c.req.json<{ confirm?: boolean }>();
 
@@ -166,10 +160,7 @@ privacy.post('/delete-all', async (c) => {
  * POST /privacy/consent - Update consent
  */
 privacy.get('/consent', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const prefix = getUserPrefix(c);
   const consent = await redis.hgetall(`${prefix}pop:consent`);
@@ -183,10 +174,7 @@ privacy.get('/consent', async (c) => {
 });
 
 privacy.post('/consent', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const prefix = getUserPrefix(c);
   const body = await c.req.json<{
@@ -219,10 +207,7 @@ privacy.post('/consent', async (c) => {
  * PUT /privacy/settings
  */
 privacy.get('/settings', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const prefix = getUserPrefix(c);
   const settings = await redis.hgetall(`${prefix}pop:privacy_settings`);
@@ -237,10 +222,7 @@ privacy.get('/settings', async (c) => {
 });
 
 privacy.put('/settings', async (c) => {
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   const prefix = getUserPrefix(c);
   const body = await c.req.json<{

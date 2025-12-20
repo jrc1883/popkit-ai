@@ -1,3 +1,5 @@
+import { getRedis } from '../services/redis';
+import type { Redis } from '@upstash/redis';
 /**
  * API Key Authentication Middleware
  *
@@ -5,7 +7,6 @@
  */
 
 import { Context, Next } from 'hono';
-import { Redis } from '@upstash/redis';
 import type { Env, Variables, ApiKeyData } from '../types';
 
 /**
@@ -31,10 +32,7 @@ export async function authMiddleware(
   const apiKey = match[1];
 
   // Get Redis client
-  const redis = new Redis({
-    url: c.env.UPSTASH_REDIS_REST_URL,
-    token: c.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  const redis = getRedis(c);
 
   // Look up API key
   const keyData = await redis.hget<ApiKeyData>('popkit:keys', apiKey);
