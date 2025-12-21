@@ -1,325 +1,228 @@
 # PopKit
 
-AI-powered development workflows for Claude Code with skills, agents, and automation.
+**AI-powered development workflows for Claude Code** - Modular plugin suite for professional software development.
 
-**Version:** 0.9.9 | **Commands:** 15 | **Agents:** 30 | **Skills:** 36
+**Version:** 0.1.0 (Beta) | **Plugins:** 8 | **Commands:** 24 | **Skills:** 46 | **Agents:** 29
 
-## What is PopKit?
+---
 
-PopKit orchestrates Claude Code's full power for real-world development. Instead of raw tools, you get composable workflows that chain together simple tasks into sophisticated processes.
+## 🎯 What is PopKit?
 
-## Monorepo Structure
+PopKit transforms Claude Code into a complete development workflow system. Instead of using raw tools, you get:
 
-```
-packages/
-  plugin/     Claude Code plugin (main package)
-  cloud/      PopKit Cloud API (Cloudflare Workers)
-```
+- **7 Focused Plugins**: Install only what you need
+- **24 Workflow Commands**: From feature dev to deployment
+- **46 Reusable Skills**: Composable automation patterns
+- **29 Specialized Agents**: Context-aware AI assistance
+- **FREE Local Execution**: All features work without cloud
+- **API Key Enhancements**: Optional semantic intelligence
 
-```
-Idea → Brainstorm → Plan → Implement → Review → Ship
-```
+---
 
-## Quick Install
+## 📦 Modular Architecture
+
+PopKit is now split into focused workflow plugins:
+
+| Plugin | Purpose | Commands | When to Use |
+|--------|---------|----------|-------------|
+| **[popkit-dev](packages/popkit-dev/)** | Development workflows | 5 | Daily dev, git, routines |
+| **[popkit-github](packages/popkit-github/)** | GitHub integration | 2 | Issues, milestones |
+| **[popkit-quality](packages/popkit-quality/)** | Testing & debugging | 4 | QA, security, assessments |
+| **[popkit-deploy](packages/popkit-deploy/)** | Deployment automation | 1 | Ship to any platform |
+| **[popkit-research](packages/popkit-research/)** | Knowledge management | 2 | Research, notes |
+| **[popkit-core](packages/popkit-core/)** | Meta features | 10 | Project setup, Power Mode |
+| **[popkit (meta)](packages/popkit-meta/)** | Complete suite | All | One-click install |
+
+**Plus**: `popkit-shared` - Shared Python utilities foundation
+
+---
+
+## ⚡ Quick Start
+
+### Option 1: Complete Suite (Recommended)
+
+Install everything with one command:
 
 ```bash
-# From Claude Marketplace
-/plugin marketplace add jrc1883/popkit
 /plugin install popkit@popkit-marketplace
-# Restart Claude Code to load
+# Restart Claude Code
 ```
 
-## Core Workflows
+All 24 commands available under `/popkit:` namespace.
+
+### Option 2: Selective Installation
+
+Install only what you need:
+
+```bash
+# Core development workflows
+/plugin install popkit-dev@popkit-marketplace
+
+# Add GitHub integration
+/plugin install popkit-github@popkit-marketplace
+
+# Add quality tools
+/plugin install popkit-quality@popkit-marketplace
+
+# Restart Claude Code
+```
+
+See [Migration Guide](packages/popkit-meta/MIGRATION.md) for details.
+
+---
+
+## 🚀 Core Workflows
 
 ### Feature Development
 
 ```bash
-/popkit:design brainstorm       # Refine idea with Socratic questioning
-/popkit:worktree create feat-x  # Create isolated workspace
-/popkit:plan write              # Generate implementation plan
-/popkit:plan execute            # Build with TDD and checkpoints
-/popkit:git pr                  # Create pull request
+# Start development workflow
+/popkit:dev "Add user authentication"
+  → Brainstorm → Plan → Implement → Review → PR
+
+# Daily routines
+/popkit:routine morning    # Health check + "Ready to Code" score
+/popkit:routine nightly    # Cleanup + "Sleep Score"
+
+# Context-aware help
+/popkit:next              # What should I do next?
 ```
 
-### Issue-Driven Development
+### Git Operations
 
 ```bash
-/popkit:issue list              # View open issues
-/popkit:issue work 42           # Start working (parses PopKit Guidance)
-/popkit:issue work 42 -p        # With Power Mode for complex issues
-/popkit:debug                   # Systematic debugging
-/popkit:git commit              # Auto-commit with repo style
-/popkit:issue close 42          # Mark complete
+# Smart commits
+/popkit:git commit        # Auto-generates conventional commit message
+
+# Pull requests
+/popkit:git pr            # Creates PR with summary + checklist
+
+# Code review
+/popkit:git review        # In-depth code review with suggestions
 ```
 
-### Daily Operations
+### Quality Assurance
 
 ```bash
-/popkit:routine morning         # Health check with "Ready to Code" score (0-100)
-/popkit:routine morning --measure # Track context usage and tool breakdown
-/popkit:routine nightly         # End-of-day cleanup with "Sleep Score" (0-100)
-/popkit:next                    # Context-aware recommendations
-/popkit:git prune               # Clean up merged branches
+# Multi-perspective assessment
+/popkit:assess all        # Run 6 specialized assessors
+
+# Systematic debugging
+/popkit:debug "login fails on mobile"
+
+# Security scanning
+/popkit:security scan     # Find vulnerabilities + create issues
 ```
 
-## Commands (15)
-
-All commands use subcommand patterns for discoverability.
-
-| Command | Subcommands | Description |
-|---------|-------------|-------------|
-| `/popkit:issue` | `list`, `view`, `create`, `work`, `close`, `comment`, `edit`, `link` | GitHub issue management |
-| `/popkit:git` | `commit`, `push`, `pr`, `prune`, `finish`, `review` | Git and PR operations |
-| `/popkit:plan` | `write`, `execute`, `list`, `view` | Implementation planning |
-| `/popkit:design` | `brainstorm`, `prd` | Design refinement |
-| `/popkit:power` | `status`, `start`, `stop`, `init` | Multi-agent orchestration |
-| `/popkit:ci` | `run`, `release` | GitHub Actions and releases |
-| `/popkit:plugin` | `test`, `docs`, `sync` | Plugin management |
-| `/popkit:debug` | (default), `routing` | Debugging and diagnostics |
-| `/popkit:worktree` | `create`, `list`, `remove`, `analyze` | Git worktree management |
-| `/popkit:routine` | `morning`, `nightly`, `run`, `list`, `generate`, `set`, `edit`, `delete` | Day routines with health scores |
-| `/popkit:next` | `quick`, `verbose` | Action recommendations |
-| `/popkit:init-project` | - | Project scaffolding |
-| `/popkit:feature-dev` | - | 7-phase development |
-| `/popkit:knowledge` | `add`, `refresh`, `search` | External knowledge |
-| `/popkit:workflow-viz` | - | Chain visualization |
-
-## Agents (30)
-
-### Tier-1: Always Active (11)
-
-Core agents available for every task:
-
-| Agent | Specialty |
-|-------|-----------|
-| `code-reviewer` | Code quality, best practices |
-| `bug-whisperer` | Complex debugging |
-| `security-auditor` | Vulnerability assessment |
-| `test-writer-fixer` | Test implementation |
-| `api-designer` | API patterns |
-| `performance-optimizer` | Performance analysis |
-| `refactoring-expert` | Code restructuring |
-| `documentation-maintainer` | Doc synchronization |
-| `query-optimizer` | Database optimization |
-| `migration-specialist` | System migrations |
-| `accessibility-guardian` | A11y compliance |
-
-### Tier-2: On-Demand (17)
-
-Specialized agents activated by triggers:
-
-`ai-engineer`, `deployment-validator`, `feature-prioritizer`, `rapid-prototyper`, `backup-coordinator`, `meta-agent`, `researcher`, `user-story-writer`, `devops-automator`, `bundle-analyzer`, `log-analyzer`, `metrics-collector`, `feedback-synthesizer`, `rollback-specialist`, `data-integrity`, `dead-code-eliminator`, `power-coordinator`
-
-### Feature Workflow (2)
-
-For 7-phase feature development:
-
-- `code-explorer` - Trace execution paths and dependencies
-- `code-architect` - Design blueprints and implementation maps
-
-## Skills (30)
-
-Skills are invoked via the Skill tool. Key skills:
-
-| Category | Skills |
-|----------|--------|
-| **Development** | `pop-brainstorming`, `pop-writing-plans`, `pop-executing-plans`, `pop-systematic-debugging`, `pop-test-driven-development`, `pop-code-review` |
-| **Quality** | `pop-verify-completion`, `pop-root-cause-tracing`, `pop-defense-in-depth`, `pop-simplify-cascade` |
-| **Session** | `pop-session-capture`, `pop-session-resume`, `pop-context-restore`, `pop-routine-measure` |
-| **Power Mode** | `pop-power-mode`, `pop-worktrees`, `pop-finish-branch` |
-| **Generation** | `pop-project-init`, `pop-mcp-generator`, `pop-skill-generator`, `pop-morning-generator` |
-
-## Output Styles (18)
-
-Templates for consistent formatting:
-
-| Category | Styles |
-|----------|--------|
-| **Git/GitHub** | `commit-message`, `pull-request`, `github-issue`, `release-notes` |
-| **Development** | `code-review`, `implementation-plan`, `debugging-report`, `analysis-report` |
-| **PDF Export** | `pdf-report`, `pdf-prd`, `pdf-architecture` |
-| **Session** | `morning-report`, `nightly-summary`, `agent-handoff` |
-| **Power Mode** | `power-mode-checkin`, `next-action-report`, `security-audit-report` |
-
-## Power Mode
-
-Multi-agent orchestration for complex tasks.
-
-### Two Tiers
-
-| Tier | Backend | Setup | Max Agents |
-|------|---------|-------|------------|
-| **Pro** | Upstash Cloud | Set env vars | 6+ parallel |
-| **Free** | File-based | None | 2-3 sequential |
-
-**No Docker or local Redis required.**
-
-### Usage
+### Deployment
 
 ```bash
-# Check current mode
-/popkit:power status
-
-# Start a Power Mode session
-/popkit:power start "Build user authentication"
-
-# Stop session
-/popkit:power stop
+# Universal deployment
+/popkit:deploy init       # Configure deployment targets
+/popkit:deploy execute    # Ship to Docker/npm/Vercel/etc.
 ```
-
-### Pro Setup (Upstash)
-
-```bash
-export UPSTASH_REDIS_REST_URL="https://your-instance.upstash.io"
-export UPSTASH_REDIS_REST_TOKEN="your-token"
-```
-
-Get free credentials at [upstash.com](https://upstash.com).
-
-### Features
-
-- Periodic agent check-ins (push state, pull insights)
-- Sync barriers between workflow phases
-- Coordinator manages agent mesh network
-- Guardrails prevent unconventional approaches
-- Human escalation for sensitive operations
-
-## Routine Measurement
-
-Track context window usage, duration, and tool breakdown during routine execution with the `--measure` flag.
-
-### What It Measures
-
-```bash
-/popkit:routine morning --measure
-```
-
-Captures:
-- **Duration**: Total execution time in seconds
-- **Tool Calls**: Number and type of tools invoked (Bash, Read, Grep, etc.)
-- **Token Usage**: Estimated input/output tokens (~4 chars per token)
-- **Cost**: Estimated API cost (Claude Sonnet 4.5 pricing)
-- **Breakdown**: Per-tool statistics (calls, tokens, duration, chars)
-
-### Output Format
-
-```
-======================================================================
-Routine Measurement Report
-======================================================================
-Routine: PopKit Full Validation (p-1)
-Duration: 12.34s
-Tool Calls: 15
-
-Context Usage:
-  Input Tokens:  1,234 (~1k)
-  Output Tokens: 6,789 (~6k)
-  Total Tokens:  8,023 (~8k)
-  Characters:    32,092
-
-Cost Estimate (Claude Sonnet 4.5):
-  Input:  $0.0037
-  Output: $0.1018
-  Total:  $0.1055
-
-Tool Breakdown:
-----------------------------------------------------------------------
-Tool                 Calls    Tokens       Duration   Chars
-----------------------------------------------------------------------
-Bash                 8        3,456        2.34s      13,824
-Read                 4        2,123        1.12s      8,492
-Grep                 2        1,234        0.56s      4,936
-Skill                1        1,210        8.32s      4,840
-======================================================================
-```
-
-### Data Persistence
-
-Measurements are automatically saved as JSON:
-
-```
-.claude/popkit/measurements/
-├── pk_20251219_080000.json       # Universal routine
-├── p-1_20251219_143022.json      # Custom PopKit routine
-└── rc-1_20251219_180000.json     # Project-specific routine
-```
-
-Each JSON file contains:
-- Full measurement data
-- Tool breakdown
-- Timestamp and routine metadata
-- Cost estimates
-
-### Use Cases
-
-- **Optimize Routines**: Identify which tools consume most tokens
-- **Cost Tracking**: Estimate routine execution costs
-- **Performance Analysis**: Compare different routine configurations
-- **Context Budgeting**: Understand context window utilization
-
-### Architecture
-
-- `hooks/utils/routine_measurement.py` - Tracker implementation
-- `hooks/post-tool-use.py` - Automatic tool call capture
-- `skills/pop-routine-measure/` - Skill and test suite
-- Environment variable: `POPKIT_ROUTINE_MEASURE=true`
-
-## Quality Gates
-
-Automatic validation after file modifications.
-
-**Triggers:** Config changes, 5+ file edits, rapid multi-file changes
-
-**Gates:** TypeScript (`tsc`), Build (`npm run build`), Lint (`npm run lint`)
-
-**On Failure:** Fix now, Rollback, Continue, or Pause
-
-## Claude Platform Integration
-
-PopKit leverages Claude API features for optimal performance.
-
-| Feature | Usage |
-|---------|-------|
-| **Effort Parameter** | `high` for debugging/security, `low` for docs |
-| **Extended Thinking** | Sonnet: ON (10k), Opus: ON (10k), Haiku: ON (5k) |
-| **Model Assignment** | `opus` for architecture, `haiku` for docs |
-| **Tool Choice** | Workflow step enforcement |
-| **PDF Support** | Read design docs, generate PDF reports |
-
-## Architecture
-
-**Tier 1 (this repo):** Universal, project-agnostic tools
-
-**Tier 2 (generated):** Project-specific MCP servers, skills, agents
-
-```bash
-/popkit:init-project        # Create .claude/ structure
-/popkit:project mcp         # Generate project MCP server
-/popkit:project skills      # Generate project skills
-```
-
-## Version History
-
-See [CHANGELOG.md](CHANGELOG.md) for full version history.
-
-### v0.9.9 (Current)
-- Platform-aware command learning
-- Automatic bug reporting with privacy controls
-- GDPR compliance
-
-### v0.9.8
-- PopKit Cloud API (Cloudflare Workers + Upstash Redis)
-- Collective learning system
-- Power Mode v2 with auto-activation
-
-## License
-
-MIT
-
-## Author
-
-Joseph Cannon (joseph.cannon@outlook.com)
 
 ---
 
-*PopKit orchestrates Claude Code's full power for real-world development workflows.*
+## 🏗️ Repository Structure
+
+```
+popkit/
+├── packages/
+│   ├── popkit-shared/      # Shared Python utilities (69 modules)
+│   ├── popkit-dev/         # Development workflows plugin
+│   ├── popkit-github/      # GitHub integration plugin
+│   ├── popkit-quality/     # Quality assurance plugin
+│   ├── popkit-deploy/      # Deployment automation plugin
+│   ├── popkit-research/    # Research management plugin
+│   ├── popkit-core/        # Core utilities plugin
+│   ├── popkit-meta/        # Meta-plugin (backwards compatibility)
+│   └── cloud/              # PopKit Cloud API (Cloudflare Workers)
+├── docs/
+│   ├── plans/              # Design documents
+│   ├── research/           # Research notes
+│   ├── phases/             # Phase completion reports
+│   └── cloud/              # Cloud documentation
+├── CLAUDE.md               # Claude Code instructions
+├── CHANGELOG.md            # Version history
+└── README.md               # This file
+```
+
+---
+
+## 🔑 API Key Enhancement Model
+
+**Everything works FREE locally.** An API key adds:
+
+- ✨ **Semantic Search**: Find skills/agents using natural language
+- 🌐 **Cloud Knowledge**: Cross-project learning and patterns
+- 🤝 **Community Intelligence**: Benefit from collective insights
+- 🎯 **Enhanced Routing**: Better agent selection with embeddings
+
+**No feature gating** - only intelligence amplification.
+
+---
+
+## 📚 Documentation
+
+### Plugin Documentation
+- [popkit-dev README](packages/popkit-dev/README.md)
+- [popkit-github README](packages/popkit-github/README.md)
+- [popkit-quality README](packages/popkit-quality/README.md)
+- [popkit-deploy README](packages/popkit-deploy/README.md)
+- [popkit-research README](packages/popkit-research/README.md)
+- [popkit-core README](packages/popkit-core/README.md)
+- [popkit-meta Migration Guide](packages/popkit-meta/MIGRATION.md)
+
+### Architecture
+- [Plugin Modularization Design](docs/plans/2025-12-20-plugin-modularization-design.md)
+- [Testing & Validation Plan](docs/plans/2025-12-21-phase5-testing-validation-plan.md)
+- [CLAUDE.md](CLAUDE.md) - Full development guide
+
+---
+
+## 🎯 Current Status
+
+**Epic #580**: Plugin Modularization
+**Phase**: 5 of 6 (Testing & Validation)
+**Progress**: 75% Complete
+
+**Recent Milestones**:
+- ✅ All 6 plugins extracted and tested (Phases 1-4)
+- ✅ 96.3% test pass rate (155/161 tests)
+- ✅ Zero functionality regression
+- 🔄 Manual command testing (in progress)
+- 📋 Documentation & marketplace release (next)
+
+See [CLAUDE.md](CLAUDE.md) for detailed roadmap.
+
+---
+
+## 🤝 Contributing
+
+PopKit is in active development. See:
+- [GitHub Issues](https://github.com/jrc1883/elshaddai/issues?q=is%3Aissue+is%3Aopen+label%3Aapp%3Apopkit)
+- [CLAUDE.md](CLAUDE.md) - Development guide
+
+---
+
+## 📜 License
+
+MIT
+
+---
+
+## 👤 Author
+
+**Joseph Cannon**
+<joseph@thehouseofdeals.com>
+
+---
+
+**Ready to supercharge your development workflow?**
+
+```bash
+/plugin install popkit@popkit-marketplace
+```
+
+Then restart Claude Code and run `/popkit:next` to get started!
