@@ -150,7 +150,7 @@ grep -r "<keywords>" packages/plugin/hooks/utils/ --include="*.py" -l
 
 ```python
 # Check if another skill passed context to us
-from hooks.utils.skill_context import load_skill_context
+from popkit_shared.utils.skill_context import load_skill_context
 
 ctx = load_skill_context()
 if ctx and ctx.previous_output:
@@ -223,7 +223,7 @@ Use AskUserQuestion tool with:
 
 ```python
 # Save context for pop-writing-plans or other downstream skills
-from hooks.utils.skill_context import save_skill_context, SkillOutput, link_workflow_to_issue
+from popkit_shared.utils.skill_context import save_skill_context, SkillOutput, link_workflow_to_issue
 
 # Save design output
 save_skill_context(SkillOutput(

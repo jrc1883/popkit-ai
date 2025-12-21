@@ -66,7 +66,7 @@ Check for research branches from Claude Code Web sessions:
 
 ```python
 import sys
-sys.path.insert(0, "hooks/utils")
+# No longer needed - install popkit-shared instead
 from research_branch_detector import (
     get_research_branches,
     format_branch_table

@@ -95,7 +95,7 @@ After writing each SKILL.md, automatically embed for semantic discovery:
 
 ```python
 import sys
-sys.path.insert(0, "hooks/utils")
+# No longer needed - install popkit-shared instead
 from embedding_project import auto_embed_item
 
 # After writing skill file

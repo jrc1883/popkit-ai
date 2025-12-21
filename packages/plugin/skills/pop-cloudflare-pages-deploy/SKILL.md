@@ -230,7 +230,7 @@ Or use wrangler for direct deploy:
 ### Step 4: Configure Custom Domain
 
 ```python
-from hooks.utils.cloudflare_api import CloudflareClient
+from popkit_shared.utils.cloudflare_api import CloudflareClient
 
 def setup_pages_domain(project_name: str, domain: str):
     """Configure custom domain for Pages project."""

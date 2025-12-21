@@ -44,7 +44,7 @@ if not token:
 
 # Verify token is valid
 # Use hooks/utils/cloudflare_api.py
-from hooks.utils.cloudflare_api import CloudflareClient
+from popkit_shared.utils.cloudflare_api import CloudflareClient
 client = CloudflareClient()
 valid, message = client.verify_token()
 
@@ -265,7 +265,7 @@ export default {
 ### Step 6: Configure Custom Domain (if requested)
 
 ```python
-from hooks.utils.cloudflare_api import CloudflareClient
+from popkit_shared.utils.cloudflare_api import CloudflareClient
 
 def setup_custom_domain(domain: str, subdomain: str, worker_name: str):
     """Configure DNS and wrangler for custom domain."""

@@ -32,7 +32,7 @@ Scan project for embeddable items:
 import sys
 from pathlib import Path
 
-sys.path.insert(0, "hooks/utils")
+# No longer needed - install popkit-shared instead
 from embedding_project import scan_project_items
 
 # Scan locations:

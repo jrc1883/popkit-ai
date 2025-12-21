@@ -56,7 +56,7 @@ Get a free API key: `/popkit:cloud signup`
 
 ```python
 import sys
-sys.path.insert(0, "hooks/utils")
+# No longer needed - install popkit-shared instead
 from enhancement_detector import check_enhancement
 
 result = check_enhancement("pattern-learning")

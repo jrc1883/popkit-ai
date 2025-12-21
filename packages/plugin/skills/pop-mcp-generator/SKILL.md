@@ -60,7 +60,7 @@ Get a free API key: `/popkit:cloud signup`
 
 ```python
 import sys
-sys.path.insert(0, "hooks/utils")
+# No longer needed - install popkit-shared instead
 from enhancement_detector import check_enhancement
 
 result = check_enhancement("knowledge-base")
@@ -78,7 +78,7 @@ Users with API key get server-side MCP generation:
 
 ```python
 import sys
-sys.path.insert(0, "hooks/utils")
+# No longer needed - install popkit-shared instead
 from enhancement_detector import has_api_key
 
 if not has_api_key():
@@ -411,7 +411,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-sys.path.insert(0, "hooks/utils")
+# No longer needed - install popkit-shared instead
 from voyage_client import VoyageClient
 
 def export_tool_embeddings(tools: list, output_path: str):

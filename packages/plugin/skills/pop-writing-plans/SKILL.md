@@ -186,7 +186,7 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 **BEFORE creating a plan**, check for context from previous skills:
 
 ```python
-from hooks.utils.skill_context import load_skill_context, get_artifact
+from popkit_shared.utils.skill_context import load_skill_context, get_artifact
 
 # Check for design context from brainstorming
 ctx = load_skill_context()
@@ -336,7 +336,7 @@ EOF
 ## Context Output (for downstream skills)
 
 ```python
-from hooks.utils.skill_context import save_skill_context, SkillOutput, link_workflow_to_issue
+from popkit_shared.utils.skill_context import save_skill_context, SkillOutput, link_workflow_to_issue
 
 # Save plan context for executing-plans or subagent-driven
 save_skill_context(SkillOutput(

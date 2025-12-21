@@ -67,13 +67,13 @@ When embeddings are initialized, use semantic similarity for better results:
 
 ```python
 # Check if semantic search is available
-from hooks.utils.embedding_store import EmbeddingStore
-from hooks.utils.voyage_client import is_available
+from popkit_shared.utils.embedding_store import EmbeddingStore
+from popkit_shared.utils.voyage_client import is_available
 
 store = EmbeddingStore()
 if is_available() and store.count("knowledge") > 0:
     # Semantic search available
-    from hooks.utils.voyage_client import embed_query
+    from popkit_shared.utils.voyage_client import embed_query
 
     query_embedding = embed_query("how do hooks work")
     results = store.search(

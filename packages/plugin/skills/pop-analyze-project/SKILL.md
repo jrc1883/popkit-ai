@@ -197,7 +197,7 @@ from datetime import datetime
 from pathlib import Path
 
 # Add pattern detector to path
-sys.path.insert(0, "hooks/utils")
+# No longer needed - install popkit-shared instead
 from pattern_detector import analyze_project, detect_frameworks
 
 # Detect patterns

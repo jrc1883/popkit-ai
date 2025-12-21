@@ -45,7 +45,7 @@ Manage DNS records for domains in your Cloudflare account. List, create, update,
 ### Operation 1: List Zones (Domains)
 
 ```python
-from hooks.utils.cloudflare_api import CloudflareClient
+from popkit_shared.utils.cloudflare_api import CloudflareClient
 
 client = CloudflareClient()
 zones = client.list_zones()
@@ -404,11 +404,11 @@ Actions Available:
 
 ```bash
 # List zones
-python -c "from hooks.utils.cloudflare_api import list_zones; print([z.name for z in list_zones()])"
+python -c "from popkit_shared.utils.cloudflare_api import list_zones; print([z.name for z in list_zones()])"
 
 # List records for domain
-python -c "from hooks.utils.cloudflare_api import *; z = get_zone_by_name('example.com'); print([r.name for r in list_dns_records(z.id)])"
+python -c "from popkit_shared.utils.cloudflare_api import *; z = get_zone_by_name('example.com'); print([r.name for r in list_dns_records(z.id)])"
 
 # Create CNAME
-python -c "from hooks.utils.cloudflare_api import *; z = get_zone_by_name('example.com'); create_dns_record(z.id, 'CNAME', 'api', 'my-worker.workers.dev')"
+python -c "from popkit_shared.utils.cloudflare_api import *; z = get_zone_by_name('example.com'); create_dns_record(z.id, 'CNAME', 'api', 'my-worker.workers.dev')"
 ```

@@ -59,7 +59,7 @@ Get a free API key: `/popkit:cloud signup`
 
 ```python
 import sys
-sys.path.insert(0, "hooks/utils")
+# No longer needed - install popkit-shared instead
 from enhancement_detector import check_enhancement
 
 result = check_enhancement("project-embeddings")
@@ -95,7 +95,7 @@ Check for flags in the user's command:
 ```python
 # Use the embedding_project module
 import sys
-sys.path.insert(0, "hooks/utils")
+# No longer needed - install popkit-shared instead
 from embedding_project import get_project_embedding_status
 
 status = get_project_embedding_status()
@@ -119,7 +119,7 @@ if status['by_type']:
 
 ```python
 import sys
-sys.path.insert(0, "hooks/utils")
+# No longer needed - install popkit-shared instead
 from embedding_project import embed_project_items, scan_project_items
 
 # Map --type flag to source types

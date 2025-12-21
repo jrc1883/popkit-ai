@@ -46,7 +46,7 @@ Use the `research_branch_detector.py` utility:
 
 ```python
 import sys
-sys.path.insert(0, "hooks/utils")
+# No longer needed - install popkit-shared instead
 from research_branch_detector import (
     fetch_remotes,
     get_research_branches,
