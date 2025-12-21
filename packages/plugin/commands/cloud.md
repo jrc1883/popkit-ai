@@ -18,7 +18,7 @@ Manage your PopKit Cloud account and connection.
 | Subcommand | Description |
 |------------|-------------|
 | `signup` | Create new PopKit Cloud account and get API key |
-| `status` | Check cloud connection, tier, and usage |
+| `status` | Check cloud connection and enhancement status |
 | `login` | Login to existing PopKit Cloud account |
 | `logout` | Disconnect from PopKit Cloud (remove API key) |
 
@@ -34,34 +34,39 @@ Create a new PopKit Cloud account and generate your API key.
 
 ### Process
 
+**SECURITY NOTE:** Credentials should NEVER be typed into Claude's chat context.
+
 Invokes the `pop-cloud-signup` skill which:
 
-1. **Collects account info** - email, password
-2. **Creates cloud account** - calls `/v1/auth/signup`
+1. **Opens browser** - redirects to https://popkit.dev/signup
+2. **User creates account** - fills form in secure web page
 3. **Generates API key** - format `pk_live_xxxxx`
-4. **Saves configuration** - stores in `.claude/popkit/cloud-config.json`
-5. **Shows setup instructions** - how to set environment variable
+4. **User copies key** - from dashboard after signup
+5. **Saves configuration** - stores in `.claude/popkit/cloud-config.json`
 6. **Tests connection** - verifies API key works
+
+**Alternative (if web signup not preferred):**
+- Use Python's `getpass` module for secure terminal input
+- NEVER ask for email/password in Claude's chat
 
 ### Output
 
 ```
 ╔══════════════════════════════════════╗
-║   PopKit Cloud Account Created!     ║
+║      Opening PopKit Signup...       ║
 ╚══════════════════════════════════════╝
 
-Email: user@example.com
-Tier: Free (100 requests/day)
+Opening https://popkit.dev/signup in your browser...
 
-Your API Key (save this securely):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-pk_live_abc123def456...
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Next steps:
+1. Complete signup in browser
+2. Copy your API key from the dashboard
+3. Run /popkit:cloud login with your API key
 
-Setup:
-1. export POPKIT_API_KEY=pk_live_abc123def456...
-2. Restart Claude Code
-3. Run /popkit:cloud status to verify
+Or set directly:
+  export POPKIT_API_KEY=pk_live_...
+
+Then run /popkit:cloud status to verify connection.
 ```
 
 ---
@@ -106,27 +111,22 @@ Latency: 82ms
 
 Account:
   Email: user@example.com
-  Tier: Free
   User ID: usr_abc123
 
-Usage Today:
-  Requests: 47 / 100
-  Remaining: 53
-  Resets: in 17 hours
-
-Available Features:
-  ✓ Pattern sharing (collective learning)
-  ✓ Research knowledge base
+Enhancements Active:
+  ✓ Semantic agent routing (via embeddings)
+  ✓ Community pattern learning
+  ✓ Cloud knowledge base
+  ✓ Cross-project insights
   ✓ Inter-agent messaging
   ✓ Workflow persistence
-  ✓ Analytics
 
-Upgrade to Pro for:
-  • 1,000 requests/day (10x more)
-  • 24-hour session persistence
-  • Priority support
+Usage This Month:
+  API Calls: 1,234
+  Embeddings: 456
+  Pattern Queries: 89
 
-Run /popkit:upgrade to see plans
+All core workflows also work offline with local fallbacks.
 ```
 
 ### Output (Not Connected)
@@ -136,18 +136,21 @@ PopKit Cloud Status
 ═══════════════════
 
 Connection: ✗ Not configured
+Mode: Local (fully functional)
 
-PopKit Cloud is not set up.
-
-To enable cloud features:
+To enable enhancements:
   1. Sign up: /popkit:cloud signup
   2. Or login: /popkit:cloud login
 
-Cloud Features (when connected):
-  • Pattern sharing (learn from community)
-  • Research knowledge base
-  • Power Mode coordination
+Enhanced Intelligence (with API key):
+  • Semantic agent routing (via embeddings)
+  • Community pattern learning
+  • Cloud knowledge base
+  • Cross-project insights
   • Workflow persistence
+
+All core workflows work perfectly without API key.
+The key adds semantic intelligence, not new features.
 ```
 
 ---
@@ -162,11 +165,14 @@ Login to an existing PopKit Cloud account.
 
 ### Process
 
+**SECURITY NOTE:** For web-based login, open browser instead of collecting credentials in chat.
+
 1. **Check for existing config** - warn if already logged in
-2. **Collect credentials** - email, password via AskUserQuestion
-3. **Call login endpoint** - POST `/v1/auth/login`
-4. **Save API key** - store in cloud-config.json
-5. **Show success** - display tier and setup instructions
+2. **Open login page** - https://popkit.dev/login
+3. **User logs in** - secure web form
+4. **User copies API key** - from dashboard
+5. **Save API key** - store in cloud-config.json
+6. **Show success** - display setup instructions
 
 ### Implementation
 
@@ -193,7 +199,6 @@ Response:
 ╚══════════════════════════════════════╝
 
 Welcome back, user@example.com!
-Tier: Free
 
 Your API Key:
 pk_live_abc123def456...
@@ -201,7 +206,7 @@ pk_live_abc123def456...
 Setup (if not already done):
   export POPKIT_API_KEY=pk_live_abc123def456...
 
-Cloud features are now available.
+Cloud enhancements are now active.
 Run /popkit:cloud status for details.
 ```
 
@@ -298,20 +303,19 @@ Solutions:
   3. Contact support if issue persists
 ```
 
-### Rate Limit Exceeded
+### Rate Limit (if implemented)
+
+**Note:** Currently no rate limits. Future usage-based pricing may apply.
 
 ```
-Error: Rate limit exceeded
+Note: Cloud enhancements paused
 
-Free tier: 100 requests/day
-Used today: 100 / 100
-
-Resets in: 5 hours
+Usage-based limit reached (future feature)
 
 Options:
-  1. Wait for reset
-  2. Upgrade to Pro (1,000/day): /popkit:upgrade
-  3. Use local mode temporarily: POPKIT_CLOUD_ENABLED=false
+  1. Continue in local mode (fully functional)
+  2. All workflows work with local fallbacks
+  3. Set POPKIT_CLOUD_ENABLED=false to disable cloud checks
 ```
 
 ---
@@ -340,12 +344,18 @@ PopKit Cloud automatically enhances other commands:
 
 ---
 
-## Premium Features
+## API Key Benefits
 
-All cloud management features available in all tiers:
-- ✅ Free - Basic signup, login, status
-- ✅ Pro - Same features + higher limits
-- ✅ Team - Same features + team management
+API key adds semantic intelligence to all workflows:
+- ✅ Semantic agent routing (via embeddings)
+- ✅ Community pattern learning
+- ✅ Cloud knowledge base
+- ✅ Cross-project insights
+- ✅ Workflow persistence
+
+**Cost:** Free for now, usage-based pricing coming soon
+
+All core workflows work perfectly without API key.
 
 ---
 
@@ -372,7 +382,8 @@ All cloud management features available in all tiers:
 
 ## Related Commands
 
-- `/popkit:upgrade` - Upgrade to Pro/Team tier
+- `/popkit:upgrade` - Get API key for enhanced intelligence
+- `/popkit:account` - View API key status and enhancements
 - `/popkit:power start` - Start Power Mode with cloud coordination
 - `/popkit:stats` - View usage statistics
 - `/popkit:routine morning` - Daily health check including cloud
@@ -390,7 +401,6 @@ Located at `.claude/popkit/cloud-config.json`:
   "apiKey": "pk_live_abc123def456...",
   "userId": "usr_abc123",
   "email": "user@example.com",
-  "tier": "free",
   "configuredAt": "2025-12-20T10:00:00Z",
   "lastVerified": "2025-12-20T10:05:00Z"
 }

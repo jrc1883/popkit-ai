@@ -1,20 +1,22 @@
 ---
 name: upgrade
-description: "upgrade | pro | team [--open] - Upgrade to PopKit Premium"
-argument-hint: "<tier> [options]"
+description: "Get your free API key for enhanced intelligence"
+argument-hint: "[options]"
 ---
 
 # /popkit:upgrade
 
-Upgrade to PopKit Premium for advanced features.
+Get a free API key to enhance PopKit with semantic intelligence.
 
-## Subcommands
+## What This Does
 
-| Subcommand | Description |
-|------------|-------------|
-| (default) | Open PopKit signup/pricing page |
-| `pro` | Direct link to Pro tier checkout ($9/mo) |
-| `team` | Direct link to Team tier checkout ($29/mo) |
+PopKit works great locally. An API key adds:
+- **Smarter agent routing** via embeddings
+- **Community pattern learning** from shared knowledge
+- **Cloud knowledge base** for cross-project insights
+- **Faster skill discovery** with semantic search
+
+**Important:** All core workflows work without an API key. The key just makes them smarter.
 
 ## Flags
 
@@ -26,9 +28,7 @@ Upgrade to PopKit Premium for advanced features.
 ## Examples
 
 ```bash
-/popkit:upgrade           # Open pricing page
-/popkit:upgrade pro       # Go directly to Pro checkout
-/popkit:upgrade team      # Go directly to Team checkout
+/popkit:upgrade           # Open signup page
 /popkit:upgrade --url     # Print URL without opening
 ```
 
@@ -39,25 +39,13 @@ Upgrade to PopKit Premium for advanced features.
 ```python
 import sys
 
-subcommand = "$ARGUMENTS".strip().lower() if "$ARGUMENTS" else ""
-flags = subcommand.split()
+flags = "$ARGUMENTS".strip().split() if "$ARGUMENTS" else []
 
 # Parse flags
 url_only = "--url" in flags
-plan = None
-for arg in flags:
-    if arg in ["pro", "team"]:
-        plan = arg
-        break
 
 # Build URL
-base_url = "https://popkit.dev"
-if plan == "pro":
-    url = f"{base_url}/checkout?plan=pro"
-elif plan == "team":
-    url = f"{base_url}/checkout?plan=team"
-else:
-    url = f"{base_url}/pricing"
+url = "https://popkit.dev/signup"
 ```
 
 ### Step 2: Open URL or Print
@@ -68,8 +56,8 @@ Otherwise, use AskUserQuestion to confirm and open:
 
 ```
 Use AskUserQuestion tool with:
-- question: "Open PopKit upgrade page in your browser?"
-- header: "Upgrade"
+- question: "Open PopKit signup page in your browser?"
+- header: "Signup"
 - options:
   - label: "Yes, open in browser"
     description: "Opens {url}"
@@ -101,10 +89,9 @@ After opening, display:
 ```markdown
 ## Next Steps
 
-1. Complete signup at popkit.dev
-2. Choose your plan and complete checkout
-3. Copy your API key from the dashboard
-4. Set it in your environment:
+1. Create your free account at popkit.dev
+2. Copy your API key from the dashboard
+3. Set it in your environment:
 
    **macOS/Linux:**
    ```bash
@@ -116,21 +103,36 @@ After opening, display:
    $env:POPKIT_API_KEY = "pk_live_your_key_here"
    ```
 
-5. Restart Claude Code to activate premium features
+4. Restart Claude Code to activate enhancements
 
-Need help? Run `/popkit:account status` to check your tier.
+Check status with: `/popkit:account status`
+
+## What You Get
+
+**Enhanced Intelligence (with API key):**
+- Semantic agent routing via embeddings
+- Community pattern learning
+- Cloud knowledge base
+- Cross-project insights
+- Faster skill discovery
+
+**Local Fallbacks (without API key):**
+- Keyword-based agent routing
+- Local pattern storage
+- File-based knowledge
+- Single-project mode
+
+**Cost:** Free for now. Usage-based pricing coming soon.
+
+All workflows work perfectly without an API key - it just adds semantic intelligence.
 ```
 
-## Premium Features Unlocked
+## Alternative: Use /popkit:cloud
 
-| Tier | Price | Features |
-|------|-------|----------|
-| **Free** | $0/mo | Core workflows, file-based Power Mode |
-| **Pro** | $9/mo | + Custom MCP/skills, hosted Redis, pattern sharing |
-| **Team** | $29/mo | + Team coordination, analytics, priority support |
+You can also use `/popkit:cloud signup` which provides an integrated signup experience.
 
 ## Related
 
-- `/popkit:account` - Manage your PopKit account
-- `/popkit:account status` - Check current tier
-- `/popkit:account billing` - Open billing portal
+- `/popkit:cloud signup` - Integrated cloud signup flow
+- `/popkit:account status` - Check API key status
+- `/popkit:cloud status` - Detailed connection info

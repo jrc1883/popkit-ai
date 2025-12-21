@@ -1,140 +1,55 @@
 ---
 name: pop-waitlist-signup
-description: "Captures email addresses for the premium features waitlist. Used during pre-launch to collect interested users. Do NOT use directly - invoked when user selects 'Get notified at launch' option."
+description: "[DEPRECATED] This skill is no longer used. API key enhancements are free - no waitlist needed. Use /popkit:cloud signup instead."
 ---
 
-# Waitlist Signup Skill
+# Waitlist Signup Skill (DEPRECATED)
 
-## Overview
+## ⚠️ Architecture Change Notice
 
-Collects email addresses from users interested in premium features during pre-launch phase. Simple, non-intrusive flow that captures email right in the console.
+**Status:** Deprecated as of December 20, 2025
 
-**Core principle:** Make it incredibly easy to stay updated. No external forms, no browser redirects - just type your email and done.
+This skill was designed for pre-launch waitlist collection for "premium features." PopKit's architecture has changed:
 
-**Trigger:** Called when user selects "Get notified at launch" from premium feature prompt.
+**Old Model (this skill):**
+- Premium features launching soon
+- Waitlist for paid tier access
+- Email collection for launch notification
 
-## Arguments
+**New Model (API key enhancement):**
+- All features free and available now
+- API keys free (no waitlist needed)
+- Enhancements, not premium features
 
-| Argument | Description |
-|----------|-------------|
-| `feature_name` | The premium feature they're interested in |
-| `required_tier` | Tier that will be required (pro, team) |
+## Migration
 
-## Execution
+Instead of this skill, use:
+- `/popkit:cloud signup` - Get free API key immediately
+- `/popkit:upgrade` - Alternative signup flow
+- No waitlist needed - everything is available
 
-### Step 1: Show Coming Soon Message
+## Why Deprecated
 
-```markdown
-## 🎉 Coming Soon: {feature_name}
+1. **No premium features** - API key enhancements are free
+2. **No launch event** - API keys available immediately
+3. **No waitlist** - No reason to collect emails for future access
 
-This premium feature is launching soon and will be available in the **{required_tier}** tier.
+## For Historical Reference
 
-We'll send you one email when premium features launch - no spam, just a heads up when it's ready.
-```
-
-### Step 2: Prompt for Email
-
-Use AskUserQuestion for email input:
-
-```
-Use AskUserQuestion tool with:
-- question: "Enter your email to get notified at launch:"
-- header: "Email"
-- options:
-  - label: "Enter email address"
-    description: "We'll notify you when premium features launch"
-  - label: "Skip"
-    description: "Continue without signing up"
-- multiSelect: false
-```
-
-### Step 3: Capture Email
-
-If user enters email (didn't select "Skip"):
-
-**Validate email format:**
-```python
-import re
-
-email = user_input.strip()
-email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-
-if not re.match(email_pattern, email):
-    print("⚠️  Invalid email format. Please try again.")
-    # Show prompt again
-```
-
-**Send to waitlist API:**
-```bash
-# Use the premium_checker utility
-python3 packages/plugin/hooks/utils/premium_checker.py waitlist "{email}" "{feature_name}"
-```
-
-### Step 4: Confirm Signup
-
-**If successful:**
-```markdown
-✅ **Thanks for signing up!**
-
-We'll email you at **{email}** when premium features launch.
-
-You can continue using PopKit's free tier in the meantime.
-```
-
-**If failed (network error, etc.):**
-```markdown
-⚠️ **Couldn't save your email right now.**
-
-Try again later, or email us directly at:
-**premium@popkit.dev**
-
-We'll make sure you're on the list!
-```
-
-### Step 5: Return to User
-
-After signup (success or failure), return control to user without further prompting.
-
-## Privacy Note
-
-The skill should mention:
-- Emails are only used for launch notification
-- No spam, marketing, or third-party sharing
-- Can unsubscribe anytime
-- Stored securely in PopKit Cloud
-
-## Example Flow
-
-**User tries:** `/popkit:project generate` (requires Pro)
-
-**Hook detects:** Pre-launch mode, user is free tier
-
-**Upgrade prompt shows:**
-```
-🎉 Coming Soon: Custom MCP Server Generation
-
-This premium feature is launching soon. What would you like to do?
-
-[1] Continue with free tier - Basic project analysis available (no custom MCP)
-[2] Get notified at launch - Enter your email to stay updated
-[3] Cancel - Return without using this feature
-```
-
-**User selects:** [2] Get notified at launch
-
-**This skill runs:**
-```
-Enter your email to get notified at launch:
-
-> user@example.com
-
-✅ Thanks for signing up!
-
-We'll email you at user@example.com when premium features launch.
-```
+This skill was part of Issue #353 (Premium Feature Gating) which implemented a subscription tier system. That architecture was replaced by the API key enhancement model (Epic #580) where:
+- All workflows work locally (free)
+- API key adds semantic intelligence (also free for now)
+- No feature gating or tiers
 
 ## Related
 
-- `hooks/utils/premium_checker.py` - Waitlist API integration
-- `pop-upgrade-prompt` - Full upgrade flow (when billing is live)
-- `/popkit:account` - Account management
+- Epic #580 - PopKit Plugin Modularization
+- Issue #581 - Update commands/skills to API key model
+- Issue #353 - Premium Feature Gating (superseded)
+- `pop-api-key-prompt` - Replacement skill for enhancement prompts
+
+---
+
+**Do not use this skill.** It references an architecture that no longer exists.
+
+For API key signup, use `/popkit:cloud signup` instead.

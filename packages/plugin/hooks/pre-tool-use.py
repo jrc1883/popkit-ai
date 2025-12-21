@@ -16,22 +16,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Tuple
 
-# Import premium checker
-sys.path.insert(0, str(Path(__file__).parent / "utils"))
-try:
-    from premium_checker import (
-        check_entitlement,
-        is_premium_feature,
-        get_upgrade_prompt_options,
-        check_rate_limit,
-        format_rate_limit_message,
-        RateLimitResult,
-        is_billing_live,
-        capture_waitlist_email
-    )
-    PREMIUM_CHECKER_AVAILABLE = True
-except ImportError:
-    PREMIUM_CHECKER_AVAILABLE = False
+# No longer using premium/tier-based gating (Epic #580, Issue #581)
+# All features work without API key - API key only adds enhancements
+# Premium checking code removed - see enhancement_detector.py for optional enhancements
+PREMIUM_CHECKER_AVAILABLE = False
 
 # Import skill state tracker for AskUserQuestion enforcement (Issue #159)
 try:
@@ -557,94 +545,9 @@ class PreToolUseHook:
         except Exception as e:
             print(f"Warning: Could not store pre-tool context: {e}", file=sys.stderr)
     
-    def check_premium_feature(self, tool_name: str, tool_args: Dict[str, Any]) -> Dict[str, Any]:
-        """Check if tool/skill requires premium tier and user has entitlement"""
-        if not PREMIUM_CHECKER_AVAILABLE:
-            return {"requires_premium": False}
-
-        # Check if this is a Skill invocation
-        if tool_name == "Skill":
-            skill_name = tool_args.get("skill", "")
-            # Strip popkit: prefix if present
-            if skill_name.startswith("popkit:"):
-                skill_name = skill_name[7:]
-
-            if is_premium_feature(skill_name):
-                result = check_entitlement(skill_name)
-                if not result.allowed:
-                    return {
-                        "requires_premium": True,
-                        "allowed": False,
-                        "feature_name": result.feature_name,
-                        "user_tier": result.user_tier.value,
-                        "required_tier": result.required_tier.value,
-                        "upgrade_message": result.upgrade_message,
-                        "fallback_available": result.fallback_available,
-                        "prompt_options": get_upgrade_prompt_options(skill_name)
-                    }
-
-        # Check if this is a Task invocation with a premium agent
-        if tool_name == "Task":
-            agent_type = tool_args.get("subagent_type", "")
-            if is_premium_feature(agent_type):
-                result = check_entitlement(agent_type)
-                if not result.allowed:
-                    return {
-                        "requires_premium": True,
-                        "allowed": False,
-                        "feature_name": result.feature_name,
-                        "user_tier": result.user_tier.value,
-                        "required_tier": result.required_tier.value,
-                        "upgrade_message": result.upgrade_message,
-                        "fallback_available": result.fallback_available,
-                        "prompt_options": get_upgrade_prompt_options(agent_type)
-                    }
-
-        return {"requires_premium": False}
-
-    def check_rate_limit(self, tool_name: str, tool_args: Dict[str, Any]) -> Dict[str, Any]:
-        """Check if user has exceeded rate limits for a feature"""
-        if not PREMIUM_CHECKER_AVAILABLE:
-            return {"rate_limited": False}
-
-        feature_name = None
-
-        # Check if this is a Skill invocation
-        if tool_name == "Skill":
-            skill_name = tool_args.get("skill", "")
-            if skill_name.startswith("popkit:"):
-                skill_name = skill_name[7:]
-            if is_premium_feature(skill_name):
-                feature_name = skill_name
-
-        # Check if this is a Task invocation with a rate-limited agent
-        if tool_name == "Task":
-            agent_type = tool_args.get("subagent_type", "")
-            if is_premium_feature(agent_type):
-                feature_name = agent_type
-
-        if not feature_name:
-            return {"rate_limited": False}
-
-        # Check rate limit
-        result = check_rate_limit(feature_name)
-        if not result.allowed:
-            return {
-                "rate_limited": True,
-                "feature": result.feature,
-                "current": result.current,
-                "limit": result.limit,
-                "remaining": result.remaining,
-                "reset_at": result.reset_at,
-                "tier": result.tier,
-                "message": format_rate_limit_message(result)
-            }
-
-        return {
-            "rate_limited": False,
-            "remaining": result.remaining,
-            "limit": result.limit
-        }
+    # Premium gating removed (Epic #580, Issue #581)
+    # All features work without API key - no feature gating or rate limiting
+    # API key only adds semantic intelligence enhancements
 
     def track_skill_invocation(self, tool_name: str, tool_args: Dict[str, Any]) -> Dict[str, Any]:
         """Track skill invocations for AskUserQuestion enforcement (Issue #159).
@@ -808,35 +711,8 @@ class PreToolUseHook:
             result["safety_check"] = {"passed": False, "violations": safety_violations}
             return result
 
-        # Premium feature gating
-        premium_check = self.check_premium_feature(tool_name, tool_args)
-        result["premium_check"] = premium_check
-        if premium_check.get("requires_premium") and not premium_check.get("allowed", True):
-            result["action"] = "premium_required"
-            result["premium_upgrade"] = {
-                "feature_name": premium_check.get("feature_name"),
-                "user_tier": premium_check.get("user_tier"),
-                "required_tier": premium_check.get("required_tier"),
-                "message": premium_check.get("upgrade_message"),
-                "fallback_available": premium_check.get("fallback_available"),
-                "prompt_options": premium_check.get("prompt_options")
-            }
-            return result
-
-        # Rate limit check (Issue #139)
-        rate_limit_check = self.check_rate_limit(tool_name, tool_args)
-        result["rate_limit"] = rate_limit_check
-        if rate_limit_check.get("rate_limited"):
-            result["action"] = "rate_limited"
-            result["rate_limit_info"] = {
-                "feature": rate_limit_check.get("feature"),
-                "current": rate_limit_check.get("current"),
-                "limit": rate_limit_check.get("limit"),
-                "reset_at": rate_limit_check.get("reset_at"),
-                "tier": rate_limit_check.get("tier"),
-                "message": rate_limit_check.get("message")
-            }
-            return result
+        # No premium gating or rate limiting (Epic #580, Issue #581)
+        # All features work without API key
 
         # Permission checks
         permission_allowed, permission_warnings = self.check_permission_requirements(
@@ -907,47 +783,6 @@ def main():
             print(f"🚫 Tool execution blocked: {tool_name}", file=sys.stderr)
             for violation in result["safety_check"]["violations"]:
                 print(f"   - {violation}", file=sys.stderr)
-        elif result["action"] == "premium_required":
-            # Premium feature gating - show upgrade prompt or coming soon
-            premium_info = result.get("premium_upgrade", {})
-            response["decision"] = "block"
-            response["reason"] = f"Premium feature required: {premium_info.get('feature_name', 'Unknown')}"
-            response["premium_required"] = True
-            response["premium_info"] = premium_info
-
-            # Output premium message to stderr for user visibility
-            if PREMIUM_CHECKER_AVAILABLE and not is_billing_live():
-                # Pre-launch mode: Show "coming soon"
-                print(f"🎉 Coming Soon: {premium_info.get('feature_name')}", file=sys.stderr)
-                print(f"   This premium feature is launching soon!", file=sys.stderr)
-                print(f"   Required tier: {premium_info.get('required_tier', 'pro').title()}", file=sys.stderr)
-                if premium_info.get("fallback_available"):
-                    print(f"   💡 Free tier alternative available", file=sys.stderr)
-                print(f"", file=sys.stderr)
-                print(f"   Want to be notified at launch? You'll be prompted to enter your email.", file=sys.stderr)
-            else:
-                # Normal mode: Show upgrade prompt
-                print(f"⭐ Premium Feature Required: {premium_info.get('feature_name')}", file=sys.stderr)
-                print(f"   Your tier: {premium_info.get('user_tier', 'free')}", file=sys.stderr)
-                print(f"   Required: {premium_info.get('required_tier', 'pro')}", file=sys.stderr)
-                if premium_info.get("fallback_available"):
-                    print(f"   💡 Free tier alternative available", file=sys.stderr)
-                print(f"   Run /popkit:upgrade to unlock premium features", file=sys.stderr)
-        elif result["action"] == "rate_limited":
-            # Rate limit exceeded (Issue #139)
-            rate_info = result.get("rate_limit_info", {})
-            response["decision"] = "block"
-            response["reason"] = f"Rate limit exceeded for {rate_info.get('feature', 'feature')}"
-            response["rate_limited"] = True
-            response["rate_limit_info"] = rate_info
-
-            # Output rate limit message to stderr for user visibility
-            print(f"⚠️ Rate Limit Exceeded: {rate_info.get('feature')}", file=sys.stderr)
-            print(f"   Used: {rate_info.get('current')} / {rate_info.get('limit')} today", file=sys.stderr)
-            print(f"   Resets at: {rate_info.get('reset_at')}", file=sys.stderr)
-            print(f"   Your tier: {rate_info.get('tier', 'free')}", file=sys.stderr)
-            if rate_info.get("tier") == "free":
-                print(f"   💡 Upgrade to Pro for higher limits: /popkit:upgrade", file=sys.stderr)
         else:
             # Output warnings and recommendations to stderr for visibility
             if result["warnings"]:

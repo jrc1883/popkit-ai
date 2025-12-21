@@ -33,24 +33,17 @@ def get_project_root() -> Path:
 
 
 def check_entitlement() -> Dict[str, Any]:
-    """Check user entitlement for embedding features."""
+    """Check API key configuration for embedding features.
+
+    Note: All features work without API key (Epic #580, Issue #581).
+    API key only adds semantic intelligence enhancements.
+    """
     result = {
         "api_available": bool(os.environ.get("VOYAGE_API_KEY")),
-        "tier": "free",  # Would check actual entitlement
-        "allowed": True,  # Assume Pro for now
-        "fallback_available": True
+        "has_api_key": bool(os.environ.get("POPKIT_API_KEY")),
+        "allowed": True,  # All features work without API key
+        "enhancement_available": bool(os.environ.get("POPKIT_API_KEY"))
     }
-
-    # Check for premium checker
-    try:
-        # This would integrate with actual premium_checker
-        # from hooks.utils.premium_checker import check_entitlement
-        # actual_result = check_entitlement("pop-embed-project")
-        # result["tier"] = actual_result.tier
-        # result["allowed"] = actual_result.allowed
-        pass
-    except ImportError:
-        pass
 
     return result
 

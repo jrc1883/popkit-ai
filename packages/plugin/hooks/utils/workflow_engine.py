@@ -1332,23 +1332,15 @@ class UpstashWorkflowEngine:
 # Workflow Engine Factory (Issue #209)
 # =============================================================================
 
-def is_pro_tier() -> bool:
-    """Check if user has Pro tier subscription.
+def has_api_key() -> bool:
+    """Check if user has API key configured.
 
     Returns:
-        True if Pro or Team tier
+        True if API key is present (all features work regardless)
     """
-    # Import here to avoid circular dependency
-    try:
-        from premium_checker import get_user_tier, Tier
-        tier = get_user_tier()
-        return tier in (Tier.PRO, Tier.TEAM)
-    except ImportError:
-        pass
-
-    # Fallback: Check environment variable
-    tier = os.environ.get("POPKIT_TIER", "free").lower()
-    return tier in ("pro", "team")
+    # Check for API key (no longer tier-based, Epic #580, Issue #581)
+    api_key = os.environ.get("POPKIT_API_KEY")
+    return bool(api_key)
 
 
 def get_workflow_engine(
@@ -1378,17 +1370,17 @@ def get_workflow_engine(
             return FileWorkflowEngine.load_workflow(workflow_id)
         return None  # Need to call create_workflow explicitly
 
-    # Force cloud engine (requires Pro)
+    # Force cloud engine (requires API key)
     if force_cloud:
-        if not is_pro_tier():
-            raise Exception("Cloud workflows require Pro tier subscription")
+        if not has_api_key():
+            raise Exception("Cloud workflows require API key. Run /popkit:cloud signup to get one (free).")
         if workflow_id:
             return UpstashWorkflowEngine.load_workflow(workflow_id)
         return None
 
-    # Auto-select based on tier
-    if is_pro_tier():
-        # Pro users get cloud workflows
+    # Auto-select based on API key (cloud enhancements optional)
+    if has_api_key():
+        # Users with API key get cloud workflows (optional enhancement)
         if workflow_id:
             # Try cloud first, fall back to local
             engine = UpstashWorkflowEngine.load_workflow(workflow_id)
@@ -1397,7 +1389,7 @@ def get_workflow_engine(
             return FileWorkflowEngine.load_workflow(workflow_id)
         return None
     else:
-        # Free users get file-based workflows
+        # Users without API key get file-based workflows (fully functional)
         if workflow_id:
             return FileWorkflowEngine.load_workflow(workflow_id)
         return None
@@ -1424,7 +1416,7 @@ def create_workflow_engine(
     Returns:
         Appropriate workflow engine with workflow created
     """
-    if force_local or not is_pro_tier():
+    if force_local or not has_api_key():
         return FileWorkflowEngine.create_workflow(
             workflow_id=workflow_id,
             workflow_def=workflow_def,
@@ -1432,7 +1424,7 @@ def create_workflow_engine(
             github_issue=github_issue
         )
 
-    if force_cloud or is_pro_tier():
+    if force_cloud or has_api_key():
         return UpstashWorkflowEngine.create_workflow(
             workflow_id=workflow_id,
             workflow_def=workflow_def,
