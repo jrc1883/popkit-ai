@@ -1,6 +1,9 @@
 # PopKit Plugin - Python Dependencies
 # Required for hooks to function properly
 
+# Shared utilities package (extracted from hooks/utils)
+popkit-shared>=0.1.0
+
 # HTTP client library (used in 11+ hooks for API calls)
 requests>=2.31.0,<3.0.0
 
