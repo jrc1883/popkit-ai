@@ -1,0 +1,45 @@
+{
+  "name": "popkit",
+  "displayName": "PopKit (Complete Suite)",
+  "version": "0.1.0",
+  "description": "Complete PopKit plugin suite - all development workflow tools in one unified package. Includes dev workflows, GitHub integration, quality assurance, deployment automation, research management, and core utilities.",
+  "author": {
+    "name": "Joseph Cannon",
+    "email": "joseph@thehouseofdeals.com",
+    "url": "https://github.com/jrc1883"
+  },
+  "publisher": "popkit",
+  "license": "MIT",
+  "homepage": "https://github.com/jrc1883/popkit",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jrc1883/popkit"
+  },
+  "bugs": {
+    "url": "https://github.com/jrc1883/popkit/issues"
+  },
+  "categories": [
+    "productivity",
+    "development",
+    "workflow",
+    "meta"
+  ],
+  "keywords": [
+    "workflow",
+    "development",
+    "github",
+    "testing",
+    "deployment",
+    "research",
+    "productivity",
+    "meta-plugin",
+    "complete-suite"
+  ],
+  "icon": "assets/icon.png",
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
+  },
+  "pricing": "free",
+  "preview": true
+}
