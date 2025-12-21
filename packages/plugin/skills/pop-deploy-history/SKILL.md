@@ -1,13 +1,13 @@
 ---
 name: deploy-history
-description: "Use to record and display deployment history - tracks versions, targets, timestamps, and rollback availability. Called automatically after deployments and on rollback --list. Free tier limited to 3 entries, Pro+ has unlimited local and cloud sync."
+description: "Use to record and display deployment history - tracks versions, targets, timestamps, and rollback availability. Called automatically after deployments and on rollback --list. All users get unlimited local history; API key adds optional cloud sync for team sharing."
 ---
 
 # Deployment History Tracking
 
 ## Overview
 
-Records deployment events and provides history display for rollback capability. Integrates with cloud for Pro+ users to enable cross-device history and longer retention.
+Records deployment events and provides history display for rollback capability. All users get unlimited local history. API key adds optional cloud sync for team sharing and cross-device access.
 
 **Core principle:** Every deployment should be recoverable - track everything needed for rollback.
 
@@ -19,8 +19,8 @@ Records deployment events and provides history display for rollback capability. 
 
 1. **ALWAYS record after successful deployment** - No silent deployments
 2. **ALWAYS include commit hash** - Links deployment to code
-3. **ALWAYS check tier for limits** - Free tier gets 3 entries max
-4. **Sync to cloud for Pro+** - Enable cross-device visibility
+3. **Store unlimited local history** - No arbitrary limits on local storage
+4. **Sync to cloud if API key configured** - Enable team sharing and cross-device visibility
 
 ## History Schema
 
@@ -127,19 +127,9 @@ def record_deployment(
         "artifacts": artifacts or {}
     }
 
-    # Apply tier limits
-    tier = get_user_tier()
-    max_entries = 3 if tier == "free" else None  # Pro+ unlimited
-
+    # All users get unlimited local history
     history = config.setdefault("history", [])
     history.insert(0, entry)  # Newest first
-
-    if max_entries and len(history) > max_entries:
-        # Remove oldest entries for free tier
-        removed = history[max_entries:]
-        history = history[:max_entries]
-        config["history"] = history
-        print(f"Note: Free tier limited to {max_entries} entries. Removed {len(removed)} old entries.")
 
     # Update last_deployment
     config["last_deployment"] = {
@@ -151,19 +141,12 @@ def record_deployment(
     with open(deploy_path, "w") as f:
         json.dump(config, f, indent=2)
 
-    # Sync to cloud for Pro+
-    if tier in ["pro", "team"]:
-        sync_to_cloud(entry, tier)
+    # Sync to cloud if API key configured (for team sharing)
+    api_key = os.environ.get("POPKIT_API_KEY")
+    if api_key:
+        sync_to_cloud(entry, api_key)
 
     return entry
-
-def get_user_tier() -> str:
-    """Get user's subscription tier."""
-    api_key = os.environ.get("POPKIT_API_KEY")
-    if not api_key:
-        return "free"
-    # In production, verify with cloud API
-    return "pro"  # Assume Pro if key exists
 ```
 
 ### Displaying History
@@ -249,18 +232,18 @@ def format_duration(seconds: int) -> str:
     return f"{seconds}s"
 ```
 
-### Cloud Sync (Pro+)
+### Cloud Sync (API Key)
 
 ```python
 import requests
 
-def sync_to_cloud(entry: Dict, tier: str):
-    """Sync deployment history to PopKit Cloud."""
-    api_key = os.environ.get("POPKIT_API_KEY")
+def sync_to_cloud(entry: Dict, api_key: str):
+    """Sync deployment history to PopKit Cloud for team sharing."""
     if not api_key:
         return
 
-    retention_days = 7 if tier == "pro" else 90  # Team gets 90 days
+    # Standard retention for all users with API key
+    retention_days = 90  # Cloud history retained for 90 days
 
     try:
         response = requests.post(
@@ -342,37 +325,6 @@ Commit: abc123 (feat: add user authentication)
 View history: /popkit:deploy rollback --list
 ```
 
-### Free Tier Limit Warning
-
-```
-Deployment Recorded
-═══════════════════
-
-Version: 1.2.0
-Targets: docker
-Status: success
-
-⚠️ Free tier history limit (3 entries)
-   Removed 1 old entry to make room.
-
-Upgrade to Pro ($9/mo) for:
-  - Unlimited local history
-  - 7-day cloud history
-  - Cross-device sync
-
-Run /popkit:upgrade to unlock.
-```
-
-## Tier Limits
-
-| Feature | Free | Pro ($9/mo) | Team ($29/mo) |
-|---------|------|-------------|---------------|
-| Local entries | 3 | Unlimited | Unlimited |
-| Cloud sync | No | Yes | Yes |
-| Cloud retention | - | 7 days | 90 days |
-| Cross-device | No | Yes | Yes |
-| Export history | No | Yes | Yes |
-
 ## Integration
 
 **Automatically called by:**
@@ -398,4 +350,3 @@ Run /popkit:upgrade to unlock.
 | No deploy.json | "Run /popkit:deploy init first" |
 | Write failed | "Could not update history. Check permissions." |
 | Cloud sync failed | "Local history saved. Cloud sync will retry." |
-| Tier limit hit | "Free tier limit reached. Oldest entry removed." |
