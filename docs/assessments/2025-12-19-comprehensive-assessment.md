@@ -1,5 +1,20 @@
 # PopKit Plugin - Comprehensive Multi-Perspective Assessment Report
 
+> **⚠️ ARCHITECTURE CHANGE (December 20, 2025)**
+>
+> This assessment was conducted under PopKit's original subscription model (free/pro/team tiers).
+> PopKit's architecture has since been redesigned to use an **API key enhancement model**:
+>
+> - All features work FREE locally
+> - API key adds semantic intelligence enhancements
+> - No subscription tiers or feature gating
+>
+> **New design:** See Epic #580 and `docs/plans/2025-12-20-plugin-modularization-design.md`
+>
+> The assessment below is preserved for reference but some findings may no longer apply.
+
+---
+
 **Generated:** 2025-12-19
 **PopKit Version:** v0.2.5 (Pre-release)
 **Assessment Framework:** pop-assessment (6 specialized assessors)

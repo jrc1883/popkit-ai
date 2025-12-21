@@ -1,9 +1,24 @@
 # Native Async Power Mode Architecture Design
 
+> **⚠️ ARCHITECTURE CHANGE (December 20, 2025)**
+>
+> This document was created under PopKit's original subscription model (free/pro/team tiers).
+> PopKit's architecture has been redesigned to use an **API key enhancement model**:
+>
+> - All features work FREE locally
+> - API key adds semantic intelligence enhancements
+> - No subscription tiers or feature gating
+>
+> **New design:** See Epic #580 and `docs/plans/2025-12-20-plugin-modularization-design.md`
+>
+> The content below is preserved for reference. Power Mode now works the same for all users.
+
+---
+
 **Date:** December 11, 2025
 **Issue:** #180
 **Author:** Claude Code Analysis
-**Status:** Design Phase
+**Status:** ~~Design Phase~~ **DEPRECATED**
 
 ---
 

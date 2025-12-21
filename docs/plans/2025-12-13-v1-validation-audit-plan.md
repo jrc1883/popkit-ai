@@ -1,7 +1,22 @@
 # PopKit v1.0.0 Validation Audit Plan
 
+> **⚠️ ARCHITECTURE CHANGE (December 20, 2025)**
+>
+> This document was created under PopKit's original subscription model (free/pro/team tiers).
+> PopKit's architecture has been redesigned to use an **API key enhancement model**:
+>
+> - All features work FREE locally
+> - API key adds semantic intelligence enhancements
+> - No subscription tiers or feature gating
+>
+> **New design:** See Epic #580 and `docs/plans/2025-12-20-plugin-modularization-design.md`
+>
+> The content below is preserved for reference but may not reflect current architecture.
+
+---
+
 **Created:** 2025-12-13
-**Status:** Planning
+**Status:** ~~Planning~~ **DEPRECATED**
 **Goal:** Comprehensive validation before public release
 
 ---

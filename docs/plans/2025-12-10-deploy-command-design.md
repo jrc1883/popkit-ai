@@ -1,7 +1,22 @@
 # /popkit:deploy Command Design
 
+> **⚠️ ARCHITECTURE CHANGE (December 20, 2025)**
+>
+> This document was created under PopKit's original subscription model (free/pro/team tiers).
+> PopKit's architecture has been redesigned to use an **API key enhancement model**:
+>
+> - All features work FREE locally
+> - API key adds semantic intelligence enhancements
+> - No subscription tiers or feature gating
+>
+> **New design:** See Epic #580 and `docs/plans/2025-12-20-plugin-modularization-design.md`
+>
+> The content below is preserved for reference but may not reflect current architecture.
+
+---
+
 **Date:** 2025-12-10
-**Status:** Design Complete - Ready for Implementation
+**Status:** ~~Design Complete~~ **DEPRECATED**
 **Author:** Claude Code (Opus 4.5) + Joseph Cannon
 **Related Research:** `RESEARCH_ONBOARDING_DEPLOYMENT.md`
 

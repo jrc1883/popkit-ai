@@ -1,7 +1,22 @@
 # PopKit Web Platform - Research & Feasibility Study
 
+> **⚠️ ARCHITECTURE CHANGE (December 20, 2025)**
+>
+> This research was conducted under PopKit's original subscription model (free/pro/team tiers).
+> PopKit's architecture has been redesigned to use an **API key enhancement model**:
+>
+> - All features work FREE locally
+> - API key adds semantic intelligence enhancements
+> - No subscription tiers or feature gating
+>
+> **New design:** See Epic #580 and `docs/plans/2025-12-20-plugin-modularization-design.md`
+>
+> The research below is preserved for reference but pricing/tier assumptions may no longer apply.
+
+---
+
 **Date:** December 5, 2025
-**Status:** Research Complete - Awaiting Review
+**Status:** ~~Research Complete~~ **DEPRECATED**
 **Scope:** Multi-phase epic for model-agnostic web-based development orchestration
 
 ---
