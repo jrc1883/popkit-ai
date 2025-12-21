@@ -1,0 +1,63 @@
+{
+  "name": "popkit-dev",
+  "version": "0.1.0",
+  "description": "Development workflow plugin - feature development, git operations, and daily routines",
+  "author": "Joseph Cannon <joseph@thehouseofdeals.com>",
+  "license": "MIT",
+  "repository": "https://github.com/jrc1883/popkit",
+  "commands": [
+    {
+      "name": "dev",
+      "description": "Feature development workflow with 7-phase guided process",
+      "path": "commands/dev.md"
+    },
+    {
+      "name": "git",
+      "description": "Git operations - commit, push, pr, review, ci, release, publish",
+      "path": "commands/git.md"
+    },
+    {
+      "name": "worktree",
+      "description": "Git worktree management for isolated development",
+      "path": "commands/worktree.md"
+    },
+    {
+      "name": "routine",
+      "description": "Morning health checks and nightly cleanup routines",
+      "path": "commands/routine.md"
+    },
+    {
+      "name": "next",
+      "description": "Context-aware next action recommendations",
+      "path": "commands/next.md"
+    }
+  ],
+  "skills": [
+    "pop-brainstorming",
+    "pop-writing-plans",
+    "pop-executing-plans",
+    "pop-next-action",
+    "pop-session-capture",
+    "pop-session-resume",
+    "pop-context-restore",
+    "pop-routine-optimized",
+    "pop-routine-measure"
+  ],
+  "agents": [
+    "code-explorer",
+    "code-architect",
+    "code-reviewer",
+    "refactoring-expert",
+    "rapid-prototyper"
+  ],
+  "dependencies": {
+    "popkit-shared": ">=0.1.0"
+  },
+  "keywords": [
+    "development",
+    "workflow",
+    "git",
+    "feature",
+    "routine"
+  ]
+}

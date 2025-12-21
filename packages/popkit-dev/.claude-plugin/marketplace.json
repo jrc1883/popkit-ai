@@ -1,0 +1,55 @@
+{
+  "name": "popkit-dev",
+  "displayName": "PopKit Dev",
+  "version": "0.1.0",
+  "description": "Development workflow plugin with feature development, git operations, and daily routines",
+  "longDescription": "PopKit Dev provides a comprehensive suite of development workflow tools including 7-phase feature development, smart git operations, worktree management, and daily health check routines. Part of the modular PopKit plugin ecosystem.",
+  "author": {
+    "name": "Joseph Cannon",
+    "email": "joseph@thehouseofdeals.com",
+    "url": "https://github.com/jrc1883"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jrc1883/popkit"
+  },
+  "license": "MIT",
+  "keywords": [
+    "development",
+    "workflow",
+    "git",
+    "feature",
+    "routine",
+    "productivity",
+    "automation"
+  ],
+  "categories": [
+    "Development Tools",
+    "Productivity",
+    "Version Control"
+  ],
+  "tags": [
+    "git",
+    "workflow",
+    "automation",
+    "development",
+    "feature-development",
+    "code-review"
+  ],
+  "icon": "🛠️",
+  "screenshots": [],
+  "changelog": "https://github.com/jrc1883/popkit/blob/main/packages/popkit-dev/CHANGELOG.md",
+  "documentation": "https://github.com/jrc1883/popkit/blob/main/packages/popkit-dev/README.md",
+  "minClaudeCodeVersion": "2.0.67",
+  "dependencies": {
+    "popkit-shared": ">=0.1.0"
+  },
+  "peerDependencies": {},
+  "pricing": {
+    "model": "free",
+    "trial": null
+  },
+  "status": "beta",
+  "beta": true,
+  "experimental": false
+}
