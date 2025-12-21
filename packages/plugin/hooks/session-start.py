@@ -22,14 +22,14 @@ sys.path.insert(0, str(Path(__file__).parent / "utils"))
 
 # Import version check utility
 try:
-    from utils.version import check_for_updates, format_update_notification, get_current_version
+    from popkit_shared.utils.version import check_for_updates, format_update_notification, get_current_version
     HAS_VERSION_CHECK = True
 except ImportError:
     HAS_VERSION_CHECK = False
 
 # Import project registration client
 try:
-    from utils.project_client import ProjectClient, ProjectRegistration
+    from popkit_shared.utils.project_client import ProjectClient, ProjectRegistration
     HAS_PROJECT_CLIENT = True
 except ImportError:
     HAS_PROJECT_CLIENT = False

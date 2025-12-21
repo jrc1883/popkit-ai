@@ -13,7 +13,7 @@ from datetime import datetime
 
 # Import error tracking utilities
 try:
-    from utils.github_issues import save_error_locally, save_lesson_locally
+    from popkit_shared.utils.github_issues import save_error_locally, save_lesson_locally
 except ImportError:
     # Fallback if utils not available
     def save_error_locally(error, status_file=None):

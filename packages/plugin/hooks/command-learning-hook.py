@@ -20,20 +20,20 @@ hooks_dir = Path(__file__).parent
 if str(hooks_dir) not in sys.path:
     sys.path.insert(0, str(hooks_dir))
 
-from utils.platform_detector import (
+from popkit_shared.utils.platform_detector import (
     PlatformDetector,
     PlatformInfo,
     OSType,
     ShellType,
     get_platform_info
 )
-from utils.command_translator import (
+from popkit_shared.utils.command_translator import (
     CommandTranslator,
     CommandTranslation,
     CommandCategory,
     translate_command
 )
-from utils.pattern_learner import (
+from popkit_shared.utils.pattern_learner import (
     PatternLearner,
     CommandCorrection,
     CorrectionSuggestion,

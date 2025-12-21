@@ -17,7 +17,7 @@ from typing import Dict, List, Optional, Any, Tuple
 
 # Import project activity tracking
 try:
-    from utils.project_client import ProjectClient, ProjectActivity
+    from popkit_shared.utils.project_client import ProjectClient, ProjectActivity
     HAS_PROJECT_CLIENT = True
 except ImportError:
     HAS_PROJECT_CLIENT = False
