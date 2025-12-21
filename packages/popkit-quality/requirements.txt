@@ -1,0 +1,7 @@
+# PopKit Quality Plugin - Python Dependencies
+
+# Shared utilities package (required)
+popkit-shared>=0.1.0
+
+# Note: npm CLI must be installed for security scanning (npm audit)
+# Note: GitHub CLI (gh) may be used for issue creation in security workflow
