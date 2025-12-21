@@ -1,0 +1,7 @@
+# PopKit Research Plugin - Python Dependencies
+
+# Shared utilities package (required)
+popkit-shared>=0.1.0
+
+# Note: Voyage AI API key optional for semantic search
+# Set VOYAGE_API_KEY environment variable for cloud features
