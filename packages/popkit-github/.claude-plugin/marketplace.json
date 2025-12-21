@@ -1,0 +1,53 @@
+{
+  "name": "popkit-github",
+  "displayName": "PopKit GitHub",
+  "version": "0.1.0",
+  "description": "GitHub workflow plugin with issue management and milestone tracking",
+  "longDescription": "PopKit GitHub provides comprehensive GitHub integration including issue CRUD operations, milestone management, health tracking, and project organization. Streamlines GitHub workflows directly from Claude Code.",
+  "author": {
+    "name": "Joseph Cannon",
+    "email": "joseph@thehouseofdeals.com",
+    "url": "https://github.com/jrc1883"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jrc1883/popkit"
+  },
+  "license": "MIT",
+  "keywords": [
+    "github",
+    "issues",
+    "milestones",
+    "project-management",
+    "workflow",
+    "productivity"
+  ],
+  "categories": [
+    "Project Management",
+    "Productivity",
+    "Development Tools"
+  ],
+  "tags": [
+    "github",
+    "issues",
+    "milestones",
+    "project-management",
+    "productivity"
+  ],
+  "icon": "🐙",
+  "screenshots": [],
+  "changelog": "https://github.com/jrc1883/popkit/blob/main/packages/popkit-github/CHANGELOG.md",
+  "documentation": "https://github.com/jrc1883/popkit/blob/main/packages/popkit-github/README.md",
+  "minClaudeCodeVersion": "2.0.67",
+  "dependencies": {
+    "popkit-shared": ">=0.1.0"
+  },
+  "peerDependencies": {},
+  "pricing": {
+    "model": "free",
+    "trial": null
+  },
+  "status": "beta",
+  "beta": true,
+  "experimental": false
+}

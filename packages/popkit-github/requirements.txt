@@ -1,0 +1,7 @@
+# PopKit GitHub Plugin - Python Dependencies
+
+# Shared utilities package (required)
+popkit-shared>=0.1.0
+
+# Note: GitHub CLI (gh) must be installed and authenticated
+# Note: All other dependencies are Python stdlib
