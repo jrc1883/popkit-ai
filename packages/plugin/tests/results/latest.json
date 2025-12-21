@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-12-19T08:39:13.252780",
+  "timestamp": "2025-12-20T23:27:43.450436",
   "summary": {
     "total": 161,
-    "passed": 161,
-    "failed": 0,
+    "passed": 155,
+    "failed": 6,
     "skipped": 0,
-    "duration_ms": 9.221
+    "duration_ms": 225.659
   },
   "results": [
     {
@@ -48,7 +48,7 @@
       "name": "all skills have SKILL.md",
       "passed": true,
       "category": "structure",
-      "message": "Found 68 files (expected 62)"
+      "message": "Found 72 files (expected 62)"
     },
     {
       "name": "all tier-1 agents have definitions",
@@ -72,19 +72,19 @@
       "name": "all hooks are Python files",
       "passed": true,
       "category": "structure",
-      "message": "Found 23 files"
+      "message": "Found 25 files (expected 23)"
     },
     {
       "name": "all hook utils are Python files",
-      "passed": true,
+      "passed": false,
       "category": "structure",
-      "message": "Found 63 files (expected 52)"
+      "message": "Found 0 files (expected 52)"
     },
     {
       "name": "all commands have definitions",
       "passed": true,
       "category": "structure",
-      "message": "Found 24 files"
+      "message": "Found 27 files (expected 24)"
     },
     {
       "name": "all output styles have definitions",
@@ -508,9 +508,9 @@
     },
     {
       "name": "/popkit:git command structure",
-      "passed": true,
+      "passed": false,
       "category": "commands",
-      "message": ""
+      "message": "Missing sections: ['Usage']"
     },
     {
       "name": "/popkit:issue command structure",
@@ -520,27 +520,27 @@
     },
     {
       "name": "/popkit:routine command structure",
-      "passed": true,
+      "passed": false,
       "category": "commands",
-      "message": ""
+      "message": "Missing sections: ['Usage']"
     },
     {
       "name": "/popkit:power command structure",
-      "passed": true,
+      "passed": false,
       "category": "commands",
-      "message": ""
+      "message": "Missing sections: ['Usage']"
     },
     {
       "name": "/popkit:project command structure",
-      "passed": true,
+      "passed": false,
       "category": "commands",
-      "message": ""
+      "message": "Missing sections: ['Usage']"
     },
     {
       "name": "/popkit:plugin command structure",
-      "passed": true,
+      "passed": false,
       "category": "commands",
-      "message": ""
+      "message": "Missing sections: ['Usage']"
     },
     {
       "name": "/popkit:debug command structure",
