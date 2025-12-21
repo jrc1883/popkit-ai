@@ -20,9 +20,7 @@ from typing import Dict, List, Optional, Tuple, Any
 import urllib.request
 import urllib.error
 
-# Add hooks/utils to path for local Voyage client
-HOOKS_UTILS = Path(__file__).parent.parent / "hooks" / "utils"
-sys.path.insert(0, str(HOOKS_UTILS))
+# Voyage client available via popkit_shared
 
 
 # =============================================================================
@@ -155,7 +153,7 @@ class LocalInsightEmbedder:
     def _try_load_voyage(self):
         """Try to load local Voyage client."""
         try:
-            from voyage_client import VoyageClient
+            from popkit_shared.utils.voyage_client import VoyageClient
             self.voyage_client = VoyageClient()
         except ImportError:
             pass

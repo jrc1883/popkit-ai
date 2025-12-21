@@ -9,6 +9,7 @@ Available Widgets:
 - power_mode: Power Mode status with issue, phase, agents
 - workflow: Current workflow progress
 - health: Build, test, lint status from morning routine
+- cloud: PopKit Cloud connection status and usage (Issue #566)
 
 Configuration in .claude/popkit/config.json:
 {
@@ -361,9 +362,7 @@ def format_active_skills_indicator() -> str:
     """
     try:
         # Import lazily to avoid circular imports
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent / "hooks" / "utils"))
-        from context_storage import get_context_storage
+        from popkit_shared.utils.context_storage import get_context_storage
 
         storage = get_context_storage()
         active = storage.get_active_skills()
@@ -649,6 +648,124 @@ def widget_health(compact: bool = True) -> str:
     return " ".join(parts)
 
 
+def widget_cloud(compact: bool = True) -> str:
+    """
+    Cloud connectivity widget (Issue #566).
+
+    Format: ☁ Connected (82ms) | Free 47/100
+    Compact: ☁ 82ms
+    """
+    import os
+
+    # Check for API key
+    api_key = os.environ.get("POPKIT_API_KEY")
+
+    # Also check config file
+    if not api_key:
+        config_path = Path.home() / ".claude" / "popkit" / "cloud-config.json"
+        if config_path.exists():
+            try:
+                config = json.loads(config_path.read_text())
+                api_key = config.get("apiKey")
+            except (json.JSONDecodeError, IOError):
+                pass
+
+    if not api_key:
+        # Not configured
+        if compact:
+            return ""  # Don't show anything in compact mode
+        return f"{Colors.DIM}☁ offline{Colors.RESET}"
+
+    # Test connection (with cache to avoid spamming API)
+    cache_file = Path.home() / ".claude" / "popkit" / "cloud-status-cache.json"
+    now = datetime.now().timestamp()
+
+    # Check cache (60 second TTL)
+    if cache_file.exists():
+        try:
+            cache = json.loads(cache_file.read_text())
+            if now - cache.get("timestamp", 0) < 60:
+                # Use cached data
+                if cache.get("connected"):
+                    latency = cache.get("latency_ms", "?")
+                    usage = cache.get("usage", {})
+                    requests = usage.get("requests_today", "?")
+                    limit = usage.get("limit", "?")
+
+                    if compact:
+                        return f"{Colors.GREEN}☁ {latency}ms{Colors.RESET}"
+                    else:
+                        tier = cache.get("tier", "free").capitalize()
+                        return f"{Colors.GREEN}☁ {tier} {requests}/{limit}{Colors.RESET}"
+                else:
+                    if compact:
+                        return f"{Colors.RED}☁ !{Colors.RESET}"
+                    return f"{Colors.RED}☁ error{Colors.RESET}"
+        except (json.JSONDecodeError, IOError):
+            pass
+
+    # Make quick health check
+    import urllib.request
+    import urllib.error
+
+    url = "https://api.thehouseofdeals.com/v1/health"
+    headers = {
+        'Authorization': f'Bearer {api_key}',
+        'User-Agent': 'PopKit-Plugin/0.2.5'
+    }
+
+    request_obj = urllib.request.Request(url, headers=headers, method='GET')
+
+    try:
+        import time
+        start = time.time()
+        with urllib.request.urlopen(request_obj, timeout=5) as response:
+            latency_ms = int((time.time() - start) * 1000)
+            result = json.loads(response.read().decode('utf-8'))
+
+            if result.get('status') == 'ok':
+                user = result.get('user', {})
+                usage = result.get('usage', {})
+
+                # Cache the result
+                cache_data = {
+                    "timestamp": now,
+                    "connected": True,
+                    "latency_ms": latency_ms,
+                    "tier": user.get('tier', 'free'),
+                    "usage": {
+                        "requests_today": usage.get('requestsToday', 0),
+                        "limit": usage.get('limit', 100)
+                    }
+                }
+
+                cache_file.parent.mkdir(parents=True, exist_ok=True)
+                cache_file.write_text(json.dumps(cache_data))
+
+                if compact:
+                    return f"{Colors.GREEN}☁ {latency_ms}ms{Colors.RESET}"
+                else:
+                    tier = user.get('tier', 'free').capitalize()
+                    requests = usage.get('requestsToday', 0)
+                    limit = usage.get('limit', 100)
+                    return f"{Colors.GREEN}☁ {tier} {requests}/{limit}{Colors.RESET}"
+
+    except (urllib.error.HTTPError, urllib.error.URLError, Exception):
+        # Cache error state
+        cache_file.parent.mkdir(parents=True, exist_ok=True)
+        cache_file.write_text(json.dumps({
+            "timestamp": now,
+            "connected": False
+        }))
+
+        if compact:
+            return f"{Colors.RED}☁ !{Colors.RESET}"
+        return f"{Colors.RED}☁ error{Colors.RESET}"
+
+    # Fallback
+    return ""
+
+
 # Widget registry
 WIDGETS: Dict[str, Callable[[bool], str]] = {
     "popkit": widget_popkit,
@@ -657,6 +774,7 @@ WIDGETS: Dict[str, Callable[[bool], str]] = {
     "batch_status": widget_batch_status,
     "workflow": widget_workflow,
     "health": widget_health,
+    "cloud": widget_cloud,
 }
 
 
@@ -1116,6 +1234,7 @@ def list_widgets():
         "batch_status": "Batch spawning status with agent count (Issue #253)",
         "workflow": "Current workflow progress from STATUS.json",
         "health": "Build, test, lint status from morning routine",
+        "cloud": "PopKit Cloud connection status and usage (Issue #566)",
     }
 
     config = WidgetConfig.load()

@@ -56,11 +56,7 @@ except ImportError:
     EMBEDDINGS_AVAILABLE = False
 
 try:
-    # Bug detector from hooks/utils
-    import sys
-    hooks_utils = Path(__file__).parent.parent / "hooks" / "utils"
-    sys.path.insert(0, str(hooks_utils))
-    from bug_detector import BugDetector, format_detection_result
+    from popkit_shared.utils.bug_detector import BugDetector, format_detection_result
     BUG_DETECTOR_AVAILABLE = True
 except ImportError:
     BUG_DETECTOR_AVAILABLE = False
@@ -83,18 +79,10 @@ except ImportError:
     def log_error(agent_id, message, details=None): pass
 
 try:
-    # Efficiency tracker from hooks/utils
-    from efficiency_tracker import get_tracker as get_efficiency_tracker
+    from popkit_shared.utils.efficiency_tracker import get_tracker as get_efficiency_tracker
     EFFICIENCY_TRACKER_AVAILABLE = True
 except ImportError:
-    try:
-        # Try alternate import path
-        efficiency_utils = Path(__file__).parent.parent / "hooks" / "utils"
-        sys.path.insert(0, str(efficiency_utils))
-        from efficiency_tracker import get_tracker as get_efficiency_tracker
-        EFFICIENCY_TRACKER_AVAILABLE = True
-    except ImportError:
-        EFFICIENCY_TRACKER_AVAILABLE = False
+    EFFICIENCY_TRACKER_AVAILABLE = False
 
 
 # =============================================================================
