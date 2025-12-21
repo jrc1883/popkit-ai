@@ -1,0 +1,46 @@
+{
+  "name": "popkit-deploy",
+  "displayName": "PopKit Deploy",
+  "version": "0.1.0",
+  "description": "Universal deployment automation for Docker, npm/PyPI, Vercel/Netlify, Cloudflare Workers/Pages, and GitHub Releases",
+  "author": {
+    "name": "Joseph Cannon",
+    "email": "joseph@thehouseofdeals.com",
+    "url": "https://github.com/jrc1883"
+  },
+  "publisher": "popkit",
+  "license": "MIT",
+  "homepage": "https://github.com/jrc1883/popkit",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jrc1883/popkit"
+  },
+  "bugs": {
+    "url": "https://github.com/jrc1883/popkit/issues"
+  },
+  "categories": [
+    "deployment",
+    "devops",
+    "automation",
+    "ci-cd"
+  ],
+  "keywords": [
+    "deployment",
+    "docker",
+    "npm",
+    "pypi",
+    "vercel",
+    "netlify",
+    "cloudflare",
+    "github-releases",
+    "ci-cd",
+    "devops"
+  ],
+  "icon": "assets/icon.png",
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
+  },
+  "pricing": "free",
+  "preview": true
+}
