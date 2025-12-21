@@ -19,7 +19,7 @@ Stream Key Naming:
 - popkit:test:{session_id}:meta      - Session metadata
 
 Usage:
-    from hooks.utils.upstash_telemetry import (
+    from popkit_shared.utils.upstash_telemetry import (
         UpstashTelemetryClient,
         stream_trace, sync_local_session,
         is_upstash_telemetry_available

@@ -8,7 +8,7 @@ This enables automated benchmarking of PopKit workflows without
 requiring human interaction.
 
 Usage in skills:
-    from hooks.utils.benchmark_responses import (
+    from popkit_shared.utils.benchmark_responses import (
         is_benchmark_mode,
         get_response,
         should_skip_question
