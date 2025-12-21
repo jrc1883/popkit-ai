@@ -1,0 +1,45 @@
+{
+  "name": "popkit-core",
+  "displayName": "PopKit Core",
+  "version": "0.1.0",
+  "description": "Core utilities for PopKit - plugin management, project analysis, Power Mode orchestration, multi-project dashboard, and meta-features",
+  "author": {
+    "name": "Joseph Cannon",
+    "email": "joseph@thehouseofdeals.com",
+    "url": "https://github.com/jrc1883"
+  },
+  "publisher": "popkit",
+  "license": "MIT",
+  "homepage": "https://github.com/jrc1883/popkit",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jrc1883/popkit"
+  },
+  "bugs": {
+    "url": "https://github.com/jrc1883/popkit/issues"
+  },
+  "categories": [
+    "productivity",
+    "utilities",
+    "project-management",
+    "meta"
+  ],
+  "keywords": [
+    "plugin-management",
+    "project-analysis",
+    "power-mode",
+    "multi-agent",
+    "orchestration",
+    "dashboard",
+    "stats",
+    "privacy",
+    "meta-features"
+  ],
+  "icon": "assets/icon.png",
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
+  },
+  "pricing": "free",
+  "preview": true
+}

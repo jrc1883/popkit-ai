@@ -1,0 +1,89 @@
+{
+  "name": "popkit-core",
+  "version": "0.1.0",
+  "description": "Core utilities plugin - plugin management, project analysis, Power Mode orchestration, stats, privacy, and meta-features",
+  "author": {
+    "name": "Joseph Cannon",
+    "email": "joseph@thehouseofdeals.com"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/jrc1883/popkit",
+  "commands": [
+    {
+      "name": "plugin",
+      "description": "Plugin testing and management",
+      "path": "commands/plugin.md"
+    },
+    {
+      "name": "stats",
+      "description": "Efficiency metrics and usage statistics",
+      "path": "commands/stats.md"
+    },
+    {
+      "name": "privacy",
+      "description": "Privacy controls and data management",
+      "path": "commands/privacy.md"
+    },
+    {
+      "name": "account",
+      "description": "Account management - status, keys, billing, logout",
+      "path": "commands/account.md"
+    },
+    {
+      "name": "upgrade",
+      "description": "Upgrade to PopKit Premium",
+      "path": "commands/upgrade.md"
+    },
+    {
+      "name": "dashboard",
+      "description": "Multi-project management dashboard",
+      "path": "commands/dashboard.md"
+    },
+    {
+      "name": "workflow-viz",
+      "description": "Workflow visualization and analysis",
+      "path": "commands/workflow-viz.md"
+    },
+    {
+      "name": "bug",
+      "description": "Bug reporting - report, search, share",
+      "path": "commands/bug.md"
+    },
+    {
+      "name": "power",
+      "description": "Power Mode multi-agent orchestration",
+      "path": "commands/power.md"
+    },
+    {
+      "name": "project",
+      "description": "Project analysis, init, and tooling",
+      "path": "commands/project.md"
+    }
+  ],
+  "skills": [
+    "pop-analyze-project",
+    "pop-bug-reporter",
+    "pop-dashboard",
+    "pop-embed-content",
+    "pop-embed-project",
+    "pop-mcp-generator",
+    "pop-power-mode",
+    "pop-project-init",
+    "pop-project-templates",
+    "pop-skill-generator"
+  ],
+  "agents": [
+    "meta-agent",
+    "power-coordinator",
+    "bundle-analyzer",
+    "dead-code-eliminator",
+    "feature-prioritizer",
+    "api-designer",
+    "accessibility-guardian",
+    "documentation-maintainer",
+    "migration-specialist"
+  ],
+  "dependencies": {
+    "popkit-shared": ">=0.1.0"
+  }
+}
