@@ -1,8 +1,6 @@
 ---
 name: mcp-generator
-description: "Use when setting up project-specific development tools or after analyzing a codebase - generates custom MCP server with semantic search, project-aware tools, and health monitoring capabilities. Do NOT use if generic popkit commands are sufficient or for small projects where MCP server overhead isn't justified - stick with built-in tools for simple workflows."
-premium: true
-required_tier: pro
+description: "Use when setting up project-specific development tools or after analyzing a codebase - generates custom MCP server with semantic search, project-aware tools, and health monitoring capabilities. Works with both basic and enhanced modes. Do NOT use if generic popkit commands are sufficient or for small projects where MCP server overhead isn't justified - stick with built-in tools for simple workflows."
 ---
 
 # MCP Server Generator
@@ -15,18 +13,20 @@ Generate a custom MCP (Model Context Protocol) server tailored to the specific p
 
 **Trigger:** `/popkit:project mcp` command after project analysis
 
-## Premium Feature
+## How It Works
 
-This is a **Pro tier** feature. Free tier users receive a basic project analysis instead.
+This skill works in two modes:
+- **Without API key**: Basic project analysis with recommendations (fully functional)
+- **With API key**: Custom MCP server generation with semantic intelligence (enhanced)
 
-### Free Tier Fallback: Basic Project Analysis
+### Basic Project Analysis (Always Available)
 
-When a free tier user invokes this skill, provide valuable project insights without generating the MCP server:
+All users get valuable project insights:
 
 ```markdown
-## Project Analysis (Free Tier)
+## Project Analysis
 
-Since custom MCP server generation requires PopKit Pro, here's what I found about your project:
+Here's what I found about your project:
 
 ### Tech Stack Detected
 - **Framework:** [detected framework]
@@ -45,46 +45,44 @@ Based on your stack, these health checks would be useful:
 [directory tree overview]
 ```
 
-### What MCP Server Would Provide
+### What Custom MCP Server Adds
 
-With PopKit Pro, you'd get a custom MCP server including:
+With an API key, you get enhanced MCP generation:
 - ✨ **Semantic tool search** - Find tools by description
 - 🔍 **Project-specific health checks** - Monitor your services
 - ⚡ **Custom quality tools** - Typecheck, lint, test commands
 - 📊 **Embeddings** - Vector search across tools
 
-Run `/popkit:upgrade` to unlock custom MCP generation.
+Get a free API key: `/popkit:cloud signup`
 ```
 
-### Fallback Implementation
-
-Before proceeding with MCP generation, check user entitlement:
+### Enhancement Detection
 
 ```python
 import sys
 sys.path.insert(0, "hooks/utils")
-from premium_checker import check_entitlement
+from enhancement_detector import check_enhancement
 
-result = check_entitlement("pop-mcp-generator")
-if not result.allowed:
-    # Execute fallback: basic project analysis
-    print("## Project Analysis (Free Tier)")
+result = check_enhancement("knowledge-base")
+if not result.has_api_key:
+    # Provide basic project analysis (fully functional)
+    print("## Project Analysis")
     # ... show detection results without generating MCP
-    print("\nRun `/popkit:upgrade` to unlock custom MCP generation.")
+    print("\nFor custom MCP generation: `/popkit:cloud signup` (free)")
     return
 ```
 
-### Cloud API Integration (Premium)
+### Cloud API Integration (Enhanced Mode)
 
-Premium users call the cloud API for server-side generation:
+Users with API key get server-side MCP generation:
 
 ```python
 import sys
 sys.path.insert(0, "hooks/utils")
-from premium_client import generate_mcp_server, is_premium
+from enhancement_detector import has_api_key
 
-if not is_premium():
-    # Show free tier fallback
+if not has_api_key():
+    # Show basic analysis
     return
 
 # Call cloud API for generation

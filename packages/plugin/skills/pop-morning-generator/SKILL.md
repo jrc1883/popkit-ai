@@ -1,8 +1,6 @@
 ---
 name: morning-generator
-description: "Use when you want to create a project-specific morning health check routine - analyzes the project's tech stack and generates customized health checks for services, databases, and domain-specific validations. Detects Next.js, Express, Supabase, Redis, etc. and creates appropriate checks. Do NOT use if the generic /popkit:routine morning is sufficient - only generate custom routines for projects with unique health check requirements."
-premium: true
-required_tier: pro
+description: "Use when you want to create a project-specific morning health check routine - analyzes the project's tech stack and generates customized health checks for services, databases, and domain-specific validations. Detects Next.js, Express, Supabase, Redis, etc. and creates appropriate checks. Works with both generic and customized routines. Do NOT use if the generic /popkit:routine morning is sufficient - only generate custom routines for projects with unique health check requirements."
 ---
 
 # Morning Generator
@@ -15,18 +13,20 @@ Generate a project-specific morning health check command based on the project's 
 
 **Trigger:** `/popkit:generate-morning` command or as part of `/popkit:init-project`
 
-## Premium Feature
+## How It Works
 
-This is a **Pro tier** feature. Free tier users can use the default `/popkit:routine morning` command instead.
+This skill works in two modes:
+- **Without API key**: Generic morning routine with basic health checks (fully functional)
+- **With API key**: Project-specific custom routines with semantic intelligence (enhanced)
 
-### Free Tier Fallback: Default Morning Routine
+### Generic Morning Routine (Always Available)
 
-When a free tier user invokes this skill, redirect them to the default routine:
+All users can use the default morning routine:
 
 ```markdown
-## Default Morning Routine (Free Tier)
+## Default Morning Routine
 
-Custom routine generation requires PopKit Pro. However, you can still use the default morning routine!
+The default routine works great for most projects!
 
 ### Available Commands
 
@@ -41,31 +41,31 @@ This provides:
 - ✅ Basic dev server check
 - ✅ Ready to Code score
 
-### What Custom Generation Would Provide
+### What Custom Generation Adds
 
-With PopKit Pro, you'd get a project-specific routine including:
+With an API key, you get project-specific enhancements:
 - ✨ **Service-specific checks** - Your exact ports and services
 - 🔍 **Database connectivity** - Supabase, PostgreSQL, MongoDB
 - ⚡ **API credential validation** - eBay OAuth, Stripe keys, etc.
 - 📊 **Domain-specific validations** - Tailored to your project type
 
-Run `/popkit:upgrade` to unlock custom routine generation.
+Get a free API key: `/popkit:cloud signup`
 ```
 
-### Fallback Implementation
+### Enhancement Detection
 
 ```python
 import sys
 sys.path.insert(0, "hooks/utils")
-from premium_checker import check_entitlement
+from enhancement_detector import check_enhancement
 
-result = check_entitlement("pop-morning-generator")
-if not result.allowed:
-    # Redirect to default routine
-    print("## Default Morning Routine (Free Tier)")
-    print("\nCustom routine generation requires PopKit Pro.")
-    print("You can use the default routine: `/popkit:routine morning`")
-    print("\nRun `/popkit:upgrade` to unlock custom routine generation.")
+result = check_enhancement("pattern-learning")
+if not result.has_api_key:
+    # Use default routine (fully functional)
+    print("## Default Morning Routine")
+    print("\nThe default routine works great for most projects!")
+    print("Use: `/popkit:routine morning`")
+    print("\nFor custom routines: `/popkit:cloud signup` (free)")
     return
 ```
 

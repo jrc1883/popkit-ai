@@ -1,8 +1,6 @@
 ---
 name: nightly-generator
-description: "Use when you want to create a project-specific nightly cleanup and maintenance routine - analyzes the project's tech stack and generates customized cleanup routines for caches, build artifacts, and domain-specific maintenance. Detects Next.js, Node.js, Python, Rust, etc. and creates appropriate cleanup targets. Do NOT use if the generic /popkit:routine nightly is sufficient - only generate custom routines for projects with unique cleanup requirements or domain-specific maintenance needs."
-premium: true
-required_tier: pro
+description: "Use when you want to create a project-specific nightly cleanup and maintenance routine - analyzes the project's tech stack and generates customized cleanup routines for caches, build artifacts, and domain-specific maintenance. Detects Next.js, Node.js, Python, Rust, etc. and creates appropriate cleanup targets. Works with both generic and customized routines. Do NOT use if the generic /popkit:routine nightly is sufficient - only generate custom routines for projects with unique cleanup requirements or domain-specific maintenance needs."
 ---
 
 # Nightly Generator
@@ -15,18 +13,20 @@ Generate a project-specific nightly cleanup and maintenance command based on the
 
 **Trigger:** `/popkit:nightly generate` command or via `/popkit:morning generate --nightly`
 
-## Premium Feature
+## How It Works
 
-This is a **Pro tier** feature. Free tier users can use the default `/popkit:routine nightly` command instead.
+This skill works in two modes:
+- **Without API key**: Generic nightly routine with basic cleanup (fully functional)
+- **With API key**: Project-specific custom routines with semantic intelligence (enhanced)
 
-### Free Tier Fallback: Default Nightly Routine
+### Generic Nightly Routine (Always Available)
 
-When a free tier user invokes this skill, redirect them to the default routine:
+All users can use the default nightly routine:
 
 ```markdown
-## Default Nightly Routine (Free Tier)
+## Default Nightly Routine
 
-Custom routine generation requires PopKit Pro. However, you can still use the default nightly routine!
+The default routine works great for most projects!
 
 ### Available Commands
 
@@ -41,31 +41,31 @@ This provides:
 - ✅ Basic cache cleanup hints
 - ✅ Sleep Score calculation
 
-### What Custom Generation Would Provide
+### What Custom Generation Adds
 
-With PopKit Pro, you'd get a project-specific routine including:
+With an API key, you get project-specific enhancements:
 - ✨ **Stack-specific cleanup** - .next/, target/, __pycache__/
 - 🔍 **Smart cache management** - Know what's safe to delete
 - ⚡ **Domain-specific maintenance** - API token checks, backup verification
 - 📊 **Disk space recovery** - Automated artifact cleanup
 
-Run `/popkit:upgrade` to unlock custom routine generation.
+Get a free API key: `/popkit:cloud signup`
 ```
 
-### Fallback Implementation
+### Enhancement Detection
 
 ```python
 import sys
 sys.path.insert(0, "hooks/utils")
-from premium_checker import check_entitlement
+from enhancement_detector import check_enhancement
 
-result = check_entitlement("pop-nightly-generator")
-if not result.allowed:
-    # Redirect to default routine
-    print("## Default Nightly Routine (Free Tier)")
-    print("\nCustom routine generation requires PopKit Pro.")
-    print("You can use the default routine: `/popkit:routine nightly`")
-    print("\nRun `/popkit:upgrade` to unlock custom routine generation.")
+result = check_enhancement("pattern-learning")
+if not result.has_api_key:
+    # Use default routine (fully functional)
+    print("## Default Nightly Routine")
+    print("\nThe default routine works great for most projects!")
+    print("Use: `/popkit:routine nightly`")
+    print("\nFor custom routines: `/popkit:cloud signup` (free)")
     return
 ```
 

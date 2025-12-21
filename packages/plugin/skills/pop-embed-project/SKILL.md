@@ -1,26 +1,26 @@
 ---
 name: embed-project
-description: "Embed project-local skills, agents, and commands for semantic search. Use after creating items manually or to update embeddings."
-premium: true
-required_tier: pro
+description: "Embed project-local skills, agents, and commands for semantic search. Use after creating items manually or to update embeddings. Works with both keyword and semantic search modes."
 ---
 
 # Embed Project Items
 
 Compute vector embeddings for project-local items to enable semantic discovery and routing.
 
-## Premium Feature
+## Enhancement Available
 
-This is a **Pro tier** feature. Free tier users can use basic file search instead.
+This skill works in two modes:
+- **Without API key**: Keyword-based file search (fully functional)
+- **With API key**: Semantic embeddings for intelligent discovery (enhanced)
 
-### Free Tier Fallback: Basic Search
+### Keyword Search Mode (Always Available)
 
-When a free tier user invokes this skill, provide basic search capabilities:
+All users can search projects using built-in file search:
 
 ```markdown
-## Basic Search (Free Tier)
+## Keyword Search Mode
 
-Project embeddings require PopKit Pro. However, you can still search your project!
+Project search works great with built-in tools!
 
 ### Available Search Methods
 
@@ -44,31 +44,31 @@ ls .claude/commands/*.md 2>/dev/null
 grep -r "keyword" .claude/
 ```
 
-### What Embeddings Would Provide
+### What Semantic Embeddings Add
 
-With PopKit Pro, you'd get semantic embeddings including:
+With an API key, you get semantic intelligence:
 - ✨ **Semantic search** - Find by meaning, not just keywords
 - 🔍 **Smart routing** - Auto-select best agent for task
 - ⚡ **Cross-project discovery** - Find patterns across codebases
 - 📊 **Relevance ranking** - Results sorted by semantic similarity
 
-Run `/popkit:upgrade` to unlock project embeddings.
+Get a free API key: `/popkit:cloud signup`
 ```
 
-### Fallback Implementation
+### Enhancement Detection
 
 ```python
 import sys
 sys.path.insert(0, "hooks/utils")
-from premium_checker import check_entitlement
+from enhancement_detector import check_enhancement
 
-result = check_entitlement("pop-embed-project")
-if not result.allowed:
-    # Provide basic search alternatives
-    print("## Basic Search (Free Tier)")
-    print("\nProject embeddings require PopKit Pro.")
-    print("Use basic file search: `grep -r 'keyword' .claude/`")
-    print("\nRun `/popkit:upgrade` to unlock project embeddings.")
+result = check_enhancement("project-embeddings")
+if not result.has_api_key:
+    # Provide keyword search alternatives (fully functional)
+    print("## Keyword Search Mode")
+    print("\nProject search works great with built-in tools!")
+    print("Use file search: `grep -r 'keyword' .claude/`")
+    print("\nFor semantic enhancements: `/popkit:cloud signup` (free)")
     return
 ```
 
