@@ -1,55 +1,86 @@
-# PopKit Research
+# PopKit - Research Plugin
 
-Research and knowledge management plugin for PopKit - capture, organize, and search research with semantic embeddings.
+**Version:** 1.0.0-beta.1
+**Status:** Research Plugin (Phase 3c of Plugin Modularization)
 
 ## Overview
 
-PopKit Research provides comprehensive tools for managing research and building a knowledge base:
+PopKit-Research is the knowledge management plugin for the PopKit ecosystem. It provides research capture, knowledge base management, and semantic search capabilities for organizing development insights.
 
-- **Research Capture**: Save code snippets, documentation, and insights
-- **Knowledge Organization**: Tag, categorize, and merge related research
-- **Semantic Search**: Find relevant research using natural language queries
-- **Cloud Sync**: Optional cloud-backed knowledge base for cross-project learning
-- **Meta-Research**: Discover what agents and tools would help your project
+**Install this plugin** when you need to capture and search research, documentation, and lessons learned.
 
-## Commands
+## Features
+
+### Commands (2)
 
 | Command | Description |
 |---------|-------------|
-| `/popkit:research` | Research management (list, search, add, tag, show, delete, merge) |
+| `/popkit:research` | Research capture and search (list, search, add, tag, show, delete, merge) |
 | `/popkit:knowledge` | Knowledge base management (list, add, remove, sync, search) |
 
-## Skills
+### Skills (3)
 
-### Knowledge Management (3)
-- `pop-knowledge-lookup` - Semantic search for knowledge items
-- `pop-research-capture` - Capture and organize research
-- `pop-research-merge` - Merge and consolidate research items
+This plugin provides 3 specialized skills:
 
-## Agents
+- `pop-research-capture` - Capture and organize development research
+- `pop-research-merge` - Merge and consolidate research findings
+- `pop-knowledge-lookup` - Search and retrieve knowledge base entries
 
-### Tier 2 - On-Demand (1)
-- `researcher` - Meta-research specialist for discovering beneficial agents and development opportunities
+**Note:** Skills are globally available once installed - other PopKit plugins can use these skills!
 
-## API Key Enhancement
+### Agents (1)
 
-| Feature | Free (Local) | With API Key (Cloud) |
-|---------|--------------|----------------------|
-| Research capture | ✅ Local files | ✅ Cloud storage |
-| Research search | ✅ Text search | ✅ Semantic search |
-| Knowledge base | ✅ Local notes | ✅ Cross-project knowledge |
-| Pattern learning | ❌ | ✅ Community patterns |
-| Research sync | ❌ | ✅ Cloud backup |
-
-**All core features work FREE locally.** API key adds cloud intelligence and cross-project insights.
+| Agent | Tier | Trigger |
+|-------|------|---------|
+| `researcher` | Tier 2 (on-demand) | Project analysis, codebase exploration, pattern discovery |
 
 ## Installation
 
-This plugin is part of the PopKit ecosystem and depends on `popkit-shared`.
-
 ```bash
-# Install via Claude Code plugin manager
+# Recommended: Install popkit foundation first
+/plugin install popkit@popkit-marketplace
+
+# Then install research plugin
 /plugin install popkit-research@popkit-marketplace
+
+# Or install during development (local)
+/plugin install popkit-research@file:./packages/popkit-research
+```
+
+## Dependencies
+
+- **popkit** (foundation plugin recommended) - For account management and stats
+- **Python** (>= 3.8) - For hook execution
+- **PopKit Cloud API** (optional) - For semantic search and community patterns
+
+## Architecture
+
+PopKit-Research is part of PopKit's modular plugin architecture:
+
+```
+popkit (foundation)
+├── Account management
+├── Usage statistics
+├── Privacy controls
+└── Premium features
+
+popkit-dev (development)
+├── Feature development
+├── Git operations
+└── Daily routines
+
+popkit-ops (operations)
+├── Quality assessment
+├── Debugging workflows
+└── Deployment automation
+
+popkit-research (knowledge)    ← You are here
+├── Research capture
+├── Knowledge management
+└── Semantic search
+
+popkit-suite (meta-plugin)
+└── Installs all 4 plugins above
 ```
 
 ## Usage Examples
@@ -60,95 +91,154 @@ This plugin is part of the PopKit ecosystem and depends on `popkit-shared`.
 # List all research items
 /popkit:research list
 
-# Search research
-/popkit:research search "authentication patterns"
+# Search research by keyword
+/popkit:research search "authentication"
 
-# Add research
-/popkit:research add "JWT validation best practices"
+# Add new research item
+/popkit:research add "OAuth implementation patterns"
 
-# Tag research
-/popkit:research tag 123 security,auth
+# Tag research item
+/popkit:research tag <id> security,authentication
 
-# Show research item
-/popkit:research show 123
+# Show research details
+/popkit:research show <id>
 
-# Delete research
-/popkit:research delete 123
+# Delete research item
+/popkit:research delete <id>
 
-# Merge related research
-/popkit:research merge 123 124 125
+# Merge research items
+/popkit:research merge <id1> <id2>
+
+# Filter by project
+/popkit:research list --project myapp
+
+# Filter by type
+/popkit:research list --type pattern
 ```
 
-### Knowledge Base
+### Knowledge Base Management
 
 ```bash
-# List knowledge items
+# List knowledge base entries
 /popkit:knowledge list
 
-# Add to knowledge base
+# Add knowledge entry
 /popkit:knowledge add
 
-# Remove from knowledge base
+# Remove knowledge entry
 /popkit:knowledge remove <id>
 
 # Sync with cloud (requires API key)
 /popkit:knowledge sync
 
-# Semantic search (requires API key)
-/popkit:knowledge search "how to optimize database queries"
+# Search knowledge base
+/popkit:knowledge search <query>
 ```
 
-### Meta-Research (Researcher Agent)
+### Researcher Agent
 
-The `researcher` agent analyzes your codebase to identify:
-- Which agents would be most helpful
-- What development opportunities exist
-- Beneficial patterns from the community
+The researcher agent activates for:
+- Project analysis and pattern discovery
+- Codebase exploration requests
+- Meta-research about plugin opportunities
+- Cross-project insight generation
 
-## Local vs Cloud Storage
+Use via Task tool or invoke directly for project analysis.
 
-### Local Mode (Default)
-- Research stored in `.claude/popkit/research/`
-- Text-based search
-- No API key required
-- Full privacy
+## Free vs API Key Enhanced
 
-### Cloud Mode (With API Key)
-- Research backed up to PopKit Cloud
+### Local Mode (No API Key)
+
+- File-based research storage
+- Local search (keyword matching)
+- Full research and knowledge commands
+- Single-project knowledge base
+
+### With API Key
+
+- Cloud-backed knowledge base
 - Semantic search with embeddings
 - Cross-project pattern learning
-- Community insights
+- Community knowledge sharing
+- Automatic tagging suggestions
 
-## Research Structure
+Configure API key via `/popkit:account keys` (requires popkit foundation).
 
-Research items are stored as JSON:
+## File Structure
 
-```json
-{
-  "id": "123",
-  "title": "JWT Validation Best Practices",
-  "content": "...",
-  "tags": ["security", "auth"],
-  "project": "my-app",
-  "created": "2025-12-20T10:00:00Z",
-  "updated": "2025-12-20T12:00:00Z"
-}
+```
+packages/popkit-research/
+├── .claude-plugin/
+│   └── plugin.json             # Plugin manifest
+├── commands/
+│   ├── research.md             # Research management
+│   └── knowledge.md            # Knowledge base
+├── skills/
+│   ├── pop-research-capture/
+│   ├── pop-research-merge/
+│   └── pop-knowledge-lookup/
+├── agents/
+│   └── tier-2-on-demand/
+│       └── researcher/
+├── hooks/
+│   └── utils/                  # 70 bundled Python utilities
+├── README.md                   # This file
+└── CHANGELOG.md                # Version history
 ```
 
-## Dependencies
+## Testing Strategy
 
-- `popkit-shared>=0.1.0` - Shared utilities package
-- Optional: Voyage AI API key for semantic search
+1. ✅ Package structure created
+2. ✅ Commands extracted from monolithic plugin
+3. ✅ Skills extracted
+4. ✅ Agent extracted
+5. ✅ plugin.json created
+6. ⏳ Local installation test
+7. ⏳ Command functionality validation
+8. ⏳ Agent routing verification
+9. ⏳ Skill execution testing
 
-## Development Status
+## Success Metrics
 
-**Version**: 0.1.0 (Beta)
-**Phase**: 6 of 8 (Plugin Modularization - Epic #580)
+- [ ] Both commands work identically to monolithic version
+- [ ] Researcher agent routes correctly
+- [ ] All 3 skills execute successfully
+- [ ] Installation < 30 seconds
+- [ ] No context window increase
+- [ ] Clean uninstall
+- [ ] No functionality regression
+
+## Issues
+
+- **This plugin**: Issue #586 (Extract popkit-research)
+- **Parent Epic**: Issue #580 (Plugin Modularization)
+- **Dependencies**: popkit foundation (#584 - COMPLETED)
+
+## Related Plugins
+
+When you need more capabilities, install additional PopKit plugins:
+
+```bash
+# For account management and stats
+/plugin install popkit@popkit-marketplace
+
+# For development workflows
+/plugin install popkit-dev@popkit-marketplace
+
+# For quality assurance and deployment
+/plugin install popkit-ops@popkit-marketplace
+
+# Or install everything
+/plugin install popkit-suite@popkit-marketplace
+```
 
 ## License
 
 MIT
 
-## Author
+## Support
 
-Joseph Cannon <joseph@thehouseofdeals.com>
+- **Documentation:** See command files in `commands/`
+- **Bug Reports:** `/popkit:bug report` (requires popkit foundation)
+- **Feature Requests:** GitHub Issues
+- **Community:** PopKit Cloud (coming soon)

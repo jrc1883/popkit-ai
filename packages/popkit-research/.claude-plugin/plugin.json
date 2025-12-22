@@ -1,34 +1,37 @@
 {
   "name": "popkit-research",
-  "version": "0.1.0",
-  "description": "Research and knowledge management plugin - capture, organize, and search research with semantic embeddings",
-  "author": {
-    "name": "Joseph Cannon",
-    "email": "joseph@thehouseofdeals.com"
-  },
+  "version": "1.0.0-beta.1",
+  "description": "PopKit research plugin - knowledge management and research workflows",
+  "author": "Joseph Cannon <joseph@thehouseofdeals.com>",
   "license": "MIT",
   "repository": "https://github.com/jrc1883/popkit",
   "commands": [
     {
       "name": "research",
-      "description": "Research management - list, search, add, tag, show, delete, merge",
+      "description": "Research capture and search (list, search, add, tag, show, delete, merge)",
       "path": "commands/research.md"
     },
     {
       "name": "knowledge",
-      "description": "Knowledge base management - list, add, remove, sync, search",
+      "description": "Knowledge base management (list, add, remove, sync, search)",
       "path": "commands/knowledge.md"
     }
   ],
   "skills": [
-    "pop-knowledge-lookup",
-    "pop-research-capture",
-    "pop-research-merge"
+    {"path": "skills/pop-research-capture/SKILL.md"},
+    {"path": "skills/pop-research-merge/SKILL.md"},
+    {"path": "skills/pop-knowledge-lookup/SKILL.md"}
   ],
   "agents": [
-    "researcher"
+    {"path": "agents/tier-2-on-demand/researcher/AGENT.md"}
   ],
-  "dependencies": {
-    "popkit-shared": ">=0.1.0"
-  }
+  "keywords": [
+    "popkit",
+    "research",
+    "knowledge",
+    "documentation",
+    "learning",
+    "capture",
+    "search"
+  ]
 }
