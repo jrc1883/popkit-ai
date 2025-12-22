@@ -1,0 +1,632 @@
+#!/usr/bin/env python3
+"""
+Session Start Hook
+Handles session initialization, setup, and update notifications.
+
+Responsibilities:
+1. Log session start
+2. Check for PopKit updates
+3. Register project with PopKit Cloud
+4. Ensure PopKit directories exist (auto-init)
+5. Filter agents based on initial task (Phase 2: Embedding-Based Agent Loading)
+"""
+
+import sys
+import json
+import os
+from pathlib import Path
+from datetime import datetime
+
+# Add utils to path
+sys.path.insert(0, str(Path(__file__).parent / "utils"))
+
+# Import version check utility
+try:
+    from popkit_shared.utils.version import check_for_updates, format_update_notification, get_current_version
+    HAS_VERSION_CHECK = True
+except ImportError:
+    HAS_VERSION_CHECK = False
+
+# Import project registration client
+try:
+    from popkit_shared.utils.project_client import ProjectClient, ProjectRegistration
+    HAS_PROJECT_CLIENT = True
+except ImportError:
+    HAS_PROJECT_CLIENT = False
+
+# Import agent loader for semantic filtering (Phase 2)
+try:
+    from agent_loader import AgentLoader
+    HAS_AGENT_LOADER = True
+except ImportError:
+    HAS_AGENT_LOADER = False
+
+# Import XML context generation utilities (Phase 1: XML Integration)
+try:
+    from context_state import clear_context_state, save_context_state, compute_hash
+    from xml_generator import generate_project_context_xml
+    HAS_XML_CONTEXT = True
+except ImportError:
+    HAS_XML_CONTEXT = False
+
+def create_logs_directory():
+    """Create logs directory if it doesn't exist."""
+    logs_dir = Path("logs")
+    logs_dir.mkdir(exist_ok=True)
+    return logs_dir
+
+def log_session_start(data):
+    """Log session start data to JSON file."""
+    logs_dir = create_logs_directory()
+    log_file = logs_dir / "session_start.json"
+    
+    # Add timestamp
+    data['timestamp'] = datetime.now().isoformat()
+    
+    # Read existing log data
+    log_data = []
+    if log_file.exists():
+        try:
+            with open(log_file, 'r') as f:
+                log_data = json.load(f)
+        except json.JSONDecodeError:
+            log_data = []
+    
+    # Append new data
+    log_data.append(data)
+    
+    # Write updated log
+    with open(log_file, 'w') as f:
+        json.dump(log_data, f, indent=2)
+
+
+def check_plugin_updates():
+    """Check for popkit updates and display notification if available.
+
+    This is non-blocking - any errors are silently ignored.
+    """
+    if not HAS_VERSION_CHECK:
+        return None
+
+    try:
+        has_update, release_info = check_for_updates()
+
+        if has_update and release_info:
+            current = get_current_version()
+            notification = format_update_notification(release_info, current)
+            print(notification, file=sys.stderr)
+
+            return {
+                'update_available': True,
+                'current_version': current,
+                'latest_version': release_info.get('version'),
+                'release_url': release_info.get('url')
+            }
+    except Exception:
+        pass  # Silent failure - never block session start
+
+    return None
+
+
+def register_project():
+    """Register this project with PopKit Cloud.
+
+    This is non-blocking - any errors are silently ignored.
+    Enables cross-project observability via /popkit:project observe.
+    """
+    if not HAS_PROJECT_CLIENT:
+        return None
+
+    try:
+        client = ProjectClient()
+
+        if not client.is_available:
+            return None
+
+        result = client.register_project()
+
+        if result:
+            print(f"Project registered with PopKit Cloud (session #{result.session_count})", file=sys.stderr)
+            return {
+                'project_id': result.project_id,
+                'session_count': result.session_count,
+                'status': result.status
+            }
+    except Exception:
+        pass  # Silent failure - never block session start
+
+    return None
+
+
+def ensure_popkit_directories():
+    """Ensure PopKit runtime directories exist.
+
+    This is idempotent and fast - creates directories only if missing.
+    Part of the skill automation architecture (Issue #173).
+
+    Created directories:
+    - .claude/popkit/           - PopKit runtime state
+    - .claude/popkit/routines/  - Custom morning/nightly routines
+
+    Returns:
+        dict: Status of directory creation, or None on error
+    """
+    try:
+        cwd = Path(os.getcwd())
+
+        # Skip if not in a git repo or project directory
+        # (Don't auto-create in random directories)
+        if not (cwd / ".git").exists() and not (cwd / "CLAUDE.md").exists():
+            return None
+
+        base = cwd / ".claude" / "popkit"
+        dirs_to_create = [
+            base,
+            base / "routines" / "morning",
+            base / "routines" / "nightly",
+        ]
+
+        created = []
+        for d in dirs_to_create:
+            if not d.exists():
+                d.mkdir(parents=True, exist_ok=True)
+                created.append(str(d.relative_to(cwd)))
+
+                # Add .gitkeep for empty directories
+                gitkeep = d / ".gitkeep"
+                if not gitkeep.exists():
+                    gitkeep.touch()
+
+        # Create config.json if missing
+        config_path = base / "config.json"
+        config_created = False
+        if not config_path.exists() and base.exists():
+            project_name = cwd.name
+
+            # Generate prefix from project name
+            words = project_name.replace('-', ' ').replace('_', ' ').split()
+            if len(words) == 1:
+                prefix = words[0][:2].lower()
+            else:
+                prefix = ''.join(word[0].lower() for word in words[:3])
+
+            config = {
+                "version": "1.0",
+                "project_name": project_name,
+                "project_prefix": prefix,
+                "default_routines": {
+                    "morning": "pk",
+                    "nightly": "pk"
+                },
+                "initialized_at": datetime.now().isoformat(),
+                "popkit_version": "1.2.0",
+                "tier": "free",
+                "features": {
+                    "power_mode": "not_configured",
+                    "deployments": [],
+                    "custom_routines": []
+                }
+            }
+
+            with open(config_path, 'w') as f:
+                json.dump(config, f, indent=2)
+            config_created = True
+
+        if created or config_created:
+            return {
+                'directories_created': created,
+                'config_created': config_created
+            }
+
+        return None  # Nothing needed
+
+    except Exception:
+        pass  # Silent failure - never block session start
+
+    return None
+
+
+def ensure_pattern_learner_directories():
+    """Ensure pattern learner and research directories exist.
+
+    Creates directories for the three-tier learning system:
+    - Tier 1 (Global): ~/.claude/config/ for command patterns database
+    - Tier 2 (Project): .claude/research/ for project research index
+    - Tier 3 (Project): .claude/expertise/ for agent expertise files
+
+    Part of Agent Expertise System (Issue #201, Phase 1).
+
+    Returns:
+        dict: Status of directory creation, or None on error
+    """
+    try:
+        home = Path.home()
+        cwd = Path(os.getcwd())
+
+        # Global config directory (Tier 1)
+        global_config = home / ".claude" / "config"
+
+        # Project-specific directories (Tier 2 and 3)
+        project_research = cwd / ".claude" / "research"
+        project_expertise = cwd / ".claude" / "expertise"
+
+        dirs_to_create = [
+            global_config,
+            project_research,
+            project_research / "entries",
+            project_expertise,
+        ]
+
+        created = []
+        for d in dirs_to_create:
+            if not d.exists():
+                d.mkdir(parents=True, exist_ok=True)
+                # Use relative path for project dirs, absolute for global
+                try:
+                    if d.is_relative_to(cwd):
+                        created.append(str(d.relative_to(cwd)))
+                    else:
+                        created.append(str(d))
+                except (ValueError, TypeError):
+                    # is_relative_to may fail on some Python versions
+                    created.append(str(d))
+
+        # Initialize research index if missing
+        index_path = project_research / "index.json"
+        index_created = False
+        if not index_path.exists() and project_research.exists():
+            # Create minimal research index structure
+            index_data = {
+                "version": "1.0.0",
+                "created_at": datetime.utcnow().isoformat() + "Z",
+                "updated_at": datetime.utcnow().isoformat() + "Z",
+                "entries": [],
+                "tags": {},
+                "metadata": {
+                    "total_entries": 0,
+                    "entry_types": {
+                        "decision": 0,
+                        "finding": 0,
+                        "learning": 0,
+                        "spike": 0
+                    }
+                }
+            }
+            with open(index_path, 'w') as f:
+                json.dump(index_data, f, indent=2)
+            index_created = True
+
+        if created or index_created:
+            return {
+                'directories_created': created,
+                'index_created': index_created
+            }
+
+        return None  # Nothing needed
+
+    except Exception:
+        pass  # Silent failure - never block session start
+
+    return None
+
+
+def load_agent_expertise():
+    """Load expertise files for relevant agents.
+
+    This is non-blocking - any errors are silently ignored.
+
+    Part of Agent Expertise System (Issue #201, Phase 2).
+
+    Returns:
+        dict: Loaded expertise info, or None on error
+    """
+    try:
+        # Import here to avoid circular dependencies
+        sys.path.insert(0, str(Path(__file__).parent / "utils"))
+        from expertise_manager import ExpertiseManager
+
+        cwd = Path(os.getcwd())
+        expertise_dir = cwd / ".claude" / "expertise"
+
+        if not expertise_dir.exists():
+            return None
+
+        loaded = []
+        for agent_dir in expertise_dir.iterdir():
+            if agent_dir.is_dir():
+                expertise_file = agent_dir / "expertise.yaml"
+                if expertise_file.exists():
+                    agent_id = agent_dir.name
+                    manager = ExpertiseManager(agent_id, cwd)
+                    summary = manager.get_summary()
+                    loaded.append({
+                        'agent_id': agent_id,
+                        'patterns': summary['total_patterns'],
+                        'preferences': summary['total_preferences'],
+                    })
+
+        if loaded:
+            print(f"Agent expertise loaded: {len(loaded)} agents", file=sys.stderr)
+            return {'agents': loaded}
+
+        return None
+
+    except Exception:
+        pass  # Silent failure
+
+    return None
+
+
+def load_relevant_agents_for_session(data):
+    """Load relevant agents based on initial user message.
+
+    Part of Phase 2: Embedding-Based Agent Loading.
+    This is non-blocking - any errors are silently ignored.
+
+    Args:
+        data: Session input data
+
+    Returns:
+        dict: Agent loading info, or None on error
+    """
+    if not HAS_AGENT_LOADER:
+        return None
+
+    try:
+        # Get initial user message (if available)
+        messages = data.get('messages', [])
+        user_message = next((m['content'] for m in messages if m['role'] == 'user'), '')
+
+        # If no user message yet, skip agent filtering
+        if not user_message:
+            return None
+
+        # Load relevant agents
+        loader = AgentLoader()
+        relevant_agents = loader.load(user_message, top_k=10)
+
+        # Output debug info to stderr
+        agent_ids = [a['agent_id'] for a in relevant_agents]
+        print(f"Agent filtering: loaded {len(agent_ids)} relevant agents", file=sys.stderr)
+        print(f"  Agents: {', '.join(agent_ids[:5])}{'...' if len(agent_ids) > 5 else ''}", file=sys.stderr)
+
+        return {
+            'loaded_agents': agent_ids,
+            'agent_count': len(relevant_agents),
+            'query_preview': user_message[:100]
+        }
+    except Exception:
+        pass  # Silent failure - never block session start
+
+    return None
+
+
+def detect_project_context():
+    """Detect project context for XML generation.
+
+    Analyzes the current project to extract:
+    - Project name
+    - Tech stack (from package.json dependencies)
+    - Infrastructure (future: detect from configs)
+    - Current work (git branch, recent issues)
+
+    Returns:
+        dict: Project context with stack, infrastructure, current_work
+    """
+    try:
+        cwd = Path(os.getcwd())
+        context = {
+            "name": cwd.name,
+            "stack": [],
+            "infrastructure": {},
+            "current_work": {}
+        }
+
+        # Detect stack from package.json
+        package_json = cwd / "package.json"
+        if package_json.exists():
+            try:
+                with open(package_json, 'r') as f:
+                    pkg = json.load(f)
+                    deps = {**pkg.get('dependencies', {}), **pkg.get('devDependencies', {})}
+
+                    # Detect frameworks
+                    if 'next' in deps:
+                        context["stack"].append("Next.js")
+                    if 'react' in deps and 'next' not in deps:
+                        context["stack"].append("React")
+                    if 'vue' in deps:
+                        context["stack"].append("Vue")
+                    if 'express' in deps:
+                        context["stack"].append("Express")
+                    if '@supabase/supabase-js' in deps:
+                        context["stack"].append("Supabase")
+                    if 'fastapi' in ' '.join(deps.keys()).lower():
+                        context["stack"].append("FastAPI")
+
+            except (json.JSONDecodeError, IOError):
+                pass
+
+        # Detect Python stack from requirements.txt
+        requirements_txt = cwd / "requirements.txt"
+        if requirements_txt.exists():
+            try:
+                with open(requirements_txt, 'r') as f:
+                    requirements = f.read().lower()
+                    if 'fastapi' in requirements:
+                        context["stack"].append("FastAPI")
+                    if 'django' in requirements:
+                        context["stack"].append("Django")
+                    if 'flask' in requirements:
+                        context["stack"].append("Flask")
+            except IOError:
+                pass
+
+        # Detect current branch
+        try:
+            import subprocess
+            result = subprocess.run(
+                ['git', 'branch', '--show-current'],
+                capture_output=True,
+                text=True,
+                timeout=1,
+                cwd=cwd
+            )
+            if result.returncode == 0:
+                branch = result.stdout.strip()
+                if branch:
+                    context["current_work"]["branch"] = branch
+        except Exception:
+            pass
+
+        return context
+
+    except Exception:
+        return {"name": "unknown", "stack": [], "infrastructure": {}, "current_work": {}}
+
+
+def main():
+    """Main entry point for the hook - JSON stdin/stdout protocol"""
+    try:
+        # Read input data from stdin
+        input_data = sys.stdin.read()
+        data = json.loads(input_data) if input_data.strip() else {}
+
+        # Log the session start
+        log_session_start(data)
+
+        # Check for updates (non-blocking)
+        update_info = check_plugin_updates()
+
+        # Register project with PopKit Cloud (non-blocking)
+        project_info = register_project()
+
+        # Ensure PopKit directories exist (auto-init, non-blocking)
+        popkit_init = ensure_popkit_directories()
+        if popkit_init:
+            dirs = popkit_init.get('directories_created', [])
+            config = popkit_init.get('config_created', False)
+            if dirs or config:
+                parts = []
+                if dirs:
+                    parts.append(f"directories: {len(dirs)}")
+                if config:
+                    parts.append("config.json")
+                print(f"PopKit auto-init: {', '.join(parts)}", file=sys.stderr)
+
+        # Ensure pattern learner and research directories (Issue #201, Phase 1)
+        learning_init = ensure_pattern_learner_directories()
+        if learning_init:
+            dirs = learning_init.get('directories_created', [])
+            index = learning_init.get('index_created', False)
+            if dirs or index:
+                parts = []
+                if dirs:
+                    parts.append(f"directories: {len(dirs)}")
+                if index:
+                    parts.append("research index")
+                print(f"Learning systems initialized: {', '.join(parts)}", file=sys.stderr)
+
+        # Load agent expertise files (Issue #201, Phase 2, non-blocking)
+        expertise_loading = load_agent_expertise()
+
+        # Load relevant agents for this session (Phase 2, non-blocking)
+        agent_loading = load_relevant_agents_for_session(data)
+
+        # Generate initial XML context and save state (Phase 1: XML Integration)
+        xml_context_info = None
+        if HAS_XML_CONTEXT:
+            try:
+                # Get session ID from data
+                session_id = data.get('session_id', 'default')
+
+                # Clear previous session state
+                clear_context_state(session_id)
+
+                # Detect project context
+                project_context = detect_project_context()
+
+                # Generate XML
+                xml_output = generate_project_context_xml(project_context)
+
+                # Save initial state
+                initial_state = {
+                    "context_sent": {
+                        "project": {
+                            "hash": compute_hash(project_context),
+                            "sent_at_message": 0  # Session start, before first message
+                        }
+                    },
+                    "message_count": 0,
+                    "last_full_context_message": 0
+                }
+                save_context_state(session_id, initial_state)
+
+                # Print XML to stderr for visibility
+                print("\n--- Project Context (XML) ---", file=sys.stderr)
+                print(xml_output, file=sys.stderr)
+                print("--- End Project Context ---\n", file=sys.stderr)
+
+                xml_context_info = {
+                    "xml_generated": True,
+                    "state_saved": True,
+                    "project_name": project_context.get("name")
+                }
+
+            except Exception as e:
+                # Silent failure - don't block session start
+                print(f"Warning: XML context generation failed: {e}", file=sys.stderr)
+
+        # Print welcome message to stderr
+        print("Session started - hooks system active", file=sys.stderr)
+
+        # Output JSON response to stdout
+        response = {
+            "status": "success",
+            "message": "Session started - hooks system active",
+            "timestamp": datetime.now().isoformat(),
+            "session_data": data
+        }
+
+        # Include update info if available
+        if update_info:
+            response["update_check"] = update_info
+
+        # Include project registration info if available
+        if project_info:
+            response["project_registration"] = project_info
+
+        # Include popkit init info if directories were created
+        if popkit_init:
+            response["popkit_init"] = popkit_init
+
+        # Include learning systems init info if directories were created (Issue #201)
+        if learning_init:
+            response["learning_init"] = learning_init
+
+        # Include expertise loading info if available (Issue #201, Phase 2)
+        if expertise_loading:
+            response["expertise_loading"] = expertise_loading
+
+        # Include agent loading info if available (Phase 2)
+        if agent_loading:
+            response["agent_loading"] = agent_loading
+
+        # Include XML context info if generated (Phase 1)
+        if xml_context_info:
+            response["xml_context"] = xml_context_info
+
+        print(json.dumps(response))
+
+    except json.JSONDecodeError as e:
+        response = {"status": "error", "error": f"Invalid JSON input: {e}"}
+        print(json.dumps(response))
+        sys.exit(0)  # Don't block on errors
+    except Exception as e:
+        response = {"status": "error", "error": str(e)}
+        print(json.dumps(response))
+        print(f"Error in session_start hook: {e}", file=sys.stderr)
+        sys.exit(0)  # Don't block on errors
+
+if __name__ == "__main__":
+    main()
