@@ -43,30 +43,33 @@ function MyComponent() {
 
 ## Components
 
-### Tier 1 (Essential) - Implemented
+### Tier 1 (Essential) - ✅ Complete
 
-- ✅ Button (variants: primary, secondary, ghost, destructive, outline, link)
-- ✅ Input (text, email, password, number)
-- ✅ Card (with header, content, footer slots)
-- ✅ Label
-- ⏳ Dialog/Modal
-- ⏳ Dropdown Menu
-- ⏳ Select
-- ⏳ Checkbox
-- ⏳ Radio Group
-- ⏳ Badge
-- ⏳ Spinner/Loading
+All 11 Tier 1 components are implemented with comprehensive variants:
 
-### Tier 2 (Common) - Planned
+- ✅ **Button** - 12 variants (default, secondary, destructive, ghost, outline, link, success, warning, flat, flat-destructive, flat-outline, flat-secondary) + loading state + 7 sizes
+- ✅ **Input** - All HTML input types + error/success states + left/right icons + 3 sizes (sm, default, lg) + enhanced focus states
+- ✅ **Card** - Compound component (Header, Title, Description, Action, Content, Footer) + auto spacing with gap-6 + grid header layout + data-slot attributes + rounded-xl
+- ✅ **Label** - Form labels with accessibility + flex layout for icons + data-slot attribute + select-none + group disabled states
+- ✅ **Dialog** - Modal with overlay, header, footer + data-slot attributes + gap-2 spacing + rounded-xs close button + mobile-optimized width
+- ✅ **DropdownMenu** - Full menu system with checkboxes, radio groups, sub-menus + data-slot attributes + destructive variant + gap-2 spacing + scrollable content + enhanced icon handling
+- ✅ **Select** - Dropdown select with groups, labels, scroll buttons
+- ✅ **Checkbox** - Boolean input with visual indicator
+- ✅ **RadioGroup** - Single selection from multiple options
+- ✅ **Badge** - 4 variants (default, secondary, destructive, outline)
+- ✅ **Spinner** - 3 sizes (sm, default, lg)
 
-- Table (with sorting, pagination)
-- Tabs
-- Accordion
-- Alert/Toast notifications
-- Tooltip
-- Avatar
-- Progress bar
-- Skeleton loading
+### Tier 2 (Common) - ✅ Complete
+
+- ✅ **Table** - Compound table component (Header, Body, Footer, Row, Head, Cell, Caption) + data-slot attributes + tight spacing + whitespace-nowrap + checkbox positioning + horizontal scroll
+- ✅ **Tabs** - Tab navigation (Root, List, Trigger, Content) + data-slot attributes + flex layout + gap-1.5 + enhanced focus states + dark mode + icon sizing
+- ✅ **Accordion** - Expandable sections (Root, Item, Trigger, Content) + data-slot attributes + ChevronDown icon + smooth animations + border styling
+- ✅ **Alert** - Notification banners (Alert, Title, Description) + data-slot attributes + 2 variants (default, destructive) + icon support + role="alert"
+- ✅ **Toast** - Radix UI toast notifications (Toast, Provider, Viewport, Title, Description, Close, Action) + data-slot attributes + 2 variants + swipe gestures + animations
+- ✅ **Tooltip** - Radix UI tooltips (Tooltip, Provider, Trigger, Content) + data-slot attributes + Portal + animations + configurable sideOffset
+- ✅ **Avatar** - Radix UI avatars (Avatar, Image, Fallback) + data-slot attributes + forwardRef + rounded-full + image fallback support
+- ✅ **Progress** - Radix UI progress bar + data-slot attributes + smooth transitions + value-based fill + accessibility (role, aria-attributes)
+- ✅ **Skeleton** - Loading placeholders + data-slot attributes + forwardRef + animate-pulse + customizable shapes (avatar, text, card)
 
 ### Tier 3 (Advanced) - Future
 
@@ -93,7 +96,37 @@ pnpm type-check
 
 # Linting
 pnpm lint
+
+# Storybook (component documentation and testing)
+pnpm storybook        # Start Storybook dev server at localhost:6006
+pnpm build-storybook  # Build static Storybook site
 ```
+
+## Storybook
+
+This package includes comprehensive Storybook documentation for all components. Storybook provides:
+- **Interactive component playground** - Test components with different props and states
+- **Visual documentation** - See all component variants and use cases
+- **Accessibility testing** - Built-in a11y addon for accessibility checks
+- **Responsive preview** - Test components at different viewport sizes
+
+### Running Storybook
+
+```bash
+pnpm storybook
+```
+
+Then open [http://localhost:6006](http://localhost:6006) in your browser.
+
+### Component Stories
+
+All 20 components have complete story files covering:
+- **Default states** - Basic component usage
+- **All variants** - Every variant and size option
+- **Interactive examples** - Real-world use cases
+- **Edge cases** - Error states, disabled states, loading states
+
+Stories are located in `src/components/[ComponentName]/[ComponentName].stories.tsx`
 
 ## Tailwind Configuration
 
