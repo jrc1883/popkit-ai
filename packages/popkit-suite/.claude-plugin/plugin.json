@@ -1,0 +1,19 @@
+{
+  "name": "popkit-suite",
+  "version": "1.0.0-beta.1",
+  "description": "Complete PopKit suite - recommends all 4 plugins for full functionality",
+  "author": "Joseph Cannon <joseph@thehouseofdeals.com>",
+  "license": "MIT",
+  "repository": "https://github.com/jrc1883/popkit",
+  "commands": [],
+  "skills": [],
+  "agents": [],
+  "keywords": [
+    "popkit",
+    "suite",
+    "complete",
+    "meta",
+    "all",
+    "bundle"
+  ]
+}
