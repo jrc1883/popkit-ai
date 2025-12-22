@@ -82,8 +82,5 @@
     "accessibility-guardian",
     "documentation-maintainer",
     "migration-specialist"
-  ],
-  "dependencies": {
-    "popkit-shared": ">=0.1.0"
-  }
+  ]
 }

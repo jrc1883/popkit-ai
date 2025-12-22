@@ -63,9 +63,6 @@
     "refactoring-expert",
     "rapid-prototyper"
   ],
-  "dependencies": {
-    "popkit-shared": ">=0.1.0"
-  },
   "keywords": [
     "development",
     "workflow",
