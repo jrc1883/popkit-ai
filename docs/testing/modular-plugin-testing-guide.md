@@ -10,19 +10,17 @@ This guide provides step-by-step instructions for testing the 4 modular PopKit p
 
 ## Pre-Testing Setup
 
-### 1. Ensure Clean Environment
+### 1. Close Any Running Claude Code Instances
+
+Close all Claude Code windows to start fresh.
+
+### 2. Navigate to PopKit Directory
 
 ```bash
-# Check current plugin status
-/plugin list
-
-# If old monolithic popkit is installed, uninstall it
-/plugin uninstall popkit@popkit-marketplace
-
-# Restart Claude Code to clear any cached state
+cd C:\Users\Josep\onedrive\documents\elshaddai\apps\popkit
 ```
 
-### 2. Prepare Testing Checklist
+### 3. Prepare Testing Checklist
 
 Create a testing checklist file to track results:
 
@@ -31,28 +29,32 @@ Create a testing checklist file to track results:
 touch docs/testing/test-results-YYYY-MM-DD.md
 ```
 
-## Testing Phase 1: Local Installation
+## Testing Phase 1: Local Plugin Loading
 
-### Install Each Plugin Locally
+### Using --plugin-dir Flag
 
-**Test 1.1: popkit (Foundation)**
+**IMPORTANT:** Local plugins are loaded using the `--plugin-dir` command-line flag, NOT via `/plugin install`.
+
+**Test 1.1: Load All Plugins**
+
+Start Claude Code with all 5 modular plugins loaded:
 
 ```bash
-/plugin install popkit@file:./packages/popkit
+# From the popkit root directory
+claude --plugin-dir ./packages/popkit --plugin-dir ./packages/popkit-dev --plugin-dir ./packages/popkit-ops --plugin-dir ./packages/popkit-research --plugin-dir ./packages/popkit-suite
 ```
 
 **Expected:**
-- Installation completes in < 30 seconds
-- No errors displayed
-- Message: "Plugin installed successfully"
+- Claude Code starts successfully
+- No plugin loading errors in console
 
 **Verify:**
 ```bash
-/plugin list
-# Should show: popkit (1.0.0-beta.1)
-```
+# In Claude Code, check available commands
+/help
 
-**Restart Claude Code** to load the plugin.
+# Should see all popkit: commands listed
+```
 
 **Test Commands:**
 ```bash
@@ -63,91 +65,46 @@ touch docs/testing/test-results-YYYY-MM-DD.md
 
 **Expected:** Commands execute without crashes.
 
----
+**Alternative: Load Individual Plugins**
 
-**Test 1.2: popkit-dev (Development)**
+If you need to test plugins individually:
 
 ```bash
-/plugin install popkit-dev@file:./packages/popkit-dev
+# Load just popkit foundation
+claude --plugin-dir ./packages/popkit
+
+# Load popkit + popkit-dev
+claude --plugin-dir ./packages/popkit --plugin-dir ./packages/popkit-dev
+
+# etc.
 ```
 
-**Expected:**
-- Installation completes in < 60 seconds
-- No errors displayed
+**Test 1.2: Verify All Commands Available**
 
-**Restart Claude Code.**
+After loading all plugins, verify commands from each plugin:
 
-**Test Commands:**
 ```bash
+# Foundation (popkit)
+/popkit:account status
+/popkit:stats session
+/popkit:privacy status
+
+# Development (popkit-dev)
 /popkit:dev brainstorm
 /popkit:git commit
 /popkit:routine morning
-```
 
-**Expected:** Commands execute, skills available.
-
----
-
-**Test 1.3: popkit-ops (Operations)**
-
-```bash
-/plugin install popkit-ops@file:./packages/popkit-ops
-```
-
-**Expected:**
-- Installation completes in < 60 seconds
-- No errors displayed
-
-**Restart Claude Code.**
-
-**Test Commands:**
-```bash
+# Operations (popkit-ops)
 /popkit:assess anthropic
 /popkit:security scan
 /popkit:debug code
-```
 
-**Expected:** Commands execute, agents route correctly.
-
----
-
-**Test 1.4: popkit-research (Knowledge)**
-
-```bash
-/plugin install popkit-research@file:./packages/popkit-research
-```
-
-**Expected:**
-- Installation completes in < 30 seconds
-- No errors displayed
-
-**Restart Claude Code.**
-
-**Test Commands:**
-```bash
+# Research (popkit-research)
 /popkit:research list
 /popkit:knowledge list
 ```
 
-**Expected:** Commands execute correctly.
-
----
-
-**Test 1.5: popkit-suite (Meta)**
-
-```bash
-/plugin install popkit-suite@file:./packages/popkit-suite
-```
-
-**Expected:**
-- Installation completes in < 5 seconds (documentation only)
-- No errors displayed
-
-**Restart Claude Code.**
-
-**Verify:**
-- README content is accessible
-- No commands registered (this is correct)
+**Expected:** All 21 commands execute without crashes.
 
 ---
 
