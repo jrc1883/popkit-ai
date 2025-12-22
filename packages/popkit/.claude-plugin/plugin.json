@@ -1,0 +1,59 @@
+{
+  "name": "popkit",
+  "version": "1.0.0-beta.1",
+  "description": "PopKit foundation plugin - account management, stats, privacy, and system features",
+  "author": "Joseph Cannon <joseph@thehouseofdeals.com>",
+  "license": "MIT",
+  "repository": "https://github.com/jrc1883/popkit",
+  "commands": [
+    {
+      "name": "account",
+      "description": "Manage API key, subscription status, billing, logout",
+      "path": "commands/account.md"
+    },
+    {
+      "name": "stats",
+      "description": "Usage metrics and efficiency tracking",
+      "path": "commands/stats.md"
+    },
+    {
+      "name": "privacy",
+      "description": "Privacy settings and data controls",
+      "path": "commands/privacy.md"
+    },
+    {
+      "name": "bug",
+      "description": "Bug reporting, diagnostics, and issue search",
+      "path": "commands/bug.md"
+    },
+    {
+      "name": "plugin",
+      "description": "Plugin testing, validation, and management",
+      "path": "commands/plugin.md"
+    },
+    {
+      "name": "cache",
+      "description": "Cache management and cleanup",
+      "path": "commands/cache.md"
+    },
+    {
+      "name": "upgrade",
+      "description": "Premium features and pricing information",
+      "path": "commands/upgrade.md"
+    }
+  ],
+  "skills": [],
+  "agents": [],
+  "dependencies": {
+    "popkit-shared": ">=0.1.0"
+  },
+  "keywords": [
+    "popkit",
+    "foundation",
+    "account",
+    "stats",
+    "privacy",
+    "premium",
+    "system"
+  ]
+}
