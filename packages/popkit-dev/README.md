@@ -1,22 +1,24 @@
 # PopKit Dev - Development Workflow Plugin
 
-**Version:** 0.1.0
-**Status:** Proof of Concept (Phase 2 of Plugin Modularization)
+**Version:** 0.2.0
+**Status:** Active Development (Phase 2-3 of Plugin Modularization)
 
 ## Overview
 
-PopKit Dev is a focused development workflow plugin extracted from the monolithic PopKit plugin. It provides comprehensive tools for feature development, git operations, and daily routines.
+PopKit Dev is a complete development workflow plugin that provides comprehensive tools for feature development, git operations, GitHub integration, and daily routines.
 
-This is the **proof of concept** for the plugin modularization architecture defined in Epic #580.
+**v0.2.0 Update:** Merged popkit-github plugin for unified development workflow. GitHub operations (issues, PRs, milestones) are now integrated alongside feature development and git operations.
 
 ## Features
 
-### Commands (5)
+### Commands (7)
 
 | Command | Description |
 |---------|-------------|
 | `/popkit:dev` | 7-phase feature development workflow |
-| `/popkit:git` | Git operations (commit, push, pr, review, etc.) |
+| `/popkit:git` | Git operations (commit, push, pr, review, release, publish) |
+| `/popkit:issue` | GitHub issue management (create, list, view, close, comment, edit, link) |
+| `/popkit:milestone` | Milestone tracking (list, create, close, report, health analysis) |
 | `/popkit:worktree` | Git worktree management |
 | `/popkit:routine` | Morning health checks and nightly cleanup |
 | `/popkit:next` | Context-aware next action recommendations |

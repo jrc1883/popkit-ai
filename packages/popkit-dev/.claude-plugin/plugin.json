@@ -1,7 +1,7 @@
 {
   "name": "popkit-dev",
-  "version": "0.1.0",
-  "description": "Development workflow plugin - feature development, git operations, and daily routines",
+  "version": "0.2.0",
+  "description": "Complete development workflow plugin - feature development, git operations, GitHub management, and daily routines",
   "author": "Joseph Cannon <joseph@thehouseofdeals.com>",
   "license": "MIT",
   "repository": "https://github.com/jrc1883/popkit",
@@ -15,6 +15,16 @@
       "name": "git",
       "description": "Git operations - commit, push, pr, review, ci, release, publish",
       "path": "commands/git.md"
+    },
+    {
+      "name": "issue",
+      "description": "GitHub issue management - create, list, view, close, comment, edit, link",
+      "path": "commands/issue.md"
+    },
+    {
+      "name": "milestone",
+      "description": "Milestone management - list, create, close, report, health tracking",
+      "path": "commands/milestone.md"
     },
     {
       "name": "worktree",
@@ -57,6 +67,10 @@
     "development",
     "workflow",
     "git",
+    "github",
+    "issues",
+    "milestones",
+    "pr",
     "feature",
     "routine"
   ]

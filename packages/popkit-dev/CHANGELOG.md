@@ -5,6 +5,32 @@ All notable changes to PopKit Dev will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2025-12-21
+
+### Added
+
+- Merged popkit-github plugin for unified development workflow
+- `/popkit:issue` command - GitHub issue management (create, list, view, close, comment, edit, link)
+- `/popkit:milestone` command - Milestone tracking (list, create, close, report, health analysis)
+
+### Changed
+
+- Renamed from "Development workflows" to "Complete development workflow"
+- Updated description to include GitHub management
+- Command count: 5 → 7
+
+### Rationale
+
+GitHub operations (issues, PRs, milestones, releases) are integral to modern development workflows, not separate project management concerns. The artificial split between popkit-dev and popkit-github created confusion and broke natural workflow continuity.
+
+**Unified workflow:** Issues → Dev → PR → Merge → Close (all in one plugin)
+
+### Issues
+
+- Implements Issue #583: Merge popkit-github into popkit-dev (Phase 3.5)
+- Supersedes Issue #572: Extract popkit-github (Phase 3)
+- Part of Epic #580: PopKit Plugin Modularization
+
 ## [0.1.0] - 2025-12-20
 
 ### Added

@@ -62,10 +62,11 @@ This document defines the architecture for splitting PopKit from a monolithic pl
 
 ### Proposed Plugins
 
+> **Update 2025-12-21:** popkit-github merged into popkit-dev (Issue #583). Plugin count reduced from 6 to 5 for better workflow coherence.
+
 | Plugin | Commands | Purpose | Free Capabilities | Enhanced (w/ API Key) |
 |--------|----------|---------|-------------------|----------------------|
-| **popkit-dev** | dev, git, worktree, routine, next | Core development workflows | Local agents, keyword routing | Semantic agent selection, community templates |
-| **popkit-github** | issue, milestone | GitHub project management | gh CLI operations | Pattern-based templates, smart labels |
+| **popkit-dev** | dev, git, issue, milestone, worktree, routine, next | Complete development workflows + GitHub | Local agents, keyword routing, gh CLI | Semantic agent selection, community templates, pattern-based labels |
 | **popkit-quality** | assess, audit, debug, security | Code quality & security | Local analysis | Community bug fixes, similar issue search |
 | **popkit-deploy** | deploy | Deployment automation | Basic deployment | Community configs, proven patterns |
 | **popkit-research** | research, knowledge | Knowledge management | Local notes | Semantic search, cross-project knowledge |
@@ -227,7 +228,7 @@ Upstash Stack at api.thehouseofdeals.com:
 ### Phase 3: Extract Remaining Plugins (Week 3-6)
 
 **Order** (simplest to most complex):
-1. **popkit-github** (Week 3) - Just gh CLI wrapper, minimal deps
+1. ~~**popkit-github**~~ (Week 3) - **MERGED into popkit-dev** (Issue #583)
 2. **popkit-deploy** (Week 3-4) - Self-contained deployment logic
 3. **popkit-quality** (Week 4-5) - Moderate complexity (6 assessment skills)
 4. **popkit-research** (Week 5) - Depends on vector DB (API key feature)
@@ -418,8 +419,7 @@ Old (v0.2.5):
 
 New (v1.0.0):
 └── Install popkit → Auto-installs all sub-plugins
-    ├── popkit-dev
-    ├── popkit-github
+    ├── popkit-dev (includes GitHub integration)
     ├── popkit-quality
     ├── popkit-deploy
     ├── popkit-research
@@ -435,7 +435,6 @@ New (v1.0.0):
   "description": "Complete PopKit suite (installs all plugins)",
   "dependencies": [
     "popkit-dev",
-    "popkit-github",
     "popkit-quality",
     "popkit-deploy",
     "popkit-research",
@@ -527,8 +526,8 @@ New (v1.0.0):
 | **Import path hell** | Medium | Shared package with stable API, semantic versioning |
 | **Plugin dependency conflicts** | Medium | All plugins pin `popkit-shared` version, coordinated releases |
 | **API key feature leakage** | Low | Clear separation in code (if client else fallback) |
-| **Marketplace confusion** | Medium | Clear naming (popkit-dev, popkit-github), good descriptions |
-| **Over-modularization** | Low | Start with 6 plugins (not 20), merge if needed |
+| **Marketplace confusion** | Medium | Clear naming (popkit-dev, popkit-quality), good descriptions |
+| **Over-modularization** | Low | Start with 5 focused plugins, merged github for coherence |
 
 ---
 
@@ -572,7 +571,7 @@ New (v1.0.0):
 - [ ] Document migration notes
 
 ### Week 4: Remaining Plugins
-- [ ] Create popkit-github (issue, milestone)
+- [x] ~~Create popkit-github~~ **MERGED into popkit-dev (Issue #583)**
 - [ ] Create popkit-deploy (deploy)
 - [ ] Create popkit-quality (assess, audit, debug, security)
 - [ ] Create popkit-research (research, knowledge)
@@ -599,7 +598,7 @@ New (v1.0.0):
 ## Open Questions
 
 1. **Skill sharing**: Should we create `@popkit/skills-common` package or duplicate skills?
-2. **Versioning**: How do we coordinate releases across 7 packages (shared + 6 plugins)?
+2. **Versioning**: How do we coordinate releases across 6 packages (shared + 5 plugins)?
 3. **Marketplace**: Should meta-plugin be featured, or individual plugins?
 4. **API key UI**: Where should users configure API key (each plugin, or centrally)?
 5. **Migration tooling**: Do we need a script to help users migrate custom configs?
@@ -625,8 +624,8 @@ New (v1.0.0):
 | worktree | packages/plugin/commands/worktree.md | popkit-dev | pop-worktrees |
 | routine | packages/plugin/commands/routine.md | popkit-dev | pop-morning, pop-nightly, pop-routine-optimized |
 | next | packages/plugin/commands/next.md | popkit-dev | pop-next-action |
-| issue | packages/plugin/commands/issue.md | popkit-github | (none - uses gh CLI) |
-| milestone | packages/plugin/commands/milestone.md | popkit-github | (none - uses gh CLI) |
+| issue | packages/plugin/commands/issue.md | popkit-dev | (none - uses gh CLI) |
+| milestone | packages/plugin/commands/milestone.md | popkit-dev | (none - uses gh CLI) |
 | assess | packages/plugin/commands/assess.md | popkit-quality | pop-assessment-* (6 skills) |
 | audit | packages/plugin/commands/audit.md | popkit-quality | pop-assessment-* |
 | debug | packages/plugin/commands/debug.md | popkit-quality | pop-systematic-debugging, pop-root-cause-tracing |
