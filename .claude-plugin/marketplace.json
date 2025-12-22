@@ -1,0 +1,88 @@
+{
+  "name": "popkit-local",
+  "owner": {
+    "name": "Joseph Cannon",
+    "email": "joseph@thehouseofdeals.com"
+  },
+  "metadata": {
+    "description": "PopKit modular plugin suite - local testing marketplace",
+    "version": "1.0.0-beta.1"
+  },
+  "plugins": [
+    {
+      "name": "popkit",
+      "source": "./packages/popkit",
+      "description": "PopKit foundation plugin - account management, stats, privacy, and system features",
+      "version": "1.0.0-beta.1",
+      "author": {
+        "name": "Joseph Cannon",
+        "email": "joseph@thehouseofdeals.com"
+      },
+      "homepage": "https://github.com/jrc1883/popkit",
+      "repository": "https://github.com/jrc1883/popkit",
+      "license": "MIT",
+      "keywords": ["popkit", "foundation", "account", "stats", "privacy"],
+      "category": "productivity"
+    },
+    {
+      "name": "popkit-dev",
+      "source": "./packages/popkit-dev",
+      "description": "Complete development workflow plugin - feature development, git operations, GitHub management",
+      "version": "0.2.0",
+      "author": {
+        "name": "Joseph Cannon",
+        "email": "joseph@thehouseofdeals.com"
+      },
+      "homepage": "https://github.com/jrc1883/popkit",
+      "repository": "https://github.com/jrc1883/popkit",
+      "license": "MIT",
+      "keywords": ["development", "workflow", "git", "github"],
+      "category": "productivity"
+    },
+    {
+      "name": "popkit-ops",
+      "source": "./packages/popkit-ops",
+      "description": "PopKit operations plugin - quality assurance, deployment, and debugging workflows",
+      "version": "1.0.0-beta.1",
+      "author": {
+        "name": "Joseph Cannon",
+        "email": "joseph@thehouseofdeals.com"
+      },
+      "homepage": "https://github.com/jrc1883/popkit",
+      "repository": "https://github.com/jrc1883/popkit",
+      "license": "MIT",
+      "keywords": ["operations", "quality", "deployment", "security"],
+      "category": "productivity"
+    },
+    {
+      "name": "popkit-research",
+      "source": "./packages/popkit-research",
+      "description": "PopKit research plugin - knowledge management and research workflows",
+      "version": "1.0.0-beta.1",
+      "author": {
+        "name": "Joseph Cannon",
+        "email": "joseph@thehouseofdeals.com"
+      },
+      "homepage": "https://github.com/jrc1883/popkit",
+      "repository": "https://github.com/jrc1883/popkit",
+      "license": "MIT",
+      "keywords": ["research", "knowledge", "documentation"],
+      "category": "productivity"
+    },
+    {
+      "name": "popkit-suite",
+      "source": "./packages/popkit-suite",
+      "description": "Complete PopKit suite - recommends all 4 plugins for full functionality",
+      "version": "1.0.0-beta.1",
+      "author": {
+        "name": "Joseph Cannon",
+        "email": "joseph@thehouseofdeals.com"
+      },
+      "homepage": "https://github.com/jrc1883/popkit",
+      "repository": "https://github.com/jrc1883/popkit",
+      "license": "MIT",
+      "keywords": ["popkit", "suite", "complete", "meta"],
+      "category": "productivity"
+    }
+  ]
+}
