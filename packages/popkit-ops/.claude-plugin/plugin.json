@@ -38,7 +38,8 @@
     {"path": "skills/pop-assessment-performance/SKILL.md"},
     {"path": "skills/pop-assessment-ux/SKILL.md"},
     {"path": "skills/pop-assessment-architecture/SKILL.md"},
-    {"path": "skills/pop-systematic-debugging/SKILL.md"}
+    {"path": "skills/pop-systematic-debugging/SKILL.md"},
+    {"path": "skills/pop-code-review/SKILL.md"}
   ],
   "agents": [
     {"path": "agents/tier-1-always-active/bug-whisperer/AGENT.md"},

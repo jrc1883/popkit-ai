@@ -51,7 +51,10 @@
     "pop-session-resume",
     "pop-context-restore",
     "pop-routine-optimized",
-    "pop-routine-measure"
+    "pop-routine-measure",
+    "pop-finish-branch",
+    "pop-project-templates",
+    "pop-worktrees"
   ],
   "agents": [
     "code-explorer",
