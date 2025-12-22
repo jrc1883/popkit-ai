@@ -18,8 +18,8 @@ from datetime import datetime
 # Add utils to path for local imports
 sys.path.insert(0, os.path.dirname(__file__))
 
-from embedding_store import EmbeddingStore, EmbeddingRecord
-from voyage_client import VoyageClient, is_available as voyage_available
+from .embedding_store import EmbeddingStore, EmbeddingRecord
+from .voyage_client import VoyageClient, is_available as voyage_available
 
 # =============================================================================
 # CONFIGURATION

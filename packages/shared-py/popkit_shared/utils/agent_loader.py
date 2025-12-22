@@ -11,9 +11,9 @@ import json
 import sys
 from pathlib import Path
 
-from embedding_store import EmbeddingStore, SearchResult
-from voyage_client import embed
-from cloud_agent_search import search_agents as cloud_search
+from .embedding_store import EmbeddingStore, SearchResult
+from .voyage_client import embed
+from .cloud_agent_search import search_agents as cloud_search
 
 
 class AgentLoader:

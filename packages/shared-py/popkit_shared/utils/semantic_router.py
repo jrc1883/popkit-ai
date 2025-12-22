@@ -21,9 +21,9 @@ from dataclasses import dataclass
 # Add utils to path
 sys.path.insert(0, os.path.dirname(__file__))
 
-from embedding_store import EmbeddingStore
-from voyage_client import VoyageClient, is_available
-from cloud_agent_search import (
+from .embedding_store import EmbeddingStore
+from .voyage_client import VoyageClient, is_available
+from .cloud_agent_search import (
     search_agents as cloud_search_agents,
     is_available as cloud_is_available
 )

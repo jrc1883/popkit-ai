@@ -20,8 +20,8 @@ from typing import List, Dict, Any, Optional, Tuple
 # Add utils to path
 sys.path.insert(0, os.path.dirname(__file__))
 
-from voyage_client import VoyageClient, is_available
-from embedding_store import EmbeddingStore, EmbeddingRecord
+from .voyage_client import VoyageClient, is_available
+from .embedding_store import EmbeddingStore, EmbeddingRecord
 
 # =============================================================================
 # CONFIGURATION

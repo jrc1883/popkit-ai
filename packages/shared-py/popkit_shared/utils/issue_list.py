@@ -13,7 +13,7 @@ import json
 import re
 from typing import Dict, List, Optional, Any
 
-from github_issues import parse_popkit_guidance, infer_issue_type
+from .github_issues import parse_popkit_guidance, infer_issue_type
 
 
 def fetch_issues(

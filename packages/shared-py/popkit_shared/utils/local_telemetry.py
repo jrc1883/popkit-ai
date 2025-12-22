@@ -8,7 +8,7 @@ telemetry events. It wraps test_telemetry.emit_event().
 
 import sys
 from typing import Dict, Any
-from test_telemetry import is_test_mode, emit_event as telemetry_emit
+from .test_telemetry import is_test_mode, emit_event as telemetry_emit
 
 
 def log_event_if_test_mode(event: Dict[str, Any]) -> None:

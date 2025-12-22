@@ -14,14 +14,14 @@ import sys
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Type
 
-from context_carrier import (
+from .context_carrier import (
     HookContext,
     create_context,
     update_context,
     serialize_context,
     deserialize_context
 )
-from message_builder import (
+from .message_builder import (
     build_user_message,
     build_assistant_message,
     build_tool_use_message,

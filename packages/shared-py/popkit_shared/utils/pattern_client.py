@@ -17,7 +17,7 @@ from datetime import datetime, timezone
 import urllib.request
 import urllib.error
 
-from pattern_anonymizer import anonymize_pattern, validate_anonymization
+from .pattern_anonymizer import anonymize_pattern, validate_anonymization
 
 
 # =============================================================================
