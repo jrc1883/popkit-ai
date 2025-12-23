@@ -25,7 +25,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 import uuid
-import fcntl
+
+# File locking (Unix-only)
+try:
+    import fcntl
+    HAS_FCNTL = True
+except ImportError:
+    HAS_FCNTL = False
 
 try:
     from .session_manager import get_current_session, update_session_activity
@@ -94,12 +100,16 @@ class SessionRecorder:
         """Load existing events from recording file."""
         try:
             with open(self.recording_file, 'r') as f:
-                fcntl.flock(f.fileno(), fcntl.LOCK_SH)
+                if HAS_FCNTL:
+                    import fcntl
+                    fcntl.flock(f.fileno(), fcntl.LOCK_SH)
                 try:
                     data = json.load(f)
                     self.events = data.get('events', [])
                 finally:
-                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                    if HAS_FCNTL:
+                        import fcntl
+                        fcntl.flock(f.fileno(), fcntl.LOCK_UN)
         except (json.JSONDecodeError, FileNotFoundError):
             self.events = []
 
@@ -129,17 +139,21 @@ class SessionRecorder:
         if HAS_SESSION_MANAGER and self.session_id:
             update_session_activity(self.session_id)
 
-        # Write to file with lock
+        # Write to file with lock (if available)
         if self.recording_file:
             with open(self.recording_file, 'w') as f:
-                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                if HAS_FCNTL:
+                    import fcntl
+                    fcntl.flock(f.fileno(), fcntl.LOCK_EX)
                 try:
                     json.dump({
                         'session_id': self.session_id,
                         'events': self.events
                     }, f, indent=2)
                 finally:
-                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                    if HAS_FCNTL:
+                        import fcntl
+                        fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 
     def record_tool_call(
         self,

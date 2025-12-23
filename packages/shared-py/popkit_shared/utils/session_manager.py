@@ -19,7 +19,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Any, Optional
 import uuid
-import fcntl
+
+# File locking (Unix-only)
+try:
+    import fcntl
+    HAS_FCNTL = True
+except ImportError:
+    HAS_FCNTL = False
 
 
 class SessionManager:
@@ -74,13 +80,17 @@ class SessionManager:
         """Load session from file with lock."""
         try:
             with open(session_file, 'r') as f:
-                # Acquire shared lock for reading
-                fcntl.flock(f.fileno(), fcntl.LOCK_SH)
+                # Acquire shared lock for reading (Unix only)
+                if HAS_FCNTL:
+                    import fcntl
+                    fcntl.flock(f.fileno(), fcntl.LOCK_SH)
                 try:
                     session = json.load(f)
                     return session
                 finally:
-                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                    if HAS_FCNTL:
+                        import fcntl
+                        fcntl.flock(f.fileno(), fcntl.LOCK_UN)
         except (json.JSONDecodeError, FileNotFoundError):
             return None
 
@@ -130,12 +140,16 @@ class SessionManager:
         session_file = self.sessions_dir / f'session-{session_id}.json'
 
         with open(session_file, 'w') as f:
-            # Acquire exclusive lock for writing
-            fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+            # Acquire exclusive lock for writing (Unix only)
+            if HAS_FCNTL:
+                import fcntl
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
             try:
                 json.dump(session, f, indent=2)
             finally:
-                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                if HAS_FCNTL:
+                    import fcntl
+                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 
     def update_session_activity(self, session_id: str) -> None:
         """Update session's last activity timestamp."""
