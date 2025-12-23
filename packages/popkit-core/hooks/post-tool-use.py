@@ -77,6 +77,13 @@ try:
 except ImportError:
     HAS_XML_GENERATOR = False
 
+# Import session recorder for --record flag support
+try:
+    from popkit_shared.utils.session_recorder import record_tool_call, is_recording_enabled
+    HAS_SESSION_RECORDER = True
+except ImportError:
+    HAS_SESSION_RECORDER = False
+
 class PostToolUseHook:
     def __init__(self):
         self.claude_dir = Path.home() / '.claude'
@@ -1096,6 +1103,21 @@ def main():
                 if isinstance(tool_result, dict):
                     content = json.dumps(tool_result)
                 tracker.track_tool_call(tool_name, content, execution_time)
+
+        # Record tool call if --record flag is enabled
+        if HAS_SESSION_RECORDER and is_recording_enabled():
+            # Determine success/error from result
+            error = None
+            if isinstance(tool_result, dict) and tool_result.get("error"):
+                error = str(tool_result.get("error"))
+
+            record_tool_call(
+                tool_name=tool_name,
+                parameters=tool_args,
+                result=str(tool_result)[:1000] if tool_result else None,  # Truncate large results
+                error=error,
+                duration_ms=int(execution_time * 1000) if execution_time else None
+            )
 
         if not tool_name:
             response = {"error": "No tool_name provided in input"}

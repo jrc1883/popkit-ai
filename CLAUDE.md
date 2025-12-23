@@ -486,11 +486,46 @@ When developing this plugin:
 
 ## Testing Changes
 
-Verify changes using the built-in test framework:
-1. Run `/popkit:plugin-test` to validate all components
-2. Run `/popkit:plugin-test hooks` to test hook JSON protocol
-3. Run `/popkit:plugin-test routing` to verify agent selection
-4. For isolation: Create a worktree with `/popkit:worktree create test-feature`
+### Modular Plugin Testing
+
+PopKit uses a modular plugin architecture with distributed testing. Each plugin package is tested independently, then cross-plugin validation ensures compatibility.
+
+**Test All Plugins:**
+```bash
+cd packages/popkit-core
+python run_all_tests.py              # Test all plugin packages
+python run_all_tests.py --verbose    # Show detailed output
+```
+
+**Test Individual Plugin:**
+```bash
+cd packages/popkit-core
+python run_tests.py                  # Test popkit-core only
+python run_tests.py hooks            # Test hooks category only
+```
+
+**Test Categories:**
+- `agents`: Agent markdown file validation and frontmatter
+- `hooks`: Hook JSON protocol and execution
+- `skills`: Skill format and structure
+- `structure`: Plugin integrity and required files
+- `cross-plugin`: Cross-plugin compatibility validation
+
+**Key Changes for Modular Architecture:**
+- ✅ Each plugin is self-contained and independently testable
+- ✅ No centralized `agents/config.json` - agents discovered from markdown files
+- ✅ Semantic routing based on agent descriptions, not keyword configs
+- ✅ Cross-plugin tests validate naming uniqueness and compatibility
+
+**Using PopKit Commands:**
+```bash
+/popkit:plugin test              # Run tests via skill (uses run_all_tests.py)
+/popkit:plugin test agents       # Test specific category
+/popkit:plugin test --verbose    # Detailed output
+```
+
+**For Isolation:**
+Create a worktree with `/popkit:worktree create test-feature` to test changes without affecting main branch
 
 ## MCP Server Template
 

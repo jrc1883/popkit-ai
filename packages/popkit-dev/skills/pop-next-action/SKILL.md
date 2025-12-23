@@ -66,8 +66,7 @@ Check for research branches from Claude Code Web sessions:
 
 ```python
 import sys
-# No longer needed - install popkit-shared instead
-from research_branch_detector import (
+from popkit_shared.utils.research_branch_detector import (
     get_research_branches,
     format_branch_table
 )
@@ -107,7 +106,7 @@ Identify what kind of project and what state it's in:
 If GitHub issues exist, fetch community votes to prioritize:
 
 ```python
-from priority_scorer import get_priority_scorer, fetch_open_issues
+from popkit_shared.utils.priority_scorer import get_priority_scorer, fetch_open_issues
 
 # Fetch and rank issues by combined priority score
 scorer = get_priority_scorer()
@@ -274,7 +273,7 @@ If user selects "Yes, process" or "Review first", invoke the `pop-research-merge
 When multiple issues exist, use priority scoring to recommend the best one:
 
 ```python
-from priority_scorer import get_priority_scorer
+from popkit_shared.utils.priority_scorer import get_priority_scorer
 
 scorer = get_priority_scorer()
 ranked = scorer.rank_issues(issues)
