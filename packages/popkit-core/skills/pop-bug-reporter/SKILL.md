@@ -1,5 +1,5 @@
 ---
-name: pop-bug-reporter
+name: bug-reporter
 description: Capture bug context, generate reports, and optionally create GitHub issues or share patterns
 ---
 
@@ -149,7 +149,7 @@ When `--share` is used, anonymize before uploading:
 
 | Original | Anonymized |
 |----------|------------|
-| `/Users/joe/myapp/src/auth/oauth.ts` | `auth module` |
+| `<project>/src/auth/oauth.ts` | `auth module` |
 | `handleTokenRefresh()` | `token refresh handler` |
 | API keys, secrets | `[REDACTED]` |
 | Variable names | Generic terms |

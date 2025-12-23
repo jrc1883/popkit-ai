@@ -35,45 +35,67 @@ def validate_plugin_structure(plugin_root: Path) -> Dict[str, Any]:
         result['errors'].append(f"Plugin root not found: {plugin_root}")
         return result
 
-    # Check required files
+    # Check required files (modular architecture - only plugin.json is truly required)
     required_files = {
-        '.claude-plugin/plugin.json': 'Plugin manifest',
-        'hooks/hooks.json': 'Hooks configuration',
-        'agents/config.json': 'Agent configuration',
-        'README.md': 'Plugin documentation'
+        '.claude-plugin/plugin.json': ('required', 'Plugin manifest'),
+        'README.md': ('required', 'Plugin documentation')
     }
 
-    for file_path, description in required_files.items():
+    optional_files = {
+        'hooks/hooks.json': 'Hooks configuration',
+        'agents/config.json': 'Agent configuration (legacy - not needed in modular architecture)'
+    }
+
+    for file_path, (requirement, description) in required_files.items():
         full_path = plugin_root / file_path
         exists = full_path.exists()
 
         result['required_files'][file_path] = {
             'exists': exists,
-            'description': description
+            'description': description,
+            'required': True
         }
 
         if not exists:
             result['errors'].append(f"Required file missing: {file_path}")
 
-    # Check required directories
-    required_dirs = {
-        'skills': 'Skills directory',
-        'commands': 'Commands directory',
-        'agents': 'Agents directory',
-        'hooks': 'Hooks directory'
+    # Check optional files
+    for file_path, description in optional_files.items():
+        full_path = plugin_root / file_path
+        exists = full_path.exists()
+
+        result['required_files'][file_path] = {
+            'exists': exists,
+            'description': description,
+            'required': False
+        }
+
+        # Don't error on missing optional files
+
+    # Check optional directories (all component directories are optional in modular architecture)
+    optional_dirs = {
+        '.claude-plugin': ('required', 'Plugin manifest directory'),
+        'skills': ('optional', 'Skills directory'),
+        'commands': ('optional', 'Commands directory'),
+        'agents': ('optional', 'Agents directory'),
+        'hooks': ('optional', 'Hooks directory')
     }
 
-    for dir_path, description in required_dirs.items():
+    for dir_path, (requirement, description) in optional_dirs.items():
         full_path = plugin_root / dir_path
         exists = full_path.exists() and full_path.is_dir()
 
         result['required_dirs'][dir_path] = {
             'exists': exists,
-            'description': description
+            'description': description,
+            'required': requirement == 'required'
         }
 
-        if not exists:
-            result['warnings'].append(f"Expected directory missing: {dir_path}")
+        if not exists and requirement == 'required':
+            result['errors'].append(f"Required directory missing: {dir_path}")
+        elif not exists and requirement == 'optional':
+            # This is fine - not all plugins need all directories
+            pass
 
     # Validate plugin.json
     plugin_json_path = plugin_root / '.claude-plugin' / 'plugin.json'
@@ -101,18 +123,26 @@ def validate_plugin_structure(plugin_root: Path) -> Dict[str, Any]:
         except json.JSONDecodeError as e:
             result['errors'].append(f"Invalid JSON in hooks.json: {e}")
 
-    # Validate agents/config.json
+    # Validate agents/config.json (optional in modular architecture)
+    # In modular architecture, each plugin has agent markdown files, not a centralized config
     agent_config_path = plugin_root / 'agents' / 'config.json'
     if agent_config_path.exists():
+        result['warnings'].append("Found agents/config.json (legacy structure). Modular plugins use agent markdown files instead.")
         try:
             agent_config = json.loads(agent_config_path.read_text())
             result['agent_config'] = validate_agent_config(agent_config, plugin_root / 'agents')
 
             if not result['agent_config']['valid']:
-                result['errors'].extend(result['agent_config']['errors'])
+                result['warnings'].extend(result['agent_config']['errors'])
 
         except json.JSONDecodeError as e:
-            result['errors'].append(f"Invalid JSON in agents/config.json: {e}")
+            result['warnings'].append(f"Invalid JSON in agents/config.json: {e}")
+    else:
+        # This is expected in modular architecture - agents are discovered from markdown files
+        result['agent_config'] = {
+            'valid': True,
+            'note': 'Using modular architecture - agents discovered from markdown files'
+        }
 
     # Overall validity
     result['valid'] = len(result['errors']) == 0

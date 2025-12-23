@@ -2,61 +2,34 @@
   "name": "popkit-ops",
   "version": "1.0.0-beta.1",
   "description": "PopKit operations plugin - quality assurance, deployment, and debugging workflows",
-  "author": "Joseph Cannon <joseph@thehouseofdeals.com>",
+  "author": {
+    "name": "Joseph Cannon",
+    "email": "joseph@thehouseofdeals.com"
+  },
   "license": "MIT",
   "repository": "https://github.com/jrc1883/popkit",
   "commands": [
-    {
-      "name": "assess",
-      "description": "Code quality assessments (anthropic, security, performance, ux, architect, docs)",
-      "path": "commands/assess.md"
-    },
-    {
-      "name": "audit",
-      "description": "Quarterly/yearly health audits (quarterly, yearly, stale, duplicates, health, ip-leak)",
-      "path": "commands/audit.md"
-    },
-    {
-      "name": "debug",
-      "description": "Systematic debugging workflows (code, routing)",
-      "path": "commands/debug.md"
-    },
-    {
-      "name": "security",
-      "description": "Security scanning and fixes (scan, list, fix, report)",
-      "path": "commands/security.md"
-    },
-    {
-      "name": "deploy",
-      "description": "Deployment orchestration (init, setup, validate, execute, rollback)",
-      "path": "commands/deploy.md"
-    }
+    "./commands/assess.md",
+    "./commands/audit.md",
+    "./commands/debug.md",
+    "./commands/security.md",
+    "./commands/deploy.md"
   ],
   "skills": [
-    {"path": "skills/pop-assessment-anthropic/SKILL.md"},
-    {"path": "skills/pop-assessment-security/SKILL.md"},
-    {"path": "skills/pop-assessment-performance/SKILL.md"},
-    {"path": "skills/pop-assessment-ux/SKILL.md"},
-    {"path": "skills/pop-assessment-architecture/SKILL.md"},
-    {"path": "skills/pop-systematic-debugging/SKILL.md"},
-    {"path": "skills/pop-code-review/SKILL.md"}
+    "./skills/pop-assessment-anthropic",
+    "./skills/pop-assessment-security",
+    "./skills/pop-assessment-performance",
+    "./skills/pop-assessment-ux",
+    "./skills/pop-assessment-architecture",
+    "./skills/pop-systematic-debugging",
+    "./skills/pop-code-review"
   ],
   "agents": [
-    {"path": "agents/tier-1-always-active/bug-whisperer/AGENT.md"},
-    {"path": "agents/tier-1-always-active/performance-optimizer/AGENT.md"},
-    {"path": "agents/tier-1-always-active/security-auditor/AGENT.md"},
-    {"path": "agents/tier-1-always-active/test-writer-fixer/AGENT.md"},
-    {"path": "agents/tier-2-on-demand/deployment-validator/AGENT.md"},
-    {"path": "agents/tier-2-on-demand/rollback-specialist/AGENT.md"}
-  ],
-  "keywords": [
-    "popkit",
-    "operations",
-    "quality",
-    "deployment",
-    "security",
-    "debugging",
-    "assessment",
-    "audit"
+    "./agents/tier-1-always-active/bug-whisperer/AGENT.md",
+    "./agents/tier-1-always-active/performance-optimizer/AGENT.md",
+    "./agents/tier-1-always-active/security-auditor/AGENT.md",
+    "./agents/tier-1-always-active/test-writer-fixer/AGENT.md",
+    "./agents/tier-2-on-demand/deployment-validator/AGENT.md",
+    "./agents/tier-2-on-demand/rollback-specialist/AGENT.md"
   ]
 }

@@ -1,5 +1,5 @@
 ---
-name: pop-dashboard
+name: dashboard
 description: "Multi-project dashboard for managing PopKit-enabled projects. Shows health scores, recent activity, and quick actions across all registered projects. Use when switching between projects, checking overall status, or managing project registry. Do NOT use if only working in a single project - use morning routine or next-action instead."
 ---
 

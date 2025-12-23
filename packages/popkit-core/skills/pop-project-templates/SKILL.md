@@ -1,5 +1,5 @@
 ---
-name: pop-project-templates
+name: project-templates
 description: "Curated project templates that guide feature-dev Phase 3 questions with research-backed technology choices. Provides standardized options for common project types (SaaS API, ML Service, CLI Tool, Full-Stack). Use when starting new projects or when feature-dev needs structured decision guidance. Do NOT use for existing projects with established stacks - analyze existing code instead."
 version: 1.0.0
 ---

@@ -2,76 +2,40 @@
   "name": "popkit-dev",
   "version": "0.2.0",
   "description": "Complete development workflow plugin - feature development, git operations, GitHub management, and daily routines",
-  "author": "Joseph Cannon <joseph@thehouseofdeals.com>",
+  "author": {
+    "name": "Joseph Cannon",
+    "email": "joseph@thehouseofdeals.com"
+  },
   "license": "MIT",
   "repository": "https://github.com/jrc1883/popkit",
   "commands": [
-    {
-      "name": "dev",
-      "description": "Feature development workflow with 7-phase guided process",
-      "path": "commands/dev.md"
-    },
-    {
-      "name": "git",
-      "description": "Git operations - commit, push, pr, review, ci, release, publish",
-      "path": "commands/git.md"
-    },
-    {
-      "name": "issue",
-      "description": "GitHub issue management - create, list, view, close, comment, edit, link",
-      "path": "commands/issue.md"
-    },
-    {
-      "name": "milestone",
-      "description": "Milestone management - list, create, close, report, health tracking",
-      "path": "commands/milestone.md"
-    },
-    {
-      "name": "worktree",
-      "description": "Git worktree management for isolated development",
-      "path": "commands/worktree.md"
-    },
-    {
-      "name": "routine",
-      "description": "Morning health checks and nightly cleanup routines",
-      "path": "commands/routine.md"
-    },
-    {
-      "name": "next",
-      "description": "Context-aware next action recommendations",
-      "path": "commands/next.md"
-    }
+    "./commands/dev.md",
+    "./commands/git.md",
+    "./commands/issue.md",
+    "./commands/milestone.md",
+    "./commands/worktree.md",
+    "./commands/routine.md",
+    "./commands/next.md"
   ],
   "skills": [
-    "pop-brainstorming",
-    "pop-writing-plans",
-    "pop-executing-plans",
-    "pop-next-action",
-    "pop-session-capture",
-    "pop-session-resume",
-    "pop-context-restore",
-    "pop-routine-optimized",
-    "pop-routine-measure",
-    "pop-finish-branch",
-    "pop-project-templates",
-    "pop-worktrees"
+    "./skills/pop-brainstorming",
+    "./skills/pop-writing-plans",
+    "./skills/pop-executing-plans",
+    "./skills/pop-next-action",
+    "./skills/pop-session-capture",
+    "./skills/pop-session-resume",
+    "./skills/pop-context-restore",
+    "./skills/pop-routine-optimized",
+    "./skills/pop-routine-measure",
+    "./skills/pop-finish-branch",
+    "./skills/pop-project-templates",
+    "./skills/pop-worktrees"
   ],
   "agents": [
-    "code-explorer",
-    "code-architect",
-    "code-reviewer",
-    "refactoring-expert",
-    "rapid-prototyper"
-  ],
-  "keywords": [
-    "development",
-    "workflow",
-    "git",
-    "github",
-    "issues",
-    "milestones",
-    "pr",
-    "feature",
-    "routine"
+    "./agents/feature-workflow/code-explorer/AGENT.md",
+    "./agents/feature-workflow/code-architect/AGENT.md",
+    "./agents/tier-1-always-active/code-reviewer/AGENT.md",
+    "./agents/tier-1-always-active/refactoring-expert/AGENT.md",
+    "./agents/tier-2-on-demand/rapid-prototyper/AGENT.md"
   ]
 }

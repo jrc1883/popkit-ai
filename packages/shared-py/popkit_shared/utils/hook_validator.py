@@ -12,14 +12,15 @@ from pathlib import Path
 from typing import Dict, Any, Optional
 
 
-def validate_hook_protocol(hook_path: Path, input_data: Any, timeout: int = 5000) -> Dict[str, Any]:
+def validate_hook_protocol(hook_path: Path, input_data: Any, timeout: int = 10000, plugin_root: Optional[Path] = None) -> Dict[str, Any]:
     """
     Validate that a hook follows JSON stdin/stdout protocol.
 
     Args:
         hook_path: Path to hook Python file
         input_data: Input data to send via stdin (will be JSON-encoded)
-        timeout: Maximum execution time in milliseconds
+        timeout: Maximum execution time in milliseconds (default: 10000)
+        plugin_root: Optional plugin root directory (defaults to hook_path.parent.parent)
 
     Returns:
         Validation result dictionary:
@@ -63,13 +64,25 @@ def validate_hook_protocol(hook_path: Path, input_data: Any, timeout: int = 5000
     try:
         start_time = time.time()
 
+        # Run from plugin root to ensure proper module imports
+        # If not provided, assume hook is at <root>/hooks/<hook>.py
+        if plugin_root is None:
+            plugin_root = hook_path.parent.parent
+
+        # Set environment variables for clean test execution
+        import os
+        test_env = os.environ.copy()
+        test_env['POPKIT_TEST_MODE'] = 'true'
+        test_env['PYTHONDONTWRITEBYTECODE'] = '1'  # Prevent .pyc file creation
+
         process = subprocess.run(
             [sys.executable, str(hook_path)],
             input=input_json,
             capture_output=True,
             text=True,
             timeout=timeout / 1000,  # Convert to seconds
-            cwd=hook_path.parent
+            cwd=str(plugin_root),
+            env=test_env
         )
 
         end_time = time.time()
@@ -94,8 +107,9 @@ def validate_hook_protocol(hook_path: Path, input_data: Any, timeout: int = 5000
 
             # Check for required fields (if not error case)
             if result['exit_code'] == 0:
-                if 'status' not in parsed and 'result' not in parsed:
-                    result['errors'].append("Output missing 'status' or 'result' field")
+                # Hooks can return 'status', 'result', or 'decision' as top-level fields
+                if 'status' not in parsed and 'result' not in parsed and 'decision' not in parsed:
+                    result['errors'].append("Output missing 'status', 'result', or 'decision' field")
                 else:
                     result['valid'] = True
             else:

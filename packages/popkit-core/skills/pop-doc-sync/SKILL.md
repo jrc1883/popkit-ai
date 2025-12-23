@@ -1,5 +1,5 @@
 ---
-name: pop-doc-sync
+name: doc-sync
 description: Synchronize documentation with codebase - updates AUTO-GEN sections in CLAUDE.md, validates cross-references, and reports stale documentation
 ---
 

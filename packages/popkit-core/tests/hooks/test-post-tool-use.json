@@ -10,16 +10,17 @@
       "case_id": "bash-command-completion",
       "name": "Bash command completion tracking",
       "input": {
-        "tool": "Bash",
-        "params": {
+        "tool_name": "Bash",
+        "tool_input": {
           "command": "echo 'test'",
           "description": "Test command"
         },
-        "result": {
+        "tool_response": {
           "success": true,
           "output": "test",
           "exit_code": 0
-        }
+        },
+        "execution_time": 0.1
       },
       "assertions": [
         {
@@ -29,10 +30,6 @@
         {
           "type": "json_valid",
           "field": "stdout"
-        },
-        {
-          "type": "has_field",
-          "field": "status"
         }
       ]
     },
@@ -40,14 +37,15 @@
       "case_id": "write-tool-quality-gate",
       "name": "Write tool triggers quality gate",
       "input": {
-        "tool": "Write",
-        "params": {
+        "tool_name": "Write",
+        "tool_input": {
           "file_path": "/test/file.ts",
           "content": "const x = 1;"
         },
-        "result": {
+        "tool_response": {
           "success": true
-        }
+        },
+        "execution_time": 0.05
       },
       "assertions": [
         {
@@ -64,15 +62,16 @@
       "case_id": "task-completion-metrics",
       "name": "Task completion captures metrics",
       "input": {
-        "tool": "Task",
-        "params": {
+        "tool_name": "Task",
+        "tool_input": {
           "prompt": "Test task",
           "subagent_type": "general-purpose"
         },
-        "result": {
+        "tool_response": {
           "success": true,
           "agent_id": "test-123"
-        }
+        },
+        "execution_time": 1.5
       },
       "assertions": [
         {
@@ -89,13 +88,14 @@
       "case_id": "skill-completion-decision",
       "name": "Skill completion checks for pending decisions",
       "input": {
-        "tool": "Skill",
-        "params": {
+        "tool_name": "Skill",
+        "tool_input": {
           "skill": "pop-project-init"
         },
-        "result": {
+        "tool_response": {
           "success": true
-        }
+        },
+        "execution_time": 0.8
       },
       "assertions": [
         {
@@ -112,15 +112,16 @@
       "case_id": "error-handling",
       "name": "Tool failure handled gracefully",
       "input": {
-        "tool": "Bash",
-        "params": {
+        "tool_name": "Bash",
+        "tool_input": {
           "command": "exit 1"
         },
-        "result": {
+        "tool_response": {
           "success": false,
           "exit_code": 1,
           "error": "Command failed"
-        }
+        },
+        "execution_time": 0.02
       },
       "assertions": [
         {

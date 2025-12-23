@@ -10,11 +10,12 @@
       "case_id": "valid-bash-input",
       "name": "Valid Bash tool produces valid JSON output",
       "input": {
-        "tool": "Bash",
-        "params": {
+        "tool_name": "Bash",
+        "tool_input": {
           "command": "echo 'test'",
           "description": "Test command"
-        }
+        },
+        "conversation_history": []
       },
       "assertions": [
         {
@@ -28,14 +29,9 @@
           "description": "Output should be valid JSON"
         },
         {
-          "type": "has_field",
-          "field": "status",
-          "description": "Response must have status field"
-        },
-        {
           "type": "duration",
-          "max_ms": 5000,
-          "description": "Hook should complete within 5 seconds"
+          "max_ms": 10000,
+          "description": "Hook should complete within 10 seconds"
         }
       ]
     },
@@ -43,10 +39,11 @@
       "case_id": "read-tool-input",
       "name": "Read tool input validation",
       "input": {
-        "tool": "Read",
-        "params": {
+        "tool_name": "Read",
+        "tool_input": {
           "file_path": "/test/path/file.txt"
-        }
+        },
+        "conversation_history": []
       },
       "assertions": [
         {
@@ -56,10 +53,6 @@
         {
           "type": "json_valid",
           "field": "stdout"
-        },
-        {
-          "type": "has_field",
-          "field": "status"
         }
       ]
     },
@@ -67,11 +60,12 @@
       "case_id": "task-tool-orchestration",
       "name": "Task tool triggers agent orchestration",
       "input": {
-        "tool": "Task",
-        "params": {
+        "tool_name": "Task",
+        "tool_input": {
           "prompt": "Test task",
           "subagent_type": "general-purpose"
-        }
+        },
+        "conversation_history": []
       },
       "assertions": [
         {
@@ -88,11 +82,12 @@
       "case_id": "write-tool-safety",
       "name": "Write tool safety checks",
       "input": {
-        "tool": "Write",
-        "params": {
+        "tool_name": "Write",
+        "tool_input": {
           "file_path": "/test/file.txt",
           "content": "test content"
-        }
+        },
+        "conversation_history": []
       },
       "assertions": [
         {

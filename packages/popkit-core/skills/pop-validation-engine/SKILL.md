@@ -1,5 +1,5 @@
 ---
-name: pop-validation-engine
+name: validation-engine
 description: Validate plugin integrity and offer safe auto-fixes for common issues - checks agents, skills, hooks, routing config, and plugin structure
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: pop-auto-docs
+name: auto-docs
 description: Generate comprehensive documentation from codebase analysis - creates README sections, API docs, migration guides, and examples from code
 ---
 

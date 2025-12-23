@@ -2,7 +2,7 @@
   "test_id": "plugin-structure-integrity",
   "category": "structure",
   "name": "Plugin Structure Integrity",
-  "description": "Verify plugin directory structure and required files are present and valid",
+  "description": "Verify plugin directory structure and required files are present and valid for modular architecture",
   "severity": "critical",
   "test_cases": [
     {
@@ -13,16 +13,6 @@
           "type": "file_exists",
           "path": ".claude-plugin/plugin.json",
           "description": "Plugin manifest must exist"
-        },
-        {
-          "type": "file_exists",
-          "path": "hooks/hooks.json",
-          "description": "Hooks configuration must exist"
-        },
-        {
-          "type": "file_exists",
-          "path": "agents/config.json",
-          "description": "Agent configuration must exist"
         },
         {
           "type": "file_exists",
@@ -38,7 +28,6 @@
       "assertions": [
         {
           "type": "json_valid",
-          "field": "file",
           "description": "Must be valid JSON"
         },
         {
@@ -66,43 +55,18 @@
     },
     {
       "case_id": "hooks-json-valid",
-      "name": "hooks.json is valid and follows schema",
+      "name": "hooks.json is valid if hooks directory exists",
       "file": "hooks/hooks.json",
+      "optional": true,
       "assertions": [
         {
           "type": "json_valid",
-          "field": "file"
+          "description": "If hooks directory exists, hooks.json must be valid JSON"
         },
         {
           "type": "has_field",
           "field": "hooks",
           "description": "Must have hooks object"
-        },
-        {
-          "type": "schema_valid",
-          "schema": "https://claude.ai/schemas/hooks.json",
-          "description": "Must follow official hooks schema"
-        }
-      ]
-    },
-    {
-      "case_id": "agent-config-valid",
-      "name": "agents/config.json is valid",
-      "file": "agents/config.json",
-      "assertions": [
-        {
-          "type": "json_valid",
-          "field": "file"
-        },
-        {
-          "type": "has_field",
-          "field": "agents",
-          "description": "Must have agents configuration"
-        },
-        {
-          "type": "has_field",
-          "field": "routing",
-          "description": "Must have routing configuration"
         }
       ]
     },
@@ -112,46 +76,83 @@
       "assertions": [
         {
           "type": "directory_exists",
+          "path": ".claude-plugin",
+          "required": true,
+          "description": ".claude-plugin directory must exist"
+        },
+        {
+          "type": "directory_exists",
           "path": "skills",
-          "description": "Skills directory should exist"
+          "required": false,
+          "description": "Skills directory is optional"
         },
         {
           "type": "directory_exists",
           "path": "commands",
-          "description": "Commands directory should exist"
+          "required": false,
+          "description": "Commands directory is optional"
         },
         {
           "type": "directory_exists",
           "path": "agents",
-          "description": "Agents directory should exist"
+          "required": false,
+          "description": "Agents directory is optional"
         },
         {
           "type": "directory_exists",
           "path": "hooks",
-          "description": "Hooks directory should exist"
+          "required": false,
+          "description": "Hooks directory is optional"
         }
       ]
     },
     {
-      "case_id": "no-orphaned-files",
-      "name": "No orphaned or unused files",
-      "scan_pattern": "**/*.py",
+      "case_id": "plugin-components-registered",
+      "name": "All plugin components are registered in plugin.json",
       "assertions": [
         {
-          "type": "file_referenced",
-          "description": "All .py files should be referenced in hooks.json or used by skills"
+          "type": "commands_registered",
+          "description": "All command files must be listed in plugin.json"
+        },
+        {
+          "type": "skills_registered",
+          "description": "All skill directories must be listed in plugin.json"
+        },
+        {
+          "type": "agents_registered",
+          "description": "All agent files must be listed in plugin.json"
         }
       ]
     },
     {
-      "case_id": "agent-files-registered",
-      "name": "All agent definitions are registered in config.json",
+      "case_id": "no-centralized-config",
+      "name": "No centralized config.json (modular architecture)",
+      "assertions": [
+        {
+          "type": "file_not_exists",
+          "path": "agents/config.json",
+          "description": "Centralized config.json should not exist in modular architecture"
+        },
+        {
+          "type": "note",
+          "message": "Each plugin is self-contained; Claude Code handles cross-plugin discovery"
+        }
+      ]
+    },
+    {
+      "case_id": "agent-files-valid",
+      "name": "All agent markdown files have valid structure",
       "scan_pattern": "agents/**/*.md",
+      "optional": true,
       "assertions": [
         {
-          "type": "agent_registered",
-          "config_file": "agents/config.json",
-          "description": "All agent .md files should be registered in config.json"
+          "type": "yaml_frontmatter_exists",
+          "description": "Agent files must have YAML frontmatter"
+        },
+        {
+          "type": "file_in_tier_directory",
+          "allowed_tiers": ["tier-1-always-active", "tier-2-on-demand", "feature-workflow"],
+          "description": "Agent files must be in tier directories"
         }
       ]
     }
@@ -161,9 +162,10 @@
     "popkit_shared.utils.json_schema_validator"
   ],
   "notes": [
-    "Plugin structure must follow Claude Code plugin conventions",
-    "All configuration files must be valid JSON",
-    "Agent and skill files must be properly registered",
-    "No orphaned or unused files should exist"
+    "Plugin structure follows Claude Code modular plugin conventions",
+    "Each plugin is self-contained and independently testable",
+    "No centralized config.json - Claude Code discovers agents automatically",
+    "Components (agents, skills, commands) are optional per plugin",
+    "Agent routing is semantic, not configuration-based"
   ]
 }
