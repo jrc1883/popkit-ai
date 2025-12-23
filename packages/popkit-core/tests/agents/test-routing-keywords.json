@@ -1,0 +1,127 @@
+{
+  "test_id": "agent-routing-keywords",
+  "category": "agents",
+  "name": "Agent Routing - Keyword Matching",
+  "description": "Verify agents are correctly routed based on keyword triggers",
+  "severity": "high",
+  "config_file": "agents/config.json",
+  "test_cases": [
+    {
+      "case_id": "bug-keyword-routing",
+      "name": "Bug-related keywords route to bug-whisperer",
+      "input": {
+        "user_query": "I have a bug in my authentication flow",
+        "keywords": ["bug", "authentication"]
+      },
+      "expected_agents": [
+        "bug-whisperer"
+      ],
+      "assertions": [
+        {
+          "type": "agent_activated",
+          "agent": "bug-whisperer",
+          "description": "'bug' keyword should activate bug-whisperer"
+        }
+      ]
+    },
+    {
+      "case_id": "security-keyword-routing",
+      "name": "Security keywords route to security-auditor",
+      "input": {
+        "user_query": "Check for security vulnerabilities in my code",
+        "keywords": ["security", "vulnerabilities"]
+      },
+      "expected_agents": [
+        "security-auditor"
+      ],
+      "assertions": [
+        {
+          "type": "agent_activated",
+          "agent": "security-auditor"
+        }
+      ]
+    },
+    {
+      "case_id": "test-keyword-routing",
+      "name": "Test keywords route to test-writer-fixer",
+      "input": {
+        "user_query": "Write tests for my API endpoint",
+        "keywords": ["test", "tests"]
+      },
+      "expected_agents": [
+        "test-writer-fixer"
+      ],
+      "assertions": [
+        {
+          "type": "agent_activated",
+          "agent": "test-writer-fixer"
+        }
+      ]
+    },
+    {
+      "case_id": "performance-keyword-routing",
+      "name": "Performance keywords route to performance-optimizer",
+      "input": {
+        "user_query": "My app is slow, help me optimize it",
+        "keywords": ["slow", "optimize", "performance"]
+      },
+      "expected_agents": [
+        "performance-optimizer"
+      ],
+      "assertions": [
+        {
+          "type": "agent_activated",
+          "agent": "performance-optimizer"
+        }
+      ]
+    },
+    {
+      "case_id": "refactor-keyword-routing",
+      "name": "Refactor keywords route to refactoring-expert",
+      "input": {
+        "user_query": "Help me refactor this messy code",
+        "keywords": ["refactor", "messy"]
+      },
+      "expected_agents": [
+        "refactoring-expert"
+      ],
+      "assertions": [
+        {
+          "type": "agent_activated",
+          "agent": "refactoring-expert"
+        }
+      ]
+    },
+    {
+      "case_id": "multiple-keyword-routing",
+      "name": "Multiple keywords can activate multiple agents",
+      "input": {
+        "user_query": "Review my code and write tests for it",
+        "keywords": ["review", "test"]
+      },
+      "expected_agents": [
+        "code-reviewer",
+        "test-writer-fixer"
+      ],
+      "assertions": [
+        {
+          "type": "agent_activated",
+          "agent": "code-reviewer"
+        },
+        {
+          "type": "agent_activated",
+          "agent": "test-writer-fixer"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "agents/config.json",
+    "popkit_shared.utils.agent_router"
+  ],
+  "notes": [
+    "Keyword matching is case-insensitive",
+    "Multiple keywords can activate multiple agents",
+    "Tier 1 agents are always loaded regardless of keywords"
+  ]
+}

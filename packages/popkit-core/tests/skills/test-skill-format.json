@@ -1,0 +1,112 @@
+{
+  "test_id": "skill-format-validation",
+  "category": "skills",
+  "name": "Skill Format Validation",
+  "description": "Verify all skills follow the SKILL.md format with proper frontmatter",
+  "severity": "high",
+  "test_cases": [
+    {
+      "case_id": "frontmatter-required-fields",
+      "name": "All skills have required frontmatter fields",
+      "scan_pattern": "skills/*/SKILL.md",
+      "assertions": [
+        {
+          "type": "yaml_frontmatter_exists",
+          "description": "SKILL.md must have YAML frontmatter"
+        },
+        {
+          "type": "has_frontmatter_field",
+          "field": "name",
+          "description": "Frontmatter must include 'name'"
+        },
+        {
+          "type": "has_frontmatter_field",
+          "field": "description",
+          "description": "Frontmatter must include 'description'"
+        }
+      ]
+    },
+    {
+      "case_id": "skill-name-convention",
+      "name": "Skill names follow naming convention",
+      "scan_pattern": "skills/*/SKILL.md",
+      "assertions": [
+        {
+          "type": "regex",
+          "field": "name",
+          "pattern": "^[a-z0-9-]+$",
+          "description": "Skill names should be lowercase with hyphens"
+        },
+        {
+          "type": "directory_name_matches",
+          "description": "Directory name should match skill name"
+        }
+      ]
+    },
+    {
+      "case_id": "description-quality",
+      "name": "Descriptions are clear and actionable",
+      "scan_pattern": "skills/*/SKILL.md",
+      "assertions": [
+        {
+          "type": "string_length",
+          "field": "description",
+          "min": 20,
+          "max": 200,
+          "description": "Description should be 20-200 characters"
+        },
+        {
+          "type": "not_contains",
+          "field": "description",
+          "values": ["TODO", "TBD", "placeholder"],
+          "description": "Description should not contain placeholders"
+        }
+      ]
+    },
+    {
+      "case_id": "markdown-structure",
+      "name": "Skills have proper markdown structure",
+      "scan_pattern": "skills/*/SKILL.md",
+      "assertions": [
+        {
+          "type": "has_heading",
+          "level": 1,
+          "description": "Should have H1 heading"
+        },
+        {
+          "type": "has_section",
+          "sections": ["Overview", "Process", "When to Use", "Integration"],
+          "min_count": 2,
+          "description": "Should have at least 2 standard sections"
+        }
+      ]
+    },
+    {
+      "case_id": "no-hardcoded-paths",
+      "name": "Skills don't contain hardcoded paths",
+      "scan_pattern": "skills/*/SKILL.md",
+      "assertions": [
+        {
+          "type": "not_contains_regex",
+          "pattern": "/Users/[^/]+/",
+          "description": "Should not contain macOS user paths"
+        },
+        {
+          "type": "not_contains_regex",
+          "pattern": "C:\\\\Users\\\\[^\\\\]+\\\\",
+          "description": "Should not contain Windows user paths"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "popkit_shared.utils.skill_parser",
+    "popkit_shared.utils.yaml_validator"
+  ],
+  "notes": [
+    "All skills must follow the SKILL.md format",
+    "Frontmatter is YAML format with name and description required",
+    "Directory name should match the skill name from frontmatter",
+    "Descriptions should be clear, actionable, and complete"
+  ]
+}

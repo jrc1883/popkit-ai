@@ -1,0 +1,131 @@
+{
+  "test_id": "hook-pre-tool-use-protocol",
+  "category": "hooks",
+  "name": "Pre-Tool-Use Hook JSON Protocol",
+  "description": "Verify pre-tool-use.py follows JSON stdin/stdout protocol and performs safety checks",
+  "severity": "critical",
+  "hook_file": "hooks/pre-tool-use.py",
+  "test_cases": [
+    {
+      "case_id": "valid-bash-input",
+      "name": "Valid Bash tool produces valid JSON output",
+      "input": {
+        "tool": "Bash",
+        "params": {
+          "command": "echo 'test'",
+          "description": "Test command"
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0,
+          "description": "Hook should exit cleanly"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout",
+          "description": "Output should be valid JSON"
+        },
+        {
+          "type": "has_field",
+          "field": "status",
+          "description": "Response must have status field"
+        },
+        {
+          "type": "duration",
+          "max_ms": 5000,
+          "description": "Hook should complete within 5 seconds"
+        }
+      ]
+    },
+    {
+      "case_id": "read-tool-input",
+      "name": "Read tool input validation",
+      "input": {
+        "tool": "Read",
+        "params": {
+          "file_path": "/test/path/file.txt"
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "has_field",
+          "field": "status"
+        }
+      ]
+    },
+    {
+      "case_id": "task-tool-orchestration",
+      "name": "Task tool triggers agent orchestration",
+      "input": {
+        "tool": "Task",
+        "params": {
+          "prompt": "Test task",
+          "subagent_type": "general-purpose"
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        }
+      ]
+    },
+    {
+      "case_id": "write-tool-safety",
+      "name": "Write tool safety checks",
+      "input": {
+        "tool": "Write",
+        "params": {
+          "file_path": "/test/file.txt",
+          "content": "test content"
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        }
+      ]
+    },
+    {
+      "case_id": "invalid-json-input",
+      "name": "Hook handles invalid JSON input gracefully",
+      "input": "invalid json{",
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 1,
+          "description": "Should exit with error code for invalid input"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "hooks/pre-tool-use.py",
+    "popkit_shared.utils.message_builder",
+    "popkit_shared.utils.context_carrier"
+  ],
+  "notes": [
+    "This hook is critical for tool orchestration",
+    "Must maintain JSON protocol for Claude Code integration",
+    "Performance critical - should complete in < 5s"
+  ]
+}

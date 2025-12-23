@@ -1,0 +1,148 @@
+{
+  "test_id": "hook-post-tool-use-protocol",
+  "category": "hooks",
+  "name": "Post-Tool-Use Hook JSON Protocol",
+  "description": "Verify post-tool-use.py follows JSON stdin/stdout protocol and performs cleanup/validation",
+  "severity": "critical",
+  "hook_file": "hooks/post-tool-use.py",
+  "test_cases": [
+    {
+      "case_id": "bash-command-completion",
+      "name": "Bash command completion tracking",
+      "input": {
+        "tool": "Bash",
+        "params": {
+          "command": "echo 'test'",
+          "description": "Test command"
+        },
+        "result": {
+          "success": true,
+          "output": "test",
+          "exit_code": 0
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "has_field",
+          "field": "status"
+        }
+      ]
+    },
+    {
+      "case_id": "write-tool-quality-gate",
+      "name": "Write tool triggers quality gate",
+      "input": {
+        "tool": "Write",
+        "params": {
+          "file_path": "/test/file.ts",
+          "content": "const x = 1;"
+        },
+        "result": {
+          "success": true
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        }
+      ]
+    },
+    {
+      "case_id": "task-completion-metrics",
+      "name": "Task completion captures metrics",
+      "input": {
+        "tool": "Task",
+        "params": {
+          "prompt": "Test task",
+          "subagent_type": "general-purpose"
+        },
+        "result": {
+          "success": true,
+          "agent_id": "test-123"
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        }
+      ]
+    },
+    {
+      "case_id": "skill-completion-decision",
+      "name": "Skill completion checks for pending decisions",
+      "input": {
+        "tool": "Skill",
+        "params": {
+          "skill": "pop-project-init"
+        },
+        "result": {
+          "success": true
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        }
+      ]
+    },
+    {
+      "case_id": "error-handling",
+      "name": "Tool failure handled gracefully",
+      "input": {
+        "tool": "Bash",
+        "params": {
+          "command": "exit 1"
+        },
+        "result": {
+          "success": false,
+          "exit_code": 1,
+          "error": "Command failed"
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0,
+          "description": "Hook should not fail even if tool fails"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "hooks/post-tool-use.py",
+    "popkit_shared.utils.skill_state",
+    "popkit_shared.utils.routine_measurement"
+  ],
+  "notes": [
+    "This hook performs cleanup and validation after tool execution",
+    "Must track skill state for AskUserQuestion enforcement",
+    "Should capture metrics for routine measurement"
+  ]
+}
