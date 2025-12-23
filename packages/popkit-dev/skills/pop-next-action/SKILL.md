@@ -40,6 +40,33 @@ git log --oneline -5 2>/dev/null
 
 # Fetch remotes to detect research branches
 git fetch --all --prune 2>/dev/null
+```
+
+**RECORDING: After gathering git state, record initial analysis:**
+
+```python
+from popkit_shared.utils.session_recorder import is_recording_enabled, record_reasoning
+import subprocess
+
+if is_recording_enabled():
+    # Get uncommitted file count
+    result = subprocess.run(
+        ["git", "status", "--short"],
+        capture_output=True,
+        text=True
+    )
+    uncommitted_lines = len([l for l in result.stdout.strip().split('\n') if l])
+
+    record_reasoning(
+        step="Analyze git status",
+        reasoning=f"Checked working directory, branch status, and recent activity",
+        data={"uncommitted_files": uncommitted_lines}
+    )
+```
+
+**Continue bash commands:**
+
+```bash
 
 # Check for TypeScript errors (if tsconfig exists)
 if [ -f "tsconfig.json" ]; then
@@ -60,6 +87,32 @@ fi
 gh issue list --limit 5 2>/dev/null || echo "No gh CLI or not a repo"
 ```
 
+**RECORDING: After running bash commands above, record context files:**
+
+```python
+from popkit_shared.utils.session_recorder import is_recording_enabled, record_file_read
+from pathlib import Path
+
+if is_recording_enabled():
+    # Record STATUS.json if it exists
+    status_file = Path.cwd() / ".claude" / "STATUS.json"
+    if status_file.exists():
+        record_file_read(
+            str(status_file),
+            "Previous session context loaded",
+            relevant=True
+        )
+
+    # Record TECHNICAL_DEBT.md if it exists
+    tech_debt_file = Path.cwd() / "TECHNICAL_DEBT.md"
+    if tech_debt_file.exists():
+        record_file_read(
+            str(tech_debt_file),
+            "Technical debt items reviewed",
+            relevant=True
+        )
+```
+
 ### Step 1.5: Detect Research Branches (NEW - Issue #181)
 
 Check for research branches from Claude Code Web sessions:
@@ -70,9 +123,23 @@ from popkit_shared.utils.research_branch_detector import (
     get_research_branches,
     format_branch_table
 )
+# RECORDING: Import session recording utilities
+from popkit_shared.utils.session_recorder import (
+    is_recording_enabled,
+    record_reasoning,
+    record_file_read
+)
 
 # Detect research branches
 branches = get_research_branches()
+
+# RECORDING: Log research branch detection
+if is_recording_enabled():
+    record_reasoning(
+        step="Detect research branches",
+        reasoning=f"Scanning remote branches for research content from web sessions",
+        data={"branches_found": len(branches)}
+    )
 
 if branches:
     print("## Research Branches Detected\n")
@@ -107,11 +174,23 @@ If GitHub issues exist, fetch community votes to prioritize:
 
 ```python
 from popkit_shared.utils.priority_scorer import get_priority_scorer, fetch_open_issues
+from popkit_shared.utils.session_recorder import is_recording_enabled, record_reasoning
 
 # Fetch and rank issues by combined priority score
 scorer = get_priority_scorer()
 issues = fetch_open_issues(limit=10)
 ranked = scorer.rank_issues(issues)
+
+# RECORDING: Log issue prioritization
+if is_recording_enabled():
+    record_reasoning(
+        step="Prioritize GitHub issues",
+        reasoning=f"Fetched {len(issues)} issues, ranked by votes + staleness + labels",
+        data={
+            "total_issues": len(issues),
+            "top_3_scores": [i.priority_score for i in ranked[:3]]
+        }
+    )
 
 # Top-voted issues get recommendation priority
 for issue in ranked[:3]:
@@ -274,6 +353,7 @@ When multiple issues exist, use priority scoring to recommend the best one:
 
 ```python
 from popkit_shared.utils.priority_scorer import get_priority_scorer
+from popkit_shared.utils.session_recorder import is_recording_enabled, record_recommendation
 
 scorer = get_priority_scorer()
 ranked = scorer.rank_issues(issues)
@@ -283,6 +363,15 @@ top = ranked[0]
 print(f"Work on #{top.number} '{top.title}' (Score: {top.priority_score:.1f})")
 if top.vote_breakdown:
     print(f"Community votes: {scorer.vote_fetcher.format_vote_display(top, compact=True)}")
+
+# RECORDING: Log the recommendation
+if is_recording_enabled():
+    record_recommendation(
+        recommendation_type="issue",
+        command=f"/popkit:dev work #{top.number}",
+        priority_score=int(top.priority_score),
+        reason=f"Issue #{top.number} '{top.title}' has highest community priority (votes + staleness + labels)"
+    )
 ```
 
 ### If No Urgent Items

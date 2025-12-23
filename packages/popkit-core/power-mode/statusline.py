@@ -648,6 +648,61 @@ def widget_health(compact: bool = True) -> str:
     return " ".join(parts)
 
 
+def widget_recording(compact: bool = True) -> str:
+    """
+    Recording status widget.
+
+    Shows when session recording is active with event count.
+    Format: REC [●] 12 events
+    Compact: REC [●] 12
+    """
+    import os
+
+    # Check if recording is enabled
+    recording_enabled = os.environ.get('POPKIT_RECORD', '').lower() == 'true'
+
+    if not recording_enabled:
+        # Check for active recording session
+        project_root = get_project_root()
+        recording_state = project_root / ".claude" / "popkit" / "recording-state.json"
+
+        if recording_state.exists():
+            try:
+                state = json.loads(recording_state.read_text())
+                recording_enabled = state.get('active', False)
+            except (json.JSONDecodeError, IOError):
+                pass
+
+    if not recording_enabled:
+        return ""
+
+    # Try to get event count from latest recording
+    recordings_dir = Path.home() / '.claude' / 'popkit' / 'recordings'
+    event_count = 0
+
+    if recordings_dir.exists():
+        # Find most recent recording file
+        recordings = sorted(
+            recordings_dir.glob('*.json'),
+            key=lambda p: p.stat().st_mtime,
+            reverse=True
+        )
+
+        if recordings:
+            try:
+                latest = recordings[0]
+                data = json.loads(latest.read_text())
+                event_count = len(data.get('events', []))
+            except (json.JSONDecodeError, IOError):
+                pass
+
+    # Format output
+    if compact:
+        return f"{Colors.RED}REC [{Colors.BOLD}●{Colors.RESET}{Colors.RED}] {event_count}{Colors.RESET}"
+    else:
+        return f"{Colors.RED}RECORDING [{Colors.BOLD}●{Colors.RESET}{Colors.RED}] {event_count} events{Colors.RESET}"
+
+
 def widget_cloud(compact: bool = True) -> str:
     """
     Cloud connectivity widget (Issue #566).
@@ -774,6 +829,7 @@ WIDGETS: Dict[str, Callable[[bool], str]] = {
     "batch_status": widget_batch_status,
     "workflow": widget_workflow,
     "health": widget_health,
+    "recording": widget_recording,
     "cloud": widget_cloud,
 }
 
@@ -1234,6 +1290,7 @@ def list_widgets():
         "batch_status": "Batch spawning status with agent count (Issue #253)",
         "workflow": "Current workflow progress from STATUS.json",
         "health": "Build, test, lint status from morning routine",
+        "recording": "Session recording active indicator with event count",
         "cloud": "PopKit Cloud connection status and usage (Issue #566)",
     }
 

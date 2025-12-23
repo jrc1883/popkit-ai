@@ -54,12 +54,60 @@ class SessionRecorder:
             self._init_recording()
 
     def _check_recording_enabled(self) -> bool:
-        """Check if recording is enabled via env var or --record flag."""
-        return os.getenv('POPKIT_RECORD', '').lower() == 'true'
+        """Check if recording is enabled via env var, flag, or state file."""
+        # Check environment variable first
+        if os.getenv('POPKIT_RECORD', '').lower() == 'true':
+            return True
+
+        # Check for recording state file (persists across tool calls)
+        state_file = Path.home() / '.claude' / 'popkit' / 'recording-state.json'
+        if state_file.exists():
+            try:
+                import json
+                state = json.loads(state_file.read_text())
+                return state.get('active', False)
+            except (json.JSONDecodeError, IOError):
+                pass
+
+        return False
 
     def _init_recording(self) -> None:
         """Initialize recording using session manager."""
         self.recordings_dir.mkdir(parents=True, exist_ok=True)
+
+        # Check for state file first (persists across tool calls)
+        state_file = Path.home() / '.claude' / 'popkit' / 'recording-state.json'
+        if state_file.exists():
+            try:
+                import json
+                state = json.loads(state_file.read_text())
+                if state.get('active'):
+                    # Use session from state file
+                    self.session_id = state.get('session_id', str(uuid.uuid4())[:8])
+                    command_name = state.get('command', 'manual-session')
+                    timestamp = datetime.now().strftime('%Y-%m-%d-%H%M%S')
+                    filename = f"{timestamp}-{command_name}-{self.session_id}.json"
+                    self.recording_file = self.recordings_dir / filename
+
+                    # Load existing events if file exists
+                    if self.recording_file.exists():
+                        self._load_existing_events()
+                    else:
+                        # Initialize new recording file
+                        self.record_event({
+                            'type': 'session_start',
+                            'timestamp': state.get('started_at', datetime.now(timezone.utc).isoformat()),
+                            'session_id': self.session_id,
+                            'command': command_name,
+                            'working_directory': os.getcwd(),
+                            'environment': {
+                                'POPKIT_RECORD': 'true',
+                                'source': 'state_file',
+                            }
+                        })
+                    return
+            except (json.JSONDecodeError, IOError):
+                pass
 
         if HAS_SESSION_MANAGER:
             # Use session manager for unified sessions
@@ -187,6 +235,53 @@ class SessionRecorder:
             'arguments': arguments
         })
 
+    def record_file_read(
+        self,
+        file_path: str,
+        content_summary: Optional[str] = None,
+        relevant: bool = True
+    ) -> None:
+        """Record reading of an important context file."""
+        self.record_event({
+            'type': 'file_read',
+            'timestamp': datetime.now(timezone.utc).isoformat(),
+            'file_path': file_path,
+            'content_summary': content_summary,
+            'relevant': relevant
+        })
+
+    def record_reasoning(
+        self,
+        step: str,
+        reasoning: str,
+        data: Optional[Dict[str, Any]] = None
+    ) -> None:
+        """Record reasoning/thinking step."""
+        self.record_event({
+            'type': 'reasoning',
+            'timestamp': datetime.now(timezone.utc).isoformat(),
+            'step': step,
+            'reasoning': reasoning,
+            'data': data or {}
+        })
+
+    def record_recommendation(
+        self,
+        recommendation_type: str,
+        command: str,
+        priority_score: int,
+        reason: str
+    ) -> None:
+        """Record a recommendation being generated."""
+        self.record_event({
+            'type': 'recommendation',
+            'timestamp': datetime.now(timezone.utc).isoformat(),
+            'recommendation_type': recommendation_type,
+            'command': command,
+            'priority_score': priority_score,
+            'reason': reason
+        })
+
     def record_decision(
         self,
         decision_type: str,
@@ -273,3 +368,31 @@ def finalize_recording(
 def is_recording_enabled() -> bool:
     """Check if recording is currently enabled."""
     return get_recorder().recording_enabled
+
+
+def record_file_read(
+    file_path: str,
+    content_summary: Optional[str] = None,
+    relevant: bool = True
+) -> None:
+    """Convenience function to record a file read."""
+    get_recorder().record_file_read(file_path, content_summary, relevant)
+
+
+def record_reasoning(
+    step: str,
+    reasoning: str,
+    data: Optional[Dict[str, Any]] = None
+) -> None:
+    """Convenience function to record reasoning."""
+    get_recorder().record_reasoning(step, reasoning, data)
+
+
+def record_recommendation(
+    recommendation_type: str,
+    command: str,
+    priority_score: int,
+    reason: str
+) -> None:
+    """Convenience function to record a recommendation."""
+    get_recorder().record_recommendation(recommendation_type, command, priority_score, reason)
