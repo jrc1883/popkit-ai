@@ -90,14 +90,15 @@
   "critical_action_required": {
     "action": "COMMIT_CHANGES_THEN_RESTART",
     "steps": [
-      "1. Commit test fixes with: /popkit:git commit",
+      "1. Commit documentation fixes with: git add CLAUDE.md STATUS.json start-popkit.cmd && git commit -m 'docs: fix recurring plugin startup confusion - use --plugin-dir for local dev'",
       "2. EXIT current Claude Code session",
-      "3. RESTART with new command (see below)",
-      "4. TEST: /popkit:next (verify hooks fire programmatically)",
+      "3. RESTART with: .\\start-popkit.cmd (or see command below)",
+      "4. TEST: /popkit:record status (verify command works)",
       "5. TEST: /popkit-core:plugin test (verify 31/31 still pass)",
       "6. Continue with Phase 6 documentation"
     ],
-    "new_startup_command": "claude --plugin-dir ./packages/popkit-core --plugin-dir ./packages/popkit-dev --plugin-dir ./packages/popkit-ops --plugin-dir ./packages/popkit-research"
+    "new_startup_command": "claude --plugin-dir ./packages/popkit-core --plugin-dir ./packages/popkit-dev --plugin-dir ./packages/popkit-ops --plugin-dir ./packages/popkit-research",
+    "startup_script": "start-popkit.cmd (easier than typing the long command)"
   },
 
   "architecture_transformation": {
@@ -266,7 +267,9 @@
     "Skill naming now standardized: directory=pop-<name>, frontmatter=<name>",
     "Hook validator enhanced: plugin_root parameter, test environment, timeout=10s",
     "Test runner enhanced: nested structures, skill arrays, regex validation",
-    "Ready for Phase 6: Documentation & Release (Epic #580 - 90% complete)"
+    "Ready for Phase 6: Documentation & Release (Epic #580 - 90% complete)",
+    "RECURRING ISSUE FIXED: CLAUDE.md now clearly states to use --plugin-dir for local dev, NOT /plugin install",
+    "Created start-popkit.cmd script to prevent startup command mistakes"
   ],
 
   "previous_session_context": {

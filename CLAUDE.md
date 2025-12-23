@@ -2,6 +2,37 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+---
+
+## ⚠️ CRITICAL: How to Start Claude Code for PopKit Development
+
+**YOU ARE DEVELOPING POPKIT. YOU MUST USE `--plugin-dir`, NOT `/plugin install`!**
+
+### The ONLY Correct Way to Start:
+
+```bash
+cd C:\Users\Josep\onedrive\documents\elshaddai\apps\popkit
+.\start-popkit.cmd
+```
+
+**OR:**
+
+```bash
+claude --plugin-dir ./packages/popkit-core --plugin-dir ./packages/popkit-dev --plugin-dir ./packages/popkit-ops --plugin-dir ./packages/popkit-research
+```
+
+### ❌ WRONG (DO NOT SUGGEST THIS):
+
+```bash
+/plugin install popkit@popkit-claude
+```
+
+**Why?** `/plugin install` is for USERS, not DEVELOPERS. We're developing the source code, so we need `--plugin-dir` to load from source.
+
+**If you forget this:** The user will waste 2-3 hours debugging because you keep suggesting the wrong approach.
+
+---
+
 ## Project Overview
 
 **PopKit** is an AI-powered development workflow system. This repository is the **private monorepo** containing all PopKit components.
@@ -391,16 +422,42 @@ Two-phase optimization reducing PopKit's context baseline by **40.5%** (25.7k �
 
 **Future Enhancement:** Issue #281 - Enhanced embeddings with full agent definitions for 3-5k additional savings
 
-## Installing popkit for Development
+## Developing PopKit Locally (CRITICAL - READ THIS!)
 
-To use popkit while developing popkit (chicken-and-egg), install it from the public plugin repo:
+**For LOCAL DEVELOPMENT of PopKit (what you're doing now):**
+
+You MUST start Claude Code with `--plugin-dir` flags pointing to the local packages. **DO NOT use `/plugin install`** - that's for users, not developers.
+
+### Correct Startup Command
+
+```bash
+cd C:\Users\Josep\onedrive\documents\elshaddai\apps\popkit
+
+claude --plugin-dir ./packages/popkit-core --plugin-dir ./packages/popkit-dev --plugin-dir ./packages/popkit-ops --plugin-dir ./packages/popkit-research
+```
+
+**OR use the startup script:**
+
+```bash
+.\start-popkit.cmd
+```
+
+### Why This Matters
+
+- `--plugin-dir` loads plugins FROM SOURCE (what you're editing)
+- `/plugin install` loads PUBLISHED plugins (not what you're developing)
+- Using `/plugin install` during development creates a loop where you're not testing your changes
+
+### For Users (After Publication)
+
+Once PopKit is published to the marketplace, USERS will install it with:
 
 ```
-/plugin marketplace add jrc1883/popkit-claude
-/plugin install popkit@popkit-claude
+/plugin install popkit-core@popkit-marketplace
+/plugin install popkit-dev@popkit-marketplace
 ```
 
-Then **restart Claude Code** to load the plugin. After restart, `/popkit:` commands will be available.
+But that's not what YOU do while developing!
 
 ## Repository Architecture (Public/Private Split)
 

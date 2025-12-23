@@ -1,6 +1,18 @@
 # PopKit Restart Guide
-**Session Date**: 2025-12-22
+**Session Date**: 2025-12-23 (UPDATED)
 **Status**: Foundation Architecture Complete - Restart Required
+
+---
+
+## 🚨 **CRITICAL: How to Start Claude Code (DO NOT FORGET THIS!)**
+
+**Use the startup script:**
+```bash
+cd C:\Users\Josep\onedrive\documents\elshaddai\apps\popkit
+.\start-popkit.cmd
+```
+
+**This prevents the recurring mistake of suggesting `/plugin install` which DOES NOT WORK for local development!**
 
 ---
 
@@ -17,20 +29,24 @@ The foundation architecture is implemented but **NOT YET ACTIVE**. Your current 
 # Just close/exit Claude Code
 ```
 
-### 2. Restart with New Command
+### 2. Restart with Startup Script (EASIER!)
+
+**Option A: Use the script (recommended):**
 ```bash
 cd C:\Users\Josep\onedrive\documents\elshaddai\apps\popkit
+.\start-popkit.cmd
+```
 
-claude --plugin-dir ./packages/popkit-core \
-      --plugin-dir ./packages/popkit-dev \
-      --plugin-dir ./packages/popkit-ops \
-      --plugin-dir ./packages/popkit-research
+**Option B: Type the full command:**
+```bash
+claude --plugin-dir ./packages/popkit-core --plugin-dir ./packages/popkit-dev --plugin-dir ./packages/popkit-ops --plugin-dir ./packages/popkit-research
 ```
 
 **Why this command?**
+- `--plugin-dir` loads plugins FROM SOURCE (we're developing them!)
 - `popkit-core` MUST load FIRST (contains all 25 hooks)
 - Other plugins are feature-only (no hooks)
-- Removed old `popkit` and `popkit-suite` (not needed)
+- **DO NOT use `/plugin install`** - that's for users, not developers!
 
 ### 3. First Thing to Test
 ```bash
