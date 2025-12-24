@@ -32,6 +32,7 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
     reasoning_steps = [e for e in events if e.get('type') == 'reasoning']
     recommendations = [e for e in events if e.get('type') == 'recommendation']
     decisions = [e for e in events if e.get('type') == 'decision']
+    subagent_stops = [e for e in events if e.get('type') == 'subagent_stop']
 
     # Calculate stats
     total_duration = sum(e.get('duration_ms') or 0 for e in tool_calls)
@@ -258,6 +259,10 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
             <div class="label">Success Rate</div>
             <div class="value">{success_rate:.0f}<span style="font-size: 16px; color: #888;">%</span></div>
         </div>
+        <div class="stat-card">
+            <div class="label">Sub-Agents</div>
+            <div class="value">{len(subagent_stops)}</div>
+        </div>
     </div>
 '''
 
@@ -392,6 +397,48 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
 '''
 
     html += '''
+            </div>
+        </div>
+    </div>
+'''
+
+    # Sub-Agent Completions Section
+    if subagent_stops:
+        html += f'''
+    <div class="section">
+        <h2>🤖 Sub-Agent Completions ({len(subagent_stops)})</h2>
+        <div class="section-content">
+            <div class="event-flow">
+'''
+        for i, sa in enumerate(subagent_stops, 1):
+            agent_id = sa.get('agent_id', 'unknown')
+            timestamp = sa.get('timestamp', 'N/A')
+            session_id = sa.get('session_id', 'N/A')
+            transcript_available = sa.get('transcript_available', False)
+            transcript_icon = '✅' if transcript_available else '❌'
+
+            html += f'''
+                <div class="event-item">
+                    <span class="event-type" style="background: #c586c0; color: #000;">SUB-AGENT</span>
+                    <span style="color: #4ec9b0; font-weight: bold; margin-left: 10px;">COMPLETED</span>
+                    <div class="event-details">
+                        <strong>Agent ID:</strong> {agent_id}<br>
+                        <strong>Session ID:</strong> {session_id[:12]}...<br>
+                        <strong>Timestamp:</strong> {timestamp}<br>
+                        <strong>Transcript:</strong> {transcript_icon} {'Available' if transcript_available else 'Not Found'}
+                        <div class="collapsible" onclick="toggleCollapsible(this)">
+                            📋 Details (click to expand)
+                        </div>
+                        <div class="collapsible-content">
+                            <strong>Full Event:</strong>
+                            <pre>{json.dumps(sa, indent=2)}</pre>
+                            {f'<p style="color: #4ec9b0;">💡 Transcript file: <code>agent-{agent_id}.jsonl</code></p>' if transcript_available else ''}
+                        </div>
+                    </div>
+                </div>
+'''
+
+        html += '''
             </div>
         </div>
     </div>
