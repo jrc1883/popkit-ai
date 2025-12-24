@@ -33,6 +33,13 @@ try:
 except ImportError:
     HAS_FCNTL = False
 
+# Cross-platform file locking
+try:
+    from filelock import FileLock, Timeout
+    HAS_FILELOCK = True
+except ImportError:
+    HAS_FILELOCK = False
+
 try:
     from .session_manager import get_current_session, update_session_activity
     HAS_SESSION_MANAGER = True
@@ -85,8 +92,21 @@ class SessionRecorder:
                     # Use session from state file
                     self.session_id = state.get('session_id', str(uuid.uuid4())[:8])
                     command_name = state.get('command', 'manual-session')
-                    timestamp = datetime.now().strftime('%Y-%m-%d-%H%M%S')
-                    filename = f"{timestamp}-{command_name}-{self.session_id}.json"
+
+                    # FIX: Reuse filename from state file, or create once on first init
+                    if 'recording_file' in state:
+                        # Reuse existing filename
+                        filename = state['recording_file']
+                    else:
+                        # First init - create filename and store in state
+                        started_at = state.get('started_at', datetime.now().isoformat())
+                        timestamp = datetime.fromisoformat(started_at).strftime('%Y-%m-%d-%H%M%S')
+                        filename = f"{timestamp}-{command_name}-{self.session_id}.json"
+
+                        # Save filename to state file for reuse
+                        state['recording_file'] = filename
+                        state_file.write_text(json.dumps(state, indent=2))
+
                     self.recording_file = self.recordings_dir / filename
 
                     # Load existing events if file exists
@@ -173,7 +193,7 @@ class SessionRecorder:
         })
 
     def record_event(self, event: Dict[str, Any]) -> None:
-        """Record an event to the session log."""
+        """Record an event to the session log with cross-platform locking."""
         if not self.recording_enabled:
             return
 
@@ -187,21 +207,58 @@ class SessionRecorder:
         if HAS_SESSION_MANAGER and self.session_id:
             update_session_activity(self.session_id)
 
-        # Write to file with lock (if available)
+        # Write to file with cross-platform lock
         if self.recording_file:
-            with open(self.recording_file, 'w') as f:
-                if HAS_FCNTL:
-                    import fcntl
-                    fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-                try:
+            if HAS_FILELOCK:
+                self._record_event_with_lock()
+            else:
+                self._record_event_unsafe()
+
+    def _record_event_with_lock(self) -> None:
+        """Record events with file locking (Windows/Unix compatible)."""
+        lock_file = Path(str(self.recording_file) + ".lock")
+        lock = FileLock(lock_file, timeout=10)
+
+        try:
+            with lock:
+                # Read existing events to prevent overwrites (race condition fix)
+                current_events = []
+                if self.recording_file.exists():
+                    try:
+                        with open(self.recording_file, 'r') as f:
+                            data = json.load(f)
+                            current_events = data.get('events', [])
+                    except (json.JSONDecodeError, FileNotFoundError):
+                        pass
+
+                # Merge with deduplication by sequence number
+                existing_sequences = {e['sequence'] for e in current_events}
+                new_events = [e for e in self.events if e['sequence'] not in existing_sequences]
+                all_events = current_events + new_events
+
+                # Write atomically
+                with open(self.recording_file, 'w') as f:
                     json.dump({
                         'session_id': self.session_id,
-                        'events': self.events
+                        'events': all_events
                     }, f, indent=2)
-                finally:
-                    if HAS_FCNTL:
-                        import fcntl
-                        fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+
+        except Timeout:
+            import sys
+            print(f"Warning: Lock timeout for {self.recording_file}, event may be lost",
+                  file=sys.stderr)
+
+    def _record_event_unsafe(self) -> None:
+        """Fallback without locking (legacy behavior for missing filelock)."""
+        import sys
+        print("Warning: filelock not installed, recording may fail on concurrent writes",
+              file=sys.stderr)
+
+        with open(self.recording_file, 'w') as f:
+            json.dump({
+                'session_id': self.session_id,
+                'events': self.events
+            }, f, indent=2)
 
     def record_tool_call(
         self,

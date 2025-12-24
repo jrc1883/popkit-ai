@@ -247,6 +247,34 @@ else:
 # → Events captured: 47
 ```
 
+## Sub-Agent Recording (In Development)
+
+**Status**: Sub-agent recording support is being implemented via the `SubagentStop` hook.
+
+**How it works**: Claude Code fires a `SubagentStop` hook event when any sub-agent (launched via `Skill` or `Task` tools) completes execution. This hook provides:
+- `agent_id`: Unique identifier for the sub-agent
+- `agent_transcript_path`: Full conversation transcript of the sub-agent
+- `session_id`: Parent session ID (shared across main agent and sub-agents)
+
+**Current limitation**: The `SubagentStop` hook handler is not yet implemented in PopKit's recording infrastructure.
+
+**Expected after implementation**:
+```bash
+/popkit:record start
+
+# All tool calls will be captured:
+git status                    # ✓ Main agent tool call
+/popkit:next                  # ✓ Skill invocation + sub-agent transcript
+  ├─ git status --porcelain   # ✓ Sub-agent tool call (from transcript)
+  ├─ git branch -vv           # ✓ Sub-agent tool call (from transcript)
+  └─ gh issue list            # ✓ Sub-agent tool call (from transcript)
+
+/popkit:record stop
+# → Report will show hierarchical view of main + sub-agent activity
+```
+
+**Implementation tracking**: Issue #603 (was originally documented as architectural limitation, now being implemented)
+
 ## Related
 
 - **Recording Infrastructure**: `packages/shared-py/popkit_shared/utils/session_recorder.py`

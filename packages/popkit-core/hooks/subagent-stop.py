@@ -21,6 +21,13 @@ except ImportError:
     def save_lesson_locally(lesson, status_file=None):
         return {"status": "skip", "reason": "utils not available"}
 
+# Import session recorder for sub-agent recording
+try:
+    from popkit_shared.utils.session_recorder import get_recorder, is_recording_enabled
+    HAS_SESSION_RECORDER = True
+except ImportError:
+    HAS_SESSION_RECORDER = False
+
 
 # Retry configuration
 MAX_RETRIES = 1
@@ -139,6 +146,41 @@ def announce_subagent_completion():
     except Exception:
         pass  # Silent failure for TTS
 
+def record_subagent_completion(data: dict):
+    """Record sub-agent completion in session recording if enabled.
+
+    Args:
+        data: SubagentStop hook input data containing agent_id and transcript_path
+    """
+    if not HAS_SESSION_RECORDER or not is_recording_enabled():
+        return
+
+    try:
+        recorder = get_recorder()
+
+        # Extract sub-agent information
+        agent_id = data.get("agent_id", "unknown")
+        transcript_path = data.get("agent_transcript_path")
+        session_id = data.get("session_id")
+
+        # Record sub-agent completion event
+        recorder.record_event({
+            "type": "subagent_stop",
+            "timestamp": datetime.now().isoformat(),
+            "agent_id": agent_id,
+            "session_id": session_id,
+            "transcript_available": bool(transcript_path and Path(transcript_path).exists())
+        })
+
+        # TODO: Parse transcript_path and extract individual tool calls
+        # For now, just record that the sub-agent completed
+        # Future enhancement: Parse JSONL transcript and record each tool call
+
+    except Exception as e:
+        # Don't block on recording failures
+        print(f"Warning: Failed to record sub-agent completion: {e}", file=sys.stderr)
+
+
 def main():
     """Main entry point for the hook - JSON stdin/stdout protocol"""
     try:
@@ -163,6 +205,9 @@ def main():
 
         with open(log_file, 'w', encoding='utf-8') as f:
             json.dump(log_data, f, indent=2)
+
+        # Record sub-agent completion in session recording
+        record_subagent_completion(data)
 
         # Check for validation failures and track errors
         validation_error = check_validation_result(data)
