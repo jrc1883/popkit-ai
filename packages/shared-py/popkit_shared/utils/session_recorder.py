@@ -324,9 +324,16 @@ _recorder: Optional[SessionRecorder] = None
 
 
 def get_recorder() -> SessionRecorder:
-    """Get or create the global recorder instance."""
+    """Get or create the global recorder instance.
+
+    Re-initializes if recording was disabled but is now enabled.
+    This handles the case where recording is started mid-session.
+    """
     global _recorder
     if _recorder is None:
+        _recorder = SessionRecorder()
+    elif not _recorder.recording_enabled and _recorder._check_recording_enabled():
+        # Recording was just enabled, re-initialize to pick up state
         _recorder = SessionRecorder()
     return _recorder
 
@@ -366,8 +373,24 @@ def finalize_recording(
 
 
 def is_recording_enabled() -> bool:
-    """Check if recording is currently enabled."""
-    return get_recorder().recording_enabled
+    """Check if recording is currently enabled.
+
+    Checks state file on EACH call to detect mid-session recording activation.
+    This prevents the singleton initialization race condition where the recorder
+    is created before the state file exists.
+    """
+    # Check state file first (most common case for manual recording)
+    state_file = Path.home() / '.claude' / 'popkit' / 'recording-state.json'
+    if state_file.exists():
+        try:
+            state = json.loads(state_file.read_text())
+            if state.get('active', False):
+                return True
+        except (json.JSONDecodeError, IOError):
+            pass
+
+    # Fallback to environment variable
+    return os.getenv('POPKIT_RECORD', '').lower() == 'true'
 
 
 def record_file_read(

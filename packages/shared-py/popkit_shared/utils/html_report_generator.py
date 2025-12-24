@@ -34,7 +34,7 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
     decisions = [e for e in events if e.get('type') == 'decision']
 
     # Calculate stats
-    total_duration = sum(e.get('duration_ms', 0) for e in tool_calls)
+    total_duration = sum(e.get('duration_ms') or 0 for e in tool_calls)
     error_count = sum(1 for e in tool_calls if e.get('error'))
     success_rate = ((len(tool_calls) - error_count) / len(tool_calls) * 100) if tool_calls else 100
 
@@ -357,12 +357,12 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
             <div class="event-flow">
 '''
 
-    max_duration = max((e.get('duration_ms', 0) for e in tool_calls), default=1)
+    max_duration = max((e.get('duration_ms') or 0 for e in tool_calls), default=1)
 
     for i, tc in enumerate(tool_calls, 1):
         tool_name = tc.get('tool_name', 'Unknown')
         params = tc.get('parameters', {})
-        duration = tc.get('duration_ms', 0)
+        duration = tc.get('duration_ms') or 0
         error = tc.get('error')
         status = 'ERROR' if error else 'OK'
         status_color = '#f48771' if error else '#4ec9b0'
