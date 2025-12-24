@@ -47,5 +47,8 @@
     "./agents/tier-1-always-active/accessibility-guardian/AGENT.md",
     "./agents/tier-1-always-active/documentation-maintainer/AGENT.md",
     "./agents/tier-1-always-active/migration-specialist/AGENT.md"
-  ]
+  ],
+  "status_line": {
+    "script": "power-mode/statusline.py"
+  }
 }
