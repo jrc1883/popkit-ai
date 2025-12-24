@@ -35,9 +35,21 @@ recordings_dir.mkdir(parents=True, exist_ok=True)
 state_file = recordings_dir.parent / 'recording-state.json'
 session_id = datetime.now().strftime('%Y%m%d-%H%M%S')
 
+# Get Claude's internal session ID from SessionStart log
+claude_session_id = None
+session_log = Path('logs/session_start.json')
+if session_log.exists():
+    try:
+        log_data = json.loads(session_log.read_text())
+        if log_data:
+            claude_session_id = log_data[-1].get('session_id')
+    except:
+        pass
+
 state = {
     'active': True,
     'session_id': session_id,
+    'claude_session_id': claude_session_id,  # For SubagentStop matching
     'started_at': datetime.now().isoformat(),
     'command': 'manual-session'
 }
@@ -46,6 +58,8 @@ state_file.write_text(json.dumps(state, indent=2))
 
 print(f"✅ Recording ENABLED")
 print(f"Session ID: {session_id}")
+if claude_session_id:
+    print(f"Claude Session: {claude_session_id[:8]}...")
 print(f"")
 print(f"All tool calls will now be recorded.")
 print(f"Status line will show: REC [●] <count>")
@@ -247,18 +261,20 @@ else:
 # → Events captured: 47
 ```
 
-## Sub-Agent Recording (In Development)
+## Sub-Agent Recording (Working)
 
-**Status**: Sub-agent recording support is being implemented via the `SubagentStop` hook.
+**Status**: ✅ Fully implemented and working (Issue #603 resolved)
 
-**How it works**: Claude Code fires a `SubagentStop` hook event when any sub-agent (launched via `Skill` or `Task` tools) completes execution. This hook provides:
-- `agent_id`: Unique identifier for the sub-agent
-- `agent_transcript_path`: Full conversation transcript of the sub-agent
-- `session_id`: Parent session ID (shared across main agent and sub-agents)
+**How it works**: Claude Code fires a `SubagentStop` hook event when any sub-agent (launched via `Skill` or `Task` tools) completes execution. PopKit's recording system now captures these events by:
 
-**Current limitation**: The `SubagentStop` hook handler is not yet implemented in PopKit's recording infrastructure.
+1. **Session ID Correlation**: Recording state stores BOTH a display session ID (`YYYYMMDD-HHMMSS`) and Claude's internal session ID (UUID)
+2. **Hook Verification**: `SubagentStop` hook verifies incoming events match the current recording session
+3. **Event Capture**: Sub-agent completion events are recorded with:
+   - `agent_id`: Unique identifier for the sub-agent
+   - `session_id`: Claude's internal session ID
+   - `transcript_available`: Whether the full transcript exists
 
-**Expected after implementation**:
+**What gets captured**:
 ```bash
 /popkit:record start
 
@@ -273,7 +289,9 @@ git status                    # ✓ Main agent tool call
 # → Report will show hierarchical view of main + sub-agent activity
 ```
 
-**Implementation tracking**: Issue #603 (was originally documented as architectural limitation, now being implemented)
+**Resolution**: Issue #603 resolved - session ID correlation fix implemented (2025-12-24)
+
+**Testing**: See `docs/testing/issue-603-subagent-recording-test.md` for verification procedure
 
 ## Related
 

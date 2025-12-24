@@ -152,23 +152,43 @@ def record_subagent_completion(data: dict):
     Args:
         data: SubagentStop hook input data containing agent_id and transcript_path
     """
-    if not HAS_SESSION_RECORDER or not is_recording_enabled():
+    if not HAS_SESSION_RECORDER:
+        return
+
+    # Check if recording is active
+    if not is_recording_enabled():
         return
 
     try:
-        recorder = get_recorder()
-
         # Extract sub-agent information
         agent_id = data.get("agent_id", "unknown")
         transcript_path = data.get("agent_transcript_path")
-        session_id = data.get("session_id")
+        incoming_session_id = data.get("session_id")
 
-        # Record sub-agent completion event
+        # Verify session ID matches the recording session
+        state_file = Path.home() / '.claude' / 'popkit' / 'recording-state.json'
+        if not state_file.exists():
+            return
+
+        try:
+            state = json.loads(state_file.read_text())
+            claude_session_id = state.get('claude_session_id')
+
+            # If no claude_session_id stored, skip session matching (legacy recordings)
+            # If it IS stored, verify it matches
+            if claude_session_id and incoming_session_id != claude_session_id:
+                # Session mismatch - this is a different Claude session
+                return
+        except (json.JSONDecodeError, IOError):
+            return
+
+        # Session matches - record the event
+        recorder = get_recorder()
         recorder.record_event({
             "type": "subagent_stop",
             "timestamp": datetime.now().isoformat(),
             "agent_id": agent_id,
-            "session_id": session_id,
+            "session_id": incoming_session_id,
             "transcript_available": bool(transcript_path and Path(transcript_path).exists())
         })
 
