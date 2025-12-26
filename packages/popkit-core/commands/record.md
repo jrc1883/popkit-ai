@@ -27,13 +27,18 @@ When user runs `/popkit:record start`:
 from pathlib import Path
 import json
 from datetime import datetime
+import uuid
 
 # Create recording state
 recordings_dir = Path.home() / '.claude' / 'popkit' / 'recordings'
 recordings_dir.mkdir(parents=True, exist_ok=True)
 
 state_file = recordings_dir.parent / 'recording-state.json'
-session_id = datetime.now().strftime('%Y%m%d-%H%M%S')
+
+# Generate unique session ID (add UUID suffix to prevent collisions)
+timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+unique_suffix = str(uuid.uuid4())[:8]
+session_id = f"{timestamp}-{unique_suffix}"
 
 # Get Claude's internal session ID from SessionStart log
 claude_session_id = None
@@ -100,28 +105,59 @@ print("Status line widget enabled.")
 
 When user runs `/popkit:record stop`:
 
-1. **Disable recording state**:
+1. **Record final events BEFORE disabling** (Solution A - fixes Issue #603):
 
 ```python
 from pathlib import Path
 import json
+from datetime import datetime
+import sys
+
+# Add shared-py to path for session_recorder
+sys.path.insert(0, str(Path.home() / '.claude' / 'popkit' / 'packages' / 'shared-py'))
 
 state_file = Path.home() / '.claude' / 'popkit' / 'recording-state.json'
 
 if not state_file.exists():
-    print("❌ Recording is not active")
+    print("[ERROR] Recording is not active")
     exit(1)
 
 # Load state
 state = json.loads(state_file.read_text())
 session_id = state.get('session_id', 'unknown')
 
-# Mark as stopped
+# CRITICAL: Record final events BEFORE disabling
+try:
+    from popkit_shared.utils.session_recorder import get_recorder
+
+    recorder = get_recorder()
+
+    # Record Bash tool completion for stop command
+    recorder.record_event({
+        "type": "tool_call_complete",
+        "timestamp": datetime.now().isoformat(),
+        "tool_name": "Bash",
+        "result": f"Recording stopped successfully. Session ID: {session_id}",
+        "error": None,
+        "duration_ms": None
+    })
+
+    # Record session end
+    recorder.record_event({
+        "type": "session_end",
+        "timestamp": datetime.now().isoformat(),
+        "session_id": session_id
+    })
+
+except Exception as e:
+    print(f"[WARN] Could not record final events: {e}", file=sys.stderr)
+
+# NOW disable recording
 state['active'] = False
 state['stopped_at'] = datetime.now().isoformat()
 state_file.write_text(json.dumps(state, indent=2))
 
-print(f"✅ Recording STOPPED")
+print(f"[OK] Recording STOPPED")
 print(f"Session ID: {session_id}")
 ```
 
@@ -162,7 +198,7 @@ html_file = recording_file.with_suffix('.html')
 
 result = subprocess.run([
     'python',
-    'packages/shared-py/popkit_shared/utils/html_report_generator.py',
+    'packages/shared-py/popkit_shared/utils/html_report_generator_v9.py',
     str(recording_file),
     str(html_file)
 ], capture_output=True, text=True)
