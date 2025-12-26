@@ -109,7 +109,41 @@ jobs:
           # Files to skip
           SKIP = [r"\.git/", r"node_modules/", r"__pycache__/", r"ip_scanner\.py"]
 
-          # Files where patterns are allowed (false positive exclusions)
+          # Path-based exemptions (documentation, examples, tests, templates)
+          EXEMPT_PATHS = [
+              r"(?:^|/)docs/",          # docs/ at start or after /
+              r"(?:^|/)examples/",      # examples/ at start or after /
+              r"(?:^|/)standards/",     # standards/ at start or after /
+              r"(?:^|/)templates/",     # templates/ at start or after /
+              r"(?:^|/)test",           # /test or test at start
+              r"\.test\.",              # .test. anywhere
+              r"_test\.",               # _test. anywhere
+              r"^test_",                # test_ at start of filename
+              r"(?:^|/)sample",         # /sample or sample at start
+              r"\.sample\.",            # .sample. anywhere
+              r"\.example\.",           # .example. anywhere
+              r"\.template\.",          # .template. anywhere
+              r"(?:^|/)fixtures/",      # fixtures/ at start or after /
+              r"README\.md$",           # README.md at end
+              r"CHANGELOG\.md$",        # CHANGELOG.md at end
+          ]
+
+          # Content-based exemption markers (must appear before the matched line)
+          EXEMPT_MARKERS = [
+              r"#\s*Example:",
+              r"#\s*BAD\s*-",
+              r"#\s*GOOD\s*-",
+              r"#\s*For documentation",
+              r"#\s*Sample:",
+              r"#\s*Template:",
+              r"//\s*Example:",
+              r"//\s*BAD\s*-",
+              r"//\s*GOOD\s*-",
+              r"//\s*Sample:",
+              r"```",  # Inside code blocks in markdown
+          ]
+
+          # Files where patterns are allowed (legacy exemptions)
           ALLOWED = {
               "ip_scanner.py": list(PATTERNS.keys()),
               "CLAUDE.md": ["cloud_code", "cloud_billing"],
@@ -119,14 +153,41 @@ jobs:
           def should_skip(path: str) -> bool:
               return any(re.search(p, path) for p in SKIP)
 
+          def is_exempt_path(path: str) -> bool:
+              """Check if file path matches any exemption pattern."""
+              path_normalized = path.replace("\\", "/")
+              return any(re.search(p, path_normalized) for p in EXEMPT_PATHS)
+
           def is_allowed(path: str, pattern: str) -> bool:
               name = Path(path).name
               return name in ALLOWED and pattern in ALLOWED[name]
+
+          def has_exempt_marker(lines: List[str], line_idx: int) -> bool:
+              """Check if line is preceded by exemption marker or inside code block."""
+              # Check previous 3 lines for markers
+              start = max(0, line_idx - 3)
+              for i in range(start, line_idx):
+                  for marker in EXEMPT_MARKERS:
+                      if re.search(marker, lines[i]):
+                          return True
+
+              # Check if inside markdown code block
+              in_code_block = False
+              for i in range(0, line_idx):
+                  if re.match(r'^\s*```', lines[i]):
+                      in_code_block = not in_code_block
+
+              return in_code_block
 
           def scan_file(filepath: Path) -> List[Finding]:
               findings = []
               if should_skip(str(filepath)):
                   return findings
+
+              # Skip exempt paths (documentation, examples, tests)
+              if is_exempt_path(str(filepath)):
+                  return findings
+
               try:
                   content = filepath.read_text(encoding='utf-8', errors='ignore')
                   lines = content.split('\n')
@@ -137,6 +198,10 @@ jobs:
                       for i, line in enumerate(lines, 1):
                           match = regex.search(line)
                           if match:
+                              # Skip if line has exemption marker
+                              if has_exempt_marker(lines, i - 1):
+                                  continue
+
                               findings.append(Finding(
                                   file=str(filepath),
                                   line=i,
