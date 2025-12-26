@@ -3,23 +3,23 @@ description: "start | stop | status - Control session recording"
 argument-hint: "<subcommand>"
 ---
 
-# /popkit:record
+# /popkit-core:record
 
 Control session recording for forensic analysis and command verification.
 
 ## Usage
 
 ```bash
-/popkit:record start                 # Enable recording
-/popkit:record stop                  # Disable and generate report
-/popkit:record status                # Check recording state
+/popkit-core:record start                 # Enable recording
+/popkit-core:record stop                  # Disable and generate report
+/popkit-core:record status                # Check recording state
 ```
 
 ## Instructions
 
 ### Start Recording
 
-When user runs `/popkit:record start`:
+When user runs `/popkit-core:record start`:
 
 1. **Create state file** to enable recording:
 
@@ -69,7 +69,7 @@ print(f"")
 print(f"All tool calls will now be recorded.")
 print(f"Status line will show: REC [●] <count>")
 print(f"")
-print(f"To stop: /popkit:record stop")
+print(f"To stop: /popkit-core:record stop")
 ```
 
 2. **Enable the recording widget** in status line:
@@ -103,7 +103,7 @@ print("Status line widget enabled.")
 
 ### Stop Recording
 
-When user runs `/popkit:record stop`:
+When user runs `/popkit-core:record stop`:
 
 1. **Record final events BEFORE disabling** (Solution A - fixes Issue #603):
 
@@ -223,7 +223,7 @@ else:
 
 ### Check Status
 
-When user runs `/popkit:record status`:
+When user runs `/popkit-core:record status`:
 
 ```python
 from pathlib import Path
@@ -234,7 +234,7 @@ state_file = Path.home() / '.claude' / 'popkit' / 'recording-state.json'
 if not state_file.exists():
     print("Recording: INACTIVE")
     print("")
-    print("To start: /popkit:record start")
+    print("To start: /popkit-core:record start")
     exit(0)
 
 state = json.loads(state_file.read_text())
@@ -261,12 +261,12 @@ if state.get('active'):
     print(f"Started: {started_at}")
     print(f"Events captured: {event_count}")
     print(f"")
-    print(f"To stop: /popkit:record stop")
+    print(f"To stop: /popkit-core:record stop")
 else:
     print("Recording: STOPPED")
     print(f"Last session: {state.get('session_id', 'unknown')}")
     print("")
-    print("To start new: /popkit:record start")
+    print("To start new: /popkit-core:record start")
 ```
 
 ## Examples
@@ -275,7 +275,7 @@ else:
 
 ```bash
 # Start recording
-/popkit:record start
+/popkit-core:record start
 # → Recording ENABLED (session: 20251223-142530)
 
 # Run commands (all tool calls are recorded)
@@ -284,7 +284,7 @@ else:
 /popkit:git status
 
 # Stop and generate report
-/popkit:record stop
+/popkit-core:record stop
 # → Recording STOPPED
 # → Report: file:///C:/Users/Josep/.claude/popkit/recordings/20251223-142530.html
 ```
@@ -292,7 +292,7 @@ else:
 ### Check Recording Status
 
 ```bash
-/popkit:record status
+/popkit-core:record status
 # → Recording: ACTIVE ●
 # → Events captured: 47
 ```
@@ -312,7 +312,7 @@ else:
 
 **What gets captured**:
 ```bash
-/popkit:record start
+/popkit-core:record start
 
 # All tool calls will be captured:
 git status                    # ✓ Main agent tool call
@@ -321,7 +321,7 @@ git status                    # ✓ Main agent tool call
   ├─ git branch -vv           # ✓ Sub-agent tool call (from transcript)
   └─ gh issue list            # ✓ Sub-agent tool call (from transcript)
 
-/popkit:record stop
+/popkit-core:record stop
 # → Report will show hierarchical view of main + sub-agent activity
 ```
 
