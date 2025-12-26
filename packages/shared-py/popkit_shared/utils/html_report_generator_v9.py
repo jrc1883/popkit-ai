@@ -553,6 +553,7 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
         .event-subagent-stop {{ background: #8b5cf6; color: #fff; }}
         .event-subagent-prompt {{ background: #5f3d1e; color: #fff; }}
         .event-subagent-text {{ background: #3d1e5f; color: #fff; }}
+        .event-assistant {{ background: #1e5f3d; color: #fff; }}
 
         .status-ok {{ color: #3fb950; font-weight: 600; }}
         .status-error {{ color: #f85149; font-weight: 600; }}
@@ -707,6 +708,22 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
             params = event.get('parameters', {})
             desc_html = f'<span class="tool-name">{tool_name}</span><br><small style="color: #8b949e;">{format_params_inline(params)}</small>'
 
+        elif event_type == 'assistant_message':
+            badge_html = '<span class="event-badge event-assistant">💬 Claude</span>'
+            content = event.get('content', '')
+            before_tool = event.get('before_tool', '')
+            # Truncate long messages for timeline view
+            if len(content) > 200:
+                content_preview = content[:200] + '...'
+            else:
+                content_preview = content
+            # Escape HTML and preserve newlines
+            content_html = format_code_content(content_preview)
+            desc_html = f'<div style="color: #c9d1d9; font-style: italic; margin-bottom: 4px;">{content_html}</div>'
+            if before_tool:
+                desc_html += f'<small style="color: #8b949e;">→ Before {before_tool} call</small>'
+            status_html = '<span class="status-ok">💭 Reasoning</span>'
+
         else:
             badge_html = f'<span class="event-badge" style="background: #6e7681; color: #fff;">{event_type}</span>'
             desc_html = '<em>Unknown event</em>'
@@ -739,7 +756,7 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
 '''
 
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    with open(output_file, 'w', encoding='utf-8') as f:
+    with open(output_file, 'w', encoding='utf-8', errors='surrogatepass') as f:
         f.write(html)
 
     print(f'HTML report generated: {output_file}')

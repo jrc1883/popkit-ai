@@ -35,6 +35,14 @@ try:
 except ImportError:
     TOOL_FILTER_AVAILABLE = False
 
+# Import session recorder for forensic analysis (Issue #603)
+try:
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / 'shared-py'))
+    from popkit_shared.utils.session_recorder import is_recording_enabled, get_recorder
+    SESSION_RECORDER_AVAILABLE = True
+except ImportError:
+    SESSION_RECORDER_AVAILABLE = False
+
 class PreToolUseHook:
     def __init__(self):
         self.claude_dir = Path.home() / '.claude'
@@ -762,6 +770,52 @@ def main():
             response = {"error": "No tool_name provided in input"}
             print(json.dumps(response))
             sys.exit(1)
+
+        # Record tool call START (before execution)
+        if SESSION_RECORDER_AVAILABLE and is_recording_enabled():
+            try:
+                recorder = get_recorder()
+                recorder.record_event({
+                    "type": "tool_call_start",
+                    "timestamp": datetime.now().isoformat(),
+                    "tool_name": tool_name,
+                    "parameters": tool_args
+                })
+
+                # Record assistant messages from conversation history for context
+                # This captures Claude's reasoning, analysis, and recommendations
+                if conversation_history:
+                    # Look at recent messages (last 5) for assistant responses
+                    for msg in reversed(conversation_history[-5:]):
+                        if msg.get('role') == 'assistant':
+                            content = msg.get('content', '')
+
+                            # Text messages contain reasoning/analysis
+                            if isinstance(content, str) and content.strip():
+                                recorder.record_event({
+                                    "type": "assistant_message",
+                                    "timestamp": datetime.now().isoformat(),
+                                    "content": content,
+                                    "before_tool": tool_name
+                                })
+                            # Content can also be a list with tool_use/text blocks
+                            elif isinstance(content, list):
+                                for block in content:
+                                    if isinstance(block, dict):
+                                        # Extract text blocks (reasoning)
+                                        if block.get('type') == 'text':
+                                            text = block.get('text', '').strip()
+                                            if text:
+                                                recorder.record_event({
+                                                    "type": "assistant_message",
+                                                    "timestamp": datetime.now().isoformat(),
+                                                    "content": text,
+                                                    "before_tool": tool_name
+                                                })
+
+            except Exception as e:
+                # Don't block on recording failures
+                print(f"Warning: Failed to record tool start: {e}", file=sys.stderr)
 
         hook = PreToolUseHook()
         result = hook.process_tool_request(tool_name, tool_args, conversation_history)
