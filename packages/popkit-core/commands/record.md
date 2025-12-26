@@ -61,13 +61,13 @@ state = {
 
 state_file.write_text(json.dumps(state, indent=2))
 
-print(f"✅ Recording ENABLED")
+print(f"[OK] Recording ENABLED")
 print(f"Session ID: {session_id}")
 if claude_session_id:
     print(f"Claude Session: {claude_session_id[:8]}...")
 print(f"")
 print(f"All tool calls will now be recorded.")
-print(f"Status line will show: REC [●] <count>")
+print(f"Status line will show: REC [*] <count>")
 print(f"")
 print(f"To stop: /popkit-core:record stop")
 ```
@@ -183,7 +183,7 @@ if recordings:
     recording_file = recordings[0]
     print(f"Recording file: {recording_file.name}")
 else:
-    print("⚠️ No recording file found")
+    print("[WARN] No recording file found")
     exit(0)
 ```
 
@@ -205,7 +205,7 @@ result = subprocess.run([
 
 if result.returncode == 0:
     print(f"")
-    print(f"📊 Forensics Report Generated:")
+    print(f"[REPORT] Forensics Report Generated:")
     print(f"")
     print(f"  file:///{html_file.as_posix()}")
     print(f"")
@@ -218,7 +218,7 @@ if result.returncode == 0:
     print(f"  - Recommendation scoring")
     print(f"  - Performance analysis")
 else:
-    print(f"⚠️ Failed to generate HTML report: {result.stderr}")
+    print(f"[WARN] Failed to generate HTML report: {result.stderr}")
 ```
 
 ### Check Status
@@ -255,7 +255,7 @@ if state.get('active'):
         except:
             pass
 
-    print(f"Recording: ACTIVE ●")
+    print(f"Recording: ACTIVE [*]")
     print(f"")
     print(f"Session ID: {session_id}")
     print(f"Started: {started_at}")
