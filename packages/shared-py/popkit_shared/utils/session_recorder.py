@@ -236,12 +236,26 @@ class SessionRecorder:
                 new_events = [e for e in self.events if e['sequence'] not in existing_sequences]
                 all_events = current_events + new_events
 
+                # Load timestamps from state file if available
+                recording_data = {
+                    'session_id': self.session_id,
+                    'events': all_events
+                }
+
+                state_file = Path.home() / '.claude' / 'popkit' / 'recording-state.json'
+                if state_file.exists():
+                    try:
+                        state = json.loads(state_file.read_text())
+                        if 'started_at' in state:
+                            recording_data['started_at'] = state['started_at']
+                        if 'stopped_at' in state:
+                            recording_data['stopped_at'] = state['stopped_at']
+                    except (json.JSONDecodeError, IOError):
+                        pass
+
                 # Write atomically
                 with open(self.recording_file, 'w') as f:
-                    json.dump({
-                        'session_id': self.session_id,
-                        'events': all_events
-                    }, f, indent=2)
+                    json.dump(recording_data, f, indent=2)
 
         except Timeout:
             import sys
@@ -254,11 +268,25 @@ class SessionRecorder:
         print("Warning: filelock not installed, recording may fail on concurrent writes",
               file=sys.stderr)
 
+        # Load timestamps from state file if available
+        recording_data = {
+            'session_id': self.session_id,
+            'events': self.events
+        }
+
+        state_file = Path.home() / '.claude' / 'popkit' / 'recording-state.json'
+        if state_file.exists():
+            try:
+                state = json.loads(state_file.read_text())
+                if 'started_at' in state:
+                    recording_data['started_at'] = state['started_at']
+                if 'stopped_at' in state:
+                    recording_data['stopped_at'] = state['stopped_at']
+            except (json.JSONDecodeError, IOError):
+                pass
+
         with open(self.recording_file, 'w') as f:
-            json.dump({
-                'session_id': self.session_id,
-                'events': self.events
-            }, f, indent=2)
+            json.dump(recording_data, f, indent=2)
 
     def record_tool_call(
         self,
