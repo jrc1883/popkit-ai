@@ -79,7 +79,7 @@ except ImportError:
 
 # Import session recorder for --record flag support
 try:
-    from popkit_shared.utils.session_recorder import record_tool_call, is_recording_enabled
+    from popkit_shared.utils.session_recorder import record_tool_call, is_recording_enabled, get_recorder
     HAS_SESSION_RECORDER = True
 except ImportError:
     HAS_SESSION_RECORDER = False
@@ -1104,20 +1104,23 @@ def main():
                     content = json.dumps(tool_result)
                 tracker.track_tool_call(tool_name, content, execution_time)
 
-        # Record tool call if --record flag is enabled
+        # Record tool call COMPLETION (after execution)
         if HAS_SESSION_RECORDER and is_recording_enabled():
             # Determine success/error from result
             error = None
             if isinstance(tool_result, dict) and tool_result.get("error"):
                 error = str(tool_result.get("error"))
 
-            record_tool_call(
-                tool_name=tool_name,
-                parameters=tool_args,
-                result=str(tool_result)[:1000] if tool_result else None,  # Truncate large results
-                error=error,
-                duration_ms=int(execution_time * 1000) if execution_time else None
-            )
+            # Record completion event (pairs with tool_call_start from pre-tool-use)
+            recorder = get_recorder()
+            recorder.record_event({
+                "type": "tool_call_complete",
+                "timestamp": datetime.now().isoformat(),
+                "tool_name": tool_name,
+                "result": str(tool_result)[:1000] if tool_result else None,  # Truncate large results
+                "error": error,
+                "duration_ms": int(execution_time * 1000) if execution_time else None
+            })
 
         if not tool_name:
             response = {"error": "No tool_name provided in input"}
