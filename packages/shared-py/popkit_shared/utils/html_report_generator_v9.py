@@ -16,6 +16,13 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime
 
+# Import transcript parser for reasoning and token analysis
+try:
+    from transcript_parser import TranscriptParser
+    HAS_TRANSCRIPT_PARSER = True
+except ImportError:
+    HAS_TRANSCRIPT_PARSER = False
+
 
 def parse_timestamp(ts_str: str) -> datetime:
     """Parse ISO timestamp with optional timezone, return timezone-naive local time."""
@@ -311,6 +318,66 @@ def escape_html(text: str) -> str:
             .replace("'", '&#39;'))
 
 
+def parse_transcript_for_reasoning(data: Dict[str, Any], events: List[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
+    """
+    Parse transcript file to extract reasoning and token usage per tool call.
+
+    Returns: {tool_use_id: {'reasoning': {...}, 'tokens': TokenUsage, 'cost': float}}
+    """
+    if not HAS_TRANSCRIPT_PARSER:
+        return {}
+
+    # Extract transcript path from metadata events
+    transcript_path = None
+    for event in events:
+        if event.get('type') == 'metadata' and 'transcript_path' in event:
+            transcript_path = Path(event['transcript_path'])
+            break
+
+    if not transcript_path:
+        # Fallback: try to find transcript from session ID
+        # Transcripts are in ~/.claude/projects/<encoded-path>/<session-id>.jsonl
+        return {}
+
+    if not transcript_path.exists():
+        return {}
+
+    # Get recording timestamps for filtering
+    start_time = data.get('started_at')
+    end_time = data.get('stopped_at')
+
+    try:
+        # Parse transcript with timestamp filtering
+        parser = TranscriptParser(str(transcript_path), start_time=start_time, end_time=end_time)
+
+        # Build lookup dictionary
+        lookup = {}
+        tool_uses = parser.get_all_tool_uses()
+
+        for tool_use in tool_uses:
+            tool_use_id = tool_use['tool_use_id']
+
+            # Get reasoning before this tool
+            reasoning = parser.get_reasoning_before_tool(tool_use_id)
+
+            # Get token usage for this tool
+            tokens = parser.get_token_usage_for_tool(tool_use_id)
+
+            # Calculate cost
+            cost = parser.calculate_cost(tokens) if tokens else 0.0
+
+            lookup[tool_use_id] = {
+                'reasoning': reasoning,
+                'tokens': tokens,
+                'cost': cost
+            }
+
+        return lookup
+    except Exception as e:
+        print(f"Warning: Failed to parse transcript: {e}")
+        return {}
+
+
 def generate_html_report(recording_file: Path, output_file: Path) -> None:
     """Generate enhanced HTML report with fixed table layout."""
 
@@ -322,6 +389,26 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
 
     for event in events:
         event['parsed_timestamp'] = parse_timestamp(event.get('timestamp', ''))
+
+    # Parse transcript for reasoning and token usage
+    reasoning_lookup = parse_transcript_for_reasoning(data, events)
+
+    # Calculate total token usage across session
+    total_tokens = None
+    total_cost = None
+    if reasoning_lookup:
+        total_input = sum(v['tokens'].input_tokens for v in reasoning_lookup.values() if v['tokens'])
+        total_output = sum(v['tokens'].output_tokens for v in reasoning_lookup.values() if v['tokens'])
+        total_cache_write = sum(v['tokens'].cache_creation_input_tokens for v in reasoning_lookup.values() if v['tokens'])
+        total_cache_read = sum(v['tokens'].cache_read_input_tokens for v in reasoning_lookup.values() if v['tokens'])
+        total_tokens = {
+            'input_tokens': total_input,
+            'output_tokens': total_output,
+            'cache_creation_input_tokens': total_cache_write,
+            'cache_read_input_tokens': total_cache_read,
+            'total_tokens': total_input + total_output + total_cache_write + total_cache_read
+        }
+        total_cost = sum(v['cost'] for v in reasoning_lookup.values())
 
     claude_dir = Path.home() / '.claude' / 'projects'
     subagent_stops = [e for e in events if e.get('type') == 'subagent_stop']
@@ -614,9 +701,70 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
             <div class="stat-card">
                 <div class="label">Success Rate</div>
                 <div class="value">{success_rate:.0f}<span style="font-size: 14px; color: #8b949e;">%</span></div>
-            </div>
-        </div>
+            </div>'''
 
+    # Add token usage cards if available
+    if total_tokens:
+        html += f'''
+            <div class="stat-card">
+                <div class="label">Total Tokens</div>
+                <div class="value">{total_tokens['total_tokens']:,}</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Session Cost</div>
+                <div class="value">${total_cost:.2f}</div>
+            </div>'''
+
+    html += '''
+        </div>'''
+
+    # Add detailed token breakdown if available
+    if total_tokens:
+        cache_hit_rate = 0
+        if total_tokens['input_tokens'] + total_tokens['cache_read_input_tokens'] > 0:
+            cache_hit_rate = (total_tokens['cache_read_input_tokens'] /
+                            (total_tokens['input_tokens'] + total_tokens['cache_read_input_tokens']) * 100)
+
+        html += f'''
+        <div class="timeline-section">
+            <h2>💰 Token Usage & Cost Analysis</h2>
+            <div style="background: #161b22; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div>
+                        <div style="color: #8b949e; font-size: 12px; margin-bottom: 5px;">Input Tokens</div>
+                        <div style="color: #c9d1d9; font-size: 18px; font-weight: 600;">{total_tokens['input_tokens']:,}</div>
+                        <div style="color: #58a6ff; font-size: 11px;">${total_tokens['input_tokens'] * 3.00 / 1_000_000:.4f}</div>
+                    </div>
+                    <div>
+                        <div style="color: #8b949e; font-size: 12px; margin-bottom: 5px;">Output Tokens</div>
+                        <div style="color: #c9d1d9; font-size: 18px; font-weight: 600;">{total_tokens['output_tokens']:,}</div>
+                        <div style="color: #58a6ff; font-size: 11px;">${total_tokens['output_tokens'] * 15.00 / 1_000_000:.4f}</div>
+                    </div>
+                    <div>
+                        <div style="color: #8b949e; font-size: 12px; margin-bottom: 5px;">Cache Writes</div>
+                        <div style="color: #c9d1d9; font-size: 18px; font-weight: 600;">{total_tokens['cache_creation_input_tokens']:,}</div>
+                        <div style="color: #58a6ff; font-size: 11px;">${total_tokens['cache_creation_input_tokens'] * 3.75 / 1_000_000:.4f}</div>
+                    </div>
+                    <div>
+                        <div style="color: #8b949e; font-size: 12px; margin-bottom: 5px;">Cache Reads</div>
+                        <div style="color: #c9d1d9; font-size: 18px; font-weight: 600;">{total_tokens['cache_read_input_tokens']:,}</div>
+                        <div style="color: #58a6ff; font-size: 11px;">${total_tokens['cache_read_input_tokens'] * 0.30 / 1_000_000:.4f}</div>
+                    </div>
+                    <div>
+                        <div style="color: #8b949e; font-size: 12px; margin-bottom: 5px;">Cache Hit Rate</div>
+                        <div style="color: #3fb950; font-size: 18px; font-weight: 600;">{cache_hit_rate:.1f}%</div>
+                        <div style="color: #8b949e; font-size: 11px;">Efficiency</div>
+                    </div>
+                    <div>
+                        <div style="color: #8b949e; font-size: 12px; margin-bottom: 5px;">Total Cost</div>
+                        <div style="color: #58a6ff; font-size: 18px; font-weight: 600;">${total_cost:.2f}</div>
+                        <div style="color: #8b949e; font-size: 11px;">Sonnet 4.5</div>
+                    </div>
+                </div>
+            </div>
+        </div>'''
+
+    html += f'''
         <div class="timeline-section">
             <h2>🌐 Unified Timeline ({len(unified_timeline)} events)</h2>
             <div class="timeline-scroll">
@@ -664,6 +812,7 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
         elif event_type == 'tool_call_start':
             tool_name = event.get('tool_name', 'Unknown')
             params = event.get('parameters', {})
+            tool_use_id = event.get('tool_use_id')
 
             is_subagent_launch = 'subagent_type' in params
             if is_subagent_launch:
@@ -672,6 +821,49 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
             else:
                 badge_html = '<span class="event-badge event-tool">Tool Start</span>'
                 desc_html = f'<span class="tool-name">{tool_name}</span><br><small style="color: #8b949e;">{format_params_inline(params)}</small>'
+
+                # Add reasoning and token info if available
+                if tool_use_id and tool_use_id in reasoning_lookup:
+                    reasoning_data = reasoning_lookup[tool_use_id]
+                    reasoning = reasoning_data['reasoning']
+                    tokens = reasoning_data['tokens']
+                    cost = reasoning_data['cost']
+
+                    # Add expandable reasoning section
+                    reasoning_id = f"reasoning_{i}"
+                    desc_html += f'''
+                    <div style="margin-top: 10px;">
+                        <button onclick="document.getElementById('{reasoning_id}').style.display = document.getElementById('{reasoning_id}').style.display === 'none' ? 'block' : 'none'"
+                                style="background: #21262d; color: #58a6ff; border: 1px solid #30363d; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;">
+                            💭 Show Claude's Reasoning
+                        </button>
+                        <div id="{reasoning_id}" style="display: none; margin-top: 10px; background: #161b22; padding: 12px; border-radius: 6px; border: 1px solid #30363d;">'''
+
+                    # Add text blocks
+                    if reasoning['text']:
+                        desc_html += '<div style="margin-bottom: 10px;"><strong style="color: #8b949e;">Reasoning:</strong></div>'
+                        for text_block in reasoning['text'][:2]:  # Show first 2 text blocks
+                            desc_html += f'<div style="color: #c9d1d9; margin-bottom: 8px; line-height: 1.5;">{escape_html(text_block[:300])}</div>'
+
+                    # Add thinking preview
+                    if reasoning['thinking']:
+                        desc_html += '<div style="margin-top: 10px;"><strong style="color: #8b949e;">Extended Thinking:</strong></div>'
+                        thinking_preview = reasoning['thinking'][0][:200]
+                        desc_html += f'<div style="color: #8b949e; font-style: italic; margin-top: 4px;">{escape_html(thinking_preview)}...</div>'
+
+                    # Add token usage
+                    if tokens:
+                        desc_html += f'''<div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #30363d;">
+                            <div style="color: #8b949e; font-size: 11px; margin-bottom: 6px;">Token Usage:</div>
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                                <div><span style="color: #58a6ff;">Input:</span> {tokens.input_tokens:,}</div>
+                                <div><span style="color: #58a6ff;">Output:</span> {tokens.output_tokens:,}</div>
+                                <div><span style="color: #58a6ff;">Total:</span> {tokens.total_tokens:,}</div>
+                                <div><span style="color: #3fb950;">Cost:</span> ${cost:.4f}</div>
+                            </div>
+                        </div>'''
+
+                    desc_html += '</div></div>'
 
             # Check if this tool call has a completion
             seq = event.get('sequence')
