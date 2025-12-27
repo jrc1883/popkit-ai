@@ -23,6 +23,13 @@ try:
 except ImportError:
     HAS_TRANSCRIPT_PARSER = False
 
+# Import narrative generator for AI-powered session summaries
+try:
+    from narrative_generator import generate_narrative
+    HAS_NARRATIVE_GENERATOR = True
+except ImportError:
+    HAS_NARRATIVE_GENERATOR = False
+
 
 def parse_timestamp(ts_str: str) -> datetime:
     """Parse ISO timestamp with optional timezone, return timezone-naive local time."""
@@ -410,6 +417,14 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
         }
         total_cost = sum(v['cost'] for v in reasoning_lookup.values())
 
+    # Generate AI narrative summary
+    narrative_html = None
+    if HAS_NARRATIVE_GENERATOR and reasoning_lookup:
+        try:
+            narrative_html = generate_narrative(recording_file, events, reasoning_lookup, total_tokens)
+        except Exception as e:
+            print(f"Warning: Failed to generate narrative: {e}")
+
     claude_dir = Path.home() / '.claude' / 'projects'
     subagent_stops = [e for e in events if e.get('type') == 'subagent_stop']
     transcripts = parse_agent_transcripts(claude_dir, subagent_stops)
@@ -725,40 +740,123 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
             cache_hit_rate = (total_tokens['cache_read_input_tokens'] /
                             (total_tokens['input_tokens'] + total_tokens['cache_read_input_tokens']) * 100)
 
+        # Calculate cost breakdown percentages
+        input_cost = total_tokens['input_tokens'] * 3.00 / 1_000_000
+        output_cost = total_tokens['output_tokens'] * 15.00 / 1_000_000
+        cache_write_cost = total_tokens['cache_creation_input_tokens'] * 3.75 / 1_000_000
+        cache_read_cost = total_tokens['cache_read_input_tokens'] * 0.30 / 1_000_000
+
+        # Calculate percentages for visual bar
+        if total_cost > 0:
+            input_pct = (input_cost / total_cost * 100) if total_cost > 0 else 0
+            output_pct = (output_cost / total_cost * 100) if total_cost > 0 else 0
+            cache_write_pct = (cache_write_cost / total_cost * 100) if total_cost > 0 else 0
+            cache_read_pct = (cache_read_cost / total_cost * 100) if total_cost > 0 else 0
+        else:
+            input_pct = output_pct = cache_write_pct = cache_read_pct = 0
+
+        # Calculate token distribution percentages
+        total = total_tokens['total_tokens']
+        if total > 0:
+            input_token_pct = (total_tokens['input_tokens'] / total * 100)
+            output_token_pct = (total_tokens['output_tokens'] / total * 100)
+            cache_write_token_pct = (total_tokens['cache_creation_input_tokens'] / total * 100)
+            cache_read_token_pct = (total_tokens['cache_read_input_tokens'] / total * 100)
+        else:
+            input_token_pct = output_token_pct = cache_write_token_pct = cache_read_token_pct = 0
+
         html += f'''
         <div class="timeline-section">
             <h2>💰 Token Usage & Cost Analysis</h2>
             <div style="background: #161b22; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+
+                <!-- Cost Breakdown Bar -->
+                <div style="margin-bottom: 25px;">
+                    <div style="color: #8b949e; font-size: 12px; margin-bottom: 8px;">Cost Distribution</div>
+                    <div style="display: flex; height: 30px; border-radius: 6px; overflow: hidden; background: #0d1117;">
+                        <div style="background: #58a6ff; width: {input_pct:.1f}%; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: 600;">
+                            {input_pct:.0f}%
+                        </div>
+                        <div style="background: #f85149; width: {output_pct:.1f}%; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: 600;">
+                            {output_pct:.0f}%
+                        </div>
+                        <div style="background: #d29922; width: {cache_write_pct:.1f}%; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: 600;">
+                            {cache_write_pct:.0f}%
+                        </div>
+                        <div style="background: #3fb950; width: {cache_read_pct:.1f}%; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: 600;">
+                            {cache_read_pct:.0f}%
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 15px; margin-top: 8px; font-size: 11px;">
+                        <div><span style="display: inline-block; width: 10px; height: 10px; background: #58a6ff; border-radius: 2px;"></span> Input</div>
+                        <div><span style="display: inline-block; width: 10px; height: 10px; background: #f85149; border-radius: 2px;"></span> Output</div>
+                        <div><span style="display: inline-block; width: 10px; height: 10px; background: #d29922; border-radius: 2px;"></span> Cache Write</div>
+                        <div><span style="display: inline-block; width: 10px; height: 10px; background: #3fb950; border-radius: 2px;"></span> Cache Read</div>
+                    </div>
+                </div>
+
+                <!-- Detailed Metrics -->
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                    <div>
+                    <div style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%); padding: 15px; border-radius: 6px; border: 1px solid #30363d;">
                         <div style="color: #8b949e; font-size: 12px; margin-bottom: 5px;">Input Tokens</div>
-                        <div style="color: #c9d1d9; font-size: 18px; font-weight: 600;">{total_tokens['input_tokens']:,}</div>
-                        <div style="color: #58a6ff; font-size: 11px;">${total_tokens['input_tokens'] * 3.00 / 1_000_000:.4f}</div>
+                        <div style="color: #58a6ff; font-size: 20px; font-weight: 600;">{total_tokens['input_tokens']:,}</div>
+                        <div style="color: #8b949e; font-size: 11px; margin-top: 4px;">{input_token_pct:.1f}% of total • ${input_cost:.4f}</div>
                     </div>
-                    <div>
+                    <div style="background: linear-gradient(135deg, #2d1f1f 0%, #1a1111 100%); padding: 15px; border-radius: 6px; border: 1px solid #30363d;">
                         <div style="color: #8b949e; font-size: 12px; margin-bottom: 5px;">Output Tokens</div>
-                        <div style="color: #c9d1d9; font-size: 18px; font-weight: 600;">{total_tokens['output_tokens']:,}</div>
-                        <div style="color: #58a6ff; font-size: 11px;">${total_tokens['output_tokens'] * 15.00 / 1_000_000:.4f}</div>
+                        <div style="color: #f85149; font-size: 20px; font-weight: 600;">{total_tokens['output_tokens']:,}</div>
+                        <div style="color: #8b949e; font-size: 11px; margin-top: 4px;">{output_token_pct:.1f}% of total • ${output_cost:.4f}</div>
                     </div>
-                    <div>
+                    <div style="background: linear-gradient(135deg, #2d2619 0%, #1a1710 100%); padding: 15px; border-radius: 6px; border: 1px solid #30363d;">
                         <div style="color: #8b949e; font-size: 12px; margin-bottom: 5px;">Cache Writes</div>
-                        <div style="color: #c9d1d9; font-size: 18px; font-weight: 600;">{total_tokens['cache_creation_input_tokens']:,}</div>
-                        <div style="color: #58a6ff; font-size: 11px;">${total_tokens['cache_creation_input_tokens'] * 3.75 / 1_000_000:.4f}</div>
+                        <div style="color: #d29922; font-size: 20px; font-weight: 600;">{total_tokens['cache_creation_input_tokens']:,}</div>
+                        <div style="color: #8b949e; font-size: 11px; margin-top: 4px;">{cache_write_token_pct:.1f}% of total • ${cache_write_cost:.4f}</div>
                     </div>
-                    <div>
+                    <div style="background: linear-gradient(135deg, #1f2d1f 0%, #11210 100%); padding: 15px; border-radius: 6px; border: 1px solid #30363d;">
                         <div style="color: #8b949e; font-size: 12px; margin-bottom: 5px;">Cache Reads</div>
-                        <div style="color: #c9d1d9; font-size: 18px; font-weight: 600;">{total_tokens['cache_read_input_tokens']:,}</div>
-                        <div style="color: #58a6ff; font-size: 11px;">${total_tokens['cache_read_input_tokens'] * 0.30 / 1_000_000:.4f}</div>
+                        <div style="color: #3fb950; font-size: 20px; font-weight: 600;">{total_tokens['cache_read_input_tokens']:,}</div>
+                        <div style="color: #8b949e; font-size: 11px; margin-top: 4px;">{cache_read_token_pct:.1f}% of total • ${cache_read_cost:.4f}</div>
                     </div>
-                    <div>
-                        <div style="color: #8b949e; font-size: 12px; margin-bottom: 5px;">Cache Hit Rate</div>
-                        <div style="color: #3fb950; font-size: 18px; font-weight: 600;">{cache_hit_rate:.1f}%</div>
-                        <div style="color: #8b949e; font-size: 11px;">Efficiency</div>
+                </div>
+
+                <!-- Efficiency Metrics -->
+                <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div style="background: #161b22; padding: 15px; border-radius: 6px; border: 1px solid #30363d;">
+                        <div style="color: #8b949e; font-size: 12px; margin-bottom: 8px;">Cache Efficiency</div>
+                        <div style="display: flex; align-items: baseline; gap: 10px;">
+                            <div style="color: #3fb950; font-size: 24px; font-weight: 600;">{cache_hit_rate:.1f}%</div>
+                            <div style="color: #8b949e; font-size: 11px;">hit rate</div>
+                        </div>
+                        <div style="color: #8b949e; font-size: 11px; margin-top: 6px;">
+                            {cache_hit_rate:.0f}% of input tokens served from cache
+                        </div>
                     </div>
-                    <div>
-                        <div style="color: #8b949e; font-size: 12px; margin-bottom: 5px;">Total Cost</div>
-                        <div style="color: #58a6ff; font-size: 18px; font-weight: 600;">${total_cost:.2f}</div>
-                        <div style="color: #8b949e; font-size: 11px;">Sonnet 4.5</div>
+                    <div style="background: #161b22; padding: 15px; border-radius: 6px; border: 1px solid #30363d;">
+                        <div style="color: #8b949e; font-size: 12px; margin-bottom: 8px;">Total Session Cost</div>
+                        <div style="display: flex; align-items: baseline; gap: 10px;">
+                            <div style="color: #58a6ff; font-size: 24px; font-weight: 600;">${total_cost:.2f}</div>
+                            <div style="color: #8b949e; font-size: 11px;">Claude Sonnet 4.5</div>
+                        </div>
+                        <div style="color: #8b949e; font-size: 11px; margin-top: 6px;">
+                            {total_tokens['total_tokens']:,} tokens processed
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>'''
+
+    # Add AI-generated narrative section
+    if narrative_html:
+        html += f'''
+        <div class="timeline-section">
+            <h2>📖 Session Narrative</h2>
+            <div style="background: #161b22; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <div style="color: #c9d1d9; font-size: 14px; line-height: 1.7;">
+                    {narrative_html}
+                </div>
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #30363d;">
+                    <div style="color: #8b949e; font-size: 11px; font-style: italic;">
+                        ✨ AI-generated summary powered by Claude Sonnet 4.5
                     </div>
                 </div>
             </div>
