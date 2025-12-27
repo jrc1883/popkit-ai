@@ -63,15 +63,24 @@ class TranscriptParser:
         reasoning = parser.get_reasoning_before_tool('toolu_abc123')
         tokens = parser.get_token_usage_for_tool('toolu_abc123')
         total = parser.get_total_token_usage()
+
+    With timestamp filtering (for recording sessions):
+        parser = TranscriptParser('/path/to/transcript.jsonl',
+                                   start_time='2025-12-26T21:29:00',
+                                   end_time='2025-12-26T21:46:00')
     """
 
-    def __init__(self, transcript_path: str):
+    def __init__(self, transcript_path: str,
+                 start_time: Optional[str] = None,
+                 end_time: Optional[str] = None):
         self.transcript_path = Path(transcript_path)
+        self.start_time = start_time
+        self.end_time = end_time
         self.entries: List[Dict[str, Any]] = []
         self._parse()
 
     def _parse(self):
-        """Parse JSONL transcript file"""
+        """Parse JSONL transcript file with optional timestamp filtering"""
         if not self.transcript_path.exists():
             raise FileNotFoundError(f"Transcript not found: {self.transcript_path}")
 
@@ -79,6 +88,20 @@ class TranscriptParser:
             for line_num, line in enumerate(f, 1):
                 try:
                     entry = json.loads(line.strip())
+
+                    # Apply timestamp filtering if start_time/end_time provided
+                    if self.start_time or self.end_time:
+                        entry_timestamp = entry.get('timestamp')
+                        if not entry_timestamp:
+                            # Skip entries without timestamps when filtering
+                            continue
+
+                        # Check if entry is within time range
+                        if self.start_time and entry_timestamp < self.start_time:
+                            continue
+                        if self.end_time and entry_timestamp > self.end_time:
+                            continue
+
                     self.entries.append(entry)
                 except json.JSONDecodeError as e:
                     # Skip malformed lines

@@ -775,10 +775,22 @@ def main():
         if SESSION_RECORDER_AVAILABLE and is_recording_enabled():
             try:
                 recorder = get_recorder()
+
+                # Store transcript path as metadata (once, for HTML report generation)
+                if len(recorder.events) == 1:  # Only session_start event exists
+                    transcript_path = input_data.get("transcript_path")
+                    if transcript_path:
+                        recorder.record_event({
+                            "type": "metadata",
+                            "timestamp": datetime.now().isoformat(),
+                            "transcript_path": transcript_path
+                        })
+
                 recorder.record_event({
                     "type": "tool_call_start",
                     "timestamp": datetime.now().isoformat(),
                     "tool_name": tool_name,
+                    "tool_use_id": input_data.get("tool_use_id"),  # For transcript correlation
                     "parameters": tool_args
                 })
 

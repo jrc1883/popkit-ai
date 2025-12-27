@@ -19,7 +19,7 @@ def test_parser_creation():
         return
 
     parser = TranscriptParser(str(transcript_path))
-    print(f"✓ Parser created successfully")
+    print(f"[OK] Parser created successfully")
     print(f"  Entries parsed: {len(parser.entries)}")
     assert len(parser.entries) > 0, "Should have parsed entries"
 
@@ -35,7 +35,7 @@ def test_get_all_tool_uses():
     parser = TranscriptParser(str(transcript_path))
     tool_uses = parser.get_all_tool_uses()
 
-    print(f"✓ Found {len(tool_uses)} tool uses")
+    print(f"[OK] Found {len(tool_uses)} tool uses")
 
     if tool_uses:
         # Show first 3
@@ -54,7 +54,7 @@ def test_get_total_token_usage():
     parser = TranscriptParser(str(transcript_path))
     usage = parser.get_total_token_usage()
 
-    print(f"✓ Total token usage calculated")
+    print(f"[OK] Total token usage calculated")
     print(f"  Input tokens: {usage.input_tokens:,}")
     print(f"  Output tokens: {usage.output_tokens:,}")
     print(f"  Cache writes: {usage.cache_creation_input_tokens:,}")
@@ -90,7 +90,7 @@ def test_get_reasoning_for_tool():
 
     reasoning = parser.get_reasoning_before_tool(tool_use_id)
 
-    print(f"✓ Reasoning extracted for {last_tool['tool_name']}")
+    print(f"[OK] Reasoning extracted for {last_tool['tool_name']}")
     print(f"  Tool use ID: {tool_use_id}")
     print(f"  Text blocks: {len(reasoning['text'])}")
     print(f"  Thinking blocks: {len(reasoning['thinking'])}")
@@ -125,14 +125,14 @@ def test_get_token_usage_for_tool():
     usage = parser.get_token_usage_for_tool(tool_use_id)
 
     if usage:
-        print(f"✓ Token usage for {last_tool['tool_name']}")
+        print(f"[OK] Token usage for {last_tool['tool_name']}")
         print(f"  Input: {usage.input_tokens}")
         print(f"  Output: {usage.output_tokens}")
         print(f"  Total: {usage.total_tokens}")
         cost = parser.calculate_cost(usage)
         print(f"  Cost: ${cost:.4f}")
     else:
-        print(f"✗ No usage data found for tool")
+        print(f"[ERROR] No usage data found for tool")
 
 
 def test_get_assistant_messages():
@@ -146,7 +146,7 @@ def test_get_assistant_messages():
     parser = TranscriptParser(str(transcript_path))
     messages = parser.get_assistant_messages()
 
-    print(f"✓ Found {len(messages)} assistant messages")
+    print(f"[OK] Found {len(messages)} assistant messages")
 
     # Show distribution
     with_text = sum(1 for m in messages if m.text_blocks)
@@ -158,6 +158,43 @@ def test_get_assistant_messages():
     print(f"  With tool uses: {with_tools}")
 
 
+def test_timestamp_filtering():
+    """Test timestamp filtering reduces token counts"""
+    transcript_path = Path.home() / '.claude' / 'projects' / 'C--Users-Josep-OneDrive-Documents-ElShaddai-apps-popkit' / 'ad19212c-7de5-4b0f-8a50-0d311410b902.jsonl'
+
+    if not transcript_path.exists():
+        print(f"SKIP: Transcript not found")
+        return
+
+    # Parse without filtering
+    parser_full = TranscriptParser(str(transcript_path))
+    usage_full = parser_full.get_total_token_usage()
+
+    # Parse with timestamp filter (last 1 hour)
+    from datetime import datetime, timedelta
+    now = datetime.now()
+    one_hour_ago = (now - timedelta(hours=1)).isoformat()
+
+    parser_filtered = TranscriptParser(
+        str(transcript_path),
+        start_time=one_hour_ago,
+        end_time=now.isoformat()
+    )
+    usage_filtered = parser_filtered.get_total_token_usage()
+
+    print(f"[OK] Timestamp filtering test:")
+    print(f"  Full transcript entries: {len(parser_full.entries)}")
+    print(f"  Filtered entries: {len(parser_filtered.entries)}")
+    print(f"  Full tokens: {usage_full.total_tokens:,}")
+    print(f"  Filtered tokens: {usage_filtered.total_tokens:,}")
+
+    # Filtering should reduce token count (unless all entries are within 1 hour)
+    reduction_pct = ((usage_full.total_tokens - usage_filtered.total_tokens) / usage_full.total_tokens * 100) if usage_full.total_tokens > 0 else 0
+    print(f"  Reduction: {reduction_pct:.1f}%")
+
+    assert len(parser_filtered.entries) <= len(parser_full.entries), "Filtered should have fewer or equal entries"
+
+
 def run_all_tests():
     """Run all tests"""
     tests = [
@@ -167,6 +204,7 @@ def run_all_tests():
         ("Reasoning Extraction", test_get_reasoning_for_tool),
         ("Tool Token Usage", test_get_token_usage_for_tool),
         ("Assistant Messages", test_get_assistant_messages),
+        ("Timestamp Filtering", test_timestamp_filtering),
     ]
 
     print("=" * 60)
@@ -185,11 +223,11 @@ def run_all_tests():
             print()
             passed += 1
         except AssertionError as e:
-            print(f"✗ FAILED: {e}")
+            print(f"[ERROR] FAILED: {e}")
             print()
             failed += 1
         except Exception as e:
-            print(f"✗ ERROR: {e}")
+            print(f"[ERROR] ERROR: {e}")
             print()
             failed += 1
 
