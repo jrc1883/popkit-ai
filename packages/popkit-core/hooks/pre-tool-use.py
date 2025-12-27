@@ -759,27 +759,12 @@ class PreToolUseHook:
 def main():
     """Main entry point for the hook - JSON stdin/stdout protocol"""
     try:
-        # DEBUG: Unconditional test to see if hook runs
-        test_file = Path.home() / '.claude' / 'popkit' / 'recordings' / 'hook_test.txt'
-        with open(test_file, 'a') as f:
-            f.write(f'pre-tool-use.py executed at {datetime.now()}, SESSION_RECORDER_AVAILABLE={SESSION_RECORDER_AVAILABLE}\n')
-
         # Read JSON input from stdin
-        try:
-            input_data = json.loads(sys.stdin.read())
-            with open(test_file, 'a') as f:
-                f.write(f'  Got input_data, keys: {list(input_data.keys())}\n')
-        except Exception as e:
-            with open(test_file, 'a') as f:
-                f.write(f'  ERROR reading stdin: {type(e).__name__}: {e}\n')
-            raise
+        input_data = json.loads(sys.stdin.read())
 
         tool_name = input_data.get("tool_name", "")
         tool_args = input_data.get("tool_input", {})
         conversation_history = input_data.get("conversation_history", [])
-
-        with open(test_file, 'a') as f:
-            f.write(f'  tool_name={tool_name}, conversation_history length={len(conversation_history)}\n')
 
         if not tool_name:
             response = {"error": "No tool_name provided in input"}
@@ -787,14 +772,8 @@ def main():
             sys.exit(1)
 
         # Record tool call START (before execution)
-        # DEBUG: Log recording attempt
-        with open(test_file, 'a') as f:
-            f.write(f'  Recording check: SESSION_RECORDER_AVAILABLE={SESSION_RECORDER_AVAILABLE}, is_recording_enabled()={is_recording_enabled() if SESSION_RECORDER_AVAILABLE else "N/A"}\n')
-
         if SESSION_RECORDER_AVAILABLE and is_recording_enabled():
             try:
-                with open(test_file, 'a') as f:
-                    f.write(f'  RECORDING tool_call_start for {tool_name}\n')
                 recorder = get_recorder()
                 recorder.record_event({
                     "type": "tool_call_start",
@@ -805,29 +784,6 @@ def main():
 
                 # Record assistant messages from conversation history for context
                 # This captures Claude's reasoning, analysis, and recommendations
-
-                # DEBUG: Log what we received
-                debug_log = Path.home() / '.claude' / 'popkit' / 'recordings' / 'conversation_debug.json'
-                try:
-                    debug_data = {
-                        'timestamp': datetime.now().isoformat(),
-                        'tool_name': tool_name,
-                        'has_history': conversation_history is not None,
-                        'history_length': len(conversation_history) if conversation_history else 0,
-                        'last_3_messages': [
-                            {
-                                'role': msg.get('role'),
-                                'content_type': type(msg.get('content')).__name__,
-                                'content_length': len(str(msg.get('content', '')))
-                            }
-                            for msg in (conversation_history[-3:] if conversation_history else [])
-                        ]
-                    }
-                    with open(debug_log, 'a') as f:
-                        f.write(json.dumps(debug_data) + '\n')
-                except:
-                    pass
-
                 if conversation_history:
                     # Look at recent messages (last 5) for assistant responses
                     for msg in reversed(conversation_history[-5:]):
