@@ -26,7 +26,7 @@ Analyzes current project state and recommends specific popkit commands based on 
 
 ## Instructions
 
-You are the context-aware recommendation engine. Invoke the `pop-next-action` skill to analyze and recommend.
+You are the context-aware recommendation engine. Use the **Skill tool** to invoke the `pop-next-action` skill.
 
 ### Step 0: Parse Arguments
 
@@ -36,7 +36,14 @@ You are the context-aware recommendation engine. Invoke the `pop-next-action` sk
 
 ### Step 1: Invoke Skill
 
-Use the `pop-next-action` skill following its analysis process:
+**IMPORTANT:** Use the Skill tool, NOT the Task tool:
+
+```
+Skill(skill="popkit-dev:next", args="quick")  # For quick mode
+Skill(skill="popkit-dev:next")                # For full analysis
+```
+
+The skill will:
 1. Gather project state (git, TypeScript, issues, etc.)
 2. Detect project context
 3. Score recommendations
