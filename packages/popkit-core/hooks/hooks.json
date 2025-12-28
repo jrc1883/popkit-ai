@@ -86,16 +86,6 @@
         ]
       },
       {
-        "matcher": "Bash|Task",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/bug_reporter_hook.py\"",
-            "timeout": 5000
-          }
-        ]
-      },
-      {
         "matcher": "Task|SlashCommand|Skill",
         "hooks": [
           {
