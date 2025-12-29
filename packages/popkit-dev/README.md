@@ -1,7 +1,7 @@
 # PopKit Dev - Development Workflow Plugin
 
-**Version:** 0.2.0
-**Status:** Active Development (Phase 2-3 of Plugin Modularization)
+**Version:** 1.0.0-beta.1
+**Status:** Ready for marketplace publication (Epic #580 Complete)
 
 ## Overview
 
@@ -53,23 +53,25 @@ PopKit Dev is a complete development workflow plugin that provides comprehensive
 
 ## Dependencies
 
-- **popkit-shared** (>= 0.1.0) - Shared utility modules
+- **popkit-shared** (>= 1.0.0) - Shared utility modules
 - **Python** (>= 3.8)
 - **requests** library
 
+**Minimum Requirements**:
+- Claude Code 2.0.67+ (for extended thinking and plan mode)
+
 ## Architecture
 
-Part of PopKit's modular plugin architecture:
+Part of PopKit's modular plugin architecture (v1.0.0-beta.1):
 
 ```
 packages/
-├── shared-py/          # Shared utilities (all plugins depend on this)
+├── shared-py/          # Shared utilities v1.0.0 (all plugins depend on this)
+├── popkit-core/        # Foundation & Power Mode
 ├── popkit-dev/         # Development workflows (this plugin)
-├── popkit-data/        # Future: Data & AI workflows
-├── popkit-cloud/       # Future: Cloud operations
-├── popkit-security/    # Future: Security scanning
-├── popkit-docs/        # Future: Documentation generation
-└── popkit-deploy/      # Future: Deployment automation
+├── popkit-ops/         # Operations, quality, deployment
+├── popkit-research/    # Knowledge management
+└── popkit-suite/       # Complete bundle (meta-plugin)
 ```
 
 ## Usage Examples

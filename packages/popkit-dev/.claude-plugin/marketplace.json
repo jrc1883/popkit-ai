@@ -1,7 +1,7 @@
 {
   "name": "popkit-dev",
   "displayName": "PopKit Dev",
-  "version": "0.1.0",
+  "version": "1.0.0-beta.1",
   "description": "Development workflow plugin with feature development, git operations, and daily routines",
   "longDescription": "PopKit Dev provides a comprehensive suite of development workflow tools including 7-phase feature development, smart git operations, worktree management, and daily health check routines. Part of the modular PopKit plugin ecosystem.",
   "author": {

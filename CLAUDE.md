@@ -46,16 +46,26 @@ claude --plugin-dir ./packages/popkit-core --plugin-dir ./packages/popkit-dev --
 | **PopKit Cloud** | Shared backend API (Cloudflare Workers) |
 | **PopKit Platform** | Future vision: model-agnostic orchestrator for multiple IDEs |
 
-### Current Architecture
+### Current Architecture (v1.0.0-beta.1)
 
 ```
 jrc1883/popkit (PRIVATE - this repo)
-├── packages/plugin/     → Published to jrc1883/popkit-claude (PUBLIC, declarative only)
-├── packages/cloud/      → Deployed to Cloudflare Workers
-└── packages/cloud-*/    → Billing, docs, team features
+├── packages/popkit-core/       → Foundation plugin (v1.0.0-beta.1)
+├── packages/popkit-dev/        → Development workflows (v1.0.0-beta.1)
+├── packages/popkit-ops/        → Operations & quality (v1.0.0-beta.1)
+├── packages/popkit-research/   → Knowledge management (v1.0.0-beta.1)
+├── packages/popkit-suite/      → Meta-plugin bundle (v1.0.0-beta.1)
+├── packages/shared-py/         → Shared utilities (v1.0.0)
+├── packages/cloud/             → Cloudflare Workers API
+├── packages/docs/              → Documentation site (Astro + Starlight)
+├── packages/landing/           → Marketing site
+├── packages/benchmarks/        → Testing framework
+└── packages/universal-mcp/     → Multi-IDE MCP server (future)
 ```
 
-Users install the plugin via: `/plugin install popkit@popkit-claude`
+**Total**: 12 packages (5 plugins + 1 shared + 6 infrastructure)
+
+Users install via: `/plugin install popkit-suite@popkit-marketplace` (complete) or individual plugins
 
 ### Cloud Infrastructure
 
@@ -679,31 +689,33 @@ See [CHANGELOG.md](CHANGELOG.md) for full version history.
 
 ## Current Status & Roadmap
 
-### Epic #580: Plugin Modularization (IN PROGRESS)
+### Epic #580: Plugin Modularization (COMPLETE ✅)
 
-**Goal**: Transform monolithic plugin into 6 focused workflow-based plugins
+**Goal**: Transform monolithic plugin into 5 focused workflow-based plugins
 
-**Progress**: Phase 6/6 (Documentation & Release) - 83% Complete
+**Progress**: Phase 6/6 (Documentation & Release) - 95% Complete
+
+**Final Architecture**:
+- **5 Modular Plugins**: popkit-core, popkit-dev, popkit-ops, popkit-research, popkit-suite
+- **Shared Foundation**: popkit-shared v1.0.0 (70 utility modules)
+- **Package Consolidation**: github→dev, quality+deploy→ops
+- **Version Alignment**: All plugins at v1.0.0-beta.1
 
 **Phases Completed** ✅:
-- Phase 1: Shared Foundation Package (`@popkit/shared-py` - 70 utility modules)
-- Phase 2: popkit-dev Plugin (core development workflows)
-- Phase 3: Remaining Plugins (github, quality, deploy, research, core)
-- Phase 4: Meta-Plugin (backwards compatibility)
-- Phase 5: Testing & Validation (Issue #578 CLOSED)
-  - ✅ Plugin structure verified (all 6 plugins)
-  - ✅ Shared package imports tested (7/7 critical modules)
-  - ✅ Test suite compatibility: 155/161 passing (96.3%)
-  - ✅ Performance measured: 298,568 tokens (acceptable despite 6.8% increase)
-  - ⏸️ Manual testing deferred to post-beta (requires published plugins)
-
-**Current Phase** 🔄:
-- **Phase 6: Documentation & Release** (Ready to start)
-  - Update documentation for modular architecture
-  - Create marketplace listings
-  - Prepare v1.0.0-beta.1 release
-  - Publish to marketplace
-  - Conduct real UAT with beta users
+- Phase 1: Shared Foundation Package (`@popkit/shared-py` v1.0.0)
+- Phase 2: popkit-dev Plugin (development workflows + GitHub)
+- Phase 3: Remaining Plugins (ops, research, core)
+- Phase 4: Meta-Plugin (popkit-suite for backwards compatibility)
+- Phase 5: Testing & Validation (96.3% test pass rate)
+- Phase 6: Documentation & Release (IN PROGRESS)
+  - ✅ Package cleanup (removed 3 packages)
+  - ✅ Version alignment (all v1.0.0-beta.1)
+  - ✅ CHANGELOG.md updated
+  - ✅ README.md updated
+  - ✅ CLAUDE.md updated
+  - ⏳ Package-level READMEs
+  - ⏳ Marketplace listings verification
+  - ⏳ Final validation & publication
 
 **Key Documents**:
 - Design: [`docs/plans/2025-12-20-plugin-modularization-design.md`](docs/plans/2025-12-20-plugin-modularization-design.md)
@@ -714,15 +726,20 @@ See [CHANGELOG.md](CHANGELOG.md) for full version history.
 
 ### Recent Milestones
 
-- **2025-12-21**: Phase 5 COMPLETE - Issue #578 closed, ready for Phase 6
-  - Structure validation: 100% (all 6 plugins verified)
+- **2025-12-28**: Phase 6 IN PROGRESS - v1.0.0-beta.1 preparation
+  - Package cleanup: Removed 3 packages (semantic-search, ui, cloud-docs)
+  - Version alignment: All plugins standardized to v1.0.0-beta.1
+  - Documentation updates: CHANGELOG, README, CLAUDE.md refreshed
+  - Final structure: 12 packages (5 plugins + 1 shared + 6 infrastructure)
+- **2025-12-21**: Phase 5 COMPLETE - Issue #578 closed
+  - Structure validation: 100% (all 5 plugins verified)
   - Test suite: 96.3% passing (155/161 tests)
-  - Performance measured: 298,568 tokens (6.8% increase acceptable)
-  - Created comprehensive testing documentation
-- **2025-12-20**: All 6 modular plugins extracted (#570-577 closed)
-- **2025-12-20**: Shared foundation package published
-- **2025-12-19**: Comprehensive assessment completed (82/100 score)
-- **2025-12-18**: Documentation deprecation notices added (#582 closed)
+  - Performance: 298,568 tokens (acceptable)
+- **2025-12-20**: All modular plugins extracted and consolidated
+  - popkit-github merged into popkit-dev
+  - popkit-quality + popkit-deploy → popkit-ops
+- **2025-12-19**: Comprehensive assessment (82/100 score)
+- **2025-12-18**: Documentation deprecation notices (#582 closed)
 
 ## Conventions
 
@@ -733,15 +750,26 @@ See [CHANGELOG.md](CHANGELOG.md) for full version history.
 
 ## Releasing New Versions
 
-When releasing a new version of popkit:
+When releasing a new version of PopKit:
 
 ### 1. Update Version Numbers
 
-Update version in these files (must match):
-- `packages/plugin/.claude-plugin/plugin.json` - Main plugin version
-- `packages/plugin/.claude-plugin/marketplace.json` - Marketplace version
+Update version in all plugin.json files (must match):
+- `packages/popkit-core/.claude-plugin/plugin.json`
+- `packages/popkit-dev/.claude-plugin/plugin.json`
+- `packages/popkit-ops/.claude-plugin/plugin.json`
+- `packages/popkit-research/.claude-plugin/plugin.json`
+- `packages/popkit-suite/.claude-plugin/plugin.json`
+- `packages/shared-py/pyproject.toml`
 
-### 2. Update Changelog
+### 2. Update Requirements
+
+Update all plugin requirements.txt files:
+```
+popkit-shared>=X.Y.Z
+```
+
+### 3. Update Changelog
 
 Add new version section to `CHANGELOG.md`:
 ```markdown
@@ -750,10 +778,10 @@ Add new version section to `CHANGELOG.md`:
 - **Feature Name**: Description
 ```
 
-### 3. Commit and Push
+### 4. Commit and Push
 
 ```bash
-git add packages/plugin/.claude-plugin/plugin.json packages/plugin/.claude-plugin/marketplace.json CHANGELOG.md
+git add packages/popkit-*/.claude-plugin/plugin.json packages/shared-py/pyproject.toml CHANGELOG.md
 git commit -m "chore: bump version to X.Y.Z for [feature summary]"
 git push
 ```

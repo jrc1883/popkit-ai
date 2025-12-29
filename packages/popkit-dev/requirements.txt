@@ -1,7 +1,7 @@
 # PopKit Dev Plugin - Python Dependencies
 
 # Shared utilities package (required)
-popkit-shared>=0.1.0
+popkit-shared>=1.0.0
 
 # HTTP client for git operations and cloud integrations
 requests>=2.31.0,<3.0.0

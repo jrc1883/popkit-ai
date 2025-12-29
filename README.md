@@ -2,7 +2,7 @@
 
 **AI-powered development workflows for Claude Code** - Modular plugin suite for professional software development.
 
-**Version:** 0.1.0 (Beta) | **Plugins:** 8 | **Commands:** 24 | **Skills:** 46 | **Agents:** 29
+**Version:** 1.0.0-beta.1 | **Plugins:** 5 | **Commands:** 24 | **Skills:** 38 | **Agents:** 21
 
 ---
 
@@ -10,10 +10,10 @@
 
 PopKit transforms Claude Code into a complete development workflow system. Instead of using raw tools, you get:
 
-- **7 Focused Plugins**: Install only what you need
+- **5 Focused Plugins**: Install only what you need
 - **24 Workflow Commands**: From feature dev to deployment
-- **46 Reusable Skills**: Composable automation patterns
-- **29 Specialized Agents**: Context-aware AI assistance
+- **38 Reusable Skills**: Composable automation patterns
+- **21 Specialized Agents**: Context-aware AI assistance
 - **FREE Local Execution**: All features work without cloud
 - **API Key Enhancements**: Optional semantic intelligence
 
@@ -21,19 +21,17 @@ PopKit transforms Claude Code into a complete development workflow system. Inste
 
 ## 📦 Modular Architecture
 
-PopKit is now split into focused workflow plugins:
+PopKit is split into 5 focused workflow plugins:
 
 | Plugin | Purpose | Commands | When to Use |
 |--------|---------|----------|-------------|
-| **[popkit-dev](packages/popkit-dev/)** | Development workflows | 5 | Daily dev, git, routines |
-| **[popkit-github](packages/popkit-github/)** | GitHub integration | 2 | Issues, milestones |
-| **[popkit-quality](packages/popkit-quality/)** | Testing & debugging | 4 | QA, security, assessments |
-| **[popkit-deploy](packages/popkit-deploy/)** | Deployment automation | 1 | Ship to any platform |
-| **[popkit-research](packages/popkit-research/)** | Knowledge management | 2 | Research, notes |
-| **[popkit-core](packages/popkit-core/)** | Meta features | 10 | Project setup, Power Mode |
-| **[popkit (meta)](packages/popkit-meta/)** | Complete suite | All | One-click install |
+| **[popkit-core](packages/popkit-core/)** | Foundation & Power Mode | 11 | Project setup, plugin management, orchestration |
+| **[popkit-dev](packages/popkit-dev/)** | Development workflows | 7 | Daily dev, git, GitHub, routines |
+| **[popkit-ops](packages/popkit-ops/)** | Operations & quality | 5 | Testing, debugging, security, deployment |
+| **[popkit-research](packages/popkit-research/)** | Knowledge management | 2 | Research capture, knowledge base |
+| **[popkit-suite](packages/popkit-suite/)** | Complete bundle | All | One-click install (all features) |
 
-**Plus**: `popkit-shared` - Shared Python utilities foundation
+**Foundation**: `popkit-shared` (v1.0.0) - 70 shared Python utility modules
 
 ---
 
@@ -44,7 +42,7 @@ PopKit is now split into focused workflow plugins:
 Install everything with one command:
 
 ```bash
-/plugin install popkit@popkit-marketplace
+/plugin install popkit-suite@popkit-marketplace
 # Restart Claude Code
 ```
 
@@ -55,19 +53,24 @@ All 24 commands available under `/popkit:` namespace.
 Install only what you need:
 
 ```bash
-# Core development workflows
+# Foundation (required for other plugins)
+/plugin install popkit-core@popkit-marketplace
+
+# Development workflows (git, GitHub, feature dev, routines)
 /plugin install popkit-dev@popkit-marketplace
 
-# Add GitHub integration
-/plugin install popkit-github@popkit-marketplace
+# Operations & quality (testing, security, deployment)
+/plugin install popkit-ops@popkit-marketplace
 
-# Add quality tools
-/plugin install popkit-quality@popkit-marketplace
+# Knowledge management (research, notes)
+/plugin install popkit-research@popkit-marketplace
 
 # Restart Claude Code
 ```
 
-See [Migration Guide](packages/popkit-meta/MIGRATION.md) for details.
+**Minimum**: popkit-core (11 commands)
+**Recommended**: popkit-core + popkit-dev (18 commands)
+**Complete**: popkit-suite (all 24 commands)
 
 ---
 

@@ -216,14 +216,19 @@ Privacy levels:
 
 ## Dependencies
 
-- `popkit-shared>=0.1.0` - Shared utilities package
-- Optional: Redis for Power Mode (Pro tier)
+- `popkit-shared>=1.0.0` - Shared utilities package
+- Optional: Redis for Power Mode orchestration
 - Optional: Voyage AI API key for semantic embeddings
+
+**Minimum Requirements**:
+- Claude Code 2.0.67+ (for extended thinking and plan mode)
+- Python 3.8+
 
 ## Development Status
 
-**Version**: 0.1.0 (Beta)
-**Phase**: 7 of 8 (Plugin Modularization - Epic #580)
+**Version**: 1.0.0-beta.1
+**Status**: Ready for marketplace publication
+**Epic #580**: Complete - Plugin modularization finished
 
 ## License
 
