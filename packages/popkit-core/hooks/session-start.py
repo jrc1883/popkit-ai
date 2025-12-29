@@ -6,7 +6,7 @@ Handles session initialization, setup, and update notifications.
 Responsibilities:
 1. Log session start
 2. Check for PopKit updates
-3. Register project with PopKit Cloud
+3. Register project with PopKit Cloud (async, non-blocking)
 4. Ensure PopKit directories exist (auto-init)
 5. Filter agents based on initial task (Phase 2: Embedding-Based Agent Loading)
 """
@@ -14,6 +14,7 @@ Responsibilities:
 import sys
 import json
 import os
+import threading
 from pathlib import Path
 from datetime import datetime
 
@@ -108,16 +109,99 @@ def check_plugin_updates():
     return None
 
 
-def register_project():
-    """Register this project with PopKit Cloud.
+def should_attempt_cloud_registration():
+    """
+    Check circuit breaker - should we attempt cloud registration?
 
-    This is non-blocking - any errors are silently ignored.
-    Enables cross-project observability via /popkit:project observe.
+    Circuit breaker prevents repeated failed attempts by tracking:
+    - Last failure timestamp
+    - Consecutive failure count
+
+    Skip registration if we failed within last 5 minutes.
+
+    Returns:
+        bool: True if we should attempt, False if circuit is open
+    """
+    try:
+        circuit_file = Path.home() / ".claude" / "config" / "cloud_circuit.json"
+
+        if not circuit_file.exists():
+            return True  # No failures yet, try it
+
+        with open(circuit_file, 'r') as f:
+            circuit_data = json.load(f)
+
+        last_failure = circuit_data.get('last_failure')
+        if not last_failure:
+            return True
+
+        # Parse timestamp
+        from datetime import datetime, timedelta
+        last_failure_time = datetime.fromisoformat(last_failure)
+        cooldown_period = timedelta(minutes=5)
+
+        # Check if cooldown period has passed
+        if datetime.now() - last_failure_time < cooldown_period:
+            return False  # Circuit open - don't retry yet
+
+        return True  # Cooldown passed, try again
+
+    except Exception:
+        return True  # On error, allow attempt
+
+
+def record_cloud_registration_failure():
+    """Record a cloud registration failure for circuit breaker."""
+    try:
+        circuit_dir = Path.home() / ".claude" / "config"
+        circuit_dir.mkdir(parents=True, exist_ok=True)
+        circuit_file = circuit_dir / "cloud_circuit.json"
+
+        # Load existing data
+        circuit_data = {}
+        if circuit_file.exists():
+            try:
+                with open(circuit_file, 'r') as f:
+                    circuit_data = json.load(f)
+            except json.JSONDecodeError:
+                circuit_data = {}
+
+        # Update failure info
+        circuit_data['last_failure'] = datetime.now().isoformat()
+        circuit_data['failure_count'] = circuit_data.get('failure_count', 0) + 1
+
+        # Write back
+        with open(circuit_file, 'w') as f:
+            json.dump(circuit_data, f, indent=2)
+
+    except Exception:
+        pass  # Silent failure
+
+
+def record_cloud_registration_success():
+    """Record a successful cloud registration - reset circuit breaker."""
+    try:
+        circuit_file = Path.home() / ".claude" / "config" / "cloud_circuit.json"
+        if circuit_file.exists():
+            circuit_file.unlink()  # Remove circuit breaker file on success
+    except Exception:
+        pass  # Silent failure
+
+
+def _register_project_sync():
+    """
+    Synchronous project registration (runs in background thread).
+
+    This is the actual registration logic that talks to PopKit Cloud.
     """
     if not HAS_PROJECT_CLIENT:
         return None
 
     try:
+        # Check circuit breaker first
+        if not should_attempt_cloud_registration():
+            return None  # Circuit open - skip registration
+
         client = ProjectClient()
 
         if not client.is_available:
@@ -126,16 +210,48 @@ def register_project():
         result = client.register_project()
 
         if result:
+            record_cloud_registration_success()  # Reset circuit breaker
             print(f"Project registered with PopKit Cloud (session #{result.session_count})", file=sys.stderr)
             return {
                 'project_id': result.project_id,
                 'session_count': result.session_count,
                 'status': result.status
             }
+        else:
+            record_cloud_registration_failure()
+
     except Exception:
+        record_cloud_registration_failure()  # Track failure
         pass  # Silent failure - never block session start
 
     return None
+
+
+def register_project_async():
+    """
+    Register project with PopKit Cloud asynchronously (non-blocking).
+
+    Launches registration in a background thread and returns immediately.
+    This ensures session-start hook completes quickly without waiting for network.
+
+    Returns:
+        dict: Status indicating async registration was started
+    """
+    if not HAS_PROJECT_CLIENT:
+        return None
+
+    try:
+        # Launch registration in background thread (daemon=True means it won't block process exit)
+        thread = threading.Thread(target=_register_project_sync, daemon=True)
+        thread.start()
+
+        return {
+            'status': 'async',
+            'message': 'Cloud registration started in background'
+        }
+
+    except Exception:
+        return None
 
 
 def ensure_popkit_directories():
@@ -492,14 +608,17 @@ def main():
         input_data = sys.stdin.read()
         data = json.loads(input_data) if input_data.strip() else {}
 
+        # Skip expensive network operations in test mode
+        test_mode = os.environ.get('POPKIT_TEST_MODE') == 'true'
+
         # Log the session start
         log_session_start(data)
 
-        # Check for updates (non-blocking)
-        update_info = check_plugin_updates()
+        # Check for updates (non-blocking, skip in test mode)
+        update_info = None if test_mode else check_plugin_updates()
 
-        # Register project with PopKit Cloud (non-blocking)
-        project_info = register_project()
+        # Register project with PopKit Cloud (async, non-blocking, skip in test mode)
+        project_info = None if test_mode else register_project_async()
 
         # Ensure PopKit directories exist (auto-init, non-blocking)
         popkit_init = ensure_popkit_directories()

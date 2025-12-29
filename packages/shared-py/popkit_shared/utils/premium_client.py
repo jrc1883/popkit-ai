@@ -24,7 +24,7 @@ POPKIT_API_URL = os.environ.get(
     "POPKIT_API_URL",
     "https://popkit-cloud-api.joseph-cannon.workers.dev"
 )
-POPKIT_VERSION = "0.9.12"
+POPKIT_VERSION = "1.0.0"
 
 
 # =============================================================================

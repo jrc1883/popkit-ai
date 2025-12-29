@@ -27,7 +27,12 @@ POPKIT_API_URL = os.environ.get(
     "POPKIT_API_URL",
     "https://popkit-cloud-api.joseph-cannon.workers.dev"
 )
-POPKIT_VERSION = "0.9.10"
+POPKIT_VERSION = "1.0.0"
+
+# Network timeouts (in seconds)
+# Session-start should be fast and non-blocking
+DEFAULT_TIMEOUT = 2  # For background operations (session-start, auto-registration)
+INTERACTIVE_TIMEOUT = 10  # For user-initiated commands (/popkit:project observe)
 
 
 # =============================================================================
@@ -217,7 +222,8 @@ class ProjectClient:
 
         try:
             params = "?active_only=true" if active_only else ""
-            response = self._get(f"/v1/projects{params}")
+            # User-initiated command - can wait longer
+            response = self._get(f"/v1/projects{params}", timeout=INTERACTIVE_TIMEOUT)
             return response.get("projects", [])
         except Exception:
             return []
@@ -251,7 +257,8 @@ class ProjectClient:
             return None
 
         try:
-            response = self._get("/v1/projects/summary")
+            # User-initiated command - can wait longer
+            response = self._get("/v1/projects/summary", timeout=INTERACTIVE_TIMEOUT)
             return ProjectSummary(
                 total_projects=response.get("total_projects", 0),
                 active_projects_24h=response.get("active_projects_24h", 0),
@@ -344,25 +351,34 @@ class ProjectClient:
             health_score=health_score
         )
 
-    def _get(self, endpoint: str) -> Dict[str, Any]:
+    def _get(self, endpoint: str, timeout: int = DEFAULT_TIMEOUT) -> Dict[str, Any]:
         """Make GET request to API."""
-        return self._request("GET", endpoint)
+        return self._request("GET", endpoint, timeout=timeout)
 
-    def _post(self, endpoint: str, body: Dict[str, Any]) -> Dict[str, Any]:
+    def _post(self, endpoint: str, body: Dict[str, Any], timeout: int = DEFAULT_TIMEOUT) -> Dict[str, Any]:
         """Make POST request to API."""
-        return self._request("POST", endpoint, body)
+        return self._request("POST", endpoint, body, timeout=timeout)
 
-    def _delete(self, endpoint: str) -> Dict[str, Any]:
+    def _delete(self, endpoint: str, timeout: int = DEFAULT_TIMEOUT) -> Dict[str, Any]:
         """Make DELETE request to API."""
-        return self._request("DELETE", endpoint)
+        return self._request("DELETE", endpoint, timeout=timeout)
 
     def _request(
         self,
         method: str,
         endpoint: str,
-        body: Optional[Dict[str, Any]] = None
+        body: Optional[Dict[str, Any]] = None,
+        timeout: int = DEFAULT_TIMEOUT
     ) -> Dict[str, Any]:
-        """Make HTTP request to API."""
+        """
+        Make HTTP request to API.
+
+        Args:
+            method: HTTP method (GET, POST, DELETE)
+            endpoint: API endpoint path
+            body: Request body (JSON-serializable)
+            timeout: Request timeout in seconds (default: 2s for background ops)
+        """
         url = f"{self.api_url}{endpoint}"
 
         headers = {
@@ -381,7 +397,7 @@ class ProjectClient:
         )
 
         try:
-            with urllib.request.urlopen(request, timeout=10) as response:
+            with urllib.request.urlopen(request, timeout=timeout) as response:
                 return json.loads(response.read().decode("utf-8"))
         except urllib.error.HTTPError as e:
             body_text = e.read().decode("utf-8") if e.fp else ""
