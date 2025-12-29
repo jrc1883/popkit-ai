@@ -1,0 +1,65 @@
+{
+  "session_id": "morning-2025-12-28-174150",
+  "timestamp": "2025-12-28T17:41:50.960773",
+  "last_morning_routine": {
+    "executed_at": "2025-12-28T17:41:50.960775",
+    "ready_to_code_score": "85/100",
+    "breakdown": {
+      "session_restored": {
+        "points": 20,
+        "max": 20,
+        "status": "\u2705",
+        "reason": "Previous session context restored"
+      },
+      "services_healthy": {
+        "points": 20,
+        "max": 20,
+        "status": "\u2705",
+        "reason": "No dev services required"
+      },
+      "dependencies_updated": {
+        "points": 15,
+        "max": 15,
+        "status": "\u2705",
+        "reason": "All dependencies up to date"
+      },
+      "branches_synced": {
+        "points": 15,
+        "max": 15,
+        "status": "\u2705",
+        "reason": "Up to date with remote"
+      },
+      "prs_reviewed": {
+        "points": 15,
+        "max": 15,
+        "status": "\u2705",
+        "reason": "No PRs pending review"
+      },
+      "issues_triaged": {
+        "points": 0,
+        "max": 15,
+        "status": "\u274c",
+        "reason": "30 issues need attention"
+      }
+    },
+    "session_restored": true
+  },
+  "git_status": {
+    "current_branch": "main",
+    "commits_behind_remote": 0,
+    "uncommitted_files": 3,
+    "stashes": 9
+  },
+  "metrics": {
+    "ready_to_code_score": "85/100"
+  },
+  "recommendations": {
+    "before_coding": [
+      "All set! Ready to code."
+    ],
+    "todays_focus": [
+      "Triage 30 open issues",
+      "Check overnight commits and CI results"
+    ]
+  }
+}

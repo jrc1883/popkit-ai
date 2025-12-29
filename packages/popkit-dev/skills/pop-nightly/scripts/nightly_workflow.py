@@ -34,8 +34,13 @@ except ImportError:
     HAS_UTILITIES = False
     print("[WARN] PopKit utilities not available - running in degraded mode", file=sys.stderr)
 
-from .sleep_score import calculate_sleep_score, get_score_interpretation
-from .report_generator import generate_nightly_report, generate_quick_summary
+# Try relative import (when used as package), fall back to direct import
+try:
+    from .sleep_score import calculate_sleep_score, get_score_interpretation
+    from .report_generator import generate_nightly_report, generate_quick_summary
+except ImportError:
+    from sleep_score import calculate_sleep_score, get_score_interpretation
+    from report_generator import generate_nightly_report, generate_quick_summary
 
 
 class NightlyWorkflow:
