@@ -1,0 +1,281 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const apiUrl = import.meta.env.PUBLIC_API_URL || 'https://popkit-cloud-api.joseph-cannon.workers.dev';
+---
+
+<BaseLayout title="Dashboard">
+  <section class="py-12">
+    <div class="max-w-6xl mx-auto px-4">
+      <!-- Header -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+          <p id="user-email" class="text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
+        <div class="mt-4 md:mt-0 flex gap-4">
+          <button id="billing-btn" class="btn-secondary">
+            Manage Billing
+          </button>
+          <button id="logout-btn" class="btn-secondary text-red-600 hover:text-red-700">
+            Log out
+          </button>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6 mb-8">
+        <!-- Tier Card -->
+        <div class="card">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold text-gray-900 dark:text-white">Current Plan</h3>
+            <span id="tier-badge" class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300">
+              Loading...
+            </span>
+          </div>
+          <p id="tier-description" class="text-gray-600 dark:text-gray-400 text-sm mb-4">
+            Loading plan details...
+          </p>
+          <a href="/signup?plan=pro" id="upgrade-link" class="text-popkit-purple hover:underline text-sm font-medium hidden">
+            Upgrade to Pro
+          </a>
+        </div>
+
+        <!-- Usage Card -->
+        <div class="card">
+          <h3 class="font-semibold text-gray-900 dark:text-white mb-4">Today's Usage</h3>
+          <div class="space-y-3">
+            <div>
+              <div class="flex justify-between text-sm mb-1">
+                <span class="text-gray-600 dark:text-gray-400">API Calls</span>
+                <span id="usage-api" class="font-medium text-gray-900 dark:text-white">-</span>
+              </div>
+              <div class="h-2 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div id="usage-api-bar" class="h-full bg-popkit-purple rounded-full" style="width: 0%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-sm mb-1">
+                <span class="text-gray-600 dark:text-gray-400">Embeddings</span>
+                <span id="usage-embed" class="font-medium text-gray-900 dark:text-white">-</span>
+              </div>
+              <div class="h-2 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div id="usage-embed-bar" class="h-full bg-popkit-blue rounded-full" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Member Since Card -->
+        <div class="card">
+          <h3 class="font-semibold text-gray-900 dark:text-white mb-4">Account</h3>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between">
+              <span class="text-gray-600 dark:text-gray-400">Member since</span>
+              <span id="member-since" class="text-gray-900 dark:text-white">-</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600 dark:text-gray-400">API Keys</span>
+              <span id="key-count" class="text-gray-900 dark:text-white">-</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- API Keys Section -->
+      <div class="card">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">API Keys</h2>
+          <button id="create-key-btn" class="btn-primary text-sm">
+            Create New Key
+          </button>
+        </div>
+
+        <div id="keys-list" class="space-y-4">
+          <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+            Loading API keys...
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="fixed inset-0 bg-white/80 dark:bg-slate-900/80 flex items-center justify-center z-50">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-popkit-purple mx-auto mb-4"></div>
+      <p class="text-gray-600 dark:text-gray-400">Loading dashboard...</p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script define:vars={{ apiUrl }}>
+  const token = localStorage.getItem('popkit_token') || sessionStorage.getItem('popkit_token');
+
+  if (!token) {
+    window.location.href = '/login';
+  }
+
+  async function loadDashboard() {
+    try {
+      // Load user info
+      const userRes = await fetch(`${apiUrl}/v1/auth/me`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+
+      if (!userRes.ok) {
+        localStorage.removeItem('popkit_token');
+        sessionStorage.removeItem('popkit_token');
+        window.location.href = '/login';
+        return;
+      }
+
+      const userData = await userRes.json();
+      const user = userData.user;
+
+      document.getElementById('user-email').textContent = user.email;
+      document.getElementById('tier-badge').textContent = user.tier.toUpperCase();
+
+      if (user.tier === 'free') {
+        document.getElementById('tier-description').textContent = 'Core features with file-based Power Mode';
+        document.getElementById('upgrade-link').classList.remove('hidden');
+        document.getElementById('tier-badge').classList.add('bg-gray-100', 'text-gray-600');
+      } else if (user.tier === 'pro') {
+        document.getElementById('tier-description').textContent = 'Full access with hosted Redis Power Mode';
+        document.getElementById('tier-badge').classList.remove('bg-gray-100', 'text-gray-600');
+        document.getElementById('tier-badge').classList.add('bg-purple-100', 'text-purple-700', 'dark:bg-purple-900/30', 'dark:text-purple-300');
+      } else {
+        document.getElementById('tier-description').textContent = 'Team features with multi-user sessions';
+        document.getElementById('tier-badge').classList.remove('bg-gray-100', 'text-gray-600');
+        document.getElementById('tier-badge').classList.add('bg-blue-100', 'text-blue-700', 'dark:bg-blue-900/30', 'dark:text-blue-300');
+      }
+
+      document.getElementById('member-since').textContent = new Date(user.created_at).toLocaleDateString('en-US', {
+        month: 'long',
+        year: 'numeric'
+      });
+
+      // Load usage
+      const usageRes = await fetch(`${apiUrl}/v1/usage/summary`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+
+      if (usageRes.ok) {
+        const usageData = await usageRes.json();
+        const limits = usageData.limits?.default || { daily: 100 };
+        const apiCalls = usageData.api?.commands_today || 0;
+
+        document.getElementById('usage-api').textContent = `${apiCalls} / ${limits.daily === -1 ? '∞' : limits.daily}`;
+        document.getElementById('usage-api-bar').style.width = limits.daily === -1 ? '10%' : `${Math.min(100, (apiCalls / limits.daily) * 100)}%`;
+
+        const embeddings = usageData.features?.['pop-embed-project']?.today || 0;
+        const embedLimit = usageData.limits?.['pop-embed-project']?.daily || 10;
+        document.getElementById('usage-embed').textContent = `${embeddings} / ${embedLimit === -1 ? '∞' : embedLimit}`;
+        document.getElementById('usage-embed-bar').style.width = embedLimit === -1 ? '10%' : `${Math.min(100, (embeddings / embedLimit) * 100)}%`;
+      }
+
+      // Load API keys
+      const keysRes = await fetch(`${apiUrl}/v1/account/keys`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+
+      if (keysRes.ok) {
+        const keysData = await keysRes.json();
+        const keysList = document.getElementById('keys-list');
+
+        document.getElementById('key-count').textContent = keysData.keys?.length || 0;
+
+        if (keysData.keys?.length > 0) {
+          keysList.innerHTML = keysData.keys.map(key => `
+            <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
+              <div>
+                <p class="font-medium text-gray-900 dark:text-white">${key.name}</p>
+                <p class="text-sm font-mono text-gray-500 dark:text-gray-400">${key.key.slice(0, 12)}...${key.key.slice(-4)}</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-xs text-gray-500 dark:text-gray-400">
+                  ${key.last_used ? `Last used ${new Date(key.last_used).toLocaleDateString()}` : 'Never used'}
+                </span>
+                <button class="copy-key-btn text-popkit-purple hover:text-purple-700" data-key="${key.key}">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          `).join('');
+
+          // Add copy handlers
+          document.querySelectorAll('.copy-key-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+              await navigator.clipboard.writeText(btn.dataset.key);
+              alert('API key copied!');
+            });
+          });
+        } else {
+          keysList.innerHTML = '<p class="text-center py-8 text-gray-500">No API keys found. Create one to get started.</p>';
+        }
+      }
+
+      // Hide loading overlay
+      document.getElementById('loading-overlay').classList.add('hidden');
+
+    } catch (error) {
+      console.error('Dashboard error:', error);
+      document.getElementById('loading-overlay').innerHTML = `
+        <div class="text-center">
+          <p class="text-red-500 mb-4">Failed to load dashboard</p>
+          <a href="/login" class="btn-primary">Try logging in again</a>
+        </div>
+      `;
+    }
+  }
+
+  // Billing button
+  document.getElementById('billing-btn').addEventListener('click', async () => {
+    try {
+      const res = await fetch(`${apiUrl}/v1/billing/portal`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      alert('Failed to open billing portal');
+    }
+  });
+
+  // Logout button
+  document.getElementById('logout-btn').addEventListener('click', () => {
+    localStorage.removeItem('popkit_token');
+    sessionStorage.removeItem('popkit_token');
+    window.location.href = '/login';
+  });
+
+  // Create key button
+  document.getElementById('create-key-btn').addEventListener('click', async () => {
+    const name = prompt('Enter a name for this API key:', 'New Key');
+    if (!name) return;
+
+    try {
+      const res = await fetch(`${apiUrl}/v1/account/keys`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        alert(`New API key created: ${data.key}\n\nCopy it now - you won't see it again!`);
+        loadDashboard(); // Refresh
+      }
+    } catch (error) {
+      alert('Failed to create API key');
+    }
+  });
+
+  loadDashboard();
+</script>

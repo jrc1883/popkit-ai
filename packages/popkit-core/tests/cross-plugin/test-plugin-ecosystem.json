@@ -1,0 +1,129 @@
+{
+  "test_id": "cross-plugin-ecosystem",
+  "category": "cross-plugin",
+  "name": "Cross-Plugin Ecosystem Validation",
+  "description": "Verify all PopKit plugins work together without conflicts",
+  "severity": "critical",
+  "plugins": [
+    "popkit-core",
+    "popkit-dev",
+    "popkit-ops",
+    "popkit-research",
+    "popkit-suite"
+  ],
+  "test_cases": [
+    {
+      "case_id": "no-command-name-conflicts",
+      "name": "No duplicate command names across plugins",
+      "scan_all_plugins": true,
+      "assertions": [
+        {
+          "type": "unique_command_names",
+          "description": "Command names must be unique across all PopKit plugins"
+        },
+        {
+          "type": "namespace_consistent",
+          "expected_prefix": "popkit:",
+          "description": "All commands should use 'popkit:' namespace"
+        }
+      ]
+    },
+    {
+      "case_id": "no-skill-name-conflicts",
+      "name": "No duplicate skill names across plugins",
+      "scan_all_plugins": true,
+      "assertions": [
+        {
+          "type": "unique_skill_names",
+          "description": "Skill names must be unique across all PopKit plugins"
+        },
+        {
+          "type": "skill_naming_convention",
+          "expected_prefix": "pop-",
+          "description": "All skills should use 'pop-' prefix"
+        }
+      ]
+    },
+    {
+      "case_id": "no-agent-name-conflicts",
+      "name": "No duplicate agent names across plugins",
+      "scan_all_plugins": true,
+      "assertions": [
+        {
+          "type": "unique_agent_names",
+          "description": "Agent names must be unique across all PopKit plugins"
+        }
+      ]
+    },
+    {
+      "case_id": "consistent-versioning",
+      "name": "All plugins follow consistent versioning",
+      "scan_all_plugins": true,
+      "assertions": [
+        {
+          "type": "semver_valid",
+          "description": "All plugins must use valid semantic versioning"
+        },
+        {
+          "type": "version_compatibility",
+          "description": "Plugin versions should be compatible within major version"
+        }
+      ]
+    },
+    {
+      "case_id": "shared-dependencies-compatible",
+      "name": "Shared package dependencies are compatible",
+      "assertions": [
+        {
+          "type": "shared_package_version",
+          "package": "@popkit/shared-py",
+          "description": "All plugins should use same version of shared-py"
+        }
+      ]
+    },
+    {
+      "case_id": "no-circular-dependencies",
+      "name": "No circular dependencies between plugins",
+      "scan_all_plugins": true,
+      "assertions": [
+        {
+          "type": "no_circular_deps",
+          "description": "Plugins should not depend on each other"
+        }
+      ]
+    },
+    {
+      "case_id": "total-agent-count",
+      "name": "Total agent count matches expected distribution",
+      "scan_all_plugins": true,
+      "expected_counts": {
+        "popkit-core": 9,
+        "popkit-dev": 5,
+        "popkit-ops": 6,
+        "popkit-research": 1,
+        "popkit-suite": 0
+      },
+      "assertions": [
+        {
+          "type": "agent_count_matches",
+          "description": "Agent counts should match expected distribution"
+        },
+        {
+          "type": "total_agents",
+          "expected": 21,
+          "description": "Total agents across all plugins should be 21"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "popkit_shared.utils.plugin_scanner",
+    "popkit_shared.utils.cross_plugin_validator"
+  ],
+  "notes": [
+    "This test validates the entire PopKit plugin ecosystem",
+    "All plugins must coexist without naming conflicts",
+    "Plugins are independent but share common utilities",
+    "Agent distribution is documented and enforced"
+  ]
+}

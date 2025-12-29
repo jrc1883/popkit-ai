@@ -1,0 +1,41 @@
+{
+  "name": "popkit-dev",
+  "version": "1.0.0-beta.1",
+  "description": "Complete development workflow plugin - feature development, git operations, GitHub management, and daily routines",
+  "author": {
+    "name": "Joseph Cannon",
+    "email": "joseph@thehouseofdeals.com"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/jrc1883/popkit",
+  "commands": [
+    "./commands/dev.md",
+    "./commands/git.md",
+    "./commands/issue.md",
+    "./commands/milestone.md",
+    "./commands/worktree.md",
+    "./commands/routine.md",
+    "./commands/next.md"
+  ],
+  "skills": [
+    "./skills/pop-brainstorming",
+    "./skills/pop-writing-plans",
+    "./skills/pop-executing-plans",
+    "./skills/pop-next-action",
+    "./skills/pop-session-capture",
+    "./skills/pop-session-resume",
+    "./skills/pop-context-restore",
+    "./skills/pop-routine-optimized",
+    "./skills/pop-routine-measure",
+    "./skills/pop-finish-branch",
+    "./skills/pop-project-templates",
+    "./skills/pop-worktrees"
+  ],
+  "agents": [
+    "./agents/feature-workflow/code-explorer/AGENT.md",
+    "./agents/feature-workflow/code-architect/AGENT.md",
+    "./agents/tier-1-always-active/code-reviewer/AGENT.md",
+    "./agents/tier-1-always-active/refactoring-expert/AGENT.md",
+    "./agents/tier-2-on-demand/rapid-prototyper/AGENT.md"
+  ]
+}

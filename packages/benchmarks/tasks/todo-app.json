@@ -1,0 +1,111 @@
+{
+  "id": "todo-app",
+  "name": "Todo App with LocalStorage",
+  "description": "Build a todo app with CRUD operations, filtering, and localStorage persistence. Tests full-stack understanding and standard patterns.",
+  "category": "standard",
+  "language": "javascript",
+  "version": "1.0.0",
+
+  "initialFiles": {
+    "index.html": "<!DOCTYPE html>\n<html>\n<head>\n  <title>Todo App</title>\n  <style>\n    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; }\n    .completed { text-decoration: line-through; opacity: 0.6; }\n    button { cursor: pointer; }\n  </style>\n</head>\n<body>\n  <h1>Todo App</h1>\n  <div id=\"app\"></div>\n  <script src=\"todo.js\"></script>\n</body>\n</html>",
+    "todo.js": "// TODO: Implement todo app\n"
+  },
+  "dependencies": [],
+  "setupCommands": [],
+
+  "prompt": "Build a production-quality Todo application with the following core features:\n\n1. **Add todos**: Input field + button to add new todos\n2. **Complete todos**: Click to toggle completion state (strikethrough)\n3. **Delete todos**: Remove button for each todo\n4. **Filter todos**: Buttons to show All / Active / Completed\n5. **Persist to localStorage**: Todos survive page refresh\n6. **Clear completed**: Button to remove all completed todos\n7. **Todo count**: Show \"X items left\" for active todos\n\n**Quality Expectations:**\n- Build this as production-ready code (clean architecture, error handling, edge cases)\n- Add features you think would make this app professional and polished\n- Consider UX details (empty states, keyboard shortcuts, animations, accessibility)\n- Structure code for maintainability (clear separation of concerns, testable functions)\n- Handle edge cases (empty input, XSS prevention, localStorage errors)\n\nFeel free to add additional features beyond the requirements if they improve the app. Use vanilla JavaScript, no frameworks. Render to the #app div.",
+
+  "context": "This is a vanilla JavaScript task. Use localStorage for persistence. Structure your code with clear functions for add, remove, toggle, render, and filter operations.",
+  "maxTokens": 50000,
+  "timeoutSeconds": 300,
+
+  "tests": [
+    {
+      "id": "file-exists",
+      "name": "todo.js exists and has content",
+      "type": "unit",
+      "command": "test -s todo.js && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "localstorage",
+      "name": "Uses localStorage",
+      "type": "unit",
+      "command": "grep -q 'localStorage' todo.js && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "add-function",
+      "name": "Has add functionality",
+      "type": "unit",
+      "command": "grep -qE '(addTodo|add.*todo|push)' todo.js && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "delete-function",
+      "name": "Has delete functionality",
+      "type": "unit",
+      "command": "grep -qE '(deleteTodo|removeTodo|delete.*todo|filter|splice)' todo.js && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "toggle-complete",
+      "name": "Has toggle completion",
+      "type": "unit",
+      "command": "grep -qE '(toggle|completed|complete)' todo.js && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "filter-implementation",
+      "name": "Has filter functionality",
+      "type": "unit",
+      "command": "grep -qE '(filter|active|completed|all)' todo.js && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "render-function",
+      "name": "Has render/display function",
+      "type": "unit",
+      "command": "grep -qE '(render|display|innerHTML|appendChild)' todo.js && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    }
+  ],
+
+  "qualityChecks": [
+    {
+      "id": "no-errors",
+      "name": "No syntax errors",
+      "type": "custom",
+      "command": "node --check todo.js 2>&1 || true",
+      "weight": 1.0
+    }
+  ],
+
+  "baseline": {
+    "vanilla": {
+      "tokenEstimate": 18000,
+      "toolCallEstimate": 30,
+      "successRate": 0.55,
+      "timeEstimate": 200,
+      "qualityEstimate": 6.0
+    },
+    "popkit": {
+      "tokenEstimate": 12000,
+      "toolCallEstimate": 18,
+      "successRate": 0.80,
+      "timeEstimate": 140,
+      "qualityEstimate": 7.5
+    },
+    "power": {
+      "tokenEstimate": 9000,
+      "toolCallEstimate": 14,
+      "successRate": 0.92,
+      "timeEstimate": 100,
+      "qualityEstimate": 8.5
+    }
+  },
+
+  "tags": ["crud", "localstorage", "dom-manipulation", "state-management", "beginner-friendly"],
+  "author": "PopKit Team",
+  "createdAt": "2025-12-09T00:00:00Z"
+}

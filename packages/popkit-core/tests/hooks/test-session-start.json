@@ -1,0 +1,121 @@
+{
+  "test_id": "hook-session-start-protocol",
+  "category": "hooks",
+  "name": "Session-Start Hook JSON Protocol",
+  "description": "Verify session-start.py initializes session context and loads agents correctly",
+  "severity": "critical",
+  "hook_file": "hooks/session-start.py",
+  "test_cases": [
+    {
+      "case_id": "basic-session-init",
+      "name": "Basic session initialization",
+      "input": {
+        "event": "SessionStart",
+        "session_id": "test-session-123",
+        "timestamp": "2025-12-22T10:00:00Z"
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "has_field",
+          "field": "status"
+        },
+        {
+          "type": "duration",
+          "max_ms": 10000,
+          "description": "Session start should complete within 10 seconds"
+        }
+      ]
+    },
+    {
+      "case_id": "agent-loading",
+      "name": "Semantic agent loading with embeddings",
+      "input": {
+        "event": "SessionStart",
+        "session_id": "test-session-123",
+        "user_query": "help me fix a bug in my React component"
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "contains",
+          "field": "stdout",
+          "expected": "Tier 1",
+          "description": "Should always load Tier 1 agents"
+        }
+      ]
+    },
+    {
+      "case_id": "status-json-check",
+      "name": "STATUS.json resume context",
+      "input": {
+        "event": "SessionStart",
+        "session_id": "test-session-456",
+        "status_json_exists": true,
+        "status_json_content": {
+          "session_date": "2025-12-21",
+          "resume_context": {
+            "what_we_did": "Implemented feature X"
+          }
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        }
+      ]
+    },
+    {
+      "case_id": "no-api-key-fallback",
+      "name": "Graceful degradation without Voyage API key",
+      "input": {
+        "event": "SessionStart",
+        "session_id": "test-session-789",
+        "env": {
+          "VOYAGE_API_KEY": ""
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0,
+          "description": "Should work without API key"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "hooks/session-start.py",
+    "popkit_shared.utils.agent_loader",
+    "popkit_shared.utils.embedding_voyage"
+  ],
+  "notes": [
+    "This hook is critical for session initialization",
+    "Must load Tier 1 agents always",
+    "Should use semantic search for relevant Tier 2 agents when API key available",
+    "Performance critical - affects startup time"
+  ]
+}

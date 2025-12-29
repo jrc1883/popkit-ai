@@ -1,0 +1,26 @@
+{
+  "name": "@popkit/docs",
+  "version": "0.1.0",
+  "description": "PopKit Documentation Website",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "keywords": [
+    "popkit",
+    "documentation",
+    "astro",
+    "starlight"
+  ],
+  "author": "Joseph Cannon",
+  "license": "MIT",
+  "dependencies": {
+    "@astrojs/starlight": "^0.28.5",
+    "astro": "^4.16.18",
+    "sharp": "^0.33.5"
+  }
+}

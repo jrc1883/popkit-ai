@@ -1,0 +1,8 @@
+# PopKit Core Plugin - Python Dependencies
+
+# Shared utilities package (required)
+popkit-shared>=1.0.0
+
+# Optional dependencies for enhanced features:
+# - Redis for Power Mode (Pro tier): pip install redis
+# - Voyage AI for semantic embeddings: Set VOYAGE_API_KEY env var

@@ -1,0 +1,31 @@
+{
+  "taskId": "puzzle-coordination",
+  "mode": "power",
+  "timestamp": "2025-12-19T04:50:51.893Z",
+  "success": false,
+  "durationSeconds": 0.003,
+  "tokens": {
+    "input": 0,
+    "output": 0,
+    "total": 0
+  },
+  "toolCalls": 0,
+  "testResults": [],
+  "qualityResults": [],
+  "conversation": [],
+  "logs": [
+    "[2025-12-19T04:50:51.887Z] Starting benchmark: puzzle-coordination",
+    "[2025-12-19T04:50:51.887Z] Mode: power",
+    "[2025-12-19T04:50:51.887Z] Switching PopKit config to mode: power",
+    "[2025-12-19T04:50:51.888Z] PopKit config switched successfully",
+    "[2025-12-19T04:50:51.889Z] Workspace created: C:\\Users\\Josep\\AppData\\Local\\Temp\\popkit-benchmark-kdj5ha\\puzzle-coordination",
+    "[2025-12-19T04:50:51.889Z] Prompt built (1369 chars)",
+    "[2025-12-19T04:50:51.890Z] Error: ReferenceError: __dirname is not defined"
+  ],
+  "error": {
+    "message": "__dirname is not defined"
+  },
+  "outputFileNames": [],
+  "toolCallDetails": [],
+  "usageDetails": null
+}

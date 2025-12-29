@@ -1,0 +1,31 @@
+{
+  "taskId": "puzzle-coordination",
+  "mode": "power",
+  "timestamp": "2025-12-19T03:53:58.335Z",
+  "success": false,
+  "durationSeconds": 300.056,
+  "tokens": {
+    "input": 0,
+    "output": 0,
+    "total": 0
+  },
+  "toolCalls": 0,
+  "testResults": [],
+  "qualityResults": [],
+  "conversation": [],
+  "logs": [
+    "[2025-12-19T03:48:58.274Z] Starting benchmark: puzzle-coordination",
+    "[2025-12-19T03:48:58.274Z] Mode: power",
+    "[2025-12-19T03:48:58.274Z] Switching PopKit config to mode: power",
+    "[2025-12-19T03:48:58.274Z] PopKit config switched successfully",
+    "[2025-12-19T03:48:58.276Z] Workspace created: C:\\Users\\Josep\\AppData\\Local\\Temp\\popkit-benchmark-aYngUY\\puzzle-coordination",
+    "[2025-12-19T03:48:58.276Z] Prompt built (1369 chars)",
+    "[2025-12-19T03:53:58.330Z] Error: Error: Command timed out after 300000ms"
+  ],
+  "error": {
+    "message": "Command timed out after 300000ms"
+  },
+  "outputFileNames": [],
+  "toolCallDetails": [],
+  "usageDetails": null
+}

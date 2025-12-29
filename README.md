@@ -1,491 +1,231 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/jrc1883/popkit-claude/main/assets/images/popkit-banner.png" alt="PopKit Banner" width="600">
-</p>
+# PopKit
 
-<h1 align="center">PopKit</h1>
+**AI-powered development workflows for Claude Code** - Modular plugin suite for professional software development.
 
-<p align="center">
-  <strong>AI-powered development workflows for Claude Code</strong>
-</p>
-
-<p align="center">
-  <a href="#quick-start">Quick Start</a> |
-  <a href="#features">Features</a> |
-  <a href="#commands">Commands</a> |
-  <a href="#agents">Agents</a> |
-  <a href="#premium">Premium</a> |
-  <a href="#faq">FAQ</a>
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/version-0.2.1-blue?style=flat-square" alt="Version">
-  <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License">
-  <img src="https://img.shields.io/badge/Claude%20Code-Plugin-purple?style=flat-square" alt="Claude Code Plugin">
-</p>
+**Version:** 1.0.0-beta.1 | **Plugins:** 5 | **Commands:** 24 | **Skills:** 38 | **Agents:** 21
 
 ---
 
-## See the Difference
+## 🎯 What is PopKit?
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/jrc1883/popkit-claude/main/assets/images/before-after.gif" alt="Before and After PopKit" width="700">
-</p>
+PopKit transforms Claude Code into a complete development workflow system. Instead of using raw tools, you get:
+
+- **5 Focused Plugins**: Install only what you need
+- **24 Workflow Commands**: From feature dev to deployment
+- **38 Reusable Skills**: Composable automation patterns
+- **21 Specialized Agents**: Context-aware AI assistance
+- **FREE Local Execution**: All features work without cloud
+- **API Key Enhancements**: Optional semantic intelligence
 
 ---
 
-## Quick Start
+## 📦 Modular Architecture
 
-Install PopKit in 2 commands:
+PopKit is split into 5 focused workflow plugins:
+
+| Plugin | Purpose | Commands | When to Use |
+|--------|---------|----------|-------------|
+| **[popkit-core](packages/popkit-core/)** | Foundation & Power Mode | 11 | Project setup, plugin management, orchestration |
+| **[popkit-dev](packages/popkit-dev/)** | Development workflows | 7 | Daily dev, git, GitHub, routines |
+| **[popkit-ops](packages/popkit-ops/)** | Operations & quality | 5 | Testing, debugging, security, deployment |
+| **[popkit-research](packages/popkit-research/)** | Knowledge management | 2 | Research capture, knowledge base |
+| **[popkit-suite](packages/popkit-suite/)** | Complete bundle | All | One-click install (all features) |
+
+**Foundation**: `popkit-shared` (v1.0.0) - 70 shared Python utility modules
+
+---
+
+## ⚡ Quick Start
+
+### Option 1: Complete Suite (Recommended)
+
+Install everything with one command:
 
 ```bash
-# Add the marketplace
-/plugin marketplace add jrc1883/popkit-claude
-
-# Install the plugin
-/plugin install popkit@popkit-claude
+/plugin install popkit-suite@popkit-marketplace
+# Restart Claude Code
 ```
 
-Then **restart Claude Code** to activate.
+All 24 commands available under `/popkit:` namespace.
 
-After restart, try:
-```bash
-/popkit:routine morning    # Morning health check
-/popkit:dev brainstorm     # Start brainstorming a feature
-/popkit:git commit         # Smart commit with auto-message
-```
+### Option 2: Selective Installation
 
----
-
-## Features
-
-### Development Workflows
-
-**7-Phase Feature Development** - From idea to implementation with guided phases:
-
-```
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│  Discovery  │ -> │ Exploration │ -> │  Questions  │ -> │Architecture │
-└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
-                                                                │
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐          │
-│   Summary   │ <- │   Review    │ <- │Implementation│ <───────┘
-└─────────────┘    └─────────────┘    └─────────────┘
-```
-
-### Intelligent Agents
-
-**30+ specialized agents** that activate based on context:
-
-| Tier | Agents | When |
-|------|--------|------|
-| **Tier 1** | 11 core agents | Always active |
-| **Tier 2** | 17 specialists | On-demand by triggers |
-| **Workflow** | 3 feature agents | During `/popkit:dev` |
-
-### Day Routines
-
-Start and end your day with health checks:
-
-```
-┌──────────────────────────────────────┐
-│  MORNING ROUTINE - Ready to Code     │
-├──────────────────────────────────────┤
-│  Git Status:     ✓ Clean             │
-│  TypeScript:     ✓ No errors         │
-│  Dev Server:     ✓ Running on :3000  │
-│  Dependencies:   ✓ Up to date        │
-├──────────────────────────────────────┤
-│  Ready to Code Score: 95/100         │
-└──────────────────────────────────────┘
-```
-
-### Power Mode (Multi-Agent)
-
-Parallel agent collaboration for complex tasks:
-
-```
-┌──────────────────────────────────────────────┐
-│  POWER MODE - 4 Agents Active                │
-├──────────────────────────────────────────────┤
-│  code-reviewer   ████████░░ 80%  Reviewing   │
-│  test-writer     ██████████ 100% Complete    │
-│  docs-updater    ██████░░░░ 60%  Writing     │
-│  security-audit  ████░░░░░░ 40%  Scanning    │
-└──────────────────────────────────────────────┘
-```
-
----
-
-## Commands
-
-### `/popkit:dev` - Development Workflows
-
-The main entry point for feature development.
-
-| Subcommand | Description |
-|------------|-------------|
-| `full` | 7-phase guided workflow (default) |
-| `work #N` | Issue-driven development |
-| `brainstorm` | Idea refinement through dialogue |
-| `plan` | Create implementation plan |
-| `execute` | Execute an existing plan |
-| `quick` | Minimal ceremony for small tasks |
-| `prd` | Generate PRD document |
-| `suite` | Full documentation suite |
-
-**Flags:** `-T` (thinking), `--power` (multi-agent), `--solo` (sequential)
+Install only what you need:
 
 ```bash
-# Examples
-/popkit:dev "user authentication"
-/popkit:dev work #57
-/popkit:dev brainstorm "real-time notifications" -T
-/popkit:dev quick "fix the login bug"
+# Foundation (required for other plugins)
+/plugin install popkit-core@popkit-marketplace
+
+# Development workflows (git, GitHub, feature dev, routines)
+/plugin install popkit-dev@popkit-marketplace
+
+# Operations & quality (testing, security, deployment)
+/plugin install popkit-ops@popkit-marketplace
+
+# Knowledge management (research, notes)
+/plugin install popkit-research@popkit-marketplace
+
+# Restart Claude Code
 ```
+
+**Minimum**: popkit-core (11 commands)
+**Recommended**: popkit-core + popkit-dev (18 commands)
+**Complete**: popkit-suite (all 24 commands)
 
 ---
 
-### `/popkit:git` - Git Workflow
+## 🚀 Core Workflows
 
-Smart git operations with auto-generated messages.
-
-| Subcommand | Description |
-|------------|-------------|
-| `commit` | Smart commit with auto-message (default) |
-| `push` | Push to remote |
-| `pr` | Create/manage pull requests |
-| `review` | Code review with confidence filtering |
-| `ci` | GitHub Actions workflow runs |
-| `release` | Create releases with changelog |
-| `finish` | Complete branch with 4-option flow |
-| `prune` | Remove stale branches |
-
-**Flags:** `--draft`, `--squash`, `--amend`
+### Feature Development
 
 ```bash
-# Examples
-/popkit:git                        # Smart commit
-/popkit:git pr                     # Create pull request
-/popkit:git release --tag v1.2.0   # Create release
-/popkit:git finish                 # Complete development
+# Start development workflow
+/popkit:dev "Add user authentication"
+  → Brainstorm → Plan → Implement → Review → PR
+
+# Daily routines
+/popkit:routine morning    # Health check + "Ready to Code" score
+/popkit:routine nightly    # Cleanup + "Sleep Score"
+
+# Context-aware help
+/popkit:next              # What should I do next?
 ```
 
----
-
-### `/popkit:routine` - Day Routines
-
-Morning health checks and nightly cleanup.
-
-| Subcommand | Description |
-|------------|-------------|
-| `morning` | Health check → Ready to Code score |
-| `nightly` | Cleanup → Sleep Score |
-
-**Actions:** `run`, `quick`, `generate`, `list`, `set`, `edit`, `delete`
-
-**Flags:** `--simple`, `--full`, `--no-debt`
+### Git Operations
 
 ```bash
-# Examples
-/popkit:routine morning             # Full morning routine
-/popkit:routine morning quick       # One-line summary
-/popkit:routine nightly             # End-of-day cleanup
-/popkit:routine morning generate    # Create custom routine
+# Smart commits
+/popkit:git commit        # Auto-generates conventional commit message
+
+# Pull requests
+/popkit:git pr            # Creates PR with summary + checklist
+
+# Code review
+/popkit:git review        # In-depth code review with suggestions
 ```
 
----
-
-### `/popkit:project` - Project Management
-
-Project analysis and setup.
-
-| Subcommand | Description |
-|------------|-------------|
-| `init` | Initialize PopKit in a project |
-| `analyze` | Deep codebase analysis |
-| `embed` | Create semantic embeddings |
-| `generate` | Generate custom MCP server |
-| `setup` | Configure project settings |
+### Quality Assurance
 
 ```bash
-# Examples
-/popkit:project init
-/popkit:project analyze --json
-/popkit:project generate mcp
+# Multi-perspective assessment
+/popkit:assess all        # Run 6 specialized assessors
+
+# Systematic debugging
+/popkit:debug "login fails on mobile"
+
+# Security scanning
+/popkit:security scan     # Find vulnerabilities + create issues
 ```
 
----
-
-### `/popkit:issue` - GitHub Issues
-
-Full issue management.
-
-| Subcommand | Description |
-|------------|-------------|
-| `create` | Create new issue |
-| `list` | List issues with filters |
-| `view` | View issue details |
-| `close` | Close an issue |
-| `comment` | Add comment |
-| `edit` | Edit issue |
-| `link` | Link related issues |
-
-**Flags:** `--state`, `--label`, `--assign`
+### Deployment
 
 ```bash
-# Examples
-/popkit:issue create "Bug in auth flow"
-/popkit:issue list --label bug
-/popkit:issue close 123 --comment "Fixed in #125"
+# Universal deployment
+/popkit:deploy init       # Configure deployment targets
+/popkit:deploy execute    # Ship to Docker/npm/Vercel/etc.
 ```
 
 ---
 
-### `/popkit:debug` - Systematic Debugging
+## 🏗️ Repository Structure
 
-Structured debugging with root cause analysis.
+```
+popkit/
+├── packages/
+│   ├── popkit-shared/      # Shared Python utilities (69 modules)
+│   ├── popkit-dev/         # Development workflows plugin
+│   ├── popkit-github/      # GitHub integration plugin
+│   ├── popkit-quality/     # Quality assurance plugin
+│   ├── popkit-deploy/      # Deployment automation plugin
+│   ├── popkit-research/    # Research management plugin
+│   ├── popkit-core/        # Core utilities plugin
+│   ├── popkit-meta/        # Meta-plugin (backwards compatibility)
+│   └── cloud/              # PopKit Cloud API (Cloudflare Workers)
+├── docs/
+│   ├── plans/              # Design documents
+│   ├── research/           # Research notes
+│   ├── phases/             # Phase completion reports
+│   └── cloud/              # Cloud documentation
+├── CLAUDE.md               # Claude Code instructions
+├── CHANGELOG.md            # Version history
+└── README.md               # This file
+```
 
-| Mode | Description |
-|------|-------------|
-| `code` | Debug code issues |
-| `routing` | Debug agent routing |
+---
 
-**Flags:** `--trace`, `--verbose`
+## 🔑 API Key Enhancement Model
+
+**Everything works FREE locally.** An API key adds:
+
+- ✨ **Semantic Search**: Find skills/agents using natural language
+- 🌐 **Cloud Knowledge**: Cross-project learning and patterns
+- 🤝 **Community Intelligence**: Benefit from collective insights
+- 🎯 **Enhanced Routing**: Better agent selection with embeddings
+
+**No feature gating** - only intelligence amplification.
+
+---
+
+## 📚 Documentation
+
+### Plugin Documentation
+- [popkit-dev README](packages/popkit-dev/README.md)
+- [popkit-github README](packages/popkit-github/README.md)
+- [popkit-quality README](packages/popkit-quality/README.md)
+- [popkit-deploy README](packages/popkit-deploy/README.md)
+- [popkit-research README](packages/popkit-research/README.md)
+- [popkit-core README](packages/popkit-core/README.md)
+- [popkit-meta Migration Guide](packages/popkit-meta/MIGRATION.md)
+
+### Architecture
+- [Plugin Modularization Design](docs/plans/2025-12-20-plugin-modularization-design.md)
+- [Testing & Validation Plan](docs/plans/2025-12-21-phase5-testing-validation-plan.md)
+- [CLAUDE.md](CLAUDE.md) - Full development guide
+
+---
+
+## 🎯 Current Status
+
+**Epic #580**: Plugin Modularization
+**Phase**: 5 of 6 (Testing & Validation)
+**Progress**: 75% Complete
+
+**Recent Milestones**:
+- ✅ All 6 plugins extracted and tested (Phases 1-4)
+- ✅ 96.3% test pass rate (155/161 tests)
+- ✅ Zero functionality regression
+- 🔄 Manual command testing (in progress)
+- 📋 Documentation & marketplace release (next)
+
+See [CLAUDE.md](CLAUDE.md) for detailed roadmap.
+
+---
+
+## 🤝 Contributing
+
+PopKit is in active development. See:
+- [GitHub Issues](https://github.com/jrc1883/elshaddai/issues?q=is%3Aissue+is%3Aopen+label%3Aapp%3Apopkit)
+- [CLAUDE.md](CLAUDE.md) - Development guide
+
+---
+
+## 📜 License
+
+MIT
+
+---
+
+## 👤 Author
+
+**Joseph Cannon**
+<joseph@thehouseofdeals.com>
+
+---
+
+**Ready to supercharge your development workflow?**
 
 ```bash
-# Examples
-/popkit:debug code "TypeError in user service"
-/popkit:debug routing --verbose
+/plugin install popkit@popkit-marketplace
 ```
 
----
-
-### `/popkit:power` - Multi-Agent Mode
-
-Parallel agent orchestration.
-
-| Subcommand | Description |
-|------------|-------------|
-| `init` | Set up Power Mode |
-| `start` | Start session |
-| `status` | View agent status |
-| `stop` | End session |
-
-**Modes:** Redis (full), File-based (zero-setup fallback)
-
-```bash
-# Examples
-/popkit:power init           # First-time setup
-/popkit:power start          # Begin session
-/popkit:power status         # Check agents
-```
-
----
-
-### More Commands
-
-| Command | Description | Subcommands |
-|---------|-------------|-------------|
-| `/popkit:assess` | Multi-perspective assessment | (direct use) |
-| `/popkit:audit` | Security audit | `quick`, `full`, `scan` |
-| `/popkit:bug` | Bug reporting | `report`, `search`, `share` |
-| `/popkit:knowledge` | Knowledge base | `list`, `add`, `search`, `sync` |
-| `/popkit:next` | What to do next | `quick`, `verbose` |
-| `/popkit:plugin` | Plugin management | `test`, `docs`, `sync` |
-| `/popkit:privacy` | Privacy controls | `status`, `consent`, `export` |
-| `/popkit:worktree` | Git worktrees | `create`, `list`, `remove` |
-
-<details>
-<summary><strong>All Commands (Auto-Generated)</strong></summary>
-
-<!-- AUTO-GEN:COMMANDS START -->
-| Command | Description |
-|---------|-------------|
-| `/popkit:account` | status | keys | billing | logout - Manage your PopKit account |
-| `/popkit:assess` | anthropic | security | performance | ux | architect | docs | all [--fix, --json] |
-| `/popkit:audit` | quarterly | yearly | stale | duplicates | health | ip-leak [--verbose, --fix] |
-| `/popkit:bug` | report | search | share [--issue, --share] |
-| `/popkit:dashboard` | [add|remove|refresh|switch|discover] - Multi-project management |
-| `/popkit:debug` | code | routing [--trace, --verbose] |
-| `/popkit:deploy` | init | setup | validate | execute | rollback [--target, --all, --dry-run] |
-| `/popkit:dev` | work #N | brainstorm | plan | execute | prd | suite | "description" [--mode quic |
-| `/popkit:git` | commit | push | pr | review | ci | release | publish | prune | finish [--draft,  |
-| `/popkit:issue` | create | list | view | close | comment | edit | link [--state, --label] |
-| `/popkit:knowledge` | list | add | remove | sync | search <query> |
-| `/popkit:milestone` | list | create | close | report | health [--json, --verbose] |
-| `/popkit:next` | [quick|verbose] - Analyze project state and recommend next actions |
-| `/popkit:plugin` | test | docs | sync | detect | version [--verbose, --json] |
-| `/popkit:power` | start | stop | status | init | metrics | widgets | consensus [--consensus, --age |
-| `/popkit:privacy` | status | consent | export | delete | level [strict|moderate|minimal] |
-| `/popkit:project` | init | analyze | board | embed | generate | mcp | setup | skills | observe [--po |
-| `/popkit:research` | list | search | add | tag | show | delete | merge [--type, --project] |
-| `/popkit:routine` | morning | nightly [run|quick|generate|list|set|edit|delete] |
-| `/popkit:security` | scan | list | fix | report [--dry-run, --severity, --fix] |
-| `/popkit:stats` | session | today | week | cloud | reset - Efficiency metrics |
-| `/popkit:upgrade` | upgrade | pro | team [--open] - Upgrade to PopKit Premium |
-| `/popkit:workflow-viz` | [workflow-name] [--validate, --metrics, --ascii] |
-| `/popkit:worktree` | create <branch> | list | analyze | remove [--force] |
-<!-- AUTO-GEN:COMMANDS END -->
-
-</details>
-
----
-
-## Agents
-
-### Tier 1: Always Active
-
-These agents are always available and route automatically based on context:
-
-| Agent | Triggers | Purpose |
-|-------|----------|---------|
-| **bug-whisperer** | "bug", "error", TypeError | Debug complex issues |
-| **code-reviewer** | After implementation | Quality review |
-| **security-auditor** | "security", "vulnerability" | Security analysis |
-| **test-writer-fixer** | `*.test.ts`, "test" | Test implementation |
-| **performance-optimizer** | "slow", "performance" | Optimization |
-| **refactoring-expert** | "refactor", "clean up" | Code restructuring |
-| **query-optimizer** | `*.sql`, "query" | Database optimization |
-| **api-designer** | "API", "endpoint" | API design |
-| **accessibility-guardian** | "a11y", "accessibility" | WCAG compliance |
-| **migration-specialist** | "migrate", "upgrade" | System migrations |
-| **documentation-maintainer** | "docs", `*.md` | Documentation |
-
-### Tier 2: On-Demand Specialists
-
-Activated when specific patterns are detected:
-
-| Agent | When Activated |
-|-------|----------------|
-| **ai-engineer** | ML/AI tasks |
-| **devops-automator** | CI/CD, Docker |
-| **bundle-analyzer** | Bundle size issues |
-| **cache-optimizer** | Caching strategies |
-| **dead-code-eliminator** | Code cleanup |
-| **rapid-prototyper** | Quick prototypes |
-| **researcher** | Technical research |
-| **meta-agent** | Agent creation |
-
-<details>
-<summary><strong>All Agents (Auto-Generated)</strong></summary>
-
-<!-- AUTO-GEN:AGENTS START -->
-### Tier 1: Always Active (11 agents)
-
-| Agent | Purpose |
-|-------|---------|
-| **accessibility-guardian** | Ensures web applications meet WCAG 2.1 AA/AAA compliance. Us |
-| **api-designer** | Expert in RESTful and GraphQL API design patterns. Use when  |
-| **bug-whisperer** | Expert debugging specialist for complex issues. Use when fac |
-| **code-reviewer** | Performs comprehensive code reviews focusing on TypeScript,  |
-| **documentation-maintainer** | Keeps documentation synchronized with codebase changes. Use  |
-| **migration-specialist** | Expert in planning and executing complex system migrations i |
-| **performance-optimizer** | Elite performance engineering specialist that analyzes, diag |
-| **query-optimizer** | Specializes in analyzing and optimizing database queries for |
-| **refactoring-expert** | Code restructuring specialist focused on improving quality,  |
-| **security-auditor** | Comprehensive security specialist for vulnerability assessme |
-| **test-writer-fixer** | Comprehensive testing specialist for writing, fixing, and op |
-
-### Tier 2: On-Demand (17 agents)
-
-| Agent | Purpose |
-|-------|---------|
-| **ai-engineer** | Specialized in ML/AI integration, model development, and int |
-| **backup-coordinator** | Designs and manages comprehensive backup strategies across d |
-| **bundle-analyzer** | Analyzes and optimizes JavaScript bundle sizes for web appli |
-| **data-integrity** | Validates data consistency, detects anomalies, and performs  |
-| **dead-code-eliminator** | Intelligent dead code detection and elimination using advanc |
-| **deployment-validator** | Ensures safe, reliable deployments through comprehensive val |
-| **devops-automator** | Use when setting up CI/CD pipelines, configuring cloud infra |
-| **feature-prioritizer** | Strategic backlog management and feature prioritization spec |
-| **feedback-synthesizer** | Analyzes user feedback, complaints, and support tickets to e |
-| **log-analyzer** | Parses and analyzes application logs across distributed syst |
-| **meta-agent** | Generates new, complete Claude Code agent configuration file |
-| **metrics-collector** | Specializes in telemetry gathering, metrics aggregation, and |
-| **power-coordinator** | Orchestrates multi-agent collaboration in Power Mode. Use wh |
-| **rapid-prototyper** | Fast MVP development specialist for quick proof-of-concept i |
-| **researcher** | Meta-researcher that analyzes codebases to identify benefici |
-| **rollback-specialist** | Expert in rapid recovery procedures and safe rollback operat |
-| **user-story-writer** | Expert requirements documentation and user story creation sp |
-
-### Feature Workflow (2 agents)
-
-| Agent | Purpose |
-|-------|---------|
-| **code-architect** | Designs feature architectures and implementation blueprints  |
-| **code-explorer** | Deeply analyzes existing codebase features by tracing execut |
-
-<!-- AUTO-GEN:AGENTS END -->
-
-</details>
-
----
-
-## Premium Features
-
-Some features require a PopKit subscription:
-
-| Feature | Free | Pro ($9/mo) |
-|---------|------|-------------|
-| Core commands | Yes | Yes |
-| Basic agents | Yes | Yes |
-| Custom MCP server | - | Yes |
-| Power Mode (Redis) | - | Yes |
-| Pattern sharing | - | Yes |
-| Team coordination | - | Team tier |
-
-Upgrade with `/popkit:upgrade` or visit [popkit.dev/pricing](https://popkit.dev/pricing).
-
----
-
-## FAQ
-
-### How do I get started?
-
-Install the plugin, restart Claude Code, then run `/popkit:routine morning` to see your project health.
-
-### What's the difference between `/popkit:dev` and just coding?
-
-`/popkit:dev` provides a structured 7-phase workflow with architecture design, code review, and quality gates. It's especially useful for larger features.
-
-### Do I need Power Mode?
-
-Power Mode enables multiple agents working in parallel. For most tasks, sequential mode works fine. Power Mode shines for complex refactoring or large features.
-
-### Can I use PopKit without the cloud?
-
-Yes! The core plugin works entirely locally. Cloud features (pattern sharing, team sync) require a subscription.
-
-### How do agents get selected?
-
-Agents route based on:
-1. **Keywords** in your request ("bug" → bug-whisperer)
-2. **File patterns** being edited (`*.test.ts` → test-writer-fixer)
-3. **Error patterns** encountered (TypeError → bug-whisperer)
-
-### What's the morning routine?
-
-A health check that scores your project's readiness:
-- Git status (uncommitted changes?)
-- TypeScript errors
-- Dev server status
-- Dependency freshness
-
----
-
-## Contributing
-
-Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-## License
-
-Apache 2.0 - see [LICENSE](LICENSE)
-
----
-
-<p align="center">
-  Built with care for the Claude Code community
-  <br>
-  <a href="https://github.com/jrc1883/popkit-claude/issues">Report Bug</a> •
-  <a href="https://github.com/jrc1883/popkit-claude/issues">Request Feature</a>
-</p>
+Then restart Claude Code and run `/popkit:next` to get started!

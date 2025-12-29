@@ -1,0 +1,20 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "popkit-shared"
+version = "1.0.0"
+description = "Shared utilities for PopKit plugin ecosystem"
+authors = ["Joseph Cannon <joseph@thehouseofdeals.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "popkit_shared"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pyyaml = "^6.0"
+filelock = "^3.13.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.0"

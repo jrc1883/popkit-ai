@@ -1,0 +1,54 @@
+{
+  "name": "popkit-core",
+  "version": "1.0.0-beta.1",
+  "description": "Core utilities plugin - plugin management, project analysis, Power Mode orchestration, stats, privacy, and meta-features",
+  "author": {
+    "name": "Joseph Cannon",
+    "email": "joseph@thehouseofdeals.com"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/jrc1883/popkit",
+  "commands": [
+    "./commands/plugin.md",
+    "./commands/stats.md",
+    "./commands/privacy.md",
+    "./commands/account.md",
+    "./commands/upgrade.md",
+    "./commands/dashboard.md",
+    "./commands/workflow-viz.md",
+    "./commands/bug.md",
+    "./commands/power.md",
+    "./commands/project.md",
+    "./commands/record.md"
+  ],
+  "skills": [
+    "./skills/pop-analyze-project",
+    "./skills/pop-auto-docs",
+    "./skills/pop-bug-reporter",
+    "./skills/pop-dashboard",
+    "./skills/pop-doc-sync",
+    "./skills/pop-embed-content",
+    "./skills/pop-embed-project",
+    "./skills/pop-mcp-generator",
+    "./skills/pop-plugin-test",
+    "./skills/pop-power-mode",
+    "./skills/pop-project-init",
+    "./skills/pop-project-templates",
+    "./skills/pop-skill-generator",
+    "./skills/pop-validation-engine"
+  ],
+  "agents": [
+    "./agents/tier-2-on-demand/meta-agent/AGENT.md",
+    "./agents/tier-2-on-demand/power-coordinator/AGENT.md",
+    "./agents/tier-2-on-demand/bundle-analyzer/AGENT.md",
+    "./agents/tier-2-on-demand/dead-code-eliminator/AGENT.md",
+    "./agents/tier-2-on-demand/feature-prioritizer/AGENT.md",
+    "./agents/tier-1-always-active/api-designer/AGENT.md",
+    "./agents/tier-1-always-active/accessibility-guardian/AGENT.md",
+    "./agents/tier-1-always-active/documentation-maintainer/AGENT.md",
+    "./agents/tier-1-always-active/migration-specialist/AGENT.md"
+  ],
+  "status_line": {
+    "script": "power-mode/statusline.py"
+  }
+}

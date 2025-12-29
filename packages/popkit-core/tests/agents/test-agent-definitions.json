@@ -1,0 +1,101 @@
+{
+  "test_id": "agent-definitions-valid",
+  "category": "agents",
+  "name": "Agent Definition Validation",
+  "description": "Verify all agent markdown files have valid frontmatter and descriptions for semantic routing",
+  "severity": "high",
+  "test_cases": [
+    {
+      "case_id": "agent-files-exist",
+      "name": "Agent markdown files exist in all plugins",
+      "plugins": [
+        "popkit-core",
+        "popkit-dev",
+        "popkit-ops",
+        "popkit-research"
+      ],
+      "assertions": [
+        {
+          "type": "agents_directory_exists",
+          "description": "Each plugin should have an agents/ directory"
+        },
+        {
+          "type": "agent_files_found",
+          "min_count": 1,
+          "description": "At least one agent file should exist"
+        }
+      ]
+    },
+    {
+      "case_id": "agent-frontmatter-valid",
+      "name": "All agents have valid YAML frontmatter",
+      "scan_pattern": "agents/**/*.md",
+      "assertions": [
+        {
+          "type": "yaml_frontmatter_exists",
+          "description": "Agent files must have YAML frontmatter"
+        },
+        {
+          "type": "has_frontmatter_field",
+          "field": "name",
+          "description": "Agent frontmatter must include 'name'"
+        },
+        {
+          "type": "has_frontmatter_field",
+          "field": "description",
+          "description": "Agent frontmatter must include 'description' for semantic routing"
+        }
+      ]
+    },
+    {
+      "case_id": "agent-descriptions-clear",
+      "name": "Agent descriptions are clear and specific",
+      "scan_pattern": "agents/**/*.md",
+      "assertions": [
+        {
+          "type": "description_min_length",
+          "min_chars": 20,
+          "description": "Descriptions should be detailed enough for semantic matching"
+        },
+        {
+          "type": "description_not_generic",
+          "avoid_phrases": ["helper", "utility", "general purpose"],
+          "description": "Descriptions should be specific, not generic"
+        }
+      ]
+    },
+    {
+      "case_id": "no-duplicate-agent-names",
+      "name": "No duplicate agent names across all plugins",
+      "scan_all_plugins": true,
+      "assertions": [
+        {
+          "type": "unique_agent_names",
+          "description": "Agent names must be unique across all PopKit plugins"
+        }
+      ]
+    },
+    {
+      "case_id": "tier-structure-valid",
+      "name": "Agent tier directories follow standard structure",
+      "scan_pattern": "agents/tier-*",
+      "assertions": [
+        {
+          "type": "directory_name_valid",
+          "allowed_patterns": ["tier-1-always-active", "tier-2-on-demand", "feature-workflow"],
+          "description": "Agent tier directories must use standard naming"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "popkit_shared.utils.agent_validator",
+    "popkit_shared.utils.frontmatter_parser"
+  ],
+  "notes": [
+    "Agent routing is semantic based on descriptions, not keyword configs",
+    "Each plugin manages its own agents independently",
+    "Agent names must be unique across all plugins to avoid conflicts",
+    "Tier structure is organizational, actual routing is semantic"
+  ]
+}

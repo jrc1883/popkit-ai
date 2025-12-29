@@ -1,0 +1,158 @@
+{
+  "name": "morning-routine-token-efficiency",
+  "description": "Compare token efficiency of prescriptive vs descriptive morning routine approaches",
+  "category": "optimization",
+  "difficulty": "medium",
+  "timeout": 180000,
+  "expected_duration": 60000,
+  "variants": [
+    {
+      "id": "prescriptive-full",
+      "name": "Prescriptive (Full Commands)",
+      "description": "Run explicit git/test commands via Bash tool - get everything",
+      "prompt": "Run a morning health check using these exact commands:\n\n1. Run `git status --porcelain` to check working directory\n2. Run `git log --oneline -1` to get latest commit\n3. Run `git diff --stat origin/$(git branch --show-current)` to check if behind remote\n4. Run tests if test framework exists\n5. Check for uncommitted changes\n6. Calculate a Ready to Code score (0-100)\n\nProvide a structured report with all command outputs.",
+      "expected_behavior": "Runs all commands explicitly, collects full output"
+    },
+    {
+      "id": "prescriptive-optimized",
+      "name": "Prescriptive (Optimized)",
+      "description": "Run explicit commands but use --short flags and skip redundant checks",
+      "prompt": "Run a morning health check using these optimized commands:\n\n1. Run `git status --short` (compact format)\n2. Run `git log --oneline -1` for latest commit\n3. Only run `git diff --stat` if status shows changes\n4. Only run tests if source files changed since last run\n5. Calculate Ready to Code score\n\nProvide a concise report.",
+      "expected_behavior": "Runs selective commands with --short flags"
+    },
+    {
+      "id": "descriptive-guided",
+      "name": "Descriptive (Guided)",
+      "description": "Natural language request with areas to check, model decides how",
+      "prompt": "Give me a morning project health check. Check these areas:\n- Git status (uncommitted changes, branch state)\n- Latest commit\n- Whether we're behind remote\n- Test status (if tests exist)\n\nYou decide which commands to run and how to present the information. Be concise and focus on what's actionable.",
+      "expected_behavior": "Model chooses efficient commands, summarizes results"
+    },
+    {
+      "id": "descriptive-minimal",
+      "name": "Descriptive (Minimal)",
+      "description": "Completely open-ended, model decides everything",
+      "prompt": "Give me a quick morning health check for this project. What do I need to know before I start coding?",
+      "expected_behavior": "Model decides what to check and how to present it"
+    },
+    {
+      "id": "cached-prescriptive",
+      "name": "Cached Prescriptive",
+      "description": "Prescriptive approach with caching (skip unchanged checks)",
+      "prompt": "Run morning health check with caching:\n\n1. Check git status - if unchanged from cache, skip detailed diff\n2. Check tests - if no source files changed, use cached results\n3. Only run expensive operations if state changed\n\nUse the routine_cache.py utility to detect unchanged state.",
+      "expected_behavior": "Skips redundant checks, uses cached results when possible"
+    }
+  ],
+  "metrics": {
+    "primary": [
+      "total_tokens",
+      "tool_calls",
+      "execution_time_ms"
+    ],
+    "secondary": [
+      "bash_calls",
+      "read_calls",
+      "bash_token_percentage",
+      "cache_hits",
+      "cache_misses"
+    ],
+    "quality": [
+      "detected_uncommitted_changes",
+      "detected_branch_ahead",
+      "calculated_score",
+      "consistency_across_runs"
+    ]
+  },
+  "success_criteria": {
+    "all_variants": [
+      "Detects uncommitted changes (true/false)",
+      "Identifies current branch",
+      "Provides actionable output"
+    ],
+    "optimization_targets": {
+      "prescriptive_optimized": {
+        "token_reduction_vs_full": "> 30%",
+        "preserves_accuracy": true
+      },
+      "descriptive_guided": {
+        "token_reduction_vs_full": "> 20%",
+        "consistency_score": "> 0.7"
+      },
+      "cached_prescriptive": {
+        "token_reduction_vs_full": "> 40%",
+        "accuracy": "100%"
+      }
+    }
+  },
+  "analysis": {
+    "compare": [
+      {
+        "variant_a": "prescriptive-full",
+        "variant_b": "prescriptive-optimized",
+        "question": "How much do --short flags and selective execution save?"
+      },
+      {
+        "variant_a": "prescriptive-full",
+        "variant_b": "descriptive-guided",
+        "question": "Is guided natural language more efficient?"
+      },
+      {
+        "variant_a": "prescriptive-optimized",
+        "variant_b": "cached-prescriptive",
+        "question": "What's the benefit of caching?"
+      },
+      {
+        "variant_a": "descriptive-guided",
+        "variant_b": "descriptive-minimal",
+        "question": "Does more guidance increase or decrease tokens?"
+      }
+    ],
+    "hypotheses": [
+      "Prescriptive-full uses most tokens but is most consistent",
+      "Caching reduces tokens by 40%+ on subsequent runs",
+      "Descriptive-minimal uses fewer tokens but less consistent",
+      "Prescriptive-optimized is best balance of efficiency and consistency"
+    ]
+  },
+  "setup": {
+    "preconditions": [
+      "Git repository with commits",
+      "Some uncommitted changes (for testing detection)",
+      "Test framework present (optional)"
+    ],
+    "environment": {
+      "POPKIT_ROUTINE_MEASURE": "true",
+      "POPKIT_CACHE_ENABLED": "true"
+    }
+  },
+  "validation": {
+    "post_run_checks": [
+      "All variants detected the same git status",
+      "All variants identified the same issues",
+      "Token counts vary as expected (full > optimized > cached)",
+      "Consistency score calculated for each variant"
+    ]
+  },
+  "expected_results": {
+    "token_usage_ranking": [
+      "1. prescriptive-full (highest)",
+      "2. descriptive-minimal",
+      "3. prescriptive-optimized",
+      "4. descriptive-guided",
+      "5. cached-prescriptive (lowest on 2nd run)"
+    ],
+    "consistency_ranking": [
+      "1. prescriptive-full (100%)",
+      "2. cached-prescriptive (100%)",
+      "3. prescriptive-optimized (95%+)",
+      "4. descriptive-guided (70-80%)",
+      "5. descriptive-minimal (50-70%)"
+    ],
+    "recommended_use_cases": {
+      "prescriptive-full": "First-time setup, comprehensive audits",
+      "prescriptive-optimized": "Daily routine (best balance)",
+      "cached-prescriptive": "Multiple runs per day (fastest)",
+      "descriptive-guided": "Ad-hoc checks, exploratory analysis",
+      "descriptive-minimal": "Quick sanity checks"
+    }
+  }
+}

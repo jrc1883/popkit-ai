@@ -1,0 +1,128 @@
+{
+  "id": "api-client",
+  "name": "TypeScript API Client with Error Handling",
+  "description": "Create a typed API client with retries, timeout, and proper error handling. Tests async patterns and error management.",
+  "category": "standard",
+  "language": "typescript",
+  "version": "1.0.0",
+
+  "initialFiles": {
+    "api-client.ts": "// TODO: Implement API client\n\nexport interface ApiClientConfig {\n  baseUrl: string;\n  timeout?: number;\n  retries?: number;\n}\n\nexport class ApiClient {\n  // Implement me!\n}\n",
+    "package.json": "{\n  \"name\": \"api-client-benchmark\",\n  \"version\": \"1.0.0\",\n  \"type\": \"module\",\n  \"scripts\": {\n    \"test\": \"npx tsx api-client.test.ts\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"^5.3.0\",\n    \"tsx\": \"^4.6.0\"\n  }\n}",
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"NodeNext\",\n    \"moduleResolution\": \"NodeNext\",\n    \"strict\": true,\n    \"esModuleInterop\": true\n  }\n}",
+    "api-client.test.ts": "// Basic test runner\nimport { ApiClient } from './api-client.js';\n\nasync function runTests() {\n  console.log('Running API Client tests...');\n  let passed = 0;\n  let failed = 0;\n\n  // Test 1: Can create instance\n  try {\n    const client = new ApiClient({ baseUrl: 'https://api.example.com' });\n    console.log('✓ Can create instance');\n    passed++;\n  } catch (e) {\n    console.log('✗ Can create instance:', e);\n    failed++;\n  }\n\n  console.log(`\\nResults: ${passed} passed, ${failed} failed`);\n  process.exit(failed > 0 ? 1 : 0);\n}\n\nrunTests();\n"
+  },
+  "dependencies": ["typescript", "tsx"],
+  "setupCommands": ["npm install"],
+
+  "prompt": "Implement a production-grade TypeScript API client library with the following requirements:\n\n1. **Constructor**: Accept ApiClientConfig with baseUrl, timeout (default 10000ms), retries (default 3)\n\n2. **Core Methods**:\n   - `get<T>(path: string): Promise<T>` - GET request\n   - `post<T, D>(path: string, data: D): Promise<T>` - POST request\n   - `put<T, D>(path: string, data: D): Promise<T>` - PUT request\n   - `delete<T>(path: string): Promise<T>` - DELETE request\n\n3. **Required Features**:\n   - Automatic retry on failure (with exponential backoff)\n   - Configurable timeout (abort if exceeded)\n   - Proper error types (NetworkError, TimeoutError, ApiError with status code)\n   - JSON parsing/serialization\n   - Request/response interceptors (optional but nice)\n\n4. **Error Handling**:\n   - Create custom error classes with clear inheritance\n   - Properly type error responses\n   - Include status code, message, and context in errors\n\n**Quality Expectations:**\n- Build this as an enterprise-ready library (comprehensive error handling, logging, debugging support)\n- Add features that would make this production-quality (circuit breaker, rate limiting, request deduplication)\n- Implement proper TypeScript practices (strict types, generics, branded types if helpful)\n- Consider edge cases (network failures, malformed responses, CORS issues, request cancellation)\n- Structure code for testability and maintainability\n\nFeel free to add additional features beyond the requirements if they would make this a better library. Use native fetch API. Export all types and classes.",
+
+  "context": "Use native fetch with AbortController for timeout. Create custom Error classes. Use generics for type-safe responses.",
+  "maxTokens": 60000,
+  "timeoutSeconds": 360,
+
+  "tests": [
+    {
+      "id": "file-exists",
+      "name": "api-client.ts has content",
+      "type": "unit",
+      "command": "test -s api-client.ts && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "exports-class",
+      "name": "Exports ApiClient class",
+      "type": "unit",
+      "command": "grep -q 'export.*class.*ApiClient' api-client.ts && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "has-get-method",
+      "name": "Has GET method",
+      "type": "unit",
+      "command": "grep -qE 'get.*<.*>.*:.*Promise' api-client.ts && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "has-post-method",
+      "name": "Has POST method",
+      "type": "unit",
+      "command": "grep -qE 'post.*<.*>.*:.*Promise' api-client.ts && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "uses-fetch",
+      "name": "Uses native fetch",
+      "type": "unit",
+      "command": "grep -q 'fetch' api-client.ts && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "has-retry-logic",
+      "name": "Has retry logic",
+      "type": "unit",
+      "command": "grep -qE '(retry|retries|attempt)' api-client.ts && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "has-timeout",
+      "name": "Has timeout handling",
+      "type": "unit",
+      "command": "grep -qE '(timeout|AbortController|signal)' api-client.ts && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "has-error-classes",
+      "name": "Has custom error classes",
+      "type": "unit",
+      "command": "grep -qE 'class.*(Error|Exception).*extends' api-client.ts && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS"
+    },
+    {
+      "id": "typescript-compiles",
+      "name": "TypeScript compiles",
+      "type": "unit",
+      "command": "npx tsc --noEmit api-client.ts 2>&1 && echo 'PASS' || echo 'FAIL'",
+      "successPattern": "PASS",
+      "timeoutSeconds": 30
+    }
+  ],
+
+  "qualityChecks": [
+    {
+      "id": "type-safety",
+      "name": "Type safety check",
+      "type": "typecheck",
+      "command": "npx tsc --noEmit --strict api-client.ts",
+      "weight": 1.0
+    }
+  ],
+
+  "baseline": {
+    "vanilla": {
+      "tokenEstimate": 22000,
+      "toolCallEstimate": 35,
+      "successRate": 0.45,
+      "timeEstimate": 240,
+      "qualityEstimate": 5.5
+    },
+    "popkit": {
+      "tokenEstimate": 14000,
+      "toolCallEstimate": 20,
+      "successRate": 0.78,
+      "timeEstimate": 160,
+      "qualityEstimate": 7.5
+    },
+    "power": {
+      "tokenEstimate": 11000,
+      "toolCallEstimate": 16,
+      "successRate": 0.90,
+      "timeEstimate": 120,
+      "qualityEstimate": 8.5
+    }
+  },
+
+  "tags": ["typescript", "async", "error-handling", "generics", "api", "intermediate"],
+  "author": "PopKit Team",
+  "createdAt": "2025-12-09T00:00:00Z"
+}

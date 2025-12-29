@@ -1,0 +1,84 @@
+{
+  "name": "nightly-routine",
+  "description": "End-of-day cleanup and maintenance workflow",
+  "version": "1.0.0",
+  "steps": [
+    {
+      "id": "collect_state",
+      "name": "Collect Project State",
+      "type": "utility",
+      "module": "popkit_shared.utils.capture_state",
+      "function": "capture_project_state",
+      "description": "Gather git, GitHub, and service status",
+      "estimated_duration_ms": 3000,
+      "required": true
+    },
+    {
+      "id": "calculate_score",
+      "name": "Calculate Sleep Score",
+      "type": "computation",
+      "module": "pop_nightly.scripts.sleep_score",
+      "function": "calculate_sleep_score",
+      "depends_on": ["collect_state"],
+      "description": "Compute 0-100 score based on project health",
+      "estimated_duration_ms": 100,
+      "required": true
+    },
+    {
+      "id": "generate_report",
+      "name": "Generate Nightly Report",
+      "type": "formatting",
+      "module": "pop_nightly.scripts.report_generator",
+      "function": "generate_nightly_report",
+      "depends_on": ["calculate_score"],
+      "description": "Format markdown report with recommendations",
+      "estimated_duration_ms": 200,
+      "required": true
+    },
+    {
+      "id": "capture_session",
+      "name": "Capture Session State",
+      "type": "state_management",
+      "description": "Update STATUS.json with nightly data",
+      "depends_on": ["calculate_score", "generate_report"],
+      "estimated_duration_ms": 500,
+      "required": true,
+      "fallback": "warn"
+    },
+    {
+      "id": "present_report",
+      "name": "Present Report to User",
+      "type": "output",
+      "description": "Display nightly report",
+      "depends_on": ["generate_report"],
+      "estimated_duration_ms": 100,
+      "required": true
+    }
+  ],
+  "total_estimated_duration_ms": 3900,
+  "success_criteria": [
+    "Sleep Score calculated successfully",
+    "STATUS.json updated",
+    "Report displayed to user"
+  ],
+  "error_handling": {
+    "git_unavailable": {
+      "action": "continue",
+      "message": "Git not available - partial score will be calculated"
+    },
+    "github_unavailable": {
+      "action": "continue",
+      "message": "GitHub CLI not available - partial score will be calculated"
+    },
+    "status_update_failed": {
+      "action": "warn",
+      "message": "Could not update STATUS.json - report still generated"
+    }
+  },
+  "optimization": {
+    "caching_enabled": true,
+    "cache_ttl_seconds": 300,
+    "cacheable_steps": ["collect_state"],
+    "token_reduction_target": "40-96%"
+  }
+}

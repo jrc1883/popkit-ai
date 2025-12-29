@@ -1,0 +1,43 @@
+{
+  "name": "popkit-research",
+  "displayName": "PopKit Research",
+  "version": "1.0.0-beta.1",
+  "description": "Research and knowledge management with semantic search, cross-project learning, and cloud-backed knowledge base",
+  "author": {
+    "name": "Joseph Cannon",
+    "email": "joseph@thehouseofdeals.com",
+    "url": "https://github.com/jrc1883"
+  },
+  "publisher": "popkit",
+  "license": "MIT",
+  "homepage": "https://github.com/jrc1883/popkit",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jrc1883/popkit"
+  },
+  "bugs": {
+    "url": "https://github.com/jrc1883/popkit/issues"
+  },
+  "categories": [
+    "research",
+    "knowledge-management",
+    "documentation",
+    "productivity"
+  ],
+  "keywords": [
+    "research",
+    "knowledge-base",
+    "semantic-search",
+    "documentation",
+    "notes",
+    "learning",
+    "organization"
+  ],
+  "icon": "assets/icon.png",
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
+  },
+  "pricing": "free",
+  "preview": true
+}

@@ -1,0 +1,72 @@
+{
+  "session_id": "nightly-2025-12-28-165848",
+  "timestamp": "2025-12-28T16:58:48.613850",
+  "last_nightly_routine": {
+    "executed_at": "2025-12-28T16:58:48.613855",
+    "sleep_score": "75/100",
+    "breakdown": {
+      "uncommitted_work_saved": {
+        "points": 0,
+        "max": 25,
+        "status": "\u274c",
+        "reason": "4 uncommitted files"
+      },
+      "branches_cleaned": {
+        "points": 20,
+        "max": 20,
+        "status": "\u2705",
+        "reason": "No stale branches"
+      },
+      "issues_updated": {
+        "points": 20,
+        "max": 20,
+        "status": "\u2705",
+        "reason": "All 5 issues updated today"
+      },
+      "ci_passing": {
+        "points": 15,
+        "max": 15,
+        "status": "\u2705",
+        "reason": "Latest CI run successful"
+      },
+      "services_stopped": {
+        "points": 10,
+        "max": 10,
+        "status": "\u2705",
+        "reason": "No dev services running"
+      },
+      "logs_archived": {
+        "points": 10,
+        "max": 10,
+        "status": "\u2705",
+        "reason": "No logs to archive"
+      }
+    }
+  },
+  "git_status": {
+    "current_branch": "main",
+    "last_commit": "unknown",
+    "uncommitted_files": 4,
+    "files": [
+      "pps/popkit/packages/popkit-dev/skills/pop-nightly/scripts/nightly_workflow.py (M)",
+      "apps/genesis/.eslint-cleanup/phase5-breakdown.txt (??)",
+      "apps/genesis/.eslint-cleanup/phase5-errors.txt (??)",
+      "apps/popkit/packages/popkit-dev/skills/pop-nightly/scripts/STATUS.json (??)"
+    ],
+    "stashes": 9,
+    "action_required": "Commit or stash changes"
+  },
+  "metrics": {
+    "sleep_score": "75/100"
+  },
+  "recommendations": {
+    "before_leaving": [
+      "Commit or stash 4 uncommitted files",
+      "Review 9 stashes - consider cleanup"
+    ],
+    "next_session": [
+      "Run /popkit:routine morning to check overnight changes",
+      "Review and address items from nightly report"
+    ]
+  }
+}

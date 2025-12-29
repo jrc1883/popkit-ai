@@ -1,0 +1,330 @@
+#!/usr/bin/env python3
+"""
+Nightly Report Generator
+
+Generates formatted markdown report for nightly routine with:
+- Sleep Score headline
+- Score breakdown table
+- Uncommitted changes (if any)
+- Recommendations before leaving
+- Next session actions
+"""
+
+from datetime import datetime
+from typing import Dict, Any, List
+
+# Try relative import (when used as package), fall back to direct import
+try:
+    from .sleep_score import format_breakdown_table, get_score_interpretation
+except ImportError:
+    from sleep_score import format_breakdown_table, get_score_interpretation
+
+
+def generate_nightly_report(
+    score: int,
+    breakdown: Dict[str, Dict[str, Any]],
+    state: Dict[str, Any]
+) -> str:
+    """
+    Generate comprehensive nightly routine report.
+
+    Args:
+        score: Sleep Score (0-100)
+        breakdown: Score breakdown from calculate_sleep_score
+        state: Full project state from capture_state
+
+    Returns:
+        Formatted markdown report string
+    """
+    interpretation = get_score_interpretation(score)
+    git_state = state.get('git', {})
+    github_state = state.get('github', {})
+    services_state = state.get('services', {})
+
+    report = []
+
+    # Header
+    report.append("# 🌙 Nightly Routine Report")
+    report.append("")
+    report.append(f"**Date**: {datetime.now().strftime('%Y-%m-%d')}")
+    report.append(f"**Sleep Score**: {score}/100 {interpretation['emoji']}")
+    report.append("")
+
+    # Score interpretation
+    report.append(f"**Grade**: {interpretation['grade']} - {interpretation['interpretation']}")
+    report.append("")
+
+    # Score breakdown table
+    report.append("## Score Breakdown")
+    report.append("")
+    report.append(format_breakdown_table(breakdown))
+    report.append("")
+
+    # Uncommitted changes section (if any)
+    uncommitted_files = git_state.get('uncommitted_files_list', [])
+    if uncommitted_files:
+        report.append("## 📝 Uncommitted Changes")
+        report.append("")
+        report.append(f"**{len(uncommitted_files)} files need attention:**")
+        report.append("")
+        for file_info in uncommitted_files[:10]:  # Show max 10
+            status = file_info.get('status', '?')
+            path = file_info.get('path', '')
+            status_label = {
+                'M': 'modified',
+                'A': 'added',
+                'D': 'deleted',
+                '??': 'untracked',
+                'R': 'renamed',
+                'U': 'unmerged'
+            }.get(status, 'changed')
+            report.append(f"- `{path}` ({status_label})")
+
+        if len(uncommitted_files) > 10:
+            report.append(f"- ... and {len(uncommitted_files) - 10} more")
+        report.append("")
+
+    # Stashes section (if any)
+    stash_count = git_state.get('stashes', 0)
+    if stash_count > 0:
+        report.append("## 💾 Stashed Changes")
+        report.append("")
+        report.append(f"**{stash_count} stashes found**")
+        report.append("")
+        report.append("Consider reviewing and cleaning up old stashes:")
+        report.append("```bash")
+        report.append("git stash list")
+        report.append("```")
+        report.append("")
+
+    # Running services (if any)
+    running_services = services_state.get('running_services', [])
+    if running_services:
+        report.append("## 🔧 Running Services")
+        report.append("")
+        report.append(f"**{len(running_services)} services still running:**")
+        report.append("")
+        for service in running_services[:5]:  # Show max 5
+            report.append(f"- {service}")
+        report.append("")
+        report.append("Consider stopping dev services before leaving.")
+        report.append("")
+
+    # CI status (if failed)
+    ci_status = github_state.get('ci_status', {})
+    if ci_status.get('conclusion') in ['failure', 'skipped']:
+        report.append("## 🚨 CI Status")
+        report.append("")
+        conclusion = ci_status.get('conclusion', 'unknown')
+        status = ci_status.get('status', 'unknown')
+        created_at = ci_status.get('createdAt', '')
+
+        report.append(f"**Latest CI run**: {conclusion} ({status})")
+        if created_at:
+            date = created_at.split('T')[0]
+            report.append(f"**Created**: {date}")
+        report.append("")
+
+        if conclusion == 'failure':
+            report.append("⚠️ CI is failing. Consider fixing before tomorrow.")
+        elif conclusion == 'skipped':
+            report.append("ℹ️ CI was skipped. May need manual trigger.")
+        report.append("")
+
+    # Recommendations
+    report.append("## 📋 Recommendations")
+    report.append("")
+
+    recommendations_before = _generate_recommendations_before_leaving(
+        score, breakdown, state
+    )
+
+    if recommendations_before:
+        report.append("**Before Leaving:**")
+        for rec in recommendations_before:
+            report.append(f"- {rec}")
+        report.append("")
+
+    recommendations_next = _generate_recommendations_next_session(
+        score, breakdown, state
+    )
+
+    if recommendations_next:
+        report.append("**Next Morning:**")
+        for rec in recommendations_next:
+            report.append(f"- {rec}")
+        report.append("")
+
+    # Footer
+    report.append("---")
+    report.append("")
+    report.append("STATUS.json updated ✅")
+    report.append("Session state captured for tomorrow's resume.")
+
+    return "\n".join(report)
+
+
+def _generate_recommendations_before_leaving(
+    score: int,
+    breakdown: Dict[str, Dict[str, Any]],
+    state: Dict[str, Any]
+) -> List[str]:
+    """Generate recommendations for actions before leaving."""
+    recommendations = []
+    git_state = state.get('git', {})
+
+    # Uncommitted work
+    if breakdown.get('uncommitted_work_saved', {}).get('points', 0) == 0:
+        uncommitted_count = git_state.get('uncommitted_files', 0)
+        recommendations.append(
+            f"Commit or stash {uncommitted_count} uncommitted files"
+        )
+
+    # Stashes
+    stash_count = git_state.get('stashes', 0)
+    if stash_count > 5:
+        recommendations.append(
+            f"Review {stash_count} stashes - consider cleaning up old ones"
+        )
+
+    # Services
+    running_services = state.get('services', {}).get('running_services', [])
+    if running_services:
+        recommendations.append(
+            f"Stop {len(running_services)} running dev services"
+        )
+
+    # CI
+    ci_status = state.get('github', {}).get('ci_status', {})
+    if ci_status.get('conclusion') == 'failure':
+        recommendations.append("Investigate CI failure before leaving")
+
+    # Low score warning
+    if score < 50:
+        recommendations.append(
+            "⚠️ Low Sleep Score - spend a few minutes cleaning up"
+        )
+
+    return recommendations
+
+
+def _generate_recommendations_next_session(
+    score: int,
+    breakdown: Dict[str, Dict[str, Any]],
+    state: Dict[str, Any]
+) -> List[str]:
+    """Generate recommendations for next morning."""
+    recommendations = []
+
+    # Always recommend morning routine
+    recommendations.append("Run `/popkit:routine morning` to check overnight changes")
+
+    # Check for pending PRs
+    # (This would come from GitHub state if we capture PR data)
+
+    # Check issues if they weren't updated today
+    if breakdown.get('issues_updated', {}).get('points', 0) < 20:
+        recommendations.append("Review and update open issues")
+
+    # CI fixes
+    ci_status = state.get('github', {}).get('ci_status', {})
+    if ci_status.get('conclusion') in ['failure', 'skipped']:
+        recommendations.append("Check CI status and fix if needed")
+
+    # Stash cleanup
+    stash_count = state.get('git', {}).get('stashes', 0)
+    if stash_count > 5:
+        recommendations.append("Clean up stash backlog")
+
+    return recommendations
+
+
+def generate_quick_summary(
+    score: int,
+    breakdown: Dict[str, Dict[str, Any]],
+    state: Dict[str, Any]
+) -> str:
+    """
+    Generate one-line quick summary for --quick flag.
+
+    Args:
+        score: Sleep Score (0-100)
+        breakdown: Score breakdown
+        state: Project state
+
+    Returns:
+        One-line summary string
+    """
+    interpretation = get_score_interpretation(score)
+    git_state = state.get('git', {})
+
+    issues = []
+
+    # Collect issues
+    uncommitted = git_state.get('uncommitted_files', 0)
+    if uncommitted > 0:
+        issues.append(f"{uncommitted} uncommitted")
+
+    stashes = git_state.get('stashes', 0)
+    if stashes > 5:
+        issues.append(f"{stashes} stashes")
+
+    ci_conclusion = state.get('github', {}).get('ci_status', {}).get('conclusion')
+    if ci_conclusion == 'failure':
+        issues.append("CI failed")
+    elif ci_conclusion == 'skipped':
+        issues.append("CI skipped")
+
+    running_services = state.get('services', {}).get('running_services', [])
+    if running_services:
+        issues.append(f"{len(running_services)} services running")
+
+    # Format summary
+    if issues:
+        issue_str = ", ".join(issues)
+        return f"Sleep Score: {score}/100 {interpretation['emoji']} - {issue_str}"
+    else:
+        return f"Sleep Score: {score}/100 {interpretation['emoji']} - All clear!"
+
+
+if __name__ == '__main__':
+    # Test with sample data
+    # Import directly (not relative) for standalone execution
+    import sleep_score
+    calculate_sleep_score = sleep_score.calculate_sleep_score
+
+    sample_state = {
+        'git': {
+            'uncommitted_files': 3,
+            'uncommitted_files_list': [
+                {'status': 'D', 'path': 'apps/popkit/packages/websitebuild-popkit-test-beta.txt'},
+                {'status': 'M', 'path': 'pnpm-lock.yaml'},
+                {'status': '??', 'path': '.npmrc'}
+            ],
+            'merged_branches': 0,
+            'stashes': 8
+        },
+        'github': {
+            'issues': [
+                {'number': 629, 'title': 'Feature A', 'updatedAt': '2025-12-28T10:00:00Z'},
+            ],
+            'ci_status': {
+                'conclusion': 'skipped',
+                'status': 'completed',
+                'createdAt': '2025-12-28T15:00:00Z'
+            }
+        },
+        'services': {
+            'running_services': [],
+            'log_files': 0
+        },
+        'timestamp': '2025-12-28T15:30:00Z'
+    }
+
+    score, breakdown = calculate_sleep_score(sample_state)
+    report = generate_nightly_report(score, breakdown, sample_state)
+
+    print(report)
+    print("\n" + "="*60 + "\n")
+    print("QUICK SUMMARY:")
+    print(generate_quick_summary(score, breakdown, sample_state))

@@ -1,0 +1,7 @@
+# PopKit Research Plugin - Python Dependencies
+
+# No external Python dependencies
+# All utilities are bundled in hooks/utils/
+
+# Note: Claude Code provides the runtime environment
+# Note: PopKit Cloud API client uses stdlib only (no requests library needed)

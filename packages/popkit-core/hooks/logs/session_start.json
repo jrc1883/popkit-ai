@@ -1,0 +1,224 @@
+[
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-123",
+    "timestamp": "2025-12-23T00:37:33.646429"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-123",
+    "timestamp": "2025-12-23T00:39:27.982907"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-123",
+    "user_query": "help me fix a bug in my React component",
+    "timestamp": "2025-12-23T00:39:28.716950"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-456",
+    "status_json_exists": true,
+    "status_json_content": {
+      "session_date": "2025-12-21",
+      "resume_context": {
+        "what_we_did": "Implemented feature X"
+      }
+    },
+    "timestamp": "2025-12-23T00:39:29.247897"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-789",
+    "env": {
+      "VOYAGE_API_KEY": ""
+    },
+    "timestamp": "2025-12-23T00:39:29.987847"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-123",
+    "timestamp": "2025-12-23T01:02:14.429158"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-123",
+    "user_query": "help me fix a bug in my React component",
+    "timestamp": "2025-12-23T01:02:15.213304"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-456",
+    "status_json_exists": true,
+    "status_json_content": {
+      "session_date": "2025-12-21",
+      "resume_context": {
+        "what_we_did": "Implemented feature X"
+      }
+    },
+    "timestamp": "2025-12-23T01:02:15.706938"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-789",
+    "env": {
+      "VOYAGE_API_KEY": ""
+    },
+    "timestamp": "2025-12-23T01:02:16.475179"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-123",
+    "timestamp": "2025-12-23T01:04:47.205965"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-123",
+    "user_query": "help me fix a bug in my React component",
+    "timestamp": "2025-12-23T01:04:47.940516"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-456",
+    "status_json_exists": true,
+    "status_json_content": {
+      "session_date": "2025-12-21",
+      "resume_context": {
+        "what_we_did": "Implemented feature X"
+      }
+    },
+    "timestamp": "2025-12-23T01:04:48.469841"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-789",
+    "env": {
+      "VOYAGE_API_KEY": ""
+    },
+    "timestamp": "2025-12-23T01:04:49.138219"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-123",
+    "timestamp": "2025-12-23T01:05:16.723708"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-123",
+    "user_query": "help me fix a bug in my React component",
+    "timestamp": "2025-12-23T01:05:17.564138"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-456",
+    "status_json_exists": true,
+    "status_json_content": {
+      "session_date": "2025-12-21",
+      "resume_context": {
+        "what_we_did": "Implemented feature X"
+      }
+    },
+    "timestamp": "2025-12-23T01:05:18.114802"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-789",
+    "env": {
+      "VOYAGE_API_KEY": ""
+    },
+    "timestamp": "2025-12-23T01:05:18.815741"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-123",
+    "timestamp": "2025-12-23T01:49:18.975926"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-123",
+    "user_query": "help me fix a bug in my React component",
+    "timestamp": "2025-12-23T01:49:19.658660"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-456",
+    "status_json_exists": true,
+    "status_json_content": {
+      "session_date": "2025-12-21",
+      "resume_context": {
+        "what_we_did": "Implemented feature X"
+      }
+    },
+    "timestamp": "2025-12-23T01:49:20.147692"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-789",
+    "env": {
+      "VOYAGE_API_KEY": ""
+    },
+    "timestamp": "2025-12-23T01:49:20.908353"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-123",
+    "timestamp": "2025-12-23T01:49:40.629462"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-123",
+    "user_query": "help me fix a bug in my React component",
+    "timestamp": "2025-12-23T01:49:41.344399"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-456",
+    "status_json_exists": true,
+    "status_json_content": {
+      "session_date": "2025-12-21",
+      "resume_context": {
+        "what_we_did": "Implemented feature X"
+      }
+    },
+    "timestamp": "2025-12-23T01:49:41.909717"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-789",
+    "env": {
+      "VOYAGE_API_KEY": ""
+    },
+    "timestamp": "2025-12-23T01:49:42.559439"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-123",
+    "timestamp": "2025-12-23T02:10:12.811511"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-123",
+    "user_query": "help me fix a bug in my React component",
+    "timestamp": "2025-12-23T02:10:13.974346"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-456",
+    "status_json_exists": true,
+    "status_json_content": {
+      "session_date": "2025-12-21",
+      "resume_context": {
+        "what_we_did": "Implemented feature X"
+      }
+    },
+    "timestamp": "2025-12-23T02:10:14.670580"
+  },
+  {
+    "event": "SessionStart",
+    "session_id": "test-session-789",
+    "env": {
+      "VOYAGE_API_KEY": ""
+    },
+    "timestamp": "2025-12-23T02:10:15.182069"
+  }
+]

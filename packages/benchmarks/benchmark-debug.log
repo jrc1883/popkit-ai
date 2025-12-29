@@ -1,0 +1,80 @@
+
+> @popkit/benchmarks@0.1.0 benchmark C:\Users\Josep\onedrive\documents\elshaddai\apps\popkit\packages\benchmarks
+> tsx run-benchmark.ts "puzzle-coordination" "power"
+
+============================================================
+Running Benchmark: puzzle-coordination (power mode)
+============================================================
+
+Loading task...
+  Name: Multi-Agent Puzzle Coordination Test
+  Category: power-mode
+  Language: python
+
+Setting up runner...
+[ConfigSwitcher] Saved snapshot: {"mode":"popkit","pluginEnabled":true,"proEnabled":false,"timestamp":"2025-12-19T05:08:55.306Z"}
+
+Executing benchmark in power mode...
+(This may take several minutes)
+
+[ConfigSwitcher] Switching to mode: power
+[ConfigSwitcher] Plugin already enabled
+[ConfigSwitcher] No pro credentials backup found
+[ConfigSwitcher] Mode switched to: power
+[PowerMode] Invoking coordinator...
+[PowerMode] Task: puzzle-coordination
+[PowerMode] Agents: 2
+[ClaudeRunner] Running: python C:\Users\Josep\OneDrive\Documents\ElShaddai\apps\popkit\packages\plugin\power-mode\benchmark_coordinator.py --task-config C:\Users\Josep\AppData\Local\Temp\popkit-benchmark-sN2bxW\task-config.json --results-dir C:\Users\Josep\AppData\Local\Temp\popkit-benchmark-sN2bxW --timeout 300
+[ClaudeRunner] CWD: undefined
+[PowerMode] Coordination complete
+[PowerMode] Success: undefined
+[PowerMode] Messages: 0
+[ClaudeRunner] Running: python -c "import sys; sys.path.insert(0, '../../../plugin/power-mode'); from upstash_adapter import get_redis_client; redis = get_redis_client(); streams = redis.execute_command('KEYS', 'popkit:stream:*'); print('PASS' if len(streams) > 0 else 'FAIL')" 
+[ClaudeRunner] CWD: C:\Users\Josep\AppData\Local\Temp\popkit-benchmark-sN2bxW\puzzle-coordination
+[ClaudeRunner] Running: python -c "import sys; sys.path.insert(0, '../../../plugin/power-mode'); from upstash_adapter import get_redis_client; redis = get_redis_client(); streams = redis.execute_command('KEYS', 'popkit:stream:*'); msgs = redis.xread({streams[0]: '0'}, count=1000) if streams else []; print('PASS' if msgs and len(msgs[0][1]) >= 5 else 'FAIL')" 
+[ClaudeRunner] CWD: C:\Users\Josep\AppData\Local\Temp\popkit-benchmark-sN2bxW\puzzle-coordination
+[ClaudeRunner] Running: python ../../../plugin/power-mode/test_coordination.py 
+[ClaudeRunner] CWD: C:\Users\Josep\AppData\Local\Temp\popkit-benchmark-sN2bxW\puzzle-coordination
+
+Capturing Power Mode coordination data...
+  ✓ Coordination stream data saved
+  ✓ Power Mode report generated
+
+Output files saved to: C:\Users\Josep\OneDrive\Documents\ElShaddai\apps\popkit\packages\benchmarks\results\puzzle-coordination-power-1766120935307
+Session data saved to: C:\Users\Josep\OneDrive\Documents\ElShaddai\apps\popkit\packages\benchmarks\results\puzzle-coordination-power-1766120935307/session.json
+
+============================================================
+RESULTS
+============================================================
+Success: No
+Duration: 4.7s
+Tool Calls: 0
+Tokens: 0
+Tests Passed: 0/3
+
+Test Results:
+  [FAIL] Agents coordinated via Redis Stream
+         Error: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import sys; sys.path.insert(0, '../../../plugin/power-mode'); from upstash_adapter import get_redis_client; redis = get_redis_client(); streams = redis.execute_command('KEYS', 'popkit:stream:*'); print('PASS' if len(streams) > 0 else 'FAIL')
+                                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'upstash_adapter'
+
+  [FAIL] Multiple coordination messages exchanged
+         Error: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import sys; sys.path.insert(0, '../../../plugin/power-mode'); from upstash_adapter import get_redis_client; redis = get_redis_client(); streams = redis.execute_command('KEYS', 'popkit:stream:*'); msgs = redis.xread({streams[0]: '0'}, count=1000) if streams else []; print('PASS' if msgs and len(msgs[0][1]) >= 5 else 'FAIL')
+                                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'upstash_adapter'
+
+  [FAIL] Question and answer protocol used
+         Error: python: can't open file 'C:\\Users\\Josep\\AppData\\Local\\plugin\\power-mode\\test_coordination.py': [Errno 2] No such file or directory
+
+
+Output Files: 1
+  - README.md
+[ConfigSwitcher] Restoring to original mode: popkit
+[ConfigSwitcher] Plugin already enabled
+[ConfigSwitcher] Configuration restored
+
+============================================================

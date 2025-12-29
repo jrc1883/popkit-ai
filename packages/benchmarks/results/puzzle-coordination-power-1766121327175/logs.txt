@@ -1,0 +1,11 @@
+[2025-12-19T05:15:27.175Z] Starting benchmark: puzzle-coordination
+[2025-12-19T05:15:27.175Z] Mode: power
+[2025-12-19T05:15:27.175Z] Switching PopKit config to mode: power
+[2025-12-19T05:15:27.176Z] PopKit config switched successfully
+[2025-12-19T05:15:27.177Z] Workspace created: C:\Users\Josep\AppData\Local\Temp\popkit-benchmark-H1gVez\puzzle-coordination
+[2025-12-19T05:15:27.177Z] Prompt built (418 chars)
+[2025-12-19T05:15:27.696Z] Claude execution complete
+[2025-12-19T05:15:27.697Z] Collected 1 output files
+[2025-12-19T05:15:27.833Z] Tests complete: 0/3 passed
+[2025-12-19T05:15:27.833Z] Quality checks complete
+[2025-12-19T05:15:27.833Z] Behavior validation skipped: no behavior capture

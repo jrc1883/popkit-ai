@@ -1,0 +1,21 @@
+
+> @popkit/benchmarks@0.1.0 benchmark C:\Users\Josep\onedrive\documents\elshaddai\apps\popkit\packages\benchmarks
+> tsx run-benchmark.ts "puzzle-coordination" "power"
+
+============================================================
+Running Benchmark: puzzle-coordination (power mode)
+============================================================
+
+Loading task...
+C:\Users\Josep\OneDrive\Documents\ElShaddai\apps\popkit\packages\benchmarks\run-benchmark.ts:44
+  throw new Error(`Task not found: ${taskId}`);
+        ^
+
+
+Error: Task not found: puzzle-coordination
+    at loadTask (C:\Users\Josep\OneDrive\Documents\ElShaddai\apps\popkit\packages\benchmarks\run-benchmark.ts:44:9)
+    at async runBenchmark (C:\Users\Josep\OneDrive\Documents\ElShaddai\apps\popkit\packages\benchmarks\run-benchmark.ts:114:16)
+    at async <anonymous> (C:\Users\Josep\OneDrive\Documents\ElShaddai\apps\popkit\packages\benchmarks\run-benchmark.ts:290:1)
+
+Node.js v22.15.1
+ ELIFECYCLE  Command failed with exit code 1.

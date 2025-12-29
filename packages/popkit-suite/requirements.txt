@@ -1,0 +1,10 @@
+# PopKit Suite Meta-Plugin - Python Dependencies
+
+# No Python dependencies required
+# This is a documentation-only plugin
+
+# Note: This plugin provides installation guides for:
+#   - popkit (foundation)
+#   - popkit-dev (development)
+#   - popkit-ops (operations)
+#   - popkit-research (knowledge)
