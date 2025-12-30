@@ -80,8 +80,8 @@ class PreToolUseHook:
         
         return session_id or "unknown"
     
-    def load_safety_rules(self) -> Dict[str, List[str]]:
-        """Load safety rules for dangerous operations"""
+    def load_safety_rules(self) -> Dict[str, Any]:
+        """Load safety rules for dangerous operations (Issue #213 - platform-aware paths)"""
         return {
             "blocked_commands": [
                 r"rm\s+-rf\s+/",
@@ -95,17 +95,51 @@ class PreToolUseHook:
                 r"dd\s+if=/dev/zero",
                 r":(){ :|:& };:",  # Fork bomb
             ],
-            "sensitive_paths": [
-                r"\/etc\/passwd",
-                r"\/etc\/shadow",
-                r"\/root\/",
-                r"\/boot\/",
-                r"C:\\Windows\\System32",
-                r"C:\\Program Files",
-                r"\.ssh\/id_rsa",
-                r"\.aws\/credentials",
-                r"\.env",
-            ],
+            "sensitive_paths": {
+                # Unix/Linux paths (apply to Linux, macOS, WSL, Git Bash)
+                "unix": [
+                    r"\/etc\/passwd",
+                    r"\/etc\/shadow",
+                    r"\/root\/",
+                    r"\/boot\/",
+                    r"\.ssh\/id_rsa",
+                    r"\.ssh\/id_ed25519",
+                    r"\.aws\/credentials",
+                    r"\.env",
+                ],
+                # Windows-specific paths
+                "windows": [
+                    r"C:\\Windows\\",
+                    r"C:\\Windows\\System32",
+                    r"C:\\Program Files\\",
+                    r"C:\\Program Files \(x86\)\\",
+                    r"%APPDATA%",
+                    r"%LOCALAPPDATA%",
+                    r"%PROGRAMDATA%",
+                    r"C:\\ProgramData\\",
+                    r"HKEY_",  # Registry paths
+                    r"HKLM\\",
+                    r"HKCU\\",
+                ],
+                # macOS-specific paths
+                "darwin": [
+                    r"\/System\/",
+                    r"\/Library\/System\/",
+                    r"~\/Library\/Preferences\/",
+                    r"\/private\/var\/",
+                    r"\/usr\/bin\/",
+                    r"\/usr\/sbin\/",
+                    r"\/Applications\/",
+                ],
+                # Cross-platform temp/cache directories
+                "all": [
+                    r"\/tmp\/",
+                    r"\/var\/tmp\/",
+                    r"C:\\Windows\\Temp\\",
+                    r"%TEMP%",
+                    r"~\/\.cache\/",
+                ]
+            },
             "dangerous_tools": [
                 "Bash:rm -rf",
                 "Bash:sudo",
@@ -175,42 +209,84 @@ class PreToolUseHook:
     def detect_environment_context(self) -> str:
         """Detect current environment context (production, development, testing)"""
         cwd = os.getcwd()
-        
+
         # Check for production indicators
         if any(indicator in cwd.lower() for indicator in ['prod', 'production', 'live', 'deploy']):
             return "production"
-        
+
         # Check for testing indicators
         if any(indicator in cwd.lower() for indicator in ['test', 'testing', 'spec', 'qa']):
             return "testing"
-        
+
         # Check for development indicators or default
         return "development"
-    
+
+    def get_platform_sensitive_paths(self) -> List[str]:
+        """Get platform-specific sensitive paths for security checks (Issue #213)"""
+        sensitive_paths_dict = self.safety_rules.get("sensitive_paths", {})
+
+        # If it's still a list (old format), return as-is for backward compatibility
+        if isinstance(sensitive_paths_dict, list):
+            return sensitive_paths_dict
+
+        # Determine platform
+        platform = sys.platform.lower()
+
+        # Collect applicable paths
+        paths = []
+
+        # Always include cross-platform paths
+        paths.extend(sensitive_paths_dict.get("all", []))
+
+        # Add platform-specific paths
+        if platform == "win32" or platform == "cygwin":
+            # Windows paths
+            paths.extend(sensitive_paths_dict.get("windows", []))
+
+            # Check if running in Git Bash or WSL (Unix commands on Windows)
+            if "MSYSTEM" in os.environ or "WSL_DISTRO_NAME" in os.environ:
+                paths.extend(sensitive_paths_dict.get("unix", []))
+        elif platform == "darwin":
+            # macOS paths (includes unix paths)
+            paths.extend(sensitive_paths_dict.get("unix", []))
+            paths.extend(sensitive_paths_dict.get("darwin", []))
+        elif platform.startswith("linux"):
+            # Linux paths
+            paths.extend(sensitive_paths_dict.get("unix", []))
+        else:
+            # Unknown platform - use unix as fallback
+            paths.extend(sensitive_paths_dict.get("unix", []))
+
+        return paths
+
     def check_safety_violations(self, tool_name: str, tool_args: Dict[str, Any]) -> List[str]:
-        """Check for safety violations in tool usage"""
+        """Check for safety violations in tool usage (Issue #213 - platform-aware paths)"""
         violations = []
-        
+
         # Check blocked commands for Bash tool
         if tool_name == "Bash" and "command" in tool_args:
             command = tool_args["command"]
             for blocked_pattern in self.safety_rules["blocked_commands"]:
                 if re.search(blocked_pattern, command, re.IGNORECASE):
                     violations.append(f"Blocked dangerous command: {blocked_pattern}")
-        
-        # Check sensitive paths for file operations
+
+        # Check sensitive paths for file operations (platform-aware)
         if tool_name in ["Write", "Edit", "MultiEdit"] and "file_path" in tool_args:
             file_path = tool_args["file_path"]
-            for sensitive_pattern in self.safety_rules["sensitive_paths"]:
+
+            # Get platform-specific sensitive paths
+            sensitive_paths = self.get_platform_sensitive_paths()
+
+            for sensitive_pattern in sensitive_paths:
                 if re.search(sensitive_pattern, file_path, re.IGNORECASE):
                     violations.append(f"Access to sensitive path blocked: {sensitive_pattern}")
-        
+
         # Check dangerous tool combinations
         tool_signature = f"{tool_name}:{tool_args.get('command', tool_args.get('file_path', ''))}"
         for dangerous_tool in self.safety_rules["dangerous_tools"]:
             if dangerous_tool in tool_signature:
                 violations.append(f"Dangerous tool usage blocked: {dangerous_tool}")
-        
+
         return violations
     
     def check_permission_requirements(self, tool_name: str, tool_args: Dict[str, Any], context: str) -> Tuple[bool, List[str]]:

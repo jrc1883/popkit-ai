@@ -179,17 +179,34 @@ class NightlyWorkflow:
     def _collect_state_fallback(self) -> Dict[str, Any]:
         """Fallback state collection without utilities."""
         import subprocess
+        import shlex
 
-        def run_command(cmd: str) -> str:
-            """Run shell command and return output."""
+        def run_command(cmd: str, use_shell: bool = False) -> str:
+            """
+            Run command and return output.
+
+            Args:
+                cmd: Command string
+                use_shell: True if command needs shell features (pipes, redirection)
+            """
             try:
-                result = subprocess.run(
-                    cmd,
-                    shell=True,
-                    capture_output=True,
-                    text=True,
-                    timeout=10
-                )
+                if use_shell:
+                    # Only use shell=True when needed for pipes/redirection
+                    result = subprocess.run(
+                        cmd,
+                        shell=True,
+                        capture_output=True,
+                        text=True,
+                        timeout=10
+                    )
+                else:
+                    # Safe list-based execution
+                    result = subprocess.run(
+                        shlex.split(cmd),
+                        capture_output=True,
+                        text=True,
+                        timeout=10
+                    )
                 return result.stdout.strip()
             except Exception as e:
                 print(f"[WARN] Command failed: {cmd} - {e}", file=sys.stderr)
@@ -203,9 +220,11 @@ class NightlyWorkflow:
                 {'status': line[:2].strip(), 'path': line[3:]}
                 for line in run_command('git status --porcelain').splitlines()
             ],
-            'stashes': int(run_command('git stash list | wc -l') or '0'),
+            # Pipes require shell=True
+            'stashes': int(run_command('git stash list | wc -l', use_shell=True) or '0'),
             'merged_branches': int(run_command(
-                'git branch --merged main | grep -v "^\\*" | grep -v "main" | wc -l'
+                'git branch --merged main | grep -v "^\\*" | grep -v "main" | wc -l',
+                use_shell=True
             ) or '0')
         }
 
@@ -227,13 +246,16 @@ class NightlyWorkflow:
                 github_state = {'issues': [], 'ci_status': {}}
 
         # Services state
+        # Pipes require shell=True
         running_services = run_command(
-            'ps aux | grep -E "(node|npm|pnpm|redis|postgres|supabase)" | grep -v grep'
+            'ps aux | grep -E "(node|npm|pnpm|redis|postgres|supabase)" | grep -v grep',
+            use_shell=True
         ).splitlines()
 
         services_state = {
             'running_services': running_services,
-            'log_files': int(run_command('ls ~/.claude/logs/*.log 2>/dev/null | wc -l') or '0')
+            # Pipe and redirection require shell=True
+            'log_files': int(run_command('ls ~/.claude/logs/*.log 2>/dev/null | wc -l', use_shell=True) or '0')
         }
 
         return {
