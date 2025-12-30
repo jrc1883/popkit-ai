@@ -11,14 +11,14 @@ PopKit Suite is a meta-plugin that guides you through installing the complete Po
 
 ## What You Get
 
-When you follow the installation guide below, you'll have access to **all 21 commands** across 4 focused plugins:
+When you follow the installation guide below, you'll have access to **all 23 commands** across 4 focused plugins:
 
-- **7 commands** - Foundation (popkit)
+- **9 commands** - Foundation (popkit-core)
 - **7 commands** - Development (popkit-dev)
 - **5 commands** - Operations (popkit-ops)
 - **2 commands** - Research (popkit-research)
 
-**Total: 21 commands, 19 skills, 13 agents**
+**Total: 23 commands, 38 skills, 21 agents**
 
 ## Quick Install (Complete Suite)
 
@@ -26,7 +26,7 @@ Install all 4 PopKit plugins to get the full functionality:
 
 ```bash
 # 1. Foundation (required for others)
-/plugin install popkit@popkit-marketplace
+/plugin install popkit-core@popkit-marketplace
 
 # 2. Development workflows
 /plugin install popkit-dev@popkit-marketplace
@@ -42,17 +42,21 @@ Install all 4 PopKit plugins to get the full functionality:
 
 ## What Each Plugin Provides
 
-### popkit (Foundation)
+### popkit-core (Foundation)
 
-**7 commands:** Account management and system features
+**9 commands:** Account management and system features
 
-- `/popkit:account` - Manage API key, subscription, billing
+- `/popkit:plugin` - Plugin testing and validation
 - `/popkit:stats` - Usage metrics and efficiency tracking
 - `/popkit:privacy` - Privacy settings and data controls
+- `/popkit:account` - Manage API key, subscription, billing
+- `/popkit:dashboard` - Multi-project management
 - `/popkit:bug` - Bug reporting and diagnostics
-- `/popkit:plugin` - Plugin testing and validation
-- `/popkit:cache` - Cache management
-- `/popkit:upgrade` - Premium features and pricing
+- `/popkit:power` - Multi-agent orchestration
+- `/popkit:project` - Project analysis and initialization
+- `/popkit:record` - Session recording and playback
+
+**14 skills, 9 agents** including power-coordinator, api-designer, accessibility-guardian.
 
 **Install first** - other plugins recommend this for account features.
 
@@ -68,7 +72,7 @@ Install all 4 PopKit plugins to get the full functionality:
 - `/popkit:routine` - Morning health checks, nightly cleanup
 - `/popkit:next` - Context-aware next action recommendations
 
-**10 skills, 5 agents** including code-reviewer, code-architect, refactoring-expert.
+**12 skills, 5 agents** including code-reviewer, code-architect, refactoring-expert.
 
 ### popkit-ops (Operations)
 
@@ -80,7 +84,7 @@ Install all 4 PopKit plugins to get the full functionality:
 - `/popkit:security` - Security scanning and fixes
 - `/popkit:deploy` - Deployment orchestration
 
-**6 skills, 6 agents** including security-auditor, performance-optimizer, bug-whisperer, test-writer-fixer.
+**7 skills, 6 agents** including security-auditor, performance-optimizer, bug-whisperer, test-writer-fixer.
 
 ### popkit-research (Knowledge)
 
@@ -97,24 +101,24 @@ Don't need everything? Install only what you need:
 
 ### Minimal Setup (Foundation Only)
 ```bash
-/plugin install popkit@popkit-marketplace
+/plugin install popkit-core@popkit-marketplace
 ```
-Gets: Account, stats, privacy, bug reporting (7 commands)
+Gets: Account, stats, privacy, bug reporting, power mode, project tools (9 commands)
 
 ### Developer Setup
 ```bash
-/plugin install popkit@popkit-marketplace
+/plugin install popkit-core@popkit-marketplace
 /plugin install popkit-dev@popkit-marketplace
 ```
-Gets: Foundation + Development (14 commands)
+Gets: Foundation + Development (16 commands)
 
 ### DevOps Engineer Setup
 ```bash
-/plugin install popkit@popkit-marketplace
+/plugin install popkit-core@popkit-marketplace
 /plugin install popkit-dev@popkit-marketplace
 /plugin install popkit-ops@popkit-marketplace
 ```
-Gets: Foundation + Dev + Ops (19 commands)
+Gets: Foundation + Dev + Ops (21 commands)
 
 ## Migration from Monolithic PopKit
 
@@ -127,7 +131,7 @@ If you're upgrading from the old monolithic popkit plugin (v0.2.x):
 /plugin uninstall popkit@popkit-marketplace
 
 # 2. Install new modular plugins
-/plugin install popkit@popkit-marketplace
+/plugin install popkit-core@popkit-marketplace
 /plugin install popkit-dev@popkit-marketplace
 /plugin install popkit-ops@popkit-marketplace
 /plugin install popkit-research@popkit-marketplace
@@ -135,7 +139,7 @@ If you're upgrading from the old monolithic popkit plugin (v0.2.x):
 # 3. Restart Claude Code
 ```
 
-You'll have the same 21 commands, just organized across 4 plugins instead of 1.
+You'll have the same 23 commands, just organized across 4 plugins instead of 1.
 
 ### Option 2: Selective Migration
 
@@ -146,7 +150,7 @@ Install only the plugins you actually use:
 /plugin uninstall popkit@popkit-marketplace
 
 # Install selectively
-/plugin install popkit@popkit-marketplace           # Always install foundation
+/plugin install popkit-core@popkit-marketplace       # Always install foundation
 /plugin install popkit-dev@popkit-marketplace        # If you use dev workflows
 /plugin install popkit-ops@popkit-marketplace        # If you use quality/deployment
 /plugin install popkit-research@popkit-marketplace   # If you use research capture
@@ -159,8 +163,8 @@ Install only the plugins you actually use:
 | Old (Monolithic) | New (Modular) |
 |------------------|---------------|
 | 1 plugin | 4 focused plugins |
-| 27 commands | 21 commands (rationalized) |
-| ~100k tokens | ~60k tokens (optimized) |
+| 24 commands | 23 commands (rationalized) |
+| ~100k tokens | ~85k tokens (optimized) |
 | Install all or nothing | Install what you need |
 
 **No breaking changes** - all command behavior is preserved.
@@ -196,23 +200,23 @@ This is a core Claude Code feature that enables true modularity.
 ```
 PopKit Ecosystem (Modular Architecture)
 
-popkit (foundation)
-├── 7 commands: account, stats, privacy, bug, plugin, cache, upgrade
-├── 0 skills (pure command execution)
-├── 0 agents (pure command execution)
-└── Size: ~15k tokens
+popkit-core (foundation)
+├── 9 commands: plugin, stats, privacy, account, dashboard, bug, power, project, record
+├── 14 skills: project analysis, documentation, meta-features
+├── 9 agents: api-designer, accessibility-guardian, power-coordinator, etc.
+└── Size: ~30k tokens
 
 popkit-dev (development)
 ├── 7 commands: dev, git, issue, milestone, worktree, routine, next
-├── 10 skills: brainstorming, planning, execution, session management
-├── 5 agents: code-explorer, code-architect, code-reviewer, refactoring-expert
+├── 12 skills: brainstorming, planning, execution, session management, templates, worktrees
+├── 5 agents: code-explorer, code-architect, code-reviewer, refactoring-expert, rapid-prototyper
 └── Size: ~25k tokens
 
 popkit-ops (operations)
 ├── 5 commands: assess, audit, debug, security, deploy
-├── 6 skills: 5 assessment types + systematic debugging
-├── 6 agents: security, performance, testing, debugging, deployment
-└── Size: ~15k tokens
+├── 7 skills: 5 assessment types + systematic debugging + code review
+├── 6 agents: security-auditor, performance-optimizer, bug-whisperer, test-writer-fixer, deployment-validator, rollback-specialist
+└── Size: ~20k tokens
 
 popkit-research (knowledge)
 ├── 2 commands: research, knowledge
@@ -245,7 +249,7 @@ Claude Code doesn't support plugin dependencies, so each plugin is self-containe
 
 Each plugin has its own version number. Update them independently:
 ```bash
-/plugin update popkit@popkit-marketplace
+/plugin update popkit-core@popkit-marketplace
 /plugin update popkit-dev@popkit-marketplace
 ```
 

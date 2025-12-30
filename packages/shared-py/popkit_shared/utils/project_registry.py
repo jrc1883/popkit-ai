@@ -699,7 +699,7 @@ def format_dashboard(projects: List[Dict[str, Any]]) -> str:
             health_icon = "!"
 
         health_str = f"{health:>2}" if health is not None else "--"
-        issues = "--"  # TODO: Integrate with GitHub issues
+        issues = "--"  # TODO(#692): Integrate with GitHub issues
         activity = format_activity(p.get("lastActive", ""))[:13].ljust(13)
 
         lines.append(f"  | {name} | {health_icon} {health_str}  | {issues:>6} | {activity} |")

@@ -1049,7 +1049,7 @@ class UpstashWorkflowEngine:
         url = f"{self.API_URL}/v1/workflows{endpoint}"
         headers = {
             "Content-Type": "application/json",
-            "User-Agent": "popkit-plugin/0.2.0"
+            "User-Agent": "popkit-plugin/1.0.0-beta.1"
         }
 
         if self.api_key:

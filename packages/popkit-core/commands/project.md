@@ -52,9 +52,9 @@ Invokes **pop-analyze-project**: Structure → Patterns → Dependencies → Qua
 
 View/manage GitHub Projects board.
 
-Uses \ CLI. Shows Todo/In Progress/Done with issue counts.
+Uses `gh project` CLI. Shows Todo/In Progress/Done with issue counts.
 
-**Prerequisites:** 
+**Prerequisites:** GitHub CLI (`gh`) installed and authenticated
 ---
 
 ## embed
@@ -81,7 +81,7 @@ Generate project-specific MCP server.
 
 Analyze stack → Generate health/git/quality tools → TypeScript server → Configure .mcp.json.
 
-See \ for templates.
+See `packages/popkit-core/templates/mcp-server/` for templates.
 
 ---
 

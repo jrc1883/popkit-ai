@@ -131,12 +131,11 @@ Undo deployment and restore previous version. Invokes **rollback-specialist** ag
 
 | Component | Integration |
 |-----------|-------------|
-| Deploy Init Skill | skills/pop-deploy-init/ |
+| Deploy Init Skill | packages/popkit-ops/skills/pop-deploy-init/ |
 | Deploy Config | .claude/popkit/deploy.json |
-| DevOps Agent | agents/tier-2-on-demand/devops-automator/ |
-| Validator Agent | agents/tier-2-on-demand/deployment-validator/ |
-| Rollback Agent | agents/tier-2-on-demand/rollback-specialist/ |
-| Premium Gating | hooks/utils/premium_checker.py |
+| DevOps Agent | packages/popkit-ops/agents/tier-2-on-demand/devops-automator/ |
+| Validator Agent | packages/popkit-ops/agents/tier-2-on-demand/deployment-validator/ |
+| Rollback Agent | packages/popkit-ops/agents/tier-2-on-demand/rollback-specialist/ |
 
 **Related:** /popkit:git pr, /popkit:git release, /popkit:routine morning
 

@@ -19,7 +19,7 @@ health.get('/', async (c) => {
   const response: Record<string, unknown> = {
     status: 'ok',
     service: 'popkit-cloud',
-    version: '0.1.0',
+    version: '1.0.0-beta.1',
     timestamp: new Date().toISOString(),
   };
 

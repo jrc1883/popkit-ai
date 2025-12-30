@@ -49,7 +49,7 @@ class PopKitMCPServer {
     this.server = new Server(
       {
         name: 'popkit-universal',
-        version: '0.1.0',
+        version: '1.0.0-beta.1',
       },
       {
         capabilities: {

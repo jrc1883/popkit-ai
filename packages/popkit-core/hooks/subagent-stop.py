@@ -192,7 +192,7 @@ def record_subagent_completion(data: dict):
             "transcript_available": bool(transcript_path and Path(transcript_path).exists())
         })
 
-        # TODO: Parse transcript_path and extract individual tool calls
+        # TODO(#687): Parse transcript_path and extract individual tool calls
         # For now, just record that the sub-agent completed
         # Future enhancement: Parse JSONL transcript and record each tool call
 

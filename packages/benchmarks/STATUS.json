@@ -1,8 +1,8 @@
 {
   "package": "@popkit/benchmarks",
-  "version": "0.1.0",
-  "lastUpdated": "2025-12-15T04:55:00Z",
-  "status": "alpha",
+  "version": "1.0.0-beta.1",
+  "lastUpdated": "2025-12-30T00:00:00Z",
+  "status": "beta",
 
   "summary": "Benchmark framework for measuring PopKit value proposition. First successful benchmark run completed.",
 

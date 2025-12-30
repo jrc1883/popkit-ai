@@ -23,6 +23,7 @@
     "./skills/pop-analyze-project",
     "./skills/pop-auto-docs",
     "./skills/pop-bug-reporter",
+    "./skills/pop-cloud-signup",
     "./skills/pop-dashboard",
     "./skills/pop-doc-sync",
     "./skills/pop-embed-content",

@@ -23,15 +23,22 @@ PopKit Dev is a complete development workflow plugin that provides comprehensive
 | `/popkit:routine` | Morning health checks and nightly cleanup |
 | `/popkit:next` | Context-aware next action recommendations |
 
-### Skills (9)
+### Skills (12)
+
+PopKit Dev provides 12 specialized skills for development workflows:
 
 - `pop-brainstorming` - Interactive idea refinement
 - `pop-writing-plans` - Implementation plan generation
 - `pop-executing-plans` - Plan execution with review
 - `pop-next-action` - Smart action recommendations
-- `pop-session-capture/resume/restore` - Session continuity
+- `pop-session-capture` - Capture session state
+- `pop-session-resume` - Resume previous session
+- `pop-context-restore` - Restore lost context
 - `pop-routine-optimized` - Morning/nightly routines
 - `pop-routine-measure` - Routine metrics tracking
+- `pop-finish-branch` - Branch completion workflow
+- `pop-project-templates` - Project scaffolding
+- `pop-worktrees` - Git worktree management
 
 ### Agents (5)
 

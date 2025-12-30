@@ -29,7 +29,9 @@
     "./skills/pop-routine-measure",
     "./skills/pop-finish-branch",
     "./skills/pop-project-templates",
-    "./skills/pop-worktrees"
+    "./skills/pop-worktrees",
+    "./skills/pop-morning",
+    "./skills/pop-nightly"
   ],
   "agents": [
     "./agents/feature-workflow/code-explorer/AGENT.md",
