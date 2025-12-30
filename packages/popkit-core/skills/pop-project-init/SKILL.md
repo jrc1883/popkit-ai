@@ -94,9 +94,9 @@ Only if missing. See `examples/` for schemas.
 Use AskUserQuestion:
 - question: "Set up Power Mode for multi-agent orchestration?"
 - options:
-  - "File Mode (Free)" - 2 agents, no setup
-  - "Redis Self-Hosted (Free)" - Docker required
-  - "Redis Cloud (Pro $9/mo)" - Zero setup
+  - "Native Async (Recommended)" - 5+ agents, zero setup (requires Claude Code 2.0.64+)
+  - "Upstash Redis (Optional)" - 10+ agents, cloud-based, env vars only (no Docker)
+  - "File Mode (Fallback)" - 2-3 agents, automatic fallback
   - "Skip for now"
 ```
 

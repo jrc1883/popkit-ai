@@ -38,6 +38,17 @@
     "color": "#1e1e1e",
     "theme": "dark"
   },
-  "pricing": "free",
+  "minClaudeCodeVersion": "2.0.67",
+  "dependencies": {
+    "popkit-shared": ">=1.0.0"
+  },
+  "peerDependencies": {},
+  "pricing": {
+    "model": "free",
+    "trial": null
+  },
+  "status": "beta",
+  "beta": true,
+  "experimental": false,
   "preview": true
 }

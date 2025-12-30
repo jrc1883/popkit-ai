@@ -9,19 +9,41 @@ Multi-agent orchestration for complex tasks requiring parallel collaboration.
 
 ## Architecture: Native Async (Claude Code 2.0.64+)
 
-Zero setup - uses Claude Code background agents (no Docker/Redis).
+**Zero setup** - uses Claude Code's native background Task tool for true parallel execution.
+
+### How Native Async Works
+
+```
+User Request → Main Agent (Coordinator)
+                    ↓
+      ┌─────────────┼─────────────┐
+      ↓             ↓             ↓
+   Agent 1       Agent 2       Agent 3
+   (Task bg)     (Task bg)     (Task bg)
+      ↓             ↓             ↓
+   Share via .claude/popkit/insights.json
+      ↓             ↓             ↓
+   TaskOutput    TaskOutput    TaskOutput
+      ↓             ↓             ↓
+      └─────────────┼─────────────┘
+                    ↓
+           Aggregated Results
+```
+
+**Key Benefits:**
+- **No external dependencies** (no Docker, no Redis)
+- **True parallelism** (agents run simultaneously)
+- **Cross-platform** (works on Windows/macOS/Linux)
+- **Reliable** (no service dependencies)
+
+**Communication:**
+- Shared file: `.claude/popkit/insights.json`
+- Polling: `TaskOutput(block: false)` every 500ms
+- Sync barriers between phases
 
 **Tier Comparison:**
 
-| Feature | Free | Premium (dollar 9/mo) | Pro (dollar 29/mo) |
-|---------|------|-----------------|--------------|
-| Mode | File-based | Native Async | Native Async |
-| Max Agents | 2 | 5 | 10 |
-| Parallel | Sequential | True parallel | True parallel |
-| Sync Barriers | Basic | Phase-aware | Phase-aware |
-| Redis Fallback | No | No | Optional |
-
-Run /popkit:upgrade to unlock premium.
+**Deep Dive:** See `docs/POWER_MODE_ASYNC.md` for complete documentation.
 
 ## Subcommands
 
@@ -30,7 +52,7 @@ Run /popkit:upgrade to unlock premium.
 | status | Check current status (default) |
 | start | Start with objective |
 | stop | Stop gracefully |
-| init | Check mode availability / Setup Redis (Pro) |
+| init | Check mode availability and configuration |
 | metrics | View session metrics |
 | widgets | Manage status line widgets |
 | consensus | Multi-agent decision-making |
@@ -62,7 +84,7 @@ Start Power Mode with objective.
 
 Arguments: [objective] (required), --phases, --agents, --timeout, --consensus, --require-plans, --trust-agents
 
-Prerequisites: Claude Code 2.0.64+ (Native Async), or /popkit:power init --redis (Pro)
+Prerequisites: Claude Code 2.0.64+ for Native Async mode (recommended)
 
 Process: Detect mode → Parse objective → Spawn background agents → Coordinate via TaskOutput → Sync barriers
 
@@ -81,18 +103,6 @@ Stop Power Mode gracefully. Send stop → Wait for agents → Save state → Cle
 View session metrics: Time (phase duration, task completion), Quality (first-pass success, review score, bugs), Coordination (insights, context reuses, sync wait), Resource (token efficiency, utilization, concurrent).
 
 Flags: --session ID, --compare, --export, --history N
-
----
-
-## init
-
-Check mode availability or setup Redis (Pro).
-
-Default: Shows native > redis > file selection, reports availability.
-
-Redis (Pro): /popkit:power init --redis [start|stop|debug]
-
-Statusline: /popkit:power init statusline (adds to .claude/settings.json)
 
 ---
 
@@ -124,9 +134,11 @@ Commands: status, enable, disable, rules [preset]
 
 ## Mode Selection
 
-1. Native Async (Preferred): Claude Code 2.0.64+, Premium/Pro, 5-10 parallel
-2. Redis (Legacy): Docker + Redis, Pro only, 6+ parallel
-3. File-Based (Fallback): Nothing required, Free, 2 sequential
+Power Mode automatically selects the best available mode:
+
+1. **Native Async (Primary)**: Claude Code 2.0.64+, 5+ parallel agents, zero setup
+2. **Upstash Redis (Optional)**: 10+ parallel agents, requires env vars, advanced coordination
+3. **File-Based (Fallback)**: 2-3 sequential agents, automatic fallback if Native Async unavailable
 
 ---
 
@@ -142,10 +154,16 @@ Thresholds: 0-59% sequential, 60-79% suggest, 80-100% auto-enable
 
 ## Architecture
 
-Native Async: power-mode/native_coordinator.py, mode_selector.py, config.json, insights.json
-Redis (Pro): coordinator.py, docker-compose.yml, setup-redis.py
-Shared: statusline.py, efficiency_tracker.py, widget config, metrics
-Consensus: consensus/ (protocol, coordinator, triggers, monitor, agent_hook, config)
+**Core Components:**
+- `native_coordinator.py` - Native Async mode orchestration (primary)
+- `mode_selector.py` - Automatic mode detection and selection
+- `upstash_adapter.py` - Optional Upstash Redis integration
+- `statusline.py` - Visual status indicators
+- `efficiency_tracker.py` - Performance metrics
+- `config.json` - Power Mode configuration
+- `insights.json` - Agent coordination patterns
+
+**No Docker dependencies.** All local coordination uses file system or Claude Code Task tool.
 
 ## Related
 

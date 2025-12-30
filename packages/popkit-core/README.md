@@ -145,19 +145,50 @@ PopKit's routing reduces context usage by **40.5%**:
 
 ## Power Mode
 
-Power Mode enables parallel multi-agent workflows:
+Power Mode enables parallel multi-agent workflows through intelligent mode selection:
 
-- **Native Async Mode** (Claude Code 2.0.64+): Zero setup, 5+ agents via background Task tool
-- **Redis Mode** (Pro tier): Full power, 10+ agents, requires Docker
-- **File-Based Mode** (Free tier): Zero setup, 2 agents sequential
+### Native Async Mode (Recommended)
 
-Usage:
-```bash
-/popkit:power init          # Set up Power Mode
-/popkit:power start         # Start orchestration
-/popkit:power status        # Check active agents
-/popkit:power stop          # Stop all agents
+**Zero setup** - uses Claude Code 2.0.64+'s native background Task tool for true parallelism:
+
 ```
+Main Agent (Coordinator)
+      ↓
+┌─────┼─────┐
+↓     ↓     ↓
+Agent1 Agent2 Agent3 (parallel background tasks)
+↓     ↓     ↓
+Share via .claude/popkit/insights.json
+↓     ↓     ↓
+TaskOutput polling → Aggregated Results
+```
+
+**Key Features:**
+- **No external dependencies**: No Docker, no Redis required
+- **True parallelism**: 5 agents (Premium) or 10 agents (Pro)
+- **Cross-platform**: Windows/macOS/Linux
+- **File-based communication**: Agents share insights via JSON
+- **Sync barriers**: Phase-aware coordination between agents
+
+**Requirements:** Claude Code 2.0.64+, Premium or Pro tier
+
+### Other Modes
+
+- **Upstash Redis Mode** (Pro tier, optional): 10+ agents, advanced coordination via Upstash cloud
+- **File-Based Mode** (Free tier): 2-3 agents sequential, automatic fallback
+
+**No Docker or local Redis installation required.** Native Async mode works out of the box.
+
+### Usage
+
+```bash
+/popkit:power init          # Check mode availability
+/popkit:power start         # Start orchestration (auto-selects best mode)
+/popkit:power status        # Check active agents and progress
+/popkit:power stop          # Stop all agents gracefully
+```
+
+**Deep Dive:** See [docs/POWER_MODE_ASYNC.md](../../docs/POWER_MODE_ASYNC.md) for architecture details, examples, and troubleshooting.
 
 ## Installation
 

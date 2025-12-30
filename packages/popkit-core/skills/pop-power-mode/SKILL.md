@@ -93,13 +93,19 @@ Pro users get maximum capabilities:
 - Premium or Pro tier
 - **No additional setup required!**
 
-### Redis Mode (Pro tier optional)
+### Upstash Redis Mode (Optional Advanced Feature)
 
-Only if you want Redis fallback:
+Only if you want 10+ agent coordination:
 ```bash
-# Setup Redis infrastructure
-/popkit:power init --redis
+# Configure Upstash environment variables
+export UPSTASH_REDIS_REST_URL="https://your-instance.upstash.io"
+export UPSTASH_REDIS_REST_TOKEN="your-token"
+
+# Verify setup
+/popkit:power init --verify
 ```
+
+No Docker required - Upstash is cloud-based.
 
 ## Activation
 
@@ -145,9 +151,9 @@ Objective:
 ### 2. Mode Selection
 
 The mode selector automatically chooses the best mode:
-1. **Native Async** (if Claude Code 2.0.64+) → True parallel agents
-2. **Redis** (if Docker + container) → Legacy parallel mode
-3. **File** (always available) → Sequential fallback
+1. **Native Async** (if Claude Code 2.0.64+) → True parallel agents (recommended)
+2. **Upstash Redis** (if env vars configured) → 10+ parallel agents (optional advanced)
+3. **File-based** (always available) → 2-3 sequential agents (fallback)
 
 ### 3. Coordinator Starts
 
@@ -334,16 +340,17 @@ rm .claude/popkit/power-state.json
 - Check `.claude/popkit/insights.json` exists
 - Verify file permissions
 
-### Redis Mode (Legacy)
+### Upstash Redis Mode (Optional)
 
-**Redis connection failed:**
-- Check container running: `docker ps --filter name=popkit-redis`
-- Test connection: `docker exec popkit-redis redis-cli ping`
-- Or Python: `python -c "import redis; print(redis.Redis(port=16379).ping())"`
+**Connection failed:**
+- Verify environment variables are set correctly
+- Check Upstash dashboard: https://console.upstash.com
+- Test with: `python packages/popkit-core/power-mode/check_upstash.py --ping`
 
 **Agents not communicating:**
-- Verify Redis mode is active: `/popkit:power status`
-- Check Redis channels: `docker exec popkit-redis redis-cli subscribe pop:broadcast`
+- Verify Upstash mode is active: `/popkit:power status`
+- Check Redis Streams in Upstash console
+- Test connection: `python packages/popkit-core/power-mode/upstash_adapter.py --test`
 
 ### General
 

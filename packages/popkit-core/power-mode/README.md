@@ -2,27 +2,28 @@
 
 Multi-agent orchestration for parallel agent collaboration via pub/sub messaging.
 
-## Architecture (Issue #191)
+## Architecture
 
-Power Mode uses a **zero-dependency** architecture:
+Power Mode uses a **zero-setup** architecture with three available modes:
 
-| Tier | Backend | Setup | Max Agents |
-|------|---------|-------|------------|
-| **Pro** | Upstash Cloud | Set env vars | 6+ parallel |
-| **Free** | File-based | None | 2-3 sequential |
+| Mode | Setup Required | Max Agents | Parallel | Best For |
+|------|----------------|------------|----------|----------|
+| **Native Async** | None (Claude Code 2.0.64+) | 5+ | True parallel | Default, recommended |
+| **Upstash Redis** | Set env vars | 10+ | True parallel | Advanced coordination |
+| **File-based** | None (automatic fallback) | 2-3 | Sequential | Legacy compatibility |
 
-**No Docker or local Redis required.**
+**No Docker or local Redis installation required.** Native Async mode works out of the box with Claude Code 2.0.64+.
 
-## Setup for Pro Users
+## Setup for Upstash (Optional Advanced Feature)
 
-Set environment variables to enable Upstash cloud Redis:
+To enable Upstash Redis mode for 10+ agent coordination:
 
 ```bash
 export UPSTASH_REDIS_REST_URL="https://your-instance.upstash.io"
 export UPSTASH_REDIS_REST_TOKEN="your-token"
 ```
 
-Get free credentials at [upstash.com](https://upstash.com).
+Get free credentials at [upstash.com](https://upstash.com). No Docker required - Upstash is cloud-based.
 
 ### Verify Setup
 
