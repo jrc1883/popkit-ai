@@ -2,7 +2,7 @@
 
 **AI-powered development workflows for Claude Code** - Modular plugin suite for professional software development.
 
-**Version:** 1.0.0-beta.1 | **Plugins:** 5 | **Commands:** 23 | **Skills:** 38 | **Agents:** 21
+**Version:** 1.0.0-beta.2 | **Plugins:** 5 | **Commands:** 23 | **Skills:** 38 | **Agents:** 21
 
 ---
 
