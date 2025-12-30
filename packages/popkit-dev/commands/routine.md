@@ -55,8 +55,8 @@ Start your day with a comprehensive project health assessment.
 | --skip-services | Skip service health checks |
 | --skip-deployments | Skip deployment status check |
 | --measure | Track and report context usage, duration, and tool breakdown |
-| --optimized | Use caching and selective execution (40-96% token reduction) |
-| --no-cache | Force fresh execution, bypass cached results (use with --optimized) |
+| --optimized | Use caching and selective execution (reduces token usage) |
+| --no-cache | Force fresh execution, bypass cached results |
 
 ---
 
@@ -101,7 +101,7 @@ Track execution metrics for routine optimization.
 
 **Storage:** `.claude/popkit/measurements/<routine>-<timestamp>.json`
 
-**Implementation:** `hooks/utils/routine_measurement.py`, `hooks/post-tool-use.py`
+**Implementation:** `packages/shared-py/popkit_shared/utils/routine_measurement.py`, `packages/popkit-core/hooks/post-tool-use.py`
 
 ### Viewing Measurements
 
@@ -160,11 +160,11 @@ See `/popkit:stats` command and `pop-routine-measure` skill for full dashboard c
 
 | Component | Integration |
 |-----------|-------------|
-| Morning Skill | skills/pop-morning/ |
-| Nightly Skill | skills/pop-nightly/ |
-| Optimized Skill | skills/pop-routine-optimized/ |
-| Measurement | hooks/utils/routine_measurement.py |
+| Morning Skill | packages/popkit-dev/skills/pop-morning/ |
+| Nightly Skill | packages/popkit-dev/skills/pop-nightly/ |
+| Optimized Skill | packages/popkit-dev/skills/pop-routine-optimized/ |
+| Measurement | packages/shared-py/popkit_shared/utils/routine_measurement.py |
 | Routine Config | .claude/popkit/routines.json |
-| Dashboard Style | output-styles/morning-dashboard.md |
+| Dashboard Style | packages/popkit-dev/output-styles/morning-dashboard.md |
 
 **Related:** `/popkit:next`, `/popkit:stats`, `/popkit:project observe`

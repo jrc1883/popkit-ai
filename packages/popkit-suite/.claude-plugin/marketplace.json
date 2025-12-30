@@ -11,13 +11,13 @@
   },
   "publisher": "popkit",
   "license": "MIT",
-  "homepage": "https://github.com/jrc1883/popkit",
+  "homepage": "https://github.com/jrc1883/popkit-claude",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jrc1883/popkit"
+    "url": "https://github.com/jrc1883/popkit-claude"
   },
   "bugs": {
-    "url": "https://github.com/jrc1883/popkit/issues"
+    "url": "https://github.com/jrc1883/popkit-claude/issues"
   },
   "categories": [
     "meta",
@@ -46,8 +46,8 @@
     "color": "#1e1e1e",
     "theme": "dark"
   },
-  "changelog": "https://github.com/jrc1883/popkit/blob/main/CHANGELOG.md",
-  "documentation": "https://github.com/jrc1883/popkit/blob/main/packages/popkit-suite/README.md",
+  "changelog": "https://github.com/jrc1883/popkit-claude/blob/main/CHANGELOG.md",
+  "documentation": "https://github.com/jrc1883/popkit-claude/blob/main/README.md",
   "minClaudeCodeVersion": "2.0.67",
   "dependencies": {},
   "peerDependencies": {},

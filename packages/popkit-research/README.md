@@ -37,8 +37,8 @@ This plugin provides 3 specialized skills:
 ## Installation
 
 ```bash
-# Recommended: Install popkit foundation first
-/plugin install popkit@popkit-marketplace
+# Recommended: Install popkit-core foundation first
+/plugin install popkit-core@popkit-marketplace
 
 # Then install research plugin
 /plugin install popkit-research@popkit-marketplace
@@ -49,7 +49,7 @@ This plugin provides 3 specialized skills:
 
 ## Dependencies
 
-- **popkit** (foundation plugin recommended) - For account management and stats
+- **popkit-core** (foundation plugin recommended) - For account management and stats
 - **Python** (>= 3.8) - For hook execution
 - **PopKit Cloud API** (optional) - For semantic search and community patterns
 
@@ -58,11 +58,12 @@ This plugin provides 3 specialized skills:
 PopKit-Research is part of PopKit's modular plugin architecture:
 
 ```
-popkit (foundation)
+popkit-core (foundation)
 ├── Account management
 ├── Usage statistics
 ├── Privacy controls
-└── Premium features
+├── Power Mode orchestration
+└── Project analysis
 
 popkit-dev (development)
 ├── Feature development
@@ -220,7 +221,7 @@ When you need more capabilities, install additional PopKit plugins:
 
 ```bash
 # For account management and stats
-/plugin install popkit@popkit-marketplace
+/plugin install popkit-core@popkit-marketplace
 
 # For development workflows
 /plugin install popkit-dev@popkit-marketplace

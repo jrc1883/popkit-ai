@@ -208,7 +208,7 @@ class ModularPluginTestRunner:
             'failures': []
         }
 
-        # TODO: Implement cross-plugin test execution
+        # TODO(#680): Implement cross-plugin test execution
         # For now, just note that they exist
         print("Cross-plugin tests discovered (execution requires custom validators)")
         results['skipped'] = True

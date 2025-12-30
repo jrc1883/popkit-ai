@@ -10,13 +10,13 @@
   },
   "publisher": "popkit",
   "license": "MIT",
-  "homepage": "https://github.com/jrc1883/popkit",
+  "homepage": "https://github.com/jrc1883/popkit-claude",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jrc1883/popkit"
+    "url": "https://github.com/jrc1883/popkit-claude"
   },
   "bugs": {
-    "url": "https://github.com/jrc1883/popkit/issues"
+    "url": "https://github.com/jrc1883/popkit-claude/issues"
   },
   "categories": [
     "research",

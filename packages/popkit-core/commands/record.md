@@ -1,9 +1,10 @@
 ---
+name: record
 description: "start | stop | status - Control session recording"
 argument-hint: "<subcommand>"
 ---
 
-# /popkit-core:record
+# /popkit:record
 
 Control session recording for forensic analysis and command verification.
 

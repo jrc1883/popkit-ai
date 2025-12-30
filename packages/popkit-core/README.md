@@ -23,7 +23,6 @@ PopKit Core provides the foundational meta-features and utilities for the PopKit
 | `/popkit:stats` | Efficiency metrics and usage statistics |
 | `/popkit:privacy` | Privacy controls and data management |
 | `/popkit:account` | Account management (status, keys, billing, logout) |
-| `/popkit:upgrade` | Upgrade to PopKit Premium |
 | `/popkit:dashboard` | Multi-project management dashboard |
 | `/popkit:bug` | Bug reporting (report, search, share) |
 | `/popkit:power` | Power Mode multi-agent orchestration |
@@ -32,12 +31,20 @@ PopKit Core provides the foundational meta-features and utilities for the PopKit
 
 ## Skills
 
+PopKit Core provides 14 specialized skills:
+
 ### Project Management (5)
 - `pop-analyze-project` - Analyze project structure and patterns
 - `pop-project-init` - Initialize PopKit in a project
 - `pop-project-templates` - Project template generation
 - `pop-embed-content` - Embed project content for semantic search
 - `pop-embed-project` - Create project embeddings
+
+### Documentation & Validation (4)
+- `pop-auto-docs` - Automatic documentation generation
+- `pop-doc-sync` - Documentation synchronization
+- `pop-plugin-test` - Plugin integrity testing
+- `pop-validation-engine` - Configuration validation
 
 ### Meta Features (5)
 - `pop-bug-reporter` - Bug capture and reporting

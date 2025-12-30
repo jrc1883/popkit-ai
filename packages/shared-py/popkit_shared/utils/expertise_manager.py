@@ -8,7 +8,7 @@ Requires 3+ occurrences before adding new patterns.
 Part of Agent Expertise System (Issue #201).
 
 IMPORTANT: Agent identification currently requires POPKIT_ACTIVE_AGENT environment
-variable to be set by the agent routing system. Until Issue #XXX is resolved,
+variable to be set by the agent routing system. Until Issue #672 is resolved,
 agent-specific expertise tracking will only work when this variable is properly set.
 """
 

@@ -995,7 +995,7 @@ def update_agent_expertise(tool_name: str, tool_input: dict, tool_output: str):
         # NOTE: POPKIT_ACTIVE_AGENT must be set by agent routing system
         # LIMITATION: This environment variable is not currently set anywhere,
         # so agent-specific tracking won't work until the routing system is updated.
-        # See Issue #XXX for tracking this limitation.
+        # See Issue #672 for tracking this limitation.
         agent_id = os.environ.get('POPKIT_ACTIVE_AGENT')
         if not agent_id:
             return  # No active agent identified

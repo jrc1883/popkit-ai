@@ -1,6 +1,6 @@
 {
   "name": "@popkit/benchmarks",
-  "version": "0.1.0",
+  "version": "1.0.0-beta.1",
   "description": "PopKit benchmarking framework for measuring value proposition",
   "type": "module",
   "main": "./dist/index.js",

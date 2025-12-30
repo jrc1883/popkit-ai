@@ -59,7 +59,7 @@ app.use('*', logger());
 app.get('/', (c) => {
   return c.json({
     service: 'popkit-cloud',
-    version: '0.1.0',
+    version: '1.0.0-beta.1',
     docs: 'https://popkit.dev/docs/cloud',
   });
 });

@@ -1,6 +1,6 @@
 {
   "name": "popkit-cloud-api",
-  "version": "0.1.0",
+  "version": "1.0.0-beta.1",
   "description": "PopKit Cloud API Gateway - Redis proxy and authentication",
   "type": "module",
   "scripts": {

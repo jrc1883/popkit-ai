@@ -56,7 +56,7 @@ export function getApiHeaders(config: PopKitConfig): Record<string, string> {
     'Content-Type': 'application/json',
     'X-PopKit-Client': config.clientId,
     'X-PopKit-Client-Version': config.clientVersion,
-    'X-PopKit-Plugin-Version': '0.1.0',
+    'X-PopKit-Plugin-Version': '1.0.0-beta.1',
   };
 
   if (config.apiKey) {
