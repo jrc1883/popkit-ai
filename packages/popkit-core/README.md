@@ -25,10 +25,10 @@ PopKit Core provides the foundational meta-features and utilities for the PopKit
 | `/popkit:account` | Account management (status, keys, billing, logout) |
 | `/popkit:upgrade` | Upgrade to PopKit Premium |
 | `/popkit:dashboard` | Multi-project management dashboard |
-| `/popkit:workflow-viz` | Workflow visualization and analysis |
 | `/popkit:bug` | Bug reporting (report, search, share) |
 | `/popkit:power` | Power Mode multi-agent orchestration |
 | `/popkit:project` | Project analysis, initialization, and tooling |
+| `/popkit:record` | Session recording and playback |
 
 ## Skills
 

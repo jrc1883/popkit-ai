@@ -18,10 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `/popkit:account` - Account management
   - `/popkit:upgrade` - Upgrade to premium
   - `/popkit:dashboard` - Multi-project dashboard
-  - `/popkit:workflow-viz` - Workflow visualization
   - `/popkit:bug` - Bug reporting
   - `/popkit:power` - Power Mode orchestration
   - `/popkit:project` - Project analysis and tooling
+  - `/popkit:record` - Session recording
 - **Skills** (10):
   - Project: analyze-project, project-init, project-templates, embed-content, embed-project
   - Meta: bug-reporter, dashboard, power-mode, mcp-generator, skill-generator

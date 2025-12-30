@@ -15,7 +15,6 @@
     "./commands/account.md",
     "./commands/upgrade.md",
     "./commands/dashboard.md",
-    "./commands/workflow-viz.md",
     "./commands/bug.md",
     "./commands/power.md",
     "./commands/project.md",
