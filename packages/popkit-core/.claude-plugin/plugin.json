@@ -13,7 +13,6 @@
     "./commands/stats.md",
     "./commands/privacy.md",
     "./commands/account.md",
-    "./commands/upgrade.md",
     "./commands/dashboard.md",
     "./commands/bug.md",
     "./commands/power.md",
