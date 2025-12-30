@@ -2,7 +2,7 @@
 
 **AI-powered development workflows for Claude Code** - Modular plugin suite for professional software development.
 
-**Version:** 1.0.0-beta.1 | **Plugins:** 5 | **Commands:** 24 | **Skills:** 38 | **Agents:** 21
+**Version:** 1.0.0-beta.1 | **Plugins:** 5 | **Commands:** 25 | **Skills:** 38 | **Agents:** 21
 
 ---
 
@@ -11,7 +11,7 @@
 PopKit transforms Claude Code into a complete development workflow system. Instead of using raw tools, you get:
 
 - **5 Focused Plugins**: Install only what you need
-- **24 Workflow Commands**: From feature dev to deployment
+- **25 Workflow Commands**: From feature dev to deployment (3 deprecated)
 - **38 Reusable Skills**: Composable automation patterns
 - **21 Specialized Agents**: Context-aware AI assistance
 - **FREE Local Execution**: All features work without cloud
@@ -46,7 +46,7 @@ Install everything with one command:
 # Restart Claude Code
 ```
 
-All 24 commands available under `/popkit:` namespace.
+All 25 commands available under `/popkit:` namespace.
 
 ### Option 2: Selective Installation
 
@@ -70,7 +70,7 @@ Install only what you need:
 
 **Minimum**: popkit-core (11 commands)
 **Recommended**: popkit-core + popkit-dev (18 commands)
-**Complete**: popkit-suite (all 24 commands)
+**Complete**: popkit-suite (all 25 commands)
 
 ---
 
@@ -132,21 +132,22 @@ Install only what you need:
 ```
 popkit/
 ├── packages/
-│   ├── popkit-shared/      # Shared Python utilities (69 modules)
-│   ├── popkit-dev/         # Development workflows plugin
-│   ├── popkit-github/      # GitHub integration plugin
-│   ├── popkit-quality/     # Quality assurance plugin
-│   ├── popkit-deploy/      # Deployment automation plugin
-│   ├── popkit-research/    # Research management plugin
-│   ├── popkit-core/        # Core utilities plugin
-│   ├── popkit-meta/        # Meta-plugin (backwards compatibility)
-│   └── cloud/              # PopKit Cloud API (Cloudflare Workers)
+│   ├── shared-py/          # Shared Python utilities (70 modules)
+│   ├── popkit-core/        # Foundation plugin (Power Mode, config)
+│   ├── popkit-dev/         # Development workflows (git, GitHub, routines)
+│   ├── popkit-ops/         # Operations & quality (test, debug, deploy)
+│   ├── popkit-research/    # Knowledge management (research, notes)
+│   ├── popkit-suite/       # Meta-plugin (complete bundle)
+│   ├── cloud/              # PopKit Cloud API (Cloudflare Workers)
+│   ├── benchmarks/         # Testing framework + archived files
+│   ├── docs/               # Documentation site (Astro + Starlight)
+│   ├── landing/            # Marketing site
+│   └── universal-mcp/      # Multi-IDE MCP server (future)
 ├── docs/
-│   ├── plans/              # Design documents
-│   ├── research/           # Research notes
-│   ├── phases/             # Phase completion reports
-│   └── cloud/              # Cloud documentation
-├── CLAUDE.md               # Claude Code instructions
+│   ├── plans/              # Design documents + implementation plans
+│   ├── assessments/        # Quality assessment reports
+│   └── research/           # Research notes
+├── CLAUDE.md               # Claude Code development instructions
 ├── CHANGELOG.md            # Version history
 └── README.md               # This file
 ```
