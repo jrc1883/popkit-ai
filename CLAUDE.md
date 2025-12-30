@@ -154,7 +154,7 @@ PopKit exists to **orchestrate Claude Code's full power** for real-world develop
    - Tier 2: On-demand specialists activated by triggers (17)
    - Feature Workflow: 7-phase development agents (3)
    - Skills: 68 reusable skills
-   - Commands: 24 slash commands
+   - Commands: 25 slash commands (3 deprecated in v1.2.0)
    <!-- AUTO-GEN:TIER-COUNTS END -->
 
 5. **Project-Specific Customization ("Chain Combos")**
@@ -726,6 +726,12 @@ See [CHANGELOG.md](CHANGELOG.md) for full version history.
 
 ### Recent Milestones
 
+- **2025-12-29**: PopKit Core cleanup and account consolidation
+  - **Account Command Consolidation**: Unified 3 fragmented commands (account, upgrade, cloud) into single `/popkit:account` with 6 subcommands (status, signup, login, keys, usage, logout)
+  - **Power Mode Simplification**: Phase 1-2 complete - archived 6 test/benchmark files (2,514 LOC), deleted consensus protocol (8 files, 5,055 LOC)
+  - **Redis Interface Extraction**: Moved BaseRedisClient and BasePubSub (400 LOC) to shared-py for reusability
+  - **Deprecation Warnings**: Added frontmatter and migration guides to upgrade.md and cloud.md (removal in v1.2.0)
+  - **Total Impact**: 7,569 LOC removed from power-mode/, 137 LOC removed from upstash_adapter.py
 - **2025-12-28**: Phase 6 IN PROGRESS - v1.0.0-beta.1 preparation
   - Package cleanup: Removed 3 packages (semantic-search, ui, cloud-docs)
   - Version alignment: All plugins standardized to v1.0.0-beta.1
