@@ -22,6 +22,7 @@ Display PopKit efficiency metrics showing token savings, collaboration stats, an
 | `today` | Today's aggregate stats |
 | `week` | Last 7 days summary |
 | `cloud` | Fetch stats from PopKit Cloud |
+| `routine [name]` | Show routine measurement dashboard |
 | `reset` | Reset session metrics |
 
 ## Options
@@ -200,6 +201,139 @@ PopKit estimates token savings using these constants:
 | Stuck prevented | 800 | Avoided loop iterations |
 
 ---
+
+---
+
+## Routine Measurement Stats (Issue #628)
+
+Display routine measurement dashboard with metrics, costs, and trends.
+
+### Usage
+
+```
+/popkit:stats routine              # Show latest measurement for any routine
+/popkit:stats routine morning      # Show latest measurement for morning routine
+/popkit:stats routine nightly      # Show latest measurement for nightly routine
+/popkit:stats routine --all        # Show all measurements summary
+```
+
+### Output Format
+
+```
+================================================================================
+                      ROUTINE MEASUREMENT DASHBOARD
+================================================================================
+Routine: morning (pk)
+Timestamp: 2025-12-30 08:15:32
+File: morning-pk_20251230_081532.json
+
+SUMMARY METRICS
+--------------------------------------------------------------------------------
+  Duration:     45.23s (0.8 minutes)
+  Tool Calls:   23
+  Total Tokens: 12,450
+  Characters:   49,800
+
+TOKEN USAGE
+--------------------------------------------------------------------------------
+  Input Tokens:   2,490  (2.5k)  [20.0%]
+  Output Tokens:  9,960  (10.0k) [80.0%]
+  Total Tokens:  12,450  (12.5k)
+
+COST ESTIMATE (Claude Sonnet 4.5)
+--------------------------------------------------------------------------------
+  Input Cost:   $0.0075  (@$3.00/million tokens)
+  Output Cost:  $0.1494  (@$15.00/million tokens)
+  Total Cost:   $0.1569
+
+TOOL BREAKDOWN
+--------------------------------------------------------------------------------
+Tool                 Calls    Tokens       Duration     Chars
+--------------------------------------------------------------------------------
+Bash                 8        6,200        18.45s       24,800
+Read                 6        3,100        12.30s       12,400
+Grep                 5        2,000        8.20s        8,000
+Glob                 4        1,150        6.28s        4,600
+
+COMPARISON WITH PREVIOUS RUN
+--------------------------------------------------------------------------------
+  Duration:     ↓ 3.12s (-6.5%)
+  Tokens:       ↑ 450 (+3.8%)
+  Cost:         ↑ $0.0068 (+4.5%)
+  Tool Calls:   → 0 tools
+================================================================================
+```
+
+### All Measurements Summary
+
+```
+/popkit:stats routine --all
+```
+
+Output:
+```
+================================================================================
+                        ALL ROUTINE MEASUREMENTS
+================================================================================
+Total Measurements: 5
+
+Date                 Routine         Duration     Tokens       Cost
+--------------------------------------------------------------------------------
+2025-12-30 08:15:32  morning              45.23s     12,450    $0.1569
+2025-12-29 08:10:15  morning              48.35s     12,000    $0.1501
+2025-12-28 08:05:42  nightly              52.10s     11,800    $0.1477
+2025-12-27 08:12:30  morning              49.20s     12,200    $0.1525
+2025-12-26 08:08:18  nightly              51.45s     11,950    $0.1495
+
+AGGREGATE STATISTICS
+--------------------------------------------------------------------------------
+  Average Duration: 49.27s
+  Average Tokens:   12,080
+  Average Cost:     $0.1513
+
+  Total Duration:   246.33s (4.1 minutes)
+  Total Tokens:     60,400
+  Total Cost:       $0.7567
+
+TREND (First → Latest)
+--------------------------------------------------------------------------------
+  Duration Change:  -6.22s
+  Token Change:     +500
+================================================================================
+```
+
+### Implementation
+
+```python
+# Invoke pop-routine-measure skill
+from skills.pop_routine_measure import main
+
+# Parse subcommand
+import sys
+args = sys.argv[1:]  # ["routine", "morning"] or ["routine", "--all"]
+
+if len(args) > 1 and args[0] == "routine":
+    routine_name = args[1] if args[1] != "--all" else None
+    show_all = "--all" in args
+
+    # Invoke dashboard
+    if show_all:
+        main(["--all"])
+    elif routine_name:
+        main(["--routine", routine_name])
+    else:
+        main([])
+else:
+    # Show session stats (default behavior)
+    # ... existing stats code ...
+```
+
+### Data Source
+
+Measurements are stored in `.claude/popkit/measurements/*.json`:
+- Created when running `/popkit:routine <name> --measure`
+- Tracked by `hooks/post-tool-use.py` via `routine_measurement.py`
+- Includes duration, token usage, tool breakdown, and costs
 
 ---
 

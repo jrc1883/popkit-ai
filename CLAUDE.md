@@ -334,12 +334,21 @@ PopKit features require specific Claude Code versions for full functionality:
 
 ## Key Architectural Patterns
 
-### Agent Routing (packages/plugin/agents/config.json)
+### Agent Routing
 
-Agents are routed via three mechanisms:
+PopKit uses a sophisticated **two-tier agent routing system** with four complementary mechanisms:
+
 1. **Keywords**: "bug" → bug-whisperer, "security" → security-auditor
 2. **File patterns**: `*.test.ts` → test-writer-fixer, `*.sql` → query-optimizer
 3. **Error patterns**: TypeError → bug-whisperer, SecurityError → security-auditor
+4. **Semantic embeddings**: Intent understanding beyond keywords (requires VOYAGE_API_KEY)
+
+**Tier System:**
+- **Tier 1** (10 agents): Always active, core capabilities (15.3k tokens)
+- **Tier 2** (9 agents): On-demand specialists (0.3k tokens when loaded)
+- **Feature Workflow** (2 agents): Multi-phase feature development
+
+**Documentation**: See [Agent Routing Guide](docs/AGENT_ROUTING_GUIDE.md) for complete routing documentation, decision trees, and examples.
 
 ### Confidence-Based Filtering
 
@@ -753,6 +762,43 @@ See [CHANGELOG.md](CHANGELOG.md) for full version history.
 - Output styles define templates for PRs, issues, releases, reviews
 - Skills can invoke other skills; commands can invoke skills
 - Python hooks use `#!/usr/bin/env python3` and are chmod +x
+
+### Hook Path Standards
+
+All hook commands in `hooks.json` must follow portability standards to ensure seamless operation across installation methods (development, marketplace, git clone).
+
+**Required Standards**:
+- **Always use `${CLAUDE_PLUGIN_ROOT}`** for plugin-relative paths
+- **Never use absolute paths** (`/home/`, `/usr/`, `C:\`, etc.)
+- **Never use user-specific paths** (`~`, `${HOME}`, usernames)
+- **Quote paths** with double quotes for Windows compatibility
+- **Use forward slashes** (work on both Windows and Unix)
+
+**Standard Hook Command Format**:
+```json
+{
+  "type": "command",
+  "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/<script-name>.py\"",
+  "timeout": <milliseconds>
+}
+```
+
+**Why This Works**:
+1. `${CLAUDE_PLUGIN_ROOT}` is resolved by Claude Code to the plugin installation directory
+2. Double quotes handle Windows paths with spaces
+3. Forward slashes work cross-platform
+4. Paths are relative to plugin root, not user directory structure
+
+**Installation Method Compatibility**:
+- **Development Mode**: `claude --plugin-dir ./packages/popkit-core`
+  - `${CLAUDE_PLUGIN_ROOT}` → `./packages/popkit-core`
+- **Marketplace Install**: `/plugin install popkit-core@popkit-marketplace`
+  - `${CLAUDE_PLUGIN_ROOT}` → plugin installation directory
+- **Local Install**: `/plugin install ./popkit-claude`
+  - `${CLAUDE_PLUGIN_ROOT}` → cloned directory
+
+**Audit Status**: All 16 PopKit hooks passed portability audit (Issue #225, December 2025).
+See `docs/HOOK_PORTABILITY_AUDIT.md` for full audit report.
 
 ## Releasing New Versions
 

@@ -103,6 +103,24 @@ Track execution metrics for routine optimization.
 
 **Implementation:** `hooks/utils/routine_measurement.py`, `hooks/post-tool-use.py`
 
+### Viewing Measurements
+
+After running routines with `--measure`, view the dashboard:
+
+```
+# View latest measurement
+/popkit:stats routine
+
+# View measurements for specific routine
+/popkit:stats routine morning
+/popkit:stats routine nightly
+
+# View all measurements summary
+/popkit:stats routine --all
+```
+
+See `/popkit:stats` command and `pop-routine-measure` skill for full dashboard capabilities.
+
 ---
 
 ## Project-Specific Routines
