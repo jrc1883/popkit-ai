@@ -61,6 +61,88 @@ PopKit Core provides the foundational meta-features and utilities for the PopKit
 - `dead-code-eliminator` - Unused code detection and removal
 - `feature-prioritizer` - Backlog management and prioritization
 
+## Agent Routing Strategy
+
+PopKit Core uses a sophisticated **two-tier agent routing system** to intelligently activate specialized agents based on context.
+
+### The Tier System
+
+**Tier 1: Always Active (4 agents in Core)**
+- `api-designer` - RESTful and GraphQL API design
+- `accessibility-guardian` - WCAG compliance and a11y
+- `documentation-maintainer` - Documentation synchronization
+- `migration-specialist` - System migrations and upgrades
+
+**Tier 2: On-Demand (5 agents in Core)**
+- `meta-agent` - Agent generator for custom workflows
+- `power-coordinator` - Multi-agent orchestration
+- `bundle-analyzer` - Bundle size optimization
+- `dead-code-eliminator` - Unused code detection
+- `feature-prioritizer` - Backlog management
+
+### How Agents Are Selected
+
+PopKit routes to agents using **four complementary mechanisms**:
+
+1. **Keyword Matching**: User message contains trigger words
+   ```
+   "Need to optimize bundle size" → bundle-analyzer
+   "API design for user service" → api-designer
+   ```
+
+2. **File Pattern Matching**: Working with specific file types
+   ```
+   "Review webpack.config.js" → bundle-analyzer
+   "Update api/users.ts" → api-designer
+   ```
+
+3. **Error Pattern Matching**: Specific error signatures
+   ```
+   "SecurityError in API call" → api-designer + security-auditor
+   ```
+
+4. **Semantic Embeddings**: Intent understanding beyond keywords
+   ```
+   "App loads slowly with large data" → bundle-analyzer
+   (Requires VOYAGE_API_KEY)
+   ```
+
+### Confidence-Based Filtering
+
+Agents apply **80+ confidence threshold** to prevent false positives:
+
+| Score | Meaning | Action |
+|-------|---------|--------|
+| 0-25 | Likely false positive | Skip |
+| 50-75 | Moderate confidence | Note only |
+| 80-100 | Certain | Report to user |
+
+### Example: API Design Request
+
+```
+User: "Design REST API for user authentication with OAuth2"
+
+Routing Analysis:
+- Keywords: "API", "REST" → api-designer (Tier 1) ✅
+- Keywords: "authentication", "OAuth2" → security-auditor (Tier 1, from ops)
+- Context: API design with security requirements
+
+Agents Activated:
+- api-designer (Primary) - Designs endpoints and schemas
+- security-auditor (Support) - Reviews auth implementation
+```
+
+### Token Optimization
+
+PopKit's routing reduces context usage by **40.5%**:
+- Tier 1 baseline: ~15.3k tokens (10 always-active agents across all plugins)
+- Tier 2 activation: ~0.3k tokens per specialist (only when needed)
+- Total savings: 25.7k → 15.3k tokens
+
+**Learn More**: See [Agent Routing Guide](../../docs/AGENT_ROUTING_GUIDE.md) for complete documentation.
+
+---
+
 ## Power Mode
 
 Power Mode enables parallel multi-agent workflows:
