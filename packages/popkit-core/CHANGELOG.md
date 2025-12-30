@@ -7,23 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **`/popkit:account`** - Unified account management command (Phase 1)
+  - 6 subcommands: status, signup, login, keys, usage, logout
+  - Consolidates fragmented account/upgrade/cloud functionality
+  - 672 lines of comprehensive account management
+
 ### Changed
-- **Power Mode Simplification** - Extracted generic Redis interfaces to `popkit-shared`
+- **Power Mode Simplification** - Phase 1-2 complete (97.2% reduction planned)
+  - Extracted generic Redis interfaces to `popkit-shared`
   - Moved `BaseRedisClient` and `BasePubSub` to `packages/shared-py/popkit_shared/storage/`
   - Reduced `upstash_adapter.py` from 627 to 490 LOC (-137 LOC)
-  - Enables reuse across local Redis, Upstash, ElastiCache, etc.
+  - Archived 6 test/benchmark files (2,514 LOC) to `packages/benchmarks/power-mode/`
+  - Deleted experimental consensus protocol (8 files, 5,055 LOC)
+  - Total cleanup: 7,569 LOC removed from active codebase
   - Related: Power Mode Upstash audit (docs/assessments/2025-12-29-power-mode-upstash-audit.md)
 
 ### Removed
 - **`/popkit:workflow-viz`** - Workflow visualizations now documented in README instead of command
   - Replaced with `/popkit:record` - Session forensics recording
-
-### Deprecated
-- **Account Command Consolidation Plan** - Preparing to merge 3 commands into 1
-  - `/popkit:upgrade` → `/popkit:account signup` (future)
-  - `/popkit:cloud` → `/popkit:account` subcommands (future)
-  - Plan: docs/plans/2025-12-29-account-consolidation-plan.md
-  - Migration: 3-phase approach with 2+ release deprecation period
+- **`/popkit:upgrade`** - Replaced by `/popkit:account signup` (Phase 3)
+- **`/popkit:cloud`** - Replaced by `/popkit:account` subcommands (Phase 3)
+- **Command Count**: Reduced from 25 → 23 commands (early removal, no deprecation period needed)
 
 ### Analysis
 - **Power Mode Audit** - Comprehensive analysis of 19,249 LOC

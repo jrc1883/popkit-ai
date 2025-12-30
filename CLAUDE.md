@@ -154,7 +154,7 @@ PopKit exists to **orchestrate Claude Code's full power** for real-world develop
    - Tier 2: On-demand specialists activated by triggers (17)
    - Feature Workflow: 7-phase development agents (3)
    - Skills: 68 reusable skills
-   - Commands: 25 slash commands (3 deprecated in v1.2.0)
+   - Commands: 23 slash commands
    <!-- AUTO-GEN:TIER-COUNTS END -->
 
 5. **Project-Specific Customization ("Chain Combos")**

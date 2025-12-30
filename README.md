@@ -2,7 +2,7 @@
 
 **AI-powered development workflows for Claude Code** - Modular plugin suite for professional software development.
 
-**Version:** 1.0.0-beta.1 | **Plugins:** 5 | **Commands:** 25 | **Skills:** 38 | **Agents:** 21
+**Version:** 1.0.0-beta.1 | **Plugins:** 5 | **Commands:** 23 | **Skills:** 38 | **Agents:** 21
 
 ---
 
@@ -11,7 +11,7 @@
 PopKit transforms Claude Code into a complete development workflow system. Instead of using raw tools, you get:
 
 - **5 Focused Plugins**: Install only what you need
-- **25 Workflow Commands**: From feature dev to deployment (3 deprecated)
+- **23 Workflow Commands**: From feature dev to deployment
 - **38 Reusable Skills**: Composable automation patterns
 - **21 Specialized Agents**: Context-aware AI assistance
 - **FREE Local Execution**: All features work without cloud
@@ -46,7 +46,7 @@ Install everything with one command:
 # Restart Claude Code
 ```
 
-All 25 commands available under `/popkit:` namespace.
+All 23 commands available under `/popkit:` namespace.
 
 ### Option 2: Selective Installation
 
@@ -70,7 +70,7 @@ Install only what you need:
 
 **Minimum**: popkit-core (11 commands)
 **Recommended**: popkit-core + popkit-dev (18 commands)
-**Complete**: popkit-suite (all 25 commands)
+**Complete**: popkit-suite (all 23 commands)
 
 ---
 
