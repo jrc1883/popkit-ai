@@ -2,9 +2,22 @@
 name: upgrade
 description: "Get your free API key for enhanced intelligence"
 argument-hint: "[options]"
+deprecated: true
+redirect: "account signup"
 ---
 
 # /popkit:upgrade
+
+⚠️ **DEPRECATED** - Use `/popkit:account signup` instead
+
+**This command will be removed in v1.2.0.** Please use the new unified account management command:
+```bash
+/popkit:account signup
+```
+
+The new command provides the same functionality with better integration into the account management system.
+
+---
 
 Get a free API key to enhance PopKit with semantic intelligence.
 

@@ -2,9 +2,26 @@
 name: cloud
 description: "signup | login | status | logout - Manage PopKit Cloud connection"
 argument-hint: "<subcommand>"
+deprecated: true
+redirect: "account"
 ---
 
 # /popkit:cloud
+
+⚠️ **DEPRECATED** - Use `/popkit:account` instead
+
+**This command will be removed in v1.2.0.** The cloud management functionality has been consolidated into the unified account command:
+
+| Old Command | New Command |
+|------------|-------------|
+| `/popkit:cloud signup` | `/popkit:account signup` |
+| `/popkit:cloud login` | `/popkit:account login` |
+| `/popkit:cloud status` | `/popkit:account status` |
+| `/popkit:cloud logout` | `/popkit:account logout` |
+
+Please update your workflows to use `/popkit:account` for all account-related operations.
+
+---
 
 Manage your connection to PopKit Cloud for semantic agent routing, pattern learning, and cloud knowledge base.
 
