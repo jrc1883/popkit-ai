@@ -30,7 +30,10 @@ from typing import Any, Callable, Dict, List, Optional, Set, Union
 from urllib.request import Request, urlopen
 from urllib.error import URLError, HTTPError
 from dataclasses import dataclass
-from abc import ABC, abstractmethod
+
+# Import Redis interface abstractions from shared package
+# Extracted from this file to packages/shared-py during Epic #580 cleanup (2025-12-29)
+from popkit_shared.storage import BaseRedisClient, BasePubSub
 
 
 # =============================================================================
@@ -44,142 +47,11 @@ UPSTASH_REST_TOKEN = os.environ.get("UPSTASH_REDIS_REST_TOKEN")
 DEFAULT_TTL = 86400 * 7
 
 
-# =============================================================================
-# ABSTRACT BASE CLIENT
-# =============================================================================
-
-class BaseRedisClient(ABC):
-    """Abstract base for Redis clients (local and Upstash)."""
-
-    @abstractmethod
-    def ping(self) -> bool:
-        """Check connection health."""
-        pass
-
-    @abstractmethod
-    def set(self, key: str, value: str, ex: Optional[int] = None) -> bool:
-        """Set a key-value pair with optional expiration."""
-        pass
-
-    @abstractmethod
-    def get(self, key: str) -> Optional[str]:
-        """Get a value by key."""
-        pass
-
-    @abstractmethod
-    def delete(self, *keys: str) -> int:
-        """Delete one or more keys."""
-        pass
-
-    @abstractmethod
-    def exists(self, *keys: str) -> int:
-        """Check if keys exist."""
-        pass
-
-    @abstractmethod
-    def keys(self, pattern: str = "*") -> List[str]:
-        """Get keys matching pattern."""
-        pass
-
-    @abstractmethod
-    def hset(self, name: str, mapping: Dict[str, str]) -> int:
-        """Set hash fields."""
-        pass
-
-    @abstractmethod
-    def hget(self, name: str, key: str) -> Optional[str]:
-        """Get hash field."""
-        pass
-
-    @abstractmethod
-    def hgetall(self, name: str) -> Dict[str, str]:
-        """Get all hash fields."""
-        pass
-
-    @abstractmethod
-    def hdel(self, name: str, *keys: str) -> int:
-        """Delete hash fields."""
-        pass
-
-    @abstractmethod
-    def rpush(self, name: str, *values: str) -> int:
-        """Push to end of list."""
-        pass
-
-    @abstractmethod
-    def lpush(self, name: str, *values: str) -> int:
-        """Push to start of list."""
-        pass
-
-    @abstractmethod
-    def lrange(self, name: str, start: int, end: int) -> List[str]:
-        """Get list range."""
-        pass
-
-    @abstractmethod
-    def lpop(self, name: str) -> Optional[str]:
-        """Pop from start of list."""
-        pass
-
-    @abstractmethod
-    def expire(self, name: str, time: int) -> bool:
-        """Set key expiration."""
-        pass
-
-    @abstractmethod
-    def ttl(self, name: str) -> int:
-        """Get time to live."""
-        pass
-
-    @abstractmethod
-    def publish(self, channel: str, message: str) -> int:
-        """Publish message to channel (simulated via streams for Upstash)."""
-        pass
-
-    @abstractmethod
-    def pubsub(self) -> 'BasePubSub':
-        """Get pub/sub interface."""
-        pass
-
-    # Stream operations (native Redis Streams)
-    @abstractmethod
-    def xadd(self, name: str, fields: Dict[str, str], id: str = "*", maxlen: Optional[int] = None) -> str:
-        """Add to stream."""
-        pass
-
-    @abstractmethod
-    def xread(self, streams: Dict[str, str], count: Optional[int] = None, block: Optional[int] = None) -> List:
-        """Read from streams."""
-        pass
-
-    @abstractmethod
-    def xrange(self, name: str, min: str = "-", max: str = "+", count: Optional[int] = None) -> List:
-        """Get stream range."""
-        pass
-
-
-class BasePubSub(ABC):
-    """Abstract base for pub/sub interface."""
-
-    @abstractmethod
-    def subscribe(self, *channels: str) -> None:
-        """Subscribe to channels."""
-        pass
-
-    @abstractmethod
-    def unsubscribe(self, *channels: str) -> None:
-        """Unsubscribe from channels."""
-        pass
-
-    @abstractmethod
-    def listen(self) -> Any:
-        """Get message generator."""
-        pass
-
-    @abstractmethod
-    def get_message(self, timeout: float = 0.0) -> Optional[Dict]:
-        """Get next message if available."""
-        pass
+# Note: BaseRedisClient and BasePubSub have been moved to:
+# packages/shared-py/popkit_shared/storage/redis_interface.py
+#
+# They are now imported at the top of this file.
+# This allows other Redis implementations to reuse the same interface.
 
 
 # =============================================================================
