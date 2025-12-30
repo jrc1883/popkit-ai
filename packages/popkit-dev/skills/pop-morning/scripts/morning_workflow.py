@@ -231,17 +231,34 @@ class MorningWorkflow:
     def _add_morning_checks(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """Add morning-specific checks to state."""
         import subprocess
+        import shlex
 
-        def run_command(cmd: str) -> str:
-            """Run shell command and return output."""
+        def run_command(cmd: str, use_shell: bool = False) -> str:
+            """
+            Run command and return output.
+
+            Args:
+                cmd: Command string
+                use_shell: True if command needs shell features (pipes, redirection)
+            """
             try:
-                result = subprocess.run(
-                    cmd,
-                    shell=True,
-                    capture_output=True,
-                    text=True,
-                    timeout=10
-                )
+                if use_shell:
+                    # Only use shell=True when needed for pipes/redirection
+                    result = subprocess.run(
+                        cmd,
+                        shell=True,
+                        capture_output=True,
+                        text=True,
+                        timeout=10
+                    )
+                else:
+                    # Safe list-based execution
+                    result = subprocess.run(
+                        shlex.split(cmd),
+                        capture_output=True,
+                        text=True,
+                        timeout=10
+                    )
                 return result.stdout.strip()
             except Exception:
                 return ""
@@ -268,7 +285,8 @@ class MorningWorkflow:
         }
 
         # Try pnpm outdated (if available)
-        pnpm_outdated = run_command('pnpm outdated --json 2>/dev/null')
+        # Uses shell redirection, so needs shell=True
+        pnpm_outdated = run_command('pnpm outdated --json 2>/dev/null', use_shell=True)
         if pnpm_outdated:
             try:
                 outdated = json.loads(pnpm_outdated)
@@ -319,17 +337,34 @@ class MorningWorkflow:
     def _collect_state_fallback(self) -> Dict[str, Any]:
         """Fallback state collection without utilities."""
         import subprocess
+        import shlex
 
-        def run_command(cmd: str) -> str:
-            """Run shell command and return output."""
+        def run_command(cmd: str, use_shell: bool = False) -> str:
+            """
+            Run command and return output.
+
+            Args:
+                cmd: Command string
+                use_shell: True if command needs shell features (pipes, redirection)
+            """
             try:
-                result = subprocess.run(
-                    cmd,
-                    shell=True,
-                    capture_output=True,
-                    text=True,
-                    timeout=10
-                )
+                if use_shell:
+                    # Only use shell=True when needed for pipes/redirection
+                    result = subprocess.run(
+                        cmd,
+                        shell=True,
+                        capture_output=True,
+                        text=True,
+                        timeout=10
+                    )
+                else:
+                    # Safe list-based execution
+                    result = subprocess.run(
+                        shlex.split(cmd),
+                        capture_output=True,
+                        text=True,
+                        timeout=10
+                    )
                 return result.stdout.strip()
             except Exception as e:
                 print(f"[WARN] Command failed: {cmd} - {e}", file=sys.stderr)
@@ -350,7 +385,8 @@ class MorningWorkflow:
             'branch': branch,
             'behind_remote': behind_count,
             'uncommitted_files': len(run_command('git status --porcelain').splitlines()),
-            'stashes': int(run_command('git stash list | wc -l') or '0')
+            # Pipe requires shell=True
+            'stashes': int(run_command('git stash list | wc -l', use_shell=True) or '0')
         }
 
         # GitHub state (if gh CLI available)
@@ -380,8 +416,10 @@ class MorningWorkflow:
                 pass
 
         # Services state
+        # Pipes require shell=True
         running_services_output = run_command(
-            'ps aux | grep -E "(node|npm|pnpm|redis|postgres|supabase)" | grep -v grep'
+            'ps aux | grep -E "(node|npm|pnpm|redis|postgres|supabase)" | grep -v grep',
+            use_shell=True
         )
         running_services = [
             line.split()[-1] for line in running_services_output.splitlines()

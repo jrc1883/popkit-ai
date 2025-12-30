@@ -1,0 +1,62 @@
+{
+  "name": "popkit-suite",
+  "displayName": "PopKit Suite",
+  "version": "1.0.0-beta.1",
+  "description": "Complete PopKit installation guide - meta-plugin for installing all 4 focused workflow plugins in one step",
+  "longDescription": "PopKit Suite is a meta-plugin that guides you through installing the complete PopKit ecosystem. Provides installation recommendations and documentation for all 21 commands, 38 skills, and 21 agents across 4 focused plugins: popkit-core (foundation), popkit-dev (development), popkit-ops (operations), and popkit-research (knowledge).",
+  "author": {
+    "name": "Joseph Cannon",
+    "email": "joseph@thehouseofdeals.com",
+    "url": "https://github.com/jrc1883"
+  },
+  "publisher": "popkit",
+  "license": "MIT",
+  "homepage": "https://github.com/jrc1883/popkit",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jrc1883/popkit"
+  },
+  "bugs": {
+    "url": "https://github.com/jrc1883/popkit/issues"
+  },
+  "categories": [
+    "meta",
+    "productivity",
+    "workflow",
+    "utilities"
+  ],
+  "keywords": [
+    "complete-suite",
+    "installation-guide",
+    "meta-plugin",
+    "popkit",
+    "workflow",
+    "productivity",
+    "development"
+  ],
+  "tags": [
+    "meta-plugin",
+    "complete-suite",
+    "installation",
+    "bundle",
+    "productivity"
+  ],
+  "icon": "assets/icon.png",
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
+  },
+  "changelog": "https://github.com/jrc1883/popkit/blob/main/CHANGELOG.md",
+  "documentation": "https://github.com/jrc1883/popkit/blob/main/packages/popkit-suite/README.md",
+  "minClaudeCodeVersion": "2.0.67",
+  "dependencies": {},
+  "peerDependencies": {},
+  "pricing": {
+    "model": "free",
+    "trial": null
+  },
+  "status": "beta",
+  "beta": true,
+  "experimental": false,
+  "preview": true
+}

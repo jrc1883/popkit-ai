@@ -393,19 +393,60 @@ See `packages/plugin/commands/routine.md` for full documentation.
 
 ### Power Mode (Multi-Agent Orchestration)
 
-Parallel agent collaboration via `/popkit:power`:
-- **Native Async Mode** (Claude Code 2.0.64+): Zero setup, 5+ agents via background Task tool
-- **Redis Mode** (Pro tier): Full power, 10+ agents, requires Docker
-- **File-Based Mode** (Free tier): Zero setup, 2 agents sequential
+Parallel agent collaboration via `/popkit:power` with intelligent mode selection:
 
-**Plan Mode** (Claude Code 2.0.70+): Agents present implementation plans for user approval before executing changes.
+#### Native Async Mode (Primary - Claude Code 2.0.64+)
+
+**Zero setup** parallel execution using Claude Code's native background Task tool:
+
+```
+Coordinator → Spawn background agents
+             ↓
+    ┌────────┼────────┐
+    ↓        ↓        ↓
+ Agent1   Agent2   Agent3  (parallel tasks)
+    ↓        ↓        ↓
+    Share via .claude/popkit/insights.json
+    ↓        ↓        ↓
+ TaskOutput polling → Results
+```
+
+**Key Benefits:**
+- **No external dependencies** (no Docker, no Redis)
+- **True parallelism**: 5 agents (Premium) or 10 agents (Pro)
+- **Cross-platform**: Windows/macOS/Linux
+- **File-based communication**: `.claude/popkit/insights.json`
+- **Sync barriers**: Phase-aware coordination
+
+**How it works:**
+1. Coordinator spawns agents via `Task(run_in_background: true)`
+2. Agents execute in parallel, sharing insights via JSON file
+3. Coordinator polls progress via `TaskOutput(block: false)` every 500ms
+4. Sync barriers between phases ensure coordination
+5. Results aggregated when all agents complete
+
+**Requirements:** Claude Code 2.0.64+, Premium or Pro tier
+
+#### Other Modes
+
+- **Upstash Redis Mode** (Pro tier, optional): 10+ agents, advanced coordination via Upstash cloud
+- **File-Based Mode** (Free tier): 2-3 agents sequential, automatic fallback
+
+**No Docker or local Redis installation required.** Native Async mode works out of the box.
+
+#### Plan Mode Integration (Claude Code 2.0.70+)
+
+Agents present implementation plans for user approval before executing:
 - Use `--require-plans` to force all agents to present plans
 - Use `--trust-agents` to allow all agents to execute directly
 - Default: Configuration-based per agent (Tier 1=execute, Tier 2=plan)
 
-Configuration: `packages/plugin/agents/config.json` → `plan_mode` section defines which agents require plan approval.
+Configuration: `packages/popkit-core/agents/config.json` → `plan_mode` section
 
-Use `/popkit:power init` to set up. See `packages/plugin/commands/power.md` for details.
+**Documentation:**
+- Quick Start: `/popkit:power init` to check setup
+- Command Reference: `packages/popkit-core/commands/power.md`
+- Deep Dive: `docs/POWER_MODE_ASYNC.md` (architecture, examples, troubleshooting)
 
 ### Stateless Message Composition
 

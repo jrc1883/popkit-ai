@@ -66,14 +66,14 @@ Parse the goal into actionable components:
 4. **Select agents** appropriate for each phase
 5. **Create TodoWrite** with all tasks
 
-### Phase 2: Redis Setup
+### Phase 2: Coordination Setup
 
 Initialize coordination infrastructure:
 
-1. Verify Redis connection (`docker exec popkit-redis redis-cli ping`)
+1. Detect available mode (Native Async / Upstash / File-based)
 2. Initialize objective state
 3. Clear stale data from previous sessions
-4. Set up channel subscriptions
+4. Set up communication channels (Task tool, Upstash Streams, or file system)
 
 ### Phase 3: Orchestration Loop
 

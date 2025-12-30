@@ -4,5 +4,5 @@
 popkit-shared>=1.0.0
 
 # Optional dependencies for enhanced features:
-# - Redis for Power Mode (Pro tier): pip install redis
+# - Redis for Upstash mode (optional): pip install redis (cloud-based, no Docker required)
 # - Voyage AI for semantic embeddings: Set VOYAGE_API_KEY env var
