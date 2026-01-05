@@ -1,6 +1,6 @@
 {
   "name": "popkit-research",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "description": "PopKit research plugin - knowledge management and research workflows",
   "author": {
     "name": "Joseph Cannon",
@@ -17,7 +17,5 @@
     "./skills/pop-research-merge",
     "./skills/pop-knowledge-lookup"
   ],
-  "agents": [
-    "./agents/tier-2-on-demand/researcher/AGENT.md"
-  ]
+  "agents": []
 }

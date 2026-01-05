@@ -1,6 +1,6 @@
 {
   "name": "popkit-ops",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "description": "PopKit operations plugin - quality assurance, deployment, and debugging workflows",
   "author": {
     "name": "Joseph Cannon",
@@ -24,12 +24,5 @@
     "./skills/pop-systematic-debugging",
     "./skills/pop-code-review"
   ],
-  "agents": [
-    "./agents/tier-1-always-active/bug-whisperer/AGENT.md",
-    "./agents/tier-1-always-active/performance-optimizer/AGENT.md",
-    "./agents/tier-1-always-active/security-auditor/AGENT.md",
-    "./agents/tier-1-always-active/test-writer-fixer/AGENT.md",
-    "./agents/tier-2-on-demand/deployment-validator/AGENT.md",
-    "./agents/tier-2-on-demand/rollback-specialist/AGENT.md"
-  ]
+  "agents": []
 }

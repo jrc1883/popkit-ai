@@ -4,6 +4,50 @@ All notable changes to PopKit are documented in this file.
 
 **Versioning:** PopKit uses semantic versioning. Currently in preview (0.x) until stable public launch.
 
+## [Unreleased]
+
+_No unreleased changes yet._
+
+---
+
+## [1.0.0-beta.3] - 2026-01-05
+
+### Stripe Billing Integration
+
+**Stripe Integration Complete** (#727):
+- Fixed JSON parse bug in billing endpoints (3 instances)
+- Updated redirect URLs: popkit.dev → thehouseofdeals.com
+- Configured Stripe secrets: API key, webhook, price IDs (Pro $9, Team $29)
+- Worker deployed: v3852c042-2833-442c-9168-7c8cdb28eba3
+- Tested endpoints: checkout, subscription, account keys
+
+**Endpoints Working**:
+- `POST /v1/billing/checkout` - Create Stripe checkout sessions ✅
+- `GET /v1/billing/subscription` - Get subscription status ✅
+- `GET /v1/account/keys` - List API keys ✅
+- `POST /v1/account/keys` - Create new API keys ✅
+
+### Command Testing Framework
+
+**Command Blueprints Created**:
+- New testing framework: `.workspace/COMMAND_BLUEPRINTS.md`
+- Step-by-step execution traces with bash commands, expected output, success criteria
+- Completed blueprints: `/popkit:account status`, `/popkit:account usage`, `/popkit:account keys`
+- 20 commands remaining to document
+
+### Repository Cleanup
+
+**Root Directory Cleanup**:
+- Deleted 7 old files (ESLint outputs, test files, phase summaries)
+- Moved `measure_plugin_tokens.py` to `packages/popkit-core/scripts/`
+- Updated README.md (fixed agent count: 19 → 22)
+- Updated STATUS.json with current session state
+
+### Issues Created
+
+- **#732**: UX improvement for API key naming flow
+- **#746**: Add soft limits to Pro tier "unlimited" rate limits
+
 ## [1.0.0-beta.2] - 2025-12-30
 
 ### v1.0.0 Release Preparation Complete ✅

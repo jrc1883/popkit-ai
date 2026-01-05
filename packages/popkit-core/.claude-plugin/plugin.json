@@ -1,6 +1,6 @@
 {
   "name": "popkit-core",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "description": "Core utilities plugin - plugin management, project analysis, Power Mode orchestration, stats, privacy, and meta-features",
   "author": {
     "name": "Joseph Cannon",
@@ -37,15 +37,7 @@
     "./skills/pop-validation-engine"
   ],
   "agents": [
-    "./agents/tier-2-on-demand/meta-agent/AGENT.md",
-    "./agents/tier-2-on-demand/power-coordinator/AGENT.md",
-    "./agents/tier-2-on-demand/bundle-analyzer/AGENT.md",
-    "./agents/tier-2-on-demand/dead-code-eliminator/AGENT.md",
-    "./agents/tier-2-on-demand/feature-prioritizer/AGENT.md",
-    "./agents/tier-1-always-active/api-designer/AGENT.md",
-    "./agents/tier-1-always-active/accessibility-guardian/AGENT.md",
-    "./agents/tier-1-always-active/documentation-maintainer/AGENT.md",
-    "./agents/tier-1-always-active/migration-specialist/AGENT.md"
+    "./agents/orchestrator/AGENT.md"
   ],
   "status_line": {
     "script": "power-mode/statusline.py"

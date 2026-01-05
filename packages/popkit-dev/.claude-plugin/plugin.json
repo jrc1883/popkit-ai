@@ -1,6 +1,6 @@
 {
   "name": "popkit-dev",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "description": "Complete development workflow plugin - feature development, git operations, GitHub management, and daily routines",
   "author": {
     "name": "Joseph Cannon",
@@ -33,11 +33,5 @@
     "./skills/pop-morning",
     "./skills/pop-nightly"
   ],
-  "agents": [
-    "./agents/feature-workflow/code-explorer/AGENT.md",
-    "./agents/feature-workflow/code-architect/AGENT.md",
-    "./agents/tier-1-always-active/code-reviewer/AGENT.md",
-    "./agents/tier-1-always-active/refactoring-expert/AGENT.md",
-    "./agents/tier-2-on-demand/rapid-prototyper/AGENT.md"
-  ]
+  "agents": []
 }
