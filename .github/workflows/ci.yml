@@ -63,28 +63,7 @@ jobs:
             cat "$PLUGIN_JSON" | python -m json.tool > /dev/null || exit 1
 
             # Check required fields
-            cat > /tmp/validate_plugin.py << 'PYEOF'
-import json
-import sys
-import os
-
-plugin_json = os.environ.get('PLUGIN_JSON', '')
-plugin_name = os.environ.get('PLUGIN', '')
-
-with open(plugin_json) as f:
-    plugin = json.load(f)
-
-required_fields = ["name", "version", "description"]
-missing = [f for f in required_fields if f not in plugin]
-
-if missing:
-    print(f"Error: Missing required fields in {plugin_name}: {missing}")
-    sys.exit(1)
-
-print(f"✓ {plugin['name']} v{plugin['version']}")
-PYEOF
-            export PLUGIN_JSON PLUGIN
-            python3 /tmp/validate_plugin.py
+            python3 .github/scripts/validate_plugin.py "$PLUGIN_JSON" "$PLUGIN"
 
             # Validate marketplace.json if it exists
             if [ -f "$MARKETPLACE_JSON" ]; then
@@ -111,25 +90,7 @@ PYEOF
           cat "$MARKETPLACE_JSON" | python -m json.tool > /dev/null
 
           # Check all plugins are listed
-          cat > /tmp/validate_marketplace.py << 'PYEOF'
-import json
-import sys
-
-with open(".claude-plugin/marketplace.json") as f:
-    marketplace = json.load(f)
-
-expected_plugins = ["popkit-core", "popkit-dev", "popkit-ops", "popkit-research", "popkit-suite"]
-actual_plugins = [p["name"] for p in marketplace.get("plugins", [])]
-
-missing = set(expected_plugins) - set(actual_plugins)
-if missing:
-    print(f"Error: Plugins missing from marketplace: {missing}")
-    sys.exit(1)
-
-print(f"✓ All {len(actual_plugins)} plugins listed in marketplace")
-print(f"✓ Marketplace version: {marketplace.get('metadata', {}).get('version', 'unknown')}")
-PYEOF
-          python3 /tmp/validate_marketplace.py
+          python3 .github/scripts/validate_marketplace.py
 
           echo "Root marketplace.json validation passed!"
 
