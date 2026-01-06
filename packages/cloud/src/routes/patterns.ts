@@ -11,12 +11,7 @@ import { getRedis } from '../services/redis';
 import { Hono } from 'hono';
 import type { Env, Variables } from '../types';
 
-// Extend Env for Voyage
-interface PatternsEnv extends Env {
-  VOYAGE_API_KEY: string;
-}
-
-const patterns = new Hono<{ Bindings: PatternsEnv; Variables: Variables }>();
+const patterns = new Hono<{ Bindings: Env; Variables: Variables }>();
 
 // Voyage API for embeddings
 const VOYAGE_API_URL = 'https://api.voyageai.com/v1/embeddings';
