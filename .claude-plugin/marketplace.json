@@ -1,12 +1,12 @@
 {
-  "name": "popkit-local",
+  "name": "popkit-marketplace",
   "owner": {
     "name": "Joseph Cannon",
     "email": "joseph@thehouseofdeals.com"
   },
   "metadata": {
-    "description": "PopKit modular plugin suite - local testing marketplace",
-    "version": "1.0.0-beta.1"
+    "description": "PopKit modular plugin suite - official marketplace",
+    "version": "1.0.0-beta.3"
   },
   "plugins": [
     {
