@@ -1,903 +1,288 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code when working with the PopKit plugin repository.
 
 ---
 
-## ⚠️ CRITICAL: How to Start Claude Code for PopKit Development
+## Overview
 
-**YOU ARE DEVELOPING POPKIT. YOU MUST USE `--plugin-dir`, NOT `/plugin install`!**
+**PopKit** is an AI-powered development workflow system for Claude Code. This repository contains the public release of PopKit's modular plugin suite.
 
-### The ONLY Correct Way to Start:
+### Repository Structure
 
-```bash
-cd C:\Users\Josep\onedrive\documents\elshaddai\apps\popkit
-.\start-popkit.cmd
+This repository is organized as a monorepo with multiple plugin packages:
+
 ```
-
-**OR:**
-
-```bash
-claude --plugin-dir ./packages/popkit-core --plugin-dir ./packages/popkit-dev --plugin-dir ./packages/popkit-ops --plugin-dir ./packages/popkit-research
+popkit-claude/
+├── packages/
+│   ├── popkit-core/        # Foundation plugin (Power Mode, config, project tools)
+│   ├── popkit-dev/         # Development workflows (git, GitHub, routines)
+│   ├── popkit-ops/         # Operations & quality (test, debug, deploy)
+│   ├── popkit-research/    # Knowledge management (research, notes)
+│   ├── popkit-suite/       # Meta-plugin (complete bundle)
+│   ├── shared-py/          # Shared Python utilities (70 modules)
+│   ├── cloud/              # PopKit Cloud API (Cloudflare Workers)
+│   ├── benchmarks/         # Testing framework
+│   ├── docs/               # Documentation site
+│   ├── landing/            # Marketing site
+│   └── universal-mcp/      # Multi-IDE MCP server (future)
+├── docs/                   # Design docs, plans, assessments
+├── CLAUDE.md               # This file
+├── README.md               # User-facing documentation
+└── CHANGELOG.md            # Version history
 ```
-
-### ❌ WRONG (DO NOT SUGGEST THIS):
-
-```bash
-/plugin install popkit@popkit-claude
-```
-
-**Why?** `/plugin install` is for USERS, not DEVELOPERS. We're developing the source code, so we need `--plugin-dir` to load from source.
-
-**If you forget this:** The user will waste 2-3 hours debugging because you keep suggesting the wrong approach.
 
 ---
 
-## Project Overview
+## Installation
 
-**PopKit** is an AI-powered development workflow system. This repository is the **private monorepo** containing all PopKit components.
+### For Users
 
-### Terminology (Avoid Confusion)
+Install PopKit from the Claude Code marketplace:
 
-| Term | Meaning |
-|------|---------|
-| **PopKit (this repo)** | Private monorepo where we develop everything |
-| **PopKit Plugin** | The Claude Code plugin users install (public: `jrc1883/popkit-claude`) |
-| **PopKit Cloud** | Shared backend API (Cloudflare Workers) |
-| **PopKit Platform** | Future vision: model-agnostic orchestrator for multiple IDEs |
-
-### Current Architecture (v1.0.0-beta.1)
-
-```
-jrc1883/popkit (PRIVATE - this repo)
-├── packages/popkit-core/       → Foundation plugin (v1.0.0-beta.1)
-├── packages/popkit-dev/        → Development workflows (v1.0.0-beta.1)
-├── packages/popkit-ops/        → Operations & quality (v1.0.0-beta.1)
-├── packages/popkit-research/   → Knowledge management (v1.0.0-beta.1)
-├── packages/popkit-suite/      → Meta-plugin bundle (v1.0.0-beta.1)
-├── packages/shared-py/         → Shared utilities (v1.0.0)
-├── packages/cloud/             → Cloudflare Workers API
-├── packages/docs/              → Documentation site (Astro + Starlight)
-├── packages/landing/           → Marketing site
-├── packages/benchmarks/        → Testing framework
-└── packages/universal-mcp/     → Multi-IDE MCP server (future)
-```
-
-**Total**: 12 packages (5 plugins + 1 shared + 6 infrastructure)
-
-Users install via: `/plugin install popkit-suite@popkit-marketplace` (complete) or individual plugins
-
-### Cloud Infrastructure
-
-**Live endpoints:**
-- `api.thehouseofdeals.com` → PopKit Cloud API (Cloudflare Worker)
-
-**Stack:**
-| Service | Purpose | Status |
-|---------|---------|--------|
-| Cloudflare Workers | API hosting, edge computing | Active |
-| Upstash Redis | Pattern storage, Power Mode coordination | Active |
-| Upstash Vector | Semantic search, embeddings | Active |
-| Upstash QStash | Scheduled jobs (future) | Available |
-
-**Cloudflare Skills:**
-- `pop-cloudflare-worker-deploy` - Deploy Workers with custom domains
-- `pop-cloudflare-pages-deploy` - Deploy static sites to Pages
-- `pop-cloudflare-dns-manage` - DNS record management
-
-**Environment Variables (Wrangler Secrets):**
 ```bash
-wrangler secret put UPSTASH_REDIS_REST_URL
-wrangler secret put UPSTASH_REDIS_REST_TOKEN
-wrangler secret put UPSTASH_VECTOR_REST_URL
-wrangler secret put UPSTASH_VECTOR_REST_TOKEN
+# Complete suite (all features)
+/plugin install popkit-suite@popkit-marketplace
+
+# Or install individual plugins
+/plugin install popkit-core@popkit-marketplace
+/plugin install popkit-dev@popkit-marketplace
+/plugin install popkit-ops@popkit-marketplace
+/plugin install popkit-research@popkit-marketplace
 ```
 
-### Public vs Private Split
+After installation, restart Claude Code and run `/popkit:next` to get started.
 
-The public repo (`jrc1883/popkit-claude`) contains **only declarative content**:
-- Commands (markdown specs)
-- Skills (marketing stubs for premium, full prompts for free)
-- Agents (definitions and routing)
-- Output styles (templates)
+### For Local Testing (Git Clone)
 
-Implementation code stays **private** in this repo:
-- `packages/plugin/power-mode/` - Orchestration logic
-- `packages/plugin/templates/` - MCP server implementation
-- `packages/plugin/hooks/utils/` - Premium logic, pattern detection
-- `packages/cloud/` - All cloud API code
+If you've cloned this repository and want to test local changes:
 
-### Future Vision
+```bash
+# Navigate to the repository root
+cd /path/to/popkit-claude
 
-PopKit will evolve from a Claude Code plugin to a platform supporting:
-- Multiple AI models (Claude, GPT, Gemini, local LLMs)
-- Multiple IDEs (VS Code, Cursor, Windsurf, JetBrains)
-- Standalone CLI (installable via pip/npm/bun)
-- Shared cloud backend for cross-project learning
+# Install individual plugin from local directory
+/plugin install ./packages/popkit-core
+/plugin install ./packages/popkit-dev
+# etc.
 
-The Claude Code plugin is the **first integration** of this platform.
-
-### Plugin Architecture
-
-The plugin implements a two-tier agent system:
-
-- **Tier 1 (always-active)**: Universal, project-agnostic tools that work anywhere
-- **Tier 2 (on-demand)**: Specialized agents activated by triggers
-- **Tier 3 (generated)**: Project-specific MCP servers, skills, and agents created via `/popkit:project generate`
-
-## Core Philosophy
-
-PopKit exists to **orchestrate Claude Code's full power** for real-world development workflows. Claude Code provides raw tools; PopKit chains them together programmatically.
-
-### Key Principles
-
-1. **Full Claude Code Orchestration**
-   - Leverages ALL capabilities: hooks, agents, skills, commands, status line, output styles, MCP servers
-   - Not just using tools, but composing them into coherent workflows
-
-2. **Non-Linear Development Support**
-   - Development isn't linear; there are branches and different paths
-   - Can help new projects (generate PRDs, setup GitHub)
-   - Can analyze existing projects (identify gaps, recommend fixes)
-   - Adapts to any project type (full stack, web, mobile)
-
-3. **Programmatic Chaining**
-   - Simple tasks chained together → orchestrated workflows
-   - Example: GitHub push + feature update as unified `/popkit:git pr`
-   - Follows Claude Code engineering blog best practices
-   - Context preservation for long-running processes
-
-4. **Tiered Loading**
-   - Don't load all tools at once
-   <!-- AUTO-GEN:TIER-COUNTS START -->
-   - Tier 1: Always-active core agents (11)
-   - Tier 2: On-demand specialists activated by triggers (17)
-   - Feature Workflow: 7-phase development agents (3)
-   - Skills: 68 reusable skills
-   - Commands: 23 slash commands
-   <!-- AUTO-GEN:TIER-COUNTS END -->
-
-5. **Project-Specific Customization ("Chain Combos")**
-   - Base commands work everywhere (Tier 1)
-   - Generate custom versions for specific projects (Tier 2)
-   - Skills/commands that learn and grow with the project
-   - Example: `/popkit:generate-mcp` creates project-specific MCP server
-
-6. **Inter-Agent Communication** (Power Mode)
-   - Pub-sub pattern for parallel agent orchestration
-   - Redis-based message passing for multi-agent coordination
-   - Structured output styles for inter-agent communication
-   - Periodic check-ins and sync barriers between phases
-
-### Design Goals
-
-| Goal | Implementation |
-|------|----------------|
-| Check GitHub first | Always improve existing code before implementing from scratch |
-| Context preservation | STATUS.json pattern, session capture/restore skills |
-| Confidence-based filtering | 80+ threshold prevents false positives |
-| Progressive disclosure | Load documentation only when needed |
-| Engineering blog alignment | Follow Anthropic's recommended patterns |
-| Interactive prompts | Always use AskUserQuestion for user decisions |
-
-### User Interaction Standard
-
-**All PopKit skills and commands MUST use `AskUserQuestion`** for user decisions:
-
-```
-Use AskUserQuestion tool with:
-- question: Clear question ending with "?"
-- header: Short label (max 12 chars)
-- options: 2-4 choices with labels and descriptions
-- multiSelect: false (unless multiple selections make sense)
+# Or use relative paths
+/plugin install packages/popkit-core
 ```
 
-**NEVER present options as plain text** like "1. Option A, 2. Option B - type 1 or 2".
+Restart Claude Code after installing local plugins.
 
-Benefits:
-- Arrow key navigation for selection
-- Prevents typos in user responses
-- Consistent UX across all PopKit features
-- "Other" option always available for custom input
+---
 
-### AskUserQuestion Enforcement (Issue #159)
+## Plugin Architecture
 
-Following Anthropic's recommendation from the Hooks Guide:
-> "By encoding these rules as hooks rather than prompting instructions, you turn suggestions into app-level code that executes every time."
+PopKit uses a modular plugin architecture with 5 focused plugins:
 
-Skills can define **required decision points** in `agents/config.json` under `skill_decisions`:
+| Plugin | Purpose | Key Features |
+|--------|---------|--------------|
+| **popkit-core** | Foundation & orchestration | Power Mode, project analysis, plugin management |
+| **popkit-dev** | Development workflows | Git operations, GitHub integration, daily routines |
+| **popkit-ops** | Operations & quality | Testing, debugging, security, deployment |
+| **popkit-research** | Knowledge management | Research capture, knowledge base |
+| **popkit-suite** | Complete bundle | All features in one install |
 
+### Plugin Components
+
+Each plugin package contains:
+
+- `.claude-plugin/plugin.json` - Plugin manifest and configuration
+- `commands/*.md` - Slash commands (e.g., `/popkit:git`)
+- `skills/*/SKILL.md` - Reusable automation skills
+- `agents/*/AGENT.md` - Specialized AI agents
+- `hooks/hooks.json` - Hook configuration
+- `hooks/*.py` - Python hook scripts (JSON stdin/stdout protocol)
+- `power-mode/` - Multi-agent orchestration (core only)
+- `tests/` - Plugin integrity tests
+
+### Hook Standards
+
+All hooks follow Claude Code portability standards:
+
+- Use `${CLAUDE_PLUGIN_ROOT}` for plugin-relative paths
+- Double-quoted paths for Windows compatibility
+- Forward slashes for cross-platform support
+- Python shebang: `#!/usr/bin/env python3`
+- JSON stdin/stdout protocol for communication
+
+Example hook command:
 ```json
-"skill_decisions": {
-  "skills": {
-    "pop-project-init": {
-      "completion_decisions": [
-        {
-          "id": "next_action",
-          "question": "Project initialized. What would you like to do next?",
-          "header": "Next Step",
-          "options": [
-            {"label": "Analyze codebase", "description": "Run /popkit:project analyze"},
-            {"label": "Done for now", "description": "I'll explore on my own"}
-          ]
-        }
-      ]
-    }
-  }
+{
+  "type": "command",
+  "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.py\"",
+  "timeout": 10000
 }
 ```
 
-**How it works:**
-1. `pre-tool-use.py` tracks when a skill is invoked
-2. `post-tool-use.py` checks for pending completion decisions
-3. Reminders are output to stderr when decisions are pending
-4. Decisions are recorded when AskUserQuestion is used
+---
 
-**Implementation files:**
-- `agents/config.json` → `skill_decisions` section (decision definitions)
-- `hooks/utils/skill_state.py` → State tracking and enforcement logic
-- `hooks/pre-tool-use.py` → Skill invocation tracking
-- `hooks/post-tool-use.py` → Pending decision reminders
+## Testing
 
-## Repository Structure
+### Plugin Validation
 
-This is a **monorepo** with npm workspaces:
-
-<!-- AUTO-GEN:REPO-STRUCTURE START -->
-```
-packages/
-  plugin/                  Claude Code plugin (main package)
-    .claude-plugin/        Plugin manifest (plugin.json, marketplace.json)
-    .mcp.json              MCP server configuration
-    agents/                31 agent definitions with tiered activation
-      config.json          Agent routing, workflows, confidence thresholds
-      tier-1-always-active/  11 core agents
-      tier-2-on-demand/    17 specialized agents
-      feature-workflow/    3 agents for 7-phase feature development
-    skills/                68 reusable skills (SKILL.md format)
-    commands/              24 slash commands
-    hooks/                 23 Python hooks (JSON stdin/stdout)
-      hooks.json           Hook configuration
-      utils/               60+ utility modules
-    output-styles/         15+ output format templates
-    power-mode/            Multi-agent orchestration
-    templates/mcp-server/  MCP server generator template
-    tests/                 Plugin self-test definitions
-    assets/                Visual assets and VHS tapes
-    scripts/               Utility scripts (sync-readme.py)
-  cloud/                   PopKit Cloud API (Cloudflare Workers)
-    src/                   API routes and middleware
-    wrangler.toml          Cloudflare configuration
-  cloud-billing/           Billing and entitlements
-  cloud-docs/              Cloud documentation
-  cloud-scripts/           Deployment scripts
-  cloud-team/              Team coordination features
-package.json               Root package.json with workspaces
-CHANGELOG.md               Version history
-```
-<!-- AUTO-GEN:REPO-STRUCTURE END -->
-
-## Development Notes
-
-This is a **configuration-only plugin** - no build or lint commands exist. All content is:
-- Markdown files with YAML frontmatter (skills, commands, agents)
-- JSON configuration (plugin.json, config.json, hooks.json, .mcp.json)
-- Python scripts (hooks with JSON stdin/stdout protocol)
-- TypeScript templates (mcp-server)
-- JSON test definitions (tests/)
-
-**Self-testing available:** Run `/popkit:plugin-test` to validate plugin integrity.
-
-## Claude Platform Integration
-
-PopKit leverages Claude API platform features for optimal performance. Configuration is in `packages/plugin/agents/config.json`.
-
-### Effort Parameter
-
-Agent compute allocation: `high` (deep analysis), `medium` (default), `low` (quick tasks).
-Configured per-agent in `packages/plugin/agents/config.json`.
-
-### Extended Thinking
-
-**Flags:** `-T`, `--thinking`, `--no-thinking`, `--think-budget N`
-
-- Sonnet: Enabled by default (10k tokens)
-- Opus: Enabled by default (10k tokens) - as of Claude Code 2.0.67
-- Haiku: Enabled by default (5k tokens)
-
-### PDF Support
-
-Skills accept PDF file paths for design docs, PRDs, and specifications.
-Use `document-skills:pdf` to generate PDF output.
-
-### Semantic Embeddings
-
-Voyage AI embeddings for tool discovery. Set `VOYAGE_API_KEY` env var.
-Use `/popkit:project embed` to embed project items.
-
-### Claude Code Version Requirements
-
-PopKit features require specific Claude Code versions for full functionality:
-
-| Feature | Minimum Version | Description |
-|---------|-----------------|-------------|
-| **Extended Thinking** | 2.0.67 | Default enabled on Sonnet/Opus/Haiku (10k tokens) |
-| **Native Async Mode** | 2.0.64 | Zero-setup background Task tool (5+ agents) |
-| **Plan Mode** | 2.0.70 | Agent approval workflow before execution |
-| **Configuration Management** | 2.0.71 | `/config` toggle for prompt suggestions |
-| **Settings Alias** | 2.0.71 | `/settings` command alias for `/config` |
-| **MCP Permissions** | 2.0.71 | Fixed `dangerously-skip-permissions` for MCP servers |
-| **Bash Glob Safety** | 2.0.71 | Fixed permission rules for shell glob patterns |
-| **Bedrock Support** | 2.0.71 | `ANTHROPIC_BEDROCK_BASE_URL` environment variable |
-
-**Current Recommendation:** Claude Code 2.0.71+ for full PopKit feature support.
-
-## Key Architectural Patterns
-
-### Agent Routing
-
-PopKit uses a sophisticated **two-tier agent routing system** with four complementary mechanisms:
-
-1. **Keywords**: "bug" → bug-whisperer, "security" → security-auditor
-2. **File patterns**: `*.test.ts` → test-writer-fixer, `*.sql` → query-optimizer
-3. **Error patterns**: TypeError → bug-whisperer, SecurityError → security-auditor
-4. **Semantic embeddings**: Intent understanding beyond keywords (requires VOYAGE_API_KEY)
-
-**Tier System:**
-- **Tier 1** (10 agents): Always active, core capabilities (15.3k tokens)
-- **Tier 2** (9 agents): On-demand specialists (0.3k tokens when loaded)
-- **Feature Workflow** (2 agents): Multi-phase feature development
-
-**Documentation**: See [Agent Routing Guide](docs/AGENT_ROUTING_GUIDE.md) for complete routing documentation, decision trees, and examples.
-
-### Confidence-Based Filtering
-
-Code review uses 80+ confidence threshold to filter issues:
-- 0-25: Likely false positive, skip
-- 50-75: Worth mentioning
-- 80-100: Must address
-
-### 7-Phase Feature Development
-
-The `/popkit:feature-dev` command and feature-workflow agents follow: Discovery → Exploration (code-explorer) → Questions → Architecture (code-architect) → Implementation → Review (code-reviewer) → Summary
-
-### Session Continuity
-
-Three skills manage state between sessions (invoke via Skill tool):
-- `pop-session-capture`: Saves state to STATUS.json
-- `pop-session-resume`: Restores context on startup
-- `pop-context-restore`: Loads previous session
-
-### Unified Routine Management (Morning + Nightly)
-
-Day-bracketing workflow via `/popkit:routine`:
-- `morning`: Health check → "Ready to Code" score (0-100)
-- `nightly`: Cleanup → "Sleep Score" (0-100)
-- `--measure`: Track context usage, duration, and tool breakdown
-
-Subcommands: `run`, `quick`, `generate`, `list`, `set`, `edit`, `delete`
-
-**Routine Measurement** (`--measure` flag):
-Tracks execution metrics for routine optimization:
-- Duration, tool calls, token usage (input/output)
-- Cost estimates (Claude Sonnet 4.5 pricing)
-- Per-tool breakdown (Bash, Read, Grep, etc.)
-- JSON persistence to `.claude/popkit/measurements/`
-
-Implementation:
-- `hooks/utils/routine_measurement.py` - Tracker
-- `hooks/post-tool-use.py` - Auto-capture tool calls
-- `skills/pop-routine-measure/` - Skill + tests
-
-See `packages/plugin/commands/routine.md` for full documentation.
-
-### Power Mode (Multi-Agent Orchestration)
-
-Parallel agent collaboration via `/popkit:power` with intelligent mode selection:
-
-#### Native Async Mode (Primary - Claude Code 2.0.64+)
-
-**Zero setup** parallel execution using Claude Code's native background Task tool:
-
-```
-Coordinator → Spawn background agents
-             ↓
-    ┌────────┼────────┐
-    ↓        ↓        ↓
- Agent1   Agent2   Agent3  (parallel tasks)
-    ↓        ↓        ↓
-    Share via .claude/popkit/insights.json
-    ↓        ↓        ↓
- TaskOutput polling → Results
-```
-
-**Key Benefits:**
-- **No external dependencies** (no Docker, no Redis)
-- **True parallelism**: 5 agents (Premium) or 10 agents (Pro)
-- **Cross-platform**: Windows/macOS/Linux
-- **File-based communication**: `.claude/popkit/insights.json`
-- **Sync barriers**: Phase-aware coordination
-
-**How it works:**
-1. Coordinator spawns agents via `Task(run_in_background: true)`
-2. Agents execute in parallel, sharing insights via JSON file
-3. Coordinator polls progress via `TaskOutput(block: false)` every 500ms
-4. Sync barriers between phases ensure coordination
-5. Results aggregated when all agents complete
-
-**Requirements:** Claude Code 2.0.64+, Premium or Pro tier
-
-#### Other Modes
-
-- **Upstash Redis Mode** (Pro tier, optional): 10+ agents, advanced coordination via Upstash cloud
-- **File-Based Mode** (Free tier): 2-3 agents sequential, automatic fallback
-
-**No Docker or local Redis installation required.** Native Async mode works out of the box.
-
-#### Plan Mode Integration (Claude Code 2.0.70+)
-
-Agents present implementation plans for user approval before executing:
-- Use `--require-plans` to force all agents to present plans
-- Use `--trust-agents` to allow all agents to execute directly
-- Default: Configuration-based per agent (Tier 1=execute, Tier 2=plan)
-
-Configuration: `packages/popkit-core/agents/config.json` → `plan_mode` section
-
-**Documentation:**
-- Quick Start: `/popkit:power init` to check setup
-- Command Reference: `packages/popkit-core/commands/power.md`
-- Deep Dive: `docs/POWER_MODE_ASYNC.md` (architecture, examples, troubleshooting)
-
-### Stateless Message Composition
-
-Hooks use pure functions for reliability and testability:
-- `packages/plugin/hooks/utils/message_builder.py` - Message composition
-- `packages/plugin/hooks/utils/context_carrier.py` - Immutable context passing
-- `packages/plugin/hooks/utils/stateless_hook.py` - Base class for hooks
-
-See `packages/plugin/tests/hooks/` for 58 tests covering this pattern.
-
-### Context Optimization (Issues #275, #276)
-
-Two-phase optimization reducing PopKit's context baseline by **40.5%** (25.7k → 15.3k tokens):
-
-**Phase 1: Tool Choice Enforcement** (Issue #275 - Completed 2025-12-17)
-- `tool_filter.py` - Workflow-based tool filtering with wildcard support
-- `pre-tool-use.py` integration - Passthrough mode with debug logging
-- `agents/config.json` - Enforcement active, override via `POPKIT_DISABLE_TOOL_FILTER`
-- **Result:** System Tools reduced 32.3% (23.3k → 15k tokens)
-
-**Phase 2: Embedding-Based Agent Loading** (Issue #276 - Completed 2025-12-17)
-- `generate-agent-embeddings.py` - Voyage AI embeddings for 28 agents
-- `agent_loader.py` - Semantic search with keyword fallback, always includes Tier 1 agents
-- `session-start.py` integration - Loads top 10 relevant agents per query
-- **Result:** Custom Agents reduced 87.5% (2.4k → 0.3k tokens)
-
-**Combined Impact:**
-- Baseline: 25.7k tokens
-- After optimization: 15.3k tokens
-- **Target exceeded:** Goal 25k, achieved 15.3k ✅
-
-**Measurement:** Run `python packages/plugin/scripts/measure-context-usage.py`
-
-**Future Enhancement:** Issue #281 - Enhanced embeddings with full agent definitions for 3-5k additional savings
-
-## Developing PopKit Locally (CRITICAL - READ THIS!)
-
-**For LOCAL DEVELOPMENT of PopKit (what you're doing now):**
-
-You MUST start Claude Code with `--plugin-dir` flags pointing to the local packages. **DO NOT use `/plugin install`** - that's for users, not developers.
-
-### Correct Startup Command
+Run comprehensive plugin tests:
 
 ```bash
-cd C:\Users\Josep\onedrive\documents\elshaddai\apps\popkit
-
-claude --plugin-dir ./packages/popkit-core --plugin-dir ./packages/popkit-dev --plugin-dir ./packages/popkit-ops --plugin-dir ./packages/popkit-research
-```
-
-**OR use the startup script:**
-
-```bash
-.\start-popkit.cmd
-```
-
-### Why This Matters
-
-- `--plugin-dir` loads plugins FROM SOURCE (what you're editing)
-- `/plugin install` loads PUBLISHED plugins (not what you're developing)
-- Using `/plugin install` during development creates a loop where you're not testing your changes
-
-### For Users (After Publication)
-
-Once PopKit is published to the marketplace, USERS will install it with:
-
-```
-/plugin install popkit-core@popkit-marketplace
-/plugin install popkit-dev@popkit-marketplace
-```
-
-But that's not what YOU do while developing!
-
-## Repository Architecture (Public/Private Split)
-
-PopKit uses a **split-repo model** to keep the core plugin open-source while keeping cloud services private:
-
-| Repository | Visibility | Contents | Status |
-|------------|------------|----------|--------|
-| `jrc1883/popkit` | **Private** | Full monorepo (plugin + cloud + billing) | Active |
-| `jrc1883/popkit-claude` | **Public** | Claude Code plugin (declarative only) | Active |
-| `jrc1883/popkit-mcp` | **Public** | Universal MCP server | Future |
-| `jrc1883/popkit-codex` | **Public** | Codex integration | Future |
-| `jrc1883/popkit-gemini` | **Public** | Gemini integration | Future |
-
-Each public repo is populated via `git subtree split` from the corresponding `packages/` directory.
-
-### Milestone Strategy
-
-| Milestone | Purpose | Key Issues |
-|-----------|---------|------------|
-| `v1.0.0` | Claude Code plugin ready for marketplace | #2 (Marketplace), #224 (Validation) |
-| `v2.0.0` | Multi-model platform expansion | #112 (Universal MCP), #113 (Codex), #114 (Gemini), #115 (Orchestration) |
-
-**v2.0.0 Roadmap:**
-1. Google Gemini Integration (#114)
-2. OpenAI Codex Integration (#113)
-3. Universal MCP Server (#112)
-4. Intelligent Orchestration Layer (#115)
-
-Labels:
-- **Priority**: `P0-critical`, `P1-high`, `P2-medium`, `P3-low`
-- **Phase**: `phase:now` (current), `phase:next` (queued), `phase:future` (v2.0+)
-
-### Publishing Plugin to Public Repo
-
-When ready to release plugin changes publicly:
-
-```bash
-# Manual publish from CLI
-/popkit:git publish                    # Push current state
-/popkit:git publish --tag v1.0.0       # With version tag
-/popkit:git publish --dry-run          # Preview first
-
-# Or via GitHub Actions
-# Go to Actions → "Publish Plugin" → Run workflow
-```
-
-### How It Works
-
-1. **Development**: Work in `packages/plugin/` within the private monorepo
-2. **Commit**: Changes stay in private repo until you explicitly publish
-3. **Publish**: `git subtree split` extracts plugin and pushes to public repo
-4. **Users Install**: From public `jrc1883/popkit-claude` via marketplace
-
-### Branch Naming Convention
-
-**IMPORTANT**: The private monorepo uses `master`, but the public repo uses `main`.
-
-When publishing manually:
-```bash
-# Correct - push to main branch
-git push plugin-public $(git subtree split --prefix=packages/plugin):main --force
-
-# Wrong - pushing to master creates a separate branch
-git subtree push --prefix=packages/plugin plugin-public master
-```
-
-### Remote Setup
-
-The `plugin-public` remote is needed for publishing:
-
-```bash
-git remote add plugin-public https://github.com/jrc1883/popkit-claude.git
-```
-
-This is automatically configured when running `/popkit:git publish` for the first time.
-
-## The Chicken-and-Egg Problem
-
-When developing this plugin:
-1. The skills/agents you're editing are the same ones you're using to edit
-2. Changes to hooks affect the current session behavior
-3. Use `/popkit:worktree create` to test changes in isolation before merging
-
-## Testing Changes
-
-### Modular Plugin Testing
-
-PopKit uses a modular plugin architecture with distributed testing. Each plugin package is tested independently, then cross-plugin validation ensures compatibility.
-
-**Test All Plugins:**
-```bash
+# Test all plugins
 cd packages/popkit-core
-python run_all_tests.py              # Test all plugin packages
-python run_all_tests.py --verbose    # Show detailed output
-```
+python run_all_tests.py              # All plugins
+python run_all_tests.py --verbose    # Detailed output
 
-**Test Individual Plugin:**
-```bash
+# Test individual plugin
 cd packages/popkit-core
-python run_tests.py                  # Test popkit-core only
-python run_tests.py hooks            # Test hooks category only
+python run_tests.py                  # popkit-core only
+python run_tests.py hooks            # Specific category
 ```
 
-**Test Categories:**
-- `agents`: Agent markdown file validation and frontmatter
-- `hooks`: Hook JSON protocol and execution
-- `skills`: Skill format and structure
-- `structure`: Plugin integrity and required files
-- `cross-plugin`: Cross-plugin compatibility validation
+### Test Categories
 
-**Key Changes for Modular Architecture:**
-- ✅ Each plugin is self-contained and independently testable
-- ✅ No centralized `agents/config.json` - agents discovered from markdown files
-- ✅ Semantic routing based on agent descriptions, not keyword configs
-- ✅ Cross-plugin tests validate naming uniqueness and compatibility
+- **agents**: Agent markdown validation and frontmatter
+- **hooks**: Hook JSON protocol and execution
+- **skills**: Skill format and structure
+- **structure**: Plugin integrity and required files
+- **cross-plugin**: Cross-plugin compatibility
 
-**Using PopKit Commands:**
+### Via PopKit Commands
+
 ```bash
-/popkit:plugin test              # Run tests via skill (uses run_all_tests.py)
+/popkit:plugin test              # Run all tests
 /popkit:plugin test agents       # Test specific category
 /popkit:plugin test --verbose    # Detailed output
 ```
 
-**For Isolation:**
-Create a worktree with `/popkit:worktree create test-feature` to test changes without affecting main branch
+---
 
-## MCP Server Template
+## Contributing
 
-Located in `packages/plugin/templates/mcp-server/`, this TypeScript template generates project-specific MCP servers with:
-- Health checks (dev server, database)
-- Git tools (status, diff, recent commits)
-- Quality tools (typecheck, lint, tests)
-- Semantic tool discovery via embeddings
+### Development Workflow
 
-To build the template locally:
-```bash
-cd packages/plugin/templates/mcp-server
-npm install
-npm run build
-```
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/jrc1883/popkit-claude.git
+   cd popkit-claude
+   ```
 
-## Key Files for Plugin Behavior
+2. **Make changes**
+   - Edit plugin files in `packages/*/`
+   - Follow existing patterns for commands, skills, agents
+   - Update tests if adding new features
 
-All plugin files are in `packages/plugin/`:
+3. **Test your changes**
+   ```bash
+   cd packages/popkit-core
+   python run_all_tests.py
+   ```
 
-<!-- AUTO-GEN:KEY-FILES START -->
-| File | Purpose |
-|------|---------|
-| `packages/plugin/.claude-plugin/plugin.json` | Plugin manifest and activation triggers |
-| `packages/plugin/.mcp.json` | MCP server and tool configuration |
-| `packages/plugin/agents/config.json` | All routing rules, workflows, confidence levels |
-| `packages/plugin/hooks/hooks.json` | Hook event configuration |
-| `packages/plugin/hooks/pre-tool-use.py` | Safety checks before tool execution |
-| `packages/plugin/hooks/post-tool-use.py` | Cleanup and validation after tools |
-| `packages/plugin/hooks/utils/skill_state.py` | Skill tracking and AskUserQuestion enforcement |
-| `packages/plugin/hooks/utils/skill_context.py` | Skill-to-skill context handoff |
-| `packages/plugin/hooks/utils/context_storage.py` | File/Upstash storage with Redis Streams |
-| `packages/plugin/power-mode/coordinator.py` | Multi-agent mesh network coordinator |
-| `packages/plugin/power-mode/statusline.py` | Visual Power Mode status line display |
-| `packages/plugin/hooks/utils/` | 51 utility modules (embeddings, routing, etc.) |
-| `packages/plugin/scripts/sync-readme.py` | Auto-generate README sections |
-| `packages/cloud/src/index.ts` | Cloud API entry point |
-| `packages/cloud/wrangler.toml` | Cloudflare Workers configuration |
-| `.github/workflows/publish-plugin.yml` | GitHub Actions for public repo sync |
-| `.github/workflows/sync-readme.yml` | Auto-sync README on changes |
-<!-- AUTO-GEN:KEY-FILES END -->
+4. **Install locally to test**
+   ```bash
+   /plugin install ./packages/popkit-core
+   # Restart Claude Code
+   ```
 
-## Analytics and Observability
+5. **Submit a pull request**
+   - Create a feature branch
+   - Commit with conventional commit format
+   - Submit PR with clear description
 
-### Local Session Tracking
+### Conventional Commits
 
-PopKit can track session data locally for analysis:
+All commits use conventional commit format:
 
 ```
-~/.popkit/
-├── sessions/           # Session logs
-│   └── {date}-{id}.json
-├── patterns/           # Learned patterns
-│   └── learned-patterns.json
-├── metrics/            # Usage statistics
-│   └── usage-stats.json
-└── config/             # User preferences
-    └── settings.json
+feat: Add new feature
+fix: Bug fix
+docs: Documentation updates
+test: Test additions/updates
+chore: Maintenance tasks
 ```
 
-### Cloud Analytics (Premium)
+### Code Standards
 
-When connected to PopKit Cloud:
-- Session duration and commands used
-- Agent routing frequency
-- Error rates and recovery patterns
-- Cross-project pattern learning
+- **Commands**: Markdown files with YAML frontmatter
+- **Skills**: SKILL.md format with description, usage, examples
+- **Agents**: AGENT.md with purpose, triggers, capabilities
+- **Hooks**: Python scripts with JSON stdin/stdout, proper error handling
+- **No build required**: Configuration-only plugin (no TypeScript/compilation)
 
-### Sandbox Testing
+---
 
-Test PopKit workflows in isolated environments:
-1. Use `/popkit:worktree create` for git isolation
-2. Test in separate projects to validate behavior
-3. Capture logs with `/popkit:bug report` for analysis
-4. Compare sessions using local metrics
+## Version Requirements
 
-### Quality Validation
+PopKit requires specific Claude Code versions for full functionality:
 
-Run comprehensive validation before releases:
-```bash
-/popkit:assess all          # Run all assessors
-/popkit:plugin test         # Test plugin integrity
-/popkit:debug routing       # Verify agent routing
-```
+| Feature | Minimum Version | Description |
+|---------|-----------------|-------------|
+| **Extended Thinking** | 2.0.67 | Default enabled (10k tokens) |
+| **Native Async Mode** | 2.0.64 | Background Task tool (5+ agents) |
+| **Plan Mode** | 2.0.70 | Agent approval workflow |
+| **Configuration Management** | 2.0.71 | `/config` toggle |
+| **MCP Permissions** | 2.0.71 | Fixed permissions for MCP servers |
 
-See `docs/plans/2025-12-13-v1-validation-audit-plan.md` for full audit strategy.
+**Recommended**: Claude Code 2.0.71+ for full feature support.
 
-## Version History
+---
 
-**Current Version:** 0.2.5 (Pre-release)
-**Target:** 1.0.0 (Marketplace Release)
+## Current Status
+
+**Version**: 1.0.0-beta.3
+**Status**: Beta release
+**Plugins**: 5 modular plugins
+**Commands**: 23 workflow commands
+**Skills**: 38 reusable skills
+**Agents**: 22 specialized agents
+
+### Recent Updates
+
+- **2025-12-29**: Core cleanup and account consolidation (v1.0.0-beta.3)
+- **2025-12-28**: Version alignment at v1.0.0-beta.1
+- **2025-12-21**: Testing & validation complete (96.3% pass rate)
+- **2025-12-20**: Plugin modularization complete
 
 See [CHANGELOG.md](CHANGELOG.md) for full version history.
 
-## Current Status & Roadmap
+---
 
-### Epic #580: Plugin Modularization (COMPLETE ✅)
+## Documentation
 
-**Goal**: Transform monolithic plugin into 5 focused workflow-based plugins
+### User Documentation
+- [README.md](README.md) - Quick start and overview
+- [CHANGELOG.md](CHANGELOG.md) - Version history
+- Package-specific READMEs in `packages/*/`
 
-**Progress**: Phase 6/6 (Documentation & Release) - 95% Complete
+### Architecture Documentation
+- [Plugin Modularization Design](docs/plans/2025-12-20-plugin-modularization-design.md)
+- [Testing & Validation Plan](docs/plans/2025-12-21-phase5-testing-validation-plan.md)
+- [Hook Portability Audit](docs/HOOK_PORTABILITY_AUDIT.md)
 
-**Final Architecture**:
-- **5 Modular Plugins**: popkit-core, popkit-dev, popkit-ops, popkit-research, popkit-suite
-- **Shared Foundation**: popkit-shared v1.0.0 (70 utility modules)
-- **Package Consolidation**: github→dev, quality+deploy→ops
-- **Version Alignment**: All plugins at v1.0.0-beta.1
+### For Claude Code
 
-**Phases Completed** ✅:
-- Phase 1: Shared Foundation Package (`@popkit/shared-py` v1.0.0)
-- Phase 2: popkit-dev Plugin (development workflows + GitHub)
-- Phase 3: Remaining Plugins (ops, research, core)
-- Phase 4: Meta-Plugin (popkit-suite for backwards compatibility)
-- Phase 5: Testing & Validation (96.3% test pass rate)
-- Phase 6: Documentation & Release (IN PROGRESS)
-  - ✅ Package cleanup (removed 3 packages)
-  - ✅ Version alignment (all v1.0.0-beta.1)
-  - ✅ CHANGELOG.md updated
-  - ✅ README.md updated
-  - ✅ CLAUDE.md updated
-  - ⏳ Package-level READMEs
-  - ⏳ Marketplace listings verification
-  - ⏳ Final validation & publication
+When working with this repository:
 
-**Key Documents**:
-- Design: [`docs/plans/2025-12-20-plugin-modularization-design.md`](docs/plans/2025-12-20-plugin-modularization-design.md)
-- Testing Plan: [`docs/plans/2025-12-21-phase5-testing-validation-plan.md`](docs/plans/2025-12-21-phase5-testing-validation-plan.md)
-- Validation Report: [`docs/assessments/2025-12-21-phase5-validation-report-initial.md`](docs/assessments/2025-12-21-phase5-validation-report-initial.md)
+- This is a **configuration-only plugin** - no build/compile steps needed
+- All plugin content is declarative (Markdown + JSON + Python hooks)
+- Test changes with `run_all_tests.py` before committing
+- Use `/plugin install ./packages/<plugin-name>` to test local changes
+- Follow existing patterns for new commands/skills/agents
+- Hooks must use `${CLAUDE_PLUGIN_ROOT}` for portability
 
-**Architecture Change**: All features now FREE with local execution. API key adds semantic intelligence enhancements (no subscription tiers).
+---
 
-### Recent Milestones
+## License
 
-- **2025-12-29**: PopKit Core cleanup and account consolidation
-  - **Account Command Consolidation**: Unified 3 fragmented commands (account, upgrade, cloud) into single `/popkit:account` with 6 subcommands (status, signup, login, keys, usage, logout)
-  - **Power Mode Simplification**: Phase 1-2 complete - archived 6 test/benchmark files (2,514 LOC), deleted consensus protocol (8 files, 5,055 LOC)
-  - **Redis Interface Extraction**: Moved BaseRedisClient and BasePubSub (400 LOC) to shared-py for reusability
-  - **Deprecation Warnings**: Added frontmatter and migration guides to upgrade.md and cloud.md (removal in v1.2.0)
-  - **Total Impact**: 7,569 LOC removed from power-mode/, 137 LOC removed from upstash_adapter.py
-- **2025-12-28**: Phase 6 IN PROGRESS - v1.0.0-beta.1 preparation
-  - Package cleanup: Removed 3 packages (semantic-search, ui, cloud-docs)
-  - Version alignment: All plugins standardized to v1.0.0-beta.1
-  - Documentation updates: CHANGELOG, README, CLAUDE.md refreshed
-  - Final structure: 12 packages (5 plugins + 1 shared + 6 infrastructure)
-- **2025-12-21**: Phase 5 COMPLETE - Issue #578 closed
-  - Structure validation: 100% (all 5 plugins verified)
-  - Test suite: 96.3% passing (155/161 tests)
-  - Performance: 298,568 tokens (acceptable)
-- **2025-12-20**: All modular plugins extracted and consolidated
-  - popkit-github merged into popkit-dev
-  - popkit-quality + popkit-deploy → popkit-ops
-- **2025-12-19**: Comprehensive assessment (82/100 score)
-- **2025-12-18**: Documentation deprecation notices (#582 closed)
+MIT
 
-## Conventions
+---
 
-- All commits use conventional commit format with Claude attribution
-- Output styles define templates for PRs, issues, releases, reviews
-- Skills can invoke other skills; commands can invoke skills
-- Python hooks use `#!/usr/bin/env python3` and are chmod +x
+## Author
 
-### Hook Path Standards
+**Joseph Cannon**
+<joseph@thehouseofdeals.com>
 
-All hook commands in `hooks.json` must follow portability standards to ensure seamless operation across installation methods (development, marketplace, git clone).
+---
 
-**Required Standards**:
-- **Always use `${CLAUDE_PLUGIN_ROOT}`** for plugin-relative paths
-- **Never use absolute paths** (`/home/`, `/usr/`, `C:\`, etc.)
-- **Never use user-specific paths** (`~`, `${HOME}`, usernames)
-- **Quote paths** with double quotes for Windows compatibility
-- **Use forward slashes** (work on both Windows and Unix)
-
-**Standard Hook Command Format**:
-```json
-{
-  "type": "command",
-  "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/<script-name>.py\"",
-  "timeout": <milliseconds>
-}
-```
-
-**Why This Works**:
-1. `${CLAUDE_PLUGIN_ROOT}` is resolved by Claude Code to the plugin installation directory
-2. Double quotes handle Windows paths with spaces
-3. Forward slashes work cross-platform
-4. Paths are relative to plugin root, not user directory structure
-
-**Installation Method Compatibility**:
-- **Development Mode**: `claude --plugin-dir ./packages/popkit-core`
-  - `${CLAUDE_PLUGIN_ROOT}` → `./packages/popkit-core`
-- **Marketplace Install**: `/plugin install popkit-core@popkit-marketplace`
-  - `${CLAUDE_PLUGIN_ROOT}` → plugin installation directory
-- **Local Install**: `/plugin install ./popkit-claude`
-  - `${CLAUDE_PLUGIN_ROOT}` → cloned directory
-
-**Audit Status**: All 16 PopKit hooks passed portability audit (Issue #225, December 2025).
-See `docs/HOOK_PORTABILITY_AUDIT.md` for full audit report.
-
-## Releasing New Versions
-
-When releasing a new version of PopKit:
-
-### 1. Update Version Numbers
-
-Update version in all plugin.json files (must match):
-- `packages/popkit-core/.claude-plugin/plugin.json`
-- `packages/popkit-dev/.claude-plugin/plugin.json`
-- `packages/popkit-ops/.claude-plugin/plugin.json`
-- `packages/popkit-research/.claude-plugin/plugin.json`
-- `packages/popkit-suite/.claude-plugin/plugin.json`
-- `packages/shared-py/pyproject.toml`
-
-### 2. Update Requirements
-
-Update all plugin requirements.txt files:
-```
-popkit-shared>=X.Y.Z
-```
-
-### 3. Update Changelog
-
-Add new version section to `CHANGELOG.md`:
-```markdown
-## [X.Y.Z] - Title
-
-- **Feature Name**: Description
-```
-
-### 4. Commit and Push
-
-```bash
-git add packages/popkit-*/.claude-plugin/plugin.json packages/shared-py/pyproject.toml CHANGELOG.md
-git commit -m "chore: bump version to X.Y.Z for [feature summary]"
-git push
-```
-
-### 4. Update Installed Plugin
-
-After pushing, update the installed plugin:
-```
-/plugin update popkit@popkit-marketplace
-```
-
-Then **restart Claude Code** to load the new version.
-
-### 5. Verify Installation
-
-After restart, verify the update worked:
-- Check `/popkit:` commands are available
-- Run `/popkit:plugin-test` to validate components
-- Test any new features added
-
-### Version Numbering
-
-Follow semantic versioning:
-- **MAJOR** (X.0.0): Breaking changes to commands, agents, or hooks
-- **MINOR** (0.X.0): New features, commands, or agents (backward compatible)
-- **PATCH** (0.0.X): Bug fixes, documentation updates
+**Repository**: https://github.com/jrc1883/popkit-claude
+**Issues**: https://github.com/jrc1883/popkit-claude/issues
