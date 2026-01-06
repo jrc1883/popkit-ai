@@ -63,22 +63,27 @@ jobs:
             cat "$PLUGIN_JSON" | python -m json.tool > /dev/null || exit 1
 
             # Check required fields
-            python3 <<EOF
+            export PLUGIN_JSON PLUGIN
+            python3 - <<'PYEOF'
 import json
 import sys
+import os
 
-with open("$PLUGIN_JSON") as f:
+plugin_json = os.environ.get('PLUGIN_JSON', '')
+plugin_name = os.environ.get('PLUGIN', '')
+
+with open(plugin_json) as f:
     plugin = json.load(f)
 
 required_fields = ["name", "version", "description"]
 missing = [f for f in required_fields if f not in plugin]
 
 if missing:
-    print(f"Error: Missing required fields in $PLUGIN: {missing}")
+    print(f"Error: Missing required fields in {plugin_name}: {missing}")
     sys.exit(1)
 
 print(f"✓ {plugin['name']} v{plugin['version']}")
-EOF
+PYEOF
 
             # Validate marketplace.json if it exists
             if [ -f "$MARKETPLACE_JSON" ]; then
