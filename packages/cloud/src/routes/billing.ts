@@ -67,6 +67,19 @@ function getTierFromSubscription(status: string, priceId: string, env: Env): Tie
  * Requires session token or API key auth.
  */
 billing.post('/checkout', async (c) => {
+  // COMING SOON: Billing is not yet accepting customers
+  // Remove this block when ready to launch
+  return c.json(
+    {
+      error: 'Billing coming soon',
+      message: 'PopKit Pro and Team plans are not yet available. Join the waitlist at https://popkit.dev',
+      comingSoon: true,
+      waitlistUrl: 'https://popkit.dev/waitlist',
+    },
+    503 // Service Unavailable
+  );
+
+  /* Uncomment when ready to accept customers
   const stripe = getStripe(c.env);
   const redis = getRedis(c);
 
@@ -131,6 +144,7 @@ billing.post('/checkout', async (c) => {
     checkoutUrl: session.url,
     sessionId: session.id,
   });
+  */
 });
 
 /**
