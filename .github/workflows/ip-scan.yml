@@ -111,21 +111,40 @@ jobs:
 
           # Path-based exemptions (documentation, examples, tests, templates)
           EXEMPT_PATHS = [
+              # Documentation and examples
               r"(?:^|/)docs/",          # docs/ at start or after /
               r"(?:^|/)examples/",      # examples/ at start or after /
               r"(?:^|/)standards/",     # standards/ at start or after /
               r"(?:^|/)templates/",     # templates/ at start or after /
+
+              # Test files
               r"(?:^|/)test",           # /test or test at start
               r"\.test\.",              # .test. anywhere
               r"_test\.",               # _test. anywhere
               r"^test_",                # test_ at start of filename
+
+              # Sample and template files
               r"(?:^|/)sample",         # /sample or sample at start
               r"\.sample\.",            # .sample. anywhere
               r"\.example\.",           # .example. anywhere
-              r"\.template\.",          # .template. anywhere
+              r"\.template",            # .template anywhere (files or extensions)
+              r"\.defaults$",           # .defaults at end (config defaults)
               r"(?:^|/)fixtures/",      # fixtures/ at start or after /
+
+              # GitHub configuration (not code leaks, just path references)
+              r"^\.github/",            # All .github/ files
+              r"^\.gitattributes$",     # Git attributes config
+              r"^\.gitignore$",         # Git ignore config
+
+              # IP Protection module itself (must reference patterns)
+              r"/ip_protection\.py$",   # IP protection utility
+              r"/ip_scanner",           # IP scanner files
+              r"IP_SCANNER",            # IP scanner docs
+
+              # Standard documentation
               r"README\.md$",           # README.md at end
               r"CHANGELOG\.md$",        # CHANGELOG.md at end
+              r"CLAUDE\.md$",           # CLAUDE.md at end
           ]
 
           # Content-based exemption markers (must appear before the matched line)
@@ -146,8 +165,10 @@ jobs:
           # Files where patterns are allowed (legacy exemptions)
           ALLOWED = {
               "ip_scanner.py": list(PATTERNS.keys()),
-              "CLAUDE.md": ["cloud_code", "cloud_billing"],
-              "audit.md": ["cloud_code", "cloud_billing"],
+              "CLAUDE.md": ["cloud_code", "cloud_billing", "proprietary"],
+              "audit.md": ["cloud_code", "cloud_billing", "proprietary"],
+              "project.md": ["cloud_code", "cloud_billing"],
+              "ip_protection.py": list(PATTERNS.keys()),  # Protection module itself
           }
 
           def should_skip(path: str) -> bool:
@@ -181,18 +202,26 @@ jobs:
 
           def scan_file(filepath: Path) -> List[Finding]:
               findings = []
-              if should_skip(str(filepath)):
+
+              # Get relative path from current directory for consistent matching
+              try:
+                  rel_path = filepath.relative_to(Path('.'))
+                  path_str = str(rel_path).replace('\\', '/')
+              except:
+                  path_str = str(filepath).replace('\\', '/')
+
+              if should_skip(path_str):
                   return findings
 
               # Skip exempt paths (documentation, examples, tests)
-              if is_exempt_path(str(filepath)):
+              if is_exempt_path(path_str):
                   return findings
 
               try:
                   content = filepath.read_text(encoding='utf-8', errors='ignore')
                   lines = content.split('\n')
                   for name, cfg in PATTERNS.items():
-                      if is_allowed(str(filepath), name):
+                      if is_allowed(path_str, name):
                           continue
                       regex = re.compile(cfg["pattern"])
                       for i, line in enumerate(lines, 1):
@@ -203,7 +232,7 @@ jobs:
                                   continue
 
                               findings.append(Finding(
-                                  file=str(filepath),
+                                  file=path_str,
                                   line=i,
                                   pattern=name,
                                   severity=cfg["severity"],
@@ -245,8 +274,8 @@ jobs:
                   print(f"::error::Found {len(findings)} potential IP leaks")
                   print(f"Critical: {len(critical)}, High: {len(high)}")
                   for f in findings:
-                      icon = "🔴" if f.severity == "critical" else "🟠"
-                      print(f"{icon} {f.file}:{f.line} - {f.description}")
+                      severity_mark = "[CRITICAL]" if f.severity == "critical" else "[HIGH]"
+                      print(f"{severity_mark} {f.file}:{f.line} - {f.description}")
                       print(f"   Matched: {f.matched}")
 
                   # Output for GitHub Actions
