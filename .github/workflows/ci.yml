@@ -63,7 +63,7 @@ jobs:
             cat "$PLUGIN_JSON" | python -m json.tool > /dev/null || exit 1
 
             # Check required fields
-            python3 << EOF
+            python3 <<EOF
 import json
 import sys
 
