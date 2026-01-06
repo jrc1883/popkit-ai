@@ -1,7 +1,7 @@
 {
   "name": "popkit-suite",
   "displayName": "PopKit Suite",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.3",
   "description": "Complete PopKit installation guide - meta-plugin for installing all 4 focused workflow plugins in one step",
   "longDescription": "PopKit Suite is a meta-plugin that guides you through installing the complete PopKit ecosystem. Provides installation recommendations and documentation for all 21 commands, 38 skills, and 21 agents across 4 focused plugins: popkit-core (foundation), popkit-dev (development), popkit-ops (operations), and popkit-research (knowledge).",
   "author": {

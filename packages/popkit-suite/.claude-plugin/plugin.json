@@ -7,8 +7,10 @@
     "email": "joseph@thehouseofdeals.com"
   },
   "license": "MIT",
-  "repository": "https://github.com/jrc1883/popkit",
-  "commands": [],
+  "repository": "https://github.com/jrc1883/popkit-claude",
+  "commands": [
+    "./commands/install.md"
+  ],
   "skills": [],
   "agents": [],
   "keywords": [

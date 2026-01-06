@@ -13,7 +13,7 @@ PopKit transforms Claude Code into a complete development workflow system. Inste
 - **5 Focused Plugins**: Install only what you need
 - **23 Workflow Commands**: From feature dev to deployment
 - **38 Reusable Skills**: Composable automation patterns
-- **19 Specialized Agents**: Context-aware AI assistance
+- **22 Specialized Agents**: Context-aware AI assistance
 - **FREE Local Execution**: All features work without cloud
 - **API Key Enhancements**: Optional semantic intelligence
 

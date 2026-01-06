@@ -7,7 +7,7 @@
     "email": "joseph@thehouseofdeals.com"
   },
   "license": "MIT",
-  "repository": "https://github.com/jrc1883/popkit",
+  "repository": "https://github.com/jrc1883/popkit-claude",
   "commands": [
     "./commands/dev.md",
     "./commands/git.md",
@@ -28,7 +28,6 @@
     "./skills/pop-routine-optimized",
     "./skills/pop-routine-measure",
     "./skills/pop-finish-branch",
-    "./skills/pop-project-templates",
     "./skills/pop-worktrees",
     "./skills/pop-morning",
     "./skills/pop-nightly"

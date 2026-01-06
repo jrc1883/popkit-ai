@@ -10,9 +10,20 @@ _No unreleased changes yet._
 
 ---
 
-## [1.0.0-beta.3] - 2026-01-05
+## [1.0.0-beta.3] - 2026-01-06
 
-### Stripe Billing Integration
+### Marketplace Publication Fixes (2026-01-06)
+
+**Critical Fixes for Public Release**:
+- Fixed popkit-dev plugin.json: Removed invalid `pop-project-templates` skill reference
+- Updated all marketplace.json files: Version alignment (beta.1 → beta.3)
+- Fixed repository URLs: Updated from `jrc1883/popkit` to `jrc1883/popkit-claude`
+- Added installation command to popkit-suite: `/popkit-suite:install` for guided setup
+- Fixed agent count in root README: 19 → 22 (consistent with header)
+
+**Marketplace-Ready Status**: All plugins validated and ready for publication
+
+### Stripe Billing Integration (2026-01-05)
 
 **Stripe Integration Complete** (#727):
 - Fixed JSON parse bug in billing endpoints (3 instances)

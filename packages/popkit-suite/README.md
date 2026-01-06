@@ -1,6 +1,6 @@
 # PopKit Suite - Complete Installation
 
-**Version:** 1.0.0-beta.1
+**Version:** 1.0.0-beta.3
 **Status:** Meta-Plugin (Phase 4 of Plugin Modularization)
 
 ## Overview

@@ -1,7 +1,7 @@
 {
   "name": "popkit-ops",
   "displayName": "PopKit Ops",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.3",
   "description": "Operations and quality plugin with assessment, deployment, debugging, and security scanning workflows",
   "longDescription": "PopKit Ops provides comprehensive DevOps and quality engineering workflows including multi-perspective code assessments, systematic debugging, security scanning, and deployment orchestration. Includes 6 specialized agents for quality assurance. Part of the modular PopKit plugin ecosystem.",
   "author": {
