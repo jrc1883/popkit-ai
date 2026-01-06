@@ -63,8 +63,7 @@ jobs:
             cat "$PLUGIN_JSON" | python -m json.tool > /dev/null || exit 1
 
             # Check required fields
-            export PLUGIN_JSON PLUGIN
-            python3 - <<'PYEOF'
+            cat > /tmp/validate_plugin.py << 'PYEOF'
 import json
 import sys
 import os
@@ -84,6 +83,8 @@ if missing:
 
 print(f"✓ {plugin['name']} v{plugin['version']}")
 PYEOF
+            export PLUGIN_JSON PLUGIN
+            python3 /tmp/validate_plugin.py
 
             # Validate marketplace.json if it exists
             if [ -f "$MARKETPLACE_JSON" ]; then
@@ -110,7 +111,7 @@ PYEOF
           cat "$MARKETPLACE_JSON" | python -m json.tool > /dev/null
 
           # Check all plugins are listed
-          python3 << 'EOF'
+          cat > /tmp/validate_marketplace.py << 'PYEOF'
 import json
 import sys
 
@@ -127,7 +128,8 @@ if missing:
 
 print(f"✓ All {len(actual_plugins)} plugins listed in marketplace")
 print(f"✓ Marketplace version: {marketplace.get('metadata', {}).get('version', 'unknown')}")
-EOF
+PYEOF
+          python3 /tmp/validate_marketplace.py
 
           echo "Root marketplace.json validation passed!"
 
