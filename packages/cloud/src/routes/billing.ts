@@ -72,9 +72,9 @@ billing.post('/checkout', async (c) => {
   return c.json(
     {
       error: 'Billing coming soon',
-      message: 'PopKit Pro and Team plans are not yet available. Join the waitlist at https://popkit.dev',
+      message: 'PopKit Pro and Team plans are coming soon. Follow the project at https://github.com/jrc1883/popkit-claude for updates.',
       comingSoon: true,
-      waitlistUrl: 'https://popkit.dev/waitlist',
+      githubUrl: 'https://github.com/jrc1883/popkit-claude',
     },
     503 // Service Unavailable
   );
