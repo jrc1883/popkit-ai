@@ -1,0 +1,149 @@
+name: Feature Request
+description: Suggest a new feature or enhancement for PopKit
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature! Please describe what you'd like to see in PopKit.
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to you?
+      options:
+        - P3-low (nice to have)
+        - P2-medium (would significantly help)
+        - P1-high (critical for my workflow)
+        - P0-critical (blocker for adoption)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: plugin
+    attributes:
+      label: Plugin Affected
+      description: Which PopKit plugin should this feature be added to?
+      options:
+        - popkit-core (foundation, Power Mode, config)
+        - popkit-dev (git, GitHub, routines)
+        - popkit-ops (testing, security, deployment)
+        - popkit-research (research, knowledge base)
+        - New plugin (suggest a new focused plugin)
+        - Cross-plugin (affects multiple plugins)
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Description
+      description: What problem does this feature solve? What's your use case?
+      placeholder: |
+        I often need to... but PopKit doesn't support...
+        This would help me because...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How would you like this feature to work?
+      placeholder: |
+        Add a new command `/popkit:feature-name` that...
+        Or enhance the existing `/popkit:command` to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Are there other ways to solve this problem?
+      placeholder: |
+        I could use... but that doesn't work because...
+        Another approach would be... but...
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: component
+    attributes:
+      label: Component Type
+      description: What kind of feature is this?
+      options:
+        - label: New command (/popkit:* command)
+        - label: New skill (pop-* skill)
+        - label: New agent (tier-1, tier-2, assessor)
+        - label: Enhancement to existing command
+        - label: Enhancement to existing skill
+        - label: Hook improvement
+        - label: Power Mode enhancement
+        - label: Documentation improvement
+        - label: Configuration option
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: Estimated Complexity
+      description: How complex do you think this feature is?
+      options:
+        - Small (1-2 files, < 100 lines)
+        - Medium (3-5 files, 100-500 lines)
+        - Large (6+ files, 500+ lines)
+        - Epic (multiple PRs, architectural changes)
+        - Not sure
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: workflow
+    attributes:
+      label: Development Workflow
+      description: Which phases would this feature require?
+      options:
+        - label: Discovery (research and context gathering)
+        - label: Architecture (design decisions needed)
+        - label: Implementation (code changes)
+        - label: Testing (test coverage required)
+        - label: Documentation (docs updates needed)
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: How would we know this feature is complete?
+      placeholder: |
+        - [ ] Command runs without errors
+        - [ ] Documentation updated
+        - [ ] Tests pass
+    validations:
+      required: false
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples
+      description: Show examples of how you'd use this feature
+      placeholder: |
+        $ /popkit:feature-name --option value
+        # Output: ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Any other context, screenshots, or examples
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        **Next Steps**: This feature request will be reviewed and potentially added to the roadmap. Vote with 👍 ❤️ 🚀 reactions to help us prioritize!

@@ -1,0 +1,154 @@
+name: Documentation Improvement
+description: Suggest improvements to PopKit documentation
+title: "[Docs] "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve PopKit documentation! Clear docs help everyone.
+
+  - type: dropdown
+    id: doc-section
+    attributes:
+      label: Documentation Section
+      description: Which documentation needs improvement?
+      options:
+        - README.md (main repository README)
+        - CLAUDE.md (development guide)
+        - CHANGELOG.md (version history)
+        - Plugin README (packages/*/README.md)
+        - Command documentation (commands/*.md)
+        - Skill documentation (skills/*/SKILL.md)
+        - Agent documentation (agents/*/AGENT.md)
+        - Installation guide
+        - Architecture documentation (docs/)
+        - API documentation
+        - Examples/tutorials
+    validations:
+      required: true
+
+  - type: input
+    id: file-path
+    attributes:
+      label: File Path (if known)
+      description: Exact path to the documentation file
+      placeholder: "packages/popkit-dev/README.md"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Issue Type
+      description: What kind of documentation issue is this?
+      options:
+        - Missing information
+        - Outdated information
+        - Incorrect information
+        - Unclear explanation
+        - Missing examples
+        - Broken links
+        - Typo/grammar
+        - Formatting issue
+        - Needs more detail
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-state
+    attributes:
+      label: Current State
+      description: What does the documentation currently say? (quote or describe)
+      placeholder: |
+        Currently the README says:
+        "Install with /plugin install popkit@popkit-marketplace"
+
+        But this is outdated because...
+    validations:
+      required: true
+
+  - type: textarea
+    id: desired-state
+    attributes:
+      label: Desired State
+      description: What should the documentation say instead?
+      placeholder: |
+        It should explain:
+        1. Install the complete suite OR
+        2. Install individual plugins
+
+        With examples for both approaches...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this documentation fix?
+      options:
+        - P3-low (minor improvement)
+        - P2-medium (helpful clarification)
+        - P1-high (confusing/blocking users)
+        - P0-critical (completely wrong/broken)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: audience
+    attributes:
+      label: Who is affected?
+      description: Which users would benefit from this documentation improvement?
+      options:
+        - label: New users (installation/getting started)
+        - label: Plugin users (using commands/skills)
+        - label: Plugin developers (contributing code)
+        - label: Advanced users (Power Mode, configuration)
+        - label: All users
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Suggested Examples
+      description: If you're suggesting adding examples, provide them here
+      placeholder: |
+        Example 1:
+        ```bash
+        /plugin install popkit-core@popkit-marketplace
+        ```
+
+        Example 2:
+        ```bash
+        /plugin install popkit-suite@popkit-marketplace
+        ```
+    validations:
+      required: false
+
+  - type: textarea
+    id: related-docs
+    attributes:
+      label: Related Documentation
+      description: Are there other docs that should be updated at the same time?
+      placeholder: |
+        - packages/popkit-dev/README.md mentions the old command
+        - CHANGELOG.md should reflect this change
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Any other information that would help improve the docs
+      placeholder: |
+        This confused me when I was trying to...
+        I expected to find information about... but couldn't find it in...
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        **For Contributors**: When fixing documentation, check for consistency across all related files and update version references as needed.

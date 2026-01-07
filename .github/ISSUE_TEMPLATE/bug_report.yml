@@ -1,0 +1,181 @@
+name: Bug Report
+description: Report something that isn't working correctly
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! Please fill out the sections below to help us fix it quickly.
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How urgent is this bug?
+      options:
+        - P3-low (minor issue, workaround exists)
+        - P2-medium (affects some workflows)
+        - P1-high (blocks important functionality)
+        - P0-critical (complete breakage, data loss)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: plugin
+    attributes:
+      label: Plugin Affected
+      description: Which PopKit plugin has the issue?
+      options:
+        - popkit-core (foundation, Power Mode, config)
+        - popkit-dev (git, GitHub, routines)
+        - popkit-ops (testing, security, deployment)
+        - popkit-research (research, knowledge base)
+        - popkit-suite (complete bundle)
+        - shared-py (shared utilities)
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear description of what the bug is
+      placeholder: When I run /popkit:dev work #123, it crashes with...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this bug?
+      placeholder: |
+        1. Install popkit-dev plugin
+        2. Run command `/popkit:git commit`
+        3. See error message...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen
+      placeholder: The command should create a commit with auto-generated message
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened
+      placeholder: Instead, it throws a Python exception...
+    validations:
+      required: true
+
+  - type: input
+    id: claude-version
+    attributes:
+      label: Claude Code Version
+      description: Run `claude --version` to get this
+      placeholder: "2.0.71"
+    validations:
+      required: true
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin Version
+      description: Run `/popkit:plugin list` to see versions
+      placeholder: "1.0.0-beta.3"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - Windows 11
+        - Windows 10
+        - macOS (Apple Silicon)
+        - macOS (Intel)
+        - Linux (Ubuntu/Debian)
+        - Linux (Fedora/RHEL)
+        - Linux (Arch)
+        - Other Linux
+    validations:
+      required: true
+
+  - type: input
+    id: shell
+    attributes:
+      label: Shell
+      description: What shell are you using?
+      placeholder: "PowerShell 7, Bash, Zsh, etc."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: component
+    attributes:
+      label: Component Affected
+      description: Which part of PopKit is affected? (Check all that apply)
+      options:
+        - label: Skills (pop-* skills)
+        - label: Agents (tier-1, tier-2, assessors)
+        - label: Commands (/popkit:* commands)
+        - label: Hooks (session-start, pre-tool-use, etc.)
+        - label: Power Mode (multi-agent orchestration)
+        - label: Configuration
+        - label: Documentation
+
+  - type: textarea
+    id: errors
+    attributes:
+      label: Error Messages
+      description: Copy and paste any error messages, logs, or stack traces
+      render: shell
+      placeholder: |
+        Paste error messages here
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain the problem
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Any other context about the problem
+      placeholder: This started happening after upgrading to Claude Code 2.0.71...
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: investigation
+    attributes:
+      label: Investigation Areas (for developers)
+      description: Where to look for the root cause
+      options:
+        - label: Hook execution (hooks/)
+        - label: Agent routing (agents/config.json)
+        - label: Skill definition (skills/)
+        - label: Command logic (commands/)
+        - label: Power Mode coordination (power-mode/)
+        - label: Shared utilities (packages/shared-py/)
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        **For Developers**: This issue will be worked on using PopKit's bug-whisperer agent and systematic debugging workflow.
