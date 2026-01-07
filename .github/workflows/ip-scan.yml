@@ -296,7 +296,7 @@ jobs:
 
       - name: Upload findings artifact
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ip-leak-findings
           path: findings.json
