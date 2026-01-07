@@ -1,5 +1,5 @@
 import { getRedis } from '../services/redis';
-import type { Redis } from '@upstash/redis';
+import { Redis } from '@upstash/redis';
 /**
  * Workflow Routes
  *

@@ -7,17 +7,17 @@
 
 import { Redis } from '@upstash/redis';
 import type { Context } from 'hono';
-import type { Env } from '../types';
+import type { Env, Variables } from '../types';
 
 let redisInstance: Redis | null = null;
 
 /**
  * Get a singleton Redis client instance.
- * 
+ *
  * @param c - Hono context with Bindings containing Redis credentials
  * @returns Redis client instance
  */
-export function getRedis(c: Context<{ Bindings: Env }>): Redis {
+export function getRedis(c: Context<{ Bindings: Env; Variables: Variables }>): Redis {
   if (!redisInstance) {
     redisInstance = new Redis({
       url: c.env.UPSTASH_REDIS_REST_URL,
