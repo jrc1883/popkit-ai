@@ -1,0 +1,176 @@
+name: Plugin Issue
+description: Report an issue with a specific PopKit command, skill, or agent
+title: "[Plugin] "
+labels: ["plugin-issue"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a plugin issue! This template helps diagnose problems with specific PopKit components.
+
+  - type: dropdown
+    id: plugin
+    attributes:
+      label: Plugin
+      description: Which PopKit plugin has the issue?
+      options:
+        - popkit-core
+        - popkit-dev
+        - popkit-ops
+        - popkit-research
+        - popkit-suite
+        - shared-py
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component-type
+    attributes:
+      label: Component Type
+      description: What type of component has the issue?
+      options:
+        - Command (/popkit:* command)
+        - Skill (pop-* skill)
+        - Agent (tier-1, tier-2, assessor)
+        - Hook (session-start, pre-tool-use, etc.)
+        - Configuration
+    validations:
+      required: true
+
+  - type: input
+    id: component-name
+    attributes:
+      label: Component Name
+      description: Exact name of the command, skill, agent, or hook
+      placeholder: "/popkit:dev work" or "pop-brainstorming" or "code-reviewer"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Issue Description
+      description: What's wrong with this component?
+      placeholder: |
+        When I run /popkit:dev work #123, it...
+        The pop-brainstorming skill doesn't...
+        The code-reviewer agent always...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction Steps
+      description: How can we reproduce this issue?
+      placeholder: |
+        1. Run command `/popkit:dev work #123`
+        2. Answer "yes" to brainstorming prompt
+        3. See error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: errors
+    attributes:
+      label: Error Messages
+      description: Copy and paste any error messages or unexpected output
+      render: shell
+      placeholder: |
+        Error: Skill 'pop-brainstorming' not found
+        Traceback (most recent call last):
+          ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: configuration
+    attributes:
+      label: Plugin Configuration
+      description: Show your plugin configuration (if relevant)
+      render: json
+      placeholder: |
+        // From .claude/config.json or plugin settings
+        {
+          "plugins": {
+            "popkit-dev": {
+              "enabled": true
+            }
+          }
+        }
+    validations:
+      required: false
+
+  - type: input
+    id: claude-version
+    attributes:
+      label: Claude Code Version
+      description: Run `claude --version`
+      placeholder: "2.0.71"
+    validations:
+      required: true
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin Version
+      description: Run `/popkit:plugin list`
+      placeholder: "1.0.0-beta.3"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - Windows 11
+        - Windows 10
+        - macOS (Apple Silicon)
+        - macOS (Intel)
+        - Linux (Ubuntu/Debian)
+        - Linux (Other)
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happens?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: installation
+    attributes:
+      label: Installation Method
+      description: How did you install the plugin?
+      options:
+        - Marketplace (/plugin install popkit-*@popkit-marketplace)
+        - Local directory (/plugin install ./packages/popkit-*)
+        - Git clone and local install
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Any other relevant information
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        **For Developers**: Check hooks/, skills/, agents/, and commands/ directories for the component mentioned above.

@@ -1,8 +1,47 @@
 # PopKit
 
+<!-- Badge Section -->
+<div align="center">
+
+![Version](https://img.shields.io/badge/version-1.0.0--beta.3-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Build Status](https://img.shields.io/github/actions/workflow/status/jrc1883/popkit-claude/ci.yml?branch=main)
+![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
+![TypeScript](https://img.shields.io/badge/typescript-5.0+-blue.svg)
+![GitHub Stars](https://img.shields.io/github/stars/jrc1883/popkit-claude?style=social)
+![GitHub Forks](https://img.shields.io/github/forks/jrc1883/popkit-claude?style=social)
+![Claude Code](https://img.shields.io/badge/Claude%20Code-2.0.71%2B-purple.svg)
+
 **AI-powered development workflows for Claude Code** - Modular plugin suite for professional software development.
 
 **Version:** 1.0.0-beta.3 | **Plugins:** 5 | **Commands:** 23 | **Skills:** 38 | **Agents:** 22
+
+[Quick Start](#-quick-start) • [Features](#-what-is-popkit) • [Documentation](#-documentation) • [Contributing](#-contributing)
+
+</div>
+
+---
+
+## 📑 Table of Contents
+
+- [What is PopKit?](#-what-is-popkit)
+- [See It In Action](#-see-it-in-action)
+- [Modular Architecture](#-modular-architecture)
+- [Quick Start](#-quick-start)
+- [Core Workflows](#-core-workflows)
+  - [Feature Development](#feature-development)
+  - [Git Operations](#git-operations)
+  - [Quality Assurance](#quality-assurance)
+  - [Deployment](#deployment)
+- [Repository Structure](#️-repository-structure)
+- [API Key Enhancement Model](#-api-key-enhancement-model)
+- [Documentation](#-documentation)
+- [Current Status](#-current-status)
+- [Contributing](#-contributing)
+- [Contributors](#-contributors)
+- [Star History](#-star-history)
+- [License](#-license)
+- [Author](#-author)
 
 ---
 
@@ -16,6 +55,34 @@ PopKit transforms Claude Code into a complete development workflow system. Inste
 - **22 Specialized Agents**: Context-aware AI assistance
 - **FREE Local Execution**: All features work without cloud
 - **API Key Enhancements**: Optional semantic intelligence
+
+---
+
+## 🎬 See It In Action
+
+### Quick Start Demo
+
+![PopKit Quick Start](packages/popkit-core/assets/images/quick-start.gif)
+
+*Watch how PopKit gets you up and running in seconds with `/plugin install` and intelligent project setup.*
+
+### Morning Routine Workflow
+
+![Morning Routine](packages/popkit-core/assets/images/morning-routine.gif)
+
+*See the `/popkit:routine morning` command in action - automated health checks, dependency updates, and your personalized "Ready to Code" score.*
+
+### Feature Development Workflow
+
+![Feature Workflow](packages/popkit-core/assets/images/feature-workflow.gif)
+
+*Complete feature development cycle: brainstorm → plan → implement → review → PR creation, all orchestrated by `/popkit:dev`.*
+
+### Power Mode Multi-Agent Orchestration
+
+![Power Mode](packages/popkit-core/assets/images/power-mode.gif)
+
+*Experience Power Mode's intelligent agent orchestration handling complex tasks with multiple specialized agents working in parallel.*
 
 ---
 
@@ -204,29 +271,83 @@ See [CLAUDE.md](CLAUDE.md) for detailed roadmap.
 
 ## 🤝 Contributing
 
-PopKit is in active development. See:
-- [GitHub Issues](https://github.com/jrc1883/elshaddai/issues?q=is%3Aissue+is%3Aopen+label%3Aapp%3Apopkit)
+PopKit is in active development. We welcome contributions!
+
+### How to Contribute
+
+1. **Fork the repository**
+2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
+3. **Commit your changes** (`git commit -m 'feat: add amazing feature'`)
+4. **Push to the branch** (`git push origin feature/amazing-feature`)
+5. **Open a Pull Request**
+
+### Development Resources
+- [GitHub Issues](https://github.com/jrc1883/popkit-claude/issues)
 - [CLAUDE.md](CLAUDE.md) - Development guide
+- [Contributing Guidelines](CONTRIBUTING.md)
+
+---
+
+## 👥 Contributors
+
+Thanks to all the amazing people who have contributed to PopKit!
+
+<!-- ALL-CONTRIBUTORS-LIST:START -->
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/jrc1883">
+        <img src="https://github.com/jrc1883.png" width="100px;" alt="Joseph Cannon"/>
+        <br />
+        <sub><b>Joseph Cannon</b></sub>
+      </a>
+      <br />
+      <sub>Creator & Maintainer</sub>
+    </td>
+  </tr>
+</table>
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+*Want to see your name here? Check out our [contributing guidelines](#-contributing)!*
+
+---
+
+## 📈 Star History
+
+<a href="https://star-history.com/#jrc1883/popkit-claude&Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=jrc1883/popkit-claude&type=Date&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=jrc1883/popkit-claude&type=Date" />
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=jrc1883/popkit-claude&type=Date" />
+  </picture>
+</a>
 
 ---
 
 ## 📜 License
 
-MIT
+MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
 ## 👤 Author
 
 **Joseph Cannon**
-<joseph@thehouseofdeals.com>
+📧 <joseph@thehouseofdeals.com>
+🐙 [GitHub](https://github.com/jrc1883)
 
 ---
+
+<div align="center">
 
 **Ready to supercharge your development workflow?**
 
 ```bash
-/plugin install popkit@popkit-marketplace
+/plugin install popkit-suite@popkit-marketplace
 ```
 
 Then restart Claude Code and run `/popkit:next` to get started!
+
+**[⬆ Back to Top](#popkit)**
+
+</div>
