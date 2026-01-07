@@ -166,7 +166,7 @@ def embed_entry(entry):
     # Generate embedding via cloud
     try:
         response = requests.post(
-            "https://popkit-cloud.elshaddai.workers.dev/v1/embeddings",
+            "https://api.thehouseofdeals.com/v1/embeddings",
             headers={"Authorization": f"Bearer {api_key}"},
             json={
                 "text": text,

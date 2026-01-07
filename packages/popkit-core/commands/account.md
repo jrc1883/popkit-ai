@@ -351,7 +351,7 @@ Run `/popkit:account status` to verify connection.
 Please check your credentials and try again.
 
 **Need help?**
-- Forgot password? Contact support@thehouseofdeals.com
+- Forgot password? Contact joseph@thehouseofdeals.com
 - Don't have an account? Run `/popkit:account signup`
 ```
 

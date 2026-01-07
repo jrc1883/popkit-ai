@@ -26,7 +26,7 @@ from .pattern_anonymizer import anonymize_pattern, validate_anonymization
 
 POPKIT_API_URL = os.environ.get(
     "POPKIT_API_URL",
-    "https://popkit-cloud-api.joseph-cannon.workers.dev"
+    "https://api.thehouseofdeals.com"
 )
 PATTERNS_ENDPOINT = "/api/v1/patterns"
 

@@ -55,7 +55,7 @@ npx wrangler pages deploy dist --project-name=popkit-landing
 
 ## Connecting to Cloud API
 
-All authentication and data fetching goes through the PopKit Cloud API at `https://popkit-cloud-api.joseph-cannon.workers.dev`.
+All authentication and data fetching goes through the PopKit Cloud API at `https://api.thehouseofdeals.com`.
 
 Endpoints used:
 - `POST /v1/auth/signup` - Create account

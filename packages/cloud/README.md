@@ -1,7 +1,5 @@
 # PopKit Cloud API
 
-**Part of Issues #68 & #69 - Hosted Redis Service & API Gateway**
-
 Cloudflare Worker that provides the API gateway for PopKit Cloud, handling authentication, rate limiting, and Redis proxy operations.
 
 ## Architecture
@@ -171,10 +169,3 @@ npm test
 - All data is namespaced per user
 - Rate limiting prevents abuse
 - CORS configured for plugin access
-
-## Related Issues
-
-- #67: [Epic] PopKit Cloud: Monetization & Premium Features
-- #68: Hosted Redis Service
-- #69: API Gateway & Authentication System
-- #70: Embedding-Enhanced Check-ins

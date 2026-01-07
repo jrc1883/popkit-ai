@@ -173,7 +173,7 @@ print(format_efficiency_summary(summary))
 ```bash
 # Fetch from PopKit Cloud (requires POPKIT_API_KEY)
 curl -H "Authorization: Bearer $POPKIT_API_KEY" \
-  "https://popkit-cloud-api.joseph-cannon.workers.dev/v1/analytics/overview?days=7"
+  "https://api.thehouseofdeals.com/v1/analytics/overview?days=7"
 ```
 
 ### Reset Session

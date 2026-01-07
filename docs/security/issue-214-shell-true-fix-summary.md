@@ -132,7 +132,7 @@ The following files were reviewed but found to be already safe:
 
 ```bash
 # Search for remaining shell=True usage
-cd C:\Users\Josep\onedrive\documents\elshaddai\apps\popkit
+cd <PROJECT_ROOT>
 rg "shell=True" --type py -n
 
 # Results: Only justified uses with inline documentation

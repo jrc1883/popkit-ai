@@ -3,22 +3,39 @@
 Create a test API key in Upstash Redis.
 
 Usage:
+    # Set environment variables first:
+    export UPSTASH_REDIS_REST_URL="https://your-instance.upstash.io"
+    export UPSTASH_REDIS_REST_TOKEN="your-token-here"
+
+    # Then run:
     python create-test-key.py
 """
 
 import json
+import os
+import sys
 import urllib.request
 import urllib.error
 import secrets
 from datetime import datetime
 
-# Upstash credentials
-UPSTASH_URL = "https://light-whale-26554.upstash.io"
-UPSTASH_TOKEN = "AWe6AAIncDI0ZDBjNGJmOTA0ZGY0YTMxODEwY2ViMzBmZGY4YWU3ZXAyMjY1NTQ"
+# Upstash credentials from environment variables
+UPSTASH_URL = os.environ.get("UPSTASH_REDIS_REST_URL")
+UPSTASH_TOKEN = os.environ.get("UPSTASH_REDIS_REST_TOKEN")
 
 
 def upstash_command(*args):
     """Execute a Redis command via Upstash REST API."""
+    if not UPSTASH_URL or not UPSTASH_TOKEN:
+        print("Error: Missing Upstash credentials!")
+        print("\nPlease set the following environment variables:")
+        print("  UPSTASH_REDIS_REST_URL - Your Upstash Redis REST URL")
+        print("  UPSTASH_REDIS_REST_TOKEN - Your Upstash Redis REST token")
+        print("\nExample:")
+        print('  export UPSTASH_REDIS_REST_URL="https://your-instance.upstash.io"')
+        print('  export UPSTASH_REDIS_REST_TOKEN="your-token-here"')
+        sys.exit(1)
+
     url = UPSTASH_URL
     headers = {
         "Authorization": f"Bearer {UPSTASH_TOKEN}",

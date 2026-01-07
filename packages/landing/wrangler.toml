@@ -6,4 +6,4 @@ compatibility_date = "2024-01-01"
 
 # Environment variables for the site
 [vars]
-PUBLIC_API_URL = "https://popkit-cloud-api.joseph-cannon.workers.dev"
+PUBLIC_API_URL = "https://api.thehouseofdeals.com"

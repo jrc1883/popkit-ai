@@ -287,7 +287,7 @@ else:
 # Stop and generate report
 /popkit-core:record stop
 # → Recording STOPPED
-# → Report: file:///C:/Users/Josep/.claude/popkit/recordings/20251223-142530.html
+# → Report: file:///<USER_HOME>/.claude/popkit/recordings/20251223-142530.html
 ```
 
 ### Check Recording Status
