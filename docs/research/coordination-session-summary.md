@@ -208,7 +208,7 @@ Like colleagues at company:
 
 ## Benchmark Data Connection
 
-**Referenced:** `C:\Users\Josep\OneDrive\Documents\ElShaddai\popkit\packages\benchmarks\results\bouncing-balls-popkit-1765818636343`
+**Referenced:** `<PROJECT_ROOT>/packages/benchmarks/results/bouncing-balls-popkit-1765818636343`
 
 **Current gaps:**
 - Benchmark data exists but missing thinking process

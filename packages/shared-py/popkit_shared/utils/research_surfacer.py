@@ -257,7 +257,7 @@ class ResearchSurfacer:
             import requests
 
             response = requests.post(
-                "https://popkit-cloud.elshaddai.workers.dev/v1/research/search",
+                "https://api.thehouseofdeals.com/v1/research/search",
                 headers={"Authorization": f"Bearer {api_key}"},
                 json={"query": query, "limit": limit},
                 timeout=5,

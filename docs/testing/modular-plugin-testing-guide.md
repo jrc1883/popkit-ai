@@ -17,7 +17,7 @@ Close all Claude Code windows to start fresh.
 ### 2. Navigate to PopKit Directory
 
 ```bash
-cd C:\Users\Josep\onedrive\documents\elshaddai\apps\popkit
+cd <PROJECT_ROOT>
 ```
 
 ### 3. Prepare Testing Checklist

@@ -12,7 +12,13 @@ from transcript_parser import TranscriptParser, TokenUsage
 def test_parser_creation():
     """Test that parser can be created and parses file"""
     # Use current session transcript
-    transcript_path = Path.home() / '.claude' / 'projects' / 'C--Users-Josep-OneDrive-Documents-ElShaddai-apps-popkit' / 'ad19212c-7de5-4b0f-8a50-0d311410b902.jsonl'
+    # Find the most recent transcript file
+    projects_dir = Path.home() / '.claude' / 'projects'
+    transcripts = list(projects_dir.glob('*/*.jsonl'))
+    if not transcripts:
+        print("SKIP: No transcript files found")
+        return
+    transcript_path = max(transcripts, key=lambda p: p.stat().st_mtime)
 
     if not transcript_path.exists():
         print(f"SKIP: Transcript not found: {transcript_path}")
@@ -26,7 +32,13 @@ def test_parser_creation():
 
 def test_get_all_tool_uses():
     """Test extracting all tool uses from transcript"""
-    transcript_path = Path.home() / '.claude' / 'projects' / 'C--Users-Josep-OneDrive-Documents-ElShaddai-apps-popkit' / 'ad19212c-7de5-4b0f-8a50-0d311410b902.jsonl'
+    # Find the most recent transcript file
+    projects_dir = Path.home() / '.claude' / 'projects'
+    transcripts = list(projects_dir.glob('*/*.jsonl'))
+    if not transcripts:
+        print("SKIP: No transcript files found")
+        return
+    transcript_path = max(transcripts, key=lambda p: p.stat().st_mtime)
 
     if not transcript_path.exists():
         print(f"SKIP: Transcript not found")
@@ -45,7 +57,13 @@ def test_get_all_tool_uses():
 
 def test_get_total_token_usage():
     """Test total token calculation"""
-    transcript_path = Path.home() / '.claude' / 'projects' / 'C--Users-Josep-OneDrive-Documents-ElShaddai-apps-popkit' / 'ad19212c-7de5-4b0f-8a50-0d311410b902.jsonl'
+    # Find the most recent transcript file
+    projects_dir = Path.home() / '.claude' / 'projects'
+    transcripts = list(projects_dir.glob('*/*.jsonl'))
+    if not transcripts:
+        print("SKIP: No transcript files found")
+        return
+    transcript_path = max(transcripts, key=lambda p: p.stat().st_mtime)
 
     if not transcript_path.exists():
         print(f"SKIP: Transcript not found")
@@ -70,7 +88,13 @@ def test_get_total_token_usage():
 
 def test_get_reasoning_for_tool():
     """Test extracting reasoning for a specific tool use"""
-    transcript_path = Path.home() / '.claude' / 'projects' / 'C--Users-Josep-OneDrive-Documents-ElShaddai-apps-popkit' / 'ad19212c-7de5-4b0f-8a50-0d311410b902.jsonl'
+    # Find the most recent transcript file
+    projects_dir = Path.home() / '.claude' / 'projects'
+    transcripts = list(projects_dir.glob('*/*.jsonl'))
+    if not transcripts:
+        print("SKIP: No transcript files found")
+        return
+    transcript_path = max(transcripts, key=lambda p: p.stat().st_mtime)
 
     if not transcript_path.exists():
         print(f"SKIP: Transcript not found")
@@ -104,7 +128,13 @@ def test_get_reasoning_for_tool():
 
 def test_get_token_usage_for_tool():
     """Test getting token usage for specific tool"""
-    transcript_path = Path.home() / '.claude' / 'projects' / 'C--Users-Josep-OneDrive-Documents-ElShaddai-apps-popkit' / 'ad19212c-7de5-4b0f-8a50-0d311410b902.jsonl'
+    # Find the most recent transcript file
+    projects_dir = Path.home() / '.claude' / 'projects'
+    transcripts = list(projects_dir.glob('*/*.jsonl'))
+    if not transcripts:
+        print("SKIP: No transcript files found")
+        return
+    transcript_path = max(transcripts, key=lambda p: p.stat().st_mtime)
 
     if not transcript_path.exists():
         print(f"SKIP: Transcript not found")
@@ -137,7 +167,13 @@ def test_get_token_usage_for_tool():
 
 def test_get_assistant_messages():
     """Test extracting all assistant messages"""
-    transcript_path = Path.home() / '.claude' / 'projects' / 'C--Users-Josep-OneDrive-Documents-ElShaddai-apps-popkit' / 'ad19212c-7de5-4b0f-8a50-0d311410b902.jsonl'
+    # Find the most recent transcript file
+    projects_dir = Path.home() / '.claude' / 'projects'
+    transcripts = list(projects_dir.glob('*/*.jsonl'))
+    if not transcripts:
+        print("SKIP: No transcript files found")
+        return
+    transcript_path = max(transcripts, key=lambda p: p.stat().st_mtime)
 
     if not transcript_path.exists():
         print(f"SKIP: Transcript not found")
@@ -160,7 +196,13 @@ def test_get_assistant_messages():
 
 def test_timestamp_filtering():
     """Test timestamp filtering reduces token counts"""
-    transcript_path = Path.home() / '.claude' / 'projects' / 'C--Users-Josep-OneDrive-Documents-ElShaddai-apps-popkit' / 'ad19212c-7de5-4b0f-8a50-0d311410b902.jsonl'
+    # Find the most recent transcript file
+    projects_dir = Path.home() / '.claude' / 'projects'
+    transcripts = list(projects_dir.glob('*/*.jsonl'))
+    if not transcripts:
+        print("SKIP: No transcript files found")
+        return
+    transcript_path = max(transcripts, key=lambda p: p.stat().st_mtime)
 
     if not transcript_path.exists():
         print(f"SKIP: Transcript not found")

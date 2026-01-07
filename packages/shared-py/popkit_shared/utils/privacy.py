@@ -444,7 +444,7 @@ def request_data_deletion(api_key: str, base_url: Optional[str] = None) -> Dict[
     import urllib.request
     import urllib.error
 
-    base_url = base_url or "https://popkit-cloud-api.joseph-cannon.workers.dev/v1"
+    base_url = base_url or "https://api.thehouseofdeals.com/v1"
     url = f"{base_url}/privacy/delete-all"
 
     headers = {
@@ -478,7 +478,7 @@ def export_user_data(api_key: str, base_url: Optional[str] = None) -> Dict[str, 
     import urllib.request
     import urllib.error
 
-    base_url = base_url or "https://popkit-cloud-api.joseph-cannon.workers.dev/v1"
+    base_url = base_url or "https://api.thehouseofdeals.com/v1"
     url = f"{base_url}/privacy/export"
 
     headers = {

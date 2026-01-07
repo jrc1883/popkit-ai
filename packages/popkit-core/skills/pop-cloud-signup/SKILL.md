@@ -381,7 +381,7 @@ Try again in a moment.
 If this persists, please:
 1. Report the issue: `/popkit:bug report`
 2. Check cloud status: https://status.thehouseofdeals.com
-3. Contact support: support@thehouseofdeals.com
+3. Contact support: joseph@thehouseofdeals.com
 ```
 
 ## Output

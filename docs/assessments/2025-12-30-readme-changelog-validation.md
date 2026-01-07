@@ -65,7 +65,7 @@ Validated and corrected all README.md and CHANGELOG.md files across the PopKit m
 
 ### 1. Root README.md
 
-**File:** `C:\Users\Josep\onedrive\documents\elshaddai\apps\popkit\README.md`
+**File:** `<PROJECT_ROOT>/README.md`
 
 #### Issue 1.1: Outdated Plugin Links (Lines 173-179)
 **Before:**
@@ -94,7 +94,7 @@ Validated and corrected all README.md and CHANGELOG.md files across the PopKit m
 
 ### 2. popkit-core README.md
 
-**File:** `C:\Users\Josep\onedrive\documents\elshaddai\apps\popkit\packages\popkit-core\README.md`
+**File:** `<PROJECT_ROOT>/packages/popkit-core/README.md`
 
 #### Issue 2.1: Incorrect Command Count (Line 26)
 **Before:** Listed 10 commands including `/popkit:upgrade`
@@ -140,7 +140,7 @@ PopKit Core provides 14 specialized skills:
 
 ### 3. popkit-dev README.md
 
-**File:** `C:\Users\Josep\onedrive\documents\elshaddai\apps\popkit\packages\popkit-dev\README.md`
+**File:** `<PROJECT_ROOT>/packages/popkit-dev/README.md`
 
 #### Issue 3.1: Incorrect Skill Count (Line 27)
 **Before:** Claimed "9 skills" with abbreviated skill list
@@ -171,7 +171,7 @@ PopKit Dev provides 12 specialized skills for development workflows:
 
 ### 4. popkit-suite README.md
 
-**File:** `C:\Users\Josep\onedrive\documents\elshaddai\apps\popkit\packages\popkit-suite\README.md`
+**File:** `<PROJECT_ROOT>/packages/popkit-suite/README.md`
 
 #### Issue 4.1: Incorrect Total Counts (Line 14-22)
 **Before:**
@@ -303,7 +303,7 @@ popkit-core (foundation)
 
 ### 5. popkit-ops README.md
 
-**File:** `C:\Users\Josep\onedrive\documents\elshaddai\apps\popkit\packages\popkit-ops\README.md`
+**File:** `<PROJECT_ROOT>/packages/popkit-ops/README.md`
 
 #### Issue 5.1: Installation Command (Line 51)
 **Before:** `/plugin install popkit@popkit-marketplace`
@@ -337,7 +337,7 @@ popkit-core (foundation)
 
 ### 6. popkit-research README.md
 
-**File:** `C:\Users\Josep\onedrive\documents\elshaddai\apps\popkit\packages\popkit-research\README.md`
+**File:** `<PROJECT_ROOT>/packages/popkit-research/README.md`
 
 #### Issue 6.1-6.4: Same fixes as popkit-ops
 - Installation command: `popkit` → `popkit-core`
@@ -350,12 +350,12 @@ popkit-core (foundation)
 ## Files Modified
 
 ### README Files (6 files)
-1. `C:\Users\Josep\onedrive\documents\elshaddai\apps\popkit\README.md`
-2. `C:\Users\Josep\onedrive\documents\elshaddai\apps\popkit\packages\popkit-core\README.md`
-3. `C:\Users\Josep\onedrive\documents\elshaddai\apps\popkit\packages\popkit-dev\README.md`
-4. `C:\Users\Josep\onedrive\documents\elshaddai\apps\popkit\packages\popkit-suite\README.md`
-5. `C:\Users\Josep\onedrive\documents\elshaddai\apps\popkit\packages\popkit-ops\README.md`
-6. `C:\Users\Josep\onedrive\documents\elshaddai\apps\popkit\packages\popkit-research\README.md`
+1. `<PROJECT_ROOT>/README.md`
+2. `<PROJECT_ROOT>/packages/popkit-core/README.md`
+3. `<PROJECT_ROOT>/packages/popkit-dev/README.md`
+4. `<PROJECT_ROOT>/packages/popkit-suite/README.md`
+5. `<PROJECT_ROOT>/packages/popkit-ops/README.md`
+6. `<PROJECT_ROOT>/packages/popkit-research/README.md`
 
 ### CHANGELOG Files (0 files modified)
 - Root CHANGELOG.md: Already accurate ✅

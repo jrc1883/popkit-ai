@@ -16,6 +16,7 @@ packages/*/package-lock.json
 .idea/
 .vscode/
 .obsidian/
+.cursor/
 *.swp
 *.swo
 
@@ -69,3 +70,9 @@ packages/benchmarks/pnpm-lock.yaml
 # Temporary build artifacts
 packages/*/build-*.txt
 .popkit/
+
+# Personal session/state files
+STATUS.json
+
+# Environment variables (secrets)
+.env

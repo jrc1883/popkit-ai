@@ -212,7 +212,7 @@ export POPKIT_BILLING_LIVE=false
 
 ```bash
 # Direct API call
-curl -X POST https://popkit-cloud-api.joseph-cannon.workers.dev/v1/waitlist/signup \
+curl -X POST https://api.thehouseofdeals.com/v1/waitlist/signup \
   -H "Content-Type: application/json" \
   -d '{
     "email": "test@example.com",
@@ -222,7 +222,7 @@ curl -X POST https://popkit-cloud-api.joseph-cannon.workers.dev/v1/waitlist/sign
   }'
 
 # Check stats
-curl https://popkit-cloud-api.joseph-cannon.workers.dev/v1/waitlist/stats
+curl https://api.thehouseofdeals.com/v1/waitlist/stats
 ```
 
 ### Test Premium Checker Utility
@@ -266,10 +266,10 @@ npm run deploy
 
 ```bash
 # Health check
-curl https://popkit-cloud-api.joseph-cannon.workers.dev/v1/health
+curl https://api.thehouseofdeals.com/v1/health
 
 # Waitlist stats
-curl https://popkit-cloud-api.joseph-cannon.workers.dev/v1/waitlist/stats
+curl https://api.thehouseofdeals.com/v1/waitlist/stats
 ```
 
 ## Switching to Live Billing
@@ -291,7 +291,7 @@ When ready to launch premium tiers:
 4. **Export waitlist:**
    ```bash
    curl -H "Authorization: Bearer your-admin-key" \
-     https://popkit-cloud-api.joseph-cannon.workers.dev/v1/waitlist/list > waitlist.json
+     https://api.thehouseofdeals.com/v1/waitlist/list > waitlist.json
    ```
 
 5. **Send launch emails** to all waitlist subscribers

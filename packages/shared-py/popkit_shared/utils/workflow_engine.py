@@ -1003,7 +1003,7 @@ class UpstashWorkflowEngine:
     # API URL (same as other PopKit cloud clients)
     API_URL = os.environ.get(
         "POPKIT_API_URL",
-        "https://popkit-cloud-api.joseph-cannon.workers.dev"
+        "https://api.thehouseofdeals.com"
     )
 
     def __init__(

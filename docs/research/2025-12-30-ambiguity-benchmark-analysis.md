@@ -207,7 +207,7 @@ AskUserQuestion({
 ### Step 1: Run Vibe-Coded Benchmarks
 
 ```bash
-cd C:\Users\Josep\onedrive\documents\elshaddai\apps\popkit\packages\benchmarks
+cd <PROJECT_ROOT>/packages/benchmarks
 
 # Run both modes in parallel (recommended)
 npx tsx run-both.ts todo-app-vibe --visible

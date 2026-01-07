@@ -73,7 +73,7 @@ Session recording was not capturing SubagentStop events because of a session ID 
 
    📊 Forensics Report Generated:
 
-     file:///C:/Users/Josep/.claude/popkit/recordings/2025-12-24-123456-manual-session-20251224-123456.html
+     file:///<USER_HOME>/.claude/popkit/recordings/2025-12-24-123456-manual-session-20251224-123456.html
 
    Click the link above to open in your browser.
    ```
@@ -84,7 +84,7 @@ Session recording was not capturing SubagentStop events because of a session ID 
 
    **Alternative: Check JSON directly**
    ```bash
-   cd C:\Users\Josep\.claude\popkit\recordings
+   cd ~/.claude/popkit/recordings
    cat <latest-recording>.json | python -m json.tool | findstr "subagent_stop"
    ```
 
@@ -110,14 +110,14 @@ If SubagentStop events still don't appear:
 1. **Check Session ID Mismatch**
    ```bash
    # Compare session IDs
-   cat C:\Users\Josep\.claude\popkit\recording-state.json
-   cat C:\Users\Josep\OneDrive\Documents\ElShaddai\apps\popkit\logs\subagent_stop.json | python -m json.tool | findstr session_id
+   cat ~/.claude/popkit/recording-state.json
+   cat <PROJECT_ROOT>/logs/subagent_stop.json | python -m json.tool | findstr session_id
    ```
 
 2. **Check Hook Execution**
    ```bash
    # Verify subagent-stop.py is being called
-   cat C:\Users\Josep\OneDrive\Documents\ElShaddai\apps\popkit\logs\subagent_stop.json | python -c "import sys, json; data=json.load(sys.stdin); print(f'Total events: {len(data)}')"
+   cat <PROJECT_ROOT>/logs/subagent_stop.json | python -c "import sys, json; data=json.load(sys.stdin); print(f'Total events: {len(data)}')"
    ```
 
 3. **Enable Debug Logging**
@@ -132,7 +132,7 @@ If SubagentStop events still don't appear:
 
 - `packages/popkit-core/commands/record.md` - Updated start recording instructions
 - `packages/popkit-core/hooks/subagent-stop.py` - Added session ID verification
-- `C:\Users\Josep\.claude\popkit\recording-state.json` - Will contain `claude_session_id` field
+- `~/.claude/popkit/recording-state.json` - Will contain `claude_session_id` field
 
 ## Related
 

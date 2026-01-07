@@ -22,7 +22,7 @@ from dataclasses import dataclass
 
 POPKIT_API_URL = os.environ.get(
     "POPKIT_API_URL",
-    "https://popkit-cloud-api.joseph-cannon.workers.dev"
+    "https://api.thehouseofdeals.com"
 )
 TIMEOUT_SECONDS = 3  # Fast timeout for responsive UX
 

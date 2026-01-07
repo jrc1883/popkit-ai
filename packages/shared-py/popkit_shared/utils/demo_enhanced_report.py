@@ -43,7 +43,15 @@ def demo_enhanced_report():
 
     if not transcript_path:
         # Fallback to current session transcript
-        transcript_path = Path.home() / '.claude' / 'projects' / 'C--Users-Josep-OneDrive-Documents-ElShaddai-apps-popkit' / 'ad19212c-7de5-4b0f-8a50-0d311410b902.jsonl'
+        # Look for most recent transcript in the projects directory
+        projects_dir = Path.home() / '.claude' / 'projects'
+        if projects_dir.exists():
+            transcripts = list(projects_dir.glob('*/*.jsonl'))
+            if transcripts:
+                transcript_path = max(transcripts, key=lambda p: p.stat().st_mtime)
+
+        if not transcript_path:
+            transcript_path = None  # Will be handled below
 
     if not transcript_path.exists():
         print(f"[WARN] Transcript not found, skipping reasoning analysis")
