@@ -2,8 +2,9 @@
 name: Architecture / Epic
 about: Major architectural changes or multi-PR initiatives
 title: "[Architecture] "
-labels: architecture, epic
+labels: ''
 assignees: ''
+
 ---
 
 ## Priority & Phase

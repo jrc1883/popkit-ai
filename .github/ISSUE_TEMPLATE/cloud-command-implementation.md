@@ -1,8 +1,10 @@
 ---
 name: Implement /popkit:cloud command
 about: User-facing command to manage PopKit Cloud connection
-title: "Implement /popkit:cloud command for cloud connection management"
-labels: enhancement, P1-high, size:M
+title: Implement /popkit:cloud command for cloud connection management
+labels: enhancement
+assignees: ''
+
 ---
 
 ## Summary

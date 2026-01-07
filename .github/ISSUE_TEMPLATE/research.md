@@ -2,8 +2,9 @@
 name: Research / Investigation
 about: Research tasks, spikes, or investigation work
 title: "[Research] "
-labels: research
+labels: ''
 assignees: ''
+
 ---
 
 ## Priority & Phase
