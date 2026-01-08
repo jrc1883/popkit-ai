@@ -236,6 +236,6 @@ Create `.github/PULL_REQUEST_TEMPLATE.md`:
 ## 🔗 Quick Links
 
 - **Repository:** https://github.com/jrc1883/popkit-claude
-- **Marketplace:** Install via `/plugin install popkit-core@popkit-marketplace`
+- **Marketplace:** Install via `/plugin install popkit-core@popkit-claude`
 - **CI Status:** https://github.com/jrc1883/popkit-claude/actions
 - **Issues:** https://github.com/jrc1883/popkit-claude/issues

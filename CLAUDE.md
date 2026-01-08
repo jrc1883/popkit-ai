@@ -19,7 +19,6 @@ popkit-claude/
 │   ├── popkit-dev/         # Development workflows (git, GitHub, routines)
 │   ├── popkit-ops/         # Operations & quality (test, debug, deploy)
 │   ├── popkit-research/    # Knowledge management (research, notes)
-│   ├── popkit-suite/       # Meta-plugin (complete bundle)
 │   ├── shared-py/          # Shared Python utilities (70 modules)
 │   ├── cloud/              # PopKit Cloud API (Cloudflare Workers)
 │   ├── benchmarks/         # Testing framework
@@ -36,47 +35,50 @@ popkit-claude/
 
 ## Installation
 
-### For Users
+### From GitHub Marketplace (Recommended)
 
-Install PopKit from the Claude Code marketplace:
+PopKit is published as a GitHub-based marketplace. Install it in two steps:
 
+**Step 1: Add the marketplace (one-time setup)**
 ```bash
-# Complete suite (all features)
-/plugin install popkit-suite@popkit-marketplace
+/plugin marketplace add jrc1883/popkit-claude
+```
 
-# Or install individual plugins
-/plugin install popkit-core@popkit-marketplace
-/plugin install popkit-dev@popkit-marketplace
-/plugin install popkit-ops@popkit-marketplace
-/plugin install popkit-research@popkit-marketplace
+**Step 2: Install plugins**
+```bash
+# Install all plugins for full functionality
+/plugin install popkit-core@popkit-claude
+/plugin install popkit-dev@popkit-claude
+/plugin install popkit-ops@popkit-claude
+/plugin install popkit-research@popkit-claude
 ```
 
 After installation, restart Claude Code and run `/popkit:next` to get started.
 
-### For Local Testing (Git Clone)
+### For Local Development (Git Clone)
 
-If you've cloned this repository and want to test local changes:
+If you've cloned this repository for development and want to test local changes:
 
 ```bash
 # Navigate to the repository root
 cd /path/to/popkit-claude
 
-# Install individual plugin from local directory
+# Install plugins from local directories
 /plugin install ./packages/popkit-core
 /plugin install ./packages/popkit-dev
-# etc.
-
-# Or use relative paths
-/plugin install packages/popkit-core
+/plugin install ./packages/popkit-ops
+/plugin install ./packages/popkit-research
 ```
 
 Restart Claude Code after installing local plugins.
+
+**Note:** Local installations take precedence over marketplace installations.
 
 ---
 
 ## Plugin Architecture
 
-PopKit uses a modular plugin architecture with 5 focused plugins:
+PopKit uses a modular plugin architecture with 4 focused plugins:
 
 | Plugin | Purpose | Key Features |
 |--------|---------|--------------|
@@ -84,7 +86,6 @@ PopKit uses a modular plugin architecture with 5 focused plugins:
 | **popkit-dev** | Development workflows | Git operations, GitHub integration, daily routines |
 | **popkit-ops** | Operations & quality | Testing, debugging, security, deployment |
 | **popkit-research** | Knowledge management | Research capture, knowledge base |
-| **popkit-suite** | Complete bundle | All features in one install |
 
 ### Plugin Components
 
@@ -286,7 +287,7 @@ PopKit requires specific Claude Code versions for full functionality:
 
 **Version**: 1.0.0-beta.3
 **Status**: Beta release
-**Plugins**: 5 modular plugins
+**Plugins**: 4 modular plugins
 **Commands**: 23 workflow commands
 **Skills**: 38 reusable skills
 **Agents**: 22 specialized agents

@@ -6,7 +6,11 @@ All notable changes to PopKit are documented in this file.
 
 ## [Unreleased]
 
-_No unreleased changes yet._
+### Removed
+- **popkit-suite plugin**: Removed non-functional meta-plugin
+  - Claude Code doesn't support plugin dependency management
+  - Users should install the 4 core plugins individually
+  - Updated all documentation to reflect 4-plugin architecture
 
 ---
 
@@ -339,8 +343,8 @@ packages/
 
 #### Modular Installation
 Users can now install:
-- **Complete suite**: `/plugin install popkit@popkit-marketplace`
-- **Selective plugins**: `/plugin install popkit-dev@popkit-marketplace`
+- **Complete suite**: `/plugin install popkit@popkit-claude`
+- **Selective plugins**: `/plugin install popkit-dev@popkit-claude`
 - **Custom combinations**: Mix and match based on needs
 
 #### Backwards Compatibility

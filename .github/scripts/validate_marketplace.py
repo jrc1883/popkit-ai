@@ -14,7 +14,7 @@ except Exception as e:
     print(f"Error: Failed to read marketplace.json: {e}")
     sys.exit(1)
 
-expected_plugins = ["popkit-core", "popkit-dev", "popkit-ops", "popkit-research", "popkit-suite"]
+expected_plugins = ["popkit-core", "popkit-dev", "popkit-ops", "popkit-research"]
 actual_plugins = [p["name"] for p in marketplace.get("plugins", [])]
 
 missing = set(expected_plugins) - set(actual_plugins)

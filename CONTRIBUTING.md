@@ -124,8 +124,11 @@ Install the plugins you want to work on from your local directory:
 /plugin install ./packages/popkit-ops
 /plugin install ./packages/popkit-research
 
-# Or install the complete suite
-/plugin install ./packages/popkit-suite
+# Or install all plugins
+/plugin install ./packages/popkit-core
+/plugin install ./packages/popkit-dev
+/plugin install ./packages/popkit-ops
+/plugin install ./packages/popkit-research
 ```
 
 **Important**: After installing local plugins, restart Claude Code for changes to take effect.
@@ -390,7 +393,6 @@ PopKit uses a modular architecture with 5 focused plugins:
 | **popkit-dev** | Development workflows | Git, GitHub, routines, feature dev |
 | **popkit-ops** | Operations & quality | Testing, debugging, security, deployment |
 | **popkit-research** | Knowledge management | Research capture, knowledge base |
-| **popkit-suite** | Complete bundle | Meta-plugin (includes all above) |
 
 ### Plugin Structure
 

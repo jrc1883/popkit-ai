@@ -203,7 +203,7 @@ This plugin is part of the PopKit ecosystem and depends on `popkit-shared`.
 
 ```bash
 # Install via Claude Code plugin manager
-/plugin install popkit-core@popkit-marketplace
+/plugin install popkit-core@popkit-claude
 ```
 
 ## Usage Examples

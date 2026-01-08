@@ -184,7 +184,7 @@ Commit? [Yes/No]
 
 **Option 2: Publish Plugin First**
 - Push changes to public `popkit-claude` repo
-- Reinstall plugin: `/plugin update popkit@popkit-marketplace`
+- Reinstall plugin: `/plugin update popkit@popkit-claude`
 - Restart Claude Code to load new version
 - Then run benchmark
 

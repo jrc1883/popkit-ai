@@ -62,7 +62,7 @@ body:
       description: What does the documentation currently say? (quote or describe)
       placeholder: |
         Currently the README says:
-        "Install with /plugin install popkit@popkit-marketplace"
+        "Install with /plugin install popkit@popkit-claude"
 
         But this is outdated because...
     validations:
@@ -115,12 +115,11 @@ body:
       placeholder: |
         Example 1:
         ```bash
-        /plugin install popkit-core@popkit-marketplace
+        /plugin install popkit-core@popkit-claude
         ```
 
         Example 2:
         ```bash
-        /plugin install popkit-suite@popkit-marketplace
         ```
     validations:
       required: false

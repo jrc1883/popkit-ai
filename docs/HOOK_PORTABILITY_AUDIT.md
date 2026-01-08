@@ -150,7 +150,7 @@ claude --plugin-dir ./packages/popkit-core
 
 ### 2. Marketplace Install (via npm)
 ```
-/plugin install popkit-core@popkit-marketplace
+/plugin install popkit-core@popkit-claude
 ```
 - ✅ `${CLAUDE_PLUGIN_ROOT}` resolves to plugin installation directory
 - ✅ Hooks execute from installed location

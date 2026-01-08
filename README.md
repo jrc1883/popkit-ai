@@ -16,7 +16,7 @@
 
 Transforms Claude Code into a complete development workflow system with intelligent agents that coordinate automatically, handle tasks in parallel, and get smarter over time. One subscription, zero installation friction.
 
-**Version:** 1.0.0-beta.3 | **Plugins:** 5 | **Commands:** 23 | **Skills:** 38 | **Agents:** 22
+**Version:** 1.0.0-beta.3 | **Plugins:** 4 | **Commands:** 23 | **Skills:** 38 | **Agents:** 22
 
 [Quick Start](#-quick-start) • [Features](#-what-is-popkit) • [Documentation](#-documentation) • [Contributing](#-contributing)
 
@@ -114,7 +114,6 @@ PopKit is split into 5 focused workflow plugins:
 | **[popkit-dev](packages/popkit-dev/)** | Development workflows | 7 | Daily dev, git, GitHub, routines |
 | **[popkit-ops](packages/popkit-ops/)** | Operations & quality | 5 | Testing, debugging, security, deployment |
 | **[popkit-research](packages/popkit-research/)** | Knowledge management | 2 | Research capture, knowledge base |
-| **[popkit-suite](packages/popkit-suite/)** | Complete bundle | All | One-click install (all features) |
 
 **Foundation**: `popkit-shared` (v1.0.0) - 70 shared Python utility modules
 
@@ -122,40 +121,32 @@ PopKit is split into 5 focused workflow plugins:
 
 ## ⚡ Quick Start
 
-### Option 1: Complete Suite (Recommended)
-
-Install everything with one command:
-
+**Step 1: Add the PopKit marketplace (one-time setup)**
 ```bash
-/plugin install popkit-suite@popkit-marketplace
-# Restart Claude Code
+/plugin marketplace add jrc1883/popkit-claude
 ```
 
-All 23 commands available under `/popkit:` namespace.
-
-### Option 2: Selective Installation
-
-Install only what you need:
+**Step 2: Install PopKit plugins**
 
 ```bash
-# Foundation (required for other plugins)
-/plugin install popkit-core@popkit-marketplace
-
-# Development workflows (git, GitHub, feature dev, routines)
-/plugin install popkit-dev@popkit-marketplace
-
-# Operations & quality (testing, security, deployment)
-/plugin install popkit-ops@popkit-marketplace
-
-# Knowledge management (research, notes)
-/plugin install popkit-research@popkit-marketplace
+# Install all plugins for full functionality
+/plugin install popkit-core@popkit-claude
+/plugin install popkit-dev@popkit-claude
+/plugin install popkit-ops@popkit-claude
+/plugin install popkit-research@popkit-claude
 
 # Restart Claude Code
 ```
 
-**Minimum**: popkit-core (11 commands)
-**Recommended**: popkit-core + popkit-dev (18 commands)
-**Complete**: popkit-suite (all 23 commands)
+**Or install selectively:**
+- `popkit-core` - Foundation (account, stats, Power Mode) - 11 commands
+- `popkit-dev` - Development workflows (git, GitHub, routines) - 7 commands
+- `popkit-ops` - Operations & quality (testing, security, deploy) - 5 commands
+- `popkit-research` - Knowledge management (research, notes) - 2 commands
+
+**Minimum**: popkit-core (9 commands)
+**Recommended**: popkit-core + popkit-dev (16 commands)
+**Complete**: All 4 plugins (23 commands)
 
 ---
 
@@ -222,7 +213,6 @@ popkit/
 │   ├── popkit-dev/         # Development workflows (git, GitHub, routines)
 │   ├── popkit-ops/         # Operations & quality (test, debug, deploy)
 │   ├── popkit-research/    # Knowledge management (research, notes)
-│   ├── popkit-suite/       # Meta-plugin (complete bundle)
 │   ├── cloud/              # PopKit Cloud API (Cloudflare Workers)
 │   ├── benchmarks/         # Testing framework + archived files
 │   ├── docs/               # Documentation site (Astro + Starlight)
@@ -361,7 +351,14 @@ MIT License - see [LICENSE](LICENSE) for details.
 **Ready to supercharge your development workflow?**
 
 ```bash
-/plugin install popkit-suite@popkit-marketplace
+# Add marketplace (one-time)
+/plugin marketplace add jrc1883/popkit-claude
+
+# Install all PopKit plugins
+/plugin install popkit-core@popkit-claude
+/plugin install popkit-dev@popkit-claude
+/plugin install popkit-ops@popkit-claude
+/plugin install popkit-research@popkit-claude
 ```
 
 Then restart Claude Code and run `/popkit:next` to get started!

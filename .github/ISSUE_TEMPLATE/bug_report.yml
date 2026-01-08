@@ -31,7 +31,6 @@ body:
         - popkit-dev (git, GitHub, routines)
         - popkit-ops (testing, security, deployment)
         - popkit-research (research, knowledge base)
-        - popkit-suite (complete bundle)
         - shared-py (shared utilities)
         - Not sure
     validations:

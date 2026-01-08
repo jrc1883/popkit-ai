@@ -292,7 +292,7 @@ def format_update_notification(release_info: Dict[str, Any], current_version: st
 
     lines.extend([
         "",
-        "  Update with: /plugin update popkit@popkit-marketplace",
+        "  Update with: /plugin update popkit@popkit-claude",
         "=" * 60,
         ""
     ])

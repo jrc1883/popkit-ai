@@ -308,7 +308,7 @@ jobs:
 
       - name: Install PopKit
         run: |
-          /plugin install popkit@popkit-marketplace
+          /plugin install popkit@popkit-claude
 
       - name: Run Plugin Tests
         run: |

@@ -43,7 +43,6 @@ jobs:
             "popkit-dev"
             "popkit-ops"
             "popkit-research"
-            "popkit-suite"
           )
 
           for PLUGIN in "${PLUGINS[@]}"; do

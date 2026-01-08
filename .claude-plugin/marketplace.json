@@ -1,5 +1,5 @@
 {
-  "name": "popkit-marketplace",
+  "name": "popkit-claude",
   "owner": {
     "name": "Joseph Cannon",
     "email": "joseph@thehouseofdeals.com"
@@ -67,21 +67,6 @@
       "repository": "https://github.com/jrc1883/popkit-claude",
       "license": "MIT",
       "keywords": ["research", "knowledge", "documentation"],
-      "category": "productivity"
-    },
-    {
-      "name": "popkit-suite",
-      "source": "./packages/popkit-suite",
-      "description": "Complete PopKit suite - installation guide for all 4 plugins with full functionality",
-      "version": "1.0.0-beta.3",
-      "author": {
-        "name": "Joseph Cannon",
-        "email": "joseph@thehouseofdeals.com"
-      },
-      "homepage": "https://github.com/jrc1883/popkit-claude",
-      "repository": "https://github.com/jrc1883/popkit-claude",
-      "license": "MIT",
-      "keywords": ["popkit", "suite", "complete", "meta", "bundle"],
       "category": "productivity"
     }
   ]

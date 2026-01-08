@@ -249,7 +249,7 @@ This plan defines the complete validation strategy for PopKit v1.0.0 release, bu
 **Must fix before v1.0.0-beta.1 publication:**
 
 - [ ] **Installation works from marketplace URL**
-  - Test: `/plugin install popkit-suite@popkit-marketplace`
+  - Test: `/plugin install popkit-suite@popkit-claude`
   - Verification: All 5 plugins installed, commands available
 
 - [ ] **Core commands don't crash**
@@ -488,7 +488,7 @@ Execute all existing automated tests and create new automated checks for securit
 Verify that users can install PopKit from marketplace and immediately use all features.
 
 **Tasks:**
-- [ ] Test suite installation (`/plugin install popkit-suite@popkit-marketplace`)
+- [ ] Test suite installation (`/plugin install popkit-suite@popkit-claude`)
 - [ ] Test selective installation (individual plugins)
 - [ ] Verify all 23 commands available after install
 - [ ] Test dependency resolution (shared package)
