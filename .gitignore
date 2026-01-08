@@ -73,6 +73,7 @@ packages/*/build-*.txt
 
 # Personal session/state files
 STATUS.json
+.workspace/
 
 # Environment variables (secrets)
 .env
