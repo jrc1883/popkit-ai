@@ -118,6 +118,31 @@ Example hook command:
 }
 ```
 
+### New in Claude Code 2.1.0
+
+**Skill Hot-Reload:**
+- Skills automatically reload when modified
+- No session restart required
+- Test changes instantly with `/skill invoke <name>`
+- Ideal for rapid skill development and iteration
+
+**Forked Skill Contexts:**
+- Skills can declare `context: fork` in frontmatter
+- Runs in isolated context (reduces token overhead)
+- Ideal for expensive operations: embeddings, web research, one-time scans
+- Example skills: `pop-research-capture`, `pop-embed-content`, `pop-assessment-*`
+
+**YAML List Format:**
+- Agent `tools` field now supports clean YAML list syntax
+- Old format still supported (backwards compatible)
+- Example:
+  ```yaml
+  tools:
+    - Read
+    - Grep
+    - Glob
+  ```
+
 ---
 
 ## Testing
@@ -221,8 +246,11 @@ PopKit requires specific Claude Code versions for full functionality:
 | **Plan Mode** | 2.0.70 | Agent approval workflow |
 | **Configuration Management** | 2.0.71 | `/config` toggle |
 | **MCP Permissions** | 2.0.71 | Fixed permissions for MCP servers |
+| **Skill Hot-Reload** | 2.1.0 | Skills reload without restart |
+| **Forked Skill Contexts** | 2.1.0 | Isolated execution contexts |
+| **YAML List Format** | 2.1.0 | Clean agent tools syntax |
 
-**Recommended**: Claude Code 2.0.71+ for full feature support.
+**Recommended**: Claude Code 2.1.0+ for full feature support.
 
 ---
 

@@ -1,6 +1,7 @@
 ---
 name: embed-content
 description: "Use when you need to manage project embeddings - embed skills, agents, commands, and MCP tools for semantic discovery. Handles rate limiting, incremental updates, and status reporting. Do NOT use if you just want to search for content - use the semantic router directly instead."
+context: fork
 ---
 
 # Embed Content

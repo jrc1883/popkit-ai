@@ -1,7 +1,13 @@
 ---
 name: deployment-validator
 description: "Ensures safe, reliable deployments through comprehensive validation and verification. Use for pre-deployment checks, smoke testing, and deployment verification."
-tools: Read, Bash, Grep, WebFetch, Task, Write
+tools:
+  - Read
+  - Bash
+  - Grep
+  - WebFetch
+  - Task
+  - Write
 output_style: deployment-report
 model: inherit
 version: 1.0.0

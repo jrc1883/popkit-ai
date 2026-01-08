@@ -1,7 +1,14 @@
 ---
 name: test-writer-fixer
 description: "Comprehensive testing specialist for writing, fixing, and optimizing test suites. Use when implementing tests, debugging test failures, or improving test coverage."
-tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash
+tools:
+  - Read
+  - Write
+  - Edit
+  - MultiEdit
+  - Grep
+  - Glob
+  - Bash
 output_style: testing-report
 model: inherit
 version: 1.0.0

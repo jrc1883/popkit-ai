@@ -1,7 +1,12 @@
 ---
 name: feature-prioritizer
 description: "Strategic backlog management and feature prioritization specialist. Use when making product roadmap decisions, prioritizing features, or managing development backlogs."
-tools: Read, Grep, Glob, Write, WebFetch
+tools:
+  - Read
+  - Grep
+  - Glob
+  - Write
+  - WebFetch
 output_style: prioritization-report
 model: inherit
 version: 1.0.0

@@ -1,7 +1,15 @@
 ---
 name: rapid-prototyper
 description: "Fast MVP development specialist for quick proof-of-concept implementations. Use when building prototypes, validating ideas, or creating minimal viable features quickly."
-tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash, WebFetch
+tools:
+  - Read
+  - Write
+  - Edit
+  - MultiEdit
+  - Grep
+  - Glob
+  - Bash
+  - WebFetch
 output_style: prototype-report
 model: inherit
 version: 1.0.0

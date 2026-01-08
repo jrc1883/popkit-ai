@@ -1,7 +1,12 @@
 ---
 name: power-coordinator
 description: "Orchestrates multi-agent collaboration in Power Mode. Use when coordinating parallel agents working on complex tasks via Redis pub/sub mesh network."
-tools: Read, Write, Bash, Task, TodoWrite
+tools:
+  - Read
+  - Write
+  - Bash
+  - Task
+  - TodoWrite
 output_style: power-mode-checkin
 model: inherit
 version: 1.0.0

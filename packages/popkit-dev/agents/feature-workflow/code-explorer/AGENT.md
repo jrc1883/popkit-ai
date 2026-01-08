@@ -1,7 +1,11 @@
 ---
 name: code-explorer
 description: "Deeply analyzes existing codebase features by tracing execution paths, data flow, and dependencies. Use during exploration phase of feature development or when understanding unfamiliar code."
-tools: Read, Grep, Glob, LS
+tools:
+  - Read
+  - Grep
+  - Glob
+  - LS
 output_style: agent-handoff
 model: inherit
 version: 1.0.0

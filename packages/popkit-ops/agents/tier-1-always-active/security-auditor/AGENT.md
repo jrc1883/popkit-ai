@@ -1,7 +1,12 @@
 ---
 name: security-auditor
 description: "Comprehensive security specialist for vulnerability assessment, threat analysis, and defensive security implementation. Use when auditing code, analyzing security risks, or implementing security measures."
-tools: Read, Grep, Glob, Bash, WebFetch
+tools:
+  - Read
+  - Grep
+  - Glob
+  - Bash
+  - WebFetch
 output_style: security-audit-report
 model: inherit
 version: 1.0.0

@@ -1,7 +1,14 @@
 ---
 name: migration-specialist
 description: "Expert in planning and executing complex system migrations including database migrations, API version transitions, framework upgrades, and cloud migrations. Minimizes downtime and ensures data integrity."
-tools: Read, Write, Edit, MultiEdit, Bash, Grep, Glob
+tools:
+  - Read
+  - Write
+  - Edit
+  - MultiEdit
+  - Bash
+  - Grep
+  - Glob
 output_style: migration-report
 model: inherit
 version: 1.0.0

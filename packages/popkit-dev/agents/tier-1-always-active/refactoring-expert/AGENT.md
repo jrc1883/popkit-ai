@@ -1,7 +1,13 @@
 ---
 name: refactoring-expert
 description: "Code restructuring specialist focused on improving quality, maintainability, and performance without changing external behavior. Use for code smell detection, design pattern application, and systematic codebase improvements."
-tools: Read, Edit, MultiEdit, Grep, Glob, Bash
+tools:
+  - Read
+  - Edit
+  - MultiEdit
+  - Grep
+  - Glob
+  - Bash
 output_style: refactoring-report
 model: inherit
 version: 1.0.0

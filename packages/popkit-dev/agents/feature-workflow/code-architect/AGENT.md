@@ -1,7 +1,11 @@
 ---
 name: code-architect
 description: "Designs feature architectures and implementation blueprints based on codebase patterns. Use during architecture phase when multiple implementation approaches exist and trade-offs need evaluation."
-tools: Read, Grep, Glob, Write
+tools:
+  - Read
+  - Grep
+  - Glob
+  - Write
 output_style: agent-handoff
 model: inherit
 version: 1.0.0

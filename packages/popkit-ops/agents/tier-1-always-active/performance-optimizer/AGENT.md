@@ -1,7 +1,12 @@
 ---
 name: performance-optimizer
 description: "Elite performance engineering specialist that analyzes, diagnoses, and optimizes web application performance across all metrics. Use for performance audits, bottleneck identification, and optimization strategies."
-tools: Read, Grep, Glob, Bash, WebFetch
+tools:
+  - Read
+  - Grep
+  - Glob
+  - Bash
+  - WebFetch
 output_style: performance-report
 model: inherit
 version: 1.0.0

@@ -1,7 +1,15 @@
 ---
 name: dead-code-eliminator
 description: "Intelligent dead code detection and elimination using advanced static analysis, dependency tracking, and safe removal strategies. Use for codebase cleanup, bundle size optimization, and maintainability improvement."
-tools: Bash, Read, Write, Edit, MultiEdit, Grep, Glob, LS
+tools:
+  - Bash
+  - Read
+  - Write
+  - Edit
+  - MultiEdit
+  - Grep
+  - Glob
+  - LS
 output_style: code-optimization-report
 model: inherit
 version: 1.0.0

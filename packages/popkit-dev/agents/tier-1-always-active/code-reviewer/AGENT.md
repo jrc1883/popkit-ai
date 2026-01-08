@@ -1,7 +1,11 @@
 ---
 name: code-reviewer
 description: "Performs comprehensive code reviews focusing on TypeScript, React, and Node.js best practices. Use after implementing significant features or when code quality assessment is needed."
-tools: Read, Grep, Glob, Edit
+tools:
+  - Read
+  - Grep
+  - Glob
+  - Edit
 output_style: code-review-report
 model: inherit
 version: 1.0.0

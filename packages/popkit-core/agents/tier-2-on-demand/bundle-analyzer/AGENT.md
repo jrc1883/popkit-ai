@@ -1,7 +1,14 @@
 ---
 name: bundle-analyzer
 description: "Analyzes and optimizes JavaScript bundle sizes for web applications. Use for identifying bloated dependencies, implementing code splitting, and reducing bundle size."
-tools: Read, Write, Edit, MultiEdit, Bash, Grep, Glob
+tools:
+  - Read
+  - Write
+  - Edit
+  - MultiEdit
+  - Bash
+  - Grep
+  - Glob
 output_style: bundle-report
 model: inherit
 version: 1.0.0

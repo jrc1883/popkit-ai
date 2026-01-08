@@ -1,6 +1,7 @@
 ---
 name: pop-assessment-security
 description: "Validates PopKit security posture using concrete vulnerability patterns, automated secret scanning, and OWASP-aligned checklists"
+context: fork
 triggers:
   - assess security
   - security audit

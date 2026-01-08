@@ -1,7 +1,13 @@
 ---
 name: rollback-specialist
 description: "Expert in rapid recovery procedures and safe rollback operations. Use when deployments fail, production issues arise, or emergency recovery is needed."
-tools: Bash, Read, Write, Edit, Task, WebFetch
+tools:
+  - Bash
+  - Read
+  - Write
+  - Edit
+  - Task
+  - WebFetch
 output_style: rollback-report
 model: inherit
 version: 1.0.0
