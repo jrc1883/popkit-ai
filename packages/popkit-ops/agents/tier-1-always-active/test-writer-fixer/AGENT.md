@@ -12,6 +12,10 @@ tools:
 output_style: testing-report
 model: inherit
 version: 1.0.0
+hooks:
+  PostToolUse:
+    - script: "${CLAUDE_PLUGIN_ROOT}/../../shared-py/hooks/auto-run-tests.py"
+      once: false
 ---
 
 # Test Writer Fixer Agent

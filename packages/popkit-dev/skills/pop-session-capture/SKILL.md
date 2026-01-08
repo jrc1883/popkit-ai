@@ -1,6 +1,10 @@
 ---
 name: session-capture
 description: "Saves complete session state to STATUS.json for seamless continuation across conversations. Captures git context, in-progress tasks, service status, focus area, and next actions. Use at the end of work sessions, before context limits, or when switching to a different task. Do NOT use mid-task or for quick questions - the overhead is only worthwhile when you actually need to resume later."
+hooks:
+  Stop:
+    - script: "${CLAUDE_PLUGIN_ROOT}/../../shared-py/hooks/auto-save-state.py"
+      once: true
 ---
 
 # Session Capture
