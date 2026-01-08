@@ -34,7 +34,6 @@
 - [ ] popkit-dev
 - [ ] popkit-ops
 - [ ] popkit-research
-- [ ] popkit-suite
 - [ ] shared-py
 - [ ] cloud (private)
 - [ ] None (documentation/CI only)

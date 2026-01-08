@@ -120,7 +120,6 @@ body:
 
         Example 2:
         ```bash
-        /plugin install popkit-suite@popkit-claude
         ```
     validations:
       required: false

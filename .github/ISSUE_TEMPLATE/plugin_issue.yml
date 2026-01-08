@@ -18,7 +18,6 @@ body:
         - popkit-dev
         - popkit-ops
         - popkit-research
-        - popkit-suite
         - shared-py
     validations:
       required: true
