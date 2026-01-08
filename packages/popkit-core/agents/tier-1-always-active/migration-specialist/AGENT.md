@@ -1,7 +1,30 @@
 ---
 name: migration-specialist
 description: "Expert in planning and executing complex system migrations including database migrations, API version transitions, framework upgrades, and cloud migrations. Minimizes downtime and ensures data integrity."
-tools: Read, Write, Edit, MultiEdit, Bash, Grep, Glob
+tools:
+  - Read
+  - Write
+  - Edit
+  - MultiEdit
+  - Grep
+  - Glob
+  # Database migration tools
+  - Bash(npx prisma migrate*)
+  - Bash(npm run migrate*)
+  - Bash(knex migrate*)
+  - Bash(sequelize-cli db:migrate*)
+  - Bash(alembic*)
+  - Bash(flyway*)
+  # Version management
+  - Bash(npm outdated*)
+  - Bash(npm-check-updates*)
+  - Bash(ncu*)
+  # Testing migrations
+  - Bash(npm test*)
+  - Bash(npm run test:migration*)
+  # Backup verification (read-only)
+  - Bash(pg_dump*)
+  - Bash(mysqldump*)
 output_style: migration-report
 model: inherit
 version: 1.0.0

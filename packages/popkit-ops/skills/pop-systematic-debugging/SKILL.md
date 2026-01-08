@@ -1,6 +1,7 @@
 ---
 name: systematic-debugging
 description: "Four-phase debugging: root cause → patterns → hypothesis → implement. For complex bugs, test failures, multi-component issues. NOT for obvious syntax errors."
+context: fork
 inputs:
   - {from: any, field: error_message, required: false}
   - {from: any, field: reproduction_steps, required: false}

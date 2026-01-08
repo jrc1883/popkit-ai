@@ -1,7 +1,23 @@
 ---
 name: refactoring-expert
 description: "Code restructuring specialist focused on improving quality, maintainability, and performance without changing external behavior. Use for code smell detection, design pattern application, and systematic codebase improvements."
-tools: Read, Edit, MultiEdit, Grep, Glob, Bash
+tools:
+  - Read
+  - Edit
+  - MultiEdit
+  - Grep
+  - Glob
+  # Testing to verify refactoring safety
+  - Bash(npm test*)
+  - Bash(yarn test*)
+  - Bash(pytest *)
+  # Linting to maintain code quality
+  - Bash(npm run lint*)
+  - Bash(eslint*)
+  - Bash(prettier --check*)
+  # Type checking
+  - Bash(npx tsc --noEmit*)
+  - Bash(npm run type-check*)
 output_style: refactoring-report
 model: inherit
 version: 1.0.0

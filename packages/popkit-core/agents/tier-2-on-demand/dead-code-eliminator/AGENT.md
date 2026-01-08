@@ -1,7 +1,26 @@
 ---
 name: dead-code-eliminator
 description: "Intelligent dead code detection and elimination using advanced static analysis, dependency tracking, and safe removal strategies. Use for codebase cleanup, bundle size optimization, and maintainability improvement."
-tools: Bash, Read, Write, Edit, MultiEdit, Grep, Glob, LS
+tools:
+  - Read
+  - Write
+  - Edit
+  - MultiEdit
+  - Grep
+  - Glob
+  - LS
+  # Dead code detection
+  - Bash(npx ts-unused-exports*)
+  - Bash(npx unimported*)
+  - Bash(npx depcheck*)
+  - Bash(npx knip*)
+  # Testing to verify safe removal
+  - Bash(npm test*)
+  - Bash(npm run test:all*)
+  # Type checking after removal
+  - Bash(npx tsc --noEmit*)
+  # Linting
+  - Bash(npm run lint*)
 output_style: code-optimization-report
 model: inherit
 version: 1.0.0

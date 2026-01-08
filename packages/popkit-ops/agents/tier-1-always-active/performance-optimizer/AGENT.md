@@ -1,7 +1,27 @@
 ---
 name: performance-optimizer
 description: "Elite performance engineering specialist that analyzes, diagnoses, and optimizes web application performance across all metrics. Use for performance audits, bottleneck identification, and optimization strategies."
-tools: Read, Grep, Glob, Bash, WebFetch
+tools:
+  - Read
+  - Grep
+  - Glob
+  # Performance testing
+  - Bash(npm run perf*)
+  - Bash(npm run benchmark*)
+  # Build analysis
+  - Bash(npm run build*)
+  - Bash(npx webpack-bundle-analyzer*)
+  - Bash(npx vite-bundle-visualizer*)
+  # Performance profiling
+  - Bash(node --prof*)
+  - Bash(npx 0x*)
+  # Load testing
+  - Bash(ab -n*)
+  - Bash(wrk*)
+  - Bash(autocannon*)
+  # Lighthouse/audits
+  - Bash(npx lighthouse*)
+  - WebFetch
 output_style: performance-report
 model: inherit
 version: 1.0.0

@@ -1,7 +1,26 @@
 ---
 name: bundle-analyzer
 description: "Analyzes and optimizes JavaScript bundle sizes for web applications. Use for identifying bloated dependencies, implementing code splitting, and reducing bundle size."
-tools: Read, Write, Edit, MultiEdit, Bash, Grep, Glob
+tools:
+  - Read
+  - Write
+  - Edit
+  - MultiEdit
+  - Grep
+  - Glob
+  # Bundle analysis tools
+  - Bash(npx webpack-bundle-analyzer*)
+  - Bash(npx vite-bundle-visualizer*)
+  - Bash(npx source-map-explorer*)
+  - Bash(npm run analyze*)
+  # Build commands for bundle generation
+  - Bash(npm run build*)
+  - Bash(npx webpack --json*)
+  - Bash(npx vite build*)
+  # Dependency analysis
+  - Bash(npm ls*)
+  - Bash(npx depcheck*)
+  - Bash(npx size-limit*)
 output_style: bundle-report
 model: inherit
 version: 1.0.0

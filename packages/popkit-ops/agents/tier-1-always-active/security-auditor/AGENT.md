@@ -1,10 +1,33 @@
 ---
 name: security-auditor
 description: "Comprehensive security specialist for vulnerability assessment, threat analysis, and defensive security implementation. Use when auditing code, analyzing security risks, or implementing security measures."
-tools: Read, Grep, Glob, Bash, WebFetch
+tools:
+  - Read
+  - Grep
+  - Glob
+  # Security scanning - read-only audit commands
+  - Bash(npm audit*)
+  - Bash(yarn audit*)
+  - Bash(pnpm audit*)
+  - Bash(snyk test*)
+  - Bash(safety check*)
+  - Bash(trivy scan*)
+  - Bash(bandit*)
+  # Dependency checks - read-only
+  - Bash(npm outdated*)
+  - Bash(pip list --outdated*)
+  - Bash(poetry show --outdated*)
+  # Security linting - check mode only
+  - Bash(eslint --max-warnings*)
+  - Bash(semgrep scan*)
+  - WebFetch
 output_style: security-audit-report
 model: inherit
 version: 1.0.0
+hooks:
+  PreToolUse:
+    - script: "${CLAUDE_PLUGIN_ROOT}/../../shared-py/hooks/validate-security-tool.py"
+      once: false
 ---
 
 # Security Auditor Agent

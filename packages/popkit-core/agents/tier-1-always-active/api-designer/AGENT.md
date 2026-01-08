@@ -1,7 +1,13 @@
 ---
 name: api-designer
 description: "Expert in RESTful and GraphQL API design patterns. Use when designing new APIs, restructuring existing endpoints, or when you need guidance on API best practices, versioning, and integration patterns."
-tools: Read, Write, Edit, MultiEdit, Grep, WebFetch
+tools:
+  - Read
+  - Write
+  - Edit
+  - MultiEdit
+  - Grep
+  - WebFetch
 output_style: api-design-report
 model: inherit
 version: 1.0.0

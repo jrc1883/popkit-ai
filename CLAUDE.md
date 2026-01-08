@@ -118,6 +118,59 @@ Example hook command:
 }
 ```
 
+### New in Claude Code 2.1.0
+
+**Skill Hot-Reload:**
+- Skills automatically reload when modified
+- No session restart required
+- Test changes instantly with `/skill invoke <name>`
+- Ideal for rapid skill development and iteration
+
+**Forked Skill Contexts:**
+- Skills can declare `context: fork` in frontmatter
+- Runs in isolated context (reduces token overhead)
+- Ideal for expensive operations: embeddings, web research, one-time scans
+- Example skills: `pop-research-capture`, `pop-embed-content`, `pop-assessment-*`
+
+**YAML List Format:**
+- Agent `tools` field now supports clean YAML list syntax
+- Old format still supported (backwards compatible)
+- Example:
+  ```yaml
+  tools:
+    - Read
+    - Grep
+    - Glob
+  ```
+
+**Wildcard Tool Permissions:**
+- Fine-grained Bash command control using `*` wildcards
+- Security model: explicit allow, block by omission
+- Example:
+  ```yaml
+  tools:
+    - Read
+    - Write
+    # Testing frameworks - safe, test-specific commands
+    - Bash(npm test)
+    - Bash(npm run test*)
+    - Bash(pytest *)
+    # Security scanning - read-only audit commands
+    - Bash(npm audit*)
+    - Bash(snyk test*)
+    # Git operations - safe, read-only inspection
+    - Bash(git status)
+    - Bash(git diff*)
+    - Bash(git log*)
+  ```
+- **Wildcard Syntax:**
+  - `Bash(command)` - Exact match only
+  - `Bash(command *)` - Command with any arguments
+  - `Bash(command subcommand*)` - Subcommand with any arguments
+- **Security Principle:** Be conservative. Only list allowed patterns; everything else is blocked.
+- **Blocked by Omission:** Commands not listed are automatically blocked (e.g., `git push --force`, `rm -rf`, `sudo`)
+- See [Wildcard Permission Design](docs/research/2026-01-08-wildcard-permission-design.md) for detailed patterns and examples
+
 ---
 
 ## Testing
@@ -221,8 +274,11 @@ PopKit requires specific Claude Code versions for full functionality:
 | **Plan Mode** | 2.0.70 | Agent approval workflow |
 | **Configuration Management** | 2.0.71 | `/config` toggle |
 | **MCP Permissions** | 2.0.71 | Fixed permissions for MCP servers |
+| **Skill Hot-Reload** | 2.1.0 | Skills reload without restart |
+| **Forked Skill Contexts** | 2.1.0 | Isolated execution contexts |
+| **YAML List Format** | 2.1.0 | Clean agent tools syntax |
 
-**Recommended**: Claude Code 2.0.71+ for full feature support.
+**Recommended**: Claude Code 2.1.0+ for full feature support.
 
 ---
 

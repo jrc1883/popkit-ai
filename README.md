@@ -12,7 +12,9 @@
 ![GitHub Forks](https://img.shields.io/github/forks/jrc1883/popkit-claude?style=social)
 ![Claude Code](https://img.shields.io/badge/Claude%20Code-2.0.71%2B-purple.svg)
 
-**AI-powered development workflows for Claude Code** - Modular plugin suite for professional software development.
+**Get 10x the work done in Claude Code—without the learning curve.**
+
+Transforms Claude Code into a complete development workflow system with intelligent agents that coordinate automatically, handle tasks in parallel, and get smarter over time. One subscription, zero installation friction.
 
 **Version:** 1.0.0-beta.3 | **Plugins:** 5 | **Commands:** 23 | **Skills:** 38 | **Agents:** 22
 
@@ -47,14 +49,30 @@
 
 ## 🎯 What is PopKit?
 
-PopKit transforms Claude Code into a complete development workflow system. Instead of using raw tools, you get:
+PopKit transforms Claude Code into a complete development workflow system with intelligent orchestration that makes you more productive without adding complexity.
 
-- **5 Focused Plugins**: Install only what you need
-- **23 Workflow Commands**: From feature dev to deployment
-- **38 Reusable Skills**: Composable automation patterns
-- **22 Specialized Agents**: Context-aware AI assistance
-- **FREE Local Execution**: All features work without cloud
-- **API Key Enhancements**: Optional semantic intelligence
+### Why PopKit?
+
+- **12x Cheaper at Scale** - Run coordinated multi-agent workflows with a single Claude subscription ($20/month), not 12 parallel subscriptions ($240/month). PopKit's intelligent orchestration means you pay once and work on unlimited tasks.
+
+- **Zero Installation Friction** - No new IDE to learn, no Docker containers to manage, no separate tools to install. PopKit lives inside Claude Code as a plugin—install in 30 seconds and start building immediately.
+
+- **Smarter Over Time, Not Just Faster** - Our embedding-based agent routing has already reduced context baseline by 40.5% (25.7k → 15.3k tokens). The more you use PopKit, the cheaper and more precise your AI assistance becomes.
+
+- **Parallel AI Workers Without the Complexity** - Power Mode coordinates multiple specialized agents working on different aspects of your task simultaneously. You get the benefits of parallel execution without managing multiple Claude instances or terminals.
+
+- **GitHub-First Workflows That Actually Work** - Issues automatically become tasks, tasks become PRs, and PRs get reviewed with quality gates. PopKit handles the entire workflow from ideation to deployment without leaving Claude Code.
+
+- **Quality Gates You Can Trust** - Every workflow includes automated testing, security scanning, code review, and deployment validation. Six specialized assessors (Anthropic, Security, Performance, UX, Architecture, Documentation) ensure production-ready code.
+
+### What's Included
+
+- **5 Focused Plugins**: Install only what you need (core, dev, ops, research, or complete suite)
+- **23 Workflow Commands**: From morning routines to deployment automation
+- **38 Reusable Skills**: Battle-tested workflows from planning to production
+- **22 Specialized Agents**: Context-aware AI assistance that routes automatically
+- **FREE Local Execution**: All features work without cloud API keys
+- **Optional Enhancements**: Semantic intelligence with Voyage AI embeddings
 
 ---
 

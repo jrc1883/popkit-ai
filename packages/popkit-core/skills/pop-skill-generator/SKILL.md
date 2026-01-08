@@ -330,12 +330,16 @@ Skills generated at .claude/skills/
 Skills created:
 ✓ [project]-patterns.md - Coding patterns (47 patterns found)
   └─ Embedded for semantic discovery
+  └─ Available immediately (hot-reload in Claude Code 2.1.0+)
 ✓ [project]-testing.md - Test conventions
   └─ Embedded for semantic discovery
+  └─ Available immediately (hot-reload in Claude Code 2.1.0+)
 ✓ [project]-deployment.md - Deployment workflow
   └─ Embedded for semantic discovery
+  └─ Available immediately (hot-reload in Claude Code 2.1.0+)
 ✓ [project]-setup.md - Dev environment setup
   └─ Embedded for semantic discovery
+  └─ Available immediately (hot-reload in Claude Code 2.1.0+)
 
 Embedding Summary:
 - Total skills: 4
@@ -343,6 +347,9 @@ Embedding Summary:
 - Skipped: 0
 
 These skills are now available for this project and discoverable via semantic search.
+
+Note: With Claude Code 2.1.0+, generated skills are immediately available
+without restarting your session. Test with `/skill invoke <skill-name>`.
 
 Would you like me to review and refine any of them?
 ```

@@ -1,6 +1,10 @@
 ---
 name: power-mode
 description: "Multi-agent orchestration system using Claude Code's native background agents (2.0.64+) for true parallel collaboration. Enables shared context, sync barriers between phases, and coordinator oversight. Use for complex tasks benefiting from parallel execution (epics, large refactors, multi-phase features). Do NOT use for simple tasks or sequential workflows - the coordination overhead isn't justified."
+hooks:
+  Stop:
+    - script: "${CLAUDE_PLUGIN_ROOT}/../../shared-py/hooks/save-power-mode-report.py"
+      once: true
 ---
 
 # Pop Power Mode

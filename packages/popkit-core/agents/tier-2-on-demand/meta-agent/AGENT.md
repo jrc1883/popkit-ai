@@ -1,7 +1,12 @@
 ---
 name: meta-agent
 description: "Generates new, complete Claude Code agent configuration files from user descriptions. Use proactively when creating custom agents for specific project needs."
-tools: Write, WebFetch, MultiEdit, Read, Grep
+tools:
+  - Write
+  - WebFetch
+  - MultiEdit
+  - Read
+  - Grep
 output_style: agent-specification
 model: inherit
 version: 1.0.0

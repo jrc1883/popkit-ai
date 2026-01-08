@@ -1,7 +1,11 @@
 ---
 name: accessibility-guardian
 description: "Ensures web applications meet WCAG 2.1 AA/AAA compliance. Use when auditing accessibility, fixing a11y violations, or implementing inclusive design patterns."
-tools: Read, Grep, Glob, WebFetch
+tools:
+  - Read
+  - Grep
+  - Glob
+  - WebFetch
 output_style: accessibility-audit
 model: inherit
 version: 1.0.0

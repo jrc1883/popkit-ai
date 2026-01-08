@@ -1,6 +1,7 @@
 ---
 name: pop-assessment-performance
 description: "Evaluates PopKit efficiency using concrete metrics for context usage, token consumption, and lazy loading validation"
+context: fork
 triggers:
   - assess performance
   - performance test

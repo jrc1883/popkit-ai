@@ -1,7 +1,14 @@
 ---
 name: documentation-maintainer
 description: "Keeps documentation synchronized with codebase changes. Use after major feature updates, API changes, or when documentation drift is detected to ensure accuracy and completeness."
-tools: Read, Write, Edit, MultiEdit, Grep, Glob, WebFetch
+tools:
+  - Read
+  - Write
+  - Edit
+  - MultiEdit
+  - Grep
+  - Glob
+  - WebFetch
 output_style: documentation-report
 model: inherit
 version: 1.0.0

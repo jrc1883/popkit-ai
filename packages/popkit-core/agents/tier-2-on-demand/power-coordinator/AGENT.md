@@ -1,7 +1,22 @@
 ---
 name: power-coordinator
 description: "Orchestrates multi-agent collaboration in Power Mode. Use when coordinating parallel agents working on complex tasks via Redis pub/sub mesh network."
-tools: Read, Write, Bash, Task, TodoWrite
+tools:
+  - Read
+  - Write
+  # Redis operations for pub/sub coordination
+  - Bash(redis-cli GET*)
+  - Bash(redis-cli SET*)
+  - Bash(redis-cli KEYS*)
+  - Bash(redis-cli SUBSCRIBE*)
+  - Bash(redis-cli PUBLISH*)
+  # System monitoring
+  - Bash(ps aux*)
+  - Bash(top -bn1*)
+  # Power Mode state inspection
+  - Bash(cat .workspace/power-mode-state.json)
+  - Task
+  - TodoWrite
 output_style: power-mode-checkin
 model: inherit
 version: 1.0.0
