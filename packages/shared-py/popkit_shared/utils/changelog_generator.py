@@ -1,16 +1,24 @@
 #!/usr/bin/env python3
 """
-Changelog Generator Utility
-Generates version history entries for CLAUDE.md from conventional commit messages.
+Enhanced Changelog Generator with Semantic Versioning
+Generates CHANGELOG.md and GitHub release notes from conventional commits.
 
-Part of PopKit plugin - Issue #85 (Documentation Automation Epic #81)
+Features:
+- Automatic semantic version bump detection (MAJOR.MINOR.PATCH)
+- Categorized commits with emoji icons
+- Breaking change detection and highlighting
+- GitHub release notes generation
+- Integration with git workflow
+
+Part of PopKit plugin - Quick Win from Issue #27 (Auto Claude Competitive Features)
 
 Usage:
     python changelog_generator.py                    # Generate for next version
-    python changelog_generator.py --version 0.9.9   # Specify version
-    python changelog_generator.py --since v0.9.8    # From specific tag
+    python changelog_generator.py --version 1.1.0   # Specify version
+    python changelog_generator.py --since v1.0.0    # From specific tag
     python changelog_generator.py --json            # Output as JSON
     python changelog_generator.py --preview         # Preview without updating
+    python changelog_generator.py --release         # Generate GitHub release notes
 """
 
 import json
@@ -23,23 +31,31 @@ from typing import Dict, List, Any, Optional, Tuple
 from collections import defaultdict
 
 
-# Conventional commit type to display name mapping
+# Conventional commit type to display name mapping with emojis
 COMMIT_TYPES = {
-    "feat": "Features",
-    "fix": "Bug Fixes",
-    "docs": "Documentation",
-    "style": "Styling",
-    "refactor": "Refactoring",
-    "perf": "Performance",
-    "test": "Testing",
-    "build": "Build System",
-    "ci": "CI/CD",
-    "chore": "Maintenance",
-    "revert": "Reverts"
+    "feat": "✨ Features",
+    "fix": "🐛 Bug Fixes",
+    "breaking": "💥 BREAKING CHANGES",
+    "docs": "📚 Documentation",
+    "style": "💄 Style",
+    "refactor": "♻️ Code Refactoring",
+    "perf": "⚡ Performance",
+    "test": "✅ Tests",
+    "build": "📦 Build System",
+    "ci": "👷 CI/CD",
+    "chore": "🔧 Chores",
+    "revert": "⏪ Reverts"
 }
 
 # Priority order for changelog sections
-TYPE_PRIORITY = ["feat", "fix", "perf", "refactor", "docs", "test", "ci", "build", "chore", "style", "revert"]
+TYPE_PRIORITY = ["breaking", "feat", "fix", "perf", "refactor", "docs", "test", "ci", "build", "chore", "style", "revert"]
+
+# Semantic versioning bump rules
+VERSION_BUMP_RULES = {
+    "major": ["breaking"],  # BREAKING CHANGE
+    "minor": ["feat"],       # New features
+    "patch": ["fix", "perf", "refactor", "docs", "test", "build", "ci", "chore", "style", "revert"]
+}
 
 
 class ChangelogGenerator:
@@ -110,6 +126,9 @@ class ChangelogGenerator:
 
     def parse_commit(self, subject: str, body: str = "") -> Optional[Dict[str, Any]]:
         """Parse a conventional commit message."""
+        # Check for breaking change first
+        is_breaking = "BREAKING CHANGE" in body or "BREAKING CHANGE:" in subject.upper()
+
         # Pattern: type(scope): description
         # or: type: description
         pattern = r'^(\w+)(?:\(([^)]+)\))?:\s*(.+)$'
@@ -118,23 +137,29 @@ class ChangelogGenerator:
         if not match:
             # Non-conventional commit
             return {
-                "type": "other",
+                "type": "breaking" if is_breaking else "other",
                 "scope": None,
                 "description": subject,
+                "body": body,
                 "issues": self.extract_issues(subject + " " + body),
-                "breaking": "BREAKING" in subject.upper() or "BREAKING" in body.upper()
+                "breaking": is_breaking
             }
 
         commit_type = match.group(1).lower()
         scope = match.group(2)
         description = match.group(3)
 
+        # Override type if breaking change
+        if is_breaking:
+            commit_type = "breaking"
+
         return {
             "type": commit_type,
             "scope": scope,
             "description": description,
+            "body": body,
             "issues": self.extract_issues(subject + " " + body),
-            "breaking": "BREAKING" in subject.upper() or "BREAKING" in body.upper()
+            "breaking": is_breaking
         }
 
     def extract_issues(self, text: str) -> List[int]:
@@ -151,16 +176,81 @@ class ChangelogGenerator:
             groups[commit["type"]].append(commit)
         return dict(groups)
 
+    def determine_version_bump(self, commits: List[Dict[str, Any]]) -> str:
+        """
+        Determine semantic version bump based on commit types.
+
+        Rules:
+        - BREAKING CHANGE → MAJOR (1.0.0 → 2.0.0)
+        - feat → MINOR (1.0.0 → 1.1.0)
+        - fix/perf/refactor/etc → PATCH (1.0.0 → 1.0.1)
+
+        Returns:
+            "major", "minor", or "patch"
+        """
+        commit_types = [c["type"] for c in commits]
+
+        # Check for major bump (breaking changes)
+        if any(t in VERSION_BUMP_RULES["major"] for t in commit_types):
+            return "major"
+
+        # Check for minor bump (new features)
+        if any(t in VERSION_BUMP_RULES["minor"] for t in commit_types):
+            return "minor"
+
+        # Default to patch
+        return "patch"
+
+    def bump_version(self, current_version: str, bump_type: str) -> str:
+        """
+        Bump a semantic version.
+
+        Args:
+            current_version: Current version (e.g., "1.2.3" or "v1.2.3")
+            bump_type: "major", "minor", or "patch"
+
+        Returns:
+            New version string (without 'v' prefix)
+        """
+        # Remove 'v' prefix if present
+        version = current_version.lstrip('v')
+
+        # Parse version
+        match = re.match(r'^(\d+)\.(\d+)\.(\d+)', version)
+        if not match:
+            return "1.0.0"
+
+        major, minor, patch = int(match.group(1)), int(match.group(2)), int(match.group(3))
+
+        if bump_type == "major":
+            return f"{major + 1}.0.0"
+        elif bump_type == "minor":
+            return f"{major}.{minor + 1}.0"
+        else:  # patch
+            return f"{major}.{minor}.{patch + 1}"
+
     def generate_markdown(
         self,
         version: str,
         title: str = None,
-        since_ref: str = None
+        since_ref: str = None,
+        for_changelog: bool = True
     ) -> str:
-        """Generate CLAUDE.md version history entry."""
+        """
+        Generate CHANGELOG.md entry.
+
+        Args:
+            version: Version number
+            title: Optional release title
+            since_ref: Generate since this tag/ref
+            for_changelog: If True, format for CHANGELOG.md; if False, for CLAUDE.md
+
+        Returns:
+            Formatted changelog entry
+        """
         commits = self.get_commits_since(since_ref)
         if not commits:
-            return f"### v{version}\n\nNo changes since last release.\n"
+            return f"## [{version}] - {datetime.now().strftime('%Y-%m-%d')}\n\nNo changes since last release.\n"
 
         grouped = self.group_commits(commits)
 
@@ -173,86 +263,181 @@ class ChangelogGenerator:
         # Build the changelog
         lines = []
 
-        # Header with title
-        if title:
-            lines.append(f"### v{version} (Current) - {title}")
+        # Header
+        if for_changelog:
+            lines.append(f"## [{version}] - {datetime.now().strftime('%Y-%m-%d')}")
         else:
-            lines.append(f"### v{version} (Current)")
+            if title:
+                lines.append(f"### v{version} (Current) - {title}")
+            else:
+                lines.append(f"### v{version} (Current)")
         lines.append("")
 
-        # Feature highlights (from feat commits)
-        if "feat" in grouped:
-            for commit in grouped["feat"]:
-                scope = commit["scope"]
+        # Generate sections in priority order
+        for commit_type in TYPE_PRIORITY:
+            if commit_type not in grouped:
+                continue
+
+            type_commits = grouped[commit_type]
+            if not type_commits:
+                continue
+
+            # Section header
+            section_name = COMMIT_TYPES.get(commit_type, commit_type.title())
+            lines.append(f"### {section_name}")
+            lines.append("")
+
+            # Commits in this section
+            for commit in type_commits:
+                scope = commit.get("scope")
                 desc = commit["description"]
                 issues = commit["issues"]
+                body = commit.get("body", "")
 
-                # Create feature bullet
+                # Format: - **scope**: description (#123)
                 if scope:
-                    scope_display = scope.replace("-", " ").title()
-                    bullet = f"- **{scope_display}**"
+                    line = f"- **{scope}**: {desc}"
                 else:
-                    bullet = f"- **{desc.split()[0].title()}**"
+                    line = f"- {desc}"
 
                 if issues:
                     issue_refs = ", ".join(f"#{i}" for i in issues)
-                    bullet += f" ({issue_refs}):"
-                else:
-                    bullet += ":"
+                    line += f" ({issue_refs})"
 
-                lines.append(bullet)
-                lines.append(f"  - {desc}")
+                lines.append(line)
+
+                # For breaking changes, add migration note if present
+                if commit_type == "breaking" and body:
+                    # Extract migration info from body
+                    migration_lines = [l.strip() for l in body.split("\n") if l.strip()]
+                    for mline in migration_lines[:3]:  # Max 3 lines
+                        lines.append(f"  - {mline}")
+
+            lines.append("")
+
+        return "\n".join(lines)
+
+    def generate_github_release_notes(
+        self,
+        version: str,
+        title: str = None,
+        since_ref: str = None
+    ) -> str:
+        """
+        Generate GitHub release notes.
+
+        Returns:
+            Formatted release notes suitable for GitHub releases
+        """
+        commits = self.get_commits_since(since_ref)
+        if not commits:
+            return f"# {version}\n\nNo changes since last release."
+
+        grouped = self.group_commits(commits)
+
+        # Collect statistics
+        all_issues = set()
+        for commit_list in grouped.values():
+            for commit in commit_list:
+                all_issues.update(commit["issues"])
+
+        # Count commits by type
+        feat_count = len(grouped.get("feat", []))
+        fix_count = len(grouped.get("fix", []))
+        breaking_count = len(grouped.get("breaking", []))
+
+        # Build release notes
+        lines = []
+
+        # Title
+        if title:
+            lines.append(f"# PopKit {version} - {title}")
+        else:
+            lines.append(f"# PopKit {version}")
+        lines.append("")
+
+        # Summary
+        lines.append("## 🎉 What's New")
+        lines.append("")
+
+        if breaking_count > 0:
+            lines.append(f"⚠️ **This release contains {breaking_count} breaking change(s)** - please review the Breaking Changes section below.")
+            lines.append("")
+
+        # Highlights (features)
+        if "feat" in grouped:
+            for commit in grouped["feat"][:5]:  # Top 5 features
+                scope = commit.get("scope", "")
+                desc = commit["description"]
+                issues = commit["issues"]
+
+                if scope:
+                    lines.append(f"### {scope.replace('-', ' ').title()}")
+                else:
+                    lines.append(f"### {desc.split()[0].title()}")
+
+                lines.append(f"{desc}")
+                if issues:
+                    issue_refs = ", ".join(f"#{i}" for i in issues)
+                    lines.append(f"({issue_refs})")
+                lines.append("")
+
+        # Breaking changes
+        if "breaking" in grouped:
+            lines.append("## 💥 Breaking Changes")
+            lines.append("")
+            for commit in grouped["breaking"]:
+                desc = commit["description"]
+                body = commit.get("body", "")
+                lines.append(f"### {desc}")
+                lines.append("")
+                if body:
+                    lines.append("**Migration:**")
+                    migration_lines = [l.strip() for l in body.split("\n") if l.strip()]
+                    for mline in migration_lines:
+                        lines.append(f"- {mline}")
+                    lines.append("")
 
         # Bug fixes
         if "fix" in grouped:
-            lines.append("- **Bug Fixes**:")
+            lines.append("## 🐛 Bug Fixes")
+            lines.append("")
             for commit in grouped["fix"]:
                 desc = commit["description"]
                 issues = commit["issues"]
                 if issues:
                     issue_refs = ", ".join(f"#{i}" for i in issues)
-                    lines.append(f"  - {desc} ({issue_refs})")
+                    lines.append(f"- {desc} ({issue_refs})")
                 else:
-                    lines.append(f"  - {desc}")
+                    lines.append(f"- {desc}")
+            lines.append("")
 
-        # Performance improvements
-        if "perf" in grouped:
-            lines.append("- **Performance**:")
-            for commit in grouped["perf"]:
-                lines.append(f"  - {commit['description']}")
+        # Statistics
+        lines.append("## 📊 Statistics")
+        lines.append("")
+        lines.append(f"- **Features Added:** {feat_count}")
+        lines.append(f"- **Bug Fixes:** {fix_count}")
+        lines.append(f"- **Total Commits:** {len(commits)}")
+        if all_issues:
+            lines.append(f"- **Issues Closed:** {len(all_issues)}")
+        lines.append("")
 
-        # Refactoring
-        if "refactor" in grouped:
-            lines.append("- **Refactoring**:")
-            for commit in grouped["refactor"]:
-                desc = commit["description"]
-                issues = commit["issues"]
-                if issues:
-                    issue_refs = ", ".join(f"#{i}" for i in issues)
-                    lines.append(f"  - {desc} ({issue_refs})")
-                else:
-                    lines.append(f"  - {desc}")
-
-        # Documentation
-        if "docs" in grouped:
-            lines.append("- **Documentation**:")
-            for commit in grouped["docs"]:
-                lines.append(f"  - {commit['description']}")
-
-        # Maintenance/Chore
-        if "chore" in grouped:
-            lines.append("- **Maintenance**:")
-            for commit in grouped["chore"]:
-                lines.append(f"  - {commit['description']}")
-
-        # GitHub issues closed
+        # Links
+        lines.append("## 🔗 Links")
+        lines.append("")
+        lines.append(f"- **Full Changelog:** [CHANGELOG.md](CHANGELOG.md#{version.replace('.', '')}---{datetime.now().strftime('%Y-%m-%d')})")
         if all_issues:
             sorted_issues = sorted(all_issues)
-            # Format as ranges where possible
-            issue_str = self.format_issue_ranges(sorted_issues)
-            lines.append(f"- **GitHub Issues Closed** - {issue_str}")
-
+            issue_list = ", ".join(f"#{i}" for i in sorted_issues)
+            lines.append(f"- **Issues Closed:** {issue_list}")
         lines.append("")
+
+        # Installation
+        lines.append("---")
+        lines.append("")
+        lines.append("**Install:** `/plugin install popkit-suite@popkit-marketplace`")
+        lines.append("")
+        lines.append("**Upgrade:** `/plugin update popkit-suite`")
 
         return "\n".join(lines)
 
@@ -284,6 +469,68 @@ class ChangelogGenerator:
 
         return ", ".join(ranges)
 
+    def update_changelog(self, version: str, title: str = None, since_ref: str = None) -> bool:
+        """Update CHANGELOG.md with new version entry."""
+        changelog = self.project_root / "CHANGELOG.md"
+
+        # Generate new entry
+        new_entry = self.generate_markdown(version, title, since_ref, for_changelog=True)
+
+        if not changelog.exists():
+            # Create new CHANGELOG.md
+            content = f"""# Changelog
+
+All notable changes to PopKit are documented in this file.
+
+**Versioning:** PopKit uses semantic versioning. Currently in preview (0.x) until stable public launch.
+
+## [Unreleased]
+
+_No unreleased changes yet._
+
+---
+
+{new_entry}
+"""
+            try:
+                changelog.write_text(content, encoding="utf-8")
+                return True
+            except IOError:
+                return False
+        else:
+            # Update existing CHANGELOG.md
+            try:
+                content = changelog.read_text(encoding="utf-8")
+            except IOError:
+                return False
+
+            # Find where to insert (after [Unreleased] section and ---)
+            pattern = r'(## \[Unreleased\].*?---\s*\n+)'
+            match = re.search(pattern, content, re.DOTALL)
+
+            if match:
+                # Insert after the --- separator
+                insert_pos = match.end()
+                updated = content[:insert_pos] + new_entry + "\n" + content[insert_pos:]
+
+                try:
+                    changelog.write_text(updated, encoding="utf-8")
+                    return True
+                except IOError:
+                    return False
+            else:
+                # Fallback: insert after first line
+                lines = content.split("\n", 1)
+                if len(lines) > 1:
+                    updated = lines[0] + "\n\n" + new_entry + "\n" + lines[1]
+                    try:
+                        changelog.write_text(updated, encoding="utf-8")
+                        return True
+                    except IOError:
+                        return False
+
+        return False
+
     def update_claude_md(self, version: str, title: str = None, since_ref: str = None) -> bool:
         """Update CLAUDE.md with new version entry."""
         claude_md = self.project_root / "CLAUDE.md"
@@ -295,8 +542,8 @@ class ChangelogGenerator:
         except IOError:
             return False
 
-        # Generate new entry
-        new_entry = self.generate_markdown(version, title, since_ref)
+        # Generate new entry (old format for CLAUDE.md)
+        new_entry = self.generate_markdown(version, title, since_ref, for_changelog=False)
 
         # Find where to insert (after "## Version History" header and note)
         # Look for the first ### entry
@@ -320,6 +567,20 @@ class ChangelogGenerator:
 
         return False
 
+    def save_release_notes(self, version: str, title: str = None, since_ref: str = None, output_file: str = None) -> bool:
+        """Save GitHub release notes to a file."""
+        if output_file is None:
+            output_file = f"release-notes-{version}.md"
+
+        release_notes = self.generate_github_release_notes(version, title, since_ref)
+
+        output_path = self.project_root / output_file
+        try:
+            output_path.write_text(release_notes, encoding="utf-8")
+            return True
+        except IOError:
+            return False
+
     def to_json(self, version: str = None, since_ref: str = None) -> str:
         """Output changelog data as JSON."""
         commits = self.get_commits_since(since_ref)
@@ -330,13 +591,22 @@ class ChangelogGenerator:
             for commit in commit_list:
                 all_issues.update(commit["issues"])
 
+        # Determine version bump
+        bump_type = self.determine_version_bump(commits)
+
+        # Get current version and calculate next version
+        current_tag = since_ref or self.get_latest_tag() or "v0.0.0"
+        suggested_version = self.bump_version(current_tag, bump_type)
+
         return json.dumps({
-            "version": version,
+            "version": version or suggested_version,
             "since_ref": since_ref,
             "commits": commits,
             "grouped": grouped,
             "issues_closed": sorted(all_issues),
-            "commit_count": len(commits)
+            "commit_count": len(commits),
+            "version_bump": bump_type,
+            "suggested_version": suggested_version
         }, indent=2)
 
 
@@ -348,13 +618,15 @@ def main():
     # Handle Windows encoding
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
-    parser = argparse.ArgumentParser(description="Generate changelog from git commits")
-    parser.add_argument("--version", "-v", help="Version number (e.g., 0.9.9)")
+    parser = argparse.ArgumentParser(description="Enhanced changelog generator with semantic versioning")
+    parser.add_argument("--version", "-v", help="Version number (e.g., 1.1.0). If not provided, auto-determined from commits")
     parser.add_argument("--title", "-t", help="Release title")
     parser.add_argument("--since", "-s", help="Generate since this tag/ref")
-    parser.add_argument("--json", action="store_true", help="Output as JSON")
-    parser.add_argument("--preview", "-p", action="store_true", help="Preview without updating")
-    parser.add_argument("--update", "-u", action="store_true", help="Update CLAUDE.md")
+    parser.add_argument("--json", action="store_true", help="Output as JSON with version bump analysis")
+    parser.add_argument("--preview", "-p", action="store_true", help="Preview without updating files")
+    parser.add_argument("--update", "-u", action="store_true", help="Update CHANGELOG.md")
+    parser.add_argument("--release", "-r", action="store_true", help="Generate GitHub release notes")
+    parser.add_argument("--auto", "-a", action="store_true", help="Auto-determine version bump from commits")
     args = parser.parse_args()
 
     generator = ChangelogGenerator()
@@ -364,25 +636,39 @@ def main():
     if not since_ref:
         since_ref = generator.get_latest_tag()
 
-    # Get version (default to incrementing latest tag)
+    # Get version
     version = args.version
-    if not version and since_ref:
-        # Try to increment patch version
-        match = re.match(r'v?(\d+)\.(\d+)\.(\d+)', since_ref)
-        if match:
-            major, minor, patch = int(match.group(1)), int(match.group(2)), int(match.group(3))
-            version = f"{major}.{minor}.{patch + 1}"
-    if not version:
-        version = "0.0.1"
+    if not version or args.auto:
+        # Auto-determine version from commits
+        commits = generator.get_commits_since(since_ref)
+        if commits:
+            bump_type = generator.determine_version_bump(commits)
+            current_tag = since_ref or "v0.0.0"
+            version = generator.bump_version(current_tag, bump_type)
+            if args.auto:
+                print(f"Auto-determined version bump: {bump_type.upper()}")
+                print(f"Next version: {version}")
+                print()
+        else:
+            version = "0.0.1"
 
     if args.json:
         print(generator.to_json(version, since_ref))
+    elif args.release:
+        # Generate GitHub release notes
+        release_notes = generator.generate_github_release_notes(version, args.title, since_ref)
+        print(release_notes)
+        if not args.preview:
+            # Save to file
+            success = generator.save_release_notes(version, args.title, since_ref)
+            if success:
+                print(f"\n✅ Release notes saved to release-notes-{version}.md", file=sys.stderr)
     elif args.update:
-        success = generator.update_claude_md(version, args.title, since_ref)
+        success = generator.update_changelog(version, args.title, since_ref)
         if success:
-            print(f"Updated CLAUDE.md with v{version} changelog")
+            print(f"✅ Updated CHANGELOG.md with v{version}")
         else:
-            print("Failed to update CLAUDE.md", file=sys.stderr)
+            print("❌ Failed to update CHANGELOG.md", file=sys.stderr)
             sys.exit(1)
     else:
         # Preview mode (default)
