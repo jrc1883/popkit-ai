@@ -24,6 +24,10 @@ jobs:
   ip-scan:
     runs-on: ubuntu-latest
     name: Scan for IP Leaks
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
 
     steps:
       - name: Checkout repository
