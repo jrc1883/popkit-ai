@@ -50,6 +50,8 @@ class SkillContext:
     artifacts: Dict[str, str]           # Files created: {"design_document": "path/to/file.md"}
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
     github_issue: Optional[int] = None  # Linked GitHub issue number
+    complexity_score: Optional[int] = None  # Task complexity (1-10)
+    complexity_analysis: Optional[Dict[str, Any]] = None  # Full complexity analysis
 
 
 @dataclass
@@ -138,7 +140,9 @@ def load_skill_context() -> Optional[SkillContext]:
             shared_decisions=data.get("shared_decisions", []),
             artifacts=data.get("artifacts", {}),
             created_at=data.get("created_at", datetime.now().isoformat()),
-            github_issue=data.get("github_issue")
+            github_issue=data.get("github_issue"),
+            complexity_score=data.get("complexity_score"),
+            complexity_analysis=data.get("complexity_analysis")
         )
     except (json.JSONDecodeError, KeyError, TypeError):
         return None
@@ -193,7 +197,9 @@ def save_skill_context(output: SkillOutput) -> None:
         "artifacts": artifacts,
         "next_suggested": output.next_suggested,
         "updated_at": datetime.now().isoformat(),
-        "github_issue": existing.get("github_issue")
+        "github_issue": existing.get("github_issue"),
+        "complexity_score": output.output.get("complexity_score"),
+        "complexity_analysis": output.output.get("complexity_analysis")
     }
 
     if output.error_message:
