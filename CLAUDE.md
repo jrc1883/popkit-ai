@@ -143,6 +143,34 @@ Example hook command:
     - Glob
   ```
 
+**Wildcard Tool Permissions:**
+- Fine-grained Bash command control using `*` wildcards
+- Security model: explicit allow, block by omission
+- Example:
+  ```yaml
+  tools:
+    - Read
+    - Write
+    # Testing frameworks - safe, test-specific commands
+    - Bash(npm test)
+    - Bash(npm run test*)
+    - Bash(pytest *)
+    # Security scanning - read-only audit commands
+    - Bash(npm audit*)
+    - Bash(snyk test*)
+    # Git operations - safe, read-only inspection
+    - Bash(git status)
+    - Bash(git diff*)
+    - Bash(git log*)
+  ```
+- **Wildcard Syntax:**
+  - `Bash(command)` - Exact match only
+  - `Bash(command *)` - Command with any arguments
+  - `Bash(command subcommand*)` - Subcommand with any arguments
+- **Security Principle:** Be conservative. Only list allowed patterns; everything else is blocked.
+- **Blocked by Omission:** Commands not listed are automatically blocked (e.g., `git push --force`, `rm -rf`, `sudo`)
+- See [Wildcard Permission Design](docs/research/2026-01-08-wildcard-permission-design.md) for detailed patterns and examples
+
 ---
 
 ## Testing

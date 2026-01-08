@@ -6,9 +6,21 @@ tools:
   - Write
   - Edit
   - MultiEdit
-  - Bash
   - Grep
   - Glob
+  # Bundle analysis tools
+  - Bash(npx webpack-bundle-analyzer*)
+  - Bash(npx vite-bundle-visualizer*)
+  - Bash(npx source-map-explorer*)
+  - Bash(npm run analyze*)
+  # Build commands for bundle generation
+  - Bash(npm run build*)
+  - Bash(npx webpack --json*)
+  - Bash(npx vite build*)
+  # Dependency analysis
+  - Bash(npm ls*)
+  - Bash(npx depcheck*)
+  - Bash(npx size-limit*)
 output_style: bundle-report
 model: inherit
 version: 1.0.0

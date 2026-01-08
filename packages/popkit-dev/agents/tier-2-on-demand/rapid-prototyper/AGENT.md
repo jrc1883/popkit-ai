@@ -8,7 +8,19 @@ tools:
   - MultiEdit
   - Grep
   - Glob
-  - Bash
+  # Package management for quick scaffolding
+  - Bash(npm install*)
+  - Bash(npm create*)
+  - Bash(npx create-*)
+  - Bash(yarn create*)
+  # Development servers
+  - Bash(npm run dev*)
+  - Bash(npm start)
+  # Testing prototypes
+  - Bash(npm test)
+  - Bash(npm run test*)
+  # Build for demos
+  - Bash(npm run build)
   - WebFetch
 output_style: prototype-report
 model: inherit

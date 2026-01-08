@@ -8,7 +8,19 @@ tools:
   - MultiEdit
   - Grep
   - Glob
-  - Bash
+  # Testing frameworks - safe, test-specific commands
+  - Bash(npm test)
+  - Bash(npm run test*)
+  - Bash(npm run coverage)
+  - Bash(yarn test*)
+  - Bash(pnpm test*)
+  - Bash(pytest *)
+  - Bash(vitest *)
+  - Bash(jest *)
+  - Bash(mocha *)
+  # Coverage analysis
+  - Bash(npx c8*)
+  - Bash(npx nyc*)
 output_style: testing-report
 model: inherit
 version: 1.0.0

@@ -2,12 +2,29 @@
 name: rollback-specialist
 description: "Expert in rapid recovery procedures and safe rollback operations. Use when deployments fail, production issues arise, or emergency recovery is needed."
 tools:
-  - Bash
   - Read
   - Write
   - Edit
-  - Task
+  # Git rollback operations
+  - Bash(git log*)
+  - Bash(git show*)
+  - Bash(git revert*)
+  - Bash(git checkout*)
+  - Bash(git reset --soft*)
+  # CI/CD workflow management
+  - Bash(gh run*)
+  - Bash(gh workflow*)
+  # Container rollback (read-only inspection)
+  - Bash(docker ps*)
+  - Bash(docker logs*)
+  - Bash(kubectl get*)
+  - Bash(kubectl describe*)
+  - Bash(kubectl rollout*)
+  # Health verification
+  - Bash(curl --head*)
+  - Bash(curl -f*)
   - WebFetch
+  - Task
 output_style: rollback-report
 model: inherit
 version: 1.0.0

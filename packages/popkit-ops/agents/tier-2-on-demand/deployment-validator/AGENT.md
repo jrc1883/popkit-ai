@@ -3,11 +3,30 @@ name: deployment-validator
 description: "Ensures safe, reliable deployments through comprehensive validation and verification. Use for pre-deployment checks, smoke testing, and deployment verification."
 tools:
   - Read
-  - Bash
   - Grep
+  - Write
+  # Build commands
+  - Bash(npm run build*)
+  - Bash(yarn build*)
+  - Bash(pnpm build*)
+  # CI/CD workflow inspection (read-only)
+  - Bash(gh workflow*)
+  - Bash(gh run*)
+  - Bash(circleci*)
+  # Container inspection (read-only)
+  - Bash(docker ps*)
+  - Bash(docker images*)
+  - Bash(docker inspect*)
+  - Bash(docker logs*)
+  # Kubernetes inspection (read-only)
+  - Bash(kubectl get*)
+  - Bash(kubectl describe*)
+  - Bash(kubectl logs*)
+  # Health checks
+  - Bash(curl --head*)
+  - Bash(curl -f*)
   - WebFetch
   - Task
-  - Write
 output_style: deployment-report
 model: inherit
 version: 1.0.0

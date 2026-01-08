@@ -5,7 +5,21 @@ tools:
   - Read
   - Grep
   - Glob
-  - Bash
+  # Security scanning - read-only audit commands
+  - Bash(npm audit*)
+  - Bash(yarn audit*)
+  - Bash(pnpm audit*)
+  - Bash(snyk test*)
+  - Bash(safety check*)
+  - Bash(trivy scan*)
+  - Bash(bandit*)
+  # Dependency checks - read-only
+  - Bash(npm outdated*)
+  - Bash(pip list --outdated*)
+  - Bash(poetry show --outdated*)
+  # Security linting - check mode only
+  - Bash(eslint --max-warnings*)
+  - Bash(semgrep scan*)
   - WebFetch
 output_style: security-audit-report
 model: inherit

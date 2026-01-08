@@ -7,7 +7,17 @@ tools:
   - MultiEdit
   - Grep
   - Glob
-  - Bash
+  # Testing to verify refactoring safety
+  - Bash(npm test*)
+  - Bash(yarn test*)
+  - Bash(pytest *)
+  # Linting to maintain code quality
+  - Bash(npm run lint*)
+  - Bash(eslint*)
+  - Bash(prettier --check*)
+  # Type checking
+  - Bash(npx tsc --noEmit*)
+  - Bash(npm run type-check*)
 output_style: refactoring-report
 model: inherit
 version: 1.0.0

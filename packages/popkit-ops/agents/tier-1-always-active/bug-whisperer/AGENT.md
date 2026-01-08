@@ -4,9 +4,25 @@ description: "Expert debugging specialist for complex issues. Use when facing ha
 tools:
   - Read
   - Grep
-  - Bash
   - Edit
   - MultiEdit
+  # Debugging commands
+  - Bash(npm run debug*)
+  - Bash(node --inspect*)
+  - Bash(node --trace*)
+  - Bash(python -m pdb*)
+  # Testing for reproduction
+  - Bash(npm test*)
+  - Bash(pytest -v*)
+  - Bash(jest --verbose*)
+  # Log inspection
+  - Bash(tail -f*)
+  - Bash(tail -n*)
+  # Git operations for bisect/history
+  - Bash(git log*)
+  - Bash(git diff*)
+  - Bash(git show*)
+  - Bash(git bisect*)
   - WebFetch
 output_style: debugging-report
 model: inherit
