@@ -293,9 +293,9 @@ popkit-core (foundation)
 **Reason:** Correct arithmetic based on actual command counts.
 
 #### Issue 4.8: Installation Commands (12 instances)
-**Before:** `/plugin install popkit@popkit-marketplace`
+**Before:** `/plugin install popkit@popkit-claude`
 
-**After:** `/plugin install popkit-core@popkit-marketplace`
+**After:** `/plugin install popkit-core@popkit-claude`
 
 **Reason:** Foundation plugin is named `popkit-core`.
 
@@ -306,9 +306,9 @@ popkit-core (foundation)
 **File:** `<PROJECT_ROOT>/packages/popkit-ops/README.md`
 
 #### Issue 5.1: Installation Command (Line 51)
-**Before:** `/plugin install popkit@popkit-marketplace`
+**Before:** `/plugin install popkit@popkit-claude`
 
-**After:** `/plugin install popkit-core@popkit-marketplace`
+**After:** `/plugin install popkit-core@popkit-claude`
 
 #### Issue 5.2: Dependencies (Line 63)
 **Before:** `**popkit** (foundation plugin recommended)`
@@ -329,9 +329,9 @@ popkit-core (foundation)
 ```
 
 #### Issue 5.4: Related Plugins (Line 296)
-**Before:** `/plugin install popkit@popkit-marketplace`
+**Before:** `/plugin install popkit@popkit-claude`
 
-**After:** `/plugin install popkit-core@popkit-marketplace`
+**After:** `/plugin install popkit-core@popkit-claude`
 
 ---
 
@@ -402,8 +402,8 @@ popkit-core (foundation)
 - [x] Architecture diagrams consistent across all READMEs
 
 ### Installation Commands ✅
-- [x] All use `popkit-core@popkit-marketplace` for foundation
-- [x] No references to old `popkit@popkit-marketplace`
+- [x] All use `popkit-core@popkit-claude` for foundation
+- [x] No references to old `popkit@popkit-claude`
 - [x] Quick install sections accurate
 - [x] Selective installation math correct
 

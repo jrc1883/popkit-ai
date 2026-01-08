@@ -298,14 +298,14 @@ git subtree push --prefix=packages/popkit plugin-public main
 ### Current State (v0.2.5)
 - Single plugin: `popkit`
 - 27 commands, 73 skills, 31 agents
-- Users: `/plugin install popkit@popkit-marketplace`
+- Users: `/plugin install popkit@popkit-claude`
 
 ### Phase 1: Foundation Plugin (v1.0.0-beta.1)
 **Extract popkit (foundation)**
 - Issue #576
 - 7 commands (account, stats, etc.)
 - Publish to marketplace
-- Users can install: `/plugin install popkit@popkit-marketplace`
+- Users can install: `/plugin install popkit@popkit-claude`
 
 ### Phase 2: Development Plugin (v1.0.0-beta.2)
 **Extract popkit-dev**
@@ -340,18 +340,18 @@ git subtree push --prefix=packages/popkit plugin-public main
 
 **v0.2.5 (current monolith):**
 ```bash
-/plugin install popkit@popkit-marketplace
+/plugin install popkit@popkit-claude
 # Gets: Everything in one plugin
 ```
 
 **v1.0.0 (modular):**
 ```bash
 # Option 1: Install suite (everything)
-/plugin install popkit-suite@popkit-marketplace
+/plugin install popkit-suite@popkit-claude
 
 # Option 2: Install selectively
-/plugin install popkit@popkit-marketplace
-/plugin install popkit-dev@popkit-marketplace
+/plugin install popkit@popkit-claude
+/plugin install popkit-dev@popkit-claude
 ```
 
 **Migration message:**

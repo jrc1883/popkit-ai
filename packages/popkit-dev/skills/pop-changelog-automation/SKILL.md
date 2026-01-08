@@ -244,7 +244,7 @@ Auto-generate GitHub release notes from commits with proper formatting, breaking
 
 ---
 
-**Install:** `/plugin install popkit-suite@popkit-marketplace`
+**Install:** `/plugin install popkit-suite@popkit-claude`
 
 **Upgrade:** `/plugin update popkit-suite`
 ```

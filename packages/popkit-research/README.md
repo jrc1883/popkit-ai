@@ -38,10 +38,10 @@ This plugin provides 3 specialized skills:
 
 ```bash
 # Recommended: Install popkit-core foundation first
-/plugin install popkit-core@popkit-marketplace
+/plugin install popkit-core@popkit-claude
 
 # Then install research plugin
-/plugin install popkit-research@popkit-marketplace
+/plugin install popkit-research@popkit-claude
 
 # Or install during development (local)
 /plugin install popkit-research@file:./packages/popkit-research
@@ -80,7 +80,6 @@ popkit-research (knowledge)    ← You are here
 ├── Knowledge management
 └── Semantic search
 
-popkit-suite (meta-plugin)
 └── Installs all 4 plugins above
 ```
 
@@ -221,16 +220,15 @@ When you need more capabilities, install additional PopKit plugins:
 
 ```bash
 # For account management and stats
-/plugin install popkit-core@popkit-marketplace
+/plugin install popkit-core@popkit-claude
 
 # For development workflows
-/plugin install popkit-dev@popkit-marketplace
+/plugin install popkit-dev@popkit-claude
 
 # For quality assurance and deployment
-/plugin install popkit-ops@popkit-marketplace
+/plugin install popkit-ops@popkit-claude
 
 # Or install everything
-/plugin install popkit-suite@popkit-marketplace
 ```
 
 ## License

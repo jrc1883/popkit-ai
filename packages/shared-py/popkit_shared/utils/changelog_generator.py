@@ -435,7 +435,7 @@ class ChangelogGenerator:
         # Installation
         lines.append("---")
         lines.append("")
-        lines.append("**Install:** `/plugin install popkit-suite@popkit-marketplace`")
+        lines.append("**Install:** `/plugin install popkit-suite@popkit-claude`")
         lines.append("")
         lines.append("**Upgrade:** `/plugin update popkit-suite`")
 
