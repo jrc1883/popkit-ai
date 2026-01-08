@@ -30,7 +30,17 @@
     "./skills/pop-finish-branch",
     "./skills/pop-worktrees",
     "./skills/pop-morning",
-    "./skills/pop-nightly"
+    "./skills/pop-nightly",
+    "./skills/pop-complexity-analyzer",
+    "./skills/pop-changelog-automation"
   ],
-  "agents": []
+  "agents": [
+    "./agents/feature-workflow/code-architect",
+    "./agents/feature-workflow/code-explorer",
+    "./agents/tier-1-always-active/code-reviewer",
+    "./agents/tier-1-always-active/refactoring-expert",
+    "./agents/tier-2-on-demand/rapid-prototyper",
+    "./agents/tier-2-on-demand/prd-parser",
+    "./agents/tier-2-on-demand/merge-conflict-resolver"
+  ]
 }
