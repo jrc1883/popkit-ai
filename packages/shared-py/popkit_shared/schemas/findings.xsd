@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <!-- Findings Schema for PopKit Tool Execution Results -->
+  <xs:element name="findings">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="tool" type="xs:string"/>
+        <xs:element name="status" type="StatusType"/>
+        <xs:element name="quality_score" type="QualityScoreType"/>
+        <xs:element name="issues" type="IssuesType" minOccurs="0"/>
+        <xs:element name="suggestions" type="SuggestionsType" minOccurs="0"/>
+        <xs:element name="followup_agents" type="AgentsType" minOccurs="0"/>
+        <xs:element name="error_message" type="xs:string" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="version" type="xs:string" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- Status: success or error -->
+  <xs:simpleType name="StatusType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="success"/>
+      <xs:enumeration value="error"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Quality score: 0.0 to 1.0 -->
+  <xs:simpleType name="QualityScoreType">
+    <xs:restriction base="xs:decimal">
+      <xs:minInclusive value="0.0"/>
+      <xs:maxInclusive value="1.0"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Issues list -->
+  <xs:complexType name="IssuesType">
+    <xs:sequence>
+      <xs:element name="issue" type="IssueType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Individual issue with optional severity -->
+  <xs:complexType name="IssueType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="severity" use="optional">
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="critical"/>
+              <xs:enumeration value="high"/>
+              <xs:enumeration value="medium"/>
+              <xs:enumeration value="low"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <!-- Suggestions list -->
+  <xs:complexType name="SuggestionsType">
+    <xs:sequence>
+      <xs:element name="suggestion" type="xs:string" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Follow-up agents list -->
+  <xs:complexType name="AgentsType">
+    <xs:sequence>
+      <xs:element name="agent" type="xs:string" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

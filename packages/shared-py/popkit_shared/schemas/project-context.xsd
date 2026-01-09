@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <!-- Project Context Schema for PopKit -->
+  <xs:element name="project">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="name" type="xs:string"/>
+        <xs:element name="stack" type="StackType" minOccurs="0"/>
+        <xs:element name="infrastructure" type="InfrastructureType" minOccurs="0"/>
+        <xs:element name="current-work" type="CurrentWorkType" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="version" type="xs:string" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- Technology stack: list of technologies used -->
+  <xs:complexType name="StackType">
+    <xs:sequence>
+      <xs:element name="technology" type="xs:string" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Infrastructure components: boolean flags for each -->
+  <xs:complexType name="InfrastructureType">
+    <xs:sequence>
+      <xs:element name="redis" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="postgres" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="mongodb" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="docker" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="kubernetes" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="cloudflare" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="aws" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="gcp" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="azure" type="xs:boolean" minOccurs="0"/>
+      <!-- Allow any additional infrastructure elements -->
+      <xs:any processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Current work context: flexible structure -->
+  <xs:complexType name="CurrentWorkType">
+    <xs:sequence>
+      <xs:element name="focus" type="xs:string" minOccurs="0"/>
+      <xs:element name="recent-changes" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="change" type="xs:string" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <!-- Allow any additional current work elements -->
+      <xs:any processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

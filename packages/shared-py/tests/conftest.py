@@ -130,6 +130,138 @@ def strict_privacy_settings():
 
 
 # =============================================================================
+# Fixtures - XML Test Data
+# =============================================================================
+
+@pytest.fixture
+def sample_problem_xml():
+    """Valid problem context XML for testing"""
+    return """
+    <problem-context version="1.0">
+      <category>bug</category>
+      <description>User authentication fails intermittently</description>
+      <severity>high</severity>
+    </problem-context>
+    """
+
+
+@pytest.fixture
+def sample_problem_xml_with_workflow():
+    """Problem context XML with workflow"""
+    return """
+    <problem-context version="1.0">
+      <category>feature</category>
+      <description>Add dark mode support</description>
+      <severity>medium</severity>
+      <workflow>
+        <step id="1">
+          <action>Design UI mockups</action>
+          <agent>pop-design</agent>
+        </step>
+        <step id="2">
+          <action>Implement theme switching</action>
+          <dependencies>
+            <dependency>step1</dependency>
+          </dependencies>
+        </step>
+      </workflow>
+    </problem-context>
+    """
+
+
+@pytest.fixture
+def sample_project_xml():
+    """Valid project context XML for testing"""
+    return """
+    <project version="1.0">
+      <name>popkit-claude</name>
+      <stack>
+        <technology>Python</technology>
+        <technology>TypeScript</technology>
+        <technology>Markdown</technology>
+      </stack>
+      <infrastructure>
+        <redis>false</redis>
+        <postgres>true</postgres>
+        <docker>true</docker>
+      </infrastructure>
+      <current-work>
+        <focus>XML testing strategy</focus>
+        <issue>Security hardening</issue>
+      </current-work>
+    </project>
+    """
+
+
+@pytest.fixture
+def sample_findings_xml():
+    """Valid findings XML for testing"""
+    return """
+    <findings version="1.0">
+      <tool>Write</tool>
+      <status>success</status>
+      <quality_score>0.85</quality_score>
+      <issues>
+        <issue>Missing error handling</issue>
+        <issue>Potential security issue</issue>
+      </issues>
+      <suggestions>
+        <suggestion>Add try-catch block</suggestion>
+        <suggestion>Run security scan</suggestion>
+      </suggestions>
+      <followup_agents>
+        <agent>security-auditor</agent>
+        <agent>test-generator</agent>
+      </followup_agents>
+    </findings>
+    """
+
+
+@pytest.fixture
+def sample_findings_xml_error():
+    """Findings XML with error status"""
+    return """
+    <findings version="1.0">
+      <tool>Read</tool>
+      <status>error</status>
+      <quality_score>0.0</quality_score>
+      <error_message>File not found: config.json</error_message>
+    </findings>
+    """
+
+
+@pytest.fixture
+def invalid_problem_xml():
+    """Invalid XML for negative testing"""
+    return """
+    <problem-context>
+      <category>invalid_category</category>
+      <severity>ultra-mega-critical</severity>
+    </problem-context>
+    """
+
+
+@pytest.fixture
+def malformed_xml():
+    """Malformed XML for error handling tests"""
+    return "<problem-context><category>bug</category>"  # Unclosed tag
+
+
+@pytest.fixture
+def xml_with_html_markers():
+    """XML wrapped in HTML comment markers (as used in conversation)"""
+    return """
+    <!-- XML Context (Invisible) -->
+    <problem-context version="1.0">
+      <category>bug</category>
+      <description>Test issue</description>
+      <severity>medium</severity>
+    </problem-context>
+    <!-- End XML Context -->
+    """
+
+
+# =============================================================================
 # Fixtures - Platform Detection Mocks
 # =============================================================================
 

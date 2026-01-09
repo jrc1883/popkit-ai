@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <!-- Workflow Schema for PopKit Multi-Step Task Execution -->
+  <xs:element name="workflow">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="step" type="StepType" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="version" type="xs:string" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- Individual workflow step -->
+  <xs:complexType name="StepType">
+    <xs:sequence>
+      <xs:element name="action" type="xs:string"/>
+      <xs:element name="agent" type="xs:string" minOccurs="0"/>
+      <xs:element name="dependencies" type="DependenciesType" minOccurs="0"/>
+      <xs:element name="expected-output" type="xs:string" minOccurs="0"/>
+      <xs:element name="validation" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:string" use="required"/>
+    <xs:attribute name="status" use="optional">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="pending"/>
+          <xs:enumeration value="in_progress"/>
+          <xs:enumeration value="completed"/>
+          <xs:enumeration value="failed"/>
+          <xs:enumeration value="skipped"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Dependencies list for a step -->
+  <xs:complexType name="DependenciesType">
+    <xs:sequence>
+      <xs:element name="dependency" type="xs:string" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

@@ -9,7 +9,22 @@ Used by: user-prompt-submit.py hook
 """
 
 import re
+import logging
 from typing import Dict, Any, Optional
+
+logger = logging.getLogger(__name__)
+
+# Try to import validator (optional for validation)
+try:
+    from popkit_shared.utils.xml_validator import (
+        validate_problem_xml,
+        validate_project_xml,
+        validate_findings_xml
+    )
+    HAS_VALIDATOR = True
+except ImportError:
+    HAS_VALIDATOR = False
+    logger.debug("xml_validator not available, validation will be skipped")
 
 
 def infer_category(message: str) -> str:
@@ -276,7 +291,8 @@ def generate_workflow_steps(category: str, context: Optional[Dict[str, Any]] = N
   </workflow>"""
 
 
-def generate_problem_xml(user_message: str, context: Optional[Dict[str, Any]] = None) -> str:
+def generate_problem_xml(user_message: str, context: Optional[Dict[str, Any]] = None,
+                        validate: bool = False) -> str:
     """
     Generate <problem> XML from user message.
 
@@ -286,6 +302,7 @@ def generate_problem_xml(user_message: str, context: Optional[Dict[str, Any]] = 
     Args:
         user_message: Plain text user message
         context: Optional context dict for additional information
+        validate: If True, validates XML against schema (requires lxml)
 
     Returns:
         XML string with problem structure
@@ -317,15 +334,24 @@ def generate_problem_xml(user_message: str, context: Optional[Dict[str, Any]] = 
     # Generate workflow
     workflow = generate_workflow_steps(category, context)
 
-    return f"""<problem-context>
+    xml = f"""<problem-context version="1.0">
   <category>{category}</category>
   <description>{description}</description>
   <severity>{severity}</severity>
 {workflow}
 </problem-context>"""
 
+    # Optional validation
+    if validate and HAS_VALIDATOR:
+        is_valid, error = validate_problem_xml(xml)
+        if not is_valid:
+            logger.warning(f"Generated invalid problem XML: {error}")
+            # Continue anyway (graceful degradation)
 
-def generate_project_context_xml(context: Dict[str, Any]) -> str:
+    return xml
+
+
+def generate_project_context_xml(context: Dict[str, Any], validate: bool = False) -> str:
     """
     Generate <project> XML from detected project info.
 
@@ -337,6 +363,7 @@ def generate_project_context_xml(context: Dict[str, Any]) -> str:
             - stack: List of technologies
             - infrastructure: Dict of infrastructure components
             - current_work: Dict with issues, branch, etc.
+        validate: If True, validates XML against schema (requires lxml)
 
     Returns:
         XML string with project context
@@ -386,7 +413,7 @@ def generate_project_context_xml(context: Dict[str, Any]) -> str:
             else:
                 work_xml += f"\n    <{key}>{_escape_xml(str(value))}</{key}>"
 
-    return f"""<project>
+    xml = f"""<project version="1.0">
   <name>{_escape_xml(name)}</name>
   <stack>{stack_xml}
   </stack>
@@ -396,8 +423,17 @@ def generate_project_context_xml(context: Dict[str, Any]) -> str:
   </current-work>
 </project>"""
 
+    # Optional validation
+    if validate and HAS_VALIDATOR:
+        is_valid, error = validate_project_xml(xml)
+        if not is_valid:
+            logger.warning(f"Generated invalid project XML: {error}")
+            # Continue anyway (graceful degradation)
 
-def generate_findings_xml(findings: Dict[str, Any]) -> str:
+    return xml
+
+
+def generate_findings_xml(findings: Dict[str, Any], validate: bool = False) -> str:
     """
     Generate <findings> XML from tool execution results (Phase 1: XML Integration #517).
 
@@ -413,6 +449,7 @@ def generate_findings_xml(findings: Dict[str, Any]) -> str:
             - suggestions: List of suggestions
             - followup_agents: List of recommended agents
             - error_message: Optional error message (if status is "error")
+        validate: If True, validates XML against schema (requires lxml)
 
     Returns:
         XML string with findings structure
@@ -435,6 +472,10 @@ def generate_findings_xml(findings: Dict[str, Any]) -> str:
     tool = findings.get("tool", "unknown")
     status = findings.get("status", "unknown")
     quality_score = findings.get("quality_score", 0.0)
+
+    # Clamp quality_score to 0.0-1.0 range
+    quality_score = max(0.0, min(1.0, float(quality_score)))
+
     issues = findings.get("issues", [])
     suggestions = findings.get("suggestions", [])
     followup_agents = findings.get("followup_agents", [])
@@ -463,7 +504,7 @@ def generate_findings_xml(findings: Dict[str, Any]) -> str:
     if error_message:
         error_xml = f"\n  <error_message>{_escape_xml(str(error_message))}</error_message>"
 
-    return f"""<findings>
+    xml = f"""<findings version="1.0">
   <tool>{_escape_xml(tool)}</tool>
   <status>{status}</status>
   <quality_score>{quality_score:.2f}</quality_score>
@@ -474,6 +515,15 @@ def generate_findings_xml(findings: Dict[str, Any]) -> str:
   <followup_agents>{agents_xml}
   </followup_agents>{error_xml}
 </findings>"""
+
+    # Optional validation
+    if validate and HAS_VALIDATOR:
+        is_valid, error = validate_findings_xml(xml)
+        if not is_valid:
+            logger.warning(f"Generated invalid findings XML: {error}")
+            # Continue anyway (graceful degradation)
+
+    return xml
 
 
 def _escape_xml(text: str) -> str:
