@@ -208,20 +208,13 @@ PopKit is split into 5 focused workflow plugins:
 ```
 popkit/
 ├── packages/
-│   ├── shared-py/          # Shared Python utilities (70 modules)
 │   ├── popkit-core/        # Foundation plugin (Power Mode, config)
 │   ├── popkit-dev/         # Development workflows (git, GitHub, routines)
 │   ├── popkit-ops/         # Operations & quality (test, debug, deploy)
 │   ├── popkit-research/    # Knowledge management (research, notes)
-│   ├── cloud/              # PopKit Cloud API (Cloudflare Workers)
-│   ├── benchmarks/         # Testing framework + archived files
-│   ├── docs/               # Documentation site (Astro + Starlight)
-│   ├── landing/            # Marketing site
-│   └── universal-mcp/      # Multi-IDE MCP server (future)
-├── docs/
-│   ├── plans/              # Design documents + implementation plans
-│   ├── assessments/        # Quality assessment reports
-│   └── research/           # Research notes
+│   ├── shared-py/          # Shared Python utilities (70 modules)
+│   └── docs/               # Documentation site (Astro + Starlight)
+├── docs/                   # Technical guides and documentation
 ├── CLAUDE.md               # Claude Code development instructions
 ├── CHANGELOG.md            # Version history
 └── README.md               # This file

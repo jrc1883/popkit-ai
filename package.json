@@ -1,23 +1,25 @@
 {
   "name": "popkit",
-  "version": "0.9.9",
+  "version": "1.0.0",
   "description": "AI-powered development workflows for Claude Code",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/popkit-core",
+    "packages/popkit-dev",
+    "packages/popkit-ops",
+    "packages/popkit-research",
+    "packages/shared-py",
+    "packages/docs"
   ],
   "scripts": {
-    "cloud:dev": "npm run dev --workspace=packages/cloud",
-    "cloud:deploy": "npm run deploy --workspace=packages/cloud",
-    "cloud:build": "npm run build --workspace=packages/cloud",
-    "plugin:test": "echo 'Run /popkit:plugin-test in Claude Code'",
+    "plugin:test": "echo 'Run /popkit:plugin test in Claude Code'",
     "docs:dev": "npm run dev --workspace=packages/docs",
     "docs:build": "npm run build --workspace=packages/docs",
     "docs:preview": "npm run preview --workspace=packages/docs"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jrc1883/popkit.git"
+    "url": "git+https://github.com/jrc1883/popkit-claude.git"
   },
   "keywords": [
     "claude-code",
@@ -30,7 +32,7 @@
   "author": "Joseph Cannon",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jrc1883/popkit/issues"
+    "url": "https://github.com/jrc1883/popkit-claude/issues"
   },
-  "homepage": "https://github.com/jrc1883/popkit#readme"
+  "homepage": "https://github.com/jrc1883/popkit-claude#readme"
 }

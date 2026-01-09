@@ -20,12 +20,8 @@ popkit-claude/
 │   ├── popkit-ops/         # Operations & quality (test, debug, deploy)
 │   ├── popkit-research/    # Knowledge management (research, notes)
 │   ├── shared-py/          # Shared Python utilities (70 modules)
-│   ├── cloud/              # PopKit Cloud API (Cloudflare Workers)
-│   ├── benchmarks/         # Testing framework
-│   ├── docs/               # Documentation site
-│   ├── landing/            # Marketing site
-│   └── universal-mcp/      # Multi-IDE MCP server (future)
-├── docs/                   # Design docs, plans, assessments
+│   └── docs/               # Documentation site (Astro + Starlight)
+├── docs/                   # Technical guides and documentation
 ├── CLAUDE.md               # This file
 ├── README.md               # User-facing documentation
 └── CHANGELOG.md            # Version history

@@ -171,59 +171,6 @@ jobs:
           echo "✓ Hook validation passed"
 
   # =============================================================================
-  # CLOUD API VALIDATION
-  # =============================================================================
-
-  cloud-validate:
-    name: Validate Cloud API
-    runs-on: ubuntu-latest
-    # Cloud API is optional (marked export-ignore for public repo)
-    continue-on-error: true
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Check if cloud package exists
-        id: check_cloud
-        run: |
-          if [ -d "packages/cloud" ]; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-            echo "✓ Cloud package found"
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-            echo "⚠ Cloud package not found (expected in private repo only)"
-            exit 0
-          fi
-
-      - name: Setup Node.js
-        if: steps.check_cloud.outputs.exists == 'true'
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        if: steps.check_cloud.outputs.exists == 'true'
-        run: |
-          cd packages/cloud
-          npm install
-
-      - name: TypeScript check
-        if: steps.check_cloud.outputs.exists == 'true'
-        run: |
-          cd packages/cloud
-          npx tsc --noEmit || echo "⚠ TypeScript errors detected (non-blocking)"
-
-      - name: Validate wrangler.toml
-        if: steps.check_cloud.outputs.exists == 'true'
-        run: |
-          if [ ! -f "packages/cloud/wrangler.toml" ]; then
-            echo "Warning: wrangler.toml not found"
-          else
-            echo "✓ wrangler.toml exists"
-          fi
-
-  # =============================================================================
   # SUMMARY JOB
   # =============================================================================
 
@@ -234,7 +181,6 @@ jobs:
       - plugin-validate
       - agents-validate
       - hooks-validate
-      - cloud-validate
     if: always()
 
     steps:
