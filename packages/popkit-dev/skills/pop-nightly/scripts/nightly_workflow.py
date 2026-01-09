@@ -179,83 +179,99 @@ class NightlyWorkflow:
     def _collect_state_fallback(self) -> Dict[str, Any]:
         """Fallback state collection without utilities."""
         import subprocess
-        import shlex
+        import shutil
+        import os
 
-        def run_command(cmd: str, use_shell: bool = False) -> str:
+        def run_command(cmd: list) -> str:
             """
             Run command and return output.
 
             Args:
-                cmd: Command string
-                use_shell: True if command needs shell features (pipes, redirection)
+                cmd: Command as list of arguments
             """
             try:
-                if use_shell:
-                    # Only use shell=True when needed for pipes/redirection
-                    result = subprocess.run(
-                        cmd,
-                        shell=True,
-                        capture_output=True,
-                        text=True,
-                        timeout=10
-                    )
-                else:
-                    # Safe list-based execution
-                    result = subprocess.run(
-                        shlex.split(cmd),
-                        capture_output=True,
-                        text=True,
-                        timeout=10
-                    )
+                result = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
                 return result.stdout.strip()
             except Exception as e:
-                print(f"[WARN] Command failed: {cmd} - {e}", file=sys.stderr)
+                print(f"[WARN] Command failed: {' '.join(cmd)} - {e}", file=sys.stderr)
                 return ""
 
-        # Git state
+        # Git state - all commands use list-based arguments (SECURE)
+        status_output = run_command(['git', 'status', '--porcelain'])
+
+        # Count stashes without pipes - SECURE
+        stash_list = run_command(['git', 'stash', 'list'])
+        stash_count = len(stash_list.splitlines()) if stash_list else 0
+
+        # Count merged branches - SECURE (use Python to filter instead of shell pipes)
+        all_branches = run_command(['git', 'branch', '--merged', 'main'])
+        merged_count = 0
+        if all_branches:
+            for line in all_branches.splitlines():
+                line = line.strip()
+                if line and not line.startswith('*') and line != 'main':
+                    merged_count += 1
+
         git_state = {
-            'branch': run_command('git rev-parse --abbrev-ref HEAD'),
-            'uncommitted_files': len(run_command('git status --porcelain').splitlines()),
+            'branch': run_command(['git', 'rev-parse', '--abbrev-ref', 'HEAD']),
+            'uncommitted_files': len(status_output.splitlines()) if status_output else 0,
             'uncommitted_files_list': [
                 {'status': line[:2].strip(), 'path': line[3:]}
-                for line in run_command('git status --porcelain').splitlines()
-            ],
-            # Pipes require shell=True
-            'stashes': int(run_command('git stash list | wc -l', use_shell=True) or '0'),
-            'merged_branches': int(run_command(
-                'git branch --merged main | grep -v "^\\*" | grep -v "main" | wc -l',
-                use_shell=True
-            ) or '0')
+                for line in status_output.splitlines()
+            ] if status_output else [],
+            'stashes': stash_count,
+            'merged_branches': merged_count
         }
 
         # GitHub state (if gh CLI available)
         github_state = {}
-        if run_command('which gh'):
+        if shutil.which('gh'):
             try:
                 issues_json = run_command(
-                    'gh issue list --state open --limit 5 --json number,title,updatedAt'
+                    ['gh', 'issue', 'list', '--state', 'open', '--limit', '5', '--json', 'number,title,updatedAt']
                 )
                 github_state['issues'] = json.loads(issues_json) if issues_json else []
 
                 ci_json = run_command(
-                    'gh run list --limit 1 --json conclusion,status,createdAt'
+                    ['gh', 'run', 'list', '--limit', '1', '--json', 'conclusion,status,createdAt']
                 )
                 ci_data = json.loads(ci_json) if ci_json else []
                 github_state['ci_status'] = ci_data[0] if ci_data else {}
             except json.JSONDecodeError:
                 github_state = {'issues': [], 'ci_status': {}}
 
-        # Services state
-        # Pipes require shell=True
-        running_services = run_command(
-            'ps aux | grep -E "(node|npm|pnpm|redis|postgres|supabase)" | grep -v grep',
-            use_shell=True
-        ).splitlines()
+        # Services state - SECURE: Use pgrep instead of shell pipes
+        running_services = []
+        for service_name in ['node', 'npm', 'pnpm', 'redis-server', 'postgres', 'supabase']:
+            try:
+                result = subprocess.run(
+                    ['pgrep', '-f', service_name],
+                    capture_output=True,
+                    text=True,
+                    timeout=5
+                )
+                if result.returncode == 0 and result.stdout.strip():
+                    running_services.append(service_name)
+            except Exception:
+                pass
+
+        # Count log files - SECURE: Use Python glob instead of shell
+        log_count = 0
+        try:
+            log_dir = Path.home() / '.claude' / 'logs'
+            if log_dir.exists():
+                log_count = len(list(log_dir.glob('*.log')))
+        except Exception:
+            pass
 
         services_state = {
             'running_services': running_services,
-            # Pipe and redirection require shell=True
-            'log_files': int(run_command('ls ~/.claude/logs/*.log 2>/dev/null | wc -l', use_shell=True) or '0')
+            'log_files': log_count
         }
 
         return {
