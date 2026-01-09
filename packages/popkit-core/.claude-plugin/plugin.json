@@ -7,44 +7,9 @@
     "email": "joseph@thehouseofdeals.com"
   },
   "license": "MIT",
-  "repository": "https://github.com/jrc1883/popkit-claude",
-  "commands": [
-    "./commands/plugin.md",
-    "./commands/stats.md",
-    "./commands/privacy.md",
-    "./commands/account.md",
-    "./commands/dashboard.md",
-    "./commands/bug.md",
-    "./commands/power.md",
-    "./commands/project.md",
-    "./commands/record.md"
-  ],
-  "skills": [
-    "./skills/pop-analyze-project",
-    "./skills/pop-auto-docs",
-    "./skills/pop-bug-reporter",
-    "./skills/pop-cloud-signup",
-    "./skills/pop-dashboard",
-    "./skills/pop-doc-sync",
-    "./skills/pop-embed-content",
-    "./skills/pop-embed-project",
-    "./skills/pop-mcp-generator",
-    "./skills/pop-plugin-test",
-    "./skills/pop-power-mode",
-    "./skills/pop-project-init",
-    "./skills/pop-project-templates",
-    "./skills/pop-skill-generator",
-    "./skills/pop-validation-engine"
-  ],
-  "agents": [
-    "./agents/tier-1-always-active/accessibility-guardian",
-    "./agents/tier-1-always-active/api-designer",
-    "./agents/tier-1-always-active/documentation-maintainer",
-    "./agents/tier-1-always-active/migration-specialist",
-    "./agents/tier-2-on-demand/bundle-analyzer",
-    "./agents/tier-2-on-demand/dead-code-eliminator",
-    "./agents/tier-2-on-demand/feature-prioritizer",
-    "./agents/tier-2-on-demand/meta-agent",
-    "./agents/tier-2-on-demand/power-coordinator"
-  ]
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jrc1883/popkit-claude",
+    "directory": "packages/popkit-core"
+  }
 }

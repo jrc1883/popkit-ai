@@ -13,7 +13,8 @@
   "homepage": "https://github.com/jrc1883/popkit-claude",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jrc1883/popkit-claude"
+    "url": "https://github.com/jrc1883/popkit-claude",
+    "directory": "packages/popkit-core"
   },
   "bugs": {
     "url": "https://github.com/jrc1883/popkit-claude/issues"
