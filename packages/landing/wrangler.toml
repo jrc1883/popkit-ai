@@ -1,9 +1,0 @@
-# Cloudflare Pages configuration for PopKit landing page
-# Deploy with: npx wrangler pages deploy dist --project-name=popkit-landing
-
-name = "popkit-landing"
-compatibility_date = "2024-01-01"
-
-# Environment variables for the site
-[vars]
-PUBLIC_API_URL = "https://api.thehouseofdeals.com"
