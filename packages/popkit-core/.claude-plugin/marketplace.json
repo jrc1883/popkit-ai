@@ -1,7 +1,7 @@
 {
   "name": "popkit-core",
   "displayName": "PopKit Core",
-  "version": "1.0.0-beta.3",
+  "version": "1.0.0-beta.4",
   "description": "Core utilities for PopKit - plugin management, project analysis, Power Mode orchestration, multi-project dashboard, and meta-features",
   "author": {
     "name": "Joseph Cannon",
