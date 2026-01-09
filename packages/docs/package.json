@@ -19,8 +19,8 @@
   "author": "Joseph Cannon",
   "license": "MIT",
   "dependencies": {
-    "@astrojs/starlight": "^0.28.5",
-    "astro": "^4.16.18",
+    "@astrojs/starlight": "^0.37.2",
+    "astro": "^5.16.7",
     "sharp": "^0.33.5"
   }
 }
