@@ -24,6 +24,10 @@ jobs:
   ip-scan:
     runs-on: ubuntu-latest
     name: Scan for IP Leaks
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
 
     steps:
       - name: Checkout repository
@@ -107,7 +111,14 @@ jobs:
           }
 
           # Files to skip
-          SKIP = [r"\.git/", r"node_modules/", r"__pycache__/", r"ip_scanner\.py"]
+          SKIP = [
+              r"\.git/",
+              r"node_modules/",
+              r"__pycache__/",
+              r"ip_scanner\.py",
+              r"package-lock\.json$",  # NPM lockfile contains workspace metadata only
+              r"pnpm-lock\.yaml$",     # PNPM lockfile contains workspace metadata only
+          ]
 
           # Path-based exemptions (documentation, examples, tests, templates)
           EXEMPT_PATHS = [
