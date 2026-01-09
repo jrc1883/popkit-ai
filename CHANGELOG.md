@@ -14,6 +14,49 @@ All notable changes to PopKit are documented in this file.
 
 ---
 
+## [1.0.0-beta.4] - 2026-01-09
+
+### Claude Code 2.1.2 Integration
+
+**Agent Type Detection Support**:
+- Added `detect_agent_type_session()` function for `--agent` flag support
+- Detects agent_type from Claude Code 2.1.2+ SessionStart hook
+- Maps all 23 PopKit agents to categories (Tier 1, Tier 2, Feature Workflow)
+- Skips embedding-based filtering when agent pre-selected via `claude --agent <name>`
+- Category-specific optimizations for context loading and Power Mode configuration
+
+**Comprehensive Test Coverage**:
+- Created `test_agent_type_detection.py` with 42 comprehensive tests
+- Tests all 23 PopKit agents across 3 categories
+- Tests edge cases: unknown agents, empty values, error handling
+- Tests logging output for all agent categories
+- Tests JSON serialization and integration with session-start workflow
+- Tests case sensitivity and hyphenation matching
+- **All tests passing**: 42/42 in 0.11s
+
+**Code Quality Improvements**:
+- Extracted `detect_agent_type_session()` to `session_start_helpers.py` for testability
+- Proper error handling with graceful degradation
+- Comprehensive logging for agent-specific sessions
+- JSON-serializable optimization results
+
+**Documentation Updates**:
+- Updated CLAUDE.md with Claude Code 2.1.2 features
+- Added SessionStart agent_type documentation
+- Added FORCE_AUTOUPDATE_PLUGINS environment variable documentation
+- Updated version requirements table
+
+**Files Added**:
+- `packages/popkit-core/hooks/session_start_helpers.py` - Agent detection logic
+- `packages/popkit-core/hooks/tests/test_agent_type_detection.py` - Test suite
+- `docs/research/2026-01-09-claude-code-2.1.2-integration.md` - Research documentation
+
+**Files Modified**:
+- `packages/popkit-core/hooks/session-start.py` - Import from helpers module
+- `CLAUDE.md` - Updated documentation for 2.1.2 features
+
+---
+
 ## [1.0.0-beta.3] - 2026-01-06
 
 ### Marketplace Publication Fixes (2026-01-06)
