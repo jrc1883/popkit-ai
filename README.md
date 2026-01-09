@@ -3,20 +3,20 @@
 <!-- Badge Section -->
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-1.0.0--beta.3-blue.svg)
+![Version](https://img.shields.io/badge/version-1.0.0--beta.4-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Build Status](https://img.shields.io/github/actions/workflow/status/jrc1883/popkit-claude/ci.yml?branch=main)
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
 ![TypeScript](https://img.shields.io/badge/typescript-5.0+-blue.svg)
 ![GitHub Stars](https://img.shields.io/github/stars/jrc1883/popkit-claude?style=social)
 ![GitHub Forks](https://img.shields.io/github/forks/jrc1883/popkit-claude?style=social)
-![Claude Code](https://img.shields.io/badge/Claude%20Code-2.0.71%2B-purple.svg)
+![Claude Code](https://img.shields.io/badge/Claude%20Code-2.1.2%2B-purple.svg)
 
 **Get 10x the work done in Claude Code—without the learning curve.**
 
 Transforms Claude Code into a complete development workflow system with intelligent agents that coordinate automatically, handle tasks in parallel, and get smarter over time. One subscription, zero installation friction.
 
-**Version:** 1.0.0-beta.3 | **Plugins:** 4 | **Commands:** 23 | **Skills:** 38 | **Agents:** 22
+**Version:** 1.0.0-beta.4 | **Plugins:** 4 | **Commands:** 23 | **Skills:** 38 | **Agents:** 22
 
 [Quick Start](#-quick-start) • [Features](#-what-is-popkit) • [Documentation](#-documentation) • [Contributing](#-contributing)
 
