@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <!-- Problem Context Schema for PopKit -->
+  <xs:element name="problem-context">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="category" type="CategoryType"/>
+        <xs:element name="description" type="xs:string"/>
+        <xs:element name="severity" type="SeverityType"/>
+        <xs:element name="workflow" type="WorkflowType" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="version" type="xs:string" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- Category enumeration: all valid problem categories -->
+  <xs:simpleType name="CategoryType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="bug"/>
+      <xs:enumeration value="feature"/>
+      <xs:enumeration value="optimization"/>
+      <xs:enumeration value="refactor"/>
+      <xs:enumeration value="investigation"/>
+      <xs:enumeration value="docs"/>
+      <xs:enumeration value="test"/>
+      <xs:enumeration value="task"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Severity enumeration: priority levels -->
+  <xs:simpleType name="SeverityType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="critical"/>
+      <xs:enumeration value="high"/>
+      <xs:enumeration value="medium"/>
+      <xs:enumeration value="low"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Workflow structure for multi-step tasks -->
+  <xs:complexType name="WorkflowType">
+    <xs:sequence>
+      <xs:element name="step" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="action" type="xs:string"/>
+            <xs:element name="agent" type="xs:string" minOccurs="0"/>
+            <xs:element name="dependencies" minOccurs="0">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="dependency" type="xs:string" maxOccurs="unbounded"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+          <xs:attribute name="id" type="xs:string" use="required"/>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
