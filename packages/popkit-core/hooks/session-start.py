@@ -9,6 +9,7 @@ Responsibilities:
 3. Register project with PopKit Cloud (async, non-blocking)
 4. Ensure PopKit directories exist (auto-init)
 5. Filter agents based on initial task (Phase 2: Embedding-Based Agent Loading)
+6. Detect and optimize for agent_type when --agent flag is used (Claude Code 2.1.2+)
 """
 
 import sys
@@ -601,6 +602,10 @@ def detect_project_context():
         return {"name": "unknown", "stack": [], "infrastructure": {}, "current_work": {}}
 
 
+# Import agent type detection from helpers module
+from session_start_helpers import detect_agent_type_session
+
+
 def main():
     """Main entry point for the hook - JSON stdin/stdout protocol"""
     try:
@@ -649,8 +654,18 @@ def main():
         # Load agent expertise files (Issue #201, Phase 2, non-blocking)
         expertise_loading = load_agent_expertise()
 
+        # Detect agent_type from --agent flag (Claude Code 2.1.2+)
+        agent_type_info = detect_agent_type_session(data)
+
         # Load relevant agents for this session (Phase 2, non-blocking)
-        agent_loading = load_relevant_agents_for_session(data)
+        # Skip embedding-based filtering if agent_type is specified (user already selected agent)
+        agent_loading = None
+        if agent_type_info and agent_type_info.get('skip_embedding_filter'):
+            # Agent already selected via --agent flag, skip embedding-based filtering
+            print("  Skipping embedding filter (agent pre-selected)", file=sys.stderr)
+        else:
+            # Normal session - use embedding-based agent filtering
+            agent_loading = load_relevant_agents_for_session(data)
 
         # Generate initial XML context and save state (Phase 1: XML Integration)
         xml_context_info = None
@@ -730,6 +745,10 @@ def main():
         # Include agent loading info if available (Phase 2)
         if agent_loading:
             response["agent_loading"] = agent_loading
+
+        # Include agent_type info if --agent flag was used (Claude Code 2.1.2+)
+        if agent_type_info:
+            response["agent_type_optimization"] = agent_type_info
 
         # Include XML context info if generated (Phase 1)
         if xml_context_info:

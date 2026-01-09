@@ -168,6 +168,34 @@ Example hook command:
 - **Blocked by Omission:** Commands not listed are automatically blocked (e.g., `git push --force`, `rm -rf`, `sudo`)
 - See [Wildcard Permission Design](docs/research/2026-01-08-wildcard-permission-design.md) for detailed patterns and examples
 
+### New in Claude Code 2.1.2
+
+**SessionStart Hook agent_type:**
+- When users run `claude --agent <agent-name>`, the `agent_type` field is now included in SessionStart hook input
+- PopKit detects this and optimizes session initialization:
+  - Skips embedding-based agent filtering (user already selected the agent)
+  - Applies category-specific optimizations (Tier 1, Tier 2, Feature Workflow)
+  - Improves logging and analytics for agent-specific sessions
+- Example: `claude --agent code-reviewer` triggers optimized code review session
+
+**Plugin Auto-Update Control:**
+- New `FORCE_AUTOUPDATE_PLUGINS` environment variable
+- When set to `true`, plugins auto-update even if main Claude Code auto-updater is disabled
+- Useful for teams wanting stable Claude Code versions but latest plugin features:
+  ```bash
+  export FORCE_AUTOUPDATE_PLUGINS=true
+  ```
+
+**Large Output Persistence:**
+- Large tool outputs are now saved to disk instead of truncated
+- Enables PopKit hooks and agents to process complete outputs
+- No code changes required - automatic improvement for all workflows
+
+**Permission Explainer Improvements:**
+- Routine dev workflows (git fetch, rebase, npm install, tests) no longer flagged as medium risk
+- Validates PopKit's wildcard permission approach (`Bash(npm test*)`, `Bash(git log*)`)
+- Smoother UX for developers using PopKit's security-conscious agent permissions
+
 ---
 
 ## Testing
@@ -274,8 +302,11 @@ PopKit requires specific Claude Code versions for full functionality:
 | **Skill Hot-Reload** | 2.1.0 | Skills reload without restart |
 | **Forked Skill Contexts** | 2.1.0 | Isolated execution contexts |
 | **YAML List Format** | 2.1.0 | Clean agent tools syntax |
+| **SessionStart agent_type** | 2.1.2 | `--agent` flag detection in hooks |
+| **Plugin Auto-Update Control** | 2.1.2 | `FORCE_AUTOUPDATE_PLUGINS` env var |
+| **Large Output Persistence** | 2.1.2 | Tool outputs saved to disk (not truncated) |
 
-**Recommended**: Claude Code 2.1.0+ for full feature support.
+**Recommended**: Claude Code 2.1.2+ for full feature support.
 
 ---
 
