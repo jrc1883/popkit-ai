@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://code.claude.com/schemas/marketplace.json",
+  "title": "Claude Code Plugin Marketplace Manifest",
+  "description": "Schema for validating marketplace.json files for plugin collections",
+  "type": "object",
+  "required": ["plugins"],
+  "additionalProperties": false,
+  "properties": {
+    "plugins": {
+      "type": "array",
+      "description": "Array of plugin entries in this marketplace",
+      "items": {
+        "$ref": "#/definitions/pluginEntry"
+      },
+      "minItems": 1
+    }
+  },
+  "definitions": {
+    "pluginEntry": {
+      "type": "object",
+      "required": ["name", "source", "description", "version"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Plugin name (must match plugin.json)",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "source": {
+          "type": "string",
+          "description": "Relative path to plugin directory",
+          "pattern": "^\\./",
+          "examples": ["./packages/popkit-core"]
+        },
+        "description": {
+          "type": "string",
+          "description": "Plugin description (must match plugin.json)",
+          "minLength": 10,
+          "maxLength": 500
+        },
+        "version": {
+          "type": "string",
+          "description": "Plugin version (must match plugin.json)",
+          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+        },
+        "homepage": {
+          "type": "string",
+          "description": "Plugin homepage URL",
+          "format": "uri",
+          "pattern": "^https://"
+        },
+        "repository": {
+          "type": "string",
+          "description": "Git repository URL (MUST be string)",
+          "format": "uri",
+          "pattern": "^https://github\\.com/"
+        },
+        "license": {
+          "type": "string",
+          "description": "SPDX license identifier",
+          "enum": [
+            "MIT",
+            "Apache-2.0",
+            "GPL-3.0",
+            "GPL-2.0",
+            "ISC",
+            "BSD-2-Clause",
+            "BSD-3-Clause",
+            "LGPL-3.0",
+            "MPL-2.0",
+            "UNLICENSED",
+            "Proprietary"
+          ]
+        },
+        "keywords": {
+          "type": "array",
+          "description": "Array of keywords for discovery",
+          "items": {
+            "type": "string",
+            "minLength": 2
+          },
+          "uniqueItems": true
+        },
+        "author": {
+          "type": "object",
+          "required": ["name"],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string",
+              "format": "email"
+            },
+            "url": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        }
+      }
+    }
+  }
+}

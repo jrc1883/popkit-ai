@@ -92,8 +92,14 @@ def generate_morning_report(
         "---",
         "",
         "STATUS.json updated ✅",
-        "Morning session initialized. Ready to code!"
+        "Morning session initialized. Ready to code!",
+        "",
+        "## 🎯 Next Steps",
+        ""
     ])
+
+    # Add PopKit Way ending: AskUserQuestion instructions
+    report_lines.extend(_generate_ask_user_question_section(score, breakdown, state))
 
     return "\n".join(report_lines)
 
@@ -330,3 +336,129 @@ def _generate_today_recommendations(state: Dict[str, Any]) -> List[str]:
         recommendations.append("Check STATUS.json for yesterday's context")
 
     return recommendations
+
+
+def _generate_ask_user_question_section(
+    score: int,
+    breakdown: Dict[str, Dict[str, Any]],
+    state: Dict[str, Any]
+) -> List[str]:
+    """
+    Generate AskUserQuestion instructions for Claude (The PopKit Way).
+
+    This section tells Claude to invoke the AskUserQuestion tool with
+    context-aware options based on the morning report results.
+
+    Args:
+        score: Ready to Code Score (0-100)
+        breakdown: Score breakdown from calculate_ready_to_code_score()
+        state: Full project state
+
+    Returns:
+        List of lines containing AskUserQuestion instructions for Claude
+    """
+    # Analyze state to determine appropriate options
+    services_data = state.get('services', {})
+    git_data = state.get('git', {})
+    github_data = state.get('github', {})
+
+    required_services = services_data.get('required_services', [])
+    running_services = services_data.get('running_services', [])
+    missing_services = [s for s in required_services if s not in running_services]
+
+    behind_commits = git_data.get('behind_remote', 0)
+    prs_needing_review = github_data.get('prs_needing_review', [])
+    issues_needing_triage = github_data.get('issues_needing_triage', [])
+
+    # Build context-aware AskUserQuestion options
+    options = []
+
+    # Option 1: Fix environment issues (if score < 80)
+    if score < 80:
+        issues_list = []
+        if missing_services:
+            issues_list.append(f"start {len(missing_services)} services")
+        if behind_commits > 0:
+            issues_list.append(f"pull {behind_commits} commits")
+
+        if issues_list:
+            options.append({
+                "label": "Fix environment issues (Recommended)",
+                "description": ", ".join(issues_list).capitalize()
+            })
+
+    # Option 2: Work on highest priority issue
+    if issues_needing_triage:
+        first_issue = issues_needing_triage[0]
+        issue_num = first_issue.get('number', '?')
+        issue_title = first_issue.get('title', 'Unknown')
+        options.append({
+            "label": f"Work on #{issue_num}: {issue_title[:50]}",
+            "description": "Highest priority issue needing attention"
+        })
+    else:
+        # Generic "start working" option
+        session_data = state.get('session', {})
+        last_work = session_data.get('last_work_summary', 'previous task')
+        options.append({
+            "label": f"Continue: {last_work}",
+            "description": "Pick up where you left off yesterday"
+        })
+
+    # Option 3: Review PRs (if any)
+    if prs_needing_review:
+        pr_count = len(prs_needing_review)
+        options.append({
+            "label": f"Review {pr_count} open PR{'s' if pr_count > 1 else ''}",
+            "description": "PRs waiting for your review"
+        })
+
+    # Option 4: Triage issues (if any and score >= 80)
+    if issues_needing_triage and score >= 80:
+        issue_count = len(issues_needing_triage)
+        options.append({
+            "label": f"Triage {issue_count} issue{'s' if issue_count > 1 else ''}",
+            "description": "Issues needing assignment or labels"
+        })
+
+    # Always include "Other" option
+    options.append({
+        "label": "Other",
+        "description": "I have something else in mind"
+    })
+
+    # Generate the AskUserQuestion instruction section
+    lines = [
+        "**IMPORTANT - The PopKit Way**: You MUST now use the AskUserQuestion tool to keep PopKit in control of the workflow.",
+        "",
+        "Use AskUserQuestion with the following configuration:",
+        "",
+        "```json",
+        "{",
+        '  "questions": [',
+        "    {",
+        f'      "question": "What would you like to do next?",',
+        '      "header": "Next Action",',
+        '      "multiSelect": false,',
+        '      "options": ['
+    ]
+
+    # Add each option
+    for i, option in enumerate(options):
+        is_last = i == len(options) - 1
+        lines.append('        {')
+        lines.append(f'          "label": "{option["label"]}",')
+        lines.append(f'          "description": "{option["description"]}"')
+        lines.append('        }' + ('' if is_last else ','))
+
+    lines.extend([
+        '      ]',
+        '    }',
+        '  ]',
+        '}',
+        '```',
+        '',
+        '**DO NOT** just end the session after showing this report. You MUST invoke AskUserQuestion to maintain The PopKit Way pattern.'
+    ])
+
+    return lines

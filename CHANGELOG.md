@@ -55,6 +55,33 @@ All notable changes to PopKit are documented in this file.
 - `packages/popkit-core/hooks/session-start.py` - Import from helpers module
 - `CLAUDE.md` - Updated documentation for 2.1.2 features
 
+### Plugin Metadata Fixes
+
+**Repository Field Format Compliance**:
+- Fixed repository field format in all plugin.json files (commit 29b1224)
+- Changed from npm-style object format to Claude Code string format
+- Ensures proper GitHub integration and marketplace compatibility
+- Aligns with official Claude Code plugin specification
+
+**Files Updated**:
+- `packages/popkit-core/.claude-plugin/plugin.json`
+- `packages/popkit-dev/.claude-plugin/plugin.json`
+- `packages/popkit-ops/.claude-plugin/plugin.json`
+- `packages/popkit-research/.claude-plugin/plugin.json`
+
+**Format Change**:
+```json
+// Before (npm-style - incorrect):
+"repository": {
+  "type": "git",
+  "url": "https://github.com/jrc1883/popkit-claude",
+  "directory": "packages/popkit-core"
+}
+
+// After (Claude Code format - correct):
+"repository": "https://github.com/jrc1883/popkit-claude"
+```
+
 ---
 
 ## [1.0.0-beta.3] - 2026-01-06

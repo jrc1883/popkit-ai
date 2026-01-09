@@ -1,0 +1,60 @@
+{
+  "plugins": [
+    {
+      "name": "popkit-core",
+      "source": "./packages/popkit-core",
+      "description": "Core utilities plugin - plugin management, project analysis, Power Mode orchestration, stats, privacy, and meta-features",
+      "version": "1.0.0-beta.4",
+      "homepage": "https://github.com/jrc1883/popkit-claude/tree/main/packages/popkit-core",
+      "repository": "https://github.com/jrc1883/popkit-claude",
+      "license": "MIT",
+      "keywords": ["development", "workflow", "automation", "power-mode"],
+      "author": {
+        "name": "Joseph Cannon",
+        "email": "joseph@thehouseofdeals.com"
+      }
+    },
+    {
+      "name": "popkit-dev",
+      "source": "./packages/popkit-dev",
+      "description": "Development workflow plugin - feature development, git operations, GitHub integration, and daily routines",
+      "version": "1.0.0-beta.4",
+      "homepage": "https://github.com/jrc1883/popkit-claude/tree/main/packages/popkit-dev",
+      "repository": "https://github.com/jrc1883/popkit-claude",
+      "license": "MIT",
+      "keywords": ["git", "github", "workflow", "development"],
+      "author": {
+        "name": "Joseph Cannon",
+        "email": "joseph@thehouseofdeals.com"
+      }
+    },
+    {
+      "name": "popkit-ops",
+      "source": "./packages/popkit-ops",
+      "description": "Operations plugin - quality assurance, deployment automation, debugging workflows, and security scanning",
+      "version": "1.0.0-beta.4",
+      "homepage": "https://github.com/jrc1883/popkit-claude/tree/main/packages/popkit-ops",
+      "repository": "https://github.com/jrc1883/popkit-claude",
+      "license": "MIT",
+      "keywords": ["ops", "deployment", "testing", "security"],
+      "author": {
+        "name": "Joseph Cannon",
+        "email": "joseph@thehouseofdeals.com"
+      }
+    },
+    {
+      "name": "popkit-research",
+      "source": "./packages/popkit-research",
+      "description": "Research plugin - knowledge management, research capture, and semantic search for development insights",
+      "version": "1.0.0-beta.4",
+      "homepage": "https://github.com/jrc1883/popkit-claude/tree/main/packages/popkit-research",
+      "repository": "https://github.com/jrc1883/popkit-claude",
+      "license": "MIT",
+      "keywords": ["research", "knowledge", "documentation"],
+      "author": {
+        "name": "Joseph Cannon",
+        "email": "joseph@thehouseofdeals.com"
+      }
+    }
+  ]
+}
