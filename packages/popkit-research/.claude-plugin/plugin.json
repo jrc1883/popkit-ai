@@ -17,5 +17,7 @@
     "./skills/pop-research-merge",
     "./skills/pop-knowledge-lookup"
   ],
-  "agents": []
+  "agents": [
+    "./agents/tier-2-on-demand/researcher"
+  ]
 }

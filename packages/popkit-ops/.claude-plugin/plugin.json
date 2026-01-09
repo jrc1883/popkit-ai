@@ -24,5 +24,12 @@
     "./skills/pop-systematic-debugging",
     "./skills/pop-code-review"
   ],
-  "agents": []
+  "agents": [
+    "./agents/tier-1-always-active/bug-whisperer",
+    "./agents/tier-1-always-active/performance-optimizer",
+    "./agents/tier-1-always-active/security-auditor",
+    "./agents/tier-1-always-active/test-writer-fixer",
+    "./agents/tier-2-on-demand/deployment-validator",
+    "./agents/tier-2-on-demand/rollback-specialist"
+  ]
 }

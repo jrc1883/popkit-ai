@@ -37,6 +37,14 @@
     "./skills/pop-validation-engine"
   ],
   "agents": [
-    "./agents/orchestrator/AGENT.md"
+    "./agents/tier-1-always-active/accessibility-guardian",
+    "./agents/tier-1-always-active/api-designer",
+    "./agents/tier-1-always-active/documentation-maintainer",
+    "./agents/tier-1-always-active/migration-specialist",
+    "./agents/tier-2-on-demand/bundle-analyzer",
+    "./agents/tier-2-on-demand/dead-code-eliminator",
+    "./agents/tier-2-on-demand/feature-prioritizer",
+    "./agents/tier-2-on-demand/meta-agent",
+    "./agents/tier-2-on-demand/power-coordinator"
   ]
 }
