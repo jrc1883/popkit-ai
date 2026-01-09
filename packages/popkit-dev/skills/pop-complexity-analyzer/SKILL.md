@@ -465,7 +465,6 @@ result = analyze_complexity("Migrate monolith to microservices architecture")
 - `pop-writing-plans` - Uses complexity for plan generation
 - `pop-brainstorming` - Uses complexity to determine depth
 - `pop-executing-plans` - Uses complexity for batch sizing
-- `pop-project-templates` - Uses complexity for template selection
 
 ## Related Commands
 
