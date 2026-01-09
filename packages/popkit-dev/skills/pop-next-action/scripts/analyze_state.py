@@ -174,10 +174,11 @@ def analyze_research_branches() -> Dict[str, Any]:
     }
 
     # Fetch to get all remote branches
-    run_command("git fetch --all --prune 2>/dev/null")
+    # SECURE: Using list-based arguments instead of shell string
+    run_command(["git", "fetch", "--all", "--prune"])
 
     # Look for research-related branches
-    branches, ok = run_command("git branch -r")
+    branches, ok = run_command(["git", "branch", "-r"])
     if not ok:
         return state
 
@@ -190,8 +191,8 @@ def analyze_research_branches() -> Dict[str, Any]:
 
         # Check if it matches research patterns
         if any(pattern in branch.lower() for pattern in research_patterns):
-            # Get branch creation time
-            date_output, _ = run_command(f"git log -1 --format='%ar' {branch} 2>/dev/null")
+            # Get branch creation time - SECURE: branch is separate argument
+            date_output, _ = run_command(["git", "log", "-1", "--format=%ar", branch])
 
             state["branches"].append({
                 "name": branch,
