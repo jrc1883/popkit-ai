@@ -312,7 +312,7 @@ PopKit requires specific Claude Code versions for full functionality:
 
 ## Current Status
 
-**Version**: 1.0.0-beta.3
+**Version**: 1.0.0-beta.4
 **Status**: Beta release
 **Plugins**: 4 modular plugins
 **Commands**: 23 workflow commands
@@ -321,12 +321,108 @@ PopKit requires specific Claude Code versions for full functionality:
 
 ### Recent Updates
 
+- **2026-01-09**: Claude Code 2.1.2 integration complete (v1.0.0-beta.4)
+- **2026-01-06**: Repository field format fix (all plugin.json files)
 - **2025-12-29**: Core cleanup and account consolidation (v1.0.0-beta.3)
 - **2025-12-28**: Version alignment at v1.0.0-beta.1
 - **2025-12-21**: Testing & validation complete (96.3% pass rate)
 - **2025-12-20**: Plugin modularization complete
 
 See [CHANGELOG.md](CHANGELOG.md) for full version history.
+
+---
+
+## The PopKit Way
+
+PopKit maintains workflow control through a consistent interaction pattern:
+
+### Core Principle
+
+**Never end a workflow without user interaction.** Every command, skill, and routine MUST end with `AskUserQuestion` to:
+- Keep PopKit in control of the workflow loop
+- Force intentional user decisions
+- Enable context-aware next actions
+- Prevent "report dump and done" anti-pattern
+- Maintain continuous workflow engagement
+
+### Implementation Pattern
+
+All skills/commands must follow this pattern:
+
+```python
+# After completing the main task (report, analysis, etc.)
+# Generate context-aware next action options
+options = [
+    {
+        "label": "Primary action (Recommended)",
+        "description": "What this action does"
+    },
+    {
+        "label": "Alternative action",
+        "description": "What this action does"
+    },
+    {
+        "label": "Other",
+        "description": "I have something else in mind"
+    }
+]
+
+# Output AskUserQuestion instructions for Claude
+output_ask_user_question_instructions(options)
+```
+
+### Examples
+
+#### ✅ Correct (The PopKit Way)
+```markdown
+# ☀️ Morning Routine Report
+[... report content ...]
+
+## 🎯 Next Steps
+Use AskUserQuestion with options:
+- "Fix environment issues (Recommended)"
+- "Continue: previous task"
+- "Review open PRs"
+- "Other"
+```
+
+#### ❌ Incorrect (Anti-Pattern)
+```markdown
+# ☀️ Morning Routine Report
+[... report content ...]
+
+Morning session initialized. Ready to code!
+[session ends without user interaction]
+```
+
+### Required Components
+
+1. **Context Analysis**: Examine workflow results to determine appropriate next actions
+2. **Option Generation**: Create 2-4 context-aware options (always include "Other")
+3. **Recommendation**: Mark the most appropriate option as "(Recommended)"
+4. **Clear Instructions**: Tell Claude explicitly to use AskUserQuestion (not just suggest it)
+
+### Skills Using This Pattern
+
+✅ **Correctly Implemented:**
+- `pop-brainstorming` - Ends with design decision options
+- `issue` command - Ends with "Work on next issue" / "Review PRs" / etc.
+- `milestone` command - Ends with next milestone actions
+- `pop-morning` - Ends with context-aware next actions (v1.0.0-beta.4+)
+
+🚧 **Needs Implementation:**
+- `pop-nightly` - Add AskUserQuestion ending
+- Other skills TBD (audit needed)
+
+### Quality Check
+
+Before committing any skill/command:
+- [ ] Does it end with AskUserQuestion?
+- [ ] Are options context-aware (not generic)?
+- [ ] Is there a "(Recommended)" option?
+- [ ] Does it maintain workflow control?
+
+**If any answer is "no", the implementation violates The PopKit Way.**
 
 ---
 

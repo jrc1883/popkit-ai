@@ -1,0 +1,152 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://code.claude.com/schemas/hooks.json",
+  "title": "Claude Code Plugin Hooks Configuration",
+  "description": "Schema for validating hooks.json files according to Claude Code specification",
+  "type": "object",
+  "required": ["hooks"],
+  "additionalProperties": false,
+  "properties": {
+    "hooks": {
+      "type": "object",
+      "description": "Hook event configurations",
+      "additionalProperties": false,
+      "properties": {
+        "PreToolUse": {
+          "$ref": "#/definitions/hookEventArray"
+        },
+        "PostToolUse": {
+          "$ref": "#/definitions/hookEventArray"
+        },
+        "PermissionRequest": {
+          "$ref": "#/definitions/hookEventArray"
+        },
+        "UserPromptSubmit": {
+          "$ref": "#/definitions/hookEventArray"
+        },
+        "Notification": {
+          "$ref": "#/definitions/hookEventArray"
+        },
+        "Stop": {
+          "$ref": "#/definitions/hookEventArray"
+        },
+        "SubagentStop": {
+          "$ref": "#/definitions/hookEventArray"
+        },
+        "SessionStart": {
+          "$ref": "#/definitions/hookEventArray"
+        },
+        "SessionEnd": {
+          "$ref": "#/definitions/hookEventArray"
+        },
+        "PreCompact": {
+          "$ref": "#/definitions/hookEventArray"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "hookEventArray": {
+      "type": "array",
+      "description": "Array of hook matchers for this event",
+      "items": {
+        "$ref": "#/definitions/hookMatcher"
+      }
+    },
+    "hookMatcher": {
+      "type": "object",
+      "required": ["hooks"],
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "Regex pattern to match tool names or event data"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Array of hooks to execute when matched",
+          "items": {
+            "$ref": "#/definitions/hookDefinition"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "hookDefinition": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["command", "prompt", "agent"],
+          "description": "Type of hook to execute"
+        },
+        "command": {
+          "type": "string",
+          "description": "Shell command to execute (for type: command)",
+          "pattern": "\\$\\{CLAUDE_PLUGIN_ROOT\\}",
+          "examples": [
+            "python \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.py\""
+          ]
+        },
+        "prompt": {
+          "type": "string",
+          "description": "Prompt text to inject (for type: prompt)"
+        },
+        "agent": {
+          "type": "string",
+          "description": "Agent name to invoke (for type: agent)"
+        },
+        "timeout": {
+          "type": "integer",
+          "description": "Timeout in milliseconds",
+          "minimum": 0,
+          "maximum": 60000,
+          "default": 10000
+        },
+        "blocking": {
+          "type": "boolean",
+          "description": "Whether hook execution blocks the event",
+          "default": false
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "command"
+              }
+            }
+          },
+          "then": {
+            "required": ["command"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "prompt"
+              }
+            }
+          },
+          "then": {
+            "required": ["prompt"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "agent"
+              }
+            }
+          },
+          "then": {
+            "required": ["agent"]
+          }
+        }
+      ]
+    }
+  }
+}

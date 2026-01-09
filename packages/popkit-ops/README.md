@@ -1,7 +1,7 @@
 # PopKit - Operations Plugin
 
-**Version:** 1.0.0-beta.1
-**Status:** Operations Plugin (Phase 3b of Plugin Modularization)
+**Version:** 1.0.0-beta.4
+**Status:** Operations Plugin (Ready for marketplace)
 
 ## Overview
 
