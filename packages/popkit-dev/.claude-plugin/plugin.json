@@ -7,40 +7,9 @@
     "email": "joseph@thehouseofdeals.com"
   },
   "license": "MIT",
-  "repository": "https://github.com/jrc1883/popkit-claude",
-  "commands": [
-    "./commands/dev.md",
-    "./commands/git.md",
-    "./commands/issue.md",
-    "./commands/milestone.md",
-    "./commands/worktree.md",
-    "./commands/routine.md",
-    "./commands/next.md"
-  ],
-  "skills": [
-    "./skills/pop-brainstorming",
-    "./skills/pop-writing-plans",
-    "./skills/pop-executing-plans",
-    "./skills/pop-next-action",
-    "./skills/pop-session-capture",
-    "./skills/pop-session-resume",
-    "./skills/pop-context-restore",
-    "./skills/pop-routine-optimized",
-    "./skills/pop-routine-measure",
-    "./skills/pop-finish-branch",
-    "./skills/pop-worktrees",
-    "./skills/pop-morning",
-    "./skills/pop-nightly",
-    "./skills/pop-complexity-analyzer",
-    "./skills/pop-changelog-automation"
-  ],
-  "agents": [
-    "./agents/feature-workflow/code-architect",
-    "./agents/feature-workflow/code-explorer",
-    "./agents/tier-1-always-active/code-reviewer",
-    "./agents/tier-1-always-active/refactoring-expert",
-    "./agents/tier-2-on-demand/rapid-prototyper",
-    "./agents/tier-2-on-demand/prd-parser",
-    "./agents/tier-2-on-demand/merge-conflict-resolver"
-  ]
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jrc1883/popkit-claude",
+    "directory": "packages/popkit-dev"
+  }
 }

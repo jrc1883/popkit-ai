@@ -7,17 +7,9 @@
     "email": "joseph@thehouseofdeals.com"
   },
   "license": "MIT",
-  "repository": "https://github.com/jrc1883/popkit-claude",
-  "commands": [
-    "./commands/research.md",
-    "./commands/knowledge.md"
-  ],
-  "skills": [
-    "./skills/pop-research-capture",
-    "./skills/pop-research-merge",
-    "./skills/pop-knowledge-lookup"
-  ],
-  "agents": [
-    "./agents/tier-2-on-demand/researcher"
-  ]
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jrc1883/popkit-claude",
+    "directory": "packages/popkit-research"
+  }
 }
