@@ -58,6 +58,13 @@ packages/plugin/power-mode/.claude/
 # Runtime logs
 logs/
 
+# Playwright MCP state
+.playwright-mcp/
+
+# Python coverage
+.coverage
+.coverage.*
+
 # Sandbox test artifacts and results
 packages/benchmarks/results/
 packages/benchmarks/analysis/
