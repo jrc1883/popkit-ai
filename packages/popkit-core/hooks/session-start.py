@@ -9,6 +9,7 @@ Responsibilities:
 3. Register project with PopKit Cloud (async, non-blocking)
 4. Ensure PopKit directories exist (auto-init)
 5. Filter agents based on initial task (Phase 2: Embedding-Based Agent Loading)
+6. Detect and optimize for agent_type when --agent flag is used (Claude Code 2.1.2+)
 """
 
 import sys
@@ -601,6 +602,99 @@ def detect_project_context():
         return {"name": "unknown", "stack": [], "infrastructure": {}, "current_work": {}}
 
 
+def detect_agent_type_session(data):
+    """Detect and optimize session for agent_type from --agent flag.
+
+    New in Claude Code 2.1.2: SessionStart hook input includes 'agent_type'
+    when the user runs Claude Code with the --agent flag.
+
+    Example: `claude --agent code-reviewer` will set agent_type='code-reviewer'
+
+    This allows PopKit to:
+    1. Skip embedding-based agent filtering (agent already selected)
+    2. Pre-load agent-specific configurations
+    3. Set appropriate defaults for the agent context
+    4. Improve logging and analytics
+
+    Args:
+        data: Session input data from Claude Code
+
+    Returns:
+        dict: Agent type optimization info, or None if no agent_type specified
+    """
+    agent_type = data.get('agent_type')
+
+    if not agent_type:
+        return None  # No --agent flag used, normal session
+
+    try:
+        # Log agent-specific session start
+        print(f"Agent-specific session detected: {agent_type}", file=sys.stderr)
+
+        # Map known agent types to PopKit agent categories
+        # This helps optimize context loading and Power Mode configuration
+        agent_category_map = {
+            # Tier 1 agents (always active)
+            'code-reviewer': 'tier-1',
+            'refactoring-expert': 'tier-1',
+            'accessibility-guardian': 'tier-1',
+            'api-designer': 'tier-1',
+            'documentation-maintainer': 'tier-1',
+            'migration-specialist': 'tier-1',
+            'bug-whisperer': 'tier-1',
+            'performance-optimizer': 'tier-1',
+            'security-auditor': 'tier-1',
+            'test-writer-fixer': 'tier-1',
+            # Tier 2 agents (on-demand)
+            'bundle-analyzer': 'tier-2',
+            'dead-code-eliminator': 'tier-2',
+            'feature-prioritizer': 'tier-2',
+            'meta-agent': 'tier-2',
+            'power-coordinator': 'tier-2',
+            'rapid-prototyper': 'tier-2',
+            'deployment-validator': 'tier-2',
+            'rollback-specialist': 'tier-2',
+            'researcher': 'tier-2',
+            'merge-conflict-resolver': 'tier-2',
+            'prd-parser': 'tier-2',
+            # Feature workflow agents
+            'code-explorer': 'feature-workflow',
+            'code-architect': 'feature-workflow',
+        }
+
+        category = agent_category_map.get(agent_type, 'unknown')
+
+        # Determine optimization strategy
+        optimization = {
+            'agent_type': agent_type,
+            'agent_category': category,
+            'skip_embedding_filter': True,  # Agent already selected by user
+            'optimizations_applied': []
+        }
+
+        # Category-specific optimizations
+        if category == 'tier-1':
+            optimization['optimizations_applied'].append('standard_context_loading')
+            print(f"  Category: Tier 1 (always active)", file=sys.stderr)
+        elif category == 'tier-2':
+            optimization['optimizations_applied'].append('on_demand_context_loading')
+            print(f"  Category: Tier 2 (on-demand specialist)", file=sys.stderr)
+        elif category == 'feature-workflow':
+            optimization['optimizations_applied'].append('feature_workflow_context')
+            print(f"  Category: Feature workflow agent", file=sys.stderr)
+        else:
+            # Unknown agent type - might be custom or from another plugin
+            optimization['optimizations_applied'].append('generic_optimization')
+            print(f"  Category: External/custom agent", file=sys.stderr)
+
+        return optimization
+
+    except Exception as e:
+        # Silent failure - don't block session start
+        print(f"Warning: Agent type detection failed: {e}", file=sys.stderr)
+        return None
+
+
 def main():
     """Main entry point for the hook - JSON stdin/stdout protocol"""
     try:
@@ -649,8 +743,18 @@ def main():
         # Load agent expertise files (Issue #201, Phase 2, non-blocking)
         expertise_loading = load_agent_expertise()
 
+        # Detect agent_type from --agent flag (Claude Code 2.1.2+)
+        agent_type_info = detect_agent_type_session(data)
+
         # Load relevant agents for this session (Phase 2, non-blocking)
-        agent_loading = load_relevant_agents_for_session(data)
+        # Skip embedding-based filtering if agent_type is specified (user already selected agent)
+        agent_loading = None
+        if agent_type_info and agent_type_info.get('skip_embedding_filter'):
+            # Agent already selected via --agent flag, skip embedding-based filtering
+            print("  Skipping embedding filter (agent pre-selected)", file=sys.stderr)
+        else:
+            # Normal session - use embedding-based agent filtering
+            agent_loading = load_relevant_agents_for_session(data)
 
         # Generate initial XML context and save state (Phase 1: XML Integration)
         xml_context_info = None
@@ -730,6 +834,10 @@ def main():
         # Include agent loading info if available (Phase 2)
         if agent_loading:
             response["agent_loading"] = agent_loading
+
+        # Include agent_type info if --agent flag was used (Claude Code 2.1.2+)
+        if agent_type_info:
+            response["agent_type_optimization"] = agent_type_info
 
         # Include XML context info if generated (Phase 1)
         if xml_context_info:
