@@ -40,17 +40,17 @@ build/
 
 # Development-only content (not distributed with plugin)
 # Uses .local suffix pattern like Claude Code's settings.local.json
-packages/plugin/commands.local/
-packages/plugin/skills.local/
-packages/plugin/agents.local/
-packages/plugin/hooks.local/
+packages/*/commands.local/
+packages/*/skills.local/
+packages/*/agents.local/
+packages/*/hooks.local/
 
 # Project-specific generated content
 # Output from /popkit:generate-* commands
 .generated/
 
 # Power Mode state files (generated during multi-agent orchestration)
-packages/plugin/power-mode/.claude/
+packages/popkit-core/power-mode/.claude/
 
 # Local Claude Code project state (created when using PopKit on this repo)
 .claude/
@@ -64,15 +64,6 @@ logs/
 # Python coverage
 .coverage
 .coverage.*
-
-# Sandbox test artifacts and results
-packages/benchmarks/results/
-packages/benchmarks/analysis/
-packages/benchmarks/tasks/real-world/
-packages/benchmarks/tasks/standard/
-packages/benchmarks/hello.txt
-packages/benchmarks/streamtest.txt
-packages/benchmarks/pnpm-lock.yaml
 
 # Temporary build artifacts
 packages/*/build-*.txt
