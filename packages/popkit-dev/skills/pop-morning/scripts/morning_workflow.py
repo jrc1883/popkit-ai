@@ -233,28 +233,26 @@ class MorningWorkflow:
         import subprocess
         import shlex
 
-        def run_command(cmd: str, use_shell: bool = False) -> str:
+        def run_command(cmd: list, stderr_redirect: bool = False) -> str:
             """
             Run command and return output.
 
             Args:
-                cmd: Command string
-                use_shell: True if command needs shell features (pipes, redirection)
+                cmd: Command as list of arguments
+                stderr_redirect: If True, redirects stderr to stdout
             """
             try:
-                if use_shell:
-                    # Only use shell=True when needed for pipes/redirection
+                if stderr_redirect:
                     result = subprocess.run(
                         cmd,
-                        shell=True,
                         capture_output=True,
                         text=True,
-                        timeout=10
+                        timeout=10,
+                        stderr=subprocess.DEVNULL
                     )
                 else:
-                    # Safe list-based execution
                     result = subprocess.run(
-                        shlex.split(cmd),
+                        cmd,
                         capture_output=True,
                         text=True,
                         timeout=10
@@ -268,10 +266,10 @@ class MorningWorkflow:
         branch = git_data.get('branch', 'main')
 
         # Fetch to get latest remote info (silent)
-        run_command('git fetch --quiet')
+        run_command(['git', 'fetch', '--quiet'])
 
-        # Check commits behind
-        behind_output = run_command(f'git rev-list --count HEAD..origin/{branch}')
+        # Check commits behind - SECURE: branch is passed as a separate argument
+        behind_output = run_command(['git', 'rev-list', '--count', f'HEAD..origin/{branch}'])
         try:
             git_data['behind_remote'] = int(behind_output) if behind_output else 0
         except ValueError:
@@ -285,8 +283,8 @@ class MorningWorkflow:
         }
 
         # Try pnpm outdated (if available)
-        # Uses shell redirection, so needs shell=True
-        pnpm_outdated = run_command('pnpm outdated --json 2>/dev/null', use_shell=True)
+        # SECURE: stderr redirect handled via subprocess parameter
+        pnpm_outdated = run_command(['pnpm', 'outdated', '--json'], stderr_redirect=True)
         if pnpm_outdated:
             try:
                 outdated = json.loads(pnpm_outdated)
@@ -303,7 +301,7 @@ class MorningWorkflow:
         # Check PRs needing review
         github_data = state.get('github', {})
         try:
-            prs_json = run_command('gh pr list --state open --json number,title,updatedAt,reviewDecision')
+            prs_json = run_command(['gh', 'pr', 'list', '--state', 'open', '--json', 'number,title,updatedAt,reviewDecision'])
             if prs_json:
                 prs = json.loads(prs_json)
                 # PRs with no review decision or requested changes
@@ -318,7 +316,7 @@ class MorningWorkflow:
 
         # Check issues needing triage (no assignee or no labels)
         try:
-            issues_json = run_command('gh issue list --state open --json number,title,assignees,labels')
+            issues_json = run_command(['gh', 'issue', 'list', '--state', 'open', '--json', 'number,title,assignees,labels'])
             if issues_json:
                 issues = json.loads(issues_json)
                 github_data['issues_needing_triage'] = [
@@ -337,56 +335,48 @@ class MorningWorkflow:
     def _collect_state_fallback(self) -> Dict[str, Any]:
         """Fallback state collection without utilities."""
         import subprocess
-        import shlex
+        import shutil
 
-        def run_command(cmd: str, use_shell: bool = False) -> str:
+        def run_command(cmd: list) -> str:
             """
             Run command and return output.
 
             Args:
-                cmd: Command string
-                use_shell: True if command needs shell features (pipes, redirection)
+                cmd: Command as list of arguments
             """
             try:
-                if use_shell:
-                    # Only use shell=True when needed for pipes/redirection
-                    result = subprocess.run(
-                        cmd,
-                        shell=True,
-                        capture_output=True,
-                        text=True,
-                        timeout=10
-                    )
-                else:
-                    # Safe list-based execution
-                    result = subprocess.run(
-                        shlex.split(cmd),
-                        capture_output=True,
-                        text=True,
-                        timeout=10
-                    )
+                result = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
                 return result.stdout.strip()
             except Exception as e:
-                print(f"[WARN] Command failed: {cmd} - {e}", file=sys.stderr)
+                print(f"[WARN] Command failed: {' '.join(cmd)} - {e}", file=sys.stderr)
                 return ""
 
         # Git state
-        run_command('git fetch --quiet')  # Fetch to get latest remote info
+        run_command(['git', 'fetch', '--quiet'])  # Fetch to get latest remote info
 
-        branch = run_command('git rev-parse --abbrev-ref HEAD')
-        behind_output = run_command(f'git rev-list --count HEAD..origin/{branch}')
+        branch = run_command(['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
+        # SECURE: branch is passed as separate argument, safe from injection
+        behind_output = run_command(['git', 'rev-list', '--count', f'HEAD..origin/{branch}'])
 
         try:
             behind_count = int(behind_output) if behind_output else 0
         except ValueError:
             behind_count = 0
 
+        # Count stashes without pipes - SECURE
+        stash_list = run_command(['git', 'stash', 'list'])
+        stash_count = len(stash_list.splitlines()) if stash_list else 0
+
         git_state = {
             'branch': branch,
             'behind_remote': behind_count,
-            'uncommitted_files': len(run_command('git status --porcelain').splitlines()),
-            # Pipe requires shell=True
-            'stashes': int(run_command('git stash list | wc -l', use_shell=True) or '0')
+            'uncommitted_files': len(run_command(['git', 'status', '--porcelain']).splitlines()),
+            'stashes': stash_count
         }
 
         # GitHub state (if gh CLI available)
@@ -395,9 +385,9 @@ class MorningWorkflow:
             'issues_needing_triage': []
         }
 
-        if run_command('which gh'):
+        if shutil.which('gh'):
             try:
-                prs_json = run_command('gh pr list --state open --json number,title,reviewDecision')
+                prs_json = run_command(['gh', 'pr', 'list', '--state', 'open', '--json', 'number,title,reviewDecision'])
                 if prs_json:
                     prs = json.loads(prs_json)
                     github_state['prs_needing_review'] = [
@@ -405,7 +395,7 @@ class MorningWorkflow:
                         if pr.get('reviewDecision') in [None, 'REVIEW_REQUIRED']
                     ]
 
-                issues_json = run_command('gh issue list --state open --json number,title,assignees')
+                issues_json = run_command(['gh', 'issue', 'list', '--state', 'open', '--json', 'number,title,assignees'])
                 if issues_json:
                     issues = json.loads(issues_json)
                     github_state['issues_needing_triage'] = [
@@ -415,15 +405,21 @@ class MorningWorkflow:
             except json.JSONDecodeError:
                 pass
 
-        # Services state
-        # Pipes require shell=True
-        running_services_output = run_command(
-            'ps aux | grep -E "(node|npm|pnpm|redis|postgres|supabase)" | grep -v grep',
-            use_shell=True
-        )
-        running_services = [
-            line.split()[-1] for line in running_services_output.splitlines()
-        ] if running_services_output else []
+        # Services state - SECURE: Use ps with specific arguments (no pipes)
+        # Get list of running processes that match our patterns
+        running_services = []
+        for service_name in ['node', 'npm', 'pnpm', 'redis-server', 'postgres', 'supabase']:
+            try:
+                result = subprocess.run(
+                    ['pgrep', '-f', service_name],
+                    capture_output=True,
+                    text=True,
+                    timeout=5
+                )
+                if result.returncode == 0 and result.stdout.strip():
+                    running_services.append(service_name)
+            except Exception:
+                pass
 
         services_state = {
             'running_services': running_services,
