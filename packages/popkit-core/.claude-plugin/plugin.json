@@ -38,8 +38,5 @@
   ],
   "agents": [
     "./agents/orchestrator/AGENT.md"
-  ],
-  "status_line": {
-    "script": "power-mode/statusline.py"
-  }
+  ]
 }

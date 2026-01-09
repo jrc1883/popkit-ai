@@ -5,7 +5,6 @@ tools:
   - Read
   - Grep
   - Glob
-  - LS
 output_style: agent-handoff
 model: inherit
 version: 1.0.0

@@ -8,7 +8,6 @@ tools:
   - WebFetch
   - WebSearch
   - Task
-  - LS
 output_style: analysis-report
 model: inherit
 version: 1.0.0

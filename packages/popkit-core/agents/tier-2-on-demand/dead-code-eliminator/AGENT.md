@@ -8,7 +8,6 @@ tools:
   - MultiEdit
   - Grep
   - Glob
-  - LS
   # Dead code detection
   - Bash(npx ts-unused-exports*)
   - Bash(npx unimported*)
