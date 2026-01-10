@@ -3,14 +3,14 @@ description: "scan | list | fix | report [--dry-run, --severity, --fix]"
 argument-hint: "<subcommand> [options]"
 ---
 
-# /popkit:security - Security Vulnerability Management
+# /popkit-ops:security - Security Vulnerability Management
 
 Automated security scanning, issue creation, and vulnerability tracking.
 
 ## Usage
 
 ```
-/popkit:security [subcommand] [options]
+/popkit-ops:security [subcommand] [options]
 ```
 
 ## Subcommands
@@ -29,11 +29,11 @@ Automated security scanning, issue creation, and vulnerability tracking.
 Run a comprehensive security audit and create GitHub issues for tracking.
 
 ```
-/popkit:security                        # Full scan, create issues
-/popkit:security scan                   # Same as above
-/popkit:security scan --dry-run         # Preview without creating issues
-/popkit:security scan --severity high   # Only HIGH+ severity
-/popkit:security scan --no-issues       # Scan only, no issue creation
+/popkit-ops:security                        # Full scan, create issues
+/popkit-ops:security scan                   # Same as above
+/popkit-ops:security scan --dry-run         # Preview without creating issues
+/popkit-ops:security scan --severity high   # Only HIGH+ severity
+/popkit-ops:security scan --no-issues       # Scan only, no issue creation
 ```
 
 ### Flags
@@ -79,7 +79,7 @@ Already Tracked:
 Auto-Fixable: 7 of 10
 
 Recommendations:
-  1. Run `/popkit:security fix` to resolve 7 vulnerabilities
+  1. Run `/popkit-ops:security fix` to resolve 7 vulnerabilities
   2. Review #42 for manual remediation steps
   3. Consider upgrading lodash (breaking changes)
 
@@ -93,10 +93,10 @@ Score Impact: -10 points (Sleep Score / Ready to Code)
 View tracked vulnerabilities and their status.
 
 ```
-/popkit:security list                   # All tracked vulnerabilities
-/popkit:security list --open            # Only open issues
-/popkit:security list --resolved        # Fixed vulnerabilities
-/popkit:security list --severity high   # Filter by severity
+/popkit-ops:security list                   # All tracked vulnerabilities
+/popkit-ops:security list --open            # Only open issues
+/popkit-ops:security list --resolved        # Fixed vulnerabilities
+/popkit-ops:security list --severity high   # Filter by severity
 ```
 
 ### Example Output
@@ -132,10 +132,10 @@ Summary: 3 open, 2 resolved
 Attempt automatic remediation of vulnerabilities.
 
 ```
-/popkit:security fix                    # Run npm audit fix
-/popkit:security fix --force            # Include breaking changes
-/popkit:security fix --pr               # Create PR with fixes
-/popkit:security fix --dry-run          # Preview what would change
+/popkit-ops:security fix                    # Run npm audit fix
+/popkit-ops:security fix --force            # Include breaking changes
+/popkit-ops:security fix --pr               # Create PR with fixes
+/popkit-ops:security fix --dry-run          # Preview what would change
 ```
 
 ### Flags
@@ -166,7 +166,7 @@ Remaining (2):
   mdast-util-to-hast: Peer dependency conflict
 
 Next Steps:
-  - Run `/popkit:security fix --force` for breaking changes
+  - Run `/popkit-ops:security fix --force` for breaking changes
   - Or manually update: npm install nodemailer@latest
 
 Updated package-lock.json
@@ -180,10 +180,10 @@ Run `npm test` to verify changes
 Generate a detailed security report without creating issues.
 
 ```
-/popkit:security report                 # Human-readable report
-/popkit:security report --json          # JSON format
-/popkit:security report --md            # Markdown format
-/popkit:security report --output file   # Save to file
+/popkit-ops:security report                 # Human-readable report
+/popkit-ops:security report --json          # JSON format
+/popkit-ops:security report --md            # Markdown format
+/popkit-ops:security report --output file   # Save to file
 ```
 
 ### Example Output (Markdown)
@@ -241,10 +241,10 @@ Security scans are integrated into PopKit routines:
 
 ```
 # Nightly (automatic)
-/popkit:routine nightly security
+/popkit-dev:routine nightly security
 
 # Morning (status check)
-/popkit:routine morning --full
+/popkit-dev:routine morning --full
 ```
 
 ### Score Impact
@@ -263,7 +263,7 @@ Maximum deduction: 30 points
 Security issues can be reported via bug system:
 
 ```
-/popkit:bug "Security vulnerability in auth module" --issue
+/popkit-core:bug "Security vulnerability in auth module" --issue
 ```
 
 ---
@@ -272,19 +272,19 @@ Security issues can be reported via bug system:
 
 ```bash
 # Quick scan
-/popkit:security
+/popkit-ops:security
 
 # Preview without creating issues
-/popkit:security --dry-run
+/popkit-ops:security --dry-run
 
 # Fix what can be auto-fixed
-/popkit:security fix
+/popkit-ops:security fix
 
 # Full report for compliance
-/popkit:security report --md > security-report.md
+/popkit-ops:security report --md > security-report.md
 
 # Check only critical issues
-/popkit:security scan --severity critical
+/popkit-ops:security scan --severity critical
 ```
 
 ---

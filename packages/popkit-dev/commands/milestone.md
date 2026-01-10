@@ -3,14 +3,14 @@ description: "list | create | close | report | health [--json, --verbose]"
 argument-hint: "<subcommand> [name] [options]"
 ---
 
-# /popkit:milestone - Milestone Management
+# /popkit-dev:milestone - Milestone Management
 
 Manage GitHub milestones with progress tracking, health checks, and release planning.
 
 ## Usage
 
 ```
-/popkit:milestone <subcommand> [options]
+/popkit-dev:milestone <subcommand> [options]
 ```
 
 ## Subcommands
@@ -30,10 +30,10 @@ Manage GitHub milestones with progress tracking, health checks, and release plan
 List all milestones with progress indicators.
 
 ```
-/popkit:milestone                    # List open milestones
-/popkit:milestone list               # Same as above
-/popkit:milestone list --all         # Include closed milestones
-/popkit:milestone list --json        # JSON output for scripting
+/popkit-dev:milestone                    # List open milestones
+/popkit-dev:milestone list               # Same as above
+/popkit-dev:milestone list --all         # Include closed milestones
+/popkit-dev:milestone list --json        # JSON output for scripting
 ```
 
 ### Flags
@@ -80,9 +80,9 @@ gh api repos/{owner}/{repo}/milestones --jq '.[] | {title, open_issues, closed_i
 Create a new milestone with optional due date.
 
 ```
-/popkit:milestone create "v1.2.0"
-/popkit:milestone create "v1.2.0" --due 2025-03-01
-/popkit:milestone create "v1.2.0" --description "Feature release"
+/popkit-dev:milestone create "v1.2.0"
+/popkit-dev:milestone create "v1.2.0" --due 2025-03-01
+/popkit-dev:milestone create "v1.2.0" --description "Feature release"
 ```
 
 ### Flags
@@ -145,8 +145,8 @@ gh api repos/{owner}/{repo}/milestones \
 Close a milestone with a summary report.
 
 ```
-/popkit:milestone close "v1.0.0"
-/popkit:milestone close "v1.0.0" --comment
+/popkit-dev:milestone close "v1.0.0"
+/popkit-dev:milestone close "v1.0.0" --comment
 ```
 
 ### Flags
@@ -198,9 +198,9 @@ gh api repos/{owner}/{repo}/milestones/{number} \
 Generate a detailed milestone report.
 
 ```
-/popkit:milestone report "v1.1.0"
-/popkit:milestone report "v1.1.0" --format markdown
-/popkit:milestone report "v1.1.0" --verbose
+/popkit-dev:milestone report "v1.1.0"
+/popkit-dev:milestone report "v1.1.0" --format markdown
+/popkit-dev:milestone report "v1.1.0" --verbose
 ```
 
 ### Flags
@@ -261,8 +261,8 @@ Generate a detailed milestone report.
 Check milestone health metrics and provide recommendations.
 
 ```
-/popkit:milestone health "v1.1.0"
-/popkit:milestone health --all
+/popkit-dev:milestone health "v1.1.0"
+/popkit-dev:milestone health --all
 ```
 
 ### Flags
@@ -325,23 +325,23 @@ Risk Score:
 
 ## Integration
 
-### With /popkit:issue
+### With /popkit-dev:issue
 
 ```
-/popkit:issue list --milestone "v1.1.0"   # Issues in milestone
-/popkit:issue edit 42 --milestone "v1.1.0"  # Add to milestone
+/popkit-dev:issue list --milestone "v1.1.0"   # Issues in milestone
+/popkit-dev:issue edit 42 --milestone "v1.1.0"  # Add to milestone
 ```
 
-### With /popkit:audit
+### With /popkit-ops:audit
 
 ```
-/popkit:audit quarterly  # Includes milestone analysis
+/popkit-ops:audit quarterly  # Includes milestone analysis
 ```
 
-### With /popkit:dev
+### With /popkit-dev:dev
 
 ```
-/popkit:dev work #148  # Shows milestone context
+/popkit-dev:dev work #148  # Shows milestone context
 ```
 
 ---
@@ -350,19 +350,19 @@ Risk Score:
 
 ```bash
 # List all milestones
-/popkit:milestone
+/popkit-dev:milestone
 
 # Create new milestone
-/popkit:milestone create "v1.2.0" --due 2025-03-01
+/popkit-dev:milestone create "v1.2.0" --due 2025-03-01
 
 # Check health before release
-/popkit:milestone health "v1.1.0"
+/popkit-dev:milestone health "v1.1.0"
 
 # Generate release report
-/popkit:milestone report "v1.0.0" --format markdown
+/popkit-dev:milestone report "v1.0.0" --format markdown
 
 # Close completed milestone
-/popkit:milestone close "v1.0.0"
+/popkit-dev:milestone close "v1.0.0"
 ```
 
 ---
@@ -381,6 +381,6 @@ Risk Score:
 
 | Command | Purpose |
 |---------|---------|
-| `/popkit:issue` | Manage individual issues |
-| `/popkit:audit` | Periodic review with milestone analysis |
-| `/popkit:git release` | Create releases tied to milestones |
+| `/popkit-dev:issue` | Manage individual issues |
+| `/popkit-ops:audit` | Periodic review with milestone analysis |
+| `/popkit-dev:git release` | Create releases tied to milestones |

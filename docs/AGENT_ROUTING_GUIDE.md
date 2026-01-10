@@ -90,7 +90,7 @@ These **specialized agents activate only when triggered** by specific keywords, 
 | **dead-code-eliminator** | popkit-core | Unused code removal | dead code, unused, tree shaking | - | ~0.3k |
 | **feature-prioritizer** | popkit-core | Backlog management | prioritize, backlog, roadmap | - | ~0.3k |
 | **meta-agent** | popkit-core | Agent generator | create agent, custom agent | AGENT.md | ~0.3k |
-| **power-coordinator** | popkit-core | Multi-agent orchestration | `/popkit:power` | power-mode/*.json | ~0.3k |
+| **power-coordinator** | popkit-core | Multi-agent orchestration | `/popkit-core:power` | power-mode/*.json | ~0.3k |
 | **rapid-prototyper** | popkit-dev | Quick prototyping | prototype, mockup, spike | - | ~0.3k |
 | **deployment-validator** | popkit-ops | Deployment validation | deploy, release, production | *.yml (CI/CD) | ~0.3k |
 | **rollback-specialist** | popkit-ops | Rollback operations | rollback, revert deployment | - | ~0.3k |
@@ -253,7 +253,7 @@ PopKit → Activates performance-optimizer (semantic match)
 export VOYAGE_API_KEY="your-key-here"
 
 # Generate embeddings (one-time)
-/popkit:project embed
+/popkit-core:project embed
 ```
 
 ---
@@ -764,7 +764,7 @@ Approve plan? [Yes / No / Modify]
 **Solution:**
 ```bash
 # Regenerate embeddings
-/popkit:project embed
+/popkit-core:project embed
 
 # Or explicitly specify agent
 "@bug-whisperer investigate this TypeError"
@@ -815,10 +815,10 @@ Power Mode coordination issue or overlapping triggers
 **Solution:**
 ```bash
 # Check Power Mode status
-/popkit:power status
+/popkit-core:power status
 
 # Stop Power Mode if stuck
-/popkit:power stop
+/popkit-core:power stop
 
 # Restart with specific agent
 "@test-writer-fixer fix this test"
@@ -840,7 +840,7 @@ Power Mode coordination issue or overlapping triggers
 export VOYAGE_API_KEY="your-key-here"
 
 # Generate embeddings (one-time)
-/popkit:project embed
+/popkit-core:project embed
 
 # Verify generation
 ls .claude/popkit/embeddings/
@@ -910,7 +910,7 @@ Enable semantic agent selection via embeddings:
 export VOYAGE_API_KEY="your-key-here"
 
 # 2. Generate embeddings (one-time setup)
-/popkit:project embed
+/popkit-core:project embed
 
 # 3. Embeddings stored in:
 # .claude/popkit/embeddings/agents.json
@@ -999,6 +999,6 @@ PopKit's agent routing system provides:
 **Next Steps:**
 - Review [Package README](../packages/popkit-core/README.md) for agent catalog
 - Explore [Power Mode Configuration](../packages/popkit-core/power-mode/config.json)
-- Test routing with `/popkit:debug routing` (if available)
-- Enable semantic routing with `/popkit:project embed`
+- Test routing with `/popkit-ops:debug routing` (if available)
+- Enable semantic routing with `/popkit-core:project embed`
 - Read agent definitions in `packages/popkit-*/agents/*/AGENT.md`

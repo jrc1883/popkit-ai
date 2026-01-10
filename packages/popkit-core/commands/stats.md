@@ -3,14 +3,14 @@ description: "session | today | week | cloud | reset - Efficiency metrics"
 argument-hint: "[subcommand] [options]"
 ---
 
-# /popkit:stats - Efficiency Metrics
+# /popkit-core:stats - Efficiency Metrics
 
 Display PopKit efficiency metrics showing token savings, collaboration stats, and overall value.
 
 ## Usage
 
 ```
-/popkit:stats [subcommand] [options]
+/popkit-core:stats [subcommand] [options]
 ```
 
 ## Subcommands
@@ -39,7 +39,7 @@ Display PopKit efficiency metrics showing token savings, collaboration stats, an
 
 ### Default (Current Session)
 ```
-/popkit:stats
+/popkit-core:stats
 ```
 
 Output:
@@ -69,7 +69,7 @@ Output:
 
 ### Compact Mode
 ```
-/popkit:stats --compact
+/popkit-core:stats --compact
 ```
 
 Output:
@@ -79,7 +79,7 @@ Output:
 
 ### Weekly Summary
 ```
-/popkit:stats week
+/popkit-core:stats week
 ```
 
 Output:
@@ -109,7 +109,7 @@ Output:
 
 ### Cloud Stats (Requires API Key)
 ```
-/popkit:stats cloud
+/popkit-core:stats cloud
 ```
 
 Output:
@@ -133,7 +133,7 @@ Collective Learning:
 
 ### JSON Output
 ```
-/popkit:stats --json
+/popkit-core:stats --json
 ```
 
 Output:
@@ -211,10 +211,10 @@ Display routine measurement dashboard with metrics, costs, and trends.
 ### Usage
 
 ```
-/popkit:stats routine              # Show latest measurement for any routine
-/popkit:stats routine morning      # Show latest measurement for morning routine
-/popkit:stats routine nightly      # Show latest measurement for nightly routine
-/popkit:stats routine --all        # Show all measurements summary
+/popkit-core:stats routine              # Show latest measurement for any routine
+/popkit-core:stats routine morning      # Show latest measurement for morning routine
+/popkit-core:stats routine nightly      # Show latest measurement for nightly routine
+/popkit-core:stats routine --all        # Show all measurements summary
 ```
 
 ### Output Format
@@ -267,7 +267,7 @@ COMPARISON WITH PREVIOUS RUN
 ### All Measurements Summary
 
 ```
-/popkit:stats routine --all
+/popkit-core:stats routine --all
 ```
 
 Output:
@@ -331,7 +331,7 @@ else:
 ### Data Source
 
 Measurements are stored in `.claude/popkit/measurements/*.json`:
-- Created when running `/popkit:routine <name> --measure`
+- Created when running `/popkit-dev:routine <name> --measure`
 - Tracked by `hooks/post-tool-use.py` via `routine_measurement.py`
 - Includes duration, token usage, tool breakdown, and costs
 
@@ -422,8 +422,8 @@ if expertise_dir.exists():
 ### Flags
 
 ```
-/popkit:stats --learning         # Show only learning systems stats
-/popkit:stats --learning --json  # JSON output for learning metrics
+/popkit-core:stats --learning         # Show only learning systems stats
+/popkit-core:stats --learning --json  # JSON output for learning metrics
 ```
 
 ---
@@ -445,6 +445,6 @@ if expertise_dir.exists():
 
 | Command | Purpose |
 |---------|---------|
-| `/popkit:power status` | Power Mode status (includes efficiency) |
-| `/popkit:routine morning` | Morning report includes efficiency |
-| `/popkit:routine nightly` | Nightly report includes efficiency |
+| `/popkit-core:power status` | Power Mode status (includes efficiency) |
+| `/popkit-dev:routine morning` | Morning report includes efficiency |
+| `/popkit-dev:routine nightly` | Nightly report includes efficiency |

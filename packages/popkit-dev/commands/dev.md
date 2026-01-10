@@ -3,7 +3,7 @@ description: "work #N | brainstorm | plan | execute | prd | suite | \"descriptio
 argument-hint: "[subcommand|description] [flags]"
 ---
 
-# /popkit:dev - Development Workflows
+# /popkit-dev:dev - Development Workflows
 
 Unified entry point for development workflows.
 
@@ -12,12 +12,12 @@ Unified entry point for development workflows.
 ## Usage
 
 ```bash
-/popkit:dev "add dark mode"           # Auto-routed
-/popkit:dev work #123                 # Issue-driven
-/popkit:dev brainstorm               # Idea refinement
-/popkit:dev plan "feature"           # Write plan
-/popkit:dev execute                  # Run plan
-/popkit:dev "task" --mode quick      # Override
+/popkit-dev:dev "add dark mode"           # Auto-routed
+/popkit-dev:dev work #123                 # Issue-driven
+/popkit-dev:dev brainstorm               # Idea refinement
+/popkit-dev:dev plan "feature"           # Write plan
+/popkit-dev:dev execute                  # Run plan
+/popkit-dev:dev "task" --mode quick      # Override
 ```
 
 ## Subcommands
@@ -86,7 +86,7 @@ Details: `commands/examples/dev/full-mode-walkthrough.md`
 Issue-driven with Power Mode.
 
 ```bash
-/popkit:dev work #57 -p
+/popkit-dev:dev work #57 -p
 ```
 
 ### Process
@@ -125,7 +125,7 @@ Details: `commands/examples/dev/plan-structure.md`
 Batch execution via `pop-executing-plans`.
 
 ```bash
-/popkit:dev execute --batch-size 5 --start-at 4
+/popkit-dev:dev execute --batch-size 5 --start-at 4
 ```
 
 Details: `commands/examples/dev/execute-batch-flow.md`
@@ -137,7 +137,7 @@ Details: `commands/examples/dev/execute-batch-flow.md`
 5-step minimal ceremony.
 
 ```bash
-/popkit:dev "fix timezone bug"
+/popkit-dev:dev "fix timezone bug"
 ```
 
 ### Quality Checks
@@ -194,15 +194,15 @@ Use Skill tool (pop-brainstorming|pop-writing-plans|pop-executing-plans)
 
 | Old | New |
 |-----|-----|
-| `/popkit:design` | `/popkit:dev brainstorm` |
-| `/popkit:plan` | `/popkit:dev plan` |
-| `/popkit:feature-dev` | `/popkit:dev full` |
+| `/popkit:design` | `/popkit-dev:dev brainstorm` |
+| `/popkit:plan` | `/popkit-dev:dev plan` |
+| `/popkit:feature-dev` | `/popkit-dev:dev full` |
 
 ---
 
 ## Related
 
-- `/popkit:git` - Version control
-- `/popkit:issue` - Issue management
-- `/popkit:worktree` - Worktree management
-- `/popkit:power` - Multi-agent orchestration
+- `/popkit-dev:git` - Version control
+- `/popkit-dev:issue` - Issue management
+- `/popkit-dev:worktree` - Worktree management
+- `/popkit-core:power` - Multi-agent orchestration

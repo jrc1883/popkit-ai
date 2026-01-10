@@ -3,7 +3,7 @@ description: "quarterly | yearly | stale | duplicates | health | ip-leak [--verb
 argument-hint: "<type> [options]"
 ---
 
-# /popkit:audit - Project Audit & Review
+# /popkit-ops:audit - Project Audit & Review
 
 Perform periodic audits to review project health, find stale issues, detect duplicates, scan for IP leaks, and generate actionable recommendations.
 
@@ -84,7 +84,7 @@ Scan for intellectual property leaks (API keys, secrets, proprietary code).
 
 **Process:** Scan codebase → Detect patterns (API keys, tokens, hardcoded credentials, proprietary algorithms) → Report findings by severity.
 
-**Integration:** Runs automatically in `/popkit:git publish` and `/popkit:routine nightly`.
+**Integration:** Runs automatically in `/popkit-dev:git publish` and `/popkit-dev:routine nightly`.
 
 **Options:** --path <dir>, --pre-publish (strict mode), --json, --severity <critical|high|medium|low>
 
@@ -101,4 +101,4 @@ Scan for intellectual property leaks (API keys, secrets, proprietary code).
 | IP Scanner | `hooks/utils/ip_protection.py` |
 | Reports | Markdown formatting |
 
-**Related:** `/popkit:milestone`, `/popkit:issue`, `/popkit:stats`, `/popkit:git publish`, `/popkit:routine nightly`
+**Related:** `/popkit-dev:milestone`, `/popkit-dev:issue`, `/popkit-core:stats`, `/popkit-dev:git publish`, `/popkit-dev:routine nightly`

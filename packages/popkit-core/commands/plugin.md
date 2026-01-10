@@ -3,7 +3,7 @@ description: "test | docs | sync | detect | version [--verbose, --json]"
 argument-hint: "<subcommand> [options]"
 ---
 
-# /popkit:plugin - Plugin Management
+# /popkit-core:plugin - Plugin Management
 
 Manage the popkit plugin itself - tests, docs, validation, conflicts, and versions.
 
@@ -61,7 +61,7 @@ Validate plugin integrity and offer to fix issues.
 
 Detect conflicts between popkit and other installed Claude Code plugins.
 
-**When it runs:** On-demand via `/popkit:plugin detect`, quick check in `/popkit:morning`, NOT at session start.
+**When it runs:** On-demand via `/popkit-core:plugin detect`, quick check in `/popkit:morning`, NOT at session start.
 
 **Conflict categories:** Command Collision (HIGH), Skill Collision (MEDIUM), Hook Collision (MEDIUM), Routing Overlap (LOW).
 
@@ -95,7 +95,7 @@ Bump plugin version with full release workflow.
 | Conflict Detector | hooks/utils/plugin_detector.py |
 | Sandbox Analytics | tests/sandbox/analytics.py |
 
-**Related:** /popkit:debug routing, /popkit:morning, /popkit:nightly
+**Related:** /popkit-ops:debug routing, /popkit:morning, /popkit:nightly
 
 ## Examples
 

@@ -3,14 +3,14 @@ description: "code | routing [--trace, --verbose]"
 argument-hint: "<mode> [options]"
 ---
 
-# /popkit:debug - Debugging Tools
+# /popkit-ops:debug - Debugging Tools
 
 Systematic debugging with root cause analysis and agent routing diagnostics.
 
 ## Usage
 
 ```
-/popkit:debug <subcommand> [options] [flags]
+/popkit-ops:debug <subcommand> [options] [flags]
 ```
 
 ## Flags
@@ -35,11 +35,11 @@ Systematic debugging with root cause analysis and agent routing diagnostics.
 Systematic approach to finding and fixing bugs with root cause analysis.
 
 ```
-/popkit:debug [issue-description]
-/popkit:debug                         # Describe issue interactively
-/popkit:debug "login fails on mobile"
-/popkit:debug code "login fails"      # Explicit subcommand
-/popkit:debug --test failing-test.ts  # Debug specific test
+/popkit-ops:debug [issue-description]
+/popkit-ops:debug                         # Describe issue interactively
+/popkit-ops:debug "login fails on mobile"
+/popkit-ops:debug code "login fails"      # Explicit subcommand
+/popkit-ops:debug --test failing-test.ts  # Debug specific test
 ```
 
 ### Process
@@ -109,14 +109,14 @@ The skill will stop and return to Phase 1 if:
 ### Options
 
 ```
-/popkit:debug --verbose               # Show all investigation steps
-/popkit:debug --skip-phase-1          # If already investigated (rare)
+/popkit-ops:debug --verbose               # Show all investigation steps
+/popkit-ops:debug --skip-phase-1          # If already investigated (rare)
 ```
 
 ### Example Session
 
 ```
-/popkit:debug "Users getting logged out randomly"
+/popkit-ops:debug "Users getting logged out randomly"
 
 Phase 1: Investigation
 - Error: "Token expired" in console
@@ -151,11 +151,11 @@ Verify: Test passes, manual test confirms
 Analyze and debug agent routing decisions to understand why specific agents are selected.
 
 ```
-/popkit:debug routing "your prompt"       # Analyze routing for a prompt
-/popkit:debug routing explain <agent>     # Show agent's routing keywords
-/popkit:debug routing keywords            # List all routing keywords
-/popkit:debug routing trace "prompt"      # Show detailed routing trace
-/popkit:debug routing compare "prompt"    # Compare all agent scores
+/popkit-ops:debug routing "your prompt"       # Analyze routing for a prompt
+/popkit-ops:debug routing explain <agent>     # Show agent's routing keywords
+/popkit-ops:debug routing keywords            # List all routing keywords
+/popkit-ops:debug routing trace "prompt"      # Show detailed routing trace
+/popkit-ops:debug routing compare "prompt"    # Compare all agent scores
 ```
 
 ### Routing Analysis Commands
@@ -181,7 +181,7 @@ Analyze and debug agent routing decisions to understand why specific agents are 
 ### Example: Analyze Routing
 
 ```
-/popkit:debug routing "fix the login bug"
+/popkit-ops:debug routing "fix the login bug"
 
 Selected Agent: bug-whisperer (0.85 confidence)
 
@@ -198,7 +198,7 @@ Top Competing Agents:
 ### Example: Explain Agent
 
 ```
-/popkit:debug routing explain code-reviewer
+/popkit-ops:debug routing explain code-reviewer
 
 code-reviewer Routing Rules
 ---
@@ -216,7 +216,7 @@ Example Prompts That Route Here:
 ### Example: List Keywords
 
 ```
-/popkit:debug routing keywords
+/popkit-ops:debug routing keywords
 
 All Routing Keywords
 ---
@@ -232,7 +232,7 @@ test-writer-fixer: test, testing, unit, coverage
 ### Example: Compare Scores
 
 ```
-/popkit:debug routing compare "optimize database performance"
+/popkit-ops:debug routing compare "optimize database performance"
 
 Agent Score Comparison
 ---
@@ -260,13 +260,13 @@ Check if your prompts contain routing keywords. Use `keywords` to see available 
 
 ```bash
 # Debug code issues
-/popkit:debug "users getting logged out"
-/popkit:debug --test auth.test.ts
+/popkit-ops:debug "users getting logged out"
+/popkit-ops:debug --test auth.test.ts
 
 # Debug agent routing
-/popkit:debug routing "fix the performance issue"
-/popkit:debug routing explain bug-whisperer
-/popkit:debug routing keywords
+/popkit-ops:debug routing "fix the performance issue"
+/popkit-ops:debug routing explain bug-whisperer
+/popkit-ops:debug routing keywords
 ```
 
 ---
@@ -284,5 +284,5 @@ Check if your prompts contain routing keywords. Use `keywords` to see available 
 
 | Command | Purpose |
 |---------|---------|
-| `/popkit:plugin test` | Run plugin self-tests |
-| `/popkit:plugin sync` | Validate plugin integrity |
+| `/popkit-core:plugin test` | Run plugin self-tests |
+| `/popkit-core:plugin sync` | Validate plugin integrity |

@@ -117,7 +117,7 @@ All notable changes to PopKit are documented in this file.
 **Command Blueprints Created**:
 - New testing framework: `.workspace/COMMAND_BLUEPRINTS.md`
 - Step-by-step execution traces with bash commands, expected output, success criteria
-- Completed blueprints: `/popkit:account status`, `/popkit:account usage`, `/popkit:account keys`
+- Completed blueprints: `/popkit-core:account status`, `/popkit-core:account usage`, `/popkit-core:account keys`
 - 20 commands remaining to document
 
 ### Repository Cleanup
@@ -157,7 +157,7 @@ This release completes comprehensive validation, security hardening, and quality
 ### Core Features
 
 **Unified Account Management**:
-- Consolidated 3 fragmented commands → single `/popkit:account` command
+- Consolidated 3 fragmented commands → single `/popkit-core:account` command
 - 6 subcommands: status, signup, login, keys, usage, logout
 - 672 lines of comprehensive account management
 - Deprecated `/popkit:upgrade` and `/popkit:cloud` (removal in v1.2.0)
@@ -544,7 +544,7 @@ All modular plugins start at **v0.1.0 (Beta)** to signal:
   - `/popkit:expertise` command - Manage agent expertise files (list, show, export, clear, stats)
   - `expertise_manager.py` - Core management with pending pattern tracking (680 lines)
   - Integration with `session-start.py` and `post-tool-use.py` hooks
-  - Learning metrics in `/popkit:stats --learning`
+  - Learning metrics in `/popkit-core:stats --learning`
   - Pilot agents: code-reviewer, bug-whisperer, security-auditor
   - Known limitation: Requires `POPKIT_ACTIVE_AGENT` environment variable (to be addressed in future issue)
   - Comprehensive test coverage (10 tests)
@@ -569,12 +569,12 @@ All modular plugins start at **v0.1.0 (Beta)** to signal:
   - Bedrock API support via \`ANTHROPIC_BEDROCK_BASE_URL\`
 
 - **Monorepo Workspace Management**: Cross-project context loading
-  - \`/popkit:project reference <name>\` - Load context from sibling projects
+  - \`/popkit-core:project reference <name>\` - Load context from sibling projects
   - \`workspace_config.py\` utility (560 lines)
     - Auto-detect pnpm, npm, yarn, lerna, PopKit workspaces
     - Walk-up algorithm to find monorepo root
     - Interactive project selection
-  - Updated \`/popkit:dashboard\` - Removed non-functional switch subcommand
+  - Updated \`/popkit-core:dashboard\` - Removed non-functional switch subcommand
   - Documentation: \`CONFIG_SCHEMA.md\`, \`TECH_STACK_ALIGNMENT_ASSESSMENT.md\`
   - Enables "additive context loading" without directory switching
 
@@ -643,7 +643,7 @@ All modular plugins start at **v0.1.0 (Beta)** to signal:
 
 ### Security Fix (Issue)
 
-- **IP Leak Scanner Enforcement**: Fixed `/popkit:git publish` workflow to properly respect scanner exit codes
+- **IP Leak Scanner Enforcement**: Fixed `/popkit-dev:git publish` workflow to properly respect scanner exit codes
   - Added exit code checking: Workflow now stops immediately when scanner returns exit code 1
   - Added `--skip-ip-scan` flag for explicit override when false positives occur
   - Updated whitelist: Added `SETUP.md`, `secret-patterns.md` to exception list
@@ -692,7 +692,7 @@ All modular plugins start at **v0.1.0 (Beta)** to signal:
 ### Improvements
 
 - **Feedback Hook Enabled**: Wired `feedback_hook.py` into hooks.json
-- **issue_list.py Wired**: Connected to `/popkit:issue list` command documentation
+- **issue_list.py Wired**: Connected to `/popkit-dev:issue list` command documentation
 - **Assessment Skills**: Added concrete standards for assessor agents
 - **IP Protection**: Added IP scanning skill
 
@@ -820,7 +820,7 @@ Following Anthropic's recommendation from the Hooks Guide:
 
 ### Plugin Version Management
 
-- **Version Command**: New `/popkit:plugin version` subcommand for full release workflow
+- **Version Command**: New `/popkit-core:plugin version` subcommand for full release workflow
   - Bump patch/minor/major versions with semantic versioning
   - Auto-updates plugin.json, marketplace.json, and CHANGELOG.md
   - Commits, pushes, and publishes to public repo in one command
@@ -849,7 +849,7 @@ This release marks the completion of all planned features for PopKit's initial s
 - Health score calculation (git, build, tests, issues, activity)
 - Auto-discovery of projects in common locations
 - Project tagging and filtering
-- `/popkit:dashboard` command with switch, refresh, discover subcommands
+- `/popkit-core:dashboard` command with switch, refresh, discover subcommands
 
 **Cross-Project Pattern Sharing**
 - Privacy-first pattern anonymization
@@ -896,10 +896,10 @@ This release marks the completion of all planned features for PopKit's initial s
   - Coordination metrics: Insights shared, context reuses, sync barrier waits
   - Resource metrics: Token usage, agent utilization, peak concurrency
   - Value summary: Overall score (0-100) with rating and highlights
-- **Metrics Command**: `/popkit:power metrics` subcommand for viewing reports
-  - View current session: `/popkit:power metrics`
-  - View specific session: `/popkit:power metrics --session ID`
-  - Compare with baseline: `/popkit:power metrics --compare`
+- **Metrics Command**: `/popkit-core:power metrics` subcommand for viewing reports
+  - View current session: `/popkit-core:power metrics`
+  - View specific session: `/popkit-core:power metrics --session ID`
+  - Compare with baseline: `/popkit-core:power metrics --compare`
 - **Coordinator Integration**: Automatic metrics collection throughout Power Mode
   - Agent start/stop tracking
   - Phase timing instrumentation
@@ -912,7 +912,7 @@ This release marks the completion of all planned features for PopKit's initial s
 
 ### Continuous Workflow Loop
 
-- **Issue Close Prompt**: After `/popkit:dev work #N` completes, prompts to close the issue
+- **Issue Close Prompt**: After `/popkit-dev:dev work #N` completes, prompts to close the issue
 - **Epic Parent Check**: Auto-detects when all children of an epic are complete
 - **Context-Aware Next Actions**: Presents prioritized open issues as selectable options
 - **Keep in the Loop**: Selecting an issue immediately starts work on it
@@ -940,7 +940,7 @@ This release marks the completion of all planned features for PopKit's initial s
   - `ProjectClient` class for calling Cloud API
   - Auto-generates project ID from path hash
   - Anonymizes paths for privacy
-- **Observe Subcommand** (`/popkit:project observe`):
+- **Observe Subcommand** (`/popkit-core:project observe`):
   - Cross-project dashboard from monorepo
   - View all projects, activity, and health scores
   - `--active` filter for last 24h, `--summary` for quick stats
@@ -967,7 +967,7 @@ This release marks the completion of all planned features for PopKit's initial s
   - `hooks/utils/priority_scorer.py` - Combined priority scoring algorithm
   - Vote weights: 👍 +1, ❤️ +2, 🚀 +3, 👎 -1
   - Priority formula: votes (35%) + staleness (20%) + labels (30%) + epic (15%)
-  - `/popkit:issue list --votes` - Sort issues by community priority
+  - `/popkit-dev:issue list --votes` - Sort issues by community priority
   - Updated `pop-next-action` skill with vote integration
 - **Monorepo Structure**:
   - Converted to npm workspaces monorepo
@@ -1011,10 +1011,10 @@ This release marks the completion of all planned features for PopKit's initial s
 ## [0.9.7] - Command Consolidation
 
 - **Command Consolidation** - Reduced 17 commands to 12 active (7 deprecated):
-  - `/popkit:dev` - Unified development command (absorbs design, plan, feature-dev)
-  - `/popkit:git` - Enhanced with ci and release subcommands
-  - `/popkit:routine` - Unified routine command (absorbs morning, nightly)
-  - `/popkit:project` - Enhanced with init subcommand
+  - `/popkit-dev:dev` - Unified development command (absorbs design, plan, feature-dev)
+  - `/popkit-dev:git` - Enhanced with ci and release subcommands
+  - `/popkit-dev:routine` - Unified routine command (absorbs morning, nightly)
+  - `/popkit-core:project` - Enhanced with init subcommand
 - **GitHub Issues Closed** --62 (Command Consolidation Epic)
 
 ## [0.9.6] - Embeddings Enhancement & Semantic Routing
@@ -1064,7 +1064,7 @@ This release marks the completion of all planned features for PopKit's initial s
 
 - **Quality Gates Hook** - Auto-validation after file modifications
 - **Issue Parser** - Parse PopKit Guidance from GitHub issues
-- **Issue-Driven Workflow** - Activation logic for `/popkit:issue work`
+- **Issue-Driven Workflow** - Activation logic for `/popkit-dev:issue work`
 - **Enhanced Issue Templates** - 4 templates with PopKit Guidance sections
 
 ## [0.7.1]
@@ -1081,8 +1081,8 @@ This release marks the completion of all planned features for PopKit's initial s
 
 ## [0.6.1]
 
-- **Context-Aware Recommendations** - `/popkit:next` command
-- **Uncertainty Detection** - Hook suggests `/popkit:next` when user seems unsure
+- **Context-Aware Recommendations** - `/popkit-dev:next` command
+- **Uncertainty Detection** - Hook suggests `/popkit-dev:next` when user seems unsure
 
 ## [0.6.0]
 

@@ -148,7 +148,7 @@ Since background agents can't communicate directly, they use **file-based pub/su
 #### Phase 1: Initialization
 
 ```
-1. User: /popkit:power start "Build authentication system"
+1. User: /popkit-core:power start "Build authentication system"
 
 2. Mode Selector:
    ├─ Check Claude Code version >= 2.0.64? ✅
@@ -420,7 +420,7 @@ def share_insight(agent_name, content, tags, phase):
 
 ```bash
 # Start Power Mode
-/popkit:power start "Analyze codebase architecture"
+/popkit-core:power start "Analyze codebase architecture"
 
 # What happens:
 # 1. Mode selector chooses Native Async (Claude Code 2.0.64+)
@@ -436,7 +436,7 @@ def share_insight(agent_name, content, tags, phase):
 
 ```bash
 # Start with phases
-/popkit:power start "Build user authentication" --phases explore,design,implement,test,review
+/popkit-core:power start "Build user authentication" --phases explore,design,implement,test,review
 
 # Execution flow:
 # Phase 1 (EXPLORE): 3 parallel agents
@@ -468,7 +468,7 @@ def share_insight(agent_name, content, tags, phase):
 
 ```bash
 # Work on epic with Power Mode
-/popkit:dev work #580 -p
+/popkit-dev:dev work #580 -p
 
 # Auto-detects:
 # - Issue #580 is labeled "epic"
@@ -481,7 +481,7 @@ def share_insight(agent_name, content, tags, phase):
 
 ```bash
 # Check Power Mode status
-/popkit:power status
+/popkit-core:power status
 
 # Output:
 # Power Mode: ACTIVE (Native Async)
@@ -612,14 +612,14 @@ Status: Waiting for agents to spawn...
 **Diagnosis:**
 ```bash
 # Check tier limits
-/popkit:account status
+/popkit-core:account status
 
 # Should show: Premium or Pro tier
 ```
 
 **Solutions:**
 1. Upgrade to Premium tier: `/popkit:upgrade`
-2. Verify tier: `/popkit:account status`
+2. Verify tier: `/popkit-core:account status`
 3. Check Claude Code supports background tasks:
    ```bash
    # Try spawning a test task
@@ -681,8 +681,8 @@ cat .claude/popkit/power-state.json
 2. Reduce agent workload (break into smaller tasks)
 3. Check if agent is stuck (kill and restart):
    ```bash
-   /popkit:power stop
-   /popkit:power start
+   /popkit-core:power stop
+   /popkit-core:power start
    ```
 
 ### Issue: Performance Degradation
@@ -845,7 +845,7 @@ Native Async Mode represents a significant leap forward for Power Mode:
 - ✅ **True parallelism** (5-10 agents simultaneously)
 - ✅ **Cross-platform** (Windows, macOS, Linux)
 - ✅ **Production-ready** (reliable, well-tested)
-- ✅ **Easy to use** (just `/popkit:power start`)
+- ✅ **Easy to use** (just `/popkit-core:power start`)
 
 **Future Enhancements:**
 - Agent-to-agent direct messaging (Issue #487 - 40% remaining)

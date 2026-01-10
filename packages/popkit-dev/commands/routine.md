@@ -3,7 +3,7 @@ description: "morning | nightly [run|quick|generate|list|set|edit|delete]"
 argument-hint: "<routine> [subcommand] [options]"
 ---
 
-# /popkit:routine - Day Routines
+# /popkit-dev:routine - Day Routines
 
 Unified command for morning health checks and nightly maintenance routines. Supports project-specific customization with numbered routine slots.
 
@@ -109,17 +109,17 @@ After running routines with `--measure`, view the dashboard:
 
 ```
 # View latest measurement
-/popkit:stats routine
+/popkit-core:stats routine
 
 # View measurements for specific routine
-/popkit:stats routine morning
-/popkit:stats routine nightly
+/popkit-core:stats routine morning
+/popkit-core:stats routine nightly
 
 # View all measurements summary
-/popkit:stats routine --all
+/popkit-core:stats routine --all
 ```
 
-See `/popkit:stats` command and `pop-routine-measure` skill for full dashboard capabilities.
+See `/popkit-core:stats` command and `pop-routine-measure` skill for full dashboard capabilities.
 
 ---
 
@@ -167,4 +167,4 @@ See `/popkit:stats` command and `pop-routine-measure` skill for full dashboard c
 | Routine Config | .claude/popkit/routines.json |
 | Dashboard Style | packages/popkit-dev/output-styles/morning-dashboard.md |
 
-**Related:** `/popkit:next`, `/popkit:stats`, `/popkit:project observe`
+**Related:** `/popkit-dev:next`, `/popkit-core:stats`, `/popkit-core:project observe`

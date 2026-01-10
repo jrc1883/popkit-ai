@@ -3,16 +3,16 @@ description: "[quick|verbose] - Analyze project state and recommend next actions
 argument-hint: "[quick|verbose]"
 ---
 
-# /popkit:next
+# /popkit-dev:next
 
 Analyzes current project state and recommends specific popkit commands based on what actually needs attention.
 
 ## Usage
 
 ```bash
-/popkit:next                # Full analysis with recommendations
-/popkit:next quick          # Condensed output
-/popkit:next verbose        # Include all context sources
+/popkit-dev:next                # Full analysis with recommendations
+/popkit-dev:next quick          # Condensed output
+/popkit-dev:next verbose        # Include all context sources
 ```
 
 ## Architecture Integration
@@ -67,19 +67,19 @@ Use the `next-action-report` output style for consistent formatting.
 ## Recommended Actions
 
 ### 1. Commit Your Current Work
-**Command:** `/popkit:git commit`
+**Command:** `/popkit-dev:git commit`
 **Why:** You have 5 uncommitted files including auth.ts and routes/
 **What it does:** Auto-generates commit message matching repo style
 **Benefit:** Clean working directory, changes safely versioned
 
 ### 2. Push to Remote
-**Command:** `/popkit:git push` or `/popkit:git pr`
+**Command:** `/popkit-dev:git push` or `/popkit-dev:git pr`
 **Why:** Branch is 2 commits ahead of origin
 **What it does:** Syncs local work to remote
 **Benefit:** Backup, collaboration, CI triggers
 
 ### 3. Review Open Issue #42
-**Command:** `/popkit:issue view 42` then `/popkit:feature-dev`
+**Command:** `/popkit-dev:issue view 42` then `/popkit:feature-dev`
 **Why:** "Add user authentication" is high priority
 **What it does:** 7-phase feature workflow
 **Benefit:** Structured progress on known work
@@ -88,23 +88,23 @@ Use the `next-action-report` output style for consistent formatting.
 
 | If you want to... | Use this command |
 |-------------------|------------------|
-| Commit changes | `/popkit:git commit` |
-| Review code | `/popkit:git review` |
+| Commit changes | `/popkit-dev:git commit` |
+| Review code | `/popkit-dev:git review` |
 | Get project health | `/popkit:morning` |
 | Plan a feature | `/popkit:design` |
-| Debug an issue | `/popkit:debug` |
+| Debug an issue | `/popkit-ops:debug` |
 ```
 
 **Quick Mode Output:**
 ```
-## /popkit:next (quick)
+## /popkit-dev:next (quick)
 
 **State:** 5 uncommitted | 2 ahead | TS clean | 3 issues
 
 **Top 3:**
 1. `/popkit:commit` - Commit 5 files (HIGH)
 2. `/popkit:commit-push-pr` - Push 2 commits (MEDIUM)
-3. `/popkit:issue view 42` - Work on auth (MEDIUM)
+3. `/popkit-dev:issue view 42` - Work on auth (MEDIUM)
 ```
 
 ---
@@ -153,14 +153,14 @@ User: "what should I do next?"
 ## Recommended Actions
 
 ### 1. Fix TypeScript Errors
-**Command:** `/popkit:debug`
+**Command:** `/popkit-ops:debug`
 **Why:** 2 TypeScript errors blocking build
 ...
 ```
 
 ### Example 2: Clean State
 ```
-User: "/popkit:next"
+User: "/popkit-dev:next"
 
 ## Current State
 | Indicator | Status | Urgency |
@@ -172,7 +172,7 @@ User: "/popkit:next"
 ## Recommended Actions
 
 ### 1. Work on Open Issue
-**Command:** `/popkit:issue view 12`
+**Command:** `/popkit-dev:issue view 12`
 **Why:** Issue #12 "Add dark mode" is high priority
 ...
 ```
@@ -196,5 +196,5 @@ User: "/popkit:next"
 - `/popkit:morning` - Full health check with "Ready to Code" score
 - `/popkit:brainstorm` - When you need to explore ideas
 - `/popkit:feature-dev` - Start working on a feature
-- `/popkit:debug` - Systematic debugging
+- `/popkit-ops:debug` - Systematic debugging
 - `/popkit:commit` - Commit current work
