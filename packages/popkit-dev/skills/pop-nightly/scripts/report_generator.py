@@ -160,6 +160,12 @@ def generate_nightly_report(
     report.append("")
     report.append("STATUS.json updated ✅")
     report.append("Session state captured for tomorrow's resume.")
+    report.append("")
+
+    # Add PopKit Way ending: AskUserQuestion instructions
+    report.append("## 🎯 Next Steps")
+    report.append("")
+    report.extend(_generate_ask_user_question_section(score, breakdown, state))
 
     return "\n".join(report)
 
@@ -285,6 +291,128 @@ def generate_quick_summary(
         return f"Sleep Score: {score}/100 {interpretation['emoji']} - {issue_str}"
     else:
         return f"Sleep Score: {score}/100 {interpretation['emoji']} - All clear!"
+
+
+def _generate_ask_user_question_section(
+    score: int,
+    breakdown: Dict[str, Dict[str, Any]],
+    state: Dict[str, Any]
+) -> List[str]:
+    """
+    Generate AskUserQuestion instructions for Claude (The PopKit Way).
+
+    This section tells Claude to invoke the AskUserQuestion tool with
+    context-aware options based on the nightly report results.
+
+    Args:
+        score: Sleep Score (0-100)
+        breakdown: Score breakdown from calculate_sleep_score()
+        state: Full project state
+
+    Returns:
+        List of lines containing AskUserQuestion instructions for Claude
+    """
+    # Analyze state to determine appropriate options
+    git_state = state.get('git', {})
+    github_state = state.get('github', {})
+    services_state = state.get('services', {})
+
+    uncommitted_files = git_state.get('uncommitted_files', 0)
+    running_services = services_state.get('running_services', [])
+    ci_status = github_state.get('ci_status', {})
+    ci_conclusion = ci_status.get('conclusion', '')
+
+    # Build context-aware AskUserQuestion options
+    options = []
+
+    # Option 1: Commit and push (if uncommitted work)
+    if uncommitted_files > 0:
+        options.append({
+            "label": "Commit and push all changes (Recommended)",
+            "description": f"Save {uncommitted_files} uncommitted file{'s' if uncommitted_files > 1 else ''}"
+        })
+
+        # Alternative: Stash
+        options.append({
+            "label": "Stash changes for tomorrow",
+            "description": "Keep work-in-progress safe without committing"
+        })
+
+    # Option 2: Stop services (if running)
+    if running_services:
+        services_list = ', '.join(running_services[:3])
+        if len(running_services) > 3:
+            services_list += f", +{len(running_services) - 3} more"
+
+        options.append({
+            "label": "Stop all dev services (Recommended)",
+            "description": f"Stop {len(running_services)} running service{'s' if len(running_services) > 1 else ''}: {services_list}"
+        })
+
+    # Option 3: CI failure action
+    if ci_conclusion == 'failure':
+        options.append({
+            "label": "Investigate CI failure",
+            "description": "Check why the latest CI run failed"
+        })
+
+    # Option 4: Clean shutdown (if score >= 70)
+    if score >= 70:
+        options.append({
+            "label": "End session (all clean)",
+            "description": "Everything looks good, ready for tomorrow"
+        })
+    else:
+        # Low score - review recommendations
+        options.append({
+            "label": "Review recommendations",
+            "description": "Check what needs attention before leaving"
+        })
+
+    # Always include "Other" option
+    options.append({
+        "label": "Other",
+        "description": "I have something else in mind"
+    })
+
+    # Limit to 4 options (AskUserQuestion constraint)
+    options = options[:4]
+
+    # Generate the AskUserQuestion instruction section
+    lines = [
+        "**IMPORTANT - The PopKit Way**: You MUST now use the AskUserQuestion tool to keep PopKit in control of the workflow.",
+        "",
+        "Use AskUserQuestion with the following configuration:",
+        "",
+        "```json",
+        "{",
+        '  "questions": [',
+        "    {",
+        f'      "question": "What would you like to do before ending the day?",',
+        '      "header": "Next Action",',
+        '      "multiSelect": false,',
+        '      "options": ['
+    ]
+
+    # Add each option
+    for i, option in enumerate(options):
+        is_last = i == len(options) - 1
+        lines.append('        {')
+        lines.append(f'          "label": "{option["label"]}",')
+        lines.append(f'          "description": "{option["description"]}"')
+        lines.append('        }' + ('' if is_last else ','))
+
+    lines.extend([
+        '      ]',
+        '    }',
+        '  ]',
+        '}',
+        '```',
+        '',
+        '**DO NOT** just end the session after showing this report. You MUST invoke AskUserQuestion to maintain The PopKit Way pattern.'
+    ])
+
+    return lines
 
 
 if __name__ == '__main__':

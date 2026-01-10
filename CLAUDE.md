@@ -409,9 +409,9 @@ Morning session initialized. Ready to code!
 - `issue` command - Ends with "Work on next issue" / "Review PRs" / etc.
 - `milestone` command - Ends with next milestone actions
 - `pop-morning` - Ends with context-aware next actions (v1.0.0-beta.4+)
+- `pop-nightly` - Ends with shutdown options based on Sleep Score (v1.0.0-beta.4+)
 
 🚧 **Needs Implementation:**
-- `pop-nightly` - Add AskUserQuestion ending
 - Other skills TBD (audit needed)
 
 ### Quality Check
