@@ -249,6 +249,93 @@ Caching strategy:
 
 STATUS.json updated ✅
 Session state captured for tomorrow's resume.
+
+## 🎯 Next Actions (The PopKit Way)
+
+**CRITICAL**: Always end with AskUserQuestion to keep PopKit in control.
+
+Use AskUserQuestion tool with context-aware options based on nightly report:
+
+**Option 1: If uncommitted work exists (Score < 70)**
+```
+What would you like to do before ending the day?
+├─ Commit and push all changes (Recommended)
+│  └─ Save all uncommitted work
+├─ Stash changes for tomorrow
+├─ Review uncommitted files
+└─ Other
+```
+
+**Option 2: If clean working directory (Score >= 70)**
+```
+Ready to wrap up! What's your last action?
+├─ Review tomorrow's priorities
+├─ Check overnight CI status
+├─ End session (all clean)
+└─ Other
+```
+
+**Option 3: If services still running**
+```
+Dev services are still running. What would you like to do?
+├─ Stop all dev services (Recommended)
+├─ Leave services running
+├─ Check which services are running
+└─ Other
+```
+
+**Option 4: If CI failing**
+```
+Latest CI run failed. What would you like to do?
+├─ Investigate CI failure now
+├─ Note for morning review
+├─ Check CI logs
+└─ Other
+```
+
+### Implementation
+
+After generating the nightly report, invoke AskUserQuestion based on score and context:
+
+```python
+# After generating report
+questions = generate_next_action_questions(score, breakdown, state)
+# Returns AskUserQuestion tool invocation
+
+# Example output to Claude:
+{
+    "type": "ask_user_question",
+    "questions": [{
+        "question": "What would you like to do before ending the day?",
+        "header": "Next Action",
+        "multiSelect": false,
+        "options": [
+            {
+                "label": "Commit and push all changes (Recommended)",
+                "description": "Save 5 uncommitted files"
+            },
+            {
+                "label": "Stash changes for tomorrow",
+                "description": "Keep work-in-progress safe"
+            },
+            {
+                "label": "Stop dev services",
+                "description": "3 services still running: redis, postgres, node"
+            }
+        ]
+    }]
+}
+```
+
+**Why This Matters (The PopKit Way):**
+- ✅ Keeps PopKit in control of the workflow
+- ✅ Prevents "forgot to commit" situations
+- ✅ Enables graceful session shutdown
+- ✅ Prevents "report dump and done" anti-pattern
+- ✅ Maintains workflow continuity for tomorrow
+
+**Never just show a report and end the session!**
+
 ```
 
 ## Error Handling

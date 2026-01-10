@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/skill-completion-handler.py\"",
+            "timeout": 5000,
+            "blocking": false
+          }
+        ]
+      }
+    ]
+  }
+}
