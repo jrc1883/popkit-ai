@@ -3,7 +3,7 @@ description: "init | analyze | board | embed | generate | mcp | setup | skills |
 argument-hint: "<subcommand> [options]"
 ---
 
-# /popkit:project - Project Lifecycle
+# /popkit-core:project - Project Lifecycle
 
 Initialize, analyze, configure, and customize projects. Cross-project observability for monorepos.
 
@@ -121,14 +121,14 @@ Read workspace config → Load CLAUDE.md, package.json, README → Output to cha
 
 ## Workflow
 
-1. New: /popkit:project init
-2. Understand: /popkit:project analyze
-3. Quality: /popkit:project setup
-4. Enhance: /popkit:project mcp
-5. Customize: /popkit:project skills
-6. Search: /popkit:project embed
+1. New: /popkit-core:project init
+2. Understand: /popkit-core:project analyze
+3. Quality: /popkit-core:project setup
+4. Enhance: /popkit-core:project mcp
+5. Customize: /popkit-core:project skills
+6. Search: /popkit-core:project embed
 
-**One-Command:** /popkit:project generate (steps 2,4,5,6)
+**One-Command:** /popkit-core:project generate (steps 2,4,5,6)
 
 ---
 
@@ -145,9 +145,9 @@ Read workspace config → Load CLAUDE.md, package.json, README → Output to cha
 
 ## Related
 
-- /popkit:routine morning - Daily health check
-- /popkit:power init - Power Mode setup
-- /popkit:next - Context-aware recommendations
+- /popkit-dev:routine morning - Daily health check
+- /popkit-core:power init - Power Mode setup
+- /popkit-dev:next - Context-aware recommendations
 
 ## Examples
 

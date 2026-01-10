@@ -50,7 +50,7 @@ packages/popkit-dev/
 ### Flow Diagram
 
 ```
-1. User runs: /popkit:routine morning
+1. User runs: /popkit-dev:routine morning
          ↓
 2. pop-morning skill executes
          ↓

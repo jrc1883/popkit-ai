@@ -3,14 +3,14 @@ description: "status | consent | export | delete | level [strict|moderate|minima
 argument-hint: "<subcommand> [level]"
 ---
 
-# /popkit:privacy - Privacy Controls
+# /popkit-core:privacy - Privacy Controls
 
 Manage your privacy settings for collective learning, including consent, data sharing preferences, and GDPR data rights.
 
 ## Usage
 
 ```
-/popkit:privacy <subcommand> [options]
+/popkit-core:privacy <subcommand> [options]
 ```
 
 ## Subcommands
@@ -30,8 +30,8 @@ Manage your privacy settings for collective learning, including consent, data sh
 View current privacy settings and consent status.
 
 ```
-/popkit:privacy
-/popkit:privacy status
+/popkit-core:privacy
+/popkit-core:privacy status
 ```
 
 ### Output
@@ -63,8 +63,8 @@ Cloud Stats:
 Give or revoke consent for data sharing.
 
 ```
-/popkit:privacy consent give       # Give consent
-/popkit:privacy consent revoke     # Revoke consent
+/popkit-core:privacy consent give       # Give consent
+/popkit-core:privacy consent revoke     # Revoke consent
 ```
 
 ### Giving Consent
@@ -88,11 +88,11 @@ When you revoke consent:
 Update privacy settings.
 
 ```
-/popkit:privacy settings level <strict|moderate|minimal>
-/popkit:privacy settings exclude project <name>
-/popkit:privacy settings exclude pattern <glob>
-/popkit:privacy settings region <us|eu>
-/popkit:privacy settings auto-delete <days>
+/popkit-core:privacy settings level <strict|moderate|minimal>
+/popkit-core:privacy settings exclude project <name>
+/popkit-core:privacy settings exclude pattern <glob>
+/popkit-core:privacy settings region <us|eu>
+/popkit-core:privacy settings auto-delete <days>
 ```
 
 ### Anonymization Levels
@@ -107,19 +107,19 @@ Update privacy settings.
 
 ```bash
 # Set strict anonymization
-/popkit:privacy settings level strict
+/popkit-core:privacy settings level strict
 
 # Exclude a project from sharing
-/popkit:privacy settings exclude project company-secrets
+/popkit-core:privacy settings exclude project company-secrets
 
 # Exclude file patterns
-/popkit:privacy settings exclude pattern "*.env*"
+/popkit-core:privacy settings exclude pattern "*.env*"
 
 # Set data region to EU
-/popkit:privacy settings region eu
+/popkit-core:privacy settings region eu
 
 # Set auto-delete to 30 days
-/popkit:privacy settings auto-delete 30
+/popkit-core:privacy settings auto-delete 30
 ```
 
 ---
@@ -129,8 +129,8 @@ Update privacy settings.
 Export all your data from PopKit Cloud (GDPR Right to Data Portability).
 
 ```
-/popkit:privacy export
-/popkit:privacy export --output ./my-data.json
+/popkit-core:privacy export
+/popkit-core:privacy export --output ./my-data.json
 ```
 
 ### What's Exported
@@ -162,8 +162,8 @@ Export all your data from PopKit Cloud (GDPR Right to Data Portability).
 Permanently delete all your data from PopKit Cloud (GDPR Right to be Forgotten).
 
 ```
-/popkit:privacy delete
-/popkit:privacy delete --confirm
+/popkit-core:privacy delete
+/popkit-core:privacy delete --confirm
 ```
 
 ### What's Deleted
@@ -207,22 +207,22 @@ This action is **permanent and cannot be undone**. You will be asked to confirm 
 
 ```bash
 # Check privacy status
-/popkit:privacy
+/popkit-core:privacy
 
 # Give consent to start sharing
-/popkit:privacy consent give
+/popkit-core:privacy consent give
 
 # Set strict anonymization for enterprise
-/popkit:privacy settings level strict
+/popkit-core:privacy settings level strict
 
 # Exclude sensitive project
-/popkit:privacy settings exclude project internal-tools
+/popkit-core:privacy settings exclude project internal-tools
 
 # Export all data
-/popkit:privacy export --output ~/popkit-data.json
+/popkit-core:privacy export --output ~/popkit-data.json
 
 # Delete all data (requires confirmation)
-/popkit:privacy delete --confirm
+/popkit-core:privacy delete --confirm
 ```
 
 ---
@@ -251,16 +251,16 @@ When you access `/settings` in Claude Code 2.0.71+:
 
 ### Command-Line Alternative
 
-For CLI-only workflows, continue using `/popkit:privacy` directly:
+For CLI-only workflows, continue using `/popkit-core:privacy` directly:
 
 ```bash
 # These still work in all Claude Code versions
-/popkit:privacy status                    # View settings
-/popkit:privacy settings level strict     # Update settings
-/popkit:privacy consent give              # Manage consent
+/popkit-core:privacy status                    # View settings
+/popkit-core:privacy settings level strict     # Update settings
+/popkit-core:privacy consent give              # Manage consent
 ```
 
-**Note:** `/settings` requires Claude Code 2.0.71+. Earlier versions use `/popkit:privacy` exclusively.
+**Note:** `/settings` requires Claude Code 2.0.71+. Earlier versions use `/popkit-core:privacy` exclusively.
 
 ---
 
@@ -276,5 +276,5 @@ For CLI-only workflows, continue using `/popkit:privacy` directly:
 
 | Command | Purpose |
 |---------|---------|
-| `/popkit:bug --share` | Share bug pattern (uses privacy settings) |
-| `/popkit:power` | Power Mode (uses collective patterns) |
+| `/popkit-core:bug --share` | Share bug pattern (uses privacy settings) |
+| `/popkit-core:power` | Power Mode (uses collective patterns) |

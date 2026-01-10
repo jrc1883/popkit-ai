@@ -3,14 +3,14 @@ description: "report | search | share [--issue, --share]"
 argument-hint: "<subcommand> [options]"
 ---
 
-# /popkit:bug - Bug Reporter
+# /popkit-core:bug - Bug Reporter
 
 Report issues the agent encountered with automatic context capture, local logging, optional GitHub issue creation, and pattern sharing.
 
 ## Usage
 
 ```
-/popkit:bug <description> [flags]
+/popkit-core:bug <description> [flags]
 ```
 
 ## Flags
@@ -36,9 +36,9 @@ Report issues the agent encountered with automatic context capture, local loggin
 ## Default: Report Bug
 
 ```
-/popkit:bug "Agent got stuck on OAuth flow"
-/popkit:bug "TypeScript type error with generics" --issue
-/popkit:bug "Build failing after upgrade" --share --issue
+/popkit-core:bug "Agent got stuck on OAuth flow"
+/popkit-core:bug "TypeScript type error with generics" --issue
+/popkit-core:bug "Build failing after upgrade" --share --issue
 ```
 
 ### Process
@@ -117,9 +117,9 @@ Logged to: .claude/bugs/bug-2024-12-04-001.json
 List all locally logged bug reports.
 
 ```
-/popkit:bug list
-/popkit:bug list --limit 5
-/popkit:bug list --since 2024-12-01
+/popkit-core:bug list
+/popkit-core:bug list --limit 5
+/popkit-core:bug list --since 2024-12-01
 ```
 
 ### Output
@@ -144,8 +144,8 @@ Total: 3 bugs logged
 View details of a specific bug report.
 
 ```
-/popkit:bug view bug-2024-12-04-001
-/popkit:bug view bug-2024-12-04-001 --raw    # Show JSON
+/popkit-core:bug view bug-2024-12-04-001
+/popkit-core:bug view bug-2024-12-04-001 --raw    # Show JSON
 ```
 
 ---
@@ -155,9 +155,9 @@ View details of a specific bug report.
 Clear local bug logs.
 
 ```
-/popkit:bug clear                    # Clear all
-/popkit:bug clear --before 2024-12-01   # Clear old
-/popkit:bug clear bug-2024-12-04-001    # Clear specific
+/popkit-core:bug clear                    # Clear all
+/popkit-core:bug clear --before 2024-12-01   # Clear old
+/popkit-core:bug clear bug-2024-12-04-001    # Clear specific
 ```
 
 ---
@@ -245,22 +245,22 @@ When `--share` flag is used, the bug pattern is anonymized and shared to the col
 
 ```bash
 # Basic bug report (logged locally)
-/popkit:bug "Agent can't find the right file"
+/popkit-core:bug "Agent can't find the right file"
 
 # Create GitHub issue with context
-/popkit:bug "Tests failing after refactor" --issue
+/popkit-core:bug "Tests failing after refactor" --issue
 
 # Share pattern to collective (Pro/Team)
-/popkit:bug "OAuth token refresh failing" --share
+/popkit-core:bug "OAuth token refresh failing" --share
 
 # Full report with issue and sharing
-/popkit:bug "Memory leak in production" --issue --share --verbose
+/popkit-core:bug "Memory leak in production" --issue --share --verbose
 
 # List recent bugs
-/popkit:bug list
+/popkit-core:bug list
 
 # View specific bug
-/popkit:bug view bug-2024-12-04-001
+/popkit-core:bug view bug-2024-12-04-001
 ```
 
 ---
@@ -278,6 +278,6 @@ When `--share` flag is used, the bug pattern is anonymized and shared to the col
 
 | Command | Purpose |
 |---------|---------|
-| `/popkit:debug` | Systematic debugging and root cause analysis |
-| `/popkit:issue create` | Create GitHub issues manually |
-| `/popkit:next` | Context-aware next action recommendations |
+| `/popkit-ops:debug` | Systematic debugging and root cause analysis |
+| `/popkit-dev:issue create` | Create GitHub issues manually |
+| `/popkit-dev:next` | Context-aware next action recommendations |

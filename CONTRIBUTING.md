@@ -140,7 +140,7 @@ Install the plugins you want to work on from your local directory:
 /plugin list
 
 # Test a command to verify it's working
-/popkit:next
+/popkit-dev:next
 ```
 
 ### 4. Make Changes
@@ -215,13 +215,13 @@ If you have PopKit installed:
 
 ```bash
 # Run all tests
-/popkit:plugin test
+/popkit-core:plugin test
 
 # Test specific category
-/popkit:plugin test agents
+/popkit-core:plugin test agents
 
 # Verbose output
-/popkit:plugin test --verbose
+/popkit-core:plugin test --verbose
 ```
 
 ### Test Categories
@@ -403,8 +403,8 @@ packages/popkit-dev/
 ├── .claude-plugin/
 │   └── plugin.json          # Plugin manifest
 ├── commands/
-│   ├── git.md               # /popkit:git command
-│   └── routine.md           # /popkit:routine command
+│   ├── git.md               # /popkit-dev:git command
+│   └── routine.md           # /popkit-dev:routine command
 ├── skills/
 │   ├── git-commit/
 │   │   └── SKILL.md         # Git commit skill

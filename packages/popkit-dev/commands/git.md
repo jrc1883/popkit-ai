@@ -3,7 +3,7 @@ description: "commit | push | pr | review | ci | release | publish | prune | fin
 argument-hint: "<subcommand> [options]"
 ---
 
-# /popkit:git - Git Workflow Management
+# /popkit-dev:git - Git Workflow Management
 
 Git operations with smart commits, PRs, code review, CI/CD, releases, publishing, and branch cleanup.
 
@@ -190,7 +190,7 @@ Invokes **pop-finish-branch**: Verify tests → Present 4 options (merge locally
 | Publishing | git subtree split, IP scanner |
 | IP Scanner | hooks/utils/ip_protection.py |
 
-**Related:** /popkit:worktree, /popkit:dev execute, /popkit:morning
+**Related:** /popkit-dev:worktree, /popkit-dev:dev execute, /popkit:morning
 
 ## Examples
 

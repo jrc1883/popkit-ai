@@ -15,13 +15,13 @@ PopKit Dev is a complete development workflow plugin that provides comprehensive
 
 | Command | Description |
 |---------|-------------|
-| `/popkit:dev` | 7-phase feature development workflow |
-| `/popkit:git` | Git operations (commit, push, pr, review, release, publish) |
-| `/popkit:issue` | GitHub issue management (create, list, view, close, comment, edit, link) |
-| `/popkit:milestone` | Milestone tracking (list, create, close, report, health analysis) |
-| `/popkit:worktree` | Git worktree management |
-| `/popkit:routine` | Morning health checks and nightly cleanup |
-| `/popkit:next` | Context-aware next action recommendations |
+| `/popkit-dev:dev` | 7-phase feature development workflow |
+| `/popkit-dev:git` | Git operations (commit, push, pr, review, release, publish) |
+| `/popkit-dev:issue` | GitHub issue management (create, list, view, close, comment, edit, link) |
+| `/popkit-dev:milestone` | Milestone tracking (list, create, close, report, health analysis) |
+| `/popkit-dev:worktree` | Git worktree management |
+| `/popkit-dev:routine` | Morning health checks and nightly cleanup |
+| `/popkit-dev:next` | Context-aware next action recommendations |
 
 ### Skills (12)
 
@@ -86,36 +86,36 @@ packages/
 
 ```bash
 # Full 7-phase workflow
-/popkit:dev "user authentication"
+/popkit-dev:dev "user authentication"
 
 # Quick mode
-/popkit:dev "fix login bug" --mode quick
+/popkit-dev:dev "fix login bug" --mode quick
 
 # Issue-driven
-/popkit:dev work #123
+/popkit-dev:dev work #123
 ```
 
 ### Git Operations
 
 ```bash
 # Smart commit
-/popkit:git commit
+/popkit-dev:git commit
 
 # Create PR
-/popkit:git pr
+/popkit-dev:git pr
 
 # Code review
-/popkit:git review
+/popkit-dev:git review
 ```
 
 ### Daily Routines
 
 ```bash
 # Morning health check
-/popkit:routine morning
+/popkit-dev:routine morning
 
 # Nightly cleanup
-/popkit:routine nightly
+/popkit-dev:routine nightly
 ```
 
 ## Testing Strategy

@@ -3,20 +3,20 @@ description: "list | add | remove | sync | search <query>"
 argument-hint: "<subcommand> [query|url]"
 ---
 
-# /popkit:knowledge
+# /popkit-research:knowledge
 
 Manage configurable knowledge sources that are synced on session start. External documentation and blogs are fetched, cached, and made available to agents for context enrichment.
 
 ## Usage
 
 ```bash
-/popkit:knowledge                    # List all sources with status
-/popkit:knowledge add <url>          # Add new knowledge source
-/popkit:knowledge remove <id>        # Remove a knowledge source
-/popkit:knowledge refresh            # Force refresh all sources
-/popkit:knowledge refresh <id>       # Force refresh specific source
-/popkit:knowledge status             # Show detailed cache statistics
-/popkit:knowledge search <query>     # Search across cached knowledge
+/popkit-research:knowledge                    # List all sources with status
+/popkit-research:knowledge add <url>          # Add new knowledge source
+/popkit-research:knowledge remove <id>        # Remove a knowledge source
+/popkit-research:knowledge refresh            # Force refresh all sources
+/popkit-research:knowledge refresh <id>       # Force refresh specific source
+/popkit-research:knowledge status             # Show detailed cache statistics
+/popkit-research:knowledge search <query>     # Search across cached knowledge
 ```
 
 ## Architecture Integration

@@ -15,8 +15,8 @@ PopKit-Research is the knowledge management plugin for the PopKit ecosystem. It 
 
 | Command | Description |
 |---------|-------------|
-| `/popkit:research` | Research capture and search (list, search, add, tag, show, delete, merge) |
-| `/popkit:knowledge` | Knowledge base management (list, add, remove, sync, search) |
+| `/popkit-research:research` | Research capture and search (list, search, add, tag, show, delete, merge) |
+| `/popkit-research:knowledge` | Knowledge base management (list, add, remove, sync, search) |
 
 ### Skills (3)
 
@@ -89,50 +89,50 @@ popkit-research (knowledge)    ← You are here
 
 ```bash
 # List all research items
-/popkit:research list
+/popkit-research:research list
 
 # Search research by keyword
-/popkit:research search "authentication"
+/popkit-research:research search "authentication"
 
 # Add new research item
-/popkit:research add "OAuth implementation patterns"
+/popkit-research:research add "OAuth implementation patterns"
 
 # Tag research item
-/popkit:research tag <id> security,authentication
+/popkit-research:research tag <id> security,authentication
 
 # Show research details
-/popkit:research show <id>
+/popkit-research:research show <id>
 
 # Delete research item
-/popkit:research delete <id>
+/popkit-research:research delete <id>
 
 # Merge research items
-/popkit:research merge <id1> <id2>
+/popkit-research:research merge <id1> <id2>
 
 # Filter by project
-/popkit:research list --project myapp
+/popkit-research:research list --project myapp
 
 # Filter by type
-/popkit:research list --type pattern
+/popkit-research:research list --type pattern
 ```
 
 ### Knowledge Base Management
 
 ```bash
 # List knowledge base entries
-/popkit:knowledge list
+/popkit-research:knowledge list
 
 # Add knowledge entry
-/popkit:knowledge add
+/popkit-research:knowledge add
 
 # Remove knowledge entry
-/popkit:knowledge remove <id>
+/popkit-research:knowledge remove <id>
 
 # Sync with cloud (requires API key)
-/popkit:knowledge sync
+/popkit-research:knowledge sync
 
 # Search knowledge base
-/popkit:knowledge search <query>
+/popkit-research:knowledge search <query>
 ```
 
 ### Researcher Agent
@@ -162,7 +162,7 @@ Use via Task tool or invoke directly for project analysis.
 - Community knowledge sharing
 - Automatic tagging suggestions
 
-Configure API key via `/popkit:account keys` (requires popkit foundation).
+Configure API key via `/popkit-core:account keys` (requires popkit foundation).
 
 ## File Structure
 
@@ -238,6 +238,6 @@ MIT
 ## Support
 
 - **Documentation:** See command files in `commands/`
-- **Bug Reports:** `/popkit:bug report` (requires popkit foundation)
+- **Bug Reports:** `/popkit-core:bug report` (requires popkit foundation)
 - **Feature Requests:** GitHub Issues
 - **Community:** PopKit Cloud (coming soon)

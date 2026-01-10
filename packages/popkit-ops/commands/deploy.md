@@ -3,7 +3,7 @@ description: "init | setup | validate | execute | rollback [--target, --all, --d
 argument-hint: "<subcommand> [target] [options]"
 ---
 
-# /popkit:deploy - Universal Deployment Orchestration
+# /popkit-ops:deploy - Universal Deployment Orchestration
 
 Deploy to any target: Docker, npm/PyPI, Vercel/Netlify, or GitHub Releases.
 
@@ -112,17 +112,17 @@ Undo deployment and restore previous version. Invokes **rollback-specialist** ag
 ## Workflow Integration
 
 ```
-/popkit:project init       → PopKit configuration
+/popkit-core:project init       → PopKit configuration
          ↓
-/popkit:deploy init        → Deployment targets
+/popkit-ops:deploy init        → Deployment targets
          ↓
-/popkit:deploy setup       → Generate configs
+/popkit-ops:deploy setup       → Generate configs
          ↓
-/popkit:deploy validate    → Pre-flight checks
+/popkit-ops:deploy validate    → Pre-flight checks
          ↓
-/popkit:deploy execute     → Ship it!
+/popkit-ops:deploy execute     → Ship it!
          ↓
-/popkit:deploy rollback    → Undo if needed
+/popkit-ops:deploy rollback    → Undo if needed
 ```
 
 ---
@@ -137,7 +137,7 @@ Undo deployment and restore previous version. Invokes **rollback-specialist** ag
 | Validator Agent | packages/popkit-ops/agents/tier-2-on-demand/deployment-validator/ |
 | Rollback Agent | packages/popkit-ops/agents/tier-2-on-demand/rollback-specialist/ |
 
-**Related:** /popkit:git pr, /popkit:git release, /popkit:routine morning
+**Related:** /popkit-dev:git pr, /popkit-dev:git release, /popkit-dev:routine morning
 
 ## Examples
 

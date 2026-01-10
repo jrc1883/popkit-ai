@@ -1,10 +1,9 @@
 ---
-name: record
 description: "start | stop | status - Control session recording"
 argument-hint: "<subcommand>"
 ---
 
-# /popkit:record
+# /popkit-core:record
 
 Control session recording for forensic analysis and command verification.
 
@@ -281,8 +280,8 @@ else:
 
 # Run commands (all tool calls are recorded)
 /popkit-dev:next
-/popkit:routine morning
-/popkit:git status
+/popkit-dev:routine morning
+/popkit-dev:git status
 
 # Stop and generate report
 /popkit-core:record stop
@@ -317,7 +316,7 @@ else:
 
 # All tool calls will be captured:
 git status                    # ✓ Main agent tool call
-/popkit:next                  # ✓ Skill invocation + sub-agent transcript
+/popkit-dev:next                  # ✓ Skill invocation + sub-agent transcript
   ├─ git status --porcelain   # ✓ Sub-agent tool call (from transcript)
   ├─ git branch -vv           # ✓ Sub-agent tool call (from transcript)
   └─ gh issue list            # ✓ Sub-agent tool call (from transcript)

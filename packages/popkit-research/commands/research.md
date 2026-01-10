@@ -3,7 +3,7 @@ description: "list | search | add | tag | show | delete | merge [--type, --proje
 argument-hint: "<subcommand> [query|id|branch] [options]"
 ---
 
-# /popkit:research - Research Management
+# /popkit-research:research - Research Management
 
 Capture, index, and surface research insights during development. Maintains a searchable knowledge base of findings, decisions, and learnings.
 
@@ -102,4 +102,4 @@ Process research branches from Claude Code Web sessions.
 | Branch Sync | Claude Code Web → CLI session handoff |
 | Search | Semantic similarity with relevance threshold |
 
-**Related:** `/popkit:knowledge`, `/popkit:dev brainstorm`, `/popkit:project embed`
+**Related:** `/popkit-research:knowledge`, `/popkit-dev:dev brainstorm`, `/popkit-core:project embed`

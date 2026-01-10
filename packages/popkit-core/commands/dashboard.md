@@ -3,18 +3,18 @@ description: "[add|remove|refresh|discover] - Multi-project management"
 argument-hint: "<subcommand> [path]"
 ---
 
-# /popkit:dashboard - Multi-Project Dashboard
+# /popkit-core:dashboard - Multi-Project Dashboard
 
 Unified view for managing multiple PopKit-enabled projects. Shows health scores, activity status, and enables quick context switching.
 
 ## Usage
 
 ```
-/popkit:dashboard                    # Show dashboard
-/popkit:dashboard add <path>         # Add project to registry
-/popkit:dashboard remove <name>      # Remove project from registry
-/popkit:dashboard refresh [name]     # Refresh health scores
-/popkit:dashboard discover           # Auto-discover projects
+/popkit-core:dashboard                    # Show dashboard
+/popkit-core:dashboard add <path>         # Add project to registry
+/popkit-core:dashboard remove <name>      # Remove project from registry
+/popkit-core:dashboard refresh [name]     # Refresh health scores
+/popkit-core:dashboard discover           # Auto-discover projects
 ```
 
 ## Subcommands
@@ -83,9 +83,9 @@ Display the full dashboard with all registered projects.
 Register a new project in the global registry.
 
 ```
-/popkit:dashboard add /path/to/project
-/popkit:dashboard add .                   # Current directory
-/popkit:dashboard add . --tags active,client
+/popkit-core:dashboard add /path/to/project
+/popkit-core:dashboard add .                   # Current directory
+/popkit-core:dashboard add . --tags active,client
 ```
 
 ### Instructions
@@ -138,7 +138,7 @@ Register a new project in the global registry.
 Remove a project from the registry (does not delete files).
 
 ```
-/popkit:dashboard remove project-name
+/popkit-core:dashboard remove project-name
 ```
 
 ### Instructions
@@ -171,9 +171,9 @@ Remove a project from the registry (does not delete files).
 Recalculate health scores for all or specific projects.
 
 ```
-/popkit:dashboard refresh           # Refresh all projects
-/popkit:dashboard refresh popkit    # Refresh specific project
-/popkit:dashboard refresh --quick   # Quick refresh (git + activity only)
+/popkit-core:dashboard refresh           # Refresh all projects
+/popkit-core:dashboard refresh popkit    # Refresh specific project
+/popkit-core:dashboard refresh --quick   # Quick refresh (git + activity only)
 ```
 
 ### Instructions
@@ -221,8 +221,8 @@ Recalculate health scores for all or specific projects.
 Auto-discover projects in common development directories.
 
 ```
-/popkit:dashboard discover
-/popkit:dashboard discover ~/projects ~/work
+/popkit-core:dashboard discover
+/popkit-core:dashboard discover ~/projects ~/work
 ```
 
 ### Instructions
@@ -285,7 +285,7 @@ Health scores are calculated from 5 components (20 points each):
 ## Related
 
 - `pop-dashboard` skill - Core implementation
-- `/popkit:routine morning` - Single-project health check
-- `/popkit:next` - Context-aware recommendations
+- `/popkit-dev:routine morning` - Single-project health check
+- `/popkit-dev:next` - Context-aware recommendations
 - `hooks/utils/project_registry.py` - Registry operations
 - `hooks/utils/health_calculator.py` - Health calculation

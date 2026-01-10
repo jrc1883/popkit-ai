@@ -3,14 +3,14 @@ description: "anthropic | security | performance | ux | architect | docs | all [
 argument-hint: "<perspective> [options]"
 ---
 
-# /popkit:assess - Multi-Perspective Self-Assessment
+# /popkit-ops:assess - Multi-Perspective Self-Assessment
 
 Run specialized assessor agents to review PopKit from different expert perspectives.
 
 ## Usage
 
 ```
-/popkit:assess [assessor] [flags]
+/popkit-ops:assess [assessor] [flags]
 ```
 
 ## Assessors
@@ -38,17 +38,17 @@ Run specialized assessor agents to review PopKit from different expert perspecti
 
 ```bash
 # Run all assessments
-/popkit:assess all
+/popkit-ops:assess all
 
 # Run specific assessor
-/popkit:assess security
-/popkit:assess docs
+/popkit-ops:assess security
+/popkit-ops:assess docs
 
 # Get JSON output
-/popkit:assess all --json
+/popkit-ops:assess all --json
 
 # Save report
-/popkit:assess all --save reports/assessment-2025-01.md
+/popkit-ops:assess all --save reports/assessment-2025-01.md
 ```
 
 ## How It Works
@@ -192,4 +192,4 @@ python tests/assessments/assessment_runner.py all --json
 - `agents/assessors/` - Assessor agent definitions
 - `tests/assessments/assessment_runner.py` - Python runner
 - `tests/run_tests.py` - General test runner
-- `/popkit:plugin test` - Plugin structure tests
+- `/popkit-core:plugin test` - Plugin structure tests

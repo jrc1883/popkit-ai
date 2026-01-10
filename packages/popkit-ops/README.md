@@ -15,11 +15,11 @@ PopKit-Ops is the operations plugin for the PopKit ecosystem. It provides qualit
 
 | Command | Description |
 |---------|-------------|
-| `/popkit:assess` | Code quality assessments (anthropic, security, performance, ux, architect, docs) |
-| `/popkit:audit` | Quarterly/yearly health audits (quarterly, yearly, stale, duplicates, health, ip-leak) |
-| `/popkit:debug` | Systematic debugging workflows (code, routing) |
-| `/popkit:security` | Security scanning and fixes (scan, list, fix, report) |
-| `/popkit:deploy` | Deployment orchestration (init, setup, validate, execute, rollback) |
+| `/popkit-ops:assess` | Code quality assessments (anthropic, security, performance, ux, architect, docs) |
+| `/popkit-ops:audit` | Quarterly/yearly health audits (quarterly, yearly, stale, duplicates, health, ip-leak) |
+| `/popkit-ops:debug` | Systematic debugging workflows (code, routing) |
+| `/popkit-ops:security` | Security scanning and fixes (scan, list, fix, report) |
+| `/popkit-ops:deploy` | Deployment orchestration (init, setup, validate, execute, rollback) |
 
 ### Skills (6)
 
@@ -100,110 +100,110 @@ popkit-research (knowledge)
 
 ```bash
 # Run all assessors
-/popkit:assess all
+/popkit-ops:assess all
 
 # Run specific assessor
-/popkit:assess anthropic      # Anthropic patterns compliance
-/popkit:assess security       # Security vulnerabilities
-/popkit:assess performance    # Performance issues
-/popkit:assess ux             # User experience
-/popkit:assess architect      # Code quality
+/popkit-ops:assess anthropic      # Anthropic patterns compliance
+/popkit-ops:assess security       # Security vulnerabilities
+/popkit-ops:assess performance    # Performance issues
+/popkit-ops:assess ux             # User experience
+/popkit-ops:assess architect      # Code quality
 
 # With auto-fix
-/popkit:assess security --fix
+/popkit-ops:assess security --fix
 
 # With JSON output
-/popkit:assess all --json
+/popkit-ops:assess all --json
 ```
 
 ### Code Auditing
 
 ```bash
 # Quarterly health check
-/popkit:audit quarterly
+/popkit-ops:audit quarterly
 
 # Yearly comprehensive audit
-/popkit:audit yearly
+/popkit-ops:audit yearly
 
 # Find stale code
-/popkit:audit stale
+/popkit-ops:audit stale
 
 # Find duplicated code
-/popkit:audit duplicates
+/popkit-ops:audit duplicates
 
 # Overall project health
-/popkit:audit health
+/popkit-ops:audit health
 
 # IP leak detection (for split-repo projects)
-/popkit:audit ip-leak
-/popkit:audit ip-leak --fix
+/popkit-ops:audit ip-leak
+/popkit-ops:audit ip-leak --fix
 ```
 
 ### Systematic Debugging
 
 ```bash
 # Debug code issues
-/popkit:debug code
+/popkit-ops:debug code
 
 # Debug agent routing
-/popkit:debug routing
+/popkit-ops:debug routing
 
 # With detailed trace
-/popkit:debug code --trace
+/popkit-ops:debug code --trace
 
 # With verbose output
-/popkit:debug code --verbose
+/popkit-ops:debug code --verbose
 ```
 
 ### Security Scanning
 
 ```bash
 # Scan for vulnerabilities
-/popkit:security scan
+/popkit-ops:security scan
 
 # List all findings
-/popkit:security list
+/popkit-ops:security list
 
 # Auto-fix vulnerabilities
-/popkit:security fix
+/popkit-ops:security fix
 
 # Generate security report
-/popkit:security report
+/popkit-ops:security report
 
 # With severity filtering
-/popkit:security scan --severity critical
-/popkit:security fix --severity high
+/popkit-ops:security scan --severity critical
+/popkit-ops:security fix --severity high
 
 # Dry run mode
-/popkit:security fix --dry-run
+/popkit-ops:security fix --dry-run
 ```
 
 ### Deployment Orchestration
 
 ```bash
 # Initialize deployment configuration
-/popkit:deploy init
+/popkit-ops:deploy init
 
 # Setup deployment environment
-/popkit:deploy setup
+/popkit-ops:deploy setup
 
 # Validate pre-deployment checks
-/popkit:deploy validate
+/popkit-ops:deploy validate
 
 # Execute deployment
-/popkit:deploy execute
+/popkit-ops:deploy execute
 
 # Rollback to previous version
-/popkit:deploy rollback
+/popkit-ops:deploy rollback
 
 # Deploy to specific target
-/popkit:deploy execute --target production
+/popkit-ops:deploy execute --target production
 
 # Deploy all targets
-/popkit:deploy execute --all
+/popkit-ops:deploy execute --all
 
 # Dry run mode
-/popkit:deploy execute --dry-run
+/popkit-ops:deploy execute --dry-run
 ```
 
 ## Agent Activation
@@ -221,8 +221,8 @@ These agents are always available and will automatically activate when relevant:
 
 These agents activate only when explicitly needed:
 
-- **deployment-validator**: Use `/popkit:deploy validate` to activate
-- **rollback-specialist**: Use `/popkit:deploy rollback` to activate
+- **deployment-validator**: Use `/popkit-ops:deploy validate` to activate
+- **rollback-specialist**: Use `/popkit-ops:deploy rollback` to activate
 
 ## File Structure
 
@@ -310,6 +310,6 @@ MIT
 ## Support
 
 - **Documentation:** See command files in `commands/`
-- **Bug Reports:** `/popkit:bug report` (requires popkit foundation)
+- **Bug Reports:** `/popkit-core:bug report` (requires popkit foundation)
 - **Feature Requests:** GitHub Issues
 - **Community:** PopKit Cloud (coming soon)

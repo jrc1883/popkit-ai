@@ -49,7 +49,7 @@ PopKit is published as a GitHub-based marketplace. Install it in two steps:
 /plugin install popkit-research@popkit-claude
 ```
 
-After installation, restart Claude Code and run `/popkit:next` to get started.
+After installation, restart Claude Code and run `/popkit-dev:next` to get started.
 
 ### For Local Development (Git Clone)
 
@@ -88,7 +88,7 @@ PopKit uses a modular plugin architecture with 4 focused plugins:
 Each plugin package contains:
 
 - `.claude-plugin/plugin.json` - Plugin manifest and configuration
-- `commands/*.md` - Slash commands (e.g., `/popkit:git`)
+- `commands/*.md` - Slash commands (e.g., `/popkit-dev:git`)
 - `skills/*/SKILL.md` - Reusable automation skills
 - `agents/*/AGENT.md` - Specialized AI agents
 - `hooks/hooks.json` - Hook configuration
@@ -227,9 +227,9 @@ python run_tests.py hooks            # Specific category
 ### Via PopKit Commands
 
 ```bash
-/popkit:plugin test              # Run all tests
-/popkit:plugin test agents       # Test specific category
-/popkit:plugin test --verbose    # Detailed output
+/popkit-core:plugin test              # Run all tests
+/popkit-core:plugin test agents       # Test specific category
+/popkit-core:plugin test --verbose    # Detailed output
 ```
 
 ---

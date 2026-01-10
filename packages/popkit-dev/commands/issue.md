@@ -3,14 +3,14 @@ description: "create | list | view | close | comment | edit | link [--state, --l
 argument-hint: "<subcommand> [#number] [options]"
 ---
 
-# /popkit:issue - GitHub Issue Management
+# /popkit-dev:issue - GitHub Issue Management
 
 Manage GitHub issues with AI-optimized formatting and PopKit workflow guidance.
 
 ## Usage
 
 ```
-/popkit:issue <subcommand> [options]
+/popkit-dev:issue <subcommand> [options]
 ```
 
 ## Subcommands
@@ -25,7 +25,7 @@ Manage GitHub issues with AI-optimized formatting and PopKit workflow guidance.
 | `edit` | Update issue metadata |
 | `link` | Link issue to PR |
 
-> **Note:** To start working on an issue, use `/popkit:dev work #N` instead.
+> **Note:** To start working on an issue, use `/popkit-dev:dev work #N` instead.
 
 ---
 
@@ -34,15 +34,15 @@ Manage GitHub issues with AI-optimized formatting and PopKit workflow guidance.
 List repository issues with Power Mode recommendations.
 
 ```
-/popkit:issue                         # List open issues
-/popkit:issue list                    # Same as above
-/popkit:issue list --power            # Only issues recommending Power Mode
-/popkit:issue list --votes            # Sort by vote score
-/popkit:issue list --label bug        # Filter by label
-/popkit:issue list --state all        # All issues (open + closed)
-/popkit:issue list --assignee @me     # Assigned to me
-/popkit:issue list --milestone v1.0   # By milestone
-/popkit:issue list -n 10              # Limit results
+/popkit-dev:issue                         # List open issues
+/popkit-dev:issue list                    # Same as above
+/popkit-dev:issue list --power            # Only issues recommending Power Mode
+/popkit-dev:issue list --votes            # Sort by vote score
+/popkit-dev:issue list --label bug        # Filter by label
+/popkit-dev:issue list --state all        # All issues (open + closed)
+/popkit-dev:issue list --assignee @me     # Assigned to me
+/popkit-dev:issue list --milestone v1.0   # By milestone
+/popkit-dev:issue list -n 10              # Limit results
 ```
 
 ### Flags
@@ -74,8 +74,8 @@ Legend:
   optional    = Power Mode available but not required
   not_needed  = Sequential execution preferred
 
-Hint: Use /popkit:dev work #11 to start working
-      Use /popkit:dev work #11 -p to force Power Mode
+Hint: Use /popkit-dev:dev work #11 to start working
+      Use /popkit-dev:dev work #11 -p to force Power Mode
 ```
 
 **With --votes flag:**
@@ -138,9 +138,9 @@ print(format_issues_table(data))
 View issue details with parsed PopKit Guidance.
 
 ```
-/popkit:issue view 45
-/popkit:issue view 45 --comments
-/popkit:issue view #45              # # prefix optional
+/popkit-dev:issue view 45
+/popkit-dev:issue view 45 --comments
+/popkit-dev:issue view #45              # # prefix optional
 ```
 
 ### Output
@@ -168,12 +168,12 @@ Description:
 Create new issue with template selection.
 
 ```
-/popkit:issue create <title>
-/popkit:issue create "Add user authentication"
-/popkit:issue create --template bug
-/popkit:issue create --template feature
-/popkit:issue create --template architecture
-/popkit:issue create --template research
+/popkit-dev:issue create <title>
+/popkit-dev:issue create "Add user authentication"
+/popkit-dev:issue create --template bug
+/popkit-dev:issue create --template feature
+/popkit-dev:issue create --template architecture
+/popkit-dev:issue create --template research
 ```
 
 ### Available Templates
@@ -255,11 +255,11 @@ This section is parsed by PopKit to:
 Close an issue with optional comment or reason.
 
 ```
-/popkit:issue close 45
-/popkit:issue close 45 --comment "Fixed in #PR"
-/popkit:issue close 45 --reason completed
-/popkit:issue close 45 --reason not_planned
-/popkit:issue close 45 --superseded-by 67
+/popkit-dev:issue close 45
+/popkit-dev:issue close 45 --comment "Fixed in #PR"
+/popkit-dev:issue close 45 --reason completed
+/popkit-dev:issue close 45 --reason not_planned
+/popkit-dev:issue close 45 --superseded-by 67
 ```
 
 ### Flags
@@ -297,7 +297,7 @@ Use AskUserQuestion tool with:
   1. label: "Work on next issue"
      description: "Start working on another open issue"
   2. label: "View remaining issues"
-     description: "List all open issues (/popkit:issue list)"
+     description: "List all open issues (/popkit-dev:issue list)"
   3. label: "End session"
      description: "Capture session state and finish"
 - multiSelect: false
@@ -305,7 +305,7 @@ Use AskUserQuestion tool with:
 
 **Based on selection:**
 - "Work on next issue" → Fetch open issues, present top 3-5 as options via another AskUserQuestion
-- "View remaining issues" → Execute `/popkit:issue list`
+- "View remaining issues" → Execute `/popkit-dev:issue list`
 - "End session" → Invoke `pop-session-capture` skill
 
 ---
@@ -315,9 +315,9 @@ Use AskUserQuestion tool with:
 Add comment to issue.
 
 ```
-/popkit:issue comment 45 "Working on this"
-/popkit:issue comment 45 --file notes.md
-/popkit:issue comment 45 --phase-update "Completed implementation, moving to testing"
+/popkit-dev:issue comment 45 "Working on this"
+/popkit-dev:issue comment 45 --file notes.md
+/popkit-dev:issue comment 45 --phase-update "Completed implementation, moving to testing"
 ```
 
 ### Flags
@@ -348,11 +348,11 @@ gh issue comment <number> --body-file <file>
 Update issue metadata.
 
 ```
-/popkit:issue edit 45 --title "New title"
-/popkit:issue edit 45 --label add:priority:high
-/popkit:issue edit 45 --label remove:wontfix
-/popkit:issue edit 45 --assignee @username
-/popkit:issue edit 45 --milestone v1.0
+/popkit-dev:issue edit 45 --title "New title"
+/popkit-dev:issue edit 45 --label add:priority:high
+/popkit-dev:issue edit 45 --label remove:wontfix
+/popkit-dev:issue edit 45 --assignee @username
+/popkit-dev:issue edit 45 --milestone v1.0
 ```
 
 ### Flags
@@ -384,8 +384,8 @@ gh issue edit <number> [--title "..."] [--add-label <name>] [--remove-label <nam
 Link issue to PR by adding a comment with the reference.
 
 ```
-/popkit:issue link 45 --pr 67
-/popkit:issue link 45 --closes-pr 67
+/popkit-dev:issue link 45 --pr 67
+/popkit-dev:issue link 45 --closes-pr 67
 ```
 
 ### Flags
@@ -449,26 +449,26 @@ When an issue lacks PopKit Guidance, infer from:
 
 ```bash
 # List open issues with Power Mode recommendations
-/popkit:issue
-/popkit:issue list
+/popkit-dev:issue
+/popkit-dev:issue list
 
 # List only issues recommending Power Mode
-/popkit:issue list --power
+/popkit-dev:issue list --power
 
 # View issue details
-/popkit:issue view 45
+/popkit-dev:issue view 45
 
 # Create with template selection prompt
-/popkit:issue create "Add user authentication"
+/popkit-dev:issue create "Add user authentication"
 
 # Create with specific template
-/popkit:issue create "Refactor auth system" --template architecture
+/popkit-dev:issue create "Refactor auth system" --template architecture
 
 # Close as superseded
-/popkit:issue close 8 --superseded-by 11
+/popkit-dev:issue close 8 --superseded-by 11
 
 # Add phase update comment
-/popkit:issue comment 11 --phase-update "Completed Phase 1: Discovery"
+/popkit-dev:issue comment 11 --phase-update "Completed Phase 1: Discovery"
 ```
 
 ---
@@ -507,6 +507,6 @@ gh issue comment 45 --body "..."
 
 | Command | Purpose |
 |---------|---------|
-| `/popkit:dev work #N` | Start working on an issue |
-| `/popkit:power status` | Check Power Mode status |
-| `/popkit:git pr` | Create pull request |
+| `/popkit-dev:dev work #N` | Start working on an issue |
+| `/popkit-core:power status` | Check Power Mode status |
+| `/popkit-dev:git pr` | Create pull request |

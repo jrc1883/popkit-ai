@@ -3,7 +3,7 @@ description: "start | stop | status | init | metrics | widgets | consensus [--co
 argument-hint: "<subcommand> [options]"
 ---
 
-# /popkit:power - Power Mode Management
+# /popkit-core:power - Power Mode Management
 
 Multi-agent orchestration for complex tasks requiring parallel collaboration.
 
@@ -167,10 +167,10 @@ Thresholds: 0-59% sequential, 60-79% suggest, 80-100% auto-enable
 
 ## Related
 
-- /popkit:issue work #N -p - Work with Power Mode
-- /popkit:issue list --power - List Power Mode candidates
-- /popkit:stats - Efficiency metrics
-- /popkit:routine morning - Includes Redis health check
+- /popkit-dev:issue work #N -p - Work with Power Mode
+- /popkit-dev:issue list --power - List Power Mode candidates
+- /popkit-core:stats - Efficiency metrics
+- /popkit-dev:routine morning - Includes Redis health check
 
 ## Examples
 

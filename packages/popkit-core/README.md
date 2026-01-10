@@ -19,15 +19,15 @@ PopKit Core provides the foundational meta-features and utilities for the PopKit
 
 | Command | Description |
 |---------|-------------|
-| `/popkit:plugin` | Plugin testing and management |
-| `/popkit:stats` | Efficiency metrics and usage statistics |
-| `/popkit:privacy` | Privacy controls and data management |
-| `/popkit:account` | Account management (status, keys, billing, logout) |
-| `/popkit:dashboard` | Multi-project management dashboard |
-| `/popkit:bug` | Bug reporting (report, search, share) |
-| `/popkit:power` | Power Mode multi-agent orchestration |
-| `/popkit:project` | Project analysis, initialization, and tooling |
-| `/popkit:record` | Session recording and playback |
+| `/popkit-core:plugin` | Plugin testing and management |
+| `/popkit-core:stats` | Efficiency metrics and usage statistics |
+| `/popkit-core:privacy` | Privacy controls and data management |
+| `/popkit-core:account` | Account management (status, keys, billing, logout) |
+| `/popkit-core:dashboard` | Multi-project management dashboard |
+| `/popkit-core:bug` | Bug reporting (report, search, share) |
+| `/popkit-core:power` | Power Mode multi-agent orchestration |
+| `/popkit-core:project` | Project analysis, initialization, and tooling |
+| `/popkit-core:record` | Session recording and playback |
 
 ## Skills
 
@@ -189,10 +189,10 @@ TaskOutput polling → Aggregated Results
 ### Usage
 
 ```bash
-/popkit:power init          # Check mode availability
-/popkit:power start         # Start orchestration (auto-selects best mode)
-/popkit:power status        # Check active agents and progress
-/popkit:power stop          # Stop all agents gracefully
+/popkit-core:power init          # Check mode availability
+/popkit-core:power start         # Start orchestration (auto-selects best mode)
+/popkit-core:power status        # Check active agents and progress
+/popkit-core:power stop          # Stop all agents gracefully
 ```
 
 **Deep Dive:** See [docs/POWER_MODE_ASYNC.md](../../docs/POWER_MODE_ASYNC.md) for architecture details, examples, and troubleshooting.
@@ -212,112 +212,112 @@ This plugin is part of the PopKit ecosystem and depends on `popkit-shared`.
 
 ```bash
 # Test plugin integrity
-/popkit:plugin test
+/popkit-core:plugin test
 
 # Validate plugin structure
-/popkit:plugin sync
+/popkit-core:plugin sync
 ```
 
 ### Project Analysis
 
 ```bash
 # Initialize PopKit in project
-/popkit:project init
+/popkit-core:project init
 
 # Analyze project structure
-/popkit:project analyze
+/popkit-core:project analyze
 
 # Generate project board
-/popkit:project board
+/popkit-core:project board
 
 # Generate MCP server
-/popkit:project mcp
+/popkit-core:project mcp
 
 # Embed project for semantic search
-/popkit:project embed
+/popkit-core:project embed
 ```
 
 ### Power Mode
 
 ```bash
 # Initialize Power Mode (one-time setup)
-/popkit:power init
+/popkit-core:power init
 
 # Start Power Mode
-/popkit:power start --agents 5
+/popkit-core:power start --agents 5
 
 # Check status
-/popkit:power status
+/popkit-core:power status
 
 # Stop Power Mode
-/popkit:power stop
+/popkit-core:power stop
 ```
 
 ### Dashboard
 
 ```bash
 # Add project to dashboard
-/popkit:dashboard add
+/popkit-core:dashboard add
 
 # Switch between projects
-/popkit:dashboard switch
+/popkit-core:dashboard switch
 
 # Remove project
-/popkit:dashboard remove
+/popkit-core:dashboard remove
 
 # Discover projects
-/popkit:dashboard discover
+/popkit-core:dashboard discover
 ```
 
 ### Statistics
 
 ```bash
 # Session stats
-/popkit:stats session
+/popkit-core:stats session
 
 # Today's stats
-/popkit:stats today
+/popkit-core:stats today
 
 # Weekly stats
-/popkit:stats week
+/popkit-core:stats week
 
 # Cloud sync stats (requires API key)
-/popkit:stats cloud
+/popkit-core:stats cloud
 
 # Reset stats
-/popkit:stats reset
+/popkit-core:stats reset
 ```
 
 ### Privacy
 
 ```bash
 # Check privacy status
-/popkit:privacy status
+/popkit-core:privacy status
 
 # Manage consent
-/popkit:privacy consent
+/popkit-core:privacy consent
 
 # Export data
-/popkit:privacy export
+/popkit-core:privacy export
 
 # Delete data
-/popkit:privacy delete
+/popkit-core:privacy delete
 
 # Set privacy level
-/popkit:privacy level strict    # strict | moderate | minimal
+/popkit-core:privacy level strict    # strict | moderate | minimal
 ```
 
 ### Bug Reporting
 
 ```bash
 # Report a bug
-/popkit:bug report "description"
+/popkit-core:bug report "description"
 
 # Search bugs
-/popkit:bug search "keyword"
+/popkit-core:bug search "keyword"
 
 # Share bug with context
-/popkit:bug share --issue 123
+/popkit-core:bug share --issue 123
 ```
 
 ## Privacy & Data

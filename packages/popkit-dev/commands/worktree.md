@@ -3,14 +3,14 @@ description: "create <branch> | list | analyze | remove [--force]"
 argument-hint: "<subcommand> [branch] [options]"
 ---
 
-# /popkit:worktree - Git Worktree Management
+# /popkit-dev:worktree - Git Worktree Management
 
 Create and manage isolated workspaces for parallel development.
 
 ## Usage
 
 ```
-/popkit:worktree <subcommand> [options]
+/popkit-dev:worktree <subcommand> [options]
 ```
 
 ## Subcommands
@@ -20,9 +20,9 @@ Create and manage isolated workspaces for parallel development.
 Create new worktree with branch:
 
 ```
-/popkit:worktree create <name>
-/popkit:worktree create feature/auth
-/popkit:worktree create fix-123 --from main
+/popkit-dev:worktree create <name>
+/popkit-dev:worktree create feature/auth
+/popkit-dev:worktree create fix-123 --from main
 ```
 
 Process:
@@ -38,7 +38,7 @@ Process:
 List all worktrees:
 
 ```
-/popkit:worktree list
+/popkit-dev:worktree list
 ```
 
 Output:
@@ -54,7 +54,7 @@ Worktrees:
 Find opportunities for worktrees:
 
 ```
-/popkit:worktree analyze
+/popkit-dev:worktree analyze
 ```
 
 Checks for:
@@ -67,8 +67,8 @@ Checks for:
 Remove worktree and optionally branch:
 
 ```
-/popkit:worktree remove <name>
-/popkit:worktree remove feature/auth --keep-branch
+/popkit-dev:worktree remove <name>
+/popkit-dev:worktree remove feature/auth --keep-branch
 ```
 
 Process:
@@ -83,7 +83,7 @@ Process:
 Clean up stale worktrees:
 
 ```
-/popkit:worktree prune
+/popkit-dev:worktree prune
 ```
 
 Removes worktrees with deleted directories.
@@ -147,14 +147,14 @@ git worktree prune
 
 ```
 # Start new feature
-/popkit:worktree create feature/user-profiles
+/popkit-dev:worktree create feature/user-profiles
 
 # See all workspaces
-/popkit:worktree list
+/popkit-dev:worktree list
 
 # Clean up after merge
-/popkit:worktree remove feature/user-profiles
+/popkit-dev:worktree remove feature/user-profiles
 
 # Find parallel work opportunities
-/popkit:worktree analyze
+/popkit-dev:worktree analyze
 ```

@@ -1,10 +1,9 @@
 ---
-name: account
 description: "status | signup | login | keys | usage | logout - Manage your PopKit account"
 argument-hint: "<subcommand>"
 ---
 
-# /popkit:account
+# /popkit-core:account
 
 Manage your PopKit account and cloud connection for enhanced semantic intelligence.
 
@@ -35,23 +34,23 @@ PopKit Cloud enhances local workflows with semantic intelligence:
 
 ```bash
 # Show account status
-/popkit:account
-/popkit:account status
+/popkit-core:account
+/popkit-core:account status
 
 # Create new account
-/popkit:account signup
+/popkit-core:account signup
 
 # Login to existing account
-/popkit:account login
+/popkit-core:account login
 
 # Manage API keys
-/popkit:account keys
+/popkit-core:account keys
 
 # View usage statistics
-/popkit:account usage
+/popkit-core:account usage
 
 # Disconnect from cloud
-/popkit:account logout
+/popkit-core:account logout
 ```
 
 ## Execution
@@ -141,7 +140,7 @@ curl -s -H "Authorization: Bearer $POPKIT_API_KEY" \
 - Pattern queries: 89
 - Patterns stored: 156
 
-Run `/popkit:account usage` for detailed breakdown.
+Run `/popkit-core:account usage` for detailed breakdown.
 ```
 
 **Without API key:**
@@ -160,7 +159,7 @@ Run `/popkit:account usage` for detailed breakdown.
 
 ### Get Cloud Enhancements
 
-Run `/popkit:account signup` to create a free account and enable:
+Run `/popkit-core:account signup` to create a free account and enable:
 - Semantic agent routing via embeddings
 - Community pattern learning across projects
 - Cloud-backed knowledge base
@@ -212,7 +211,7 @@ The skill handles the full signup workflow including:
 
 1. **Verify connection:**
    ```bash
-   /popkit:account status
+   /popkit-core:account status
    ```
 
 2. **Cloud enhancements now active:**
@@ -223,7 +222,7 @@ The skill handles the full signup workflow including:
 
 **Config file:** ~/.claude/popkit/cloud-config.json
 
-Run `/popkit:account` to see your account status.
+Run `/popkit-core:account` to see your account status.
 ```
 
 **Error Handling:**
@@ -237,7 +236,7 @@ This email is already associated with a PopKit Cloud account.
 
 Try logging in instead:
 ```bash
-/popkit:account login
+/popkit-core:account login
 ```
 
 Or use a different email address.
@@ -324,7 +323,7 @@ if response.status_code == 200:
 
     print(f"✅ Logged in as {email}")
     print(f"API key saved to {config_path}")
-    print("\nRun /popkit:account status to verify connection")
+    print("\nRun /popkit-core:account status to verify connection")
 else:
     error_msg = response.json().get("error", "Unknown error")
     print(f"❌ Login failed: {error_msg}")
@@ -338,7 +337,7 @@ else:
 **Email:** user@example.com
 **API Key:** pk_live_xyz789... (saved securely)
 
-Run `/popkit:account status` to verify connection.
+Run `/popkit-core:account status` to verify connection.
 ```
 
 **Error Handling:**
@@ -352,7 +351,7 @@ Please check your credentials and try again.
 
 **Need help?**
 - Forgot password? Contact joseph@thehouseofdeals.com
-- Don't have an account? Run `/popkit:account signup`
+- Don't have an account? Run `/popkit-core:account signup`
 ```
 
 ---
@@ -380,7 +379,7 @@ if not api_key:
 
 if not api_key:
     print("❌ No API key configured")
-    print("\nRun /popkit:account signup to create an account")
+    print("\nRun /popkit-core:account signup to create an account")
     return
 ```
 
@@ -445,7 +444,7 @@ if not api_key:
 
 if not api_key:
     print("❌ No API key configured")
-    print("\nRun /popkit:account signup to create an account")
+    print("\nRun /popkit-core:account signup to create an account")
     return
 ```
 
@@ -507,7 +506,7 @@ An API key would add:
 - Cloud knowledge base
 - Cross-project insights
 
-Run `/popkit:account signup` to enhance your workflows.
+Run `/popkit-core:account signup` to enhance your workflows.
 ```
 
 ---
@@ -536,7 +535,7 @@ has_env = os.environ.get("POPKIT_API_KEY")
 
 if not has_config and not has_env:
     print("⚪ Not connected to PopKit Cloud")
-    print("\nRun /popkit:account signup to create an account")
+    print("\nRun /popkit-core:account signup to create an account")
     return
 
 # Confirm logout using AskUserQuestion
@@ -581,8 +580,8 @@ print("\nAll workflows will continue to work locally.")
 All workflows continue to work locally without cloud enhancements.
 
 To reconnect:
-- `/popkit:account signup` - Create new account
-- `/popkit:account login` - Login to existing account
+- `/popkit-core:account signup` - Create new account
+- `/popkit-core:account login` - Login to existing account
 ```
 
 ---
@@ -607,7 +606,7 @@ To reconnect:
 **Best Practices:**
 - Use strong passwords (16+ characters recommended)
 - Don't share API keys
-- Use `/popkit:account logout` when switching accounts
+- Use `/popkit-core:account logout` when switching accounts
 
 ---
 
@@ -641,7 +640,7 @@ Access account-related settings:
 # - Data retention policies
 ```
 
-**Note:** Requires Claude Code 2.0.71+. For earlier versions, use `/popkit:account` directly.
+**Note:** Requires Claude Code 2.0.71+. For earlier versions, use `/popkit-core:account` directly.
 
 ---
 
@@ -649,8 +648,8 @@ Access account-related settings:
 
 | Error | Response |
 |-------|----------|
-| No API key | "Run /popkit:account signup to create an account" |
-| Invalid API key | "API key invalid. Run /popkit:account login or signup" |
+| No API key | "Run /popkit-core:account signup to create an account" |
+| Invalid API key | "API key invalid. Run /popkit-core:account login or signup" |
 | Network error | "Couldn't reach PopKit Cloud. Working in local mode." |
 | API rate limit | "Rate limit reached. Working in local mode until reset." |
 
@@ -660,8 +659,8 @@ Access account-related settings:
 
 | Command | Purpose |
 |---------|---------|
-| `/popkit:privacy` | Privacy and data settings |
-| `/popkit:stats` | Session metrics |
+| `/popkit-core:privacy` | Privacy and data settings |
+| `/popkit-core:stats` | Session metrics |
 
 ---
 

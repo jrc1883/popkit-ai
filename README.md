@@ -88,13 +88,13 @@ PopKit transforms Claude Code into a complete development workflow system with i
 
 ![Morning Routine](packages/popkit-core/assets/images/morning-routine.gif)
 
-*See the `/popkit:routine morning` command in action - automated health checks, dependency updates, and your personalized "Ready to Code" score.*
+*See the `/popkit-dev:routine morning` command in action - automated health checks, dependency updates, and your personalized "Ready to Code" score.*
 
 ### Feature Development Workflow
 
 ![Feature Workflow](packages/popkit-core/assets/images/feature-workflow.gif)
 
-*Complete feature development cycle: brainstorm → plan → implement → review → PR creation, all orchestrated by `/popkit:dev`.*
+*Complete feature development cycle: brainstorm → plan → implement → review → PR creation, all orchestrated by `/popkit-dev:dev`.*
 
 ### Power Mode Multi-Agent Orchestration
 
@@ -156,49 +156,49 @@ PopKit is split into 5 focused workflow plugins:
 
 ```bash
 # Start development workflow
-/popkit:dev "Add user authentication"
+/popkit-dev:dev "Add user authentication"
   → Brainstorm → Plan → Implement → Review → PR
 
 # Daily routines
-/popkit:routine morning    # Health check + "Ready to Code" score
-/popkit:routine nightly    # Cleanup + "Sleep Score"
+/popkit-dev:routine morning    # Health check + "Ready to Code" score
+/popkit-dev:routine nightly    # Cleanup + "Sleep Score"
 
 # Context-aware help
-/popkit:next              # What should I do next?
+/popkit-dev:next              # What should I do next?
 ```
 
 ### Git Operations
 
 ```bash
 # Smart commits
-/popkit:git commit        # Auto-generates conventional commit message
+/popkit-dev:git commit        # Auto-generates conventional commit message
 
 # Pull requests
-/popkit:git pr            # Creates PR with summary + checklist
+/popkit-dev:git pr            # Creates PR with summary + checklist
 
 # Code review
-/popkit:git review        # In-depth code review with suggestions
+/popkit-dev:git review        # In-depth code review with suggestions
 ```
 
 ### Quality Assurance
 
 ```bash
 # Multi-perspective assessment
-/popkit:assess all        # Run 6 specialized assessors
+/popkit-ops:assess all        # Run 6 specialized assessors
 
 # Systematic debugging
-/popkit:debug "login fails on mobile"
+/popkit-ops:debug "login fails on mobile"
 
 # Security scanning
-/popkit:security scan     # Find vulnerabilities + create issues
+/popkit-ops:security scan     # Find vulnerabilities + create issues
 ```
 
 ### Deployment
 
 ```bash
 # Universal deployment
-/popkit:deploy init       # Configure deployment targets
-/popkit:deploy execute    # Ship to Docker/npm/Vercel/etc.
+/popkit-ops:deploy init       # Configure deployment targets
+/popkit-ops:deploy execute    # Ship to Docker/npm/Vercel/etc.
 ```
 
 ---
@@ -354,7 +354,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 /plugin install popkit-research@popkit-claude
 ```
 
-Then restart Claude Code and run `/popkit:next` to get started!
+Then restart Claude Code and run `/popkit-dev:next` to get started!
 
 **[⬆ Back to Top](#popkit)**
 
