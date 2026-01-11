@@ -23,8 +23,7 @@ from popkit_shared.utils.xml_generator import (
     generate_findings_xml,
     infer_category,
     infer_severity,
-    generate_workflow_steps,
-    _escape_xml
+    generate_workflow_steps
 )
 
 

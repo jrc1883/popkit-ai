@@ -9,7 +9,7 @@ Critical for security boundary enforcement and tool access control.
 import sys
 import pytest
 from pathlib import Path
-from unittest.mock import patch, mock_open, MagicMock
+from unittest.mock import patch, mock_open
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 

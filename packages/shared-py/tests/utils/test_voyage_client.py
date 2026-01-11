@@ -27,7 +27,6 @@ from popkit_shared.utils.voyage_client import (
     embed_document,
     is_available,
     VOYAGE_MODEL,
-    EMBEDDING_DIM,
     MAX_REQUESTS_PER_MINUTE,
     MAX_TOKENS_PER_MINUTE,
     BATCH_SIZE
