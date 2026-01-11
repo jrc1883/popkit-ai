@@ -525,10 +525,8 @@ class TestAPIRetry:
             mock_call.side_effect = RuntimeError("500: Server error")
 
             with patch("time.sleep") as mock_sleep:
-                try:
+                with pytest.raises(RuntimeError):
                     client._call_api_with_retry(["text"], "document", max_attempts=3, initial_delay=1.0)
-                except RuntimeError:
-                    pass
 
             # Should have delays: 1.0, 2.0
             assert mock_sleep.call_count == 2
