@@ -275,6 +275,10 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install test dependencies
+        run: |
+          pip install PyYAML
+
       - name: Run PopKit test suite
         run: |
           # Add shared-py to Python path so tests can import popkit_shared
