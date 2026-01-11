@@ -75,6 +75,12 @@ def validate_hook_protocol(hook_path: Path, input_data: Any, timeout: int = 1000
         test_env['POPKIT_TEST_MODE'] = 'true'
         test_env['PYTHONDONTWRITEBYTECODE'] = '1'  # Prevent .pyc file creation
 
+        # Add shared-py to PYTHONPATH so hooks can import popkit_shared
+        shared_py_path = plugin_root.parent / 'shared-py'
+        if shared_py_path.exists():
+            existing_path = test_env.get('PYTHONPATH', '')
+            test_env['PYTHONPATH'] = f"{shared_py_path}:{existing_path}" if existing_path else str(shared_py_path)
+
         process = subprocess.run(
             [sys.executable, str(hook_path)],
             input=input_json,
