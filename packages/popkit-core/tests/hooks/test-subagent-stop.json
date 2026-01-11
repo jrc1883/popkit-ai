@@ -1,0 +1,421 @@
+{
+  "test_id": "hook-subagent-stop-protocol",
+  "category": "hooks",
+  "name": "Subagent-Stop Hook Cleanup and Retry Logic",
+  "description": "Verify subagent-stop.py handles validation failures, retry logic, and cleanup correctly",
+  "severity": "critical",
+  "hook_file": "hooks/subagent-stop.py",
+  "test_cases": [
+    {
+      "case_id": "basic-subagent-completion",
+      "name": "Basic subagent completion without errors",
+      "input": {
+        "event": "SubagentStop",
+        "subagent_id": "test-subagent-123",
+        "task": "code-review",
+        "duration": 45,
+        "status": "success"
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0,
+          "description": "Should complete successfully"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "has_field",
+          "field": "status"
+        },
+        {
+          "type": "contains",
+          "field": "status",
+          "expected": "success"
+        },
+        {
+          "type": "contains",
+          "field": "validation_tracked",
+          "expected": false
+        },
+        {
+          "type": "contains",
+          "field": "retry_requested",
+          "expected": false
+        }
+      ]
+    },
+    {
+      "case_id": "validation-failure-detection",
+      "name": "Detects validation failure from output-validator",
+      "input": {
+        "event": "SubagentStop",
+        "subagent_id": "test-subagent-456",
+        "task": "code-review",
+        "validation_result": {
+          "status": "invalid",
+          "agent": "code-reviewer",
+          "missing_fields": ["recommendations", "severity"]
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "contains",
+          "field": "validation_tracked",
+          "expected": true
+        },
+        {
+          "type": "has_field",
+          "field": "retry_requested"
+        }
+      ]
+    },
+    {
+      "case_id": "retry-logic-validation-failure",
+      "name": "Requests retry on validation failure (first attempt)",
+      "input": {
+        "event": "SubagentStop",
+        "subagent_id": "test-subagent-789",
+        "retry_count": 0,
+        "validation_result": {
+          "status": "invalid",
+          "agent": "security-auditor",
+          "missing_fields": ["vulnerability_count"]
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "contains",
+          "field": "retry_requested",
+          "expected": true
+        },
+        {
+          "type": "has_field",
+          "field": "retry_instruction"
+        },
+        {
+          "type": "contains",
+          "field": "retry_count",
+          "expected": 1
+        }
+      ]
+    },
+    {
+      "case_id": "retry-instruction-generation",
+      "name": "Generates specific retry instructions",
+      "input": {
+        "event": "SubagentStop",
+        "subagent_id": "test-subagent-retry",
+        "retry_count": 0,
+        "validation_result": {
+          "status": "invalid",
+          "agent": "performance-optimizer",
+          "missing_fields": ["baseline_metrics", "optimized_metrics"]
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "has_field",
+          "field": "retry_instruction"
+        },
+        {
+          "type": "contains",
+          "field": "retry_instruction",
+          "expected": "missing_fields"
+        }
+      ]
+    },
+    {
+      "case_id": "max-retries-exceeded",
+      "name": "Does not retry when max retries exceeded",
+      "input": {
+        "event": "SubagentStop",
+        "subagent_id": "test-subagent-maxed",
+        "retry_count": 1,
+        "validation_result": {
+          "status": "invalid",
+          "agent": "test-writer-fixer",
+          "missing_fields": ["test_count"]
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0,
+          "description": "Should not fail but also not retry"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "contains",
+          "field": "retry_requested",
+          "expected": false
+        },
+        {
+          "type": "contains",
+          "field": "validation_tracked",
+          "expected": true
+        }
+      ]
+    },
+    {
+      "case_id": "error-tracking-status-json",
+      "name": "Tracks errors in STATUS.json",
+      "input": {
+        "event": "SubagentStop",
+        "subagent_id": "test-subagent-error",
+        "validation_result": {
+          "status": "invalid",
+          "agent": "bug-whisperer",
+          "missing_fields": ["root_cause"]
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "contains",
+          "field": "validation_tracked",
+          "expected": true
+        }
+      ]
+    },
+    {
+      "case_id": "tts-notification-success",
+      "name": "TTS notification on completion (graceful failure)",
+      "input": {
+        "event": "SubagentStop",
+        "subagent_id": "test-subagent-tts",
+        "task": "deployment-validator",
+        "status": "success",
+        "tts_enabled": true
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0,
+          "description": "Should not fail if TTS unavailable"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "contains",
+          "field": "status",
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "case_id": "chat-transcript-save",
+      "name": "Saves chat transcript when requested",
+      "input": {
+        "event": "SubagentStop",
+        "subagent_id": "test-subagent-chat",
+        "save_chat": true,
+        "transcript": [
+          {"role": "user", "content": "Review this code"},
+          {"role": "assistant", "content": "The code looks good"}
+        ]
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "has_field",
+          "field": "chat_saved"
+        },
+        {
+          "type": "file_exists",
+          "file": "logs/subagent-chat.json",
+          "description": "Should save subagent chat transcript"
+        }
+      ]
+    },
+    {
+      "case_id": "log-file-creation",
+      "name": "Creates log file for subagent completion",
+      "input": {
+        "event": "SubagentStop",
+        "subagent_id": "test-subagent-log",
+        "task": "refactoring-expert",
+        "duration": 120,
+        "tool_count": 25
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "file_exists",
+          "file": "logs/subagent-stop.json",
+          "description": "Should create logs/subagent-stop.json"
+        }
+      ]
+    },
+    {
+      "case_id": "append-to-existing-log",
+      "name": "Appends to existing subagent-stop.json log",
+      "input": {
+        "event": "SubagentStop",
+        "subagent_id": "test-subagent-append",
+        "task": "code-architect",
+        "existing_log": [
+          {"subagent_id": "prev-subagent", "timestamp": "2025-01-01T12:00:00"}
+        ]
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        }
+      ]
+    },
+    {
+      "case_id": "missing-validation-result",
+      "name": "Handles missing validation result gracefully",
+      "input": {
+        "event": "SubagentStop",
+        "subagent_id": "test-subagent-no-validation",
+        "task": "code-explorer"
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0,
+          "description": "Should handle missing validation gracefully"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "contains",
+          "field": "validation_tracked",
+          "expected": false
+        },
+        {
+          "type": "contains",
+          "field": "retry_requested",
+          "expected": false
+        }
+      ]
+    },
+    {
+      "case_id": "empty-input",
+      "name": "Handles empty input gracefully",
+      "input": {},
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0,
+          "description": "Should not fail on empty input"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "contains",
+          "field": "status",
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "case_id": "session-recording-integration",
+      "name": "Integrates with session recording if enabled",
+      "input": {
+        "event": "SubagentStop",
+        "subagent_id": "test-subagent-recording",
+        "task": "rapid-prototyper",
+        "session_recording": true
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "contains",
+          "field": "status",
+          "expected": "success"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "hooks/subagent-stop.py",
+    "hooks/output-validator.py",
+    "logs/subagent-stop.json",
+    "logs/subagent-chat.json",
+    "STATUS.json",
+    ".claude/popkit/error-tracking.json"
+  ],
+  "notes": [
+    "This hook is critical for subagent cleanup and retry logic",
+    "Validates subagent output against expected schema",
+    "Requests retry only for validation failures (MAX_RETRIES = 1)",
+    "Generates specific retry instructions based on missing fields",
+    "Tracks validation errors in STATUS.json for analytics",
+    "Supports TTS notifications (ElevenLabs, OpenAI TTS, pyttsx3)",
+    "Integrates with session recording system",
+    "Creates logs directory if it doesn't exist",
+    "Appends to existing subagent-stop.json log",
+    "Must not block Claude exit even on errors"
+  ]
+}

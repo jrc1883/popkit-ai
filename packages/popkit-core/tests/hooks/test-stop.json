@@ -1,0 +1,231 @@
+{
+  "test_id": "hook-stop-protocol",
+  "category": "hooks",
+  "name": "Stop Hook Session Cleanup",
+  "description": "Verify stop.py handles session termination and saves logs correctly",
+  "severity": "critical",
+  "hook_file": "hooks/stop.py",
+  "test_cases": [
+    {
+      "case_id": "basic-session-stop",
+      "name": "Basic session termination",
+      "input": {
+        "event": "Stop",
+        "session_id": "test-session-123",
+        "duration": 3600,
+        "reason": "user_exit"
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0,
+          "description": "Should complete successfully"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "has_field",
+          "field": "status"
+        },
+        {
+          "type": "contains",
+          "field": "status",
+          "expected": "success"
+        },
+        {
+          "type": "duration",
+          "max_ms": 5000,
+          "description": "Should complete quickly"
+        }
+      ]
+    },
+    {
+      "case_id": "log-file-creation",
+      "name": "Session stop creates log file",
+      "input": {
+        "event": "Stop",
+        "session_id": "test-session-456",
+        "duration": 1800,
+        "tool_count": 42,
+        "error_count": 0
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "file_exists",
+          "file": "logs/stop.json",
+          "description": "Should create logs/stop.json"
+        }
+      ]
+    },
+    {
+      "case_id": "chat-transcript-save",
+      "name": "Save chat transcript when requested",
+      "input": {
+        "event": "Stop",
+        "session_id": "test-session-789",
+        "save_chat": true,
+        "transcript": [
+          {"role": "user", "content": "Hello"},
+          {"role": "assistant", "content": "Hi there"}
+        ]
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "has_field",
+          "field": "chat_saved"
+        },
+        {
+          "type": "contains",
+          "field": "chat_saved",
+          "expected": true
+        },
+        {
+          "type": "file_exists",
+          "file": "logs/chat.json",
+          "description": "Should save chat transcript"
+        }
+      ]
+    },
+    {
+      "case_id": "no-chat-transcript",
+      "name": "Handles missing transcript gracefully",
+      "input": {
+        "event": "Stop",
+        "session_id": "test-session-no-chat",
+        "save_chat": true
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0,
+          "description": "Should not fail even if transcript missing"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "contains",
+          "field": "chat_saved",
+          "expected": false
+        }
+      ]
+    },
+    {
+      "case_id": "append-to-existing-log",
+      "name": "Appends to existing stop.json log",
+      "input": {
+        "event": "Stop",
+        "session_id": "test-session-append",
+        "duration": 900,
+        "existing_log": [
+          {"session_id": "prev-session", "timestamp": "2025-01-01T12:00:00"}
+        ]
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        }
+      ]
+    },
+    {
+      "case_id": "invalid-json-input",
+      "name": "Handles invalid JSON input gracefully",
+      "input": "invalid json{{{",
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0,
+          "description": "Should not block on errors"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "contains",
+          "field": "status",
+          "expected": "error"
+        }
+      ]
+    },
+    {
+      "case_id": "empty-input",
+      "name": "Handles empty input gracefully",
+      "input": {},
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "contains",
+          "field": "status",
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "case_id": "timestamp-added",
+      "name": "Adds timestamp to logged data",
+      "input": {
+        "event": "Stop",
+        "session_id": "test-session-time"
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "has_field",
+          "field": "timestamp"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "hooks/stop.py",
+    "logs/stop.json",
+    "logs/chat.json"
+  ],
+  "notes": [
+    "This hook is critical for session cleanup and preventing data loss",
+    "Creates logs directory if it doesn't exist",
+    "Appends to existing stop.json log (doesn't overwrite)",
+    "Optionally saves chat transcripts when requested",
+    "Must not block Claude exit even on errors",
+    "Provides both stderr and stdout output"
+  ]
+}
