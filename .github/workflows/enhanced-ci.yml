@@ -205,7 +205,8 @@ jobs:
         run: |
           echo "Checking for unsafe subprocess usage..."
 
-          if grep -r "shell=True" --include="*.py" packages/; then
+          # Look for actual subprocess calls with shell=True (not string literals)
+          if grep -r -E "subprocess\.(call|Popen|run)\([^)]*shell\s*=\s*True" --include="*.py" packages/; then
             echo "❌ Found shell=True in subprocess calls (security risk)"
             exit 1
           fi

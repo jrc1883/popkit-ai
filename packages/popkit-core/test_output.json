@@ -1,4 +1,0 @@
-Warning: Could not log to observability system: HTTPConnectionPool(host='localhost', port=8001): Max retries exceeded with url: /events (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x000001FE73B58C20>, 'Connection to localhost timed out. (connect timeout=2)'))
-\u2728 Quality Score: 0.9 - Excellent
-\u2705 Tool Bash analysis complete
-{"status": "success", "tool_name": "Bash", "session_id": "8f394022", "analysis": {"success": true, "quality_score": 0.9, "issues": [], "suggestions": [], "metrics": {}, "followup_needed": ["test_results_analysis"]}, "followup_agents": [], "recommendations": [], "metrics": {"success_rate": 1.0, "quality_score": 0.9, "error_count": 0, "execution_time": 0.1, "followup_complexity": 0.1, "safety_score": 1.0}, "stop_info": {"truncated": false, "warning": null, "suggestion": null, "stop_reason": null}, "workflow_routing": {"routed": false, "reason": "workflow_router_unavailable"}, "findings_xml": null}
