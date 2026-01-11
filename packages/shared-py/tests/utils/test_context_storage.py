@@ -7,7 +7,6 @@ Tests abstract interface and default FileContextStorage backend.
 """
 
 import sys
-import json
 import tempfile
 import pytest
 from pathlib import Path
