@@ -27,7 +27,7 @@ class TestContextStorageInterface:
     def test_cannot_instantiate_abstract_class(self):
         """Test that ContextStorage is abstract"""
         with pytest.raises(TypeError):
-            storage = ContextStorage()
+            ContextStorage()
 
     def test_must_implement_abstract_methods(self):
         """Test that subclass must implement required methods"""
@@ -35,7 +35,7 @@ class TestContextStorageInterface:
             pass
 
         with pytest.raises(TypeError):
-            storage = IncompleteStorage()
+            IncompleteStorage()
 
     def test_can_instantiate_complete_subclass(self):
         """Test that complete implementation works"""
