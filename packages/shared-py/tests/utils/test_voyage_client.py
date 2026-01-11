@@ -29,7 +29,8 @@ from popkit_shared.utils.voyage_client import (
     VOYAGE_MODEL,
     MAX_REQUESTS_PER_MINUTE,
     MAX_TOKENS_PER_MINUTE,
-    BATCH_SIZE
+    BATCH_SIZE,
+    _client,
 )
 
 
@@ -596,8 +597,8 @@ class TestModuleFunctions:
     def test_get_client_singleton(self):
         """Test get_client returns singleton"""
         # Reset singleton
-        import popkit_shared.utils.voyage_client as vc
-        vc._client = None
+        global _client
+        _client = None
 
         client1 = get_client()
         client2 = get_client()
