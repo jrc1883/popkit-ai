@@ -59,10 +59,7 @@ class TestLoadAgentConfig:
         # Which resolves to: packages/shared-py/agents/config.json
         with patch("builtins.open", mock_open(read_data='{}')) as mock_file:
             with patch("json.load", return_value={}):
-                try:
-                    load_agent_config()
-                except:
-                    pass
+                load_agent_config()
                 # Verify the path ends with agents/config.json
                 call_args = str(mock_file.call_args)
                 assert "config.json" in call_args
