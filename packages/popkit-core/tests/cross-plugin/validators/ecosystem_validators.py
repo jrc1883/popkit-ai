@@ -134,7 +134,6 @@ def validate_unique_agent_names(plugins_data: Dict[str, Dict]) -> Tuple[bool, st
 
 def validate_namespace_consistent(plugins_data: Dict[str, Dict], expected_prefix: str) -> Tuple[bool, str]:
     """Validate that all commands use consistent namespace prefix."""
-    non_compliant = []
 
     for plugin_name, data in plugins_data.items():
         for command in data.get('commands', []):
