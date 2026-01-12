@@ -9,7 +9,7 @@ Tests naming uniqueness, version compatibility, and ecosystem health.
 import json
 import re
 from pathlib import Path
-from typing import Dict, List, Set, Tuple, Any
+from typing import Dict, List, Tuple
 from collections import defaultdict
 
 
