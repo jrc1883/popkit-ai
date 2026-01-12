@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Testing Report Schema",
+  "description": "Schema for testing reports from test-writer-fixer agent",
+  "type": "object",
+  "required": ["summary"],
+  "properties": {
+    "projectName": {
+      "type": "string",
+      "description": "Name of project being tested"
+    },
+    "status": {
+      "type": "string",
+      "description": "Testing status"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Summary of testing results"
+    },
+    "recommendation": {
+      "type": "string",
+      "description": "Testing recommendations"
+    }
+  }
+}

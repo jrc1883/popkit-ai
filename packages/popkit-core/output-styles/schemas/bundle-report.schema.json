@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Bundle Report Schema",
+  "description": "Schema for bundle analysis reports from bundle-analyzer agent",
+  "type": "object",
+  "required": ["summary"],
+  "properties": {
+    "projectName": {
+      "type": "string",
+      "description": "Name of project being analyzed"
+    },
+    "status": {
+      "type": "string",
+      "description": "Bundle analysis status"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Summary of bundle analysis"
+    },
+    "recommendation": {
+      "type": "string",
+      "description": "Bundle optimization recommendations"
+    }
+  }
+}

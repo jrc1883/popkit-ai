@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Structured Planning Schema",
+  "description": "Schema for structured planning documents from prd-parser agent",
+  "type": "object",
+  "required": ["summary"],
+  "properties": {
+    "projectName": {
+      "type": "string",
+      "description": "Name of project being planned"
+    },
+    "status": {
+      "type": "string",
+      "description": "Planning status"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Summary of planning document"
+    },
+    "recommendation": {
+      "type": "string",
+      "description": "Planning recommendations"
+    },
+    "scope": {
+      "type": "string",
+      "description": "Scope of planning"
+    }
+  }
+}

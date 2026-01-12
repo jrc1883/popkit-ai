@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Debugging Report Schema",
+  "description": "Schema for bug investigation reports from bug-whisperer agent",
+  "type": "object",
+  "required": ["issueTitle", "severity", "symptom", "summary"],
+  "properties": {
+    "issueTitle": {
+      "type": "string",
+      "description": "Title of the bug or issue being investigated"
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low"],
+      "description": "Severity level of the bug"
+    },
+    "status": {
+      "type": "string",
+      "description": "Current status of the investigation"
+    },
+    "symptom": {
+      "type": "object",
+      "description": "Description of the observed symptoms",
+      "properties": {
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "summary": {
+      "type": "string",
+      "description": "Summary of findings and resolution"
+    }
+  }
+}

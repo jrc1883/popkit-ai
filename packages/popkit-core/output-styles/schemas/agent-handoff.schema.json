@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Agent Handoff Schema",
+  "description": "Schema for agent handoff reports from code-architect and code-explorer agents",
+  "type": "object",
+  "required": ["from", "to", "task", "confidence", "summary"],
+  "properties": {
+    "from": {
+      "type": "string",
+      "description": "Agent passing work forward"
+    },
+    "to": {
+      "type": "string",
+      "description": "Agent receiving the work"
+    },
+    "task": {
+      "type": "string",
+      "description": "Task being handed off"
+    },
+    "status": {
+      "type": "string",
+      "description": "Current status of the work"
+    },
+    "confidence": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Confidence level in the handoff (0-100)"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Summary of findings and context for next agent"
+    }
+  }
+}

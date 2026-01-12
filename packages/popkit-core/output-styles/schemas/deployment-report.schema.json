@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Deployment Report Schema",
+  "description": "Schema for deployment validation reports from deployment-validator agent",
+  "type": "object",
+  "required": ["healthScore", "summary"],
+  "properties": {
+    "healthScore": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Overall deployment health score (0-100)"
+    },
+    "status": {
+      "type": "string",
+      "description": "Deployment status"
+    },
+    "date": {
+      "type": "string",
+      "description": "Date of deployment"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Summary of deployment validation results"
+    },
+    "recommendation": {
+      "type": "string",
+      "description": "Recommendations for deployment"
+    }
+  }
+}
