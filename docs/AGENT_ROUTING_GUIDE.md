@@ -664,8 +664,7 @@ Power Mode enables **parallel multi-agent workflows** with sophisticated coordin
 
 | Mode | Agents | Setup | Use Case |
 |------|--------|-------|----------|
-| **Native Async** | 5+ | Zero (Claude Code 2.0.64+) | Default mode, background tasks |
-| **Redis Mode** | 10+ | Docker + Redis | Advanced coordination, team workflows |
+| **Native Async** | 5-10 | Zero (Claude Code 2.0.64+) | Default mode, background tasks |
 | **File Mode** | 2 | Zero | Fallback, sequential workflows |
 
 ### Check-In Protocol

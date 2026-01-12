@@ -97,20 +97,6 @@ Pro users get maximum capabilities:
 - Premium or Pro tier
 - **No additional setup required!**
 
-### Upstash Redis Mode (Optional Advanced Feature)
-
-Only if you want 10+ agent coordination:
-```bash
-# Configure Upstash environment variables
-export UPSTASH_REDIS_REST_URL="https://your-instance.upstash.io"
-export UPSTASH_REDIS_REST_TOKEN="your-token"
-
-# Verify setup
-/popkit:power init --verify
-```
-
-No Docker required - Upstash is cloud-based.
-
 ## Activation
 
 ### Method 1: Command (Recommended)
@@ -155,9 +141,8 @@ Objective:
 ### 2. Mode Selection
 
 The mode selector automatically chooses the best mode:
-1. **Native Async** (if Claude Code 2.0.64+) → True parallel agents (recommended)
-2. **Upstash Redis** (if env vars configured) → 10+ parallel agents (optional advanced)
-3. **File-based** (always available) → 2-3 sequential agents (fallback)
+1. **Native Async** (if Claude Code 2.0.64+) → 5-10 parallel agents (recommended)
+2. **File-based** (always available) → 2 sequential agents (fallback)
 
 ### 3. Coordinator Starts
 
@@ -166,11 +151,6 @@ The mode selector automatically chooses the best mode:
 - Spawns background agents via `Task(run_in_background: true)`
 - Polls progress via `TaskOutput(block: false)`
 - Manages phase transitions
-
-**Redis Mode (Legacy):**
-- Creates Redis channels
-- External coordinator.py process
-- Monitors agent health via heartbeats
 
 ### 4. Agents Work in Parallel
 
@@ -213,25 +193,11 @@ When objective met:
 
 ## Communication Channels
 
-### Native Async Mode (Default)
-
 Uses file-based communication:
 | File | Purpose |
 |------|---------|
 | `.claude/popkit/insights.json` | Shared discoveries |
 | `.claude/popkit/power-state.json` | Session state |
-
-### Redis Mode (Pro Tier Legacy)
-
-Uses Redis pub/sub channels:
-| Channel | Purpose |
-|---------|---------|
-| `pop:broadcast` | Coordinator → All agents |
-| `pop:agent:{id}` | Direct messages to agent |
-| `pop:heartbeat` | Agent health check-ins |
-| `pop:results` | Completed work |
-| `pop:insights` | Shared discoveries |
-| `pop:human` | Human decision requests |
 
 ## Guardrails
 
@@ -343,18 +309,6 @@ rm .claude/popkit/power-state.json
 **Insights not sharing:**
 - Check `.claude/popkit/insights.json` exists
 - Verify file permissions
-
-### Upstash Redis Mode (Optional)
-
-**Connection failed:**
-- Verify environment variables are set correctly
-- Check Upstash dashboard: https://console.upstash.com
-- Test with: `python packages/popkit-core/power-mode/check_upstash.py --ping`
-
-**Agents not communicating:**
-- Verify Upstash mode is active: `/popkit:power status`
-- Check Redis Streams in Upstash console
-- Test connection: `python packages/popkit-core/power-mode/upstash_adapter.py --test`
 
 ### General
 
