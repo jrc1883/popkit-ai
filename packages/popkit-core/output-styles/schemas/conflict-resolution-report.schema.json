@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Conflict Resolution Report Schema",
+  "description": "Schema for merge conflict resolution reports from merge-conflict-resolver agent",
+  "type": "object",
+  "required": ["summary"],
+  "properties": {
+    "status": {
+      "type": "string",
+      "description": "Conflict resolution status"
+    },
+    "confidence": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Confidence in resolution (0-100)"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Summary of conflict resolution"
+    },
+    "recommendation": {
+      "type": "string",
+      "description": "Post-resolution recommendations"
+    }
+  }
+}

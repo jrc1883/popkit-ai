@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Documentation Report Schema",
+  "description": "Schema for documentation maintenance reports from documentation-maintainer agent",
+  "type": "object",
+  "required": ["summary"],
+  "properties": {
+    "projectName": {
+      "type": "string",
+      "description": "Name of project being documented"
+    },
+    "status": {
+      "type": "string",
+      "description": "Documentation status"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Summary of documentation updates"
+    },
+    "recommendation": {
+      "type": "string",
+      "description": "Documentation recommendations"
+    }
+  }
+}

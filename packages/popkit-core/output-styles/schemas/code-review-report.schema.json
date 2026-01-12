@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Code Review Report Schema",
+  "description": "Schema for code review reports from code-reviewer agent",
+  "type": "object",
+  "required": ["summary"],
+  "properties": {
+    "projectName": {
+      "type": "string",
+      "description": "Name of project being reviewed"
+    },
+    "status": {
+      "type": "string",
+      "description": "Code review status"
+    },
+    "confidence": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Confidence in review findings (0-100)"
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low"],
+      "description": "Highest severity issue found"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Summary of code review findings"
+    },
+    "recommendation": {
+      "type": "string",
+      "description": "Code improvement recommendations"
+    }
+  }
+}

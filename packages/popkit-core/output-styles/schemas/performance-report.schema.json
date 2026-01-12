@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Performance Report Schema",
+  "description": "Schema for performance optimization reports from performance-optimizer agent",
+  "type": "object",
+  "required": ["summary"],
+  "properties": {
+    "projectName": {
+      "type": "string",
+      "description": "Name of the project being optimized"
+    },
+    "date": {
+      "type": "string",
+      "description": "Date of the performance analysis"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Summary of performance findings and optimizations"
+    },
+    "recommendation": {
+      "type": "string",
+      "description": "Primary recommendation for performance improvements"
+    }
+  }
+}

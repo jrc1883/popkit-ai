@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Code Optimization Report Schema",
+  "description": "Schema for code optimization reports from dead-code-eliminator agent",
+  "type": "object",
+  "required": ["summary"],
+  "properties": {
+    "projectName": {
+      "type": "string",
+      "description": "Name of project being optimized"
+    },
+    "status": {
+      "type": "string",
+      "description": "Optimization status"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Summary of code optimization actions"
+    },
+    "recommendation": {
+      "type": "string",
+      "description": "Optimization recommendations"
+    }
+  }
+}
