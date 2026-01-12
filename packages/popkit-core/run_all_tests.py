@@ -198,20 +198,121 @@ class ModularPluginTestRunner:
         test_files = list(cross_plugin_tests_dir.glob("*.json"))
         print(f"Found {len(test_files)} cross-plugin test(s)")
 
-        # For cross-plugin tests, we need to pass context about all plugins
-        # This is a simplified implementation - would need custom validators
+        # Import validators
+        import time
+        sys.path.insert(0, str(cross_plugin_tests_dir / "validators"))
+        from ecosystem_validators import (
+            scan_plugin_commands, scan_plugin_skills, scan_plugin_agents,
+            load_plugin_version, validate_unique_command_names,
+            validate_unique_skill_names, validate_unique_agent_names,
+            validate_namespace_consistent, validate_skill_naming_convention,
+            validate_semver_valid, validate_version_compatibility,
+            validate_shared_package_version, validate_no_circular_deps,
+            validate_agent_count_matches, validate_total_agents
+        )
+
+        # Scan all plugins to build ecosystem data
+        plugins_data = {}
+        for plugin_dir in self.root_dir.glob("packages/popkit-*"):
+            plugin_name = plugin_dir.name
+            plugins_data[plugin_name] = {
+                'path': plugin_dir,
+                'commands': scan_plugin_commands(plugin_dir),
+                'skills': scan_plugin_skills(plugin_dir),
+                'agents': scan_plugin_agents(plugin_dir),
+                'version': load_plugin_version(plugin_dir)
+            }
+
+        # Execute cross-plugin tests
         results = {
-            'total': len(test_files),
+            'total': 0,
             'passed': 0,
             'failed': 0,
             'duration_ms': 0,
             'failures': []
         }
 
-        # TODO(#680): Implement cross-plugin test execution
-        # For now, just note that they exist
-        print("Cross-plugin tests discovered (execution requires custom validators)")
-        results['skipped'] = True
+        start_time = time.time()
+
+        for test_file in test_files:
+            with open(test_file, 'r', encoding='utf-8') as f:
+                test_def = json.load(f)
+
+            test_name = test_def.get('name', test_file.name)
+            print(f"\nRunning: {test_name}")
+
+            for test_case in test_def.get('test_cases', []):
+                for assertion in test_case.get('assertions', []):
+                    results['total'] += 1
+                    assertion_type = assertion['type']
+
+                    # Map assertion types to validator functions
+                    try:
+                        if assertion_type == 'unique_command_names':
+                            passed, message = validate_unique_command_names(plugins_data)
+                        elif assertion_type == 'unique_skill_names':
+                            passed, message = validate_unique_skill_names(plugins_data)
+                        elif assertion_type == 'unique_agent_names':
+                            passed, message = validate_unique_agent_names(plugins_data)
+                        elif assertion_type == 'namespace_consistent':
+                            passed, message = validate_namespace_consistent(
+                                plugins_data, assertion.get('expected_prefix', 'popkit:')
+                            )
+                        elif assertion_type == 'skill_naming_convention':
+                            passed, message = validate_skill_naming_convention(
+                                plugins_data, assertion.get('expected_prefix', 'pop-')
+                            )
+                        elif assertion_type == 'semver_valid':
+                            passed, message = validate_semver_valid(plugins_data)
+                        elif assertion_type == 'version_compatibility':
+                            passed, message = validate_version_compatibility(plugins_data)
+                        elif assertion_type == 'shared_package_version':
+                            passed, message = validate_shared_package_version(
+                                plugins_data, assertion.get('package', '@popkit/shared-py')
+                            )
+                        elif assertion_type == 'no_circular_deps':
+                            passed, message = validate_no_circular_deps(plugins_data)
+                        elif assertion_type == 'agent_count_matches':
+                            passed, message = validate_agent_count_matches(
+                                plugins_data, test_case.get('expected_counts', {})
+                            )
+                        elif assertion_type == 'total_agents':
+                            passed, message = validate_total_agents(
+                                plugins_data, assertion.get('expected', 0)
+                            )
+                        else:
+                            passed = False
+                            message = f"Unknown assertion type: {assertion_type}"
+
+                        if passed:
+                            results['passed'] += 1
+                            if self.verbose:
+                                print(f"  [ok] {test_case['name']}: {message}")
+                        else:
+                            results['failed'] += 1
+                            failure = {
+                                'test': test_name,
+                                'case': test_case['name'],
+                                'assertion': assertion_type,
+                                'reason': message
+                            }
+                            results['failures'].append(failure)
+                            print(f"  [x] {test_case['name']}: {message}")
+
+                    except Exception as e:
+                        results['failed'] += 1
+                        failure = {
+                            'test': test_name,
+                            'case': test_case['name'],
+                            'assertion': assertion_type,
+                            'reason': f"Validator error: {str(e)}"
+                        }
+                        results['failures'].append(failure)
+                        print(f"  [x] {test_case['name']}: {str(e)}")
+
+        results['duration_ms'] = int((time.time() - start_time) * 1000)
+
+        print(f"\nCross-plugin tests: {results['passed']}/{results['total']} passed")
 
         return results
 
@@ -268,12 +369,16 @@ class ModularPluginTestRunner:
         for plugin_name, results in self.all_results['plugins'].items():
             all_failures.extend(results.get('failures', []))
 
+        # Include cross-plugin failures
+        cross = self.all_results.get('cross_plugin', {})
+        all_failures.extend(cross.get('failures', []))
+
         if all_failures:
             print(f"\nFailures ({len(all_failures)}):")
             print("-" * 60)
             for failure in all_failures[:10]:  # Show first 10
-                plugin = failure.get('plugin', 'unknown')
-                name = failure.get('name', 'unknown')
+                plugin = failure.get('plugin', failure.get('test', 'cross-plugin'))
+                name = failure.get('name', failure.get('case', 'unknown'))
                 reason = failure.get('reason', 'unknown')
                 print(f"[x] {plugin} - {name}")
                 print(f"    {reason}")
@@ -318,6 +423,13 @@ class ModularPluginTestRunner:
         if not self.fail_fast or self.all_results['summary']['tests_failed'] == 0:
             cross_results = self.run_cross_plugin_tests(plugins)
             self.all_results['cross_plugin'] = cross_results
+
+            # Include cross-plugin results in summary
+            if not cross_results.get('skipped'):
+                self.all_results['summary']['total_tests'] += cross_results['total']
+                self.all_results['summary']['tests_passed'] += cross_results['passed']
+                self.all_results['summary']['tests_failed'] += cross_results['failed']
+                self.all_results['summary']['duration_ms'] += cross_results['duration_ms']
 
         # Print summary
         self.print_summary()
