@@ -18,11 +18,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/agent-orchestrator.py\"",
-            "timeout": 5000
-          },
-          {
-            "type": "command",
             "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/chain-validator.py\"",
             "timeout": 5000
           }
