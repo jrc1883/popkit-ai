@@ -7,12 +7,9 @@ Critical for user data protection and regulatory compliance.
 """
 
 import sys
-import os
-import json
 import tempfile
 import pytest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
@@ -24,9 +21,7 @@ from popkit_shared.utils.privacy import (
     abstract_code_identifiers,
     abstract_error_message,
     generate_content_hash,
-    PrivacyManager,
-    SENSITIVE_PATTERNS,
-    REPLACEMENT_TOKENS
+    PrivacyManager
 )
 
 

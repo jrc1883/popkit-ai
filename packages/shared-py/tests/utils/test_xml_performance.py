@@ -26,8 +26,6 @@ from popkit_shared.utils.xml_parser import (
 )
 from popkit_shared.utils.xml_validator import (
     validate_problem_xml,
-    validate_project_xml,
-    validate_findings_xml,
     is_well_formed_xml
 )
 

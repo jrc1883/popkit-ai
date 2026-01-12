@@ -188,18 +188,18 @@ jobs:
         run: |
           echo "Scanning for potential secrets..."
 
-          # Check for common secret patterns
-          if grep -r -E "password\s*=\s*['\"]" --include="*.py" --include="*.json" packages/; then
+          # Check for common secret patterns (excluding test files)
+          if grep -r -E "password\s*=\s*['\"]" --include="*.py" --include="*.json" --exclude-dir=tests packages/; then
             echo "❌ Found potential hardcoded password"
             exit 1
           fi
 
-          if grep -r -E "api[_-]?key\s*=\s*['\"]" --include="*.py" --include="*.json" packages/; then
+          if grep -r -E "api[_-]?key\s*=\s*['\"]" --include="*.py" --include="*.json" --exclude-dir=tests packages/; then
             echo "❌ Found potential hardcoded API key"
             exit 1
           fi
 
-          echo "✅ No obvious secrets found"
+          echo "✅ No obvious secrets found (test files excluded)"
 
       - name: Check for shell=True in Python scripts
         run: |

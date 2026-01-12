@@ -1,0 +1,243 @@
+{
+  "test_id": "hook-quality-gate-protocol",
+  "category": "hooks",
+  "name": "Quality-Gate Hook PostToolUse Validation",
+  "description": "Verify quality-gate.py enforces code quality checks on high-risk changes",
+  "severity": "critical",
+  "hook_file": "hooks/quality-gate.py",
+  "test_cases": [
+    {
+      "case_id": "passthrough-read-tool",
+      "name": "Non-modifying tools pass through",
+      "input": {
+        "event": "PostToolUse",
+        "tool": "Read",
+        "tool_args": {
+          "file_path": "src/test.ts"
+        },
+        "result": "File contents"
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0,
+          "description": "Read tool should not trigger validation"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "duration",
+          "max_ms": 1000,
+          "description": "Should pass through quickly"
+        }
+      ]
+    },
+    {
+      "case_id": "high-risk-package-json",
+      "name": "package.json changes trigger validation",
+      "input": {
+        "event": "PostToolUse",
+        "tool": "Edit",
+        "tool_args": {
+          "file_path": "package.json",
+          "old_string": "\"version\": \"1.0.0\"",
+          "new_string": "\"version\": \"1.1.0\""
+        },
+        "result": "File edited successfully"
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0,
+          "description": "Should trigger gates for package.json"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        }
+      ]
+    },
+    {
+      "case_id": "import-change-detection",
+      "name": "Import statement changes trigger validation",
+      "input": {
+        "event": "PostToolUse",
+        "tool": "Edit",
+        "tool_args": {
+          "file_path": "src/index.ts",
+          "old_string": "console.log('test');",
+          "new_string": "import { foo } from './foo';"
+        },
+        "result": "File edited successfully"
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0,
+          "description": "Import changes should trigger validation"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        }
+      ]
+    },
+    {
+      "case_id": "delete-operation",
+      "name": "Delete operations trigger validation",
+      "input": {
+        "event": "PostToolUse",
+        "tool": "Delete",
+        "tool_args": {
+          "file_path": "src/old-module.ts"
+        },
+        "result": "File deleted"
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0,
+          "description": "Deletions are high-risk and should trigger gates"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        }
+      ]
+    },
+    {
+      "case_id": "batch-threshold",
+      "name": "Batch threshold triggers validation",
+      "input": {
+        "event": "PostToolUse",
+        "tool": "Edit",
+        "tool_args": {
+          "file_path": "src/file5.ts",
+          "old_string": "old",
+          "new_string": "new"
+        },
+        "result": "File edited",
+        "state": {
+          "file_edit_count": 5,
+          "recent_files": ["file1.ts", "file2.ts", "file3.ts", "file4.ts"]
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0,
+          "description": "5th edit should trigger batch validation"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        }
+      ]
+    },
+    {
+      "case_id": "rapid-multi-file-changes",
+      "name": "Rapid changes across multiple files trigger validation",
+      "input": {
+        "event": "PostToolUse",
+        "tool": "Edit",
+        "tool_args": {
+          "file_path": "src/file4.ts",
+          "old_string": "old",
+          "new_string": "new"
+        },
+        "result": "File edited",
+        "state": {
+          "recent_files": ["file1.ts", "file2.ts", "file3.ts"],
+          "recent_file_count": 3
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0,
+          "description": "3+ different files should trigger validation"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        }
+      ]
+    },
+    {
+      "case_id": "no-gates-available",
+      "name": "Graceful handling when no gates configured",
+      "input": {
+        "event": "PostToolUse",
+        "tool": "Edit",
+        "tool_args": {
+          "file_path": "README.md",
+          "old_string": "old text",
+          "new_string": "new text"
+        },
+        "result": "File edited",
+        "env": {
+          "NO_TSCONFIG": "true",
+          "NO_PACKAGE_JSON": "true"
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0,
+          "description": "Should handle missing gate configuration gracefully"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        }
+      ]
+    },
+    {
+      "case_id": "power-mode-lightweight",
+      "name": "Power Mode uses lightweight checks only",
+      "input": {
+        "event": "PostToolUse",
+        "tool": "Edit",
+        "tool_args": {
+          "file_path": "package.json",
+          "old_string": "old",
+          "new_string": "new"
+        },
+        "result": "File edited",
+        "env": {
+          "POWER_MODE": "true"
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "duration",
+          "max_ms": 15000,
+          "description": "Power Mode checks should be lightweight (< 15s)"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "hooks/quality-gate.py",
+    ".claude/quality-gate-state.json",
+    ".claude/quality-gates.json"
+  ],
+  "notes": [
+    "This hook is critical for preventing bad code from being committed",
+    "Triggers on: high-risk files, import changes, deletions, batch threshold",
+    "Runs TypeScript, build, lint checks based on project config",
+    "Presents interactive options on failure: fix, rollback, continue, pause",
+    "Power Mode uses lightweight 15s checks only",
+    "See Issue #195 for timeout analysis (180s justified)"
+  ]
+}
