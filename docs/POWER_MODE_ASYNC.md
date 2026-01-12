@@ -33,14 +33,6 @@ Power Mode's **Native Async Mode** leverages Claude Code 2.0.64+'s built-in back
 - **Fault Tolerant**: Built-in task monitoring and error handling
 - **Resource Efficient**: Uses Claude Code's native task scheduler
 
-### What Problem Does It Solve?
-
-Before Native Async Mode, Power Mode coordination required either:
-1. **Redis Mode**: Required Docker + Redis container (complex setup, platform-specific issues)
-2. **File-Based Mode**: Sequential-only execution (limited to 2 agents, no true parallelism)
-
-Native Async Mode provides **the best of both worlds**: true parallelism with zero external dependencies.
-
 ---
 
 ## Architecture
@@ -266,32 +258,26 @@ Since background agents can't communicate directly, they use **file-based pub/su
 
 ### Feature Matrix
 
-| Feature | Native Async | Redis Mode | File-Based |
-|---------|-------------|------------|------------|
-| **Setup** | None | Docker + Upstash | None |
-| **Max Agents** | 5-10 | 6+ | 2 |
-| **Parallelism** | ✅ True | ✅ True | ❌ Sequential |
-| **Cross-Platform** | ✅ Yes | ⚠️ Docker issues | ✅ Yes |
-| **External Deps** | None | Docker/Upstash | None |
-| **Communication** | File-based | Redis pub/sub | File-based |
-| **Performance** | High | Highest | Low |
-| **Reliability** | High | Medium | Medium |
-| **Cost** | Free (Premium+) | Pro tier | Free |
+| Feature | Native Async | File-Based |
+|---------|-------------|------------|
+| **Setup** | None | None |
+| **Max Agents** | 5-10 | 2 |
+| **Parallelism** | ✅ True | ❌ Sequential |
+| **Cross-Platform** | ✅ Yes | ✅ Yes |
+| **External Deps** | None | None |
+| **Communication** | File-based | File-based |
+| **Performance** | High | Low |
+| **Reliability** | High | Medium |
+| **Cost** | Free (Premium+) | Free |
+| **Claude Code** | 2.0.64+ | Any version |
 
 ### When to Use Each Mode
 
 #### Use Native Async When:
 - ✅ You have Claude Code 2.0.64+
-- ✅ You want zero setup
 - ✅ You need 5-10 parallel agents
-- ✅ You're on Windows (Docker issues avoided)
-- ✅ You want maximum reliability
-
-#### Use Redis Mode When:
-- ✅ You need 10+ agents
-- ✅ You need team coordination
-- ✅ You already have Upstash/Redis infrastructure
-- ✅ You need advanced pub/sub features
+- ✅ You want maximum performance
+- ✅ You want zero setup
 
 #### Use File-Based When:
 - ✅ You're on Free tier
@@ -725,15 +711,14 @@ Power Mode is slow despite Native Async.
 | Mode | Duration | Agents | Insights | Overhead |
 |------|----------|--------|----------|----------|
 | Native Async | 45s | 5 parallel | 23 | ~10% (polling) |
-| Redis Mode | 42s | 5 parallel | 23 | ~15% (pub/sub) |
 | File-Based | 180s | 2 sequential | 12 | ~5% (minimal) |
 
 **Key Findings:**
 - Native Async is **4x faster** than File-Based mode
-- Performance within **7%** of Redis mode
 - Polling overhead is negligible (~10%)
 - Scales linearly up to 5 agents
-- No external dependencies = more reliable
+- Zero external dependencies
+- High reliability
 
 ### Scalability Limits
 
