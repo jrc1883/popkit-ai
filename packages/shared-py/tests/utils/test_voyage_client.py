@@ -16,6 +16,7 @@ import urllib.error
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+import popkit_shared.utils.voyage_client as voyage_client_module
 from popkit_shared.utils.voyage_client import (
     EmbeddingResponse,
     EmbeddingUsage,
@@ -596,9 +597,8 @@ class TestModuleFunctions:
 
     def test_get_client_singleton(self):
         """Test get_client returns singleton"""
-        # Reset singleton
-        global _client
-        _client = None
+        # Reset singleton in the voyage_client module
+        voyage_client_module._client = None
 
         client1 = get_client()
         client2 = get_client()
