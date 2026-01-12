@@ -6,7 +6,7 @@ Fixes all incorrect /popkit: references to use correct plugin namespaces.
 
 import re
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Tuple
 
 # Mapping of command names to their correct plugin namespaces
 COMMAND_MAPPING = {
