@@ -222,31 +222,24 @@ def main():
         if results['summary']['total_warnings'] > 0:
             print(f"Chain validation: {results['summary']['total_warnings']} warnings", file=sys.stderr)
 
-        # Output JSON response
+        # Output JSON response (PreToolUse hook format)
         response = {
-            "status": "success",
+            "decision": "approve",  # Chain validator never blocks tool execution
+            "warnings": [f"{results['summary']['total_warnings']} workflow validation warnings"] if results['summary']['total_warnings'] > 0 else [],
             "chain_validation": results
         }
         print(json.dumps(response))
 
     except json.JSONDecodeError as e:
-        response = {"status": "error", "error": f"Invalid JSON input: {e}"}
+        response = {"decision": "approve", "error": f"Invalid JSON input: {e}"}
         print(json.dumps(response))
         sys.exit(0)
     except Exception as e:
-        response = {"status": "error", "error": str(e)}
+        response = {"decision": "approve", "error": str(e)}
         print(json.dumps(response))
         print(f"Error in chain-validator hook: {e}", file=sys.stderr)
         sys.exit(0)
 
 
 if __name__ == "__main__":
-    # If run directly, show validation results
-    validator = ChainValidator()
-    results = validator.validate_all_workflows()
-    print(json.dumps(results, indent=2))
-
-    print("\n--- Workflow Visualizations ---\n")
-    for workflow_id in results['workflows'].keys():
-        print(validator.get_workflow_visualization(workflow_id))
-        print()
+    main()

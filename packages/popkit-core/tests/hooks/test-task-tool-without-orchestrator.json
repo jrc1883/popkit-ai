@@ -5,11 +5,11 @@
   "description": "Verify Task tool functions correctly with only chain-validator.py hook (agent-orchestrator.py removed in Issue #117)",
   "severity": "critical",
   "issue": "#117",
+  "hook_file": "hooks/chain-validator.py",
   "test_cases": [
     {
       "case_id": "task-tool-basic",
       "name": "Task tool with simple prompt",
-      "hook_file": "hooks/chain-validator.py",
       "input": {
         "tool_name": "Task",
         "tool_input": {
@@ -44,7 +44,6 @@
     {
       "case_id": "task-tool-background",
       "name": "Task tool with background flag",
-      "hook_file": "hooks/chain-validator.py",
       "input": {
         "tool_name": "Task",
         "tool_input": {
@@ -72,7 +71,6 @@
     {
       "case_id": "task-tool-no-prompt",
       "name": "Task tool handles missing prompt",
-      "hook_file": "hooks/chain-validator.py",
       "input": {
         "tool_name": "Task",
         "tool_input": {
@@ -83,8 +81,8 @@
       "assertions": [
         {
           "type": "exit_code",
-          "expected_in": [0, 1],
-          "description": "Hook should handle missing prompt gracefully"
+          "expected": 0,
+          "description": "Hook should handle missing prompt gracefully (chain-validator always returns 0)"
         },
         {
           "type": "json_valid",
@@ -95,7 +93,6 @@
     {
       "case_id": "task-tool-complex-prompt",
       "name": "Task tool with complex multi-line prompt",
-      "hook_file": "hooks/chain-validator.py",
       "input": {
         "tool_name": "Task",
         "tool_input": {

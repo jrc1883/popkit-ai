@@ -57,28 +57,6 @@
       ]
     },
     {
-      "case_id": "task-tool-orchestration",
-      "name": "Task tool triggers agent orchestration",
-      "input": {
-        "tool_name": "Task",
-        "tool_input": {
-          "prompt": "Test task",
-          "subagent_type": "general-purpose"
-        },
-        "conversation_history": []
-      },
-      "assertions": [
-        {
-          "type": "exit_code",
-          "expected": 0
-        },
-        {
-          "type": "json_valid",
-          "field": "stdout"
-        }
-      ]
-    },
-    {
       "case_id": "write-tool-safety",
       "name": "Write tool safety checks",
       "input": {
