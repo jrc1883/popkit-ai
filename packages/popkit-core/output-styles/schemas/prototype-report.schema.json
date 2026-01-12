@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Prototype Report Schema",
+  "description": "Schema for prototype reports from rapid-prototyper agent",
+  "type": "object",
+  "required": ["summary"],
+  "properties": {
+    "projectName": {
+      "type": "string",
+      "description": "Name of prototype project"
+    },
+    "status": {
+      "type": "string",
+      "description": "Prototype status"
+    },
+    "confidence": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Confidence in prototype (0-100)"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Summary of prototype implementation"
+    },
+    "recommendation": {
+      "type": "string",
+      "description": "Next steps for prototype"
+    }
+  }
+}

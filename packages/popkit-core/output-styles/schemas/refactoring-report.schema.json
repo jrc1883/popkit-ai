@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Refactoring Report Schema",
+  "description": "Schema for refactoring reports from refactoring-expert agent",
+  "type": "object",
+  "required": ["summary"],
+  "properties": {
+    "projectName": {
+      "type": "string",
+      "description": "Name of project being refactored"
+    },
+    "status": {
+      "type": "string",
+      "description": "Refactoring status"
+    },
+    "confidence": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Confidence in refactoring (0-100)"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Summary of refactoring actions"
+    },
+    "recommendation": {
+      "type": "string",
+      "description": "Further refactoring recommendations"
+    }
+  }
+}

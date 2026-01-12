@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Power Mode Check-in Schema",
+  "description": "Schema for power mode coordination check-ins from power-coordinator agent",
+  "type": "object",
+  "required": ["summary"],
+  "properties": {
+    "status": {
+      "type": "string",
+      "description": "Current power mode status"
+    },
+    "confidence": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Confidence in coordination (0-100)"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Summary of power mode coordination status"
+    }
+  }
+}

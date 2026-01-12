@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Accessibility Audit Schema",
+  "description": "Schema for accessibility audit reports from accessibility-guardian agent",
+  "type": "object",
+  "required": ["summary"],
+  "properties": {
+    "projectName": {
+      "type": "string",
+      "description": "Name of project being audited"
+    },
+    "securityScore": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Accessibility score (0-100)"
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low"],
+      "description": "Highest severity accessibility issue found"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Summary of accessibility findings"
+    },
+    "recommendation": {
+      "type": "string",
+      "description": "Accessibility improvement recommendations"
+    }
+  }
+}

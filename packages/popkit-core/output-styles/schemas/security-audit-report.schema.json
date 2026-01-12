@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Security Audit Report Schema",
+  "description": "Schema for security audit reports from security-auditor agent",
+  "type": "object",
+  "required": ["projectName", "securityScore", "summary"],
+  "properties": {
+    "projectName": {
+      "type": "string",
+      "description": "Name of the project being audited"
+    },
+    "securityScore": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Overall security score (0-100)"
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low"],
+      "description": "Highest severity level found"
+    },
+    "auditDate": {
+      "type": "string",
+      "description": "Date of the security audit"
+    },
+    "recommendation": {
+      "type": "string",
+      "description": "Primary recommendation for security improvements"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Summary of security findings"
+    },
+    "scope": {
+      "type": "string",
+      "description": "Scope of the security audit"
+    }
+  }
+}
