@@ -1,0 +1,138 @@
+{
+  "test_id": "hook-task-tool-no-orchestrator",
+  "category": "hooks",
+  "name": "Task Tool Works Without agent-orchestrator.py",
+  "description": "Verify Task tool functions correctly with only chain-validator.py hook (agent-orchestrator.py removed in Issue #117)",
+  "severity": "critical",
+  "issue": "#117",
+  "test_cases": [
+    {
+      "case_id": "task-tool-basic",
+      "name": "Task tool with simple prompt",
+      "hook_file": "hooks/chain-validator.py",
+      "input": {
+        "tool_name": "Task",
+        "tool_input": {
+          "prompt": "List files in the current directory",
+          "subagent_type": "general-purpose"
+        },
+        "conversation_history": []
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0,
+          "description": "chain-validator should exit cleanly"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout",
+          "description": "Output should be valid JSON"
+        },
+        {
+          "type": "field_exists",
+          "field": "decision",
+          "description": "Hook must return decision field"
+        },
+        {
+          "type": "duration",
+          "max_ms": 5000,
+          "description": "Hook should complete within 5 seconds"
+        }
+      ]
+    },
+    {
+      "case_id": "task-tool-background",
+      "name": "Task tool with background flag",
+      "hook_file": "hooks/chain-validator.py",
+      "input": {
+        "tool_name": "Task",
+        "tool_input": {
+          "prompt": "Analyze the codebase structure",
+          "subagent_type": "code-analyzer",
+          "background": true
+        },
+        "conversation_history": []
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "field_exists",
+          "field": "decision"
+        }
+      ]
+    },
+    {
+      "case_id": "task-tool-no-prompt",
+      "name": "Task tool handles missing prompt",
+      "hook_file": "hooks/chain-validator.py",
+      "input": {
+        "tool_name": "Task",
+        "tool_input": {
+          "subagent_type": "general-purpose"
+        },
+        "conversation_history": []
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected_in": [0, 1],
+          "description": "Hook should handle missing prompt gracefully"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        }
+      ]
+    },
+    {
+      "case_id": "task-tool-complex-prompt",
+      "name": "Task tool with complex multi-line prompt",
+      "hook_file": "hooks/chain-validator.py",
+      "input": {
+        "tool_name": "Task",
+        "tool_input": {
+          "prompt": "Analyze the following:\n1. Code structure\n2. Dependencies\n3. Test coverage\n\nProvide recommendations.",
+          "subagent_type": "code-analyzer"
+        },
+        "conversation_history": []
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "field_exists",
+          "field": "decision"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "hooks/chain-validator.py"
+  ],
+  "removed_dependencies": [
+    "hooks/agent-orchestrator.py (removed in Issue #117)"
+  ],
+  "notes": [
+    "This test verifies Task tool works after removing agent-orchestrator.py",
+    "agent-orchestrator.py was dead code with legacy OPTIMUS/Contains Studio references",
+    "Task tool orchestration now handled by Power Mode and SessionStart hook",
+    "chain-validator.py is the only PreToolUse hook for Task tool"
+  ],
+  "related_issues": [
+    "#117"
+  ]
+}

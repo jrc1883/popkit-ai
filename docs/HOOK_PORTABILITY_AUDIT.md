@@ -9,10 +9,10 @@
 
 ## Executive Summary
 
-Comprehensive audit of all PopKit hook commands revealed **100% compliance** with portability standards. All 16 unique hook commands correctly use the `${CLAUDE_PLUGIN_ROOT}` variable for plugin-relative paths. No hardcoded paths were found.
+Comprehensive audit of all PopKit hook commands revealed **100% compliance** with portability standards. All 15 unique hook commands correctly use the `${CLAUDE_PLUGIN_ROOT}` variable for plugin-relative paths. No hardcoded paths were found.
 
 **Key Findings**:
-- ✅ All 16 hooks use `${CLAUDE_PLUGIN_ROOT}` variable
+- ✅ All 15 hooks use `${CLAUDE_PLUGIN_ROOT}` variable
 - ✅ No absolute paths detected
 - ✅ No user-specific paths detected
 - ✅ Consistent path formatting across all hooks
@@ -25,7 +25,7 @@ Comprehensive audit of all PopKit hook commands revealed **100% compliance** wit
 ### 1. Configuration Analysis
 - **File Audited**: `packages/popkit-core/hooks/hooks.json`
 - **Total Hook Events**: 7 (PreToolUse, PostToolUse, UserPromptSubmit, SessionStart, Stop, SubagentStop, Notification)
-- **Total Hook Commands**: 16 unique Python scripts
+- **Total Hook Commands**: 15 unique Python scripts
 - **Total Matchers**: 11 tool matchers
 
 ### 2. Path Pattern Analysis
@@ -48,11 +48,10 @@ Verified that all hook scripts referenced in `hooks.json` exist in the filesyste
 
 ### Hook Event Breakdown
 
-#### PreToolUse (2 matchers, 3 hooks)
+#### PreToolUse (2 matchers, 2 hooks)
 | Hook Script | Matcher | Status | Path Format |
 |-------------|---------|--------|-------------|
 | `pre-tool-use.py` | Bash\|Read\|Write\|Edit\|... | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
-| `agent-orchestrator.py` | Task | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
 | `chain-validator.py` | Task | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
 
 #### PostToolUse (4 matchers, 8 hooks)
@@ -95,8 +94,8 @@ Verified that all hook scripts referenced in `hooks.json` exist in the filesyste
 | `notification.py` | (empty - all notifications) | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
 
 ### Summary Statistics
-- **Total Hooks in hooks.json**: 16
-- **Portable Hooks**: 16 (100%)
+- **Total Hooks in hooks.json**: 15
+- **Portable Hooks**: 15 (100%)
 - **Non-Portable Hooks**: 0 (0%)
 - **Hooks with Issues**: 0 (0%)
 
@@ -108,9 +107,10 @@ Verified that all hook scripts referenced in `hooks.json` exist in the filesyste
 These files exist in the hooks directory but are not referenced in `hooks.json`:
 
 1. **`agent-context-integration.py`** - Appears to be an older/deprecated hook
-2. **`issue-workflow.py`** - May be a specialized hook not currently active
-3. **`pre_tool_use_stateless.py`** - Stateless version (possibly experimental)
-4. **`post_tool_use_stateless.py`** - Stateless version (possibly experimental)
+2. **`agent-orchestrator.py`** - ❌ **REMOVED** (Issue #117) - Dead code with legacy OPTIMUS paths
+3. **`issue-workflow.py`** - May be a specialized hook not currently active
+4. **`pre_tool_use_stateless.py`** - Stateless version (possibly experimental)
+5. **`post_tool_use_stateless.py`** - Stateless version (possibly experimental)
 
 ### Test Files
 1. **`test_findings_xml.py`** - Unit test for XML parsing
