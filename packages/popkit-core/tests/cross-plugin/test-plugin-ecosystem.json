@@ -98,10 +98,9 @@
       "scan_all_plugins": true,
       "expected_counts": {
         "popkit-core": 9,
-        "popkit-dev": 5,
+        "popkit-dev": 7,
         "popkit-ops": 6,
-        "popkit-research": 1,
-        "popkit-suite": 0
+        "popkit-research": 1
       },
       "assertions": [
         {
@@ -110,8 +109,8 @@
         },
         {
           "type": "total_agents",
-          "expected": 21,
-          "description": "Total agents across all plugins should be 21"
+          "expected": 23,
+          "description": "Total agents across all plugins should be 23"
         }
       ]
     }
