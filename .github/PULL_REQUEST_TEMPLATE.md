@@ -57,7 +57,7 @@
 <!-- What automated tests did you run? -->
 
 - [ ] Plugin tests passed (`python run_all_tests.py`)
-- [ ] Specific test category: ****\_\_\_\_****
+- [ ] Specific test category: \***\*\_\_\_\_\*\***
 
 ### Test Results
 

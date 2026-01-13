@@ -115,7 +115,7 @@ The 69 extracted modules are organized into 8 categories:
    - local_telemetry, upstash_telemetry, efficiency_tracker, etc.
 
 8. **Specialized Utilities** (7 modules)
-   - voyage*client, embedding*_, workflow\__, etc.
+   - voyage*client, embedding*\_, workflow\_\_, etc.
 
 ## Next Steps
 

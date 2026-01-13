@@ -101,6 +101,7 @@ Output styles should be minimal templates.
    ```
 
 3. **Reference Over Embed**
+
    ```markdown
    # Instead of embedding full docs:
 
