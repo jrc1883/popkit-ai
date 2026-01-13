@@ -79,7 +79,7 @@ def validate_hook_protocol(
         test_env["PYTHONDONTWRITEBYTECODE"] = "1"  # Prevent .pyc file creation
 
         # Add shared-py to PYTHONPATH so hooks can import popkit_shared
-        shared_py_path = plugin_root.parent / "shared-py"
+        shared_py_path = (plugin_root.parent / "shared-py").resolve()  # Use absolute path
         if shared_py_path.exists():
             existing_path = test_env.get("PYTHONPATH", "")
             test_env["PYTHONPATH"] = (
