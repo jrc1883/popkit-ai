@@ -36,11 +36,13 @@ popkit-claude/
 PopKit is published as a GitHub-based marketplace. Install it in two steps:
 
 **Step 1: Add the marketplace (one-time setup)**
+
 ```bash
 /plugin marketplace add jrc1883/popkit-claude
 ```
 
 **Step 2: Install plugins**
+
 ```bash
 # Install all plugins for full functionality
 /plugin install popkit-core@popkit-claude
@@ -76,12 +78,12 @@ Restart Claude Code after installing local plugins.
 
 PopKit uses a modular plugin architecture with 4 focused plugins:
 
-| Plugin | Purpose | Key Features |
-|--------|---------|--------------|
-| **popkit-core** | Foundation & orchestration | Power Mode, project analysis, plugin management |
-| **popkit-dev** | Development workflows | Git operations, GitHub integration, daily routines |
-| **popkit-ops** | Operations & quality | Testing, debugging, security, deployment |
-| **popkit-research** | Knowledge management | Research capture, knowledge base |
+| Plugin              | Purpose                    | Key Features                                       |
+| ------------------- | -------------------------- | -------------------------------------------------- |
+| **popkit-core**     | Foundation & orchestration | Power Mode, project analysis, plugin management    |
+| **popkit-dev**      | Development workflows      | Git operations, GitHub integration, daily routines |
+| **popkit-ops**      | Operations & quality       | Testing, debugging, security, deployment           |
+| **popkit-research** | Knowledge management       | Research capture, knowledge base                   |
 
 ### Plugin Components
 
@@ -107,6 +109,7 @@ All hooks follow Claude Code portability standards:
 - JSON stdin/stdout protocol for communication
 
 Example hook command:
+
 ```json
 {
   "type": "command",
@@ -118,18 +121,21 @@ Example hook command:
 ### New in Claude Code 2.1.0
 
 **Skill Hot-Reload:**
+
 - Skills automatically reload when modified
 - No session restart required
 - Test changes instantly with `/skill invoke <name>`
 - Ideal for rapid skill development and iteration
 
 **Forked Skill Contexts:**
+
 - Skills can declare `context: fork` in frontmatter
 - Runs in isolated context (reduces token overhead)
 - Ideal for expensive operations: embeddings, web research, one-time scans
 - Example skills: `pop-research-capture`, `pop-embed-content`, `pop-assessment-*`
 
 **YAML List Format:**
+
 - Agent `tools` field now supports clean YAML list syntax
 - Old format still supported (backwards compatible)
 - Example:
@@ -141,6 +147,7 @@ Example hook command:
   ```
 
 **Wildcard Tool Permissions:**
+
 - Fine-grained Bash command control using `*` wildcards
 - Security model: explicit allow, block by omission
 - Example:
@@ -171,6 +178,7 @@ Example hook command:
 ### New in Claude Code 2.1.2
 
 **SessionStart Hook agent_type:**
+
 - When users run `claude --agent <agent-name>`, the `agent_type` field is now included in SessionStart hook input
 - PopKit detects this and optimizes session initialization:
   - Skips embedding-based agent filtering (user already selected the agent)
@@ -179,6 +187,7 @@ Example hook command:
 - Example: `claude --agent code-reviewer` triggers optimized code review session
 
 **Plugin Auto-Update Control:**
+
 - New `FORCE_AUTOUPDATE_PLUGINS` environment variable
 - When set to `true`, plugins auto-update even if main Claude Code auto-updater is disabled
 - Useful for teams wanting stable Claude Code versions but latest plugin features:
@@ -187,11 +196,13 @@ Example hook command:
   ```
 
 **Large Output Persistence:**
+
 - Large tool outputs are now saved to disk instead of truncated
 - Enables PopKit hooks and agents to process complete outputs
 - No code changes required - automatic improvement for all workflows
 
 **Permission Explainer Improvements:**
+
 - Routine dev workflows (git fetch, rebase, npm install, tests) no longer flagged as medium risk
 - Validates PopKit's wildcard permission approach (`Bash(npm test*)`, `Bash(git log*)`)
 - Smoother UX for developers using PopKit's security-conscious agent permissions
@@ -199,21 +210,25 @@ Example hook command:
 ### New in Claude Code 2.1.3
 
 **Commands and Skills Merge:**
+
 - Unified slash commands and skills into a single mental model
 - No behavior changes - purely UX improvement
 - Skills and commands remain separate in plugin structure
 - More intuitive for users when invoking workflows
 
 **Release Channel Control:**
+
 - Added `/config` toggle for `stable` vs `latest` release channels
 - Users can control update frequency independently
 
 **Permission Rule Validation:**
+
 - Detection and warnings for unreachable permission rules
 - `/doctor` command shows rule conflicts with actionable fixes
 - Improved security configuration UX
 
 **Bug Fixes:**
+
 - Plan files no longer persist across `/clear` commands
 - Fixed skill duplicate detection on ExFAT filesystems
 - Corrected sub-agent model selection during conversation compaction
@@ -221,6 +236,7 @@ Example hook command:
 ### New in Claude Code 2.1.4
 
 **Background Task Control:**
+
 - New `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` environment variable
 - Allows disabling all background task functionality when needed
 - Useful for debugging or resource-constrained environments
@@ -228,6 +244,7 @@ Example hook command:
 ### New in Claude Code 2.1.5
 
 **Temp Directory Override:**
+
 - New `CLAUDE_CODE_TMPDIR` environment variable
 - Overrides default temp directory for internal files
 - Useful for custom storage configurations or permissions issues
@@ -235,32 +252,39 @@ Example hook command:
 ### New in Claude Code 2.1.6
 
 **Settings Search:**
+
 - `/config` command gained search functionality
 - Quickly filter settings by keyword
 - Improved navigation for large configuration files
 
 **Updates Visibility:**
+
 - `/doctor` now shows auto-update channel and available npm versions
 - Better transparency about version management
 
 **Stats Date Filtering:**
+
 - `/stats` command added date range filtering
 - Options: Last 7 days, Last 30 days, All time
 - More granular usage analytics
 
 **Nested Skills Discovery:**
+
 - Automatic discovery of skills from nested `.claude/skills` directories
 - Supports more flexible project organization
 
 **Context Window Display:**
+
 - Added percentage-based fields for context window usage
 - Easier to understand token consumption at a glance
 
 **Security Fixes:**
+
 - Resolved permission bypass via shell line continuation
 - Improved command validation and sanitization
 
 **Bug Fixes:**
+
 - Fixed text styling (bold, colors) getting progressively misaligned
 - Removed ability to @-mention MCP servers (use `/mcp enable <name>` instead)
 
@@ -307,6 +331,7 @@ python run_tests.py hooks            # Specific category
 ### Development Workflow
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/jrc1883/popkit-claude.git
    cd popkit-claude
@@ -318,12 +343,14 @@ python run_tests.py hooks            # Specific category
    - Update tests if adding new features
 
 3. **Test your changes**
+
    ```bash
    cd packages/popkit-core
    python run_all_tests.py
    ```
 
 4. **Install locally to test**
+
    ```bash
    /plugin install ./packages/popkit-core
    # Restart Claude Code
@@ -360,28 +387,28 @@ chore: Maintenance tasks
 
 PopKit requires specific Claude Code versions for full functionality:
 
-| Feature | Minimum Version | Description |
-|---------|-----------------|-------------|
-| **Extended Thinking** | 2.0.67 | Default enabled (10k tokens) |
-| **Native Async Mode** | 2.0.64 | Background Task tool (5+ agents) |
-| **MCP Wildcard Permissions** | 2.0.70 | `mcp__server__*` syntax for tool permissions |
-| **Plan Mode** | 2.0.70 | Agent approval workflow |
-| **Configuration Management** | 2.0.71 | `/config` toggle |
-| **MCP Permissions** | 2.0.71 | Fixed permissions for MCP servers |
-| **Skill Hot-Reload** | 2.1.0 | Skills reload without restart |
-| **Forked Skill Contexts** | 2.1.0 | Isolated execution contexts |
-| **YAML List Format** | 2.1.0 | Clean agent tools syntax |
-| **SessionStart agent_type** | 2.1.2 | `--agent` flag detection in hooks |
-| **Plugin Auto-Update Control** | 2.1.2 | `FORCE_AUTOUPDATE_PLUGINS` env var |
-| **Large Output Persistence** | 2.1.2 | Tool outputs saved to disk (not truncated) |
-| **Unified Commands/Skills UX** | 2.1.3 | Mental model simplification (no code changes) |
-| **Release Channel Toggle** | 2.1.3 | `stable` vs `latest` in `/config` |
-| **Permission Rule Validation** | 2.1.3 | Unreachable rule detection in `/doctor` |
-| **Background Task Disable** | 2.1.4 | `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` env var |
-| **Temp Directory Override** | 2.1.5 | `CLAUDE_CODE_TMPDIR` env var |
-| **Settings Search** | 2.1.6 | Keyword filtering in `/config` |
-| **Nested Skills Discovery** | 2.1.6 | Auto-detect `.claude/skills` subdirectories |
-| **Shell Continuation Security** | 2.1.6 | Permission bypass fix |
+| Feature                         | Minimum Version | Description                                    |
+| ------------------------------- | --------------- | ---------------------------------------------- |
+| **Extended Thinking**           | 2.0.67          | Default enabled (10k tokens)                   |
+| **Native Async Mode**           | 2.0.64          | Background Task tool (5+ agents)               |
+| **MCP Wildcard Permissions**    | 2.0.70          | `mcp__server__*` syntax for tool permissions   |
+| **Plan Mode**                   | 2.0.70          | Agent approval workflow                        |
+| **Configuration Management**    | 2.0.71          | `/config` toggle                               |
+| **MCP Permissions**             | 2.0.71          | Fixed permissions for MCP servers              |
+| **Skill Hot-Reload**            | 2.1.0           | Skills reload without restart                  |
+| **Forked Skill Contexts**       | 2.1.0           | Isolated execution contexts                    |
+| **YAML List Format**            | 2.1.0           | Clean agent tools syntax                       |
+| **SessionStart agent_type**     | 2.1.2           | `--agent` flag detection in hooks              |
+| **Plugin Auto-Update Control**  | 2.1.2           | `FORCE_AUTOUPDATE_PLUGINS` env var             |
+| **Large Output Persistence**    | 2.1.2           | Tool outputs saved to disk (not truncated)     |
+| **Unified Commands/Skills UX**  | 2.1.3           | Mental model simplification (no code changes)  |
+| **Release Channel Toggle**      | 2.1.3           | `stable` vs `latest` in `/config`              |
+| **Permission Rule Validation**  | 2.1.3           | Unreachable rule detection in `/doctor`        |
+| **Background Task Disable**     | 2.1.4           | `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` env var |
+| **Temp Directory Override**     | 2.1.5           | `CLAUDE_CODE_TMPDIR` env var                   |
+| **Settings Search**             | 2.1.6           | Keyword filtering in `/config`                 |
+| **Nested Skills Discovery**     | 2.1.6           | Auto-detect `.claude/skills` subdirectories    |
+| **Shell Continuation Security** | 2.1.6           | Permission bypass fix                          |
 
 **Recommended**: Claude Code 2.1.6+ for full feature support and latest security fixes.
 
@@ -417,6 +444,7 @@ PopKit maintains workflow control through a consistent interaction pattern:
 ### Core Principle
 
 **Never end a workflow without user interaction.** Every command, skill, and routine MUST end with `AskUserQuestion` to:
+
 - Keep PopKit in control of the workflow loop
 - Force intentional user decisions
 - Enable context-aware next actions
@@ -452,12 +480,16 @@ output_ask_user_question_instructions(options)
 ### Examples
 
 #### ✅ Correct (The PopKit Way)
+
 ```markdown
 # ☀️ Morning Routine Report
+
 [... report content ...]
 
 ## 🎯 Next Steps
+
 Use AskUserQuestion with options:
+
 - "Fix environment issues (Recommended)"
 - "Continue: previous task"
 - "Review open PRs"
@@ -465,8 +497,10 @@ Use AskUserQuestion with options:
 ```
 
 #### ❌ Incorrect (Anti-Pattern)
+
 ```markdown
 # ☀️ Morning Routine Report
+
 [... report content ...]
 
 Morning session initialized. Ready to code!
@@ -483,6 +517,7 @@ Morning session initialized. Ready to code!
 ### Skills Using This Pattern
 
 ✅ **Correctly Implemented:**
+
 - `pop-brainstorming` - Ends with design decision options
 - `issue` command - Ends with "Work on next issue" / "Review PRs" / etc.
 - `milestone` command - Ends with next milestone actions
@@ -490,11 +525,13 @@ Morning session initialized. Ready to code!
 - `pop-nightly` - Ends with shutdown options based on Sleep Score (v1.0.0-beta.4+)
 
 🚧 **Needs Implementation:**
+
 - Other skills TBD (audit needed)
 
 ### Quality Check
 
 Before committing any skill/command:
+
 - [ ] Does it end with AskUserQuestion?
 - [ ] Are options context-aware (not generic)?
 - [ ] Is there a "(Recommended)" option?
@@ -507,11 +544,13 @@ Before committing any skill/command:
 ## Documentation
 
 ### User Documentation
+
 - [README.md](README.md) - Quick start and overview
 - [CHANGELOG.md](CHANGELOG.md) - Version history
 - Package-specific READMEs in `packages/*/`
 
 ### Architecture Documentation
+
 - [Plugin Modularization Design](docs/plans/2025-12-20-plugin-modularization-design.md)
 - [Testing & Validation Plan](docs/plans/2025-12-21-phase5-testing-validation-plan.md)
 - [Hook Portability Audit](docs/HOOK_PORTABILITY_AUDIT.md)

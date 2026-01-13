@@ -40,12 +40,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Agents Provided
 
 **Tier 1 (Always Active):**
+
 - bug-whisperer - Expert debugging for complex issues
 - performance-optimizer - Performance engineering and bottleneck analysis
 - security-auditor - Security vulnerability detection
 - test-writer-fixer - Test creation and debugging
 
 **Tier 2 (On-Demand):**
+
 - deployment-validator - Pre-deployment validation and checks
 - rollback-specialist - Emergency deployment recovery
 

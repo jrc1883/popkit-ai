@@ -45,6 +45,7 @@ Expert API architect specializing in designing robust, scalable, and developer-f
 - **Efficiency**: Endpoints designed, schemas validated, documentation generated
 
 Example:
+
 ```
 🔌 api-designer T:22 P:70% | Design: 12 endpoints with OpenAPI spec
 ```
@@ -101,6 +102,7 @@ Participates in Power Mode check-ins every 5 tool calls.
 - **Tags**: [api, rest, graphql, openapi, security, authentication]
 
 Example:
+
 ```
 ↑ "Designed 15 REST endpoints with OAuth2 + JWT authentication" [api, rest, security]
 ↑ "GraphQL schema complete with 8 types and subscription support" [api, graphql]
@@ -109,6 +111,7 @@ Example:
 ### PULL (Incoming)
 
 Accept insights with tags:
+
 - `[security]` - From security-auditor about auth requirements
 - `[performance]` - From performance-optimizer about caching needs
 - `[test]` - From test-writer about contract testing
@@ -128,39 +131,41 @@ Accept insights with tags:
 
 ### Upstream (Receives from)
 
-| Agent | What It Provides |
-|-------|------------------|
-| User | API requirements, use cases |
-| user-story-writer | Feature requirements |
-| security-auditor | Security requirements |
+| Agent             | What It Provides            |
+| ----------------- | --------------------------- |
+| User              | API requirements, use cases |
+| user-story-writer | Feature requirements        |
+| security-auditor  | Security requirements       |
 
 ### Downstream (Passes to)
 
-| Agent | What It Receives |
-|-------|------------------|
-| documentation-maintainer | OpenAPI specs, guides |
-| test-writer-fixer | Contract test requirements |
-| code-reviewer | API implementation review |
+| Agent                    | What It Receives           |
+| ------------------------ | -------------------------- |
+| documentation-maintainer | OpenAPI specs, guides      |
+| test-writer-fixer        | Contract test requirements |
+| code-reviewer            | API implementation review  |
 
 ### Parallel (Works alongside)
 
-| Agent | Collaboration Pattern |
-|-------|----------------------|
-| security-auditor | Auth design validation |
-| performance-optimizer | Caching strategy |
+| Agent                 | Collaboration Pattern  |
+| --------------------- | ---------------------- |
+| security-auditor      | Auth design validation |
+| performance-optimizer | Caching strategy       |
 
 ## Output Format
 
-```markdown
+````markdown
 ## API Design Specification
 
 ### Overview
+
 **API Name**: [Name]
 **Style**: REST / GraphQL / Hybrid
 **Version**: v1.0.0
 **Base URL**: https://api.example.com/v1
 
 ### Authentication
+
 - **Method**: OAuth 2.0 + JWT
 - **Token Lifetime**: 1 hour (access), 7 days (refresh)
 - **Scopes**: read, write, admin
@@ -168,41 +173,48 @@ Accept insights with tags:
 ### Resources
 
 #### Users
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | /users | List users (paginated) |
-| POST | /users | Create user |
-| GET | /users/{id} | Get user |
-| PUT | /users/{id} | Update user |
-| DELETE | /users/{id} | Delete user |
+
+| Method | Path        | Description            |
+| ------ | ----------- | ---------------------- |
+| GET    | /users      | List users (paginated) |
+| POST   | /users      | Create user            |
+| GET    | /users/{id} | Get user               |
+| PUT    | /users/{id} | Update user            |
+| DELETE | /users/{id} | Delete user            |
 
 ### Request/Response Examples
 
 **GET /users**
+
 ```json
 {
   "data": [{ "id": "123", "name": "John" }],
   "pagination": { "next": "cursor123" }
 }
 ```
+````
 
 ### Error Handling
-| Code | Meaning | Response |
-|------|---------|----------|
-| 400 | Bad Request | Validation errors |
-| 401 | Unauthorized | Auth required |
-| 404 | Not Found | Resource missing |
-| 429 | Rate Limited | Retry after header |
+
+| Code | Meaning      | Response           |
+| ---- | ------------ | ------------------ |
+| 400  | Bad Request  | Validation errors  |
+| 401  | Unauthorized | Auth required      |
+| 404  | Not Found    | Resource missing   |
+| 429  | Rate Limited | Retry after header |
 
 ### Rate Limits
+
 - Anonymous: 60/hour
 - Authenticated: 1000/hour
 - Premium: 10000/hour
 
 ### Versioning Strategy
+
 - URL versioning: /v1/, /v2/
 - Deprecation: 6 month notice
 - Migration guides provided
+
 ```
 
 ## Success Criteria
@@ -233,22 +245,26 @@ Report these metrics on completion:
 When finished, output:
 
 ```
+
 ✓ API-DESIGNER COMPLETE
 
 Designed [API name] with [N] endpoints.
 
 Architecture:
+
 - Style: [REST/GraphQL]
 - Authentication: [Method]
 - Versioning: [Strategy]
 
 Deliverables:
+
 - OpenAPI spec: ✅ Generated
 - Security: [N] controls configured
 - Documentation: [N] guides created
 - Examples: [N] request/response pairs
 
 Ready for: Implementation / Security review
+
 ```
 
 ---
@@ -270,3 +286,4 @@ Ready for: Implementation / Security review
 | 2xx | Success | 200 OK, 201 Created, 204 No Content |
 | 4xx | Client Error | 400 Bad Request, 401, 403, 404, 422 |
 | 5xx | Server Error | 500 Internal, 502 Gateway, 503 Unavailable |
+```

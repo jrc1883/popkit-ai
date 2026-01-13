@@ -448,7 +448,6 @@ def check_research_relevance(
 # =============================================================================
 
 if __name__ == "__main__":
-
     print("Research Surfacer Test")
     print("=" * 40)
 

@@ -59,6 +59,7 @@ Elite web performance engineering specialist excelling at identifying bottleneck
 - **Efficiency**: Performance score improvement, metrics optimized
 
 Example:
+
 ```
 ⚡ performance-optimizer T:20 P:75% | LCP: 2.8s → 2.1s
 ```
@@ -115,6 +116,7 @@ Participates in Power Mode check-ins every 5 tool calls.
 - **Tags**: [performance, bundle, react, lcp, fid, cls, optimization]
 
 Example:
+
 ```
 ↑ "LCP bottleneck: 400kb hero image not optimized" [performance, lcp]
 ↑ "React re-render issue: missing memo on UserList" [performance, react]
@@ -123,6 +125,7 @@ Example:
 ### PULL (Incoming)
 
 Accept insights with tags:
+
 - `[bundle]` - From bundle-analyzer about size issues
 - `[code]` - From code-reviewer about inefficient patterns
 - `[test]` - From test-writer about performance tests
@@ -142,26 +145,26 @@ Accept insights with tags:
 
 ### Upstream (Receives from)
 
-| Agent | What It Provides |
-|-------|------------------|
-| bundle-analyzer | Bundle analysis, size issues |
-| code-reviewer | Code patterns affecting performance |
-| User | Performance requirements, budgets |
+| Agent           | What It Provides                    |
+| --------------- | ----------------------------------- |
+| bundle-analyzer | Bundle analysis, size issues        |
+| code-reviewer   | Code patterns affecting performance |
+| User            | Performance requirements, budgets   |
 
 ### Downstream (Passes to)
 
-| Agent | What It Receives |
-|-------|------------------|
-| devops-automator | CDN and caching configuration |
-| documentation-maintainer | Performance best practices |
-| metrics-collector | Performance metrics setup |
+| Agent                    | What It Receives              |
+| ------------------------ | ----------------------------- |
+| devops-automator         | CDN and caching configuration |
+| documentation-maintainer | Performance best practices    |
+| metrics-collector        | Performance metrics setup     |
 
 ### Parallel (Works alongside)
 
-| Agent | Collaboration Pattern |
-|-------|----------------------|
-| bundle-analyzer | Frontend optimization |
-| code-reviewer | Performance-aware review |
+| Agent           | Collaboration Pattern    |
+| --------------- | ------------------------ |
+| bundle-analyzer | Frontend optimization    |
+| code-reviewer   | Performance-aware review |
 
 ## Output Format
 
@@ -169,17 +172,18 @@ Accept insights with tags:
 ## Performance Optimization Report
 
 ### Summary
+
 **Overall Score**: [X]/100 → [Y]/100
 **Grade**: [NEEDS IMPROVEMENT → GOOD]
 **Key Improvement**: [Most impactful change]
 
 ### Core Web Vitals
 
-| Metric | Before | After | Target | Status |
-|--------|--------|-------|--------|--------|
-| LCP | 2.8s | 2.1s | <2.5s | ✅ Pass |
-| FID | 150ms | 85ms | <100ms | ✅ Pass |
-| CLS | 0.15 | 0.06 | <0.1 | ✅ Pass |
+| Metric | Before | After | Target | Status  |
+| ------ | ------ | ----- | ------ | ------- |
+| LCP    | 2.8s   | 2.1s  | <2.5s  | ✅ Pass |
+| FID    | 150ms  | 85ms  | <100ms | ✅ Pass |
+| CLS    | 0.15   | 0.06  | <0.1   | ✅ Pass |
 
 ### Optimizations Applied
 
@@ -190,22 +194,25 @@ Accept insights with tags:
 
 ### Bundle Analysis
 
-| Chunk | Before | After | Savings |
-|-------|--------|-------|---------|
-| Main | 500KB | 200KB | 60% |
-| Vendor | 800KB | 400KB | 50% |
+| Chunk  | Before | After | Savings |
+| ------ | ------ | ----- | ------- |
+| Main   | 500KB  | 200KB | 60%     |
+| Vendor | 800KB  | 400KB | 50%     |
 
 ### React Optimizations
+
 - Memoization: [N] components optimized
 - Code splitting: [N] routes lazy loaded
 - Virtual scrolling: [Where applied]
 
 ### Monitoring Setup
+
 - Performance budgets: [Configured]
 - Alerting: [Thresholds set]
 - RUM: [Tracking active]
 
 ### Recommendations
+
 1. [Next optimization opportunity]
 2. [Future improvement]
 ```
@@ -225,12 +232,12 @@ Completion is achieved when:
 
 Report these metrics on completion:
 
-| Metric | Description |
-|--------|-------------|
-| LCP improvement | Seconds reduced |
-| Bundle reduction | KB saved |
-| Score improvement | Lighthouse delta |
-| Optimizations | Changes implemented |
+| Metric            | Description         |
+| ----------------- | ------------------- |
+| LCP improvement   | Seconds reduced     |
+| Bundle reduction  | KB saved            |
+| Score improvement | Lighthouse delta    |
+| Optimizations     | Changes implemented |
 | Budget compliance | All metrics passing |
 
 ## Completion Signal
@@ -259,17 +266,17 @@ Monitoring: Active with [N] alerts configured
 
 ## Reference: Core Web Vitals Targets
 
-| Metric | Good | Needs Work | Poor |
-|--------|------|------------|------|
-| LCP | <2.5s | 2.5-4.0s | >4.0s |
-| FID | <100ms | 100-300ms | >300ms |
-| CLS | <0.1 | 0.1-0.25 | >0.25 |
+| Metric | Good   | Needs Work | Poor   |
+| ------ | ------ | ---------- | ------ |
+| LCP    | <2.5s  | 2.5-4.0s   | >4.0s  |
+| FID    | <100ms | 100-300ms  | >300ms |
+| CLS    | <0.1   | 0.1-0.25   | >0.25  |
 
 ## Reference: React Optimization Patterns
 
-| Pattern | When to Use | Example |
-|---------|-------------|---------|
-| React.memo | Expensive renders | List items |
-| useMemo | Expensive calculations | Filtered arrays |
-| useCallback | Stable references | Event handlers |
-| lazy | Large components | Routes, modals |
+| Pattern     | When to Use            | Example         |
+| ----------- | ---------------------- | --------------- |
+| React.memo  | Expensive renders      | List items      |
+| useMemo     | Expensive calculations | Filtered arrays |
+| useCallback | Stable references      | Event handlers  |
+| lazy        | Large components       | Routes, modals  |

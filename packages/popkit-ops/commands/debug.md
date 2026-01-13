@@ -15,18 +15,18 @@ Systematic debugging with root cause analysis and agent routing diagnostics.
 
 ## Flags
 
-| Flag | Description |
-|------|-------------|
+| Flag               | Description                                             |
+| ------------------ | ------------------------------------------------------- |
 | `-T`, `--thinking` | Enable extended thinking for deeper root cause analysis |
-| `--no-thinking` | Disable extended thinking (use default) |
-| `--think-budget N` | Set thinking token budget (default: 10000) |
+| `--no-thinking`    | Disable extended thinking (use default)                 |
+| `--think-budget N` | Set thinking token budget (default: 10000)              |
 
 ## Subcommands
 
-| Subcommand | Description |
-|------------|-------------|
-| `code` | Systematic code debugging (default) |
-| `routing` | Analyze agent routing decisions |
+| Subcommand | Description                         |
+| ---------- | ----------------------------------- |
+| `code`     | Systematic code debugging (default) |
+| `routing`  | Analyze agent routing decisions     |
 
 ---
 
@@ -102,6 +102,7 @@ Fixed! Test now passes.
 ### Red Flags
 
 The skill will stop and return to Phase 1 if:
+
 - "Quick fix" is attempted without investigation
 - Multiple changes made at once
 - Fixes proposed without understanding
@@ -160,13 +161,13 @@ Analyze and debug agent routing decisions to understand why specific agents are 
 
 ### Routing Analysis Commands
 
-| Command | Description |
-|---------|-------------|
-| `routing "prompt"` | Analyze routing for provided prompt |
-| `routing explain <agent>` | Show what triggers routing to this agent |
-| `routing keywords` | List all routing keywords by agent |
-| `routing trace "prompt"` | Step-by-step routing decision trace |
-| `routing compare "prompt"` | Show all agent scores side-by-side |
+| Command                    | Description                              |
+| -------------------------- | ---------------------------------------- |
+| `routing "prompt"`         | Analyze routing for provided prompt      |
+| `routing explain <agent>`  | Show what triggers routing to this agent |
+| `routing keywords`         | List all routing keywords by agent       |
+| `routing trace "prompt"`   | Step-by-step routing decision trace      |
+| `routing compare "prompt"` | Show all agent scores side-by-side       |
 
 ### Process
 
@@ -273,16 +274,16 @@ Check if your prompts contain routing keywords. Use `keywords` to see available 
 
 ## Architecture Integration
 
-| Component | Integration |
-|-----------|-------------|
+| Component            | Integration                                |
+| -------------------- | ------------------------------------------ |
 | Code Debugging Skill | `skills/pop-systematic-debugging/SKILL.md` |
-| Root Cause Tracing | `skills/pop-root-cause-tracing/SKILL.md` |
-| Routing Config | `agents/config.json` |
-| Routing Debug Skill | `skills/pop-routing-debug/SKILL.md` |
+| Root Cause Tracing   | `skills/pop-root-cause-tracing/SKILL.md`   |
+| Routing Config       | `agents/config.json`                       |
+| Routing Debug Skill  | `skills/pop-routing-debug/SKILL.md`        |
 
 ## Related Commands
 
-| Command | Purpose |
-|---------|---------|
-| `/popkit-core:plugin test` | Run plugin self-tests |
+| Command                    | Purpose                   |
+| -------------------------- | ------------------------- |
+| `/popkit-core:plugin test` | Run plugin self-tests     |
 | `/popkit-core:plugin sync` | Validate plugin integrity |

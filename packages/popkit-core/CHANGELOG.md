@@ -8,12 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - **`/popkit:account`** - Unified account management command (Phase 1)
   - 6 subcommands: status, signup, login, keys, usage, logout
   - Consolidates fragmented account/upgrade/cloud functionality
   - 672 lines of comprehensive account management
 
 ### Changed
+
 - **Power Mode Simplification** - Phase 1-2 complete (97.2% reduction planned)
   - Extracted generic Redis interfaces to `popkit-shared`
   - Moved `BaseRedisClient` and `BasePubSub` to `packages/shared-py/popkit_shared/storage/`
@@ -24,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Related: Power Mode Upstash audit (docs/assessments/2025-12-29-power-mode-upstash-audit.md)
 
 ### Removed
+
 - **`/popkit:workflow-viz`** - Workflow visualizations now documented in README instead of command
   - Replaced with `/popkit:record` - Session forensics recording
 - **`/popkit:upgrade`** - Replaced by `/popkit:account signup` (Phase 3)
@@ -31,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Command Count**: Reduced from 25 → 23 commands (early removal, no deprecation period needed)
 
 ### Analysis
+
 - **Power Mode Audit** - Comprehensive analysis of 19,249 LOC
   - Only 400 LOC (2.1%) is Upstash-specific
   - Core value: Redis Streams pub/sub simulation (200 LOC)
@@ -43,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2025-12-20
 
 ### Added
+
 - **Initial Release** - Extracted from monolithic PopKit plugin (Issue #576, Epic #580)
 - **Commands** (10):
   - `/popkit:plugin` - Plugin testing and management

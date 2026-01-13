@@ -4,9 +4,9 @@
 
 PopKit is currently in beta. Security updates are provided for the latest beta version.
 
-| Version | Supported |
-|---------|-----------|
-| 1.0.0-beta.x | ✅ Active support |
+| Version        | Supported              |
+| -------------- | ---------------------- |
+| 1.0.0-beta.x   | ✅ Active support      |
 | < 1.0.0-beta.1 | ❌ No longer supported |
 
 ## Security Features
@@ -45,6 +45,7 @@ Subject line: `[SECURITY] PopKit Vulnerability Report`
 ### What to Include
 
 Please provide:
+
 - Description of the vulnerability
 - Steps to reproduce
 - Potential impact
@@ -64,6 +65,7 @@ Please provide:
 ## Security Best Practices for Users
 
 ### Plugin Installation
+
 1. **Verify Source**: Only install PopKit from official sources
    - GitHub: https://github.com/jrc1883/popkit-claude
    - Claude Code Marketplace: `@popkit-claude`
@@ -73,14 +75,18 @@ Please provide:
 3. **Monitor Permissions**: PopKit hooks use restricted tool permissions by design
 
 ### Hook Security
+
 PopKit hooks follow strict security guidelines:
+
 - Use `${CLAUDE_PLUGIN_ROOT}` for portability
 - No arbitrary command execution
 - JSON stdin/stdout protocol
 - Explicit tool whitelisting
 
 ### API Keys (Optional Enhancement Features)
+
 If using PopKit Cloud features:
+
 - **Never commit** API keys to repositories
 - Store in `.env` files (gitignored)
 - Use environment variables in CI/CD
@@ -89,13 +95,16 @@ If using PopKit Cloud features:
 ## Known Security Considerations
 
 ### Issue #20: Command Injection Vulnerabilities (In Progress)
+
 - **Status**: Active remediation
 - **Impact**: Some utility functions use `subprocess.run(shell=True)`
 - **Timeline**: Fix targeted for v1.0.0 release
 - **Tracking**: https://github.com/jrc1883/popkit-claude/issues/20
 
 ### Plugin Hooks
+
 PopKit hooks execute Python scripts with Claude Code's permissions. Key protections:
+
 - Hooks are user-installed (explicit consent)
 - Source code is visible in repository
 - Restricted tool permissions
@@ -104,20 +113,24 @@ PopKit hooks execute Python scripts with Claude Code's permissions. Key protecti
 ## Security Disclosure Policy
 
 ### Public Disclosure
+
 After a vulnerability is fixed:
+
 1. Security advisory published on GitHub
 2. CVE requested for critical vulnerabilities
 3. Fix details disclosed responsibly
 4. Credit given to reporter (with permission)
 
 ### Hall of Fame
+
 We recognize security researchers who responsibly disclose vulnerabilities:
 
-*No vulnerabilities reported yet.*
+_No vulnerabilities reported yet._
 
 ## Compliance & Standards
 
 PopKit follows:
+
 - OWASP Top 10 security practices
 - GitHub Security Best Practices
 - Principle of least privilege
@@ -126,6 +139,7 @@ PopKit follows:
 ## Questions?
 
 For security questions that aren't vulnerabilities:
+
 - Open a [GitHub Discussion](https://github.com/jrc1883/popkit-claude/discussions)
 - Email: joseph@thehouseofdeals.com
 

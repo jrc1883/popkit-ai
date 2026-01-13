@@ -36,8 +36,8 @@ Save current session state to STATUS.json for seamless continuation in future se
     "blocked": ["Task blocked by X"]
   },
   "services": {
-    "devServer": {"running": true, "port": 3000},
-    "database": {"running": true, "port": 5432}
+    "devServer": { "running": true, "port": 3000 },
+    "database": { "running": true, "port": 5432 }
   },
   "context": {
     "focusArea": "Working on authentication flow",
@@ -74,6 +74,7 @@ git diff --cached --name-only | wc -l
 ### Step 2: Gather Task State
 
 From TodoWrite:
+
 - Tasks marked as in_progress
 - Recently completed tasks (last 3)
 - Any blocked tasks with reasons
@@ -91,6 +92,7 @@ pg_isready -h localhost -p 5432 || echo "not running"
 ### Step 4: Document Context
 
 Capture:
+
 - What area of code you're focused on
 - Any blockers or decisions made
 - What should happen next
@@ -116,11 +118,13 @@ Write to `.claude/STATUS.json` (or project root if no .claude directory)
 ## When to Capture
 
 **Automatic triggers:**
+
 - End of conversation (if hooks enabled)
 - Before Claude Code closes
 - After major milestone completion
 
 **Manual triggers:**
+
 - Before switching to different work
 - When hitting context limits
 - Before complex operations
@@ -144,8 +148,8 @@ Write to `.claude/STATUS.json` (or project root if no .claude directory)
     "blocked": []
   },
   "services": {
-    "devServer": {"running": true, "port": 3000},
-    "database": {"running": true, "port": 5432}
+    "devServer": { "running": true, "port": 3000 },
+    "database": { "running": true, "port": 5432 }
   },
   "context": {
     "focusArea": "Authentication system",
@@ -164,9 +168,11 @@ Write to `.claude/STATUS.json` (or project root if no .claude directory)
 ## Integration
 
 **Pairs with:**
+
 - **session-resume** - Reads STATUS.json on startup
 - **context-restore** - Loads previous context into working memory
 
 **Hook integration:**
+
 - Can be triggered by session-end hook
 - Runs before Claude Code closes

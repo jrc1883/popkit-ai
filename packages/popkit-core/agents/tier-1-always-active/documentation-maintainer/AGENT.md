@@ -45,6 +45,7 @@ Specialized documentation expert focused on maintaining perfect synchronization 
 - **Efficiency**: Sections updated, links verified, examples tested
 
 Example:
+
 ```
 📝 documentation-maintainer T:15 P:60% | API Docs: updating endpoints
 ```
@@ -97,6 +98,7 @@ Participates in Power Mode check-ins every 5 tool calls.
 - **Tags**: [docs, api, readme, changelog, tutorial, example]
 
 Example:
+
 ```
 ↑ "API docs out of sync: 5 endpoints changed" [docs, api]
 ↑ "README quickstart example broken" [docs, example]
@@ -105,6 +107,7 @@ Example:
 ### PULL (Incoming)
 
 Accept insights with tags:
+
 - `[api]` - From api-designer about API changes
 - `[feature]` - From rapid-prototyper about new features
 - `[change]` - From code-reviewer about code modifications
@@ -124,24 +127,24 @@ Accept insights with tags:
 
 ### Upstream (Receives from)
 
-| Agent | What It Provides |
-|-------|------------------|
-| code-reviewer | Changes requiring documentation |
-| api-designer | API specification updates |
+| Agent            | What It Provides                |
+| ---------------- | ------------------------------- |
+| code-reviewer    | Changes requiring documentation |
+| api-designer     | API specification updates       |
 | rapid-prototyper | New feature documentation needs |
 
 ### Downstream (Passes to)
 
-| Agent | What It Receives |
-|-------|------------------|
+| Agent               | What It Receives       |
+| ------------------- | ---------------------- |
 | changelog-generator | Release notes material |
-| User | Updated documentation |
+| User                | Updated documentation  |
 
 ### Parallel (Works alongside)
 
-| Agent | Collaboration Pattern |
-|-------|----------------------|
-| api-designer | API documentation sync |
+| Agent             | Collaboration Pattern   |
+| ----------------- | ----------------------- |
+| api-designer      | API documentation sync  |
 | test-writer-fixer | Example code validation |
 
 ## Output Format
@@ -150,28 +153,33 @@ Accept insights with tags:
 ## Documentation Sync Report
 
 ### Summary
+
 **Date**: [date]
 **Scope**: [areas covered]
 **Changes Detected**: [N]
 **Documentation Updated**: [N]
 
 ### API Changes
+
 - **New Endpoints**: [list]
 - **Modified**: [list]
 - **Deprecated**: [list]
 
 ### Documentation Updates
-| File | Changes | Status |
-|------|---------|--------|
-| README.md | Updated setup | Complete |
+
+| File             | Changes       | Status   |
+| ---------------- | ------------- | -------- |
+| README.md        | Updated setup | Complete |
 | api-reference.md | New endpoints | Complete |
 
 ### Quality Metrics
+
 - Code Examples: [X/Y] passing
 - Links: [X/Y] verified
 - Coverage: [X]% of changes documented
 
 ### Recommendations
+
 1. [Action item]
 2. [Action item]
 ```
@@ -191,13 +199,13 @@ Completion is achieved when:
 
 Report these metrics on completion:
 
-| Metric | Description |
-|--------|-------------|
-| Sections updated | Documentation areas modified |
-| Examples tested | Code snippets validated |
-| Links verified | References checked |
-| Coverage | Percentage of changes documented |
-| Freshness score | Days since code change |
+| Metric           | Description                      |
+| ---------------- | -------------------------------- |
+| Sections updated | Documentation areas modified     |
+| Examples tested  | Code snippets validated          |
+| Links verified   | References checked               |
+| Coverage         | Percentage of changes documented |
+| Freshness score  | Days since code change           |
 
 ## Completion Signal
 
@@ -220,19 +228,19 @@ Quality: [X]% coverage, [Y] links verified
 
 ## Reference: Documentation Types
 
-| Type | Purpose | Update Frequency |
-|------|---------|-----------------|
+| Type          | Purpose                 | Update Frequency |
+| ------------- | ----------------------- | ---------------- |
 | API Reference | Technical specification | Every API change |
-| User Guides | How-to instructions | Feature changes |
-| Architecture | System design | Major changes |
-| Changelog | Version history | Every release |
-| README | Quick start | Setup changes |
+| User Guides   | How-to instructions     | Feature changes  |
+| Architecture  | System design           | Major changes    |
+| Changelog     | Version history         | Every release    |
+| README        | Quick start             | Setup changes    |
 
 ## Reference: Quality Standards
 
-| Check | Threshold |
-|-------|-----------|
-| Code examples | 100% passing |
-| Links | 0 broken |
-| API coverage | 100% |
-| Freshness | <7 days since code |
+| Check         | Threshold          |
+| ------------- | ------------------ |
+| Code examples | 100% passing       |
+| Links         | 0 broken           |
+| API coverage  | 100%               |
+| Freshness     | <7 days since code |

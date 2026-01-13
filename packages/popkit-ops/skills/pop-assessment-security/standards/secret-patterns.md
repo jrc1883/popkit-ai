@@ -13,6 +13,7 @@ All code MUST be free of hardcoded secrets, credentials, and sensitive data. Thi
 API keys should never be hardcoded in source code.
 
 **Detect**:
+
 ```python
 # BAD - Hardcoded API key
 api_key = "sk-1234567890abcdef"
@@ -20,6 +21,7 @@ API_KEY = "AKIAIOSFODNN7EXAMPLE"
 ```
 
 **Fix**:
+
 ```python
 # GOOD - Environment variable
 api_key = os.environ.get("API_KEY")
@@ -35,12 +37,14 @@ api_key = config.get("api_key")
 AWS access keys (starting with AKIA, ABIA, ACCA, ASIA) must not appear in code.
 
 **Detect**:
+
 ```python
 # BAD
 aws_key = "AKIAIOSFODNN7EXAMPLE"
 ```
 
 **Fix**:
+
 ```python
 # GOOD - Use AWS credentials file or environment
 import boto3
@@ -54,6 +58,7 @@ client = boto3.client('s3')  # Uses default credential chain
 AWS secret access keys are 40-character strings that must be protected.
 
 **Detect**:
+
 ```python
 # BAD
 aws_secret = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
@@ -66,6 +71,7 @@ aws_secret = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 Hardcoded passwords create security vulnerabilities.
 
 **Detect**:
+
 ```python
 # BAD
 password = "mysecretpassword"
@@ -73,6 +79,7 @@ db_password = "admin123"
 ```
 
 **Fix**:
+
 ```python
 # GOOD - Environment variable
 password = os.environ.get("DB_PASSWORD")
@@ -88,6 +95,7 @@ password = secrets_manager.get_secret("db-password")
 Private keys in code enable impersonation attacks.
 
 **Detect**:
+
 ```
 # BAD - Private key in code
 -----BEGIN RSA PRIVATE KEY-----
@@ -96,6 +104,7 @@ MIIEpQIBAAKCAQEA...
 ```
 
 **Fix**:
+
 ```python
 # GOOD - Load from file
 with open("/path/to/key.pem", "r") as f:
@@ -112,6 +121,7 @@ private_key = secrets_manager.get_secret("ssh-key")
 JWT tokens in code may expose authentication capabilities.
 
 **Detect**:
+
 ```python
 # BAD - Hardcoded JWT
 token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0..."
@@ -121,15 +131,17 @@ token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0..."
 
 **Severity**: Critical | **CWE**: CWE-798
 
-GitHub tokens (ghp_, gho_, ghu_, ghs_, ghr_) enable repository access.
+GitHub tokens (ghp*, gho*, ghu*, ghs*, ghr\_) enable repository access.
 
 **Detect**:
+
 ```python
 # BAD
 github_token = "ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 ```
 
 **Fix**:
+
 ```python
 # GOOD - Environment variable
 github_token = os.environ.get("GITHUB_TOKEN")
@@ -145,6 +157,7 @@ github_token = os.environ.get("GITHUB_TOKEN")
 Connection strings with embedded credentials expose databases.
 
 **Detect**:
+
 ```python
 # BAD
 conn = "mongodb://user:password@host:27017/db"
@@ -152,6 +165,7 @@ conn = "postgres://admin:secret@localhost/mydb"
 ```
 
 **Fix**:
+
 ```python
 # GOOD - Separate credential handling
 user = os.environ.get("DB_USER")
@@ -166,6 +180,7 @@ conn = f"postgres://{user}:{password}@localhost/mydb"
 Bearer tokens should be dynamically obtained.
 
 **Detect**:
+
 ```python
 # BAD
 headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5..."}
@@ -178,6 +193,7 @@ headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5..."}
 Generic patterns like `secret_key`, `token_value` with hardcoded values.
 
 **Detect**:
+
 ```python
 # BAD
 secret_key = "my-super-secret-key-12345"
@@ -186,18 +202,18 @@ token_value = "abcdef123456789"
 
 ## Validation Checklist
 
-| Check ID | Description | Severity |
-|----------|-------------|----------|
-| SD-001 | No API key assignments | critical |
-| SD-002 | No AWS access key IDs | critical |
-| SD-003 | No AWS secret keys | critical |
-| SD-004 | No password assignments | high |
-| SD-005 | No private keys | critical |
-| SD-006 | No JWT tokens | high |
-| SD-007 | No GitHub tokens | critical |
-| SD-008 | No credential connection strings | critical |
-| SD-009 | No bearer tokens | high |
-| SD-010 | No generic secret patterns | high |
+| Check ID | Description                      | Severity |
+| -------- | -------------------------------- | -------- |
+| SD-001   | No API key assignments           | critical |
+| SD-002   | No AWS access key IDs            | critical |
+| SD-003   | No AWS secret keys               | critical |
+| SD-004   | No password assignments          | high     |
+| SD-005   | No private keys                  | critical |
+| SD-006   | No JWT tokens                    | high     |
+| SD-007   | No GitHub tokens                 | critical |
+| SD-008   | No credential connection strings | critical |
+| SD-009   | No bearer tokens                 | high     |
+| SD-010   | No generic secret patterns       | high     |
 
 ## Acceptable Patterns
 

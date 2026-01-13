@@ -311,6 +311,7 @@ else:
    - `transcript_available`: Whether the full transcript exists
 
 **What gets captured**:
+
 ```bash
 /popkit-core:record start
 

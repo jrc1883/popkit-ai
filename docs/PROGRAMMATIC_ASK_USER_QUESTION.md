@@ -10,15 +10,18 @@ PopKit uses a PostToolUse hook to **programmatically invoke AskUserQuestion** in
 
 **Before**: Skills output markdown with instructions for Claude:
 
-```markdown
+````markdown
 ## 🎯 Next Steps
 
 **IMPORTANT**: You MUST use AskUserQuestion with this config:
+
 ```json
 {
   "questions": [...]
 }
 ```
+````
+
 ```
 
 **Issue**: Claude must read this, understand it, and invoke the tool. Not guaranteed.
@@ -28,7 +31,9 @@ PopKit uses a PostToolUse hook to **programmatically invoke AskUserQuestion** in
 **After**: PostToolUse hook intercepts skill output and programmatically invokes AskUserQuestion:
 
 ```
+
 Skill executes → Outputs markdown → Hook intercepts → Extracts JSON → Invokes AskUserQuestion ✓
+
 ```
 
 **Result**: 100% reliable, no reliance on Claude's instruction-following.
@@ -40,34 +45,38 @@ Skill executes → Outputs markdown → Hook intercepts → Extracts JSON → In
 ### Components
 
 ```
+
 packages/popkit-dev/
 ├── hooks/
-│   ├── hooks.json                         # PostToolUse hook configuration
-│   ├── skill-completion-handler.py        # Hook script (extracts & invokes)
-│   └── test-skill-completion-handler.py   # Test suite (3 tests)
+│ ├── hooks.json # PostToolUse hook configuration
+│ ├── skill-completion-handler.py # Hook script (extracts & invokes)
+│ └── test-skill-completion-handler.py # Test suite (3 tests)
+
 ```
 
 ### Flow Diagram
 
 ```
+
 1. User runs: /popkit-dev:routine morning
-         ↓
+   ↓
 2. pop-morning skill executes
-         ↓
+   ↓
 3. Python outputs markdown with PopKit Way instructions
-         ↓
+   ↓
 4. Claude Code invokes Skill tool (completes)
-         ↓
+   ↓
 5. PostToolUse hook fires → skill-completion-handler.py runs
-         ↓
+   ↓
 6. Hook extracts JSON configuration from markdown
-         ↓
+   ↓
 7. Hook outputs: {"type": "ask_user_question", "questions": [...]}
-         ↓
+   ↓
 8. Claude Code invokes AskUserQuestion tool (programmatically!)
-         ↓
+   ↓
 9. User sees interactive prompt
-```
+
+````
 
 ---
 
@@ -93,9 +102,10 @@ packages/popkit-dev/
     ]
   }
 }
-```
+````
 
 **Key points**:
+
 - Triggers **after** any Skill tool invocation
 - Runs `skill-completion-handler.py`
 - Non-blocking (doesn't delay output)
@@ -128,6 +138,7 @@ packages/popkit-dev/
 ### Output (stdout):
 
 **Case 1: PopKit Way found**
+
 ```json
 {
   "type": "ask_user_question",
@@ -143,6 +154,7 @@ packages/popkit-dev/
 ```
 
 **Case 2: No PopKit Way instructions**
+
 ```json
 {
   "type": "passthrough"
@@ -150,6 +162,7 @@ packages/popkit-dev/
 ```
 
 **Case 3: Non-Skill tool**
+
 ```json
 {
   "type": "passthrough"
@@ -210,10 +223,12 @@ Results: 3 passed, 0 failed
 All skills following "The PopKit Way" automatically benefit from this hook:
 
 ✅ **Currently Implemented**:
+
 - `pop-morning` - Morning routine with Ready to Code Score
 - `pop-nightly` - Nightly routine with Sleep Score
 
 🔜 **Future Skills**:
+
 - Any skill that outputs PopKit Way instructions
 - No code changes needed - hook handles it automatically
 
@@ -222,18 +237,22 @@ All skills following "The PopKit Way" automatically benefit from this hook:
 ## Benefits
 
 ### 1. **100% Reliability**
+
 - No relying on Claude's instruction-following
 - Programmatic tool invocation guaranteed
 
 ### 2. **Universal Application**
+
 - Works for all skills using PopKit Way pattern
 - No per-skill hook configuration needed
 
 ### 3. **Graceful Degradation**
+
 - If hook fails, Claude still sees instructions (fallback)
 - Non-blocking hook prevents output delays
 
 ### 4. **Easy to Extend**
+
 - Add more hook actions in the future
 - Extract structured data for other purposes
 
@@ -246,6 +265,7 @@ All skills following "The PopKit Way" automatically benefit from this hook:
 **Symptoms**: AskUserQuestion never appears, even though skill outputs instructions
 
 **Solutions**:
+
 1. Verify hooks/hooks.json exists and is valid JSON
 2. Check hook script is executable: `chmod +x hooks/skill-completion-handler.py`
 3. Test hook manually:
@@ -259,6 +279,7 @@ All skills following "The PopKit Way" automatically benefit from this hook:
 **Symptoms**: Hook fires but doesn't invoke AskUserQuestion
 
 **Solutions**:
+
 1. Verify skill output contains `**IMPORTANT - The PopKit Way**` marker
 2. Ensure JSON is in code block: ` ```json...``` `
 3. Check JSON is valid (no syntax errors)
@@ -269,6 +290,7 @@ All skills following "The PopKit Way" automatically benefit from this hook:
 **Symptoms**: User sees prompt twice
 
 **Possible causes**:
+
 1. Claude follows instructions AND hook fires (both invoke)
 2. Multiple skills output PopKit Way instructions
 

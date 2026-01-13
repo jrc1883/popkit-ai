@@ -16,6 +16,7 @@ Query cached external documentation and blog content to get fresh context for de
 ## When to Use
 
 Invoke this skill when:
+
 - User asks about Claude Code features or best practices
 - You need to reference official documentation
 - Answering questions about hooks, commands, or Claude Code architecture
@@ -24,6 +25,7 @@ Invoke this skill when:
 ## Available Knowledge Sources
 
 Default sources (synced automatically):
+
 1. **anthropic-engineering** - Claude Code Engineering Blog
 2. **claude-code-docs-overview** - Claude Code Documentation Overview
 3. **claude-code-docs-hooks** - Claude Code Hooks Reference
@@ -33,6 +35,7 @@ Default sources (synced automatically):
 ### Step 1: List Available Knowledge
 
 Use the **Read tool** to check what knowledge is available:
+
 ```
 Read: ~/.claude/config/knowledge/sources.json
 ```
@@ -40,6 +43,7 @@ Read: ~/.claude/config/knowledge/sources.json
 ### Step 2: Check Cache Freshness
 
 Use bash for SQLite queries (no native equivalent):
+
 ```bash
 sqlite3 ~/.claude/config/knowledge/cache.db \
   "SELECT source_id, fetched_at, expires_at, status FROM knowledge_cache"
@@ -48,6 +52,7 @@ sqlite3 ~/.claude/config/knowledge/cache.db \
 ### Step 3: Read Specific Content
 
 Use the **Read tool** to read cached content:
+
 ```
 Read: ~/.claude/config/knowledge/content/anthropic-engineering.md
 Read: ~/.claude/config/knowledge/content/claude-code-docs-overview.md
@@ -56,6 +61,7 @@ Read: ~/.claude/config/knowledge/content/claude-code-docs-overview.md
 ### Step 4: Search Across Sources
 
 Use the **Grep tool** to search across all cached content:
+
 ```
 Grep: pattern="hooks", path="~/.claude/config/knowledge/content/"
 Grep: pattern="MCP", path="~/.claude/config/knowledge/content/"
@@ -89,6 +95,7 @@ if is_available() and store.count("knowledge") > 0:
 ```
 
 **Hybrid Search Strategy:**
+
 1. Try semantic search first (if embeddings available)
 2. Fall back to Grep for keyword matching
 3. Combine results with weighted scoring:
@@ -96,6 +103,7 @@ if is_available() and store.count("knowledge") > 0:
    - Keyword match: 30% weight
 
 **Initialize Embeddings:**
+
 ```bash
 python hooks/utils/embedding_init.py --force
 ```
@@ -116,8 +124,9 @@ When providing information from knowledge sources:
 [Relevant excerpt or summary from cached knowledge]
 
 ---
-*From cached knowledge source: [source_id]*
-*Last updated: [fetched_at]*
+
+_From cached knowledge source: [source_id]_
+_Last updated: [fetched_at]_
 ```
 
 ## Example Queries
@@ -125,6 +134,7 @@ When providing information from knowledge sources:
 ### Query: "How do hooks work in Claude Code?"
 
 1. Use the **Read tool** to read the hooks documentation:
+
    ```
    Read: ~/.claude/config/knowledge/content/claude-code-docs-hooks.md
    ```
@@ -135,6 +145,7 @@ When providing information from knowledge sources:
 ### Query: "What are best practices for Claude Code?"
 
 1. Use the **Read tool** to read the engineering blog:
+
    ```
    Read: ~/.claude/config/knowledge/content/anthropic-engineering.md
    ```
@@ -145,6 +156,7 @@ When providing information from knowledge sources:
 ### Query: "Is there something about X in the docs?"
 
 1. Use the **Grep tool** to search all sources:
+
    ```
    Grep: pattern="X", path="~/.claude/config/knowledge/content/"
    ```
@@ -162,6 +174,7 @@ If knowledge is stale or missing:
 Last fetched: [date] (expired [time] ago)
 
 Would you like me to:
+
 1. Refresh the knowledge sources? (`/popkit:knowledge refresh`)
 2. Provide what I have from my training data?
 3. Search the web for current information?

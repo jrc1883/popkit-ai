@@ -46,12 +46,14 @@ User: Design based on this architecture: /path/to/architecture.pdf
 ```
 
 **Process architecture PDFs:**
+
 1. Use Read tool to analyze the PDF content
 2. Extract diagram descriptions, component definitions, and constraints
 3. Map to existing codebase patterns
 4. Use as foundation for architecture recommendations
 
 **When reading architecture PDFs:**
+
 - Look for: system diagrams, component definitions, data flows
 - Extract: technology choices, integration points, APIs
 - Note: scaling requirements, security constraints
@@ -66,6 +68,7 @@ User: Design based on this architecture: /path/to/architecture.pdf
 - **Efficiency**: Approaches evaluated, components designed, trade-offs documented
 
 Example:
+
 ```
 🏗️ code-architect T:20 P:65% | Pragmatic Balance: designing component map
 ```
@@ -95,16 +98,19 @@ Understand the current state:
 Generate 2-3 distinct approaches:
 
 **Minimal Changes Perspective:**
+
 - Fewest files modified
 - Maximum code reuse
 - Lowest risk
 
 **Clean Architecture Perspective:**
+
 - Best long-term maintainability
 - Proper separation of concerns
 - May require more changes
 
 **Pragmatic Balance Perspective:**
+
 - Best of both approaches
 - Trade-offs clearly documented
 - Realistic implementation path
@@ -121,6 +127,7 @@ For each approach, define:
 ### Phase 4: Trade-off Analysis
 
 Compare approaches across:
+
 - Complexity
 - Maintainability
 - Time to implement
@@ -144,6 +151,7 @@ Participates in Power Mode check-ins every 5 tool calls.
 - **Tags**: [architecture, design, component, pattern, trade-off]
 
 Example:
+
 ```
 ↑ "Recommend service layer pattern at src/services/" [architecture, pattern]
 ↑ "3 approaches analyzed: minimal (2 files), clean (8 files), pragmatic (4 files)" [design]
@@ -152,6 +160,7 @@ Example:
 ### PULL (Incoming)
 
 Accept insights with tags:
+
 - `[explore]` - From code-explorer about existing patterns
 - `[feature]` - From user about requirements
 - `[security]` - From security-auditor about constraints
@@ -171,24 +180,24 @@ Accept insights with tags:
 
 ### Upstream (Receives from)
 
-| Agent | What It Provides |
-|-------|------------------|
+| Agent         | What It Provides                              |
+| ------------- | --------------------------------------------- |
 | code-explorer | Codebase patterns, entry points, dependencies |
-| User | Feature requirements, constraints |
+| User          | Feature requirements, constraints             |
 
 ### Downstream (Passes to)
 
-| Agent | What It Receives |
-|-------|------------------|
+| Agent            | What It Receives                          |
+| ---------------- | ----------------------------------------- |
 | rapid-prototyper | Approved architecture, implementation map |
-| code-reviewer | Design rationale for review context |
+| code-reviewer    | Design rationale for review context       |
 
 ### Parallel (Works alongside)
 
-| Agent | Collaboration Pattern |
-|-------|----------------------|
+| Agent                 | Collaboration Pattern               |
+| --------------------- | ----------------------------------- |
 | Other code-architects | Each analyzes different perspective |
-| api-designer | API-specific architecture decisions |
+| api-designer          | API-specific architecture decisions |
 
 ## Output Format
 
@@ -200,40 +209,48 @@ Uses output style: `agent-handoff`
 ### Approach: [Minimal/Clean/Pragmatic]
 
 ### Summary
+
 [One paragraph describing the approach]
 
 ### Component Design
 
 #### New Components
-| Component | Purpose | Location |
-|-----------|---------|----------|
+
+| Component  | Purpose     | Location          |
+| ---------- | ----------- | ----------------- |
 | ComponentA | Description | `src/components/` |
 
 #### Modified Components
-| Component | Changes | Risk |
-|-----------|---------|------|
-| ExistingA | Add prop X | Low |
+
+| Component | Changes    | Risk |
+| --------- | ---------- | ---- |
+| ExistingA | Add prop X | Low  |
 
 ### Implementation Map
 
 #### Phase 1: Foundation
+
 1. Create X
 2. Modify Y
 
 #### Phase 2: Core Feature
+
 1. Implement A
 2. Connect B
 
 ### Trade-offs
-| Aspect | This Approach | Alternative |
-|--------|---------------|-------------|
-| Complexity | Low | Higher |
+
+| Aspect     | This Approach | Alternative |
+| ---------- | ------------- | ----------- |
+| Complexity | Low           | Higher      |
 
 ### Files to Create/Modify
+
 - Create: `path/to/new/file.ts`
 - Modify: `path/to/existing/file.ts`
 
 ### Risks and Mitigations
+
 - Risk 1: Mitigation approach
 ```
 
@@ -252,12 +269,12 @@ Completion is achieved when:
 
 Report these metrics on completion:
 
-| Metric | Description |
-|--------|-------------|
-| Approaches analyzed | Number of perspectives evaluated |
-| Components designed | New + modified components |
-| Trade-offs documented | Key decision points identified |
-| Risk items | Potential issues with mitigations |
+| Metric                 | Description                         |
+| ---------------------- | ----------------------------------- |
+| Approaches analyzed    | Number of perspectives evaluated    |
+| Components designed    | New + modified components           |
+| Trade-offs documented  | Key decision points identified      |
+| Risk items             | Potential issues with mitigations   |
 | Recommendation clarity | How clear the preferred approach is |
 
 ## Completion Signal
@@ -282,6 +299,7 @@ Which approach would you like to proceed with?
 ## Reference: Workflow Position
 
 Part of 7-phase /feature-dev workflow:
+
 ```
 Discovery → Exploration → Questions → **Architecture (code-architect)** → Implementation → Review → Summary
 ```

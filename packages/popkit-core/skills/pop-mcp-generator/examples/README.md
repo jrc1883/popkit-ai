@@ -4,14 +4,14 @@ Detailed code samples and implementation patterns extracted from the main SKILL.
 
 ## Contents
 
-| File | Purpose |
-|------|---------|
-| `tool-implementation.ts` | Example tool implementations (health check, semantic search) |
-| `server-index.ts` | Complete MCP server entry point |
-| `package-json.json` | Generated package.json template |
-| `basic-analysis-output.md` | Example basic mode output (no API key) |
-| `cloud-api-integration.py` | Enhanced mode cloud API integration |
-| `auto-embedding.py` | Tool embedding export and registration |
+| File                       | Purpose                                                      |
+| -------------------------- | ------------------------------------------------------------ |
+| `tool-implementation.ts`   | Example tool implementations (health check, semantic search) |
+| `server-index.ts`          | Complete MCP server entry point                              |
+| `package-json.json`        | Generated package.json template                              |
+| `basic-analysis-output.md` | Example basic mode output (no API key)                       |
+| `cloud-api-integration.py` | Enhanced mode cloud API integration                          |
+| `auto-embedding.py`        | Tool embedding export and registration                       |
 
 ## Usage
 
@@ -25,6 +25,7 @@ These examples are referenced from the main SKILL.md using progressive disclosur
 ```
 
 This approach:
+
 - Reduces main SKILL.md token count by 53.8% (3,435 → 1,588 tokens)
 - Preserves all implementation details for reference
 - Improves readability with focused main documentation

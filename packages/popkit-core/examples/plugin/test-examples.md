@@ -11,6 +11,7 @@ Examples of using `/popkit:plugin test` for comprehensive plugin validation.
 ```
 
 Output:
+
 ```
 Loaded 35 test definitions from 5 files
 
@@ -49,6 +50,7 @@ Duration: 1.86s
 ```
 
 Output:
+
 ```
 Loaded 3 test definitions from 1 file
 
@@ -75,6 +77,7 @@ Duration: 1.66s
 ```
 
 Output:
+
 ```
 Loaded 2 test definitions from 1 file
 
@@ -114,6 +117,7 @@ Show detailed output including passing tests:
 ```
 
 Output:
+
 ```
 Executing: Pre-Tool-Use Hook JSON Protocol
 Category: hooks
@@ -156,6 +160,7 @@ Duration: 0.23s
 ```
 
 Output:
+
 ```
 PopKit Plugin Test Results
 ============================================================
@@ -192,6 +197,7 @@ Stop on first failure:
 ```
 
 Output:
+
 ```
 PopKit Plugin Test Results
 ============================================================
@@ -221,6 +227,7 @@ Duration: 0.54s
 ```
 
 Output:
+
 ```json
 {
   "summary": {
@@ -274,6 +281,7 @@ Run a specific test by ID:
 ```
 
 Output:
+
 ```
 Loaded 1 test definition
 
@@ -466,6 +474,7 @@ When working on agents:
 ### Common Failure Patterns
 
 **Missing Frontmatter**:
+
 ```
 ✗ skill-format-validation
   Reason: Frontmatter missing required field: description
@@ -475,6 +484,7 @@ When working on agents:
 Fix: Add `description` to frontmatter
 
 **Hardcoded Paths**:
+
 ```
 ✗ skill-format-validation
   Reason: Found hardcoded user path
@@ -485,6 +495,7 @@ Fix: Add `description` to frontmatter
 Fix: Replace with relative paths or environment variables
 
 **Orphaned Agents**:
+
 ```
 ✗ agent-definitions-exist
   Reason: Agent definition missing for: new-feature-agent

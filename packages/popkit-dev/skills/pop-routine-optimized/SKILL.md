@@ -13,6 +13,7 @@ Token-efficient routine execution using intelligent caching and selective tool c
 ## Overview
 
 Reduces routine token usage by 30-50% through:
+
 - **Caching**: Skip unchanged checks (git status, test results)
 - **Selective Execution**: Only run tests if source changed
 - **Compact Flags**: Use `--short`, `--quiet` where possible
@@ -21,10 +22,12 @@ Reduces routine token usage by 30-50% through:
 ## When to Use
 
 **Automatic:**
+
 - Invoked when `--optimized` flag used with `/popkit:routine`
 - Example: `/popkit:routine morning --optimized`
 
 **Manual:**
+
 - Can be called directly for custom optimization strategies
 
 ## Optimization Strategies
@@ -47,6 +50,7 @@ else:
 ```
 
 **Token Savings:**
+
 - Cache hit: ~500 tokens saved (skip command entirely)
 - `--short` flag: ~200 tokens vs full output
 
@@ -69,6 +73,7 @@ else:
 ```
 
 **Token Savings:**
+
 - Cache hit: ~1000-3000 tokens (skip test execution)
 - Smart detection: Only re-run when needed
 
@@ -88,18 +93,19 @@ else:
 ```
 
 **Token Savings:**
+
 - Skip when clean: ~700 tokens
 - `--stat` vs full diff: ~500 tokens
 
 ### 4. Compact Command Flags
 
-| Command | Standard | Optimized | Savings |
-|---------|----------|-----------|---------|
-| git status | `git status` | `git status --short` | ~200 tokens |
-| git log | `git log` | `git log --oneline -5` | ~400 tokens |
-| git diff | `git diff` | `git diff --stat` | ~500 tokens |
-| pytest | `pytest -v` | `pytest --quiet` | ~300 tokens |
-| npm test | `npm test` | `npm test -- --silent` | ~200 tokens |
+| Command    | Standard     | Optimized              | Savings     |
+| ---------- | ------------ | ---------------------- | ----------- |
+| git status | `git status` | `git status --short`   | ~200 tokens |
+| git log    | `git log`    | `git log --oneline -5` | ~400 tokens |
+| git diff   | `git diff`   | `git diff --stat`      | ~500 tokens |
+| pytest     | `pytest -v`  | `pytest --quiet`       | ~300 tokens |
+| npm test   | `npm test`   | `npm test -- --silent` | ~200 tokens |
 
 ## Implementation
 
@@ -204,13 +210,13 @@ def optimized_morning_routine():
 
 **Typical Optimization Results:**
 
-| Check | Standard | Optimized | Savings | Method |
-|-------|----------|-----------|---------|--------|
-| Git Status | 700 tokens | 200 tokens | 500 | Cache + --short |
-| Git Diff | 800 tokens | 0-300 tokens | 500 | Skip if clean |
-| Tests | 3000 tokens | 0-1500 tokens | 1500 | Cache if unchanged |
-| TypeScript | 2000 tokens | 0-2000 tokens | Variable | Skip if no .ts |
-| Lint | 1500 tokens | 0-1500 tokens | Variable | Skip if clean |
+| Check      | Standard    | Optimized     | Savings  | Method             |
+| ---------- | ----------- | ------------- | -------- | ------------------ |
+| Git Status | 700 tokens  | 200 tokens    | 500      | Cache + --short    |
+| Git Diff   | 800 tokens  | 0-300 tokens  | 500      | Skip if clean      |
+| Tests      | 3000 tokens | 0-1500 tokens | 1500     | Cache if unchanged |
+| TypeScript | 2000 tokens | 0-2000 tokens | Variable | Skip if no .ts     |
+| Lint       | 1500 tokens | 0-1500 tokens | Variable | Skip if clean      |
 
 **Total Potential Savings: 3000-4000 tokens (40-50%)**
 
@@ -226,6 +232,7 @@ print(get_cache_stats_report(cache))
 ```
 
 Output:
+
 ```
 Cache Statistics:
   Valid entries: 5
@@ -256,6 +263,7 @@ cache.clear()
 ```
 
 **Token Usage:**
+
 - Git commands: ~2000 tokens
 - Tests: ~3000 tokens
 - Linting: ~1500 tokens
@@ -269,6 +277,7 @@ cache.clear()
 ```
 
 **Token Usage:**
+
 - Git commands (--short): ~1200 tokens
 - Tests: ~3000 tokens (no cache yet)
 - Linting (--silent): ~800 tokens
@@ -283,6 +292,7 @@ cache.clear()
 ```
 
 **Token Usage:**
+
 - Git commands (cached): ~200 tokens
 - Tests (cached): ~100 tokens
 - Linting (skipped): ~0 tokens
@@ -359,6 +369,7 @@ The optimized routine works with `--measure` flag:
 ```
 
 Output:
+
 ```
 [CACHED] Git status unchanged
 [CACHED] No source changes - using cached test results
@@ -391,19 +402,19 @@ Token Savings vs Standard: 8,180 tokens (96%)
 
 ## Related Skills
 
-| Skill | Purpose |
-|-------|---------|
-| `pop-routine-measure` | Measure token usage |
+| Skill                 | Purpose                  |
+| --------------------- | ------------------------ |
+| `pop-routine-measure` | Measure token usage      |
 | `pop-morning-routine` | Standard morning routine |
 | `pop-nightly-routine` | Standard nightly routine |
 
 ## Architecture
 
-| Component | Purpose |
-|-----------|---------|
-| `hooks/utils/routine_cache.py` | Cache management |
-| `hooks/utils/routine_measurement.py` | Token tracking |
-| `skills/pop-routine-optimized/` | This skill |
+| Component                            | Purpose          |
+| ------------------------------------ | ---------------- |
+| `hooks/utils/routine_cache.py`       | Cache management |
+| `hooks/utils/routine_measurement.py` | Token tracking   |
+| `skills/pop-routine-optimized/`      | This skill       |
 
 ---
 

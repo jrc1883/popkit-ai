@@ -196,17 +196,20 @@ Use AskUserQuestion tool with:
 ## The Process
 
 **Understanding the idea:**
+
 - Check out the current project state first (files, docs, recent commits)
 - Ask questions one at a time to refine the idea using AskUserQuestion
 - Only one question per message - if a topic needs more exploration, break it into multiple questions
 - Focus on understanding: purpose, constraints, success criteria
 
 **Exploring approaches:**
+
 - Propose 2-3 different approaches with trade-offs using AskUserQuestion
 - Each option should have a clear label and description explaining trade-offs
 - Lead with your recommended option by listing it first
 
 **Presenting the design:**
+
 - Once you believe you understand what you're building, present the design
 - Break it into sections of 200-300 words
 - Ask after each section whether it looks right so far
@@ -216,6 +219,7 @@ Use AskUserQuestion tool with:
 ## After the Design
 
 **Documentation:**
+
 - Write the validated design to `docs/plans/YYYY-MM-DD-<topic>-design.md`
 - Commit the design document to git
 
@@ -252,6 +256,7 @@ gh issue create --title "[Design] <topic>" --body "Design document: docs/plans/.
 ```
 
 **Implementation (if continuing):**
+
 - Use AskUserQuestion: "Design complete. What's next?"
 - Options: "Create implementation plan", "Create issue only", "Done for now"
 - Use pop:writing-plans skill to create detailed implementation plan (receives context automatically)
@@ -274,12 +279,14 @@ User: Here's the design doc: /path/to/design.pdf
 ```
 
 **Process PDF input:**
+
 1. Use Read tool to analyze the PDF content
 2. Extract key requirements, constraints, and goals
 3. Identify areas that need clarification
 4. Use extracted context to inform the brainstorming process
 
 **When reading design PDFs:**
+
 - Look for: objectives, user stories, constraints, success criteria
 - Note gaps: missing acceptance criteria, unclear requirements
 - Identify: dependencies, technical constraints, timeline pressures

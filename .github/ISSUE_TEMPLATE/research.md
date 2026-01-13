@@ -3,12 +3,13 @@ name: Research / Investigation
 about: Research tasks, spikes, or investigation work
 title: "[Research] "
 labels: research
-assignees: ''
+assignees: ""
 ---
 
 ## Priority & Phase
 
 <!-- Research is typically phase:now or phase:next -->
+
 **Priority:** `P1-high` | `P2-medium` | `P3-low`
 **Phase:** `phase:now` | `phase:next` | `phase:future`
 **Milestone:** `v1.0.0` | `v2.0.0`
@@ -63,34 +64,40 @@ This research should be completed within: [X hours/days]
 <!-- This section helps Claude Code conduct this research effectively -->
 
 ### Workflow
+
 - [ ] **Exploration Mode** - Use `code-explorer` agent for codebase analysis
 - [ ] **Web Research** - Use WebSearch/WebFetch for external research
 - [ ] **Document Findings** - Create summary in appropriate location
 
 ### Research Phases
+
 - [x] Discovery - Gather information
 - [ ] Analysis - Synthesize findings
 - [ ] Recommendation - Propose path forward
 
 ### Suggested Agents
+
 - Primary: `researcher`, `code-explorer`
 - Supporting: `documentation-maintainer`
 
 ### Output Location
 
 Where should findings be documented?
+
 - [ ] `docs/research/[topic].md`
 - [ ] Comment on this issue
 - [ ] New architecture issue
 - [ ] CLAUDE.md update
 
 ### Quality Gates
+
 - [ ] Research question answered
 - [ ] Sources cited
 - [ ] Tradeoffs documented
 - [ ] Follow-up issues created
 
 ### Power Mode
+
 - [ ] **Not Needed** - Research is typically sequential exploration
 
 ---

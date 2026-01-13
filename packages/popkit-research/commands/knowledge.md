@@ -23,13 +23,13 @@ Manage configurable knowledge sources that are synced on session start. External
 
 This command integrates with popkit's full architecture:
 
-| Component | Role |
-|-----------|------|
-| **Skill** | `pop-knowledge-lookup` - Query cached knowledge |
-| **Hook** | `knowledge-sync.py` - Session start sync with TTL |
-| **Config** | `~/.claude/config/knowledge/sources.json` |
-| **Cache** | `~/.claude/config/knowledge/cache.db` (SQLite) |
-| **Content** | `~/.claude/config/knowledge/content/*.md` |
+| Component   | Role                                              |
+| ----------- | ------------------------------------------------- |
+| **Skill**   | `pop-knowledge-lookup` - Query cached knowledge   |
+| **Hook**    | `knowledge-sync.py` - Session start sync with TTL |
+| **Config**  | `~/.claude/config/knowledge/sources.json`         |
+| **Cache**   | `~/.claude/config/knowledge/cache.db` (SQLite)    |
+| **Content** | `~/.claude/config/knowledge/content/*.md`         |
 
 ## Instructions
 
@@ -38,6 +38,7 @@ You are the knowledge source manager. Parse the ARGUMENTS to determine the subco
 ### Step 0: Parse Arguments
 
 Extract the subcommand and parameters from ARGUMENTS:
+
 - No args → `list`
 - `add <url>` → add workflow
 - `remove <id>` → remove workflow
@@ -48,6 +49,7 @@ Extract the subcommand and parameters from ARGUMENTS:
 ### Configuration Location
 
 All operations use this config file:
+
 ```
 ~/.claude/config/knowledge/sources.json
 ```
@@ -61,6 +63,7 @@ Read it first to understand current state before any operation.
 **Trigger:** No arguments provided
 
 **Steps:**
+
 1. Read `~/.claude/config/knowledge/sources.json`
 2. Query cache status from `~/.claude/config/knowledge/cache.db`:
    ```sql
@@ -70,6 +73,7 @@ Read it first to understand current state before any operation.
 3. Display formatted table
 
 **Output Format:**
+
 ```
 ## Knowledge Sources
 
@@ -88,6 +92,7 @@ Read it first to understand current state before any operation.
 **Trigger:** `add <url>`
 
 **Steps:**
+
 1. **Validate URL** - Must be valid HTTP(S)
 2. **Check for duplicates** - Ensure URL not already configured
 3. **Generate ID** - Create kebab-case from domain/path (e.g., `docs-anthropic-hooks`)
@@ -101,6 +106,7 @@ Read it first to understand current state before any operation.
 7. **Trigger initial sync** - Fetch and cache content immediately
 
 **Output Format:**
+
 ```
 ## Added Knowledge Source
 
@@ -121,6 +127,7 @@ Initial fetch: 45KB cached successfully
 **Trigger:** `remove <id>`
 
 **Steps:**
+
 1. **Read current config** from sources.json
 2. **Find source by ID** - Error if not found
 3. **Show what will be removed** (name, URL, cached size)
@@ -129,6 +136,7 @@ Initial fetch: 45KB cached successfully
 6. **Clean cache DB** - Delete metadata row
 
 **Output Format:**
+
 ```
 ## Removed Knowledge Source
 
@@ -146,6 +154,7 @@ Remaining sources: 2
 **Trigger:** `refresh [id]`
 
 **Steps:**
+
 1. **Determine scope** - All sources or specific ID
 2. **For each source:**
    - Fetch URL via WebFetch (bypass cache)
@@ -154,6 +163,7 @@ Remaining sources: 2
 3. **Report results**
 
 **Output Format:**
+
 ```
 ## Knowledge Refresh
 
@@ -172,6 +182,7 @@ All sources refreshed successfully.
 **Trigger:** `status`
 
 **Steps:**
+
 1. Read sources.json for configuration
 2. Query cache.db for detailed metrics:
    ```sql
@@ -182,6 +193,7 @@ All sources refreshed successfully.
 4. Display comprehensive status
 
 **Output Format:**
+
 ```
 ## Knowledge Cache Status
 
@@ -208,6 +220,7 @@ All sources refreshed successfully.
 **Trigger:** `search <query>`
 
 **Steps:**
+
 1. Search across all cached content files using Grep:
    ```bash
    grep -ri "<query>" ~/.claude/config/knowledge/content/
@@ -216,6 +229,7 @@ All sources refreshed successfully.
 3. Show relevant excerpts with context
 
 **Output Format:**
+
 ```
 ## Knowledge Search: "hooks"
 
@@ -235,12 +249,12 @@ All sources refreshed successfully.
 
 ## Error Handling
 
-| Error | Response |
-|-------|----------|
-| Source ID not found | List available IDs and suggest closest match |
-| URL fetch failed | Show HTTP status, suggest checking URL manually |
-| Config file missing | Create with defaults, inform user |
-| Cache DB corrupted | Recreate DB, trigger full refresh |
+| Error               | Response                                        |
+| ------------------- | ----------------------------------------------- |
+| Source ID not found | List available IDs and suggest closest match    |
+| URL fetch failed    | Show HTTP status, suggest checking URL manually |
+| Config file missing | Create with defaults, inform user               |
+| Cache DB corrupted  | Recreate DB, trigger full refresh               |
 
 ---
 
@@ -253,6 +267,7 @@ All sources refreshed successfully.
 ## Validation
 
 After any modification, verify:
+
 1. `sources.json` is valid JSON
 2. All enabled sources have corresponding content files (or are pending sync)
 3. Cache DB is consistent with config

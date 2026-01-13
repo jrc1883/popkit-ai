@@ -9,15 +9,15 @@ Capture, index, and surface research insights during development. Maintains a se
 
 ## Subcommands
 
-| Subcommand | Description |
-|------------|-------------|
-| list (default) | List captured research |
-| search | Semantic search across research entries |
-| add | Add new research entry |
-| tag | Add/remove tags from entries |
-| show | View full research entry |
-| delete | Remove research entry |
-| merge | Process research branches from Claude Code Web sessions |
+| Subcommand     | Description                                             |
+| -------------- | ------------------------------------------------------- |
+| list (default) | List captured research                                  |
+| search         | Semantic search across research entries                 |
+| add            | Add new research entry                                  |
+| tag            | Add/remove tags from entries                            |
+| show           | View full research entry                                |
+| delete         | Remove research entry                                   |
+| merge          | Process research branches from Claude Code Web sessions |
 
 ---
 
@@ -95,11 +95,11 @@ Process research branches from Claude Code Web sessions.
 
 ## Architecture
 
-| Component | Integration |
-|-----------|-------------|
-| Index Storage | .claude/research/index.json |
-| Embeddings | Voyage AI, Upstash Vector |
-| Branch Sync | Claude Code Web → CLI session handoff |
-| Search | Semantic similarity with relevance threshold |
+| Component     | Integration                                  |
+| ------------- | -------------------------------------------- |
+| Index Storage | .claude/research/index.json                  |
+| Embeddings    | Voyage AI, Upstash Vector                    |
+| Branch Sync   | Claude Code Web → CLI session handoff        |
+| Search        | Semantic similarity with relevance threshold |
 
 **Related:** `/popkit-research:knowledge`, `/popkit-dev:dev brainstorm`, `/popkit-core:project embed`

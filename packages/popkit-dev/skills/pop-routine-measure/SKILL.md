@@ -233,21 +233,22 @@ if ROUTINE_MEASUREMENT_AVAILABLE and check_measure_flag():
 
 ## Metrics Collected
 
-| Metric | Description | Source |
-|--------|-------------|--------|
-| **Duration** | Total execution time in seconds | Tracker start/stop |
-| **Tool Calls** | Number of tools invoked | Hook tracking |
-| **Input Tokens** | Estimated input tokens (~20% of total) | Content length / 4 |
-| **Output Tokens** | Estimated output tokens (~80% of total) | Content length / 4 |
-| **Total Tokens** | Input + Output | Sum |
-| **Characters** | Raw character count | Content length |
-| **Cost** | Estimated API cost (Sonnet 4.5 pricing) | Token count * price |
+| Metric            | Description                             | Source               |
+| ----------------- | --------------------------------------- | -------------------- |
+| **Duration**      | Total execution time in seconds         | Tracker start/stop   |
+| **Tool Calls**    | Number of tools invoked                 | Hook tracking        |
+| **Input Tokens**  | Estimated input tokens (~20% of total)  | Content length / 4   |
+| **Output Tokens** | Estimated output tokens (~80% of total) | Content length / 4   |
+| **Total Tokens**  | Input + Output                          | Sum                  |
+| **Characters**    | Raw character count                     | Content length       |
+| **Cost**          | Estimated API cost (Sonnet 4.5 pricing) | Token count \* price |
 
 ## Token Estimation
 
 Uses rough heuristic: **~4 characters per token**
 
 This is an approximation. Actual tokenization varies by:
+
 - Language (code vs natural language)
 - Repetition and patterns
 - Special characters
@@ -257,6 +258,7 @@ For more accurate counts, use Claude API's token counting endpoint (future enhan
 ## Cost Calculation
 
 Based on Claude Sonnet 4.5 pricing (as of Dec 2025):
+
 - **Input:** $3.00 per million tokens
 - **Output:** $15.00 per million tokens
 
@@ -566,16 +568,19 @@ python <dashboard_script> --routine morning --no-compare
 ## Future Enhancements
 
 ### Phase 2: Comparison Mode
+
 ```
 /popkit:routine morning --measure --compare pk,p-1
 ```
 
 ### Phase 3: Trend Analysis
+
 ```
 /popkit:routine morning --measure --trend 7d
 ```
 
 ### Phase 4: Optimization Suggestions
+
 ```
 Tool breakdown shows Bash taking 60% of tokens.
 Suggestion: Cache git status results to reduce redundant calls.
@@ -583,29 +588,29 @@ Suggestion: Cache git status results to reduce redundant calls.
 
 ## Related Skills
 
-| Skill | Purpose |
-|-------|---------|
-| `pop-morning-routine` | Execute morning routine |
-| `pop-nightly-routine` | Execute nightly routine |
-| `pop-routine-generator` | Create custom routines |
+| Skill                        | Purpose                     |
+| ---------------------------- | --------------------------- |
+| `pop-morning-routine`        | Execute morning routine     |
+| `pop-nightly-routine`        | Execute nightly routine     |
+| `pop-routine-generator`      | Create custom routines      |
 | `pop-assessment-performance` | Analyze performance metrics |
 
 ## Related Commands
 
-| Command | Purpose |
-|---------|---------|
-| `/popkit:routine` | Execute routines |
+| Command                      | Purpose                |
+| ---------------------------- | ---------------------- |
+| `/popkit:routine`            | Execute routines       |
 | `/popkit:assess performance` | Performance assessment |
-| `/popkit:stats` | Session statistics |
+| `/popkit:stats`              | Session statistics     |
 
 ## Architecture Files
 
-| File | Purpose |
-|------|---------|
+| File                                 | Purpose                      |
+| ------------------------------------ | ---------------------------- |
 | `hooks/utils/routine_measurement.py` | Measurement tracking classes |
-| `hooks/post-tool-use.py` | Tool call capture hook |
-| `commands/routine.md` | Command specification |
-| `.claude/popkit/measurements/` | Measurement data storage |
+| `hooks/post-tool-use.py`             | Tool call capture hook       |
+| `commands/routine.md`                | Command specification        |
+| `.claude/popkit/measurements/`       | Measurement data storage     |
 
 ## Testing
 

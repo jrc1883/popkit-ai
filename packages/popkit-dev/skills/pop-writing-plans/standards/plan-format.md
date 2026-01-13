@@ -7,6 +7,7 @@ This document defines the required structure and conventions for implementation 
 Plans MUST be saved to: `docs/plans/YYYY-MM-DD-<feature-name>.md`
 
 Examples:
+
 - `docs/plans/2025-12-12-user-authentication.md`
 - `docs/plans/2025-12-12-api-rate-limiting.md`
 
@@ -30,22 +31,23 @@ Every plan MUST start with this header structure:
 
 ### Header Field Requirements
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| Title | Yes | Must include "Implementation Plan" |
-| Claude instruction | Yes | Reference to executing-plans skill |
-| Goal | Yes | Single sentence, specific outcome |
-| Architecture | Yes | High-level approach, 2-3 sentences |
-| Tech Stack | Yes | List of key technologies |
+| Field              | Required | Description                        |
+| ------------------ | -------- | ---------------------------------- |
+| Title              | Yes      | Must include "Implementation Plan" |
+| Claude instruction | Yes      | Reference to executing-plans skill |
+| Goal               | Yes      | Single sentence, specific outcome  |
+| Architecture       | Yes      | High-level approach, 2-3 sentences |
+| Tech Stack         | Yes      | List of key technologies           |
 
 ## Task Structure
 
 Each task follows this format:
 
-```markdown
+````markdown
 ### Task N: [Component Name]
 
 **Files:**
+
 - Create: `exact/path/to/file.py`
 - Modify: `exact/path/to/existing.py:123-145`
 - Test: `tests/exact/path/to/test.py`
@@ -57,11 +59,14 @@ Each task follows this format:
 [Details]
 
 **Step N: Commit**
+
 ```bash
 git add [files]
 git commit -m "type: description"
 ```
-```
+````
+
+````
 
 ### Task Requirements
 
@@ -91,14 +96,16 @@ All code blocks MUST have language specifiers:
 ```python
 def example():
     pass
-```
+````
 
 <!-- Bad -->
+
 ```
 def example():
     pass
 ```
-```
+
+````
 
 Common language specifiers:
 - `python`, `typescript`, `javascript`, `bash`, `json`, `yaml`, `markdown`
@@ -116,11 +123,12 @@ Common language specifiers:
 - Create: `path/to/file.py`
 - Modify: `your/file.py`
 - Create: `[insert path here]`
-```
+````
 
 ### Forbidden Placeholders
 
 These patterns are invalid:
+
 - `path/to/`
 - `your/`
 - `example/`
@@ -142,11 +150,11 @@ Expected: All tests PASS (3 passed)
 
 ### Expected Output Patterns
 
-| Pattern | Usage |
-|---------|-------|
-| `PASS` / `FAIL` | Test results |
-| `Expected: [specific output]` | Command output |
-| Error message quotes | Failure verification |
+| Pattern                       | Usage                |
+| ----------------------------- | -------------------- |
+| `PASS` / `FAIL`               | Test results         |
+| `Expected: [specific output]` | Command output       |
+| Error message quotes          | Failure verification |
 
 ## Commit Message Convention
 
@@ -156,14 +164,14 @@ Follow conventional commits:
 git commit -m "type(scope): description"
 ```
 
-| Type | Usage |
-|------|-------|
-| `feat` | New feature |
-| `fix` | Bug fix |
+| Type       | Usage              |
+| ---------- | ------------------ |
+| `feat`     | New feature        |
+| `fix`      | Bug fix            |
 | `refactor` | Code restructuring |
-| `test` | Test changes |
-| `docs` | Documentation |
-| `chore` | Maintenance |
+| `test`     | Test changes       |
+| `docs`     | Documentation      |
+| `chore`    | Maintenance        |
 
 ## TDD Pattern
 
@@ -197,16 +205,16 @@ python scripts/validate_plan.py docs/plans/YYYY-MM-DD-feature.md
 
 ### Validation Checks
 
-| Check | Severity | Description |
-|-------|----------|-------------|
-| Missing Goal/Architecture/Tech Stack | Error | Required header fields |
-| No tasks found | Error | Must have `### Task N:` format |
-| Placeholder file paths | Error | No generic paths |
-| Missing Files section | Warning | Tasks should list files |
-| No numbered steps | Warning | Tasks need `**Step N:**` |
-| Missing commit step | Info | Each task should commit |
-| Code blocks without language | Warning | Add language specifier |
-| Run commands without expected | Info | Add expected output |
+| Check                                | Severity | Description                    |
+| ------------------------------------ | -------- | ------------------------------ |
+| Missing Goal/Architecture/Tech Stack | Error    | Required header fields         |
+| No tasks found                       | Error    | Must have `### Task N:` format |
+| Placeholder file paths               | Error    | No generic paths               |
+| Missing Files section                | Warning  | Tasks should list files        |
+| No numbered steps                    | Warning  | Tasks need `**Step N:**`       |
+| Missing commit step                  | Info     | Each task should commit        |
+| Code blocks without language         | Warning  | Add language specifier         |
+| Run commands without expected        | Info     | Add expected output            |
 
 ### Score Calculation
 
@@ -225,7 +233,7 @@ After implementing, use @pop-code-review for quality check.
 
 ## Complete Example
 
-```markdown
+````markdown
 # User Authentication Implementation Plan
 
 > **For Claude:** Use executing-plans skill to implement this plan task-by-task.
@@ -242,6 +250,7 @@ middleware for protected routes. Uses existing User model.
 ### Task 1: Password Hashing Utilities
 
 **Files:**
+
 - Create: `src/auth/password.py`
 - Test: `tests/auth/test_password.py`
 
@@ -257,6 +266,7 @@ def test_hash_password_returns_different_value():
     assert hashed != password
     assert len(hashed) > 50
 ```
+````
 
 **Step 2: Run test to verify failure**
 
@@ -286,5 +296,9 @@ git commit -m "feat(auth): add password hashing utility"
 ```
 
 ### Task 2: JWT Token Generation
+
 ...
+
+```
+
 ```

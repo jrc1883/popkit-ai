@@ -785,7 +785,6 @@ class EmbeddingStore:
 # =============================================================================
 
 if __name__ == "__main__":
-
     print("EmbeddingStore Test")
     print("=" * 40)
 

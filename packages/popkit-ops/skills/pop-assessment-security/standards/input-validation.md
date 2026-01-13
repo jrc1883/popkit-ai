@@ -13,6 +13,7 @@ All external input MUST be validated before use. This standard defines patterns 
 All user input must be validated for type, length, format, and range.
 
 **Detect**:
+
 ```python
 # BAD - Direct use of user input
 name = request.form["name"]
@@ -24,6 +25,7 @@ db.save(comment)
 ```
 
 **Fix**:
+
 ```python
 # GOOD - Validate input
 from validators import validate_name
@@ -46,6 +48,7 @@ if not isinstance(comment, str) or len(comment) > 10000:
 Input types must be verified before operations.
 
 **Detect**:
+
 ```python
 # BAD - Assuming type
 quantity = request.json["quantity"]
@@ -57,6 +60,7 @@ User.query.get(user_id)  # Could be non-integer
 ```
 
 **Fix**:
+
 ```python
 # GOOD - Explicit type conversion with validation
 try:
@@ -77,6 +81,7 @@ user_id = request.args.get("id", type=int)
 Numeric inputs must be within expected ranges.
 
 **Detect**:
+
 ```python
 # BAD - No range check
 page = int(request.args.get("page"))
@@ -88,6 +93,7 @@ return items[index]  # Index out of bounds?
 ```
 
 **Fix**:
+
 ```python
 # GOOD - Range validation
 page = int(request.args.get("page", 1))
@@ -107,6 +113,7 @@ abort(404)
 Structured inputs (emails, URLs, dates) must be format-validated.
 
 **Detect**:
+
 ```python
 # BAD - No email validation
 email = request.form["email"]
@@ -118,6 +125,7 @@ requests.post(callback_url, data=result)
 ```
 
 **Fix**:
+
 ```python
 # GOOD - Format validation
 import re
@@ -141,6 +149,7 @@ if parsed.scheme not in ("https",) or parsed.netloc not in ALLOWED_HOSTS:
 Output must be encoded for the context to prevent XSS.
 
 **Detect**:
+
 ```python
 # BAD - Raw HTML output
 return f"<h1>Welcome, {username}</h1>"
@@ -150,6 +159,7 @@ template = f"<script>user = '{user_input}'</script>"
 ```
 
 **Fix**:
+
 ```python
 # GOOD - HTML encoding
 from markupsafe import escape
@@ -170,6 +180,7 @@ return render_template("page.html", username=username)
 File uploads must validate content type, not just extension.
 
 **Detect**:
+
 ```python
 # BAD - Trust file extension
 if filename.endswith(".jpg"):
@@ -181,6 +192,7 @@ if request.content_type == "image/jpeg":
 ```
 
 **Fix**:
+
 ```python
 # GOOD - Validate actual content
 import magic
@@ -207,6 +219,7 @@ if ext not in ALLOWED_EXTENSIONS or mime not in ALLOWED_MIMES:
 Input sizes must be limited to prevent DoS.
 
 **Detect**:
+
 ```python
 # BAD - Unlimited file upload
 file = request.files["upload"]
@@ -217,6 +230,7 @@ data = request.get_json()
 ```
 
 **Fix**:
+
 ```python
 # GOOD - Size limits
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16MB
@@ -238,6 +252,7 @@ if file:
 Complex regex patterns can cause denial of service.
 
 **Detect**:
+
 ```python
 # BAD - Evil regex
 pattern = r"^(a+)+$"
@@ -248,6 +263,7 @@ pattern = r".*.*.*"
 ```
 
 **Fix**:
+
 ```python
 # GOOD - Simple patterns
 pattern = r"^a+$"
@@ -264,16 +280,16 @@ re.match(pattern, user_input)
 
 ## Validation Checklist
 
-| Check ID | Description | Severity |
-|----------|-------------|----------|
-| IV-001 | Validate all user input | high |
-| IV-002 | Verify input types | medium |
-| IV-003 | Check numeric ranges | medium |
-| IV-004 | Validate structured formats | medium |
-| IV-005 | Encode output for context | high |
-| IV-006 | Validate file content types | medium |
-| IV-007 | Enforce size limits | medium |
-| IV-008 | Avoid ReDoS patterns | medium |
+| Check ID | Description                 | Severity |
+| -------- | --------------------------- | -------- |
+| IV-001   | Validate all user input     | high     |
+| IV-002   | Verify input types          | medium   |
+| IV-003   | Check numeric ranges        | medium   |
+| IV-004   | Validate structured formats | medium   |
+| IV-005   | Encode output for context   | high     |
+| IV-006   | Validate file content types | medium   |
+| IV-007   | Enforce size limits         | medium   |
+| IV-008   | Avoid ReDoS patterns        | medium   |
 
 ## Validation Libraries
 

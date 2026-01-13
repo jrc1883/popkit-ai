@@ -170,11 +170,13 @@ Review code for bugs, quality issues, and project conventions with confidence-ba
 ## When to Request Review
 
 **Mandatory:**
+
 - After each task in subagent-driven development
 - After completing major feature
 - Before merge to main
 
 **Optional but valuable:**
+
 - When stuck (fresh perspective)
 - Before refactoring (baseline check)
 - After fixing complex bug
@@ -183,13 +185,13 @@ Review code for bugs, quality issues, and project conventions with confidence-ba
 
 Each identified issue receives a confidence score (0-100):
 
-| Score | Meaning | Action |
-|-------|---------|--------|
-| 0 | Not a real problem | Ignore |
-| 25 | Possibly valid | Ignore |
-| 50 | Moderately confident | Note for reference |
-| 75 | Highly confident | Report |
-| 100 | Absolutely certain | Report as critical |
+| Score | Meaning              | Action             |
+| ----- | -------------------- | ------------------ |
+| 0     | Not a real problem   | Ignore             |
+| 25    | Possibly valid       | Ignore             |
+| 50    | Moderately confident | Note for reference |
+| 75    | Highly confident     | Report             |
+| 100   | Absolutely certain   | Report as critical |
 
 **Threshold: 80+** - Only issues scoring 80 or higher are reported.
 
@@ -203,18 +205,21 @@ Each identified issue receives a confidence score (0-100):
 ## Review Categories
 
 ### 1. Simplicity/DRY/Elegance
+
 - Code duplication
 - Unnecessary complexity
 - Missed abstractions
 - Overly clever code
 
 ### 2. Bugs/Correctness
+
 - Logic errors
 - Edge case handling
 - Type safety issues
 - Error handling gaps
 
 ### 3. Conventions/Abstractions
+
 - Project pattern compliance
 - Naming conventions
 - File organization
@@ -226,12 +231,15 @@ Each identified issue receives a confidence score (0-100):
 ## Code Review: [Feature/PR Name]
 
 ### Summary
+
 [1-2 sentences on overall quality]
 
 ### Critical Issues (Must Fix)
+
 _Issues with confidence 90+_
 
 #### Issue 1: [Title]
+
 - **File**: `path/to/file.ts:line`
 - **Confidence**: 95/100
 - **Category**: Bug/Correctness
@@ -239,9 +247,11 @@ _Issues with confidence 90+_
 - **Fix**: How to fix it
 
 ### Important Issues (Should Fix)
+
 _Issues with confidence 80-89_
 
 #### Issue 2: [Title]
+
 - **File**: `path/to/file.ts:line`
 - **Confidence**: 82/100
 - **Category**: Conventions
@@ -260,18 +270,21 @@ _Issues with confidence 80-89_
 ## How to Request Review
 
 **1. Get git SHAs:**
+
 ```bash
 BASE_SHA=$(git rev-parse HEAD~1)  # or origin/main
 HEAD_SHA=$(git rev-parse HEAD)
 ```
 
 **2. Dispatch code-reviewer subagent:**
+
 - What was implemented
 - Plan or requirements reference
 - Base and head commits
 - Brief description
 
 **3. Act on feedback:**
+
 - Fix Critical issues immediately
 - Fix Important issues before proceeding
 - Note Minor issues for later
@@ -280,6 +293,7 @@ HEAD_SHA=$(git rev-parse HEAD)
 ## Parallel Review
 
 Launch 3 code-reviewer agents in parallel with different focuses:
+
 1. **Simplicity Focus**: DRY, elegance, unnecessary complexity
 2. **Correctness Focus**: Bugs, edge cases, error handling
 3. **Conventions Focus**: Project patterns, naming, organization
@@ -289,12 +303,14 @@ Consolidate findings and filter by confidence threshold.
 ## Red Flags
 
 **Never:**
+
 - Skip review because "it's simple"
 - Ignore Critical issues
 - Proceed with unfixed Important issues
 - Argue with valid technical feedback
 
 **If reviewer wrong:**
+
 - Push back with technical reasoning
 - Show code/tests that prove it works
 - Request clarification
@@ -340,12 +356,12 @@ For each suggestion:
 
 Push back on technically questionable suggestions:
 
-| Reviewer Says | Your Response |
-|---------------|---------------|
+| Reviewer Says                          | Your Response                                             |
+| -------------------------------------- | --------------------------------------------------------- |
 | "This could fail if..." (hypothetical) | "Is this edge case actually reachable? Show me the path." |
-| "Use pattern X instead" | "Does X fit our architecture? What's the trade-off?" |
-| "This is inefficient" | "Is this a hot path? Premature optimization?" |
-| "Add validation for Y" | "Is Y possible given our type system?" |
+| "Use pattern X instead"                | "Does X fit our architecture? What's the trade-off?"      |
+| "This is inefficient"                  | "Is this a hot path? Premature optimization?"             |
+| "Add validation for Y"                 | "Is Y possible given our type system?"                    |
 
 **Disagree with technical reasoning, not emotion.** If you're right, show evidence.
 
@@ -361,16 +377,17 @@ Order matters:
 
 **Step 5: Respond to Each Comment**
 
-| Situation | Response |
-|-----------|----------|
-| Fixed the issue | "Fixed in [commit]" or just resolve the comment |
-| Disagree | Technical reasoning why, ask for their perspective |
-| Need clarification | Ask specific question, don't guess |
-| Won't fix | Explain why (tech debt ticket? out of scope?) |
+| Situation          | Response                                           |
+| ------------------ | -------------------------------------------------- |
+| Fixed the issue    | "Fixed in [commit]" or just resolve the comment    |
+| Disagree           | Technical reasoning why, ask for their perspective |
+| Need clarification | Ask specific question, don't guess                 |
+| Won't fix          | Explain why (tech debt ticket? out of scope?)      |
 
 ### What NOT to Do
 
 **Performative Agreement:**
+
 ```
 BAD: "Great point! You're absolutely right! I'll fix that immediately!"
 GOOD: "Fixed" or "Good catch" or just the fix itself
@@ -379,12 +396,14 @@ GOOD: "Fixed" or "Good catch" or just the fix itself
 Actions demonstrate engagement better than words.
 
 **Blind Implementation:**
+
 ```
 BAD: Immediately implementing every suggestion without verification
 GOOD: Verify suggestion makes sense for YOUR codebase, then implement
 ```
 
 **Defensive Reactions:**
+
 ```
 BAD: "Well actually, I wrote it this way because..."
 GOOD: "Here's why I chose this approach: [technical reason]. Does that change your recommendation?"
@@ -400,6 +419,7 @@ It happens. Handle professionally:
 4. **Escalate if needed** - Get another opinion
 
 Don't:
+
 - Silently ignore feedback
 - Implement something you know is wrong
 - Get emotional or defensive
@@ -407,6 +427,7 @@ Don't:
 ### Red Flags in Your Own Behavior
 
 Stop if you're:
+
 - Implementing without understanding
 - Agreeing to avoid conflict
 - Skipping comments you don't like

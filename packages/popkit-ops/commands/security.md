@@ -15,12 +15,12 @@ Automated security scanning, issue creation, and vulnerability tracking.
 
 ## Subcommands
 
-| Subcommand | Description |
-|------------|-------------|
-| `scan` (default) | Full security scan with issue creation |
-| `list` | List tracked vulnerabilities and issues |
-| `fix` | Attempt automatic remediation |
-| `report` | Generate detailed report |
+| Subcommand       | Description                             |
+| ---------------- | --------------------------------------- |
+| `scan` (default) | Full security scan with issue creation  |
+| `list`           | List tracked vulnerabilities and issues |
+| `fix`            | Attempt automatic remediation           |
+| `report`         | Generate detailed report                |
 
 ---
 
@@ -38,12 +38,12 @@ Run a comprehensive security audit and create GitHub issues for tracking.
 
 ### Flags
 
-| Flag | Description |
-|------|-------------|
-| `--dry-run` | Preview what issues would be created |
+| Flag                 | Description                                             |
+| -------------------- | ------------------------------------------------------- |
+| `--dry-run`          | Preview what issues would be created                    |
 | `--severity <level>` | Minimum severity: `low`, `moderate`, `high`, `critical` |
-| `--no-issues` | Scan and report only, skip issue creation |
-| `--json` | Output in JSON format |
+| `--no-issues`        | Scan and report only, skip issue creation               |
+| `--json`             | Output in JSON format                                   |
 
 ### Scan Process
 
@@ -140,12 +140,12 @@ Attempt automatic remediation of vulnerabilities.
 
 ### Flags
 
-| Flag | Description |
-|------|-------------|
-| `--force` | Apply fixes even with breaking changes |
-| `--pr` | Create a Pull Request with the fixes |
-| `--dry-run` | Show what would be fixed without applying |
-| `--package <name>` | Fix specific package only |
+| Flag               | Description                               |
+| ------------------ | ----------------------------------------- |
+| `--force`          | Apply fixes even with breaking changes    |
+| `--pr`             | Create a Pull Request with the fixes      |
+| `--dry-run`        | Show what would be fixed without applying |
+| `--package <name>` | Fix specific package only                 |
 
 ### Example Output
 
@@ -190,21 +190,23 @@ Generate a detailed security report without creating issues.
 
 ```markdown
 # Security Report: popkit
+
 Generated: 2024-12-09T10:30:00Z
 
 ## Summary
 
-| Severity | Count | Auto-Fixable |
-|----------|-------|--------------|
-| Critical | 0 | - |
-| High | 2 | 1 |
-| Moderate | 5 | 4 |
-| Low | 3 | 2 |
-| **Total** | **10** | **7** |
+| Severity  | Count  | Auto-Fixable |
+| --------- | ------ | ------------ |
+| Critical  | 0      | -            |
+| High      | 2      | 1            |
+| Moderate  | 5      | 4            |
+| Low       | 3      | 2            |
+| **Total** | **10** | **7**        |
 
 ## Critical & High Vulnerabilities
 
 ### nodemailer (HIGH)
+
 - **CVE:** CVE-2024-1234
 - **Versions:** <=7.0.10
 - **Fix:** 7.0.11
@@ -212,6 +214,7 @@ Generated: 2024-12-09T10:30:00Z
 - **Advisory:** https://github.com/advisories/GHSA-xxxx
 
 ### lodash (HIGH)
+
 - **CVE:** CVE-2024-5678
 - **Versions:** <4.17.21
 - **Fix:** 4.17.21
@@ -250,11 +253,11 @@ Security scans are integrated into PopKit routines:
 ### Score Impact
 
 | Severity | Points |
-|----------|--------|
-| Critical | -20 |
-| High | -10 |
-| Moderate | -5 |
-| Low | -2 |
+| -------- | ------ |
+| Critical | -20    |
+| High     | -10    |
+| Moderate | -5     |
+| Low      | -2     |
 
 Maximum deduction: 30 points
 
@@ -291,10 +294,10 @@ Security issues can be reported via bug system:
 
 ## Architecture
 
-| Component | Purpose |
-|-----------|---------|
-| `npm audit --json` | Vulnerability data |
-| `gh issue create` | Issue creation |
-| `gh issue list` | Duplicate detection |
-| `pop-security-scan` skill | Core logic |
-| Routine integration | Automated scanning |
+| Component                 | Purpose             |
+| ------------------------- | ------------------- |
+| `npm audit --json`        | Vulnerability data  |
+| `gh issue create`         | Issue creation      |
+| `gh issue list`           | Duplicate detection |
+| `pop-security-scan` skill | Core logic          |
+| Routine integration       | Automated scanning  |

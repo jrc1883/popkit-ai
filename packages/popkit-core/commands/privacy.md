@@ -15,13 +15,13 @@ Manage your privacy settings for collective learning, including consent, data sh
 
 ## Subcommands
 
-| Subcommand | Description |
-|------------|-------------|
-| `status` | View current privacy settings (default) |
-| `consent` | Give or revoke consent for data sharing |
-| `settings` | Update privacy settings |
-| `export` | Export all your data (GDPR) |
-| `delete` | Delete all your data (GDPR) |
+| Subcommand | Description                             |
+| ---------- | --------------------------------------- |
+| `status`   | View current privacy settings (default) |
+| `consent`  | Give or revoke consent for data sharing |
+| `settings` | Update privacy settings                 |
+| `export`   | Export all your data (GDPR)             |
+| `delete`   | Delete all your data (GDPR)             |
 
 ---
 
@@ -70,6 +70,7 @@ Give or revoke consent for data sharing.
 ### Giving Consent
 
 When you give consent, you acknowledge:
+
 - Anonymized patterns may be shared with the community
 - Your data is processed according to our privacy policy
 - You can revoke consent at any time
@@ -77,6 +78,7 @@ When you give consent, you acknowledge:
 ### Revoking Consent
 
 When you revoke consent:
+
 - Data sharing is immediately disabled
 - No new data will be collected
 - Existing data remains until you request deletion
@@ -97,11 +99,11 @@ Update privacy settings.
 
 ### Anonymization Levels
 
-| Level | Description |
-|-------|-------------|
-| `strict` | Abstract patterns only, no code snippets |
-| `moderate` | Patterns + generic code (default) |
-| `minimal` | More context preserved (for open source) |
+| Level      | Description                              |
+| ---------- | ---------------------------------------- |
+| `strict`   | Abstract patterns only, no code snippets |
+| `moderate` | Patterns + generic code (default)        |
+| `minimal`  | More context preserved (for open source) |
 
 ### Examples
 
@@ -184,14 +186,14 @@ This action is **permanent and cannot be undone**. You will be asked to confirm 
 
 ### What Gets Anonymized
 
-| Data Type | Anonymization |
-|-----------|---------------|
-| File paths | `project/` prefix |
-| API keys | `[API_KEY]` |
-| Emails | `[EMAIL]` |
-| IPs | `[IP_ADDRESS]` |
-| UUIDs | `[UUID]` |
-| Database URLs | `[DATABASE_URL]` |
+| Data Type     | Anonymization     |
+| ------------- | ----------------- |
+| File paths    | `project/` prefix |
+| API keys      | `[API_KEY]`       |
+| Emails        | `[EMAIL]`         |
+| IPs           | `[IP_ADDRESS]`    |
+| UUIDs         | `[UUID]`          |
+| Database URLs | `[DATABASE_URL]`  |
 
 ### What Never Leaves Your Machine
 
@@ -266,15 +268,15 @@ For CLI-only workflows, continue using `/popkit-core:privacy` directly:
 
 ## Architecture Integration
 
-| Component | Integration |
-|-----------|-------------|
-| Privacy Module | `hooks/utils/privacy.py` |
-| Cloud API | `/v1/privacy/*` endpoints |
+| Component        | Integration                   |
+| ---------------- | ----------------------------- |
+| Privacy Module   | `hooks/utils/privacy.py`      |
+| Cloud API        | `/v1/privacy/*` endpoints     |
 | Settings Storage | `.claude/popkit/privacy.json` |
 
 ## Related Commands
 
-| Command | Purpose |
-|---------|---------|
+| Command                    | Purpose                                   |
+| -------------------------- | ----------------------------------------- |
 | `/popkit-core:bug --share` | Share bug pattern (uses privacy settings) |
-| `/popkit-core:power` | Power Mode (uses collective patterns) |
+| `/popkit-core:power`       | Power Mode (uses collective patterns)     |

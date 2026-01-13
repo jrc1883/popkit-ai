@@ -41,6 +41,7 @@ Deeply analyzes existing codebase features by tracing execution paths, examining
 - **Efficiency**: Files examined, patterns found, dependencies mapped
 
 Example:
+
 ```
 🔍 code-explorer T:12 P:45% | Data Flow: tracking user auth flow
 ```
@@ -114,6 +115,7 @@ Participates in Power Mode check-ins every 5 tool calls.
 - **Tags**: [explore, architecture, pattern, dependency, file]
 
 Example:
+
 ```
 ↑ "Auth entry point at src/api/auth/login.ts" [auth, entry]
 ↑ "Uses JWT pattern from src/lib/jwt.ts" [pattern, auth]
@@ -122,6 +124,7 @@ Example:
 ### PULL (Incoming)
 
 Accept insights with tags:
+
 - `[feature]` - From user about what to explore
 - `[architecture]` - From code-architect about design
 - `[pattern]` - From other explorers about found patterns
@@ -141,25 +144,25 @@ Accept insights with tags:
 
 ### Upstream (Receives from)
 
-| Agent | What It Provides |
-|-------|------------------|
-| User | Feature to explore, questions to answer |
-| power-coordinator | Phase directive, scope boundaries |
+| Agent             | What It Provides                        |
+| ----------------- | --------------------------------------- |
+| User              | Feature to explore, questions to answer |
+| power-coordinator | Phase directive, scope boundaries       |
 
 ### Downstream (Passes to)
 
-| Agent | What It Receives |
-|-------|------------------|
-| code-architect | Patterns found, architecture insights |
-| code-reviewer | Context about existing patterns |
-| rapid-prototyper | Similar implementations to reference |
+| Agent            | What It Receives                      |
+| ---------------- | ------------------------------------- |
+| code-architect   | Patterns found, architecture insights |
+| code-reviewer    | Context about existing patterns       |
+| rapid-prototyper | Similar implementations to reference  |
 
 ### Parallel (Works alongside)
 
-| Agent | Collaboration Pattern |
-|-------|----------------------|
+| Agent                | Collaboration Pattern           |
+| -------------------- | ------------------------------- |
 | Other code-explorers | Each explores different aspects |
-| researcher | External documentation lookup |
+| researcher           | External documentation lookup   |
 
 ## Output Format
 
@@ -169,30 +172,37 @@ Uses output style: `agent-handoff`
 ## Feature Analysis: [Feature Name]
 
 ### Entry Points
+
 - `path/to/file.ts:functionName` - Description
 
 ### Data Flow
+
 1. User action → Component → Hook → API → Database
 2. Response → Transform → State → UI Update
 
 ### Architecture Layers
+
 - **UI**: Components used
 - **State**: State management approach
 - **API**: Endpoints called
 - **Data**: Models and schemas
 
 ### Dependencies
+
 - Internal: [list]
 - External: [list]
 
 ### Patterns Found
+
 - Pattern 1: Description and location
 - Pattern 2: Description and location
 
 ### Files to Read
+
 - `path/to/critical/file.ts` - Why it matters
 
 ### Recommendations for Implementation
+
 - Follow pattern X found in [location]
 - Reuse utility Y from [location]
 ```
@@ -212,12 +222,12 @@ Completion is achieved when:
 
 Report these metrics on completion:
 
-| Metric | Description |
-|--------|-------------|
-| Files examined | Total files read/searched |
-| Entry points | Starting points identified |
-| Patterns found | Reusable patterns documented |
-| Dependencies | Internal/external deps mapped |
+| Metric          | Description                            |
+| --------------- | -------------------------------------- |
+| Files examined  | Total files read/searched              |
+| Entry points    | Starting points identified             |
+| Patterns found  | Reusable patterns documented           |
+| Dependencies    | Internal/external deps mapped          |
 | Recommendations | Actionable insights for implementation |
 
 ## Completion Signal
@@ -250,6 +260,7 @@ Run 2-3 code-explorer agents in parallel for comprehensive analysis:
 ## Reference: Workflow Position
 
 Part of 7-phase /feature-dev workflow:
+
 ```
 Discovery → **Exploration (code-explorer)** → Questions → Architecture → Implementation → Review → Summary
 ```

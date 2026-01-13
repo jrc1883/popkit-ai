@@ -87,12 +87,12 @@ pytest -m "not slow"
 
 Current test coverage for critical utility modules:
 
-| Module | Coverage Target | Status |
-|--------|----------------|--------|
-| `safe_json.py` | 80%+ | ✓ |
-| `flag_parser.py` | 80%+ | ✓ |
-| `platform_detector.py` | 80%+ | ✓ |
-| `privacy.py` | 80%+ | ✓ |
+| Module                 | Coverage Target | Status |
+| ---------------------- | --------------- | ------ |
+| `safe_json.py`         | 80%+            | ✓      |
+| `flag_parser.py`       | 80%+            | ✓      |
+| `platform_detector.py` | 80%+            | ✓      |
+| `privacy.py`           | 80%+            | ✓      |
 
 ## Writing New Tests
 
@@ -213,6 +213,7 @@ def test_anonymize_sensitive_data():
 ## Continuous Integration
 
 Tests are automatically run on:
+
 - Pull requests
 - Commits to main branch
 - Pre-commit hooks (if configured)

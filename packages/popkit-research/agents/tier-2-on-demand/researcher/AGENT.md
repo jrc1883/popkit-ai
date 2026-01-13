@@ -45,6 +45,7 @@ Specialized meta-researcher that analyzes codebases, project structures, and dev
 - **Efficiency**: Research depth vs. insights gained
 
 Example:
+
 ```
 🔍 researcher T:35 P:60% | Patterns: 8 | Agents: 3 identified
 ```
@@ -112,6 +113,7 @@ Participates in Power Mode check-ins every 5 tool calls.
 - **Tags**: [research, analysis, pattern, agent, opportunity]
 
 Example:
+
 ```
 ↑ "Found ETL pipeline pattern - data-validator agent needed" [research, pattern]
 ↑ "3 high-impact agent opportunities identified" [analysis, opportunity]
@@ -120,6 +122,7 @@ Example:
 ### PULL (Incoming)
 
 Accept insights with tags:
+
 - `[feature]` - From user about what to research
 - `[ecosystem]` - From agent-discovery about existing agents
 - `[domain]` - From domain experts about specific needs
@@ -139,23 +142,23 @@ Accept insights with tags:
 
 ### Upstream (Receives from)
 
-| Agent | What It Provides |
-|-------|------------------|
-| User | Research targets, questions |
-| power-coordinator | Research phase directive |
+| Agent             | What It Provides            |
+| ----------------- | --------------------------- |
+| User              | Research targets, questions |
+| power-coordinator | Research phase directive    |
 
 ### Downstream (Passes to)
 
-| Agent | What It Receives |
-|-------|------------------|
-| meta-agent | Agent specifications to create |
-| agent-discovery | Ecosystem analysis findings |
+| Agent           | What It Receives               |
+| --------------- | ------------------------------ |
+| meta-agent      | Agent specifications to create |
+| agent-discovery | Ecosystem analysis findings    |
 
 ### Parallel (Works alongside)
 
-| Agent | Collaboration Pattern |
-|-------|----------------------|
-| code-explorer | Shares codebase discoveries |
+| Agent           | Collaboration Pattern          |
+| --------------- | ------------------------------ |
+| code-explorer   | Shares codebase discoveries    |
 | agent-discovery | Coordinates ecosystem analysis |
 
 ## Output Format
@@ -166,6 +169,7 @@ Uses output style: `analysis-report`
 ## Project Research Summary
 
 ### Technical Profile
+
 - **Architecture**: [Framework/pattern summary]
 - **Stack**: [Key technologies]
 - **Domain**: [Business context]
@@ -175,31 +179,37 @@ Uses output style: `analysis-report`
 ### Agent Gap Analysis
 
 #### High-Impact Opportunities
+
 1. **[Agent Name]** - [Description]
    - **Impact**: [Expected improvement]
    - **Effort**: [Implementation complexity]
    - **Priority**: [Critical/High/Medium/Low]
 
 #### Specialized Domain Agents
+
 - **[Domain]**: [Expertise needed]
 - **[Integration]**: [External focus]
 
 ### Recommended Priorities
 
 #### Phase 1 (Immediate Value)
+
 1. **[Agent Name]**
    - Purpose: [Primary function]
    - Tools: [Required capabilities]
    - Impact: [Expected benefit]
 
 #### Phase 2 (Strategic Value)
+
 [Additional agents]
 
 ### Implementation Roadmap
+
 - Prerequisites: [Required setup]
 - Success Metrics: [How to measure]
 
 ### External Resources
+
 - [Relevant links]
 ```
 
@@ -218,13 +228,13 @@ Completion is achieved when:
 
 Report these metrics on completion:
 
-| Metric | Description |
-|--------|-------------|
-| Agent opportunities | High-value agents proposed |
+| Metric                | Description                     |
+| --------------------- | ------------------------------- |
+| Agent opportunities   | High-value agents proposed      |
 | Gap analysis coverage | Percentage of codebase analyzed |
-| Pattern recognition | Recurring patterns identified |
-| ROI projection | Efficiency gains estimate |
-| Specification clarity | Actionable specs provided |
+| Pattern recognition   | Recurring patterns identified   |
+| ROI projection        | Efficiency gains estimate       |
+| Specification clarity | Actionable specs provided       |
 
 ## Completion Signal
 
@@ -259,16 +269,16 @@ When finished, output:
 
 ## Reference: Agent Categories
 
-| Category | Examples |
-|----------|----------|
-| Domain-Specific | e-commerce, fintech, healthcare |
-| Technical | Framework experts, DB optimization |
-| Process | DevOps, testing, documentation |
-| Integration | Third-party APIs, monitoring |
+| Category        | Examples                           |
+| --------------- | ---------------------------------- |
+| Domain-Specific | e-commerce, fintech, healthcare    |
+| Technical       | Framework experts, DB optimization |
+| Process         | DevOps, testing, documentation     |
+| Integration     | Third-party APIs, monitoring       |
 
 ## Reference: Priority Matrix
 
-| Impact/Effort | Low Effort | High Effort |
-|---------------|------------|-------------|
-| High Impact | Do First | Plan Carefully |
-| Low Impact | Quick Wins | Avoid |
+| Impact/Effort | Low Effort | High Effort    |
+| ------------- | ---------- | -------------- |
+| High Impact   | Do First   | Plan Carefully |
+| Low Impact    | Quick Wins | Avoid          |

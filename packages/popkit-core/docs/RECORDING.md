@@ -69,7 +69,7 @@ Every session recording captures:
       "type": "tool_call",
       "timestamp": "2025-12-23T10:00:01Z",
       "tool_name": "Bash",
-      "parameters": {"command": "git status"},
+      "parameters": { "command": "git status" },
       "result": "M file1.py\nM file2.py",
       "error": null,
       "duration_ms": 150
@@ -90,21 +90,25 @@ Every session recording captures:
 The analyzer generates comprehensive reports showing:
 
 ### Performance Summary
+
 - Total tool calls
 - Total/average/min/max duration
 - Session start/end times
 
 ### Tool Usage Breakdown
+
 - Call counts per tool
 - Duration statistics
 - Error rates
 
 ### Error Summary
+
 - Total errors
 - Error rate percentage
 - Error types and frequencies
 
 ### Event Timeline
+
 - Chronological list of all events
 - Visual indicators for success/failure
 - Duration for each operation
@@ -192,6 +196,7 @@ print(report)
 ### Recording Not Created
 
 Check that:
+
 1. `POPKIT_RECORD=true` is set
 2. Directory `~/.claude/popkit/recordings/` exists (created automatically)
 3. Hook is enabled and imports succeeded
@@ -199,6 +204,7 @@ Check that:
 ### Empty Recording
 
 If recording file exists but has no events:
+
 - Verify hook is being called (check stderr output)
 - Check for import errors in `post-tool-use.py`
 - Ensure `popkit_shared` package is installed
@@ -206,6 +212,7 @@ If recording file exists but has no events:
 ### Analyzer Errors
 
 Common issues:
+
 - **UnicodeEncodeError**: Windows console encoding issue (fixed in latest version)
 - **File not found**: Check file path, use absolute path
 - **Invalid JSON**: Recording may be corrupted, check file contents
@@ -214,12 +221,12 @@ Common issues:
 
 ### Components
 
-| Component | Purpose |
-|-----------|---------|
-| `session_recorder.py` | Core recording logic, event capture |
-| `recording_analyzer.py` | Analysis and report generation |
-| `post-tool-use.py` | Hook integration for auto-capture |
-| Environment vars | Enable/configure recording |
+| Component               | Purpose                             |
+| ----------------------- | ----------------------------------- |
+| `session_recorder.py`   | Core recording logic, event capture |
+| `recording_analyzer.py` | Analysis and report generation      |
+| `post-tool-use.py`      | Hook integration for auto-capture   |
+| Environment vars        | Enable/configure recording          |
 
 ### Flow
 
@@ -242,6 +249,7 @@ Generate Markdown/JSON report
 ## Future Enhancements
 
 Planned features:
+
 - [ ] Automatic recording via `--record` flag on commands
 - [ ] Web UI for browsing recordings
 - [ ] Comparison tool for before/after recordings

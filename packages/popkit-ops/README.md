@@ -13,13 +13,13 @@ PopKit-Ops is the operations plugin for the PopKit ecosystem. It provides qualit
 
 ### Commands (5)
 
-| Command | Description |
-|---------|-------------|
-| `/popkit-ops:assess` | Code quality assessments (anthropic, security, performance, ux, architect, docs) |
-| `/popkit-ops:audit` | Quarterly/yearly health audits (quarterly, yearly, stale, duplicates, health, ip-leak) |
-| `/popkit-ops:debug` | Systematic debugging workflows (code, routing) |
-| `/popkit-ops:security` | Security scanning and fixes (scan, list, fix, report) |
-| `/popkit-ops:deploy` | Deployment orchestration (init, setup, validate, execute, rollback) |
+| Command                | Description                                                                            |
+| ---------------------- | -------------------------------------------------------------------------------------- |
+| `/popkit-ops:assess`   | Code quality assessments (anthropic, security, performance, ux, architect, docs)       |
+| `/popkit-ops:audit`    | Quarterly/yearly health audits (quarterly, yearly, stale, duplicates, health, ip-leak) |
+| `/popkit-ops:debug`    | Systematic debugging workflows (code, routing)                                         |
+| `/popkit-ops:security` | Security scanning and fixes (scan, list, fix, report)                                  |
+| `/popkit-ops:deploy`   | Deployment orchestration (init, setup, validate, execute, rollback)                    |
 
 ### Skills (6)
 
@@ -36,14 +36,14 @@ This plugin provides 6 specialized skills:
 
 ### Agents (6)
 
-| Agent | Tier | Trigger |
-|-------|------|---------|
-| `bug-whisperer` | Tier 1 (always-active) | Complex debugging, hard-to-reproduce bugs |
-| `performance-optimizer` | Tier 1 (always-active) | Performance issues, bottleneck analysis |
-| `security-auditor` | Tier 1 (always-active) | Security scanning, vulnerability detection |
-| `test-writer-fixer` | Tier 1 (always-active) | Test creation, test failures, coverage |
-| `deployment-validator` | Tier 2 (on-demand) | Pre-deployment checks, validation |
-| `rollback-specialist` | Tier 2 (on-demand) | Deployment failures, emergency recovery |
+| Agent                   | Tier                   | Trigger                                    |
+| ----------------------- | ---------------------- | ------------------------------------------ |
+| `bug-whisperer`         | Tier 1 (always-active) | Complex debugging, hard-to-reproduce bugs  |
+| `performance-optimizer` | Tier 1 (always-active) | Performance issues, bottleneck analysis    |
+| `security-auditor`      | Tier 1 (always-active) | Security scanning, vulnerability detection |
+| `test-writer-fixer`     | Tier 1 (always-active) | Test creation, test failures, coverage     |
+| `deployment-validator`  | Tier 2 (on-demand)     | Pre-deployment checks, validation          |
+| `rollback-specialist`   | Tier 2 (on-demand)     | Deployment failures, emergency recovery    |
 
 ## Installation
 

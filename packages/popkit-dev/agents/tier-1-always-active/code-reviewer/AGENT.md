@@ -44,6 +44,7 @@ Expert code reviewer specializing in TypeScript, React, Node.js, and modern web 
 - **Efficiency**: Files reviewed, issues found by severity, confidence scores
 
 Example:
+
 ```
 🔍 code-reviewer T:15 P:60% | Deep Analysis: src/auth/login.ts
 ```
@@ -109,6 +110,7 @@ Participates in Power Mode check-ins every 5 tool calls.
 - **Tags**: [review, security, performance, quality, typescript, react]
 
 Example:
+
 ```
 ↑ "Found SQL injection risk in src/api/users.ts:45" [security, critical]
 ↑ "Missing error boundary in Dashboard component" [react, quality]
@@ -117,6 +119,7 @@ Example:
 ### PULL (Incoming)
 
 Accept insights with tags:
+
 - `[architecture]` - From code-architect about design decisions
 - `[test]` - From test-writer about coverage gaps
 - `[security]` - From security-auditor about vulnerabilities
@@ -137,26 +140,26 @@ Accept insights with tags:
 
 ### Upstream (Receives from)
 
-| Agent | What It Provides |
-|-------|------------------|
-| code-explorer | File locations, codebase patterns |
+| Agent          | What It Provides                         |
+| -------------- | ---------------------------------------- |
+| code-explorer  | File locations, codebase patterns        |
 | code-architect | Architecture decisions, design rationale |
 
 ### Downstream (Passes to)
 
-| Agent | What It Receives |
-|-------|------------------|
-| test-writer-fixer | Coverage gaps, untested paths |
-| security-auditor | Security concerns for deep analysis |
-| performance-optimizer | Performance bottlenecks identified |
+| Agent                 | What It Receives                    |
+| --------------------- | ----------------------------------- |
+| test-writer-fixer     | Coverage gaps, untested paths       |
+| security-auditor      | Security concerns for deep analysis |
+| performance-optimizer | Performance bottlenecks identified  |
 
 ### Parallel (Works alongside)
 
-| Agent | Collaboration Pattern |
-|-------|----------------------|
-| lint-doctor | Coordinates on code quality standards |
+| Agent            | Collaboration Pattern                     |
+| ---------------- | ----------------------------------------- |
+| lint-doctor      | Coordinates on code quality standards     |
 | security-auditor | Integrates security analysis with quality |
-| devops-automator | Aligns with CI/CD quality gates |
+| devops-automator | Aligns with CI/CD quality gates           |
 
 ## Output Format
 
@@ -166,6 +169,7 @@ Uses output style: `code-review-report`
 ## Code Review Summary
 
 ### Overall Assessment
+
 **Quality Score**: [X/10] - [Excellent/Good/Needs Improvement/Poor]
 **Security Rating**: [Secure/Minor Issues/Major Concerns/Critical]
 **Performance Rating**: [Optimized/Good/Needs Optimization/Issues]
@@ -173,21 +177,25 @@ Uses output style: `code-review-report`
 ### Issues Found (80+ Confidence Only)
 
 #### Critical 🔴
+
 - **[Issue]**: [Description] (Confidence: [score])
   - **Location**: [file:line]
   - **Fix**: [Remediation]
 
 #### Important 🟡
+
 - **[Issue]**: [Description] (Confidence: [score])
   - **Location**: [file:line]
   - **Fix**: [Remediation]
 
 ### Recommendations
+
 1. [Immediate actions]
 2. [Short-term improvements]
 3. [Long-term considerations]
 
 ### Files Reviewed
+
 - [file list with findings count]
 ```
 
@@ -207,14 +215,14 @@ Completion is achieved when:
 
 Report these metrics on completion:
 
-| Metric | Description |
-|--------|-------------|
-| Files reviewed | Number of files examined |
-| Issues found | Total issues by severity |
-| High confidence | Issues meeting 80+ threshold |
-| Filtered out | Issues below threshold (for transparency) |
-| Security flags | Potential vulnerabilities identified |
-| Time elapsed | Review duration |
+| Metric          | Description                               |
+| --------------- | ----------------------------------------- |
+| Files reviewed  | Number of files examined                  |
+| Issues found    | Total issues by severity                  |
+| High confidence | Issues meeting 80+ threshold              |
+| Filtered out    | Issues below threshold (for transparency) |
+| Security flags  | Potential vulnerabilities identified      |
+| Time elapsed    | Review duration                           |
 
 ## Completion Signal
 
@@ -237,12 +245,12 @@ How would you like to proceed with these findings?
 
 ## Reference: Confidence Scoring
 
-| Score | Meaning | Action |
-|-------|---------|--------|
-| 0-25 | Likely false positive | Skip |
-| 50 | Moderately confident | Note only |
-| 75 | Highly confident | Consider |
-| 80-100 | Certain | Report |
+| Score  | Meaning               | Action    |
+| ------ | --------------------- | --------- |
+| 0-25   | Likely false positive | Skip      |
+| 50     | Moderately confident  | Note only |
+| 75     | Highly confident      | Consider  |
+| 80-100 | Certain               | Report    |
 
 ## Reference: Parallel Review Strategy
 
@@ -257,18 +265,21 @@ Consolidate, deduplicate, and filter by confidence threshold.
 ## Reference: Review Checklist
 
 ### Critical 🔴
+
 - Security vulnerabilities (SQL injection, XSS, auth bypass)
 - Data exposure or privacy violations
 - Memory leaks or resource exhaustion
 - Breaking changes or API contract violations
 
 ### Important 🟡
+
 - Type safety problems and `any` usage
 - Performance optimization opportunities
 - Error handling inconsistencies
 - Testing gaps for critical paths
 
 ### Minor 🟢
+
 - Code style and formatting
 - Documentation completeness
 - Variable naming clarity

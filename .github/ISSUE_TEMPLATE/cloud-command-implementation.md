@@ -12,6 +12,7 @@ User-facing command to manage PopKit Cloud connection: signup, login, logout, st
 ## Context
 
 PopKit Cloud is deployed and fully operational at `api.thehouseofdeals.com`. The backend API works end-to-end:
+
 - ✅ Signup endpoint creates accounts and generates API keys
 - ✅ Authentication validates API keys
 - ✅ Usage tracking works (100 requests/day free tier)
@@ -21,12 +22,14 @@ PopKit Cloud is deployed and fully operational at `api.thehouseofdeals.com`. The
 **Current State:** Cloud works but users can't connect (no plugin implementation).
 
 **Files Created:**
+
 - `packages/plugin/commands/cloud.md` - Command specification
 - `packages/plugin/skills/pop-cloud-signup/SKILL.md` - Signup skill specification
 - `CLOUD-STATUS.md` - Architecture documentation
 - `CLOUD-VALIDATION.md` - End-to-end validation proof
 
 **Bug Fixed:**
+
 - `packages/plugin/power-mode/cloud_client.py` - URL now points to correct domain
 
 ## What Needs Implementation
@@ -74,6 +77,7 @@ Add cloud connectivity indicator to status line
 ## Estimated Effort
 
 **Implementation:** 2-4 hours
+
 - Signup skill: 1 hour
 - Status/login/logout: 1 hour
 - Status line widget: 30 min

@@ -18,6 +18,7 @@ Fully restore working context when resuming after a break. Goes beyond STATUS.js
 ### Step 1: Load STATUS.json
 
 Read and parse the status file:
+
 - Project name and current branch
 - In-progress tasks
 - Focus area and next action
@@ -41,16 +42,19 @@ git diff --stat
 Based on focus area, read relevant files:
 
 **If working on feature:**
+
 - Main feature file(s)
 - Related test files
 - Recently modified files (git diff --name-only)
 
 **If debugging:**
+
 - Error-related files
 - Test files that failed
 - Log files if available
 
 **If refactoring:**
+
 - Files being refactored
 - Files that import/use them
 - Test coverage for affected areas
@@ -76,26 +80,32 @@ Construct understanding:
 ## Current Context
 
 ### What We're Building
+
 [Feature description from STATUS.json focus area]
 
 ### Where We Are
+
 - Branch: [branch name]
 - Last commit: [commit message]
 - Uncommitted: [files and their purpose]
 
 ### Key Files
+
 - `path/to/main.ts` - [what it does, current state]
 - `path/to/test.ts` - [test coverage status]
 
 ### Decisions Made
+
 - [Decision 1 from keyDecisions]
 - [Decision 2]
 
 ### What's Next
+
 1. [nextAction from STATUS.json]
 2. [Logical following step]
 
 ### Potential Issues
+
 - [Any warnings from tests/lint]
 - [Any blockers noted]
 ```
@@ -167,6 +177,7 @@ Ready to continue?
 ## When to Use
 
 **Use context-restore when:**
+
 - Fresh Start session (> 4 hours gap)
 - Complex feature with many files
 - Returning after distraction
@@ -174,6 +185,7 @@ Ready to continue?
 - Need to verify decisions made
 
 **Skip context-restore when:**
+
 - Continuation session (< 30 min)
 - Simple, single-file work
 - Just committed everything
@@ -182,10 +194,12 @@ Ready to continue?
 ## Integration
 
 **Pairs with:**
+
 - **session-resume** - Triggers context-restore for Fresh Start
 - **session-capture** - Creates the STATUS.json being restored
 
 **Calls:**
+
 - Read tool to examine key files
 - Bash for git commands and tests
 - TodoWrite to restore task state

@@ -44,6 +44,7 @@ Expert agent architect that transforms user requirements into comprehensive, pro
 - **Efficiency**: Requirements parsed, sections completed, integrations defined
 
 Example:
+
 ```
 🏭 meta-agent T:15 P:70% | Architecture: defining circuit breakers
 ```
@@ -122,6 +123,7 @@ Participates in Power Mode check-ins every 5 tool calls.
 - **Tags**: [meta, agent, create, template, design]
 
 Example:
+
 ```
 ↑ "Creating data-validator agent for ETL pipeline" [meta, agent]
 ↑ "Selected tools: Read, Grep, Bash for validation tasks" [design]
@@ -130,6 +132,7 @@ Example:
 ### PULL (Incoming)
 
 Accept insights with tags:
+
 - `[research]` - From researcher about agent opportunities
 - `[ecosystem]` - From agent-discovery about existing agents
 - `[requirement]` - From user about specific needs
@@ -149,24 +152,24 @@ Accept insights with tags:
 
 ### Upstream (Receives from)
 
-| Agent | What It Provides |
-|-------|------------------|
+| Agent      | What It Provides                    |
+| ---------- | ----------------------------------- |
 | researcher | Agent specifications and priorities |
-| User | Requirements and use cases |
+| User       | Requirements and use cases          |
 
 ### Downstream (Passes to)
 
-| Agent | What It Receives |
-|-------|------------------|
-| Created agent | Initial configuration |
-| documentation-maintainer | Agent documentation |
+| Agent                    | What It Receives      |
+| ------------------------ | --------------------- |
+| Created agent            | Initial configuration |
+| documentation-maintainer | Agent documentation   |
 
 ### Parallel (Works alongside)
 
-| Agent | Collaboration Pattern |
-|-------|----------------------|
-| researcher | Research informs creation |
-| agent-discovery | Validates uniqueness |
+| Agent           | Collaboration Pattern     |
+| --------------- | ------------------------- |
+| researcher      | Research informs creation |
+| agent-discovery | Validates uniqueness      |
 
 ## Output Format
 
@@ -185,39 +188,51 @@ version: 1.0.0
 # Agent Name
 
 ## Metadata
+
 [Complete metadata block]
 
 ## Purpose
+
 [2-4 sentence mission]
 
 ## Primary Capabilities
+
 [5-7 bullet points]
 
 ## Progress Tracking
+
 [Checkpoint format]
 
 ## Circuit Breakers
+
 [4-6 safety limits]
 
 ## Systematic Approach
+
 [Phase-based methodology]
 
 ## Power Mode Integration
+
 [Check-in protocol]
 
 ## Integration with Other Agents
+
 [Collaboration patterns]
 
 ## Output Format
+
 [Response template]
 
 ## Success Criteria
+
 [Completion conditions]
 
 ## Value Delivery Tracking
+
 [Metrics to report]
 
 ## Completion Signal
+
 [Standard end marker]
 ```
 
@@ -237,13 +252,13 @@ Completion is achieved when:
 
 Report these metrics on completion:
 
-| Metric | Description |
-|--------|-------------|
-| Sections complete | All 12 required sections |
-| Tools assigned | Number and appropriateness |
+| Metric               | Description                  |
+| -------------------- | ---------------------------- |
+| Sections complete    | All 12 required sections     |
+| Tools assigned       | Number and appropriateness   |
 | Integrations defined | Agent collaboration patterns |
-| Template compliance | Adherence to standard |
-| Deployment readiness | Ready for immediate use |
+| Template compliance  | Adherence to standard        |
+| Deployment readiness | Ready for immediate use      |
 
 ## Completion Signal
 
@@ -269,21 +284,21 @@ Ready for deployment. Test with /popkit:routing-debug [agent-name]
 
 ## Reference: Tool Categories
 
-| Category | Tools | Use Case |
-|----------|-------|----------|
-| Core | Read, Write, Edit | File operations |
-| Analysis | Grep, Glob, LS | Pattern matching |
-| Automation | Bash, TodoWrite | Commands, tasks |
-| External | WebFetch, WebSearch | Research |
-| Delegation | Task | Sub-agents |
+| Category   | Tools               | Use Case         |
+| ---------- | ------------------- | ---------------- |
+| Core       | Read, Write, Edit   | File operations  |
+| Analysis   | Grep, Glob, LS      | Pattern matching |
+| Automation | Bash, TodoWrite     | Commands, tasks  |
+| External   | WebFetch, WebSearch | Research         |
+| Delegation | Task                | Sub-agents       |
 
 ## Reference: Color Palette
 
-| Color | Domain |
-|-------|--------|
-| red | Security, critical |
-| blue | Technical, data |
-| green | Quality, testing |
-| yellow | Documentation |
-| cyan | Meta, coordination |
+| Color   | Domain             |
+| ------- | ------------------ |
+| red     | Security, critical |
+| blue    | Technical, data    |
+| green   | Quality, testing   |
+| yellow  | Documentation      |
+| cyan    | Meta, coordination |
 | magenta | Research, analysis |

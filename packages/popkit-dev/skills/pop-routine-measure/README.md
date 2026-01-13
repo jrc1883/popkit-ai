@@ -33,22 +33,26 @@ Run any routine with the `--measure` flag:
 ## What You Get
 
 ### Summary Metrics
+
 - Execution duration (seconds and minutes)
 - Total tool calls
 - Token usage (input/output)
 - Character counts
 
 ### Token Breakdown
+
 - Input tokens with percentage
 - Output tokens with percentage
 - Total tokens with k notation
 
 ### Cost Estimates
+
 - Input cost (@$3.00/million tokens)
 - Output cost (@$15.00/million tokens)
 - Total cost (Claude Sonnet 4.5 pricing)
 
 ### Tool Analysis
+
 - Per-tool breakdown (Bash, Read, Grep, Glob, etc.)
 - Call counts
 - Token usage per tool
@@ -56,6 +60,7 @@ Run any routine with the `--measure` flag:
 - Character counts
 
 ### Comparison (when available)
+
 - Duration change vs previous run
 - Token usage change
 - Cost change
@@ -63,6 +68,7 @@ Run any routine with the `--measure` flag:
 - Percentage changes and indicators (↑↓→)
 
 ### Aggregate Statistics (--all)
+
 - Average duration, tokens, cost
 - Total duration, tokens, cost
 - Trend analysis (first → latest)
@@ -70,6 +76,7 @@ Run any routine with the `--measure` flag:
 ## Data Storage
 
 Measurements stored in:
+
 ```
 .claude/popkit/measurements/
 ├── morning-pk_20251230_081532.json
@@ -100,6 +107,7 @@ Measurements stored in:
 ## Testing
 
 Test data created in `.claude/popkit/measurements/`:
+
 - `morning-pk_20251230_081532.json` (latest)
 - `morning-pk_20251229_081015.json` (previous for comparison)
 
@@ -114,16 +122,19 @@ Verified:
 ## Future Enhancements
 
 ### Phase 2: Direct Comparison
+
 ```bash
 /popkit:stats routine morning --compare pk,p-1
 ```
 
 ### Phase 3: Trend Analysis
+
 ```bash
 /popkit:stats routine morning --trend 7d
 ```
 
 ### Phase 4: Optimization Suggestions
+
 ```
 Tool breakdown analysis:
 - Bash: 50% of tokens → Suggestion: Cache git status

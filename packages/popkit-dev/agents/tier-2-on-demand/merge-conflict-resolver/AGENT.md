@@ -69,6 +69,7 @@ This agent can be triggered:
 - **Efficiency**: Conflicts resolved, tests validated, time saved
 
 Example:
+
 ```
 🔀 merge-conflict-resolver T:15 P:60% | src/auth/login.ts: custom merge (complexity: 8/10)
 ```
@@ -393,6 +394,7 @@ Participates in Power Mode check-ins every 5 tool calls.
 - **Tags**: [conflict, merge, resolution, validation]
 
 Example:
+
 ```
 ↑ "5 conflicts analyzed - 2 high complexity require code-architect" [conflict]
 ↑ "Custom merge strategy worked for auth/login.ts" [resolution]
@@ -401,6 +403,7 @@ Example:
 ### PULL (Incoming)
 
 Accept insights with tags:
+
 - `[architecture]` - From code-architect about resolution approach
 - `[test]` - From test-writer about validation
 - `[review]` - From code-reviewer about quality
@@ -421,25 +424,25 @@ Accept insights with tags:
 
 ### Upstream (Receives from)
 
-| Agent | What It Provides |
-|-------|------------------|
-| User | Trigger to resolve conflicts |
+| Agent     | What It Provides                     |
+| --------- | ------------------------------------ |
+| User      | Trigger to resolve conflicts         |
 | Git hooks | Automatic detection on merge failure |
 
 ### Downstream (Passes to)
 
-| Agent | What It Receives |
-|-------|------------------|
+| Agent          | What It Receives                   |
+| -------------- | ---------------------------------- |
 | code-architect | Complex conflict analysis requests |
-| test-writer | Test validation requests |
-| code-reviewer | Final review of resolved conflicts |
+| test-writer    | Test validation requests           |
+| code-reviewer  | Final review of resolved conflicts |
 
 ### Parallel (Works alongside)
 
-| Agent | Collaboration Pattern |
-|-------|----------------------|
+| Agent          | Collaboration Pattern                 |
+| -------------- | ------------------------------------- |
 | code-architect | Consults on complexity >= 7 conflicts |
-| test-writer | Validates resolutions with tests |
+| test-writer    | Validates resolutions with tests      |
 
 ## Output Format
 
@@ -458,37 +461,42 @@ Uses output style: `conflict-resolution-report`
 ## Prioritization
 
 **HIGH PRIORITY** (Complexity 7-10):
+
 - src/auth/login.ts (8/10)
 - src/api/routes.ts (7/10)
 
 **MEDIUM PRIORITY** (Complexity 4-6):
+
 - src/utils/helpers.ts (5/10)
 
 **LOW PRIORITY** (Complexity 1-3):
+
 - package.json (2/10)
 - README.md (1/10)
 
 ## Resolution Summary
 
-| File | Complexity | Strategy | Validation |
-|------|------------|----------|------------|
-| src/auth/login.ts | 8/10 | Custom merge | ✅ Tests pass |
-| src/api/routes.ts | 7/10 | Keep both | ✅ Tests pass |
-| src/utils/helpers.ts | 5/10 | Keep ours | ✅ Lint pass |
-| package.json | 2/10 | Keep theirs | ✅ Valid JSON |
-| README.md | 1/10 | Keep both | ✅ N/A |
+| File                 | Complexity | Strategy     | Validation    |
+| -------------------- | ---------- | ------------ | ------------- |
+| src/auth/login.ts    | 8/10       | Custom merge | ✅ Tests pass |
+| src/api/routes.ts    | 7/10       | Keep both    | ✅ Tests pass |
+| src/utils/helpers.ts | 5/10       | Keep ours    | ✅ Lint pass  |
+| package.json         | 2/10       | Keep theirs  | ✅ Valid JSON |
+| README.md            | 1/10       | Keep both    | ✅ N/A        |
 
 ## Architecture Review
 
 **Code Architect Consulted:** 2 high-complexity conflicts
 
 **src/auth/login.ts (8/10):**
+
 - Issue: Conflicting authentication strategies
 - Resolution: Custom merge integrating both JWT and session approaches
 - Rationale: Supports multiple auth methods for different clients
 - Validation: All auth tests passing
 
 **src/api/routes.ts (7/10):**
+
 - Issue: Route structure changes on both sides
 - Resolution: Keep both route sets with namespacing
 - Rationale: Routes serve different purposes, no overlap
@@ -497,14 +505,17 @@ Uses output style: `conflict-resolution-report`
 ## Validation Results
 
 **Type Checking:**
+
 - TypeScript: ✅ No errors
 - Python: N/A
 
 **Linting:**
+
 - ESLint: ✅ All files pass
 - Prettier: ✅ Formatted
 
 **Tests:**
+
 - Unit: ✅ 127/127 passing
 - Integration: ✅ 23/23 passing
 - E2E: ✅ 15/15 passing
@@ -527,12 +538,13 @@ Uses output style: `conflict-resolution-report`
 - **Performance**: No performance-sensitive changes
 
 ## Resolution Commit
-
 ```
+
 commit abc123def456
 Resolve merge conflicts with AI assistance
 
 Conflicts resolved:
+
 - src/auth/login.ts: custom merge (complexity: 8/10)
 - src/api/routes.ts: keep both (complexity: 7/10)
 - src/utils/helpers.ts: keep ours (complexity: 5/10)
@@ -540,6 +552,7 @@ Conflicts resolved:
 - README.md: keep both (complexity: 1/10)
 
 Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+
 ```
 
 ## Next Steps
@@ -571,14 +584,14 @@ Completion is achieved when:
 
 Report these metrics on completion:
 
-| Metric | Description |
-|--------|-------------|
-| Conflicts resolved | Total number resolved |
-| Complexity distribution | High/medium/low breakdown |
+| Metric                  | Description                          |
+| ----------------------- | ------------------------------------ |
+| Conflicts resolved      | Total number resolved                |
+| Complexity distribution | High/medium/low breakdown            |
 | Architect consultations | Number of complex conflicts reviewed |
-| Validation success rate | % of resolutions passing tests |
-| Time saved | Estimated vs manual resolution |
-| Rollbacks needed | Number of strategy retries |
+| Validation success rate | % of resolutions passing tests       |
+| Time saved              | Estimated vs manual resolution       |
+| Rollbacks needed        | Number of strategy retries           |
 
 ## Completion Signal
 
@@ -615,6 +628,7 @@ prioritized = resolver.prioritize_conflicts(conflicts)
 ### Code Architect Integration
 
 For conflicts with complexity >= 7:
+
 ```python
 Task(
     subagent_type="code-architect",

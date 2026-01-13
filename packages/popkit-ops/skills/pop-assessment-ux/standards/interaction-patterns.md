@@ -9,11 +9,13 @@ Standards for consistent, user-friendly interaction patterns.
 Use AskUserQuestion for all user decisions.
 
 **Requirements:**
+
 - Never present options as plain text
 - Always use structured choices
 - Provide clear descriptions for each option
 
 **Format:**
+
 ```
 AskUserQuestion tool with:
 - question: Clear question ending with "?"
@@ -23,6 +25,7 @@ AskUserQuestion tool with:
 ```
 
 **Example:**
+
 ```python
 {
   "question": "Which testing framework do you want to use?",
@@ -41,12 +44,14 @@ AskUserQuestion tool with:
 Validate input before processing.
 
 **Validation Order:**
+
 1. Type checking
 2. Format validation
 3. Range/constraint checking
 4. Business rule validation
 
 **Error on Invalid:**
+
 ```
 Invalid project name: 'my project'
 - Names cannot contain spaces
@@ -59,11 +64,13 @@ Invalid project name: 'my project'
 Provide sensible defaults.
 
 **Guidelines:**
+
 - Most common choice as default
 - Safe option when uncertain
 - Clearly indicate which is default
 
 **Examples:**
+
 ```
 Output format (default: json):
 Branch name (default: main):
@@ -75,12 +82,15 @@ Timeout in seconds (default: 30):
 Show progress for long operations.
 
 **Methods:**
+
 1. **Status Line Updates**
+
    ```
    [Analyzing] 45 files processed...
    ```
 
 2. **Phase Indicators**
+
    ```
    Phase 1/3: Scanning files...
    Phase 2/3: Analyzing patterns...
@@ -99,6 +109,7 @@ Show progress for long operations.
 Confirm successful operations.
 
 **Format:**
+
 ```
 ✓ Operation completed successfully.
   - 3 files created
@@ -111,12 +122,14 @@ Confirm successful operations.
 Summarize what was done.
 
 **Include:**
+
 - Actions taken
 - Files modified/created
 - Settings changed
 - Suggested next steps
 
 **Example:**
+
 ```
 Project created successfully!
 
@@ -139,6 +152,7 @@ Next steps:
 Make it easy to discover starting commands.
 
 **Entry Points:**
+
 - `/popkit:help` - Overview of all commands
 - `/popkit:project init` - Common starting point
 - `/popkit:next` - Context-aware suggestions
@@ -148,6 +162,7 @@ Make it easy to discover starting commands.
 Similar tasks follow similar patterns.
 
 **Standard Flow:**
+
 ```
 1. init    → Initialize/setup
 2. config  → Configure options
@@ -160,6 +175,7 @@ Similar tasks follow similar patterns.
 Users can cancel or go back.
 
 **Mechanisms:**
+
 - `Ctrl+C` - Cancel current operation
 - `--dry-run` - Preview without changes
 - Confirmation prompts for destructive ops
@@ -170,11 +186,13 @@ Users can cancel or go back.
 Multi-step tasks are guided.
 
 **Features:**
+
 - Step indicators
 - What's next suggestions
 - Related command recommendations
 
 **Example:**
+
 ```
 Step 2 of 4: Configure project settings
 
@@ -187,6 +205,7 @@ Would you like to:
 ## Feedback Patterns
 
 ### Success Feedback
+
 ```
 ✓ Task completed
   Summary of what was done
@@ -194,6 +213,7 @@ Would you like to:
 ```
 
 ### Warning Feedback
+
 ```
 ⚠ Operation completed with warnings
   - Warning 1
@@ -202,6 +222,7 @@ Would you like to:
 ```
 
 ### Error Feedback
+
 ```
 ✗ Operation failed
   What went wrong
@@ -211,10 +232,10 @@ Would you like to:
 
 ## Quality Metrics
 
-| Metric | Target |
-|--------|--------|
-| AskUserQuestion usage | 100% for decisions |
-| Input validation | 100% |
-| Progress indication | All ops >2s |
-| Completion confirmation | 100% |
-| Escape routes | All destructive ops |
+| Metric                  | Target              |
+| ----------------------- | ------------------- |
+| AskUserQuestion usage   | 100% for decisions  |
+| Input validation        | 100%                |
+| Progress indication     | All ops >2s         |
+| Completion confirmation | 100%                |
+| Escape routes           | All destructive ops |

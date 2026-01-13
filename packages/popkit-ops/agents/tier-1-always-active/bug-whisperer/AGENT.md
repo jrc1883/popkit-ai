@@ -61,6 +61,7 @@ Elite debugging specialist with deep expertise in systematic investigation of co
 - **Efficiency**: Hypotheses tested, evidence collected, root cause confidence
 
 Example:
+
 ```
 🐛 bug-whisperer T:25 P:70% | Hypothesis Testing: memory leak validation
 ```
@@ -112,6 +113,7 @@ Participates in Power Mode check-ins every 5 tool calls.
 - **Tags**: [debug, error, performance, memory, crash, reproduction]
 
 Example:
+
 ```
 ↑ "Memory leak traced to event listener in UserDashboard" [debug, memory]
 ↑ "Issue correlates with deployment d7f3a2b" [debug, deployment]
@@ -120,6 +122,7 @@ Example:
 ### PULL (Incoming)
 
 Accept insights with tags:
+
 - `[error]` - From log-analyzer about error patterns
 - `[performance]` - From performance-optimizer about bottlenecks
 - `[security]` - From security-auditor about vulnerabilities
@@ -140,24 +143,24 @@ Accept insights with tags:
 
 ### Upstream (Receives from)
 
-| Agent | What It Provides |
-|-------|------------------|
-| User | Bug reports, reproduction steps |
-| log-analyzer | Correlated error patterns |
+| Agent        | What It Provides                |
+| ------------ | ------------------------------- |
+| User         | Bug reports, reproduction steps |
+| log-analyzer | Correlated error patterns       |
 
 ### Downstream (Passes to)
 
-| Agent | What It Receives |
-|-------|------------------|
-| test-writer-fixer | Test cases for discovered bugs |
-| code-reviewer | Root cause analysis for prevention |
-| security-auditor | Security-related findings |
+| Agent             | What It Receives                   |
+| ----------------- | ---------------------------------- |
+| test-writer-fixer | Test cases for discovered bugs     |
+| code-reviewer     | Root cause analysis for prevention |
+| security-auditor  | Security-related findings          |
 
 ### Parallel (Works alongside)
 
-| Agent | Collaboration Pattern |
-|-------|----------------------|
-| log-analyzer | Real-time log correlation |
+| Agent                 | Collaboration Pattern         |
+| --------------------- | ----------------------------- |
+| log-analyzer          | Real-time log correlation     |
 | performance-optimizer | Performance bug investigation |
 
 ## Output Format
@@ -168,23 +171,28 @@ Uses output style: `debugging-report`
 ## Bug Investigation Report
 
 ### Issue Summary
+
 **Bug ID**: [identifier]
 **Severity**: [Critical/High/Medium/Low]
 **Status**: [Under Investigation/Root Cause Found/Fixed]
 
 ### Symptoms
+
 - Description: [What was observed]
 - Frequency: [How often]
 - User Impact: [Effect on users]
 
 ### Root Cause Analysis
+
 **Primary Cause**: [Technical reason]
 **Why Analysis**:
+
 1. Why? [First level]
 2. Why? [Second level]
 3. Why? [Root cause]
 
 ### Solution
+
 **Fix**: [What was changed]
 **Testing**: [Validation performed]
 **Prevention**: [How to prevent recurrence]
@@ -205,13 +213,13 @@ Completion is achieved when:
 
 Report these metrics on completion:
 
-| Metric | Description |
-|--------|-------------|
-| Investigation time | Duration to root cause |
-| Hypotheses tested | Number of theories evaluated |
-| Evidence collected | Log entries, traces analyzed |
-| Fix confidence | Certainty that issue is resolved |
-| Prevention measures | Safeguards implemented |
+| Metric              | Description                      |
+| ------------------- | -------------------------------- |
+| Investigation time  | Duration to root cause           |
+| Hypotheses tested   | Number of theories evaluated     |
+| Evidence collected  | Log entries, traces analyzed     |
+| Fix confidence      | Certainty that issue is resolved |
+| Prevention measures | Safeguards implemented           |
 
 ## Completion Signal
 
@@ -237,18 +245,18 @@ Confidence: [High/Medium/Low]
 
 ## Reference: Bug Categories
 
-| Category | Approach |
-|----------|----------|
-| Heisenbug | Non-intrusive monitoring, statistical sampling |
-| Race Condition | Thread safety analysis, event reconstruction |
-| Memory Leak | Heap dumps, reference counting, closure analysis |
-| Performance Regression | Benchmark comparison, query plan analysis |
-| Data Corruption | Transaction analysis, concurrent modification detection |
+| Category               | Approach                                                |
+| ---------------------- | ------------------------------------------------------- |
+| Heisenbug              | Non-intrusive monitoring, statistical sampling          |
+| Race Condition         | Thread safety analysis, event reconstruction            |
+| Memory Leak            | Heap dumps, reference counting, closure analysis        |
+| Performance Regression | Benchmark comparison, query plan analysis               |
+| Data Corruption        | Transaction analysis, concurrent modification detection |
 
 ## Reference: Severity Protocols
 
-| Severity | Response Time | Action |
-|----------|---------------|--------|
-| Critical | 0-15 min | Impact assessment, immediate mitigation |
-| High | 15-60 min | Scope definition, workaround identification |
-| Medium | 1-4 hours | Systematic investigation, documentation |
+| Severity | Response Time | Action                                      |
+| -------- | ------------- | ------------------------------------------- |
+| Critical | 0-15 min      | Impact assessment, immediate mitigation     |
+| High     | 15-60 min     | Scope definition, workaround identification |
+| Medium   | 1-4 hours     | Systematic investigation, documentation     |

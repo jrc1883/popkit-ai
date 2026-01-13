@@ -16,6 +16,7 @@ Provides a unified view across all PopKit-enabled projects, showing health score
 ## When to Use
 
 Invoke this skill when:
+
 - Managing multiple projects
 - Need quick overview of all project statuses
 - Switching context between projects
@@ -79,13 +80,13 @@ print(f"Quick Health: {quick_score}/100")
 
 ### Health Score Breakdown
 
-| Component | Points | Criteria |
-|-----------|--------|----------|
-| **Git Status** | 20 | Clean working tree (+20), uncommitted (-5/10 files), unpushed (-5/commit) |
-| **Build Status** | 20 | Passed (+20), warnings (-2 each), failed (0) |
-| **Test Coverage** | 20 | >80% (+20), 60-80% (+15), <60% (+10), none (+5) |
-| **Issue Health** | 20 | No stale (+20), -2 per stale issue (>30 days) |
-| **Activity** | 20 | Today (+20), week (+15), month (+10), older (+5) |
+| Component         | Points | Criteria                                                                  |
+| ----------------- | ------ | ------------------------------------------------------------------------- |
+| **Git Status**    | 20     | Clean working tree (+20), uncommitted (-5/10 files), unpushed (-5/commit) |
+| **Build Status**  | 20     | Passed (+20), warnings (-2 each), failed (0)                              |
+| **Test Coverage** | 20     | >80% (+20), 60-80% (+15), <60% (+10), none (+5)                           |
+| **Issue Health**  | 20     | No stale (+20), -2 per stale issue (>30 days)                             |
+| **Activity**      | 20     | Today (+20), week (+15), month (+10), older (+5)                          |
 
 ## Subcommand Operations
 
@@ -105,6 +106,7 @@ Display the full dashboard with all projects, health scores, and quick actions.
 ```
 
 Register a project in the global registry. Auto-detects:
+
 - Project name from package.json/pyproject.toml
 - GitHub repo from git remote
 - Initial health score
@@ -266,12 +268,12 @@ Configure dashboard behavior in registry:
 
 ## Error Handling
 
-| Situation | Response |
-|-----------|----------|
+| Situation              | Response                          |
+| ---------------------- | --------------------------------- |
 | No projects registered | Suggest `/popkit:dashboard add .` |
 | Project path not found | Remove from registry with warning |
-| Health check fails | Show "--" for health, log error |
-| gh CLI unavailable | Skip issue counts |
+| Health check fails     | Show "--" for health, log error   |
+| gh CLI unavailable     | Skip issue counts                 |
 
 ## Related
 

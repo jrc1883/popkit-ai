@@ -12,15 +12,16 @@ Fixed all unsafe `subprocess.run(..., shell=True)` calls in PopKit Python code t
 
 ### Total Changes: 3 Functions Across 2 Files
 
-| File | Function | Lines Changed | Status |
-|------|----------|---------------|--------|
-| `packages/popkit-dev/skills/pop-morning/scripts/morning_workflow.py` | `_add_morning_checks` | 235-264 | ✅ Fixed |
-| `packages/popkit-dev/skills/pop-morning/scripts/morning_workflow.py` | `_collect_state_fallback` | 337-371 | ✅ Fixed |
-| `packages/popkit-dev/skills/pop-nightly/scripts/nightly_workflow.py` | `_collect_state_fallback` | 179-213 | ✅ Fixed |
+| File                                                                 | Function                  | Lines Changed | Status   |
+| -------------------------------------------------------------------- | ------------------------- | ------------- | -------- |
+| `packages/popkit-dev/skills/pop-morning/scripts/morning_workflow.py` | `_add_morning_checks`     | 235-264       | ✅ Fixed |
+| `packages/popkit-dev/skills/pop-morning/scripts/morning_workflow.py` | `_collect_state_fallback` | 337-371       | ✅ Fixed |
+| `packages/popkit-dev/skills/pop-nightly/scripts/nightly_workflow.py` | `_collect_state_fallback` | 179-213       | ✅ Fixed |
 
 ## Implementation Pattern
 
 ### Before (Vulnerable)
+
 ```python
 def run_command(cmd: str) -> str:
     """Run shell command and return output."""
@@ -35,6 +36,7 @@ def run_command(cmd: str) -> str:
 ```
 
 ### After (Secure)
+
 ```python
 import subprocess
 import shlex
@@ -70,6 +72,7 @@ def run_command(cmd: str, use_shell: bool = False) -> str:
 ## Commands Analysis
 
 ### Safe (No shell=True needed)
+
 These commands now use `shlex.split()` for safe execution:
 
 - `git fetch --quiet`
@@ -81,25 +84,29 @@ These commands now use `shlex.split()` for safe execution:
 - `gh run list --limit 1 --json ...`
 
 ### Requires shell=True (Documented & Justified)
+
 These commands legitimately need shell features:
 
-| Command | Reason | Location |
-|---------|--------|----------|
-| `git stash list \| wc -l` | Pipe | morning_workflow.py:389, nightly_workflow.py:224 |
-| `git branch --merged main \| grep ... \| wc -l` | Multiple pipes | nightly_workflow.py:226-227 |
-| `pnpm outdated --json 2>/dev/null` | Shell redirection | morning_workflow.py:289 |
-| `ps aux \| grep ... \| grep -v grep` | Multiple pipes | morning_workflow.py:421-422, nightly_workflow.py:251-252 |
-| `ls ~/.claude/logs/*.log 2>/dev/null \| wc -l` | Pipe + redirection | nightly_workflow.py:258 |
+| Command                                         | Reason             | Location                                                 |
+| ----------------------------------------------- | ------------------ | -------------------------------------------------------- |
+| `git stash list \| wc -l`                       | Pipe               | morning_workflow.py:389, nightly_workflow.py:224         |
+| `git branch --merged main \| grep ... \| wc -l` | Multiple pipes     | nightly_workflow.py:226-227                              |
+| `pnpm outdated --json 2>/dev/null`              | Shell redirection  | morning_workflow.py:289                                  |
+| `ps aux \| grep ... \| grep -v grep`            | Multiple pipes     | morning_workflow.py:421-422, nightly_workflow.py:251-252 |
+| `ls ~/.claude/logs/*.log 2>/dev/null \| wc -l`  | Pipe + redirection | nightly_workflow.py:258                                  |
 
 ## Security Impact
 
 ### Vulnerability Eliminated
+
 - **Risk:** Command injection via user-controlled branch names or paths
 - **Example Attack:** If branch name was `main; rm -rf /`, old code would execute deletion
 - **Mitigation:** `shlex.split()` treats the entire string as arguments, preventing shell interpretation
 
 ### Remaining Controlled Risk
+
 Commands still using `shell=True` are:
+
 1. **Documented** with inline comments explaining why shell is needed
 2. **Justified** - they use pipes/redirection that require shell features
 3. **Low Risk** - inputs are from git/system commands, not user input
@@ -107,12 +114,15 @@ Commands still using `shell=True` are:
 ## Testing Recommendations
 
 ### Manual Testing
+
 1. Run `/popkit:routine morning` - verify git status, services, dependencies check
 2. Run `/popkit:routine nightly` - verify git cleanup, CI status, services
 3. Test with special characters in branch names (spaces, quotes)
 
 ### Automated Testing
+
 Add test cases for:
+
 - Branch names with special characters: `feature/user's-work`, `fix "bug" #123`
 - Commands with arguments containing spaces
 - Windows vs. Unix path handling
@@ -121,11 +131,11 @@ Add test cases for:
 
 The following files were reviewed but found to be already safe:
 
-| File | Reason |
-|------|--------|
-| `packages/shared-py/popkit_shared/utils/research_branch_detector.py` | Already uses list-based `["git"] + args` pattern |
-| `packages/shared-py/popkit_shared/utils/security_scanner.py` | Already uses list-based `["npm", "audit", "--json"]` pattern |
-| `packages/benchmarks/power-mode/benchmarks/benchmark_coordinator.py` | Already uses list-based `['claude', '--print', ...]` pattern |
+| File                                                                           | Reason                                                                   |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| `packages/shared-py/popkit_shared/utils/research_branch_detector.py`           | Already uses list-based `["git"] + args` pattern                         |
+| `packages/shared-py/popkit_shared/utils/security_scanner.py`                   | Already uses list-based `["npm", "audit", "--json"]` pattern             |
+| `packages/benchmarks/power-mode/benchmarks/benchmark_coordinator.py`           | Already uses list-based `['claude', '--print', ...]` pattern             |
 | `packages/popkit-ops/skills/pop-assessment-security/scripts/scan_injection.py` | Only contains string patterns for detection, not actual subprocess calls |
 
 ## Verification

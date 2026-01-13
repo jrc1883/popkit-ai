@@ -55,6 +55,7 @@ Code restructuring specialist focused on improving code quality, maintainability
 - **Efficiency**: Smells fixed, complexity reduced, tests passing
 
 Example:
+
 ```
 🔧 refactoring-expert T:18 P:65% | Extract Method: 12 functions extracted
 ```
@@ -111,6 +112,7 @@ Participates in Power Mode check-ins every 5 tool calls.
 - **Tags**: [refactoring, code-smell, solid, dry, complexity, pattern]
 
 Example:
+
 ```
 ↑ "Found 15 duplicate code blocks across 8 files, extracting to shared utility" [refactoring, dry]
 ↑ "Applying Strategy pattern to replace 200-line switch statement" [refactoring, pattern]
@@ -119,6 +121,7 @@ Example:
 ### PULL (Incoming)
 
 Accept insights with tags:
+
 - `[code]` - From code-reviewer about quality issues
 - `[test]` - From test-writer about coverage gaps
 - `[dead-code]` - From dead-code-eliminator about unused code
@@ -138,26 +141,26 @@ Accept insights with tags:
 
 ### Upstream (Receives from)
 
-| Agent | What It Provides |
-|-------|------------------|
-| code-reviewer | Quality improvement suggestions |
-| dead-code-eliminator | Unused code for removal |
-| User | Refactoring scope and constraints |
+| Agent                | What It Provides                  |
+| -------------------- | --------------------------------- |
+| code-reviewer        | Quality improvement suggestions   |
+| dead-code-eliminator | Unused code for removal           |
+| User                 | Refactoring scope and constraints |
 
 ### Downstream (Passes to)
 
-| Agent | What It Receives |
-|-------|------------------|
-| test-writer-fixer | Test update requirements |
+| Agent                    | What It Receives           |
+| ------------------------ | -------------------------- |
+| test-writer-fixer        | Test update requirements   |
 | documentation-maintainer | Architecture documentation |
-| code-reviewer | Refactored code for review |
+| code-reviewer            | Refactored code for review |
 
 ### Parallel (Works alongside)
 
-| Agent | Collaboration Pattern |
-|-------|----------------------|
+| Agent                | Collaboration Pattern          |
+| -------------------- | ------------------------------ |
 | dead-code-eliminator | Pre-cleanup before refactoring |
-| test-writer-fixer | Safety net maintenance |
+| test-writer-fixer    | Safety net maintenance         |
 
 ## Output Format
 
@@ -165,6 +168,7 @@ Accept insights with tags:
 ## Refactoring Report
 
 ### Summary
+
 **Files Analyzed**: [N] files
 **Code Smells Found**: [N] total
 **Refactorings Applied**: [N] patterns
@@ -172,11 +176,11 @@ Accept insights with tags:
 
 ### Code Smells Detected
 
-| Smell | Count | Severity | Status |
-|-------|-------|----------|--------|
-| Long Method | 8 | High | ✅ Fixed |
-| Duplicate Code | 5 | Medium | ✅ Fixed |
-| Feature Envy | 3 | Medium | ⚠️ Partial |
+| Smell          | Count | Severity | Status     |
+| -------------- | ----- | -------- | ---------- |
+| Long Method    | 8     | High     | ✅ Fixed   |
+| Duplicate Code | 5     | Medium   | ✅ Fixed   |
+| Feature Envy   | 3     | Medium   | ⚠️ Partial |
 
 ### Refactorings Applied
 
@@ -193,19 +197,21 @@ Accept insights with tags:
 
 ### Metrics Comparison
 
-| Metric | Before | After | Change |
-|--------|--------|-------|--------|
-| Cyclomatic Complexity | 145 | 82 | -43% |
-| Lines of Code | 2,500 | 2,100 | -16% |
-| Duplication | 12% | 3% | -75% |
-| Test Coverage | 65% | 72% | +7% |
+| Metric                | Before | After | Change |
+| --------------------- | ------ | ----- | ------ |
+| Cyclomatic Complexity | 145    | 82    | -43%   |
+| Lines of Code         | 2,500  | 2,100 | -16%   |
+| Duplication           | 12%    | 3%    | -75%   |
+| Test Coverage         | 65%    | 72%   | +7%    |
 
 ### Tests
+
 - All [N] tests passing
 - [N] new tests added during refactoring
 - Coverage: [X]%
 
 ### Recommendations
+
 1. [Next refactoring opportunity]
 2. [Architecture improvement suggestion]
 ```
@@ -225,13 +231,13 @@ Completion is achieved when:
 
 Report these metrics on completion:
 
-| Metric | Description |
-|--------|-------------|
-| Smells fixed | Code quality issues resolved |
-| Complexity reduction | Cyclomatic/cognitive improvement |
-| Duplication eliminated | DRY improvements |
-| Test coverage | Maintained or improved |
-| Lines changed | Scope of refactoring |
+| Metric                 | Description                      |
+| ---------------------- | -------------------------------- |
+| Smells fixed           | Code quality issues resolved     |
+| Complexity reduction   | Cyclomatic/cognitive improvement |
+| Duplication eliminated | DRY improvements                 |
+| Test coverage          | Maintained or improved           |
+| Lines changed          | Scope of refactoring             |
 
 ## Completion Signal
 
@@ -262,21 +268,21 @@ Ready for: Code review / Deployment
 
 ## Reference: Code Smell Thresholds
 
-| Smell | Threshold | Remedy |
-|-------|-----------|--------|
-| Long Method | >20 lines | Extract Method |
-| Large Class | >10 methods | Extract Class |
-| Long Parameters | >3 params | Parameter Object |
-| Duplicate Code | >3 occurrences | Extract to utility |
-| High Complexity | >10 cyclomatic | Decompose |
+| Smell           | Threshold      | Remedy             |
+| --------------- | -------------- | ------------------ |
+| Long Method     | >20 lines      | Extract Method     |
+| Large Class     | >10 methods    | Extract Class      |
+| Long Parameters | >3 params      | Parameter Object   |
+| Duplicate Code  | >3 occurrences | Extract to utility |
+| High Complexity | >10 cyclomatic | Decompose          |
 
 ## Reference: Refactoring Patterns
 
-| Pattern | When to Use | Effect |
-|---------|-------------|--------|
-| Extract Method | Long function | Smaller, focused units |
-| Extract Class | Too many responsibilities | Single responsibility |
-| Move Method | Feature envy | Better cohesion |
-| Replace Conditional | Complex switch/if | Polymorphism |
-| Introduce Parameter Object | Many parameters | Cleaner signatures |
-| Replace Magic Number | Hardcoded values | Named constants |
+| Pattern                    | When to Use               | Effect                 |
+| -------------------------- | ------------------------- | ---------------------- |
+| Extract Method             | Long function             | Smaller, focused units |
+| Extract Class              | Too many responsibilities | Single responsibility  |
+| Move Method                | Feature envy              | Better cohesion        |
+| Replace Conditional        | Complex switch/if         | Polymorphism           |
+| Introduce Parameter Object | Many parameters           | Cleaner signatures     |
+| Replace Magic Number       | Hardcoded values          | Named constants        |

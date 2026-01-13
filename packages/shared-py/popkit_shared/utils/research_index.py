@@ -975,7 +975,6 @@ def get_research_manager(project_root: Optional[str] = None) -> ResearchIndexMan
 # =============================================================================
 
 if __name__ == "__main__":
-
     print("Research Index Test")
     print("=" * 40)
 

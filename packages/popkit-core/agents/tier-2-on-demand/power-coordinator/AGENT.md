@@ -56,6 +56,7 @@ Orchestrates multi-agent collaboration via Redis pub/sub for complex tasks requi
 - **Efficiency**: Track objective progress, agent utilization, insight flow
 
 Example:
+
 ```
 ⚡ power-coordinator T:45 P:60% | Phase 3/5: implement - 2 agents active
 ```
@@ -154,6 +155,7 @@ As coordinator, manages check-ins from all agents every 5 tool calls.
 ### PULL (Incoming)
 
 Accept all agent check-ins:
+
 - `[discovery]` - File locations, patterns found
 - `[blocker]` - Issues preventing progress
 - `[question]` - Need clarification
@@ -175,32 +177,33 @@ Accept all agent check-ins:
 
 ### Upstream (Receives from)
 
-| Agent | What It Provides |
-|-------|------------------|
+| Agent      | What It Provides                 |
+| ---------- | -------------------------------- |
 | All agents | Check-ins, discoveries, blockers |
-| meta-agent | New agent definitions if needed |
+| meta-agent | New agent definitions if needed  |
 
 ### Downstream (Passes to)
 
-| Agent | What It Receives |
-|-------|------------------|
+| Agent      | What It Receives                  |
+| ---------- | --------------------------------- |
 | All agents | Routed insights, phase directives |
-| User | Completion reports, escalations |
+| User       | Completion reports, escalations   |
 
 ### Parallel (Works alongside)
 
-| Agent | Collaboration Pattern |
-|-------|----------------------|
-| code-explorer | Phase 1 exploration |
-| code-architect | Phase 2 design |
+| Agent            | Collaboration Pattern  |
+| ---------------- | ---------------------- |
+| code-explorer    | Phase 1 exploration    |
+| code-architect   | Phase 2 design         |
 | rapid-prototyper | Phase 3 implementation |
-| code-reviewer | Phase 4 review |
+| code-reviewer    | Phase 4 review         |
 
 ## Output Format
 
 Uses output style: `power-mode-checkin`
 
 Completion report:
+
 ```
 ⚡ OBJECTIVE COMPLETE
 
@@ -242,14 +245,14 @@ Completion is achieved when:
 
 Report these metrics on completion:
 
-| Metric | Description |
-|--------|-------------|
-| Phases completed | N/N workflow phases |
-| Agent utilization | Active agents per phase |
-| Insights routed | Cross-agent discoveries shared |
-| Patterns learned | Reusable approaches identified |
-| Escalations | Human interventions required |
-| Runtime | Total session duration |
+| Metric            | Description                    |
+| ----------------- | ------------------------------ |
+| Phases completed  | N/N workflow phases            |
+| Agent utilization | Active agents per phase        |
+| Insights routed   | Cross-agent discoveries shared |
+| Patterns learned  | Reusable approaches identified |
+| Escalations       | Human interventions required   |
+| Runtime           | Total session duration         |
 
 ## Completion Signal
 
@@ -272,14 +275,14 @@ Session transcript saved to ~/.claude/power-mode-sessions/[id].json
 
 ## Reference: Agent Selection Matrix
 
-| Phase | Primary Agents | Support Agents |
-|-------|---------------|----------------|
-| explore | code-explorer, researcher | - |
-| design | code-architect | api-designer |
-| implement | rapid-prototyper | - |
-| test | test-writer-fixer | - |
-| document | documentation-maintainer | - |
-| review | code-reviewer | security-auditor |
+| Phase     | Primary Agents            | Support Agents   |
+| --------- | ------------------------- | ---------------- |
+| explore   | code-explorer, researcher | -                |
+| design    | code-architect            | api-designer     |
+| implement | rapid-prototyper          | -                |
+| test      | test-writer-fixer         | -                |
+| document  | documentation-maintainer  | -                |
+| review    | code-reviewer             | security-auditor |
 
 ## Reference: Human Escalation Triggers
 
@@ -295,10 +298,10 @@ Always escalate to human for:
 
 ## Reference: Message Types
 
-| Type | Meaning |
-|------|---------|
-| SYNC | Wait at barrier |
-| COURSE_CORRECT | Redirect agent |
-| DRIFT_ALERT | Off-track warning |
-| PHASE_ADVANCE | Move to next phase |
-| AGENT_DOWN | Agent unresponsive |
+| Type           | Meaning            |
+| -------------- | ------------------ |
+| SYNC           | Wait at barrier    |
+| COURSE_CORRECT | Redirect agent     |
+| DRIFT_ALERT    | Off-track warning  |
+| PHASE_ADVANCE  | Move to next phase |
+| AGENT_DOWN     | Agent unresponsive |

@@ -9,6 +9,7 @@ Standards for creating helpful, actionable error messages.
 Errors must clearly state what went wrong.
 
 **Structure:**
+
 ```
 [What happened] [Where it happened] [With what context]
 ```
@@ -34,6 +35,7 @@ Use plain language that users understand.
 | stack overflow | Operation too complex |
 
 **When Technical Details Help:**
+
 ```
 # Include both
 Cannot connect to database.
@@ -45,12 +47,14 @@ Technical: ECONNREFUSED 127.0.0.1:5432
 Provide relevant context for the error.
 
 **Context Elements:**
+
 - File path where error occurred
 - Line number (for syntax errors)
 - Value that caused the error
 - Expected vs actual
 
 **Example:**
+
 ```
 Invalid configuration value.
   File: config.json
@@ -64,11 +68,13 @@ Invalid configuration value.
 Tell users how to fix the problem.
 
 **Pattern:**
+
 ```
 [Problem]. [Solution].
 ```
 
 **Examples:**
+
 ```
 # Good
 Missing API key. Set POPKIT_API_KEY in your environment.
@@ -82,6 +88,7 @@ Missing API key.
 Tell users what to do next.
 
 **Patterns:**
+
 ```
 # Command suggestion
 Run 'npm install' to install missing dependencies.
@@ -101,12 +108,14 @@ See https://docs.example.com/auth for setup guide.
 Link to relevant docs for complex errors.
 
 **Format:**
+
 ```
 [Error message]
 For more information, see: [URL]
 ```
 
 **When to Include:**
+
 - Configuration errors
 - Setup/installation issues
 - Complex troubleshooting
@@ -117,6 +126,7 @@ For more information, see: [URL]
 Errors should be helpful, not blaming.
 
 **Guidelines:**
+
 - Use passive voice or "we" language
 - Focus on the problem, not the user
 - Avoid accusatory language
@@ -133,6 +143,7 @@ Errors should be helpful, not blaming.
 All errors follow the same structure.
 
 **Standard Format:**
+
 ```
 [Category] Description.
 Context: [details]
@@ -140,6 +151,7 @@ Solution: [how to fix]
 ```
 
 **Categories:**
+
 - `[Config]` - Configuration issues
 - `[Input]` - Invalid user input
 - `[Network]` - Connection problems
@@ -151,27 +163,28 @@ Solution: [how to fix]
 
 ### Error Severity
 
-| Level | Use When |
-|-------|----------|
-| Error | Operation cannot continue |
+| Level   | Use When                                |
+| ------- | --------------------------------------- |
+| Error   | Operation cannot continue               |
 | Warning | Operation continues but may have issues |
-| Info | Informational, no action needed |
+| Info    | Informational, no action needed         |
 
 ### Exit Codes
 
-| Code | Meaning |
-|------|---------|
-| 0 | Success |
-| 1 | General error |
-| 2 | Misuse of command |
-| 126 | Permission problem |
-| 127 | Command not found |
+| Code | Meaning            |
+| ---- | ------------------ |
+| 0    | Success            |
+| 1    | General error      |
+| 2    | Misuse of command  |
+| 126  | Permission problem |
+| 127  | Command not found  |
 
 ## Anti-Patterns
 
 ### Avoid These
 
 1. **Generic Messages**
+
    ```
    # Bad
    Error occurred
@@ -180,6 +193,7 @@ Solution: [how to fix]
    ```
 
 2. **Technical Dumps**
+
    ```
    # Bad
    Error: TypeError: Cannot read property 'x' of undefined
@@ -197,9 +211,9 @@ Solution: [how to fix]
 
 ## Quality Metrics
 
-| Metric | Target |
-|--------|--------|
-| Actionable errors | >90% |
-| Context included | >80% |
-| Plain language | 100% |
-| Consistent format | 100% |
+| Metric            | Target |
+| ----------------- | ------ |
+| Actionable errors | >90%   |
+| Context included  | >80%   |
+| Plain language    | 100%   |
+| Consistent format | 100%   |

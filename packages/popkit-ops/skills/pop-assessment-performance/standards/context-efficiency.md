@@ -16,6 +16,7 @@ Skills should minimize context consumption while remaining effective.
 | Examples | <500 tokens | 500-800 | >800 |
 
 **Guidelines:**
+
 - Use tables over verbose lists
 - One clear example over multiple redundant ones
 - Reference external docs for detailed info
@@ -33,6 +34,7 @@ Agents have more context allowance but still need efficiency.
 | Workflow | <800 tokens | 800-1200 | >1200 |
 
 **Guidelines:**
+
 - Only include tools the agent actually uses
 - Keep workflows to essential steps
 - Use numbered lists over prose
@@ -50,6 +52,7 @@ Configuration files should be concise and deduplicated.
 | hooks.json | <3K tokens | 3K-5K | >5K |
 
 **Deduplication Rules:**
+
 - Define patterns once, reference by ID
 - Use inheritance for similar agents
 - Externalize large keyword lists
@@ -59,6 +62,7 @@ Configuration files should be concise and deduplicated.
 Output styles should be minimal templates.
 
 **Guidelines:**
+
 - Use placeholders over hardcoded text
 - Keep templates under 500 tokens
 - Share common sections across styles
@@ -69,42 +73,51 @@ Output styles should be minimal templates.
 ### Token Reduction Strategies
 
 1. **Abbreviate Common Patterns**
+
    ```markdown
    # Instead of:
+
    "This skill allows users to perform X operation"
 
    # Use:
+
    "Performs X operation"
    ```
 
 2. **Table Over List**
+
    ```markdown
    # Instead of:
+
    - Option A: Description of option A
    - Option B: Description of option B
 
    # Use:
-   | Option | Description |
-   |--------|-------------|
-   | A | Description A |
-   | B | Description B |
+
+   | Option | Description   |
+   | ------ | ------------- |
+   | A      | Description A |
+   | B      | Description B |
    ```
 
 3. **Reference Over Embed**
    ```markdown
    # Instead of embedding full docs:
+
    See `standards/detailed-guide.md` for complete reference.
    ```
 
 ### Content Organization
 
 **High-Value First:**
+
 1. Purpose (what it does)
 2. Quick usage (how to invoke)
 3. Examples (most common case)
 4. Details (only if needed)
 
 **Progressive Disclosure:**
+
 - Core info in SKILL.md
 - Extended docs in separate files
 - Advanced options in config files
@@ -123,6 +136,7 @@ def estimate_tokens(text: str) -> int:
 ### Automated Checks
 
 Run context measurement:
+
 ```bash
 python scripts/measure_context.py ./
 ```
@@ -130,6 +144,7 @@ python scripts/measure_context.py ./
 ### Manual Review
 
 Checklist:
+
 - [ ] All skills under 2000 tokens
 - [ ] All agents under 5000 tokens
 - [ ] Config files under thresholds
@@ -137,9 +152,9 @@ Checklist:
 
 ## Quality Metrics
 
-| Metric | Target | Description |
-|--------|--------|-------------|
-| Avg skill tokens | <1500 | Average across all skills |
-| Avg agent tokens | <4000 | Average across all agents |
-| Config overhead | <20% | Config / total content ratio |
-| Deduplication | >90% | No repeated content |
+| Metric           | Target | Description                  |
+| ---------------- | ------ | ---------------------------- |
+| Avg skill tokens | <1500  | Average across all skills    |
+| Avg agent tokens | <4000  | Average across all agents    |
+| Config overhead  | <20%   | Config / total content ratio |
+| Deduplication    | >90%   | No repeated content          |

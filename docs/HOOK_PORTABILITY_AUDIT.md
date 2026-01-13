@@ -12,6 +12,7 @@
 Comprehensive audit of all PopKit hook commands revealed **100% compliance** with portability standards. All 15 unique hook commands correctly use the `${CLAUDE_PLUGIN_ROOT}` variable for plugin-relative paths. No hardcoded paths were found.
 
 **Key Findings**:
+
 - ✅ All 15 hooks use `${CLAUDE_PLUGIN_ROOT}` variable
 - ✅ No absolute paths detected
 - ✅ No user-specific paths detected
@@ -23,13 +24,16 @@ Comprehensive audit of all PopKit hook commands revealed **100% compliance** wit
 ## Audit Methodology
 
 ### 1. Configuration Analysis
+
 - **File Audited**: `packages/popkit-core/hooks/hooks.json`
 - **Total Hook Events**: 7 (PreToolUse, PostToolUse, UserPromptSubmit, SessionStart, Stop, SubagentStop, Notification)
 - **Total Hook Commands**: 15 unique Python scripts
 - **Total Matchers**: 11 tool matchers
 
 ### 2. Path Pattern Analysis
+
 Each hook command was evaluated for:
+
 1. Use of `${CLAUDE_PLUGIN_ROOT}` variable
 2. Absence of hardcoded absolute paths
 3. Absence of user-specific paths (e.g., `/home/username/`)
@@ -37,7 +41,9 @@ Each hook command was evaluated for:
 5. File existence verification
 
 ### 3. Cross-Reference Check
+
 Verified that all hook scripts referenced in `hooks.json` exist in the filesystem:
+
 - Listed all `.py` files in `packages/popkit-core/hooks/`
 - Matched against hook commands in `hooks.json`
 - Identified 2 test files and 2 unused/deprecated hooks
@@ -49,51 +55,59 @@ Verified that all hook scripts referenced in `hooks.json` exist in the filesyste
 ### Hook Event Breakdown
 
 #### PreToolUse (2 matchers, 2 hooks)
-| Hook Script | Matcher | Status | Path Format |
-|-------------|---------|--------|-------------|
-| `pre-tool-use.py` | Bash\|Read\|Write\|Edit\|... | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
-| `chain-validator.py` | Task | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
+
+| Hook Script          | Matcher                      | Status      | Path Format                         |
+| -------------------- | ---------------------------- | ----------- | ----------------------------------- |
+| `pre-tool-use.py`    | Bash\|Read\|Write\|Edit\|... | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
+| `chain-validator.py` | Task                         | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
 
 #### PostToolUse (4 matchers, 8 hooks)
-| Hook Script | Matcher | Status | Path Format |
-|-------------|---------|--------|-------------|
-| `post-tool-use.py` | Bash\|Read\|Write\|Edit\|... | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
-| `agent-observability.py` | Bash\|Read\|Write\|Edit\|... | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
-| `context-monitor.py` | Bash\|Read\|Write\|Edit\|... | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
-| `quality-gate.py` | Write\|Edit\|MultiEdit | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
-| `doc-sync.py` | Write\|Edit\|MultiEdit | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
-| `chain-metrics.py` | Task | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
-| `command-learning-hook.py` | Bash | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
-| `feedback_hook.py` | Task\|SlashCommand\|Skill | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
+
+| Hook Script                | Matcher                      | Status      | Path Format                         |
+| -------------------------- | ---------------------------- | ----------- | ----------------------------------- |
+| `post-tool-use.py`         | Bash\|Read\|Write\|Edit\|... | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
+| `agent-observability.py`   | Bash\|Read\|Write\|Edit\|... | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
+| `context-monitor.py`       | Bash\|Read\|Write\|Edit\|... | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
+| `quality-gate.py`          | Write\|Edit\|MultiEdit       | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
+| `doc-sync.py`              | Write\|Edit\|MultiEdit       | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
+| `chain-metrics.py`         | Task                         | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
+| `command-learning-hook.py` | Bash                         | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
+| `feedback_hook.py`         | Task\|SlashCommand\|Skill    | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
 
 #### UserPromptSubmit (1 matcher, 1 hook)
-| Hook Script | Matcher | Status | Path Format |
-|-------------|---------|--------|-------------|
+
+| Hook Script             | Matcher               | Status      | Path Format                         |
+| ----------------------- | --------------------- | ----------- | ----------------------------------- |
 | `user-prompt-submit.py` | (empty - all prompts) | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
 
 #### SessionStart (1 matcher, 2 hooks)
-| Hook Script | Matcher | Status | Path Format |
-|-------------|---------|--------|-------------|
-| `session-start.py` | (empty - all sessions) | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
+
+| Hook Script         | Matcher                | Status      | Path Format                         |
+| ------------------- | ---------------------- | ----------- | ----------------------------------- |
+| `session-start.py`  | (empty - all sessions) | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
 | `knowledge-sync.py` | (empty - all sessions) | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
 
 #### Stop (1 matcher, 1 hook)
-| Hook Script | Matcher | Status | Path Format |
-|-------------|---------|--------|-------------|
-| `stop.py` | (empty - all stops) | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
+
+| Hook Script | Matcher             | Status      | Path Format                         |
+| ----------- | ------------------- | ----------- | ----------------------------------- |
+| `stop.py`   | (empty - all stops) | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
 
 #### SubagentStop (1 matcher, 2 hooks)
-| Hook Script | Matcher | Status | Path Format |
-|-------------|---------|--------|-------------|
-| `subagent-stop.py` | (empty - all subagent stops) | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
+
+| Hook Script           | Matcher                      | Status      | Path Format                         |
+| --------------------- | ---------------------------- | ----------- | ----------------------------------- |
+| `subagent-stop.py`    | (empty - all subagent stops) | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
 | `output-validator.py` | (empty - all subagent stops) | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
 
 #### Notification (1 matcher, 1 hook)
-| Hook Script | Matcher | Status | Path Format |
-|-------------|---------|--------|-------------|
+
+| Hook Script       | Matcher                     | Status      | Path Format                         |
+| ----------------- | --------------------------- | ----------- | ----------------------------------- |
 | `notification.py` | (empty - all notifications) | ✅ Portable | `"${CLAUDE_PLUGIN_ROOT}/hooks/..."` |
 
 ### Summary Statistics
+
 - **Total Hooks in hooks.json**: 15
 - **Portable Hooks**: 15 (100%)
 - **Non-Portable Hooks**: 0 (0%)
@@ -104,6 +118,7 @@ Verified that all hook scripts referenced in `hooks.json` exist in the filesyste
 ## Additional Files Discovered
 
 ### Unused Hook Files (Not in hooks.json)
+
 These files exist in the hooks directory but are not referenced in `hooks.json`:
 
 1. **`agent-context-integration.py`** - Appears to be an older/deprecated hook
@@ -113,10 +128,12 @@ These files exist in the hooks directory but are not referenced in `hooks.json`:
 5. **`post_tool_use_stateless.py`** - Stateless version (possibly experimental)
 
 ### Test Files
+
 1. **`test_findings_xml.py`** - Unit test for XML parsing
 2. **`test_xml_parsing.py`** - Unit test for XML parsing
 
 **Recommendation**: Consider documenting whether these unused hooks should be:
+
 - Added to `hooks.json` if they're needed
 - Deleted if they're deprecated
 - Moved to a `deprecated/` or `experimental/` subdirectory
@@ -142,24 +159,30 @@ All hooks comply with the following standards:
 This audit verified portability across three PopKit installation methods:
 
 ### 1. Development Mode (`--plugin-dir`)
+
 ```bash
 claude --plugin-dir ./packages/popkit-core
 ```
+
 - ✅ `${CLAUDE_PLUGIN_ROOT}` resolves to `./packages/popkit-core`
 - ✅ Hooks execute from source directory
 
 ### 2. Marketplace Install (via npm)
+
 ```
 /plugin install popkit-core@popkit-claude
 ```
+
 - ✅ `${CLAUDE_PLUGIN_ROOT}` resolves to plugin installation directory
 - ✅ Hooks execute from installed location
 
 ### 3. Local Install (git clone + install)
+
 ```bash
 git clone https://github.com/jrc1883/popkit-claude.git
 /plugin install ./popkit-claude
 ```
+
 - ✅ `${CLAUDE_PLUGIN_ROOT}` resolves to cloned directory
 - ✅ Hooks execute from git clone location
 
@@ -170,13 +193,16 @@ git clone https://github.com/jrc1883/popkit-claude.git
 ## Testing Methodology
 
 ### Pre-Audit Testing
+
 1. Verified all hook scripts exist in filesystem using `Glob` tool
 2. Counted 24 total `.py` files in hooks directory
 3. Cross-referenced against 16 hooks in `hooks.json`
 4. Identified 4 unused hooks and 2 test files
 
 ### Path Pattern Validation
+
 For each hook command:
+
 1. Extracted path from `hooks.json` command field
 2. Verified use of `${CLAUDE_PLUGIN_ROOT}` variable
 3. Checked for quote wrapping (Windows compatibility)
@@ -184,7 +210,9 @@ For each hook command:
 5. Confirmed no user-specific path segments
 
 ### Timeout Validation
+
 All hooks have appropriate timeout values:
+
 - Quick hooks (context, observability): 3000ms (3s)
 - Standard hooks (pre/post tool use): 5000ms (5s)
 - Heavy hooks (session start, quality gate): 10000ms (10s) or 180000ms (3min)
@@ -194,6 +222,7 @@ All hooks have appropriate timeout values:
 ## Recommendations
 
 ### Immediate Actions (None Required)
+
 No fixes needed - all hooks are fully portable.
 
 ### Future Enhancements
@@ -230,6 +259,7 @@ PopKit's hook system demonstrates **excellent portability standards**. The consi
 ## Appendix: Hook Command Reference
 
 ### Standard Hook Command Format
+
 ```json
 {
   "type": "command",
@@ -239,6 +269,7 @@ PopKit's hook system demonstrates **excellent portability standards**. The consi
 ```
 
 ### Example from hooks.json
+
 ```json
 {
   "type": "command",
@@ -248,6 +279,7 @@ PopKit's hook system demonstrates **excellent portability standards**. The consi
 ```
 
 ### Why This Works
+
 1. **`${CLAUDE_PLUGIN_ROOT}`**: Resolved by Claude Code to plugin installation directory
 2. **Double quotes**: Handle Windows paths with spaces
 3. **Forward slashes**: Work on both Windows and Unix

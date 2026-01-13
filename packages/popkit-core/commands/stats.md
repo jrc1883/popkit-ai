@@ -15,34 +15,36 @@ Display PopKit efficiency metrics showing token savings, collaboration stats, an
 
 ## Subcommands
 
-| Subcommand | Description |
-|------------|-------------|
-| (default) | Show current session stats |
-| `session` | Current session efficiency (default) |
-| `today` | Today's aggregate stats |
-| `week` | Last 7 days summary |
-| `cloud` | Fetch stats from PopKit Cloud |
-| `routine [name]` | Show routine measurement dashboard |
-| `reset` | Reset session metrics |
+| Subcommand       | Description                          |
+| ---------------- | ------------------------------------ |
+| (default)        | Show current session stats           |
+| `session`        | Current session efficiency (default) |
+| `today`          | Today's aggregate stats              |
+| `week`           | Last 7 days summary                  |
+| `cloud`          | Fetch stats from PopKit Cloud        |
+| `routine [name]` | Show routine measurement dashboard   |
+| `reset`          | Reset session metrics                |
 
 ## Options
 
-| Option | Description |
-|--------|-------------|
-| `--compact` | One-line summary for scripts |
-| `--json` | Output as JSON |
-| `--detailed` | Show full breakdown |
+| Option       | Description                  |
+| ------------ | ---------------------------- |
+| `--compact`  | One-line summary for scripts |
+| `--json`     | Output as JSON               |
+| `--detailed` | Show full breakdown          |
 
 ---
 
 ## Examples
 
 ### Default (Current Session)
+
 ```
 /popkit-core:stats
 ```
 
 Output:
+
 ```
 +==================================================================+
 |                     Session Efficiency Report                     |
@@ -68,21 +70,25 @@ Output:
 ```
 
 ### Compact Mode
+
 ```
 /popkit-core:stats --compact
 ```
 
 Output:
+
 ```
 ~2.4k tokens saved | 73% efficient | 8 dedup, 2 patterns
 ```
 
 ### Weekly Summary
+
 ```
 /popkit-core:stats week
 ```
 
 Output:
+
 ```
 +==================================================================+
 |                   Weekly Efficiency Summary                       |
@@ -108,11 +114,13 @@ Output:
 ```
 
 ### Cloud Stats (Requires API Key)
+
 ```
 /popkit-core:stats cloud
 ```
 
 Output:
+
 ```
 PopKit Cloud Analytics
 ----------------------
@@ -132,11 +140,13 @@ Collective Learning:
 ```
 
 ### JSON Output
+
 ```
 /popkit-core:stats --json
 ```
 
 Output:
+
 ```json
 {
   "session_id": "abc12345",
@@ -192,13 +202,13 @@ print("Session metrics reset")
 
 PopKit estimates token savings using these constants:
 
-| Event | Est. Tokens Saved | Reasoning |
-|-------|-------------------|-----------|
-| Duplicate skipped | 100 | Insight not reprocessed |
-| Pattern matched | 500 | Avoided debugging time |
-| Context reuse | 200 | Semantic vs brute force |
-| Bug detected | 300 | Early detection savings |
-| Stuck prevented | 800 | Avoided loop iterations |
+| Event             | Est. Tokens Saved | Reasoning               |
+| ----------------- | ----------------- | ----------------------- |
+| Duplicate skipped | 100               | Insight not reprocessed |
+| Pattern matched   | 500               | Avoided debugging time  |
+| Context reuse     | 200               | Semantic vs brute force |
+| Bug detected      | 300               | Early detection savings |
+| Stuck prevented   | 800               | Avoided loop iterations |
 
 ---
 
@@ -271,6 +281,7 @@ COMPARISON WITH PREVIOUS RUN
 ```
 
 Output:
+
 ```
 ================================================================================
                         ALL ROUTINE MEASUREMENTS
@@ -331,6 +342,7 @@ else:
 ### Data Source
 
 Measurements are stored in `.claude/popkit/measurements/*.json`:
+
 - Created when running `/popkit-dev:routine <name> --measure`
 - Tracked by `hooks/post-tool-use.py` via `routine_measurement.py`
 - Includes duration, token usage, tool breakdown, and costs
@@ -430,21 +442,21 @@ if expertise_dir.exists():
 
 ## Architecture Integration
 
-| Component | Integration |
-|-----------|-------------|
-| Efficiency Tracker | `hooks/utils/efficiency_tracker.py` |
-| Expertise Manager | `hooks/utils/expertise_manager.py` (Issue #201) |
-| Research Index | `hooks/utils/research_index.py` (Issue #201) |
-| Pattern Learner | `hooks/utils/pattern_learner.py` (Issue #201) |
-| Check-in Hook | `power-mode/checkin-hook.py` |
-| Cloud API | `cloud-api/src/routes/analytics.ts` |
-| Output Style | `output-styles/efficiency-summary.md` |
-| Status Line | `power-mode/statusline.py` |
+| Component          | Integration                                     |
+| ------------------ | ----------------------------------------------- |
+| Efficiency Tracker | `hooks/utils/efficiency_tracker.py`             |
+| Expertise Manager  | `hooks/utils/expertise_manager.py` (Issue #201) |
+| Research Index     | `hooks/utils/research_index.py` (Issue #201)    |
+| Pattern Learner    | `hooks/utils/pattern_learner.py` (Issue #201)   |
+| Check-in Hook      | `power-mode/checkin-hook.py`                    |
+| Cloud API          | `cloud-api/src/routes/analytics.ts`             |
+| Output Style       | `output-styles/efficiency-summary.md`           |
+| Status Line        | `power-mode/statusline.py`                      |
 
 ## Related Commands
 
-| Command | Purpose |
-|---------|---------|
-| `/popkit-core:power status` | Power Mode status (includes efficiency) |
-| `/popkit-dev:routine morning` | Morning report includes efficiency |
-| `/popkit-dev:routine nightly` | Nightly report includes efficiency |
+| Command                       | Purpose                                 |
+| ----------------------------- | --------------------------------------- |
+| `/popkit-core:power status`   | Power Mode status (includes efficiency) |
+| `/popkit-dev:routine morning` | Morning report includes efficiency      |
+| `/popkit-dev:routine nightly` | Nightly report includes efficiency      |

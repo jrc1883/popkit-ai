@@ -34,42 +34,44 @@ All schemas follow JSON Schema Draft-07 format:
 
 ## Available Schemas
 
-| Schema File | Output Style | Used By Agent(s) |
-|-------------|--------------|------------------|
-| `accessibility-audit.schema.json` | accessibility-audit | accessibility-guardian |
-| `agent-handoff.schema.json` | agent-handoff | code-architect, code-explorer |
-| `agent-specification.schema.json` | agent-specification | meta-agent |
-| `analysis-report.schema.json` | analysis-report | researcher |
-| `api-design-report.schema.json` | api-design-report | api-designer |
-| `bundle-report.schema.json` | bundle-report | bundle-analyzer |
-| `code-optimization-report.schema.json` | code-optimization-report | dead-code-eliminator |
-| `code-review-report.schema.json` | code-review-report | code-reviewer |
-| `conflict-resolution-report.schema.json` | conflict-resolution-report | merge-conflict-resolver |
-| `debugging-report.schema.json` | debugging-report | bug-whisperer |
-| `deployment-report.schema.json` | deployment-report | deployment-validator |
-| `documentation-report.schema.json` | documentation-report | documentation-maintainer |
-| `migration-report.schema.json` | migration-report | migration-specialist |
-| `performance-report.schema.json` | performance-report | performance-optimizer |
-| `power-mode-checkin.schema.json` | power-mode-checkin | power-coordinator |
-| `prioritization-report.schema.json` | prioritization-report | feature-prioritizer |
-| `prototype-report.schema.json` | prototype-report | rapid-prototyper |
-| `refactoring-report.schema.json` | refactoring-report | refactoring-expert |
-| `rollback-report.schema.json` | rollback-report | rollback-specialist |
-| `security-audit-report.schema.json` | security-audit-report | security-auditor |
-| `structured-planning.schema.json` | structured-planning | prd-parser |
-| `testing-report.schema.json` | testing-report | test-writer-fixer |
+| Schema File                              | Output Style               | Used By Agent(s)              |
+| ---------------------------------------- | -------------------------- | ----------------------------- |
+| `accessibility-audit.schema.json`        | accessibility-audit        | accessibility-guardian        |
+| `agent-handoff.schema.json`              | agent-handoff              | code-architect, code-explorer |
+| `agent-specification.schema.json`        | agent-specification        | meta-agent                    |
+| `analysis-report.schema.json`            | analysis-report            | researcher                    |
+| `api-design-report.schema.json`          | api-design-report          | api-designer                  |
+| `bundle-report.schema.json`              | bundle-report              | bundle-analyzer               |
+| `code-optimization-report.schema.json`   | code-optimization-report   | dead-code-eliminator          |
+| `code-review-report.schema.json`         | code-review-report         | code-reviewer                 |
+| `conflict-resolution-report.schema.json` | conflict-resolution-report | merge-conflict-resolver       |
+| `debugging-report.schema.json`           | debugging-report           | bug-whisperer                 |
+| `deployment-report.schema.json`          | deployment-report          | deployment-validator          |
+| `documentation-report.schema.json`       | documentation-report       | documentation-maintainer      |
+| `migration-report.schema.json`           | migration-report           | migration-specialist          |
+| `performance-report.schema.json`         | performance-report         | performance-optimizer         |
+| `power-mode-checkin.schema.json`         | power-mode-checkin         | power-coordinator             |
+| `prioritization-report.schema.json`      | prioritization-report      | feature-prioritizer           |
+| `prototype-report.schema.json`           | prototype-report           | rapid-prototyper              |
+| `refactoring-report.schema.json`         | refactoring-report         | refactoring-expert            |
+| `rollback-report.schema.json`            | rollback-report            | rollback-specialist           |
+| `security-audit-report.schema.json`      | security-audit-report      | security-auditor              |
+| `structured-planning.schema.json`        | structured-planning        | prd-parser                    |
+| `testing-report.schema.json`             | testing-report             | test-writer-fixer             |
 
 ## Field Extraction
 
 The output-validator hook extracts fields from markdown-formatted agent outputs using regex patterns. Common fields include:
 
 ### Standard Fields
+
 - `status` - Current status of the work
 - `summary` - Summary section (extracted from `### Summary`)
 - `recommendation` - Recommendations for next steps
 - `date` - Date of the report
 
 ### Specialized Fields
+
 - `from`, `to`, `task` - Handoff fields (agent-handoff)
 - `severity` - Issue severity (debugging-report, security-audit-report, etc.)
 - `confidence` - Confidence score 0-100 (agent-handoff, various reports)

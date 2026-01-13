@@ -61,20 +61,21 @@ PopKit organizes agents into three tiers to optimize context usage and ensure re
 
 These agents are **always loaded** in every session, providing foundational capabilities across all workflows.
 
-| Agent | Plugin | Purpose | Trigger Keywords | File Patterns |
-|-------|--------|---------|------------------|---------------|
-| **accessibility-guardian** | popkit-core | WCAG compliance and a11y | accessibility, a11y, wcag, aria | *.tsx, *.jsx, *.html |
-| **api-designer** | popkit-core | RESTful and GraphQL design | api, rest, graphql, endpoint, openapi | *api*.ts, *routes*.ts |
-| **documentation-maintainer** | popkit-core | Documentation sync | docs, readme, documentation | *.md, CLAUDE.md |
-| **migration-specialist** | popkit-core | System migrations | migration, upgrade, version, deprecation | package.json, migration*.* |
-| **code-reviewer** | popkit-dev | Code quality assessment | review, quality, refactor | *.ts, *.tsx, *.js, *.jsx |
-| **refactoring-expert** | popkit-dev | Code restructuring | refactor, technical debt, restructure | *.ts, *.tsx, *.js, *.jsx |
-| **bug-whisperer** | popkit-ops | Complex debugging | bug, error, crash, issue, debugging | - (error-based) |
-| **performance-optimizer** | popkit-ops | Performance tuning | slow, performance, optimize, bottleneck | - (semantic) |
-| **security-auditor** | popkit-ops | Security analysis | security, auth, vulnerability, xss, sql | *auth*.ts, *security*.* |
-| **test-writer-fixer** | popkit-ops | Test creation and fixes | test, spec, coverage, assertion | *.test.*, *.spec.* |
+| Agent                        | Plugin      | Purpose                    | Trigger Keywords                         | File Patterns              |
+| ---------------------------- | ----------- | -------------------------- | ---------------------------------------- | -------------------------- |
+| **accessibility-guardian**   | popkit-core | WCAG compliance and a11y   | accessibility, a11y, wcag, aria          | _.tsx, _.jsx, \*.html      |
+| **api-designer**             | popkit-core | RESTful and GraphQL design | api, rest, graphql, endpoint, openapi    | _api_.ts, _routes_.ts      |
+| **documentation-maintainer** | popkit-core | Documentation sync         | docs, readme, documentation              | \*.md, CLAUDE.md           |
+| **migration-specialist**     | popkit-core | System migrations          | migration, upgrade, version, deprecation | package.json, migration*.* |
+| **code-reviewer**            | popkit-dev  | Code quality assessment    | review, quality, refactor                | _.ts, _.tsx, _.js, _.jsx   |
+| **refactoring-expert**       | popkit-dev  | Code restructuring         | refactor, technical debt, restructure    | _.ts, _.tsx, _.js, _.jsx   |
+| **bug-whisperer**            | popkit-ops  | Complex debugging          | bug, error, crash, issue, debugging      | - (error-based)            |
+| **performance-optimizer**    | popkit-ops  | Performance tuning         | slow, performance, optimize, bottleneck  | - (semantic)               |
+| **security-auditor**         | popkit-ops  | Security analysis          | security, auth, vulnerability, xss, sql  | _auth_.ts, _security_.\*   |
+| **test-writer-fixer**        | popkit-ops  | Test creation and fixes    | test, spec, coverage, assertion          | _.test._, _.spec._         |
 
 **Why Always Active?**
+
 - Core skills needed across ALL projects (code review, testing, debugging)
 - Minimal token overhead (baseline ~15.3k tokens after optimization)
 - Immediate response without activation delay
@@ -84,19 +85,20 @@ These agents are **always loaded** in every session, providing foundational capa
 
 These **specialized agents activate only when triggered** by specific keywords, file patterns, or error signatures.
 
-| Agent | Plugin | Purpose | Trigger Keywords | File Patterns | Token Cost |
-|-------|--------|---------|------------------|---------------|------------|
-| **bundle-analyzer** | popkit-core | Bundle size optimization | bundle, webpack, vite, build size | webpack.config.*, vite.config.* | ~0.3k |
-| **dead-code-eliminator** | popkit-core | Unused code removal | dead code, unused, tree shaking | - | ~0.3k |
-| **feature-prioritizer** | popkit-core | Backlog management | prioritize, backlog, roadmap | - | ~0.3k |
-| **meta-agent** | popkit-core | Agent generator | create agent, custom agent | AGENT.md | ~0.3k |
-| **power-coordinator** | popkit-core | Multi-agent orchestration | `/popkit-core:power` | power-mode/*.json | ~0.3k |
-| **rapid-prototyper** | popkit-dev | Quick prototyping | prototype, mockup, spike | - | ~0.3k |
-| **deployment-validator** | popkit-ops | Deployment validation | deploy, release, production | *.yml (CI/CD) | ~0.3k |
-| **rollback-specialist** | popkit-ops | Rollback operations | rollback, revert deployment | - | ~0.3k |
-| **researcher** | popkit-research | Web research and analysis | research, investigate, find docs | - | ~0.3k |
+| Agent                    | Plugin          | Purpose                   | Trigger Keywords                  | File Patterns                   | Token Cost |
+| ------------------------ | --------------- | ------------------------- | --------------------------------- | ------------------------------- | ---------- |
+| **bundle-analyzer**      | popkit-core     | Bundle size optimization  | bundle, webpack, vite, build size | webpack.config._, vite.config._ | ~0.3k      |
+| **dead-code-eliminator** | popkit-core     | Unused code removal       | dead code, unused, tree shaking   | -                               | ~0.3k      |
+| **feature-prioritizer**  | popkit-core     | Backlog management        | prioritize, backlog, roadmap      | -                               | ~0.3k      |
+| **meta-agent**           | popkit-core     | Agent generator           | create agent, custom agent        | AGENT.md                        | ~0.3k      |
+| **power-coordinator**    | popkit-core     | Multi-agent orchestration | `/popkit-core:power`              | power-mode/\*.json              | ~0.3k      |
+| **rapid-prototyper**     | popkit-dev      | Quick prototyping         | prototype, mockup, spike          | -                               | ~0.3k      |
+| **deployment-validator** | popkit-ops      | Deployment validation     | deploy, release, production       | \*.yml (CI/CD)                  | ~0.3k      |
+| **rollback-specialist**  | popkit-ops      | Rollback operations       | rollback, revert deployment       | -                               | ~0.3k      |
+| **researcher**           | popkit-research | Web research and analysis | research, investigate, find docs  | -                               | ~0.3k      |
 
 **Why On-Demand?**
+
 - Specialized skills not needed for every task
 - Reduces baseline token usage by 87.5% (2.4k → 0.3k tokens)
 - Activates instantly when needed via keyword or semantic search
@@ -106,12 +108,13 @@ These **specialized agents activate only when triggered** by specific keywords, 
 
 These agents participate in the **7-phase feature development workflow** (`/popkit:feature-dev`).
 
-| Agent | Plugin | Purpose | Phase |
-|-------|--------|---------|-------|
-| **code-explorer** | popkit-dev | Codebase exploration | Phase 2: Exploration |
+| Agent              | Plugin     | Purpose               | Phase                 |
+| ------------------ | ---------- | --------------------- | --------------------- |
+| **code-explorer**  | popkit-dev | Codebase exploration  | Phase 2: Exploration  |
 | **code-architect** | popkit-dev | Architecture planning | Phase 4: Architecture |
 
 **Workflow Phases:**
+
 1. **Discovery** - Requirements gathering
 2. **Exploration** - code-explorer analyzes codebase
 3. **Questions** - Clarification
@@ -144,6 +147,7 @@ keywords:
 ```
 
 **Example:**
+
 ```
 User: "There's a bug in the login form"
        ^^^
@@ -167,6 +171,7 @@ file_patterns:
 ```
 
 **Example:**
+
 ```
 User: "Review src/auth/login.test.ts"
                         ^^^^^
@@ -211,6 +216,7 @@ error_patterns:
 ```
 
 **Examples:**
+
 ```
 User: "Getting CORS errors on API calls"
                 ^^^^
@@ -230,12 +236,14 @@ PopKit → Activates performance-optimizer (timeout pattern)
 Uses **Voyage AI embeddings** to understand intent beyond keywords. Requires `VOYAGE_API_KEY`.
 
 **How It Works:**
+
 1. User query is embedded (vector representation)
 2. Agent descriptions are pre-embedded
 3. Cosine similarity ranks relevance
 4. Top 10 agents are loaded (always includes Tier 1)
 
 **Example:**
+
 ```
 User: "The app is slow when scrolling large lists"
       (no direct keyword match)
@@ -248,6 +256,7 @@ PopKit → Activates performance-optimizer (semantic match)
 ```
 
 **Configuration:**
+
 ```bash
 # Enable semantic routing
 export VOYAGE_API_KEY="your-key-here"
@@ -268,13 +277,13 @@ Only issues with **80+ confidence** are reported to the user. This prevents low-
 
 ### Confidence Levels
 
-| Score Range | Meaning | Action |
-|-------------|---------|--------|
-| **0-25** | Likely false positive | Skip entirely |
-| **26-49** | Low confidence | Internal note only |
-| **50-74** | Moderate confidence | Note for context |
-| **75-79** | High confidence | Consider reporting |
-| **80-100** | Certain / Critical | Always report |
+| Score Range | Meaning               | Action             |
+| ----------- | --------------------- | ------------------ |
+| **0-25**    | Likely false positive | Skip entirely      |
+| **26-49**   | Low confidence        | Internal note only |
+| **50-74**   | Moderate confidence   | Note for context   |
+| **75-79**   | High confidence       | Consider reporting |
+| **80-100**  | Certain / Critical    | Always report      |
 
 ### Example: Code Review Filtering
 
@@ -302,7 +311,7 @@ You can override the default threshold in agent frontmatter:
 
 ```yaml
 # In AGENT.md
-confidence_threshold: 75  # Lower threshold for this agent
+confidence_threshold: 75 # Lower threshold for this agent
 ```
 
 ---
@@ -421,17 +430,18 @@ Here's the complete decision tree for how PopKit selects and activates agents:
 
 Quick reference for common scenarios:
 
-| Input | Keywords | Files | Errors | Tier 1 Agents | Tier 2 Agents |
-|-------|----------|-------|--------|---------------|---------------|
-| "Fix TypeError in auth.ts" | bug | auth.ts | TypeError | bug-whisperer, security-auditor | - |
-| "Optimize bundle size" | bundle, optimize | - | - | performance-optimizer | bundle-analyzer |
-| "Review login.test.ts" | review, test | *.test.ts | - | code-reviewer, test-writer-fixer | - |
-| "Deploy to production" | deploy, production | - | - | security-auditor | deployment-validator |
-| "Research GraphQL caching" | research, GraphQL | - | - | api-designer | researcher |
+| Input                      | Keywords           | Files      | Errors    | Tier 1 Agents                    | Tier 2 Agents        |
+| -------------------------- | ------------------ | ---------- | --------- | -------------------------------- | -------------------- |
+| "Fix TypeError in auth.ts" | bug                | auth.ts    | TypeError | bug-whisperer, security-auditor  | -                    |
+| "Optimize bundle size"     | bundle, optimize   | -          | -         | performance-optimizer            | bundle-analyzer      |
+| "Review login.test.ts"     | review, test       | \*.test.ts | -         | code-reviewer, test-writer-fixer | -                    |
+| "Deploy to production"     | deploy, production | -          | -         | security-auditor                 | deployment-validator |
+| "Research GraphQL caching" | research, GraphQL  | -          | -         | api-designer                     | researcher           |
 
 ### Decision Examples
 
 **Scenario 1: Bug Report**
+
 ```
 Input: "There's a TypeError when clicking the login button"
 
@@ -444,6 +454,7 @@ Result: bug-whisperer takes lead, accessibility-guardian assists
 ```
 
 **Scenario 2: Test File Edit**
+
 ```
 Input: "Update src/auth/login.test.ts to cover new validation"
 
@@ -456,6 +467,7 @@ Result: test-writer-fixer takes lead, security-auditor reviews
 ```
 
 **Scenario 3: Performance Issue**
+
 ```
 Input: "The dashboard is slow when rendering 1000+ rows"
 
@@ -468,6 +480,7 @@ Result: performance-optimizer + bundle-analyzer collaboration
 ```
 
 **Scenario 4: Deployment**
+
 ```
 Input: "Need to deploy v2.1.0 to production"
 
@@ -486,6 +499,7 @@ Result: deployment-validator activated, security-auditor reviews
 ### Example 1: Bug Report Routing
 
 **User Request:**
+
 ```
 "Getting a TypeError: Cannot read property 'map' of undefined
  in src/components/UserList.tsx when data is loading"
@@ -511,10 +525,12 @@ Result: deployment-validator activated, security-auditor reviews
    - "map of undefined" → missing null check
 
 **Agents Activated:**
+
 - **bug-whisperer** (Primary) - Tier 1
 - **code-reviewer** (Support) - Tier 1
 
 **Workflow:**
+
 1. bug-whisperer investigates TypeError root cause
 2. code-reviewer suggests defensive coding patterns
 3. test-writer-fixer proposes test to catch regression
@@ -524,6 +540,7 @@ Result: deployment-validator activated, security-auditor reviews
 ### Example 2: Test Coverage Request
 
 **User Request:**
+
 ```
 "Add tests to src/api/auth.test.ts for the new password reset flow"
 ```
@@ -542,10 +559,12 @@ Result: deployment-validator activated, security-auditor reviews
    - "password reset" → security-critical feature
 
 **Agents Activated:**
+
 - **test-writer-fixer** (Primary) - Tier 1
 - **security-auditor** (Support) - Tier 1
 
 **Workflow:**
+
 1. test-writer-fixer creates test structure
 2. security-auditor reviews for security test coverage
 3. code-reviewer validates test quality
@@ -555,6 +574,7 @@ Result: deployment-validator activated, security-auditor reviews
 ### Example 3: Performance Optimization
 
 **User Request:**
+
 ```
 "The app bundle is 5MB and initial load takes 8 seconds.
  Need to optimize bundle size."
@@ -576,11 +596,13 @@ Result: deployment-validator activated, security-auditor reviews
    - "bundle size" → Tree shaking, compression
 
 **Agents Activated:**
+
 - **bundle-analyzer** (Primary) - Tier 2 🔥
 - **performance-optimizer** (Support) - Tier 1
 - **dead-code-eliminator** (Support) - Tier 2 🔥
 
 **Workflow:**
+
 1. bundle-analyzer analyzes webpack/vite configuration
 2. dead-code-eliminator identifies unused dependencies
 3. performance-optimizer measures before/after metrics
@@ -590,6 +612,7 @@ Result: deployment-validator activated, security-auditor reviews
 ### Example 4: Security Audit
 
 **User Request:**
+
 ```
 "Getting CORS errors when calling /api/users from localhost:3000"
 ```
@@ -608,11 +631,13 @@ Result: deployment-validator activated, security-auditor reviews
    - "localhost:3000" → Development environment
 
 **Agents Activated:**
+
 - **security-auditor** (Primary) - Tier 1
 - **api-designer** (Support) - Tier 1
 - **bug-whisperer** (Support) - Tier 1
 
 **Workflow:**
+
 1. security-auditor analyzes CORS configuration
 2. api-designer reviews API security headers
 3. bug-whisperer confirms fix resolves error
@@ -622,6 +647,7 @@ Result: deployment-validator activated, security-auditor reviews
 ### Example 5: Feature Development
 
 **User Request:**
+
 ```
 "/popkit:feature-dev 'Add real-time notifications using WebSockets'"
 ```
@@ -645,6 +671,7 @@ Result: deployment-validator activated, security-auditor reviews
    - Phase 7: Summary
 
 **Agents Activated (Sequential):**
+
 1. **code-explorer** (Phase 2)
 2. **code-architect** (Phase 4)
 3. **code-reviewer** (Phase 6)
@@ -662,21 +689,23 @@ Power Mode enables **parallel multi-agent workflows** with sophisticated coordin
 
 ### Modes of Operation
 
-| Mode | Agents | Setup | Use Case |
-|------|--------|-------|----------|
-| **Native Async** | 5-10 | Zero (Claude Code 2.0.64+) | Default mode, background tasks |
-| **File Mode** | 2 | Zero | Fallback, sequential workflows |
+| Mode             | Agents | Setup                      | Use Case                       |
+| ---------------- | ------ | -------------------------- | ------------------------------ |
+| **Native Async** | 5-10   | Zero (Claude Code 2.0.64+) | Default mode, background tasks |
+| **File Mode**    | 2      | Zero                       | Fallback, sequential workflows |
 
 ### Check-In Protocol
 
 Agents participate in **check-ins every 5 tool calls** to share insights and coordinate.
 
 **Check-In Format:**
+
 ```
 🔌 api-designer T:22 P:70% | Design: 12 endpoints with OpenAPI spec
 ```
 
 Where:
+
 - **T**: Total tool calls
 - **P**: Progress percentage
 - **Phase**: Current phase name
@@ -687,12 +716,14 @@ Where:
 Agents communicate via tagged insights:
 
 **PUSH (Outgoing):**
+
 ```
 ↑ "Found SQL injection risk in src/api/users.ts:45" [security, critical]
 ↑ "moment.js (300kb) → date-fns (20kb) saves 280kb" [bundle, optimization]
 ```
 
 **PULL (Incoming):**
+
 ```
 Agents subscribe to tags:
 - security-auditor listens for [security]
@@ -708,7 +739,7 @@ Agents can **wait for dependencies** before proceeding:
 sync_barriers:
   - phase: "architecture"
     wait_for: ["code-explorer"]
-    timeout: 120  # seconds
+    timeout: 120 # seconds
 
   - phase: "review"
     wait_for: ["security-auditor", "test-writer-fixer"]
@@ -738,6 +769,7 @@ Approve plan? [Yes / No / Modify]
 ```
 
 **Configuration:**
+
 ```json
 // power-mode/config.json
 "plan_mode": {
@@ -756,11 +788,13 @@ Approve plan? [Yes / No / Modify]
 **Symptom:** Agent doesn't match the task (e.g., bundle-analyzer for a test issue)
 
 **Diagnosis:**
+
 1. Check if keywords are ambiguous
 2. Verify file patterns in request
 3. Review semantic embeddings (if enabled)
 
 **Solution:**
+
 ```bash
 # Regenerate embeddings
 /popkit-core:project embed
@@ -776,10 +810,12 @@ Approve plan? [Yes / No / Modify]
 **Symptom:** Expected specialist agent didn't activate
 
 **Diagnosis:**
+
 1. Tier 2 agents require trigger keywords
 2. Semantic routing may not be enabled
 
 **Solution:**
+
 ```bash
 # Check if VOYAGE_API_KEY is set
 echo $VOYAGE_API_KEY
@@ -798,6 +834,7 @@ echo $VOYAGE_API_KEY
 Code-reviewer circuit breaker should prevent this, but if it happens:
 
 **Solution:**
+
 1. code-reviewer automatically stops after 10 low-confidence issues
 2. Refocuses on high-priority findings only
 3. Reports filtered count for transparency
@@ -812,6 +849,7 @@ Code-reviewer circuit breaker should prevent this, but if it happens:
 Power Mode coordination issue or overlapping triggers
 
 **Solution:**
+
 ```bash
 # Check Power Mode status
 /popkit-core:power status
@@ -830,10 +868,12 @@ Power Mode coordination issue or overlapping triggers
 **Symptom:** Agents don't activate for semantic queries
 
 **Diagnosis:**
+
 1. VOYAGE_API_KEY not set
 2. Embeddings not generated
 
 **Solution:**
+
 ```bash
 # Set API key
 export VOYAGE_API_KEY="your-key-here"
@@ -861,17 +901,17 @@ tools: Read, Write, Edit, Bash
 output_style: agent-output-style
 model: inherit
 version: 1.0.0
-tier: tier-1-always-active  # or tier-2-on-demand
-keywords:  # Keyword triggers
+tier: tier-1-always-active # or tier-2-on-demand
+keywords: # Keyword triggers
   - keyword1
   - keyword2
-file_patterns:  # File pattern triggers
+file_patterns: # File pattern triggers
   - "*.test.ts"
   - "**/__tests__/**"
-error_patterns:  # Error signature triggers
+error_patterns: # Error signature triggers
   - "TypeError"
   - "SecurityError"
-confidence_threshold: 80  # Minimum confidence to report
+confidence_threshold: 80 # Minimum confidence to report
 ---
 ```
 
@@ -892,10 +932,7 @@ Located in `packages/popkit-core/power-mode/config.json`:
     "sync_timeout_seconds": 120
   },
   "guardrails": {
-    "human_required_actions": [
-      "delete_production_data",
-      "modify_security_config"
-    ]
+    "human_required_actions": ["delete_production_data", "modify_security_config"]
   }
 }
 ```
@@ -916,6 +953,7 @@ export VOYAGE_API_KEY="your-key-here"
 ```
 
 **Embedding Process:**
+
 1. Agent descriptions are embedded using Voyage AI
 2. User query is embedded on each request
 3. Cosine similarity ranks agent relevance
@@ -927,49 +965,49 @@ export VOYAGE_API_KEY="your-key-here"
 
 ### Common Routing Scenarios
 
-| User Request | Expected Agent(s) | Routing Mechanism | Tier |
-|--------------|-------------------|-------------------|------|
-| "Fix bug in UserList component" | bug-whisperer | Keyword: "bug" | Tier 1 |
-| "Review src/auth/login.test.ts" | test-writer-fixer, code-reviewer | File: *.test.ts + Keyword: "review" | Tier 1 |
-| "TypeError in API call" | bug-whisperer | Error: "TypeError" | Tier 1 |
-| "Optimize bundle size for production" | bundle-analyzer, performance-optimizer | Keyword: "bundle" | Tier 2 |
-| "Deploy v2.0 to production" | deployment-validator, security-auditor | Keyword: "deploy" | Tier 2 |
-| "Research GraphQL best practices" | researcher, api-designer | Keyword: "research" | Tier 2 |
-| "Add accessibility to modal" | accessibility-guardian | Keyword: "accessibility" | Tier 1 |
-| "Refactor legacy API endpoints" | refactoring-expert, api-designer | Keyword: "refactor" | Tier 1 |
+| User Request                          | Expected Agent(s)                      | Routing Mechanism                    | Tier   |
+| ------------------------------------- | -------------------------------------- | ------------------------------------ | ------ |
+| "Fix bug in UserList component"       | bug-whisperer                          | Keyword: "bug"                       | Tier 1 |
+| "Review src/auth/login.test.ts"       | test-writer-fixer, code-reviewer       | File: \*.test.ts + Keyword: "review" | Tier 1 |
+| "TypeError in API call"               | bug-whisperer                          | Error: "TypeError"                   | Tier 1 |
+| "Optimize bundle size for production" | bundle-analyzer, performance-optimizer | Keyword: "bundle"                    | Tier 2 |
+| "Deploy v2.0 to production"           | deployment-validator, security-auditor | Keyword: "deploy"                    | Tier 2 |
+| "Research GraphQL best practices"     | researcher, api-designer               | Keyword: "research"                  | Tier 2 |
+| "Add accessibility to modal"          | accessibility-guardian                 | Keyword: "accessibility"             | Tier 1 |
+| "Refactor legacy API endpoints"       | refactoring-expert, api-designer       | Keyword: "refactor"                  | Tier 1 |
 
 ### Error Pattern → Agent Mapping
 
-| Error Pattern | Agent | Tier | Example |
-|---------------|-------|------|---------|
-| TypeError, ReferenceError | bug-whisperer | 1 | "TypeError: Cannot read property 'map'" |
-| SecurityError, CORS, XSS | security-auditor | 1 | "CORS policy blocked request" |
-| Timeout, Out of memory | performance-optimizer | 1 | "Query timeout after 30s" |
-| Test assertion failed | test-writer-fixer | 1 | "Expected 200, got 404" |
-| SQL injection, CSRF | security-auditor | 1 | "SQL injection vulnerability detected" |
+| Error Pattern             | Agent                 | Tier | Example                                 |
+| ------------------------- | --------------------- | ---- | --------------------------------------- |
+| TypeError, ReferenceError | bug-whisperer         | 1    | "TypeError: Cannot read property 'map'" |
+| SecurityError, CORS, XSS  | security-auditor      | 1    | "CORS policy blocked request"           |
+| Timeout, Out of memory    | performance-optimizer | 1    | "Query timeout after 30s"               |
+| Test assertion failed     | test-writer-fixer     | 1    | "Expected 200, got 404"                 |
+| SQL injection, CSRF       | security-auditor      | 1    | "SQL injection vulnerability detected"  |
 
 ### File Pattern → Agent Mapping
 
-| File Pattern | Agent | Tier | Example File |
-|--------------|-------|------|--------------|
-| *.test.ts, *.spec.js | test-writer-fixer | 1 | login.test.ts |
-| *.tsx, *.jsx | accessibility-guardian, code-reviewer | 1 | UserList.tsx |
-| *api*.ts, *routes*.ts | api-designer | 1 | api/users.ts |
-| webpack.config.*, vite.config.* | bundle-analyzer | 2 | webpack.config.js |
-| *auth*.ts, *security*.* | security-auditor | 1 | auth/oauth.ts |
-| *.md, CLAUDE.md | documentation-maintainer | 1 | README.md |
-| package.json | migration-specialist | 1 | package.json |
+| File Pattern                    | Agent                                 | Tier | Example File      |
+| ------------------------------- | ------------------------------------- | ---- | ----------------- |
+| _.test.ts, _.spec.js            | test-writer-fixer                     | 1    | login.test.ts     |
+| _.tsx, _.jsx                    | accessibility-guardian, code-reviewer | 1    | UserList.tsx      |
+| _api_.ts, _routes_.ts           | api-designer                          | 1    | api/users.ts      |
+| webpack.config._, vite.config._ | bundle-analyzer                       | 2    | webpack.config.js |
+| _auth_.ts, _security_.\*        | security-auditor                      | 1    | auth/oauth.ts     |
+| \*.md, CLAUDE.md                | documentation-maintainer              | 1    | README.md         |
+| package.json                    | migration-specialist                  | 1    | package.json      |
 
 ### Confidence Threshold Quick Guide
 
-| Issue Type | Typical Confidence | Will Report? |
-|------------|-------------------|--------------|
-| SQL injection risk | 95-100 | Yes ✓ |
-| Missing error boundary | 85-95 | Yes ✓ |
-| Type safety issue (any usage) | 80-90 | Yes ✓ |
-| Performance bottleneck | 75-85 | Yes ✓ |
-| Variable naming clarity | 50-70 | No ✗ |
-| Subjective style preference | 20-40 | No ✗ |
+| Issue Type                    | Typical Confidence | Will Report? |
+| ----------------------------- | ------------------ | ------------ |
+| SQL injection risk            | 95-100             | Yes ✓        |
+| Missing error boundary        | 85-95              | Yes ✓        |
+| Type safety issue (any usage) | 80-90              | Yes ✓        |
+| Performance bottleneck        | 75-85              | Yes ✓        |
+| Variable naming clarity       | 50-70              | No ✗         |
+| Subjective style preference   | 20-40              | No ✗         |
 
 ---
 
@@ -984,18 +1022,21 @@ PopKit's agent routing system provides:
 5. **Semantic Understanding**: Beyond keywords with embeddings
 
 **Key Metrics:**
+
 - **Tier 1**: 10 always-active core agents (~15.3k tokens)
 - **Tier 2**: 9 on-demand specialists (~0.3k tokens when not loaded)
 - **Feature Workflow**: 2 agents for 7-phase development
 - **Total**: 21 specialized agents across 4 plugins
 
 **Performance Impact:**
+
 - Baseline context: 15.3k tokens (Tier 1 only)
 - With 3 Tier 2 agents: ~16.2k tokens
 - Maximum (all agents): ~18k tokens
 - Savings vs. always loading all: 40.5% reduction
 
 **Next Steps:**
+
 - Review [Package README](../packages/popkit-core/README.md) for agent catalog
 - Explore [Power Mode Configuration](../packages/popkit-core/power-mode/config.json)
 - Test routing with `/popkit-ops:debug routing` (if available)
