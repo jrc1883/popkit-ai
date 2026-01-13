@@ -11,7 +11,8 @@ Part of the popkit plugin system.
 import json
 import os
 import re
-from datetime import datetime, timezone
+import subprocess
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 # Constants
@@ -656,6 +657,99 @@ def format_project_table(projects: List[Dict[str, Any]], show_path: bool = False
     return "\n".join(lines)
 
 
+def get_cached_issue_count(project: Dict[str, Any]) -> str:
+    """Get cached GitHub issue count for project.
+
+    Args:
+        project: Project dict from registry
+
+    Returns:
+        String representation of issue count or '--'
+    """
+    # Check if project has GitHub issues data
+    issue_data = project.get("github_issues", {})
+    if not issue_data:
+        return "--"
+
+    # Check cache freshness (15 minute TTL)
+    cached_at_str = issue_data.get("cached_at")
+    if not cached_at_str:
+        return "--"
+
+    try:
+        cached_at = datetime.fromisoformat(cached_at_str)
+        ttl = timedelta(minutes=15)
+
+        if datetime.now() - cached_at < ttl:
+            # Cache is fresh
+            open_count = issue_data.get("open_count")
+            if open_count is not None:
+                return str(open_count)
+    except (ValueError, TypeError):
+        pass
+
+    return "--"
+
+
+def fetch_project_issues(path: str, timeout: int = 5) -> Optional[int]:
+    """Fetch open issue count from GitHub via gh CLI.
+
+    Args:
+        path: Path to the project directory
+        timeout: Timeout in seconds (default: 5)
+
+    Returns:
+        Number of open issues, or None on error
+    """
+    try:
+        result = subprocess.run(
+            ["gh", "issue", "list", "--state", "open", "--json", "number"],
+            cwd=path,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+
+        if result.returncode == 0:
+            issues = json.loads(result.stdout)
+            return len(issues)
+        else:
+            return None
+    except Exception:
+        return None
+
+
+def refresh_project_issue_counts(registry: Dict[str, Any]) -> int:
+    """Refresh GitHub issue counts for all projects in registry.
+
+    Args:
+        registry: Project registry dict with 'projects' list
+
+    Returns:
+        Number of projects successfully updated
+    """
+    updated = 0
+    projects = registry.get("projects", [])
+
+    for project in projects:
+        path = project.get("path")
+        if not path:
+            continue
+
+        # Fetch issue count
+        count = fetch_project_issues(path, timeout=5)
+
+        if count is not None:
+            # Update project with fresh data
+            project["github_issues"] = {
+                "open_count": count,
+                "cached_at": datetime.now().isoformat(),
+            }
+            updated += 1
+
+    return updated
+
+
 def format_dashboard(projects: List[Dict[str, Any]]) -> str:
     """Format full dashboard display.
 
@@ -704,7 +798,7 @@ def format_dashboard(projects: List[Dict[str, Any]]) -> str:
             health_icon = "!"
 
         health_str = f"{health:>2}" if health is not None else "--"
-        issues = "--"  # TODO(#692): Integrate with GitHub issues
+        issues = get_cached_issue_count(p)
         activity = format_activity(p.get("lastActive", ""))[:13].ljust(13)
 
         lines.append(f"  | {name} | {health_icon} {health_str}  | {issues:>6} | {activity} |")

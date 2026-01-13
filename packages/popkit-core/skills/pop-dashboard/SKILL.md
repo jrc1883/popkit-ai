@@ -88,6 +88,40 @@ print(f"Quick Health: {quick_score}/100")
 | **Issue Health**  | 20     | No stale (+20), -2 per stale issue (>30 days)                             |
 | **Activity**      | 20     | Today (+20), week (+15), month (+10), older (+5)                          |
 
+### Step 4: Refresh Issue Counts
+
+Fetch fresh GitHub issue counts for all projects:
+
+```python
+from project_registry import load_registry, refresh_project_issue_counts, save_registry
+
+# Load registry
+registry = load_registry()
+
+# Fetch fresh issue counts for all projects
+updated_count = refresh_project_issue_counts(registry)
+
+# Save updated registry
+save_registry(registry)
+
+print(f"Updated issue counts for {updated_count} projects")
+```
+
+**Cache Behavior:**
+
+- Issue counts are cached for 15 minutes (TTL)
+- Dashboard displays cached counts when fresh (`< 15 min`)
+- Stale cache displays `'--'` until refreshed
+- Non-GitHub projects always show `'--'`
+
+**Performance Considerations:**
+
+- Dashboard loads instantly (uses cache, no network calls)
+- Refresh fetches issue counts sequentially (~0.5s per project)
+- 10 projects refresh in ~5-10 seconds
+- Manual refresh gives user control over when to pay fetch cost
+- Falls back gracefully if `gh` CLI is unavailable
+
 ## Subcommand Operations
 
 ### Show Dashboard (Default)

@@ -33,6 +33,9 @@ Collect information from multiple sources:
 # Git status
 git status --short 2>/dev/null
 
+# Current branch name (for protected branch detection)
+current_branch=$(git branch --show-current 2>/dev/null)
+
 # Branch info
 git branch -vv 2>/dev/null | head -5
 
@@ -58,10 +61,26 @@ if is_recording_enabled():
     )
     uncommitted_lines = len([l for l in result.stdout.strip().split('\n') if l])
 
+    # Get current branch name
+    branch_result = subprocess.run(
+        ["git", "branch", "--show-current"],
+        capture_output=True,
+        text=True
+    )
+    current_branch = branch_result.stdout.strip()
+
+    # Check if on protected branch
+    PROTECTED_BRANCHES = ["main", "master", "develop", "production"]
+    is_protected = current_branch in PROTECTED_BRANCHES
+
     record_reasoning(
         step="Analyze git status",
-        reasoning=f"Checked working directory, branch status, and recent activity",
-        data={"uncommitted_files": uncommitted_lines}
+        reasoning=f"Checked working directory, branch={current_branch}, protected={is_protected}",
+        data={
+            "uncommitted_files": uncommitted_lines,
+            "current_branch": current_branch,
+            "is_protected": is_protected
+        }
     )
 ```
 
@@ -159,16 +178,17 @@ if branches:
 
 Identify what kind of project and what state it's in:
 
-| Indicator             | What It Means                   | Weight |
-| --------------------- | ------------------------------- | ------ |
-| Uncommitted changes   | Active work in progress         | HIGH   |
-| Ahead of remote       | Ready to push/PR                | MEDIUM |
-| TypeScript errors     | Build broken                    | HIGH   |
-| **Research branches** | Web session findings to process | HIGH   |
-| Open issues           | Known work items                | MEDIUM |
-| **Issue votes**       | Community priority              | MEDIUM |
-| TECHNICAL_DEBT.md     | Documented debt                 | MEDIUM |
-| Recent commits        | Active development              | LOW    |
+| Indicator             | What It Means                   | Weight   |
+| --------------------- | ------------------------------- | -------- |
+| **On protected branch** | **Requires feature branch**   | **CRITICAL** |
+| Uncommitted changes   | Active work in progress         | HIGH     |
+| Ahead of remote       | Ready to push/PR                | MEDIUM   |
+| TypeScript errors     | Build broken                    | HIGH     |
+| **Research branches** | Web session findings to process | HIGH     |
+| Open issues           | Known work items                | MEDIUM   |
+| **Issue votes**       | Community priority              | MEDIUM   |
+| TECHNICAL_DEBT.md     | Documented debt                 | MEDIUM   |
+| Recent commits        | Active development              | LOW      |
 
 ### Step 2.5: Fetch Issue Votes (NEW)
 
@@ -215,18 +235,20 @@ For each potential recommendation, calculate a relevance score:
 Score = Base Priority + Context Multipliers
 
 Base Priorities:
+- Create feature branch (if on protected): 100  # NEW - HIGHEST PRIORITY
 - Fix build errors: 90
 - Process research branches: 85  # NEW - important to merge findings
 - Commit uncommitted work: 80
-- Push ahead commits: 60
+- Push ahead commits (if on feature branch): 60  # UPDATED - only if safe
 - Address open issues: 50
 - Tackle tech debt: 40
 - Start new feature: 30
 
 Context Multipliers:
+- On protected branch with commits: +50 to branch creation  # NEW
 - Has uncommitted changes: +20 to commit
 - TypeScript errors: +30 to fix
-- Research branches detected: +25 to process  # NEW
+- Research branches detected: +25 to process
 - Many open issues: +10 to issue work
 - Long time since commit: +15 to commit
 ```
@@ -249,12 +271,18 @@ Use the `next-action-report` output style:
 ```markdown
 ## Current State
 
-| Indicator   | Status         | Urgency           |
-| ----------- | -------------- | ----------------- |
-| Uncommitted | X files        | [HIGH/MEDIUM/LOW] |
-| Branch Sync | [status]       | [urgency]         |
-| TypeScript  | [clean/errors] | [urgency]         |
-| Open Issues | X open         | [urgency]         |
+| Indicator      | Status              | Urgency           |
+| -------------- | ------------------- | ----------------- |
+| Current Branch | [branch-name]       | [urgency]         |
+| Uncommitted    | X files             | [HIGH/MEDIUM/LOW] |
+| Branch Sync    | [status]            | [urgency]         |
+| TypeScript     | [clean/errors]      | [urgency]         |
+| Open Issues    | X open              | [urgency]         |
+
+**Note:** When on protected branch (main/master), display urgency as:
+```
+| Current Branch | main (PROTECTED)    | ⚠️ CRITICAL       |
+```
 
 ## Recommended Actions
 
@@ -292,6 +320,42 @@ Based on your context, you could also:
 ```
 
 ## Recommendation Logic
+
+### If On Protected Branch with Unpushed Commits (NEW - Issue #141)
+
+```markdown
+### 1. Create Feature Branch
+
+**Command:** `git checkout -b feat/descriptive-name`
+
+**Why:** You have [X] commits on `main` but cannot push directly due to branch protection
+
+**What it does:**
+- Creates feature branch from current state
+- Moves all commits to feature branch
+- Resets local main to match remote
+
+**Benefit:**
+- Complies with branch protection policy
+- Enables proper PR workflow
+- Prevents failed push attempts
+
+**Next steps:**
+```bash
+# Create and push feature branch
+git checkout -b feat/your-feature-name
+git push -u origin feat/your-feature-name
+
+# Create pull request
+gh pr create --title "..." --body "..."
+
+# Clean up local main
+git checkout main
+git reset --hard origin/main
+```
+```
+
+**CRITICAL**: This recommendation should **suppress** the "Push ahead commits" recommendation when on a protected branch.
 
 ### If Uncommitted Changes Detected
 

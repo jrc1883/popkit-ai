@@ -20,7 +20,7 @@
   "license": "MIT",
   "dependencies": {
     "@astrojs/starlight": "^0.37.2",
-    "astro": "^5.15.9",
+    "astro": "^5.16.9",
     "sharp": "^0.34.5"
   }
 }
