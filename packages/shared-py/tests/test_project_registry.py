@@ -4,13 +4,13 @@ Tests for project_registry.py GitHub issue integration.
 """
 
 import json
-import pytest
 from datetime import datetime, timedelta
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from popkit_shared.utils.project_registry import (
-    get_cached_issue_count,
     fetch_project_issues,
-    refresh_project_issue_counts
+    get_cached_issue_count,
+    refresh_project_issue_counts,
 )
 
 
@@ -22,10 +22,7 @@ def test_get_cached_issue_count_fresh():
     project = {
         "name": "test-project",
         "path": "/path/to/project",
-        "github_issues": {
-            "open_count": 5,
-            "cached_at": cached_at
-        }
+        "github_issues": {"open_count": 5, "cached_at": cached_at},
     }
 
     result = get_cached_issue_count(project)
@@ -40,10 +37,7 @@ def test_get_cached_issue_count_stale():
     project = {
         "name": "test-project",
         "path": "/path/to/project",
-        "github_issues": {
-            "open_count": 5,
-            "cached_at": cached_at
-        }
+        "github_issues": {"open_count": 5, "cached_at": cached_at},
     }
 
     result = get_cached_issue_count(project)
@@ -53,10 +47,7 @@ def test_get_cached_issue_count_stale():
 def test_get_cached_issue_count_missing():
     """Test that missing cache data returns '--'."""
     # Project with no github_issues field
-    project = {
-        "name": "test-project",
-        "path": "/path/to/project"
-    }
+    project = {"name": "test-project", "path": "/path/to/project"}
 
     result = get_cached_issue_count(project)
     assert result == "--", f"Expected '--', got '{result}'"
@@ -67,10 +58,7 @@ def test_get_cached_issue_count_invalid_format():
     project = {
         "name": "test-project",
         "path": "/path/to/project",
-        "github_issues": {
-            "open_count": 5,
-            "cached_at": "invalid-timestamp"
-        }
+        "github_issues": {"open_count": 5, "cached_at": "invalid-timestamp"},
     }
 
     result = get_cached_issue_count(project)
@@ -83,11 +71,7 @@ def test_fetch_project_issues_success(mock_run):
     # Mock successful gh CLI response
     mock_result = MagicMock()
     mock_result.returncode = 0
-    mock_result.stdout = json.dumps([
-        {"number": 1},
-        {"number": 2},
-        {"number": 3}
-    ])
+    mock_result.stdout = json.dumps([{"number": 1}, {"number": 2}, {"number": 3}])
     mock_run.return_value = mock_result
 
     result = fetch_project_issues("/path/to/project", timeout=5)
@@ -124,7 +108,7 @@ def test_refresh_project_issue_counts_success(mock_fetch):
         "projects": [
             {"name": "project1", "path": "/path/1"},
             {"name": "project2", "path": "/path/2"},
-            {"name": "project3", "path": "/path/3"}
+            {"name": "project3", "path": "/path/3"},
         ]
     }
 
@@ -155,7 +139,7 @@ def test_refresh_project_issue_counts_partial_failure(mock_fetch):
         "projects": [
             {"name": "project1", "path": "/path/1"},
             {"name": "project2", "path": "/path/2"},
-            {"name": "project3", "path": "/path/3"}
+            {"name": "project3", "path": "/path/3"},
         ]
     }
 

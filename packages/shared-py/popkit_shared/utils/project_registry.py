@@ -707,7 +707,7 @@ def fetch_project_issues(path: str, timeout: int = 5) -> Optional[int]:
             cwd=path,
             capture_output=True,
             text=True,
-            timeout=timeout
+            timeout=timeout,
         )
 
         if result.returncode == 0:
@@ -743,7 +743,7 @@ def refresh_project_issue_counts(registry: Dict[str, Any]) -> int:
             # Update project with fresh data
             project["github_issues"] = {
                 "open_count": count,
-                "cached_at": datetime.now().isoformat()
+                "cached_at": datetime.now().isoformat(),
             }
             updated += 1
 

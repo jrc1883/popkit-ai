@@ -9,16 +9,14 @@ Tests the complete workflow:
 4. Stale cache returns '--'
 """
 
-import json
-import pytest
 from datetime import datetime, timedelta
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
+
+import pytest
 
 from popkit_shared.utils.project_registry import (
     get_cached_issue_count,
-    fetch_project_issues,
     refresh_project_issue_counts,
-    format_dashboard
 )
 
 
@@ -30,7 +28,7 @@ def test_full_dashboard_workflow(mock_fetch):
         "projects": [
             {"name": "project1", "path": "/path/1", "healthScore": 92},
             {"name": "project2", "path": "/path/2", "healthScore": 85},
-            {"name": "project3", "path": "/path/3", "healthScore": 78}
+            {"name": "project3", "path": "/path/3", "healthScore": 78},
         ]
     }
 
@@ -78,10 +76,7 @@ def test_stale_cache_behavior():
     project = {
         "name": "stale-project",
         "path": "/path/to/project",
-        "github_issues": {
-            "open_count": 10,
-            "cached_at": stale_timestamp
-        }
+        "github_issues": {"open_count": 10, "cached_at": stale_timestamp},
     }
 
     # Verify stale cache returns '--'
@@ -93,7 +88,7 @@ def test_non_github_project():
     """Test that non-GitHub projects show '--'."""
     project = {
         "name": "local-project",
-        "path": "/path/to/local"
+        "path": "/path/to/local",
         # No github_issues field
     }
 
@@ -111,7 +106,7 @@ def test_partial_refresh_failure(mock_fetch):
         "projects": [
             {"name": "project1", "path": "/path/1"},
             {"name": "project2", "path": "/path/2"},
-            {"name": "project3", "path": "/path/3"}
+            {"name": "project3", "path": "/path/3"},
         ]
     }
 
@@ -143,10 +138,7 @@ def test_zero_issues_displays_correctly():
     project = {
         "name": "zero-issues",
         "path": "/path/to/project",
-        "github_issues": {
-            "open_count": 0,
-            "cached_at": fresh_timestamp
-        }
+        "github_issues": {"open_count": 0, "cached_at": fresh_timestamp},
     }
 
     result = get_cached_issue_count(project)
