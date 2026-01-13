@@ -1,0 +1,31 @@
+{
+  "$schema": "https://claude.ai/schemas/mcp.json",
+  "version": "1.0.0",
+  "mcpServers": {
+    "project-health": {
+      "command": "node",
+      "args": [".claude/mcp-servers/project-health/dist/index.js"],
+      "permissions": {
+        "allowed": ["mcp__project-health__*"]
+      }
+    },
+    "git-tools": {
+      "command": "node",
+      "args": [".claude/mcp-servers/git-tools/dist/index.js"],
+      "permissions": {
+        "allowed": ["mcp__git-tools__*"],
+        "denied": ["mcp__git-tools__force-push"]
+      }
+    }
+  },
+  "resources": {
+    "project-context": {
+      "description": "Current project context and configuration",
+      "server": "project-health"
+    },
+    "agent-registry": {
+      "description": "Registry of available agents and their capabilities",
+      "server": "project-health"
+    }
+  }
+}

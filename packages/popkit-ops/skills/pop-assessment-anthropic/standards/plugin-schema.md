@@ -98,7 +98,11 @@ Claude Code plugins require specific configuration files with defined schemas. T
     "server-name": {
       "command": "string",
       "args": ["string"],
-      "env": { "KEY": "value" }
+      "env": { "KEY": "value" },
+      "permissions": {
+        "allowed": ["mcp__server-name__*"],
+        "denied": ["mcp__server-name__dangerous-tool"]
+      }
     }
   },
   "tools": { ... },
@@ -107,6 +111,21 @@ Claude Code plugins require specific configuration files with defined schemas. T
 }
 ```
 
+### Wildcard Permissions (Claude Code 2.0.70+)
+
+**Syntax:** `mcp__{server-name}__{tool-pattern}`
+
+**Examples:**
+- `mcp__server-name__*` - All tools from server
+- `mcp__server-name__health-*` - Tools matching prefix
+- Explicit list - Specific tools only
+
+**Recommended:**
+- First-party servers → Wildcard (`*`)
+- Third-party servers → Explicit list
+
+See `docs/MCP_WILDCARD_PERMISSIONS.md` for detailed guide.
+
 ### Validation Rules
 
 | Check | Rule | Severity |
@@ -114,6 +133,7 @@ Claude Code plugins require specific configuration files with defined schemas. T
 | Schema reference | Should include `$schema` | low |
 | Server command | Must be valid executable | critical |
 | Server args | Must be array of strings | high |
+| Permissions | Should use wildcard for first-party servers | low |
 
 ## agents/config.json Schema
 

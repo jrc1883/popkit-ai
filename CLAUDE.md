@@ -296,6 +296,7 @@ PopKit requires specific Claude Code versions for full functionality:
 |---------|-----------------|-------------|
 | **Extended Thinking** | 2.0.67 | Default enabled (10k tokens) |
 | **Native Async Mode** | 2.0.64 | Background Task tool (5+ agents) |
+| **MCP Wildcard Permissions** | 2.0.70 | `mcp__server__*` syntax for tool permissions |
 | **Plan Mode** | 2.0.70 | Agent approval workflow |
 | **Configuration Management** | 2.0.71 | `/config` toggle |
 | **MCP Permissions** | 2.0.71 | Fixed permissions for MCP servers |
@@ -437,6 +438,7 @@ Before committing any skill/command:
 - [Plugin Modularization Design](docs/plans/2025-12-20-plugin-modularization-design.md)
 - [Testing & Validation Plan](docs/plans/2025-12-21-phase5-testing-validation-plan.md)
 - [Hook Portability Audit](docs/HOOK_PORTABILITY_AUDIT.md)
+- [MCP Wildcard Permissions Guide](docs/MCP_WILDCARD_PERMISSIONS.md) - Claude Code 2.0.70+ wildcard syntax
 
 ### For Claude Code
 
