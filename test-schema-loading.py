@@ -4,7 +4,6 @@ Quick test script to verify output-validator.py can load all schemas.
 """
 
 import json
-import sys
 from pathlib import Path
 
 # Get the schema directory
