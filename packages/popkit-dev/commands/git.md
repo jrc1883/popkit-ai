@@ -37,9 +37,45 @@ Invokes **git commit** with: Status check → Analyze changes → Generate messa
 
 ## push
 
-Push current branch to remote with safety checks.
+Push current branch to remote with branch protection safety checks.
 
-Warns before pushing to main/master, uses `--force-with-lease`, confirms if branch has no upstream.
+**Branch Protection (Issue #141, #142):**
+
+Before pushing, MUST check current branch:
+
+```bash
+current_branch=$(git branch --show-current 2>/dev/null)
+```
+
+**Protected Branches:** `main`, `master`, `develop`, `production`
+
+**If on protected branch:**
+
+1. ❌ BLOCK the push operation (do not just warn)
+2. Explain why: "Cannot push directly to protected branch '[branch]' due to branch protection policy"
+3. Recommend feature branch workflow:
+
+   ```bash
+   # Create feature branch from current state
+   git checkout -b feat/descriptive-name
+   git push -u origin feat/descriptive-name
+
+   # Create pull request
+   gh pr create --title "..." --body "..."
+
+   # Clean up local protected branch
+   git checkout [protected-branch]
+   git reset --hard origin/[protected-branch]
+   ```
+
+4. Reference: See CLAUDE.md "Git Workflow Principles" section
+
+**If on feature branch:**
+
+- Proceed with push
+- Use `--force-with-lease` if --force requested
+- Confirm if branch has no upstream
+- Set upstream with -u flag if needed
 
 **Options:** --force-with-lease, -u
 

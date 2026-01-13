@@ -178,17 +178,17 @@ if branches:
 
 Identify what kind of project and what state it's in:
 
-| Indicator             | What It Means                   | Weight   |
-| --------------------- | ------------------------------- | -------- |
-| **On protected branch** | **Requires feature branch**   | **CRITICAL** |
-| Uncommitted changes   | Active work in progress         | HIGH     |
-| Ahead of remote       | Ready to push/PR                | MEDIUM   |
-| TypeScript errors     | Build broken                    | HIGH     |
-| **Research branches** | Web session findings to process | HIGH     |
-| Open issues           | Known work items                | MEDIUM   |
-| **Issue votes**       | Community priority              | MEDIUM   |
-| TECHNICAL_DEBT.md     | Documented debt                 | MEDIUM   |
-| Recent commits        | Active development              | LOW      |
+| Indicator               | What It Means                   | Weight       |
+| ----------------------- | ------------------------------- | ------------ |
+| **On protected branch** | **Requires feature branch**     | **CRITICAL** |
+| Uncommitted changes     | Active work in progress         | HIGH         |
+| Ahead of remote         | Ready to push/PR                | MEDIUM       |
+| TypeScript errors       | Build broken                    | HIGH         |
+| **Research branches**   | Web session findings to process | HIGH         |
+| Open issues             | Known work items                | MEDIUM       |
+| **Issue votes**         | Community priority              | MEDIUM       |
+| TECHNICAL_DEBT.md       | Documented debt                 | MEDIUM       |
+| Recent commits          | Active development              | LOW          |
 
 ### Step 2.5: Fetch Issue Votes (NEW)
 
@@ -271,17 +271,19 @@ Use the `next-action-report` output style:
 ```markdown
 ## Current State
 
-| Indicator      | Status              | Urgency           |
-| -------------- | ------------------- | ----------------- |
-| Current Branch | [branch-name]       | [urgency]         |
-| Uncommitted    | X files             | [HIGH/MEDIUM/LOW] |
-| Branch Sync    | [status]            | [urgency]         |
-| TypeScript     | [clean/errors]      | [urgency]         |
-| Open Issues    | X open              | [urgency]         |
+| Indicator      | Status         | Urgency           |
+| -------------- | -------------- | ----------------- |
+| Current Branch | [branch-name]  | [urgency]         |
+| Uncommitted    | X files        | [HIGH/MEDIUM/LOW] |
+| Branch Sync    | [status]       | [urgency]         |
+| TypeScript     | [clean/errors] | [urgency]         |
+| Open Issues    | X open         | [urgency]         |
 
 **Note:** When on protected branch (main/master), display urgency as:
 ```
-| Current Branch | main (PROTECTED)    | ⚠️ CRITICAL       |
+
+| Current Branch | main (PROTECTED) | ⚠️ CRITICAL |
+
 ```
 
 ## Recommended Actions
@@ -323,7 +325,7 @@ Based on your context, you could also:
 
 ### If On Protected Branch with Unpushed Commits (NEW - Issue #141)
 
-```markdown
+````markdown
 ### 1. Create Feature Branch
 
 **Command:** `git checkout -b feat/descriptive-name`
@@ -331,16 +333,19 @@ Based on your context, you could also:
 **Why:** You have [X] commits on `main` but cannot push directly due to branch protection
 
 **What it does:**
+
 - Creates feature branch from current state
 - Moves all commits to feature branch
 - Resets local main to match remote
 
 **Benefit:**
+
 - Complies with branch protection policy
 - Enables proper PR workflow
 - Prevents failed push attempts
 
 **Next steps:**
+
 ```bash
 # Create and push feature branch
 git checkout -b feat/your-feature-name
@@ -353,7 +358,9 @@ gh pr create --title "..." --body "..."
 git checkout main
 git reset --hard origin/main
 ```
-```
+````
+
+````
 
 **CRITICAL**: This recommendation should **suppress** the "Push ahead commits" recommendation when on a protected branch.
 
@@ -366,7 +373,7 @@ git reset --hard origin/main
 **Why:** You have [X] uncommitted files including [key files]
 **What it does:** Auto-generates commit message matching repo style
 **Benefit:** Clean working directory, changes safely versioned
-```
+````
 
 ### If TypeScript Errors
 
