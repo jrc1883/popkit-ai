@@ -8,14 +8,13 @@ and spikes during development. Integrates with embeddings for semantic search.
 Part of PopKit Issue #142 (Research Index with Embeddings).
 """
 
-import os
 import json
+import os
 import re
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
-from typing import List, Dict, Any, Optional, Tuple
-from dataclasses import dataclass, field, asdict
 from pathlib import Path
-
+from typing import Any, Dict, List, Optional, Tuple
 
 # =============================================================================
 # CONFIGURATION
@@ -635,8 +634,8 @@ class ResearchIndexManager:
         """
         # Try to import embedding utilities
         try:
-            from .voyage_client import VoyageClient
             from .embedding_store import EmbeddingStore
+            from .voyage_client import VoyageClient
         except ImportError:
             # Fall back to keyword search
             return self.search_keywords(query, entry_type, project, limit)
@@ -806,8 +805,8 @@ class ResearchIndexManager:
 
         # Try to import embedding utilities
         try:
+            from .embedding_store import EmbeddingRecord, EmbeddingStore
             from .voyage_client import VoyageClient
-            from .embedding_store import EmbeddingStore, EmbeddingRecord
         except ImportError:
             return None
 
@@ -976,7 +975,6 @@ def get_research_manager(project_root: Optional[str] = None) -> ResearchIndexMan
 # =============================================================================
 
 if __name__ == "__main__":
-    import sys
 
     print("Research Index Test")
     print("=" * 40)

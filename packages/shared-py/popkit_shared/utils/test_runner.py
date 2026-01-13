@@ -12,8 +12,7 @@ Executes test definitions and validates assertions across all test categories:
 import json
 import time
 from pathlib import Path
-from typing import Dict, List, Any, Optional
-from datetime import datetime
+from typing import Any, Dict
 
 
 class TestRunner:
@@ -179,7 +178,7 @@ class TestRunner:
 
     def _execute_agent_test(self, test_def: Dict, test_case: Dict) -> Dict:
         """Execute agent definition validation test (modular architecture)."""
-        from .agent_validator import validate_agent_files, check_unique_agent_names
+        from .agent_validator import validate_agent_files
 
         try:
             # For modular architecture, we validate agent markdown files
@@ -240,7 +239,6 @@ class TestRunner:
     def _execute_structure_test(self, test_def: Dict, test_case: Dict) -> Dict:
         """Execute plugin structure integrity test."""
         from .plugin_validator import validate_plugin_structure
-        import json
 
         try:
             # If test case specifies a file, validate that specific file
@@ -308,7 +306,7 @@ class TestRunner:
                             test_def,
                             test_case,
                             assertion,
-                            f"Exit code mismatch",
+                            "Exit code mismatch",
                             assertion.get("expected"),
                             result.get("exit_code"),
                         )

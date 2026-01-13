@@ -11,7 +11,7 @@ These utilities create properly-formatted message objects for:
 Part of the popkit plugin stateless hook architecture.
 """
 
-from typing import Dict, List, Any, Union
+from typing import Any, Dict, List, Union
 
 # Type aliases for clarity
 Content = Union[str, List[Dict[str, Any]]]

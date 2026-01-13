@@ -25,11 +25,10 @@ import json
 import re
 import subprocess
 import sys
+from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from collections import defaultdict
-
+from typing import Any, Dict, List, Optional
 
 # Conventional commit type to display name mapping with emojis
 COMMIT_TYPES = {

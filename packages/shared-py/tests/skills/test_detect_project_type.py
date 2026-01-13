@@ -6,10 +6,11 @@ Tests project type detection for project initialization.
 Critical for setting up new projects correctly.
 """
 
-import sys
 import json
-import pytest
+import sys
 from pathlib import Path
+
+import pytest
 
 # Add popkit-core skills to path
 sys.path.insert(
@@ -23,7 +24,7 @@ sys.path.insert(
     ),
 )
 
-from detect_project_type import detect_existing_project, suggest_project_type, get_template_info
+from detect_project_type import detect_existing_project, get_template_info, suggest_project_type
 
 
 class TestDetectExistingProject:

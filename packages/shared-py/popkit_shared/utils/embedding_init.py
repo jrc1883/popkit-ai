@@ -8,20 +8,19 @@ Run during plugin initialization or on-demand.
 Part of PopKit Issue #19 (Embeddings Enhancement).
 """
 
+import json
 import os
 import sys
-import json
-import re
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import List, Dict, Any, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 # Add utils to path
 sys.path.insert(0, os.path.dirname(__file__))
 
+from .embedding_store import EmbeddingRecord, EmbeddingStore
 from .voyage_client import VoyageClient, is_available
-from .embedding_store import EmbeddingStore, EmbeddingRecord
 
 # =============================================================================
 # CONFIGURATION
@@ -379,7 +378,7 @@ def initialize_embeddings(
 
     if verbose:
         print(f"\n{'=' * 50}")
-        print(f"Embedding initialization complete!")
+        print("Embedding initialization complete!")
         print(f"  Skills:   {results['skills']['embedded']}/{results['skills']['extracted']}")
         print(f"  Agents:   {results['agents']['embedded']}/{results['agents']['extracted']}")
         print(f"  Commands: {results['commands']['embedded']}/{results['commands']['extracted']}")

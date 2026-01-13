@@ -12,15 +12,13 @@ variable to be set by the agent routing system. Until Issue #672 is resolved,
 agent-specific expertise tracking will only work when this variable is properly set.
 """
 
-import os
-import yaml
 import json
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
 from pathlib import Path
-from dataclasses import dataclass, field, asdict
-from collections import defaultdict
+from typing import Any, Dict, List, Optional
 
+import yaml
 
 # =============================================================================
 # CONFIGURATION

@@ -8,16 +8,16 @@ Provides persistent storage for captured bugs, consent preferences,
 and sharing status tracking.
 """
 
-import sqlite3
-import json
 import hashlib
+import json
+import sqlite3
 import uuid
-from datetime import datetime
-from dataclasses import dataclass, asdict
-from typing import Dict, List, Optional, Any
-from pathlib import Path
 from contextlib import contextmanager
+from dataclasses import asdict, dataclass
+from datetime import datetime
 from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 
 class ShareStatus(Enum):
@@ -589,8 +589,8 @@ def get_bug_store() -> BugStore:
 
 if __name__ == "__main__":
     # Test the bug store
-    import tempfile
     import shutil
+    import tempfile
 
     temp_dir = tempfile.mkdtemp()
     db_path = Path(temp_dir) / "test_bugs.db"

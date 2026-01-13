@@ -9,12 +9,11 @@ Enhanced with:
 - Word wrapping without breaking table layout
 """
 
-import json
-import re
 import ast
-from pathlib import Path
-from typing import Dict, Any, List, Optional, Tuple
+import json
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 # Import transcript parser for reasoning and token analysis
 try:

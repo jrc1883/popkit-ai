@@ -11,12 +11,11 @@ Enhanced with:
 - Visual sub-agent scope
 """
 
-import json
-import re
 import ast
-from pathlib import Path
-from typing import Dict, Any, List, Optional, Tuple
+import json
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 
 def parse_timestamp(ts_str: str) -> datetime:

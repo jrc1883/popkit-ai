@@ -24,12 +24,9 @@ Usage:
     reasoning = result["reasoning"]  # str
 """
 
-import json
-import re
-from dataclasses import dataclass, field, asdict
-from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
+from dataclasses import asdict, dataclass
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
 
 class ComplexityLevel(Enum):

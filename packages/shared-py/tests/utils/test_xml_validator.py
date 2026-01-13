@@ -7,23 +7,24 @@ Critical for ensuring XML context integrity in PopKit.
 """
 
 import sys
-import pytest
 from pathlib import Path
+
+import pytest
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from popkit_shared.utils.xml_validator import (
+    HAS_LXML,
+    clear_schema_cache,
     get_schema_path,
     is_well_formed_xml,
-    validate_xml_structure,
-    validate_xml_against_schema,
+    validate_findings_xml,
     validate_problem_xml,
     validate_project_xml,
-    validate_findings_xml,
     validate_workflow_xml,
-    clear_schema_cache,
-    HAS_LXML,
+    validate_xml_against_schema,
+    validate_xml_structure,
 )
 
 

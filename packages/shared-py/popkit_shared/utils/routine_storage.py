@@ -8,13 +8,11 @@ Handles creation, retrieval, updates, and deletion of morning/nightly routines.
 Part of the popkit plugin system.
 """
 
-import os
 import json
+import os
 import re
-from typing import Dict, List, Any, Optional, Tuple
-from pathlib import Path
 from datetime import datetime, timezone
-
+from typing import Any, Dict, List, Optional, Tuple
 
 # Constants
 POPKIT_DIR = ".claude/popkit"
@@ -537,7 +535,7 @@ def delete_routine(
     # Check if it's the default
     default_id = config.get("defaults", {}).get(routine_type, "pk")
     if routine_id == default_id:
-        return False, f"Cannot delete default routine. Change default first with 'set' command"
+        return False, "Cannot delete default routine. Change default first with 'set' command"
 
     # Find and remove from config
     routines = config.get("routines", {}).get(routine_type, [])

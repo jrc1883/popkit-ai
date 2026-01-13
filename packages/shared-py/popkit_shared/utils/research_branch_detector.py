@@ -11,12 +11,11 @@ Patterns detected:
 - Branches with research docs (*.md in root or docs/research/)
 """
 
-import subprocess
-import re
 import json
-from typing import List, Dict, Optional, Tuple
-from datetime import datetime, timezone
+import re
+import subprocess
 from dataclasses import dataclass
+from typing import Dict, List, Optional, Tuple
 
 
 @dataclass
@@ -267,11 +266,11 @@ def generate_issue_body(branch: ResearchBranch, parsed_docs: List[Dict[str, str]
     primary = parsed_docs[0] if parsed_docs else {}
 
     body_parts = [
-        f"## Summary",
+        "## Summary",
         "",
         primary.get("summary", "Research findings from Claude Code Web session."),
         "",
-        f"## Source",
+        "## Source",
         f"- **Branch:** `{branch.full_name}`",
         f"- **Created:** {branch.created_ago}",
         f"- **Files:** {len(branch.files_changed)} changed",

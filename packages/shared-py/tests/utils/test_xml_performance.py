@@ -8,23 +8,24 @@ Ensures operations meet sub-millisecond targets.
 
 import sys
 import time
-import pytest
 from pathlib import Path
+
+import pytest
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from popkit_shared.utils.xml_generator import (
+    generate_findings_xml,
     generate_problem_xml,
     generate_project_context_xml,
-    generate_findings_xml,
 )
 from popkit_shared.utils.xml_parser import (
+    parse_findings,
     parse_problem_context,
     parse_project_context,
-    parse_findings,
 )
-from popkit_shared.utils.xml_validator import validate_problem_xml, is_well_formed_xml
+from popkit_shared.utils.xml_validator import is_well_formed_xml, validate_problem_xml
 
 
 class TestGenerationPerformance:

@@ -9,7 +9,7 @@ Used by: user-prompt-submit.py hook
 """
 
 import re
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 # Import compute_hash from context_state
 try:

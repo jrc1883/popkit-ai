@@ -11,19 +11,20 @@ Tests coverage for functions missing direct unit tests:
 """
 
 import sys
-import pytest
 from pathlib import Path
+
+import pytest
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from popkit_shared.utils.xml_generator import (
+    generate_findings_xml,
     generate_problem_xml,
     generate_project_context_xml,
-    generate_findings_xml,
+    generate_workflow_steps,
     infer_category,
     infer_severity,
-    generate_workflow_steps,
 )
 
 

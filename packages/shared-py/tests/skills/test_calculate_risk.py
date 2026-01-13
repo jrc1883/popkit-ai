@@ -7,8 +7,9 @@ Critical for security assessment workflows.
 """
 
 import sys
-import pytest
 from pathlib import Path
+
+import pytest
 
 # Add popkit-ops skills to path
 sys.path.insert(
@@ -24,9 +25,9 @@ sys.path.insert(
 
 from calculate_risk import (
     calculate_weighted_risk,
-    get_risk_label,
     collect_all_findings,
     generate_recommendations,
+    get_risk_label,
 )
 
 

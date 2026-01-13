@@ -8,16 +8,15 @@ Enables cross-project observability and multi-project dashboard.
 Part of Issue #93 (Multi-Project Dashboard).
 """
 
-import os
-import json
 import hashlib
+import json
+import os
 import platform
-from typing import Optional, Dict, Any, List
+import urllib.error
+import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
-import urllib.request
-import urllib.error
-
+from typing import Any, Dict, List, Optional
 
 # =============================================================================
 # CONFIGURATION

@@ -26,7 +26,6 @@ Usage:
 """
 
 import json
-import os
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -37,7 +36,7 @@ from typing import Any, Dict, List, Optional, Tuple
 try:
     from .workflow_engine import WorkflowDefinition, WorkflowStep
 except ImportError:
-    from workflow_engine import WorkflowDefinition, WorkflowStep
+    from workflow_engine import WorkflowDefinition
 
 
 # =============================================================================

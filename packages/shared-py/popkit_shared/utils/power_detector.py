@@ -24,8 +24,7 @@ Part of Issue #66 - Power Mode v2
 
 import re
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
-
+from typing import Any, Dict, List, Optional
 
 # =============================================================================
 # CONFIGURATION
@@ -205,7 +204,7 @@ class PowerDetector:
             if file_count >= MIN_FILES_FOR_SUGGESTION:
                 reasons.append(f"~{file_count} files")
             if title_keywords:
-                reasons.append(f"complexity keywords in title")
+                reasons.append("complexity keywords in title")
 
             result.reason = "Consider Power Mode: " + ", ".join(reasons[:3])
 
@@ -262,7 +261,7 @@ class PowerDetector:
         ]
         for pattern in file_patterns:
             if re.search(pattern, task_lower):
-                signals.append(f"Multi-file indicator")
+                signals.append("Multi-file indicator")
                 result.confidence += 0.15
                 break
 
@@ -517,14 +516,14 @@ if __name__ == "__main__":
     if args.json:
         print(json.dumps(recommendation.to_dict(), indent=2))
     else:
-        print(f"\nPower Mode Recommendation:")
+        print("\nPower Mode Recommendation:")
         print(f"  Should suggest: {recommendation.should_suggest}")
         print(f"  Should auto-enable: {recommendation.should_auto_enable}")
         print(f"  Confidence: {recommendation.confidence:.1%}")
         print(f"  Reason: {recommendation.reason}")
 
         if recommendation.detected_signals:
-            print(f"\nDetected signals:")
+            print("\nDetected signals:")
             for signal in recommendation.detected_signals:
                 print(f"  - {signal}")
 

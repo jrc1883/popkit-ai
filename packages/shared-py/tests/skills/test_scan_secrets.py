@@ -7,8 +7,9 @@ Critical for identifying hardcoded credentials and API keys.
 """
 
 import sys
-import pytest
 from pathlib import Path
+
+import pytest
 
 # Add popkit-ops skills to path
 sys.path.insert(
@@ -22,7 +23,7 @@ sys.path.insert(
     ),
 )
 
-from scan_secrets import should_exclude, is_likely_example, scan_file, SECRET_PATTERNS
+from scan_secrets import SECRET_PATTERNS, is_likely_example, scan_file, should_exclude
 
 
 class TestSecretPatterns:

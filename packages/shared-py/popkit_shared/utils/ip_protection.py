@@ -11,9 +11,9 @@ Used by:
 
 import re
 import subprocess
-from pathlib import Path
-from typing import List, Dict, Optional, Tuple
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Dict, List, Tuple
 
 
 @dataclass
@@ -422,8 +422,8 @@ def scan_pre_publish(plugin_dir: Path) -> Tuple[bool, str]:
 
 
 if __name__ == "__main__":
-    import sys
     import argparse
+    import sys
 
     parser = argparse.ArgumentParser(description="Scan for IP leaks")
     parser.add_argument("path", nargs="?", default=".", help="Path to scan")

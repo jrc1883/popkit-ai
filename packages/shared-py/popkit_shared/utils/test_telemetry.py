@@ -5,7 +5,7 @@ import json
 import os
 import sys
 from datetime import datetime, timezone
-from typing import Dict, Any, Optional, List
+from typing import Any, Dict, List, Optional
 
 
 def is_test_mode() -> bool:

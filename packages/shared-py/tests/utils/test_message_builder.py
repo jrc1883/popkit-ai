@@ -7,23 +7,24 @@ Critical for hook communication and stateless message handling.
 """
 
 import sys
-import pytest
 from pathlib import Path
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from popkit_shared.utils.message_builder import (
-    build_user_message,
     build_assistant_message,
-    build_tool_use_message,
-    build_tool_result_message,
     build_text_block,
-    build_tool_use_block,
     build_tool_result_block,
+    build_tool_result_message,
+    build_tool_use_block,
+    build_tool_use_message,
+    build_user_message,
     compose_conversation,
-    merge_tool_uses,
-    merge_tool_results,
     extract_tool_use,
+    merge_tool_results,
+    merge_tool_uses,
     rebuild_from_history,
 )
 

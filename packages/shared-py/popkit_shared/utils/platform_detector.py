@@ -9,13 +9,13 @@ to enable intelligent command translation and cross-platform support.
 """
 
 import os
-import sys
-import subprocess
 import shutil
+import subprocess
+import sys
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
-from pathlib import Path
 from enum import Enum
+from pathlib import Path
+from typing import Dict, Optional, Tuple
 
 
 class OSType(Enum):

@@ -6,10 +6,9 @@ Provides robust ElementTree-based parsing for PopKit's XML context structures.
 Replaces fragile regex-based parsing with proper XML parsing.
 """
 
-import xml.etree.ElementTree as ET
-import re
-from typing import Dict, Any, Optional, List
 import logging
+import xml.etree.ElementTree as ET
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 

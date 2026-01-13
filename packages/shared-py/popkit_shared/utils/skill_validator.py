@@ -5,9 +5,10 @@ Validates that skills follow the SKILL.md format with proper frontmatter and str
 """
 
 import re
-import yaml
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List
+
+import yaml
 
 
 def validate_skill_format(skill_file: Path) -> Dict[str, Any]:

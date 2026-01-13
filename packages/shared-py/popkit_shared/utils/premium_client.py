@@ -8,13 +8,12 @@ Handles server-side skill generation with subscription validation.
 Part of Issue #152 (Server-Side Premium Skill Execution).
 """
 
-import os
 import json
-from typing import Optional, Dict, Any, List
-from dataclasses import dataclass
-import urllib.request
+import os
 import urllib.error
-
+import urllib.request
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 
 # =============================================================================
 # CONFIGURATION

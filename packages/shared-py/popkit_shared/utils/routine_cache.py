@@ -9,9 +9,9 @@ Caches git status, test results, and other expensive operations.
 import hashlib
 import json
 import time
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 
 @dataclass
@@ -227,7 +227,6 @@ def check_tests_unchanged(cache: RoutineCache, test_command: str = "pytest") -> 
         True if tests likely unchanged, False if need to re-run
     """
     from pathlib import Path
-    import glob
 
     try:
         # Get modification times of test and source files

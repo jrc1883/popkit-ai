@@ -23,7 +23,7 @@ import re
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 
 @dataclass

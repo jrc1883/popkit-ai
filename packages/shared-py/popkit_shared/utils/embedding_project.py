@@ -11,15 +11,16 @@ Part of PopKit Issue #46 (Project Embeddings).
 import os
 import sys
 import time
-from pathlib import Path
-from typing import List, Dict, Any, Optional
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 # Add utils to path for local imports
 sys.path.insert(0, os.path.dirname(__file__))
 
-from .embedding_store import EmbeddingStore, EmbeddingRecord
-from .voyage_client import VoyageClient, is_available as voyage_available
+from .embedding_store import EmbeddingRecord, EmbeddingStore
+from .voyage_client import VoyageClient
+from .voyage_client import is_available as voyage_available
 
 # =============================================================================
 # CONFIGURATION
@@ -300,7 +301,7 @@ def embed_project_items(
             results["errors"] += len(batch)
 
     if verbose:
-        print(f"\nEmbedding complete!")
+        print("\nEmbedding complete!")
         print(f"  Embedded: {results['embedded']}")
         print(f"  Skipped: {results['skipped']}")
         if results["errors"]:

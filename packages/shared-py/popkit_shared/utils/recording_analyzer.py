@@ -10,10 +10,9 @@ Processes session recordings to generate insights about:
 """
 
 import json
-from pathlib import Path
-from typing import Dict, Any, List, Optional
-from datetime import datetime
 from collections import Counter, defaultdict
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 
 class RecordingAnalyzer:
@@ -135,28 +134,28 @@ class RecordingAnalyzer:
 
         lines = []
         lines.append(f"# Recording Analysis: {self.session_id}")
-        lines.append(f"")
+        lines.append("")
         lines.append(f"**Recording File:** `{self.recording_file.name}`")
         lines.append(f"**Total Events:** {len(self.events)}")
-        lines.append(f"")
+        lines.append("")
 
         # Performance Summary
-        lines.append(f"## Performance Summary")
-        lines.append(f"")
-        lines.append(f"| Metric | Value |")
-        lines.append(f"|--------|-------|")
+        lines.append("## Performance Summary")
+        lines.append("")
+        lines.append("| Metric | Value |")
+        lines.append("|--------|-------|")
         lines.append(f"| Total Tool Calls | {performance.get('total_tool_calls', 0)} |")
         lines.append(f"| Total Duration | {performance.get('total_duration_ms', 0):.0f}ms |")
         lines.append(f"| Avg Duration | {performance.get('avg_duration_ms', 0):.0f}ms |")
         lines.append(f"| Min Duration | {performance.get('min_duration_ms', 0):.0f}ms |")
         lines.append(f"| Max Duration | {performance.get('max_duration_ms', 0):.0f}ms |")
-        lines.append(f"")
+        lines.append("")
 
         # Tool Usage Breakdown
-        lines.append(f"## Tool Usage Breakdown")
-        lines.append(f"")
-        lines.append(f"| Tool | Calls | Total Duration | Avg Duration | Errors |")
-        lines.append(f"|------|-------|----------------|--------------|--------|")
+        lines.append("## Tool Usage Breakdown")
+        lines.append("")
+        lines.append("| Tool | Calls | Total Duration | Avg Duration | Errors |")
+        lines.append("|------|-------|----------------|--------------|--------|")
 
         for tool, data in sorted(tool_usage.items(), key=lambda x: -x[1]["count"]):
             avg_dur = data.get("avg_duration_ms", 0)
@@ -166,44 +165,44 @@ class RecordingAnalyzer:
                 f"{avg_dur:.0f}ms | "
                 f"{data['errors']} |"
             )
-        lines.append(f"")
+        lines.append("")
 
         # Error Summary
         if errors["total_errors"] > 0:
-            lines.append(f"## Error Summary")
-            lines.append(f"")
+            lines.append("## Error Summary")
+            lines.append("")
             lines.append(f"**Total Errors:** {errors['total_errors']}")
             lines.append(f"**Error Rate:** {errors['error_rate']:.1%}")
-            lines.append(f"")
-            lines.append(f"**Error Types:**")
+            lines.append("")
+            lines.append("**Error Types:**")
             for error_type, count in errors["error_types"].items():
                 lines.append(f"- {error_type}: {count}")
-            lines.append(f"")
+            lines.append("")
 
         # Skill Invocations
         if skills:
-            lines.append(f"## Skill Invocations")
-            lines.append(f"")
+            lines.append("## Skill Invocations")
+            lines.append("")
             for skill in skills:
                 lines.append(f"- **{skill.get('skill_name')}**")
                 if skill.get("arguments"):
                     lines.append(f"  - Args: `{skill.get('arguments')}`")
-            lines.append(f"")
+            lines.append("")
 
         # Decisions
         if decisions:
-            lines.append(f"## User Decisions")
-            lines.append(f"")
+            lines.append("## User Decisions")
+            lines.append("")
             for decision in decisions:
                 lines.append(f"### {decision.get('question', 'Unknown')}")
                 lines.append(f"**Selected:** {decision.get('selected', 'Not answered')}")
-                lines.append(f"")
+                lines.append("")
 
         # Timeline
-        lines.append(f"## Event Timeline")
-        lines.append(f"")
-        lines.append(f"| # | Type | Details | Duration |")
-        lines.append(f"|---|------|---------|----------|")
+        lines.append("## Event Timeline")
+        lines.append("")
+        lines.append("| # | Type | Details | Duration |")
+        lines.append("|---|------|---------|----------|")
 
         for event in self.get_timeline()[:20]:  # Show first 20 events
             event_type = event["type"]
@@ -227,11 +226,11 @@ class RecordingAnalyzer:
                 lines.append(f"| {seq} | {event_type.replace('_', ' ').title()} | - | - |")
 
         if len(self.events) > 20:
-            lines.append(f"| ... | ... | ... | ... |")
-            lines.append(f"")
+            lines.append("| ... | ... | ... | ... |")
+            lines.append("")
             lines.append(f"*Showing first 20 of {len(self.events)} events*")
 
-        lines.append(f"")
+        lines.append("")
         return "\n".join(lines)
 
     def _generate_json_report(self) -> str:

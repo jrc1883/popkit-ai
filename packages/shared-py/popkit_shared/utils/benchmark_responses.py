@@ -21,10 +21,10 @@ Usage in skills:
         # Normal AskUserQuestion flow
 """
 
-import os
 import json
+import os
 import re
-from typing import Optional, Dict, Any, Union, List
+from typing import Any, Dict, List, Optional, Union
 
 # Environment variable checks
 BENCHMARK_MODE = os.environ.get("POPKIT_BENCHMARK_MODE", "").lower() == "true"

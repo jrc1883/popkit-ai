@@ -20,11 +20,9 @@ Usage:
 """
 
 import re
-import json
-from typing import List, Dict, Optional, Any, Set
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from pathlib import Path
-
+from typing import Any, Dict, List, Optional
 
 # =============================================================================
 # DATA CLASSES
@@ -537,17 +535,17 @@ Technologies:
 
     print(f"Document: {result.title}")
     print(f"Features: {result.total_features}")
-    print(f"\nComplexity Distribution:")
+    print("\nComplexity Distribution:")
     for level, count in result.complexity_distribution.items():
         print(f"  {level}: {count}")
 
-    print(f"\nTechnologies Identified:")
+    print("\nTechnologies Identified:")
     for tech in result.technologies:
         research = " (should research)" if tech.should_research else ""
         version = f" v{tech.version}" if tech.version else ""
         print(f"  - {tech.name}{version}{research}")
 
-    print(f"\nFeatures:")
+    print("\nFeatures:")
     for feature in result.features:
         indent = "  " * (feature.level - 2)
         complexity = f" [{feature.complexity_score}/10]" if feature.complexity_score else ""
@@ -574,7 +572,7 @@ Technologies:
             else:
                 print("Avg Complexity: N/A")
 
-            print(f"\nHigh Complexity Features:")
+            print("\nHigh Complexity Features:")
             high_complexity = [
                 f for f in result.features if f.complexity_score and f.complexity_score >= 7
             ]

@@ -35,12 +35,11 @@ Usage:
 import json
 import os
 import shutil
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
-from enum import Enum
-
 
 # =============================================================================
 # Enums and Constants
@@ -1037,8 +1036,8 @@ class UpstashWorkflowEngine:
         Raises:
             Exception if request fails
         """
-        import urllib.request
         import urllib.error
+        import urllib.request
 
         url = f"{self.API_URL}/v1/workflows{endpoint}"
         headers = {"Content-Type": "application/json", "User-Agent": "popkit-plugin/1.0.0-beta.1"}

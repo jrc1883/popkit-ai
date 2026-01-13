@@ -6,10 +6,10 @@ Provides schema-based validation for PopKit's XML context system.
 Supports both lxml (full XSD validation) and ElementTree (well-formedness).
 """
 
+import logging
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from typing import Tuple, Optional
-import logging
+from typing import Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -186,10 +186,10 @@ def validate_xml_against_schema(xml_string: str, schema_type: str) -> Tuple[bool
 
             return False, error_message
 
-    except ValueError as e:
+    except ValueError:
         # Invalid schema_type
         raise
-    except FileNotFoundError as e:
+    except FileNotFoundError:
         # Schema file not found
         raise
     except Exception as e:

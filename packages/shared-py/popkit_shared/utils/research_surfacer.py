@@ -9,12 +9,10 @@ Part of PopKit Issue #143 (Auto-surface Relevant Research).
 """
 
 import os
-import json
 import re
-from typing import List, Dict, Any, Optional, Tuple
-from pathlib import Path
 from dataclasses import dataclass
-
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 # =============================================================================
 # CONFIGURATION
@@ -450,7 +448,6 @@ def check_research_relevance(
 # =============================================================================
 
 if __name__ == "__main__":
-    import sys
 
     print("Research Surfacer Test")
     print("=" * 40)

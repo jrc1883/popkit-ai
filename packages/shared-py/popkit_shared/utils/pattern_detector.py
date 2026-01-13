@@ -8,13 +8,10 @@ Powers structured analysis and informs skill generation.
 Part of PopKit Issue #50 (Phase 2: Generator Improvements).
 """
 
-import os
-import re
 import json
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import List, Dict, Any, Optional, Set
-from dataclasses import dataclass, field, asdict
-
+from typing import Any, Dict, List, Optional, Set
 
 # =============================================================================
 # DATA CLASSES

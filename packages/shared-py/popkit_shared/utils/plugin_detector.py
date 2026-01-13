@@ -9,12 +9,11 @@ commands, skills, hooks, and agent routing for potential conflicts.
 Part of the popkit plugin system.
 """
 
-import os
 import json
+import os
 import re
-from typing import Dict, List, Any, Tuple, Optional
 from pathlib import Path
-
+from typing import Any, Dict, List, Optional, Tuple
 
 # Conflict severity levels
 SEVERITY_HIGH = "high"

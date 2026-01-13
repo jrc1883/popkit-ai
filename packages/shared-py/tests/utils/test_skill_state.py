@@ -6,11 +6,12 @@ Tests skill state tracking for AskUserQuestion enforcement and activity ledger.
 Critical for The PopKit Way - ensures skills end with user interaction.
 """
 
-import sys
 import json
-import pytest
+import sys
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 

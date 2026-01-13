@@ -11,22 +11,24 @@ Updated for Issue #48 (Project Awareness).
 Updated for Issue #101 (Upstash Vector Integration) - Cloud semantic search.
 """
 
+import json
 import os
 import sys
-import json
-from typing import List, Tuple, Optional, Dict, Any
-from pathlib import Path
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 # Add utils to path
 sys.path.insert(0, os.path.dirname(__file__))
 
-from .embedding_store import EmbeddingStore
-from .voyage_client import VoyageClient, is_available
 from .cloud_agent_search import (
-    search_agents as cloud_search_agents,
     is_available as cloud_is_available,
 )
+from .cloud_agent_search import (
+    search_agents as cloud_search_agents,
+)
+from .embedding_store import EmbeddingStore
+from .voyage_client import VoyageClient, is_available
 
 # =============================================================================
 # CONFIGURATION

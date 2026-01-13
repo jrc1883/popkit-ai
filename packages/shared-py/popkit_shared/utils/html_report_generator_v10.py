@@ -18,12 +18,11 @@ Generates comprehensive HTML reports from PopKit session recordings with:
 - Visual cost distribution charts
 """
 
-import json
-import re
 import ast
+import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # Import transcript parser for reasoning extraction and token tracking
 try:
@@ -225,7 +224,6 @@ def compute_session_token_usage(
     # Parse timestamp boundaries
     # Recording timestamps are in LOCAL time (no timezone), transcripts are in UTC
     # Convert recording timestamps to UTC for comparison
-    from datetime import timezone
     import time
 
     start_dt = None
@@ -326,7 +324,7 @@ def compute_session_token_usage(
                                 # Skip messages outside recording window
                                 if msg_dt < start_dt or msg_dt > end_dt:
                                     continue
-                            except Exception as e:
+                            except Exception:
                                 pass  # If we can't parse timestamp, include the message
 
                         # Extract token usage from this message

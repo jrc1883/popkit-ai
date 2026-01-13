@@ -166,7 +166,7 @@ def main():
 
     # Summary
     print("\n" + "=" * 70)
-    print(f"\nTest Summary:")
+    print("\nTest Summary:")
     print(f"  Total: {total_tests}")
     print(f"  Passed: {passed_tests}")
     print(f"  Failed: {total_tests - passed_tests}")

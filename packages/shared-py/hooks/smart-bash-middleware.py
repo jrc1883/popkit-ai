@@ -13,9 +13,8 @@ Demonstrates the updatedInput feature of Claude Code 2.1.0.
 """
 
 import json
-import sys
 import re
-
+import sys
 
 # Dangerous commands that should be protected
 DANGEROUS_COMMANDS = [

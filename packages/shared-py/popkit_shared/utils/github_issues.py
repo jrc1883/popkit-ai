@@ -11,13 +11,12 @@ Features:
 Part of the popkit plugin system.
 """
 
-import subprocess
 import json
 import re
+import subprocess
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any
-
+from typing import Any, Dict, List, Optional
 
 # =============================================================================
 # Issue Parsing - PopKit Guidance Section

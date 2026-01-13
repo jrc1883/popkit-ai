@@ -6,9 +6,10 @@ for semantic routing in Claude Code.
 """
 
 import re
-import yaml
 from pathlib import Path
-from typing import Dict, List, Any, Set
+from typing import Any, Dict, List
+
+import yaml
 
 
 def validate_agent_files(plugin_root: Path) -> Dict[str, Any]:

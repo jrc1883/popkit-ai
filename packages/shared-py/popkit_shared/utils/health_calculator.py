@@ -12,13 +12,11 @@ Calculates health scores for projects based on:
 Part of the popkit plugin system.
 """
 
+import json
 import os
 import subprocess
-import json
-from typing import Dict, Any, Optional, Tuple, List
-from datetime import datetime, timezone, timedelta
-from pathlib import Path
-
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict, List, Optional, Tuple
 
 # Score weights (total = 100)
 WEIGHTS = {"git": 20, "build": 20, "tests": 20, "issues": 20, "activity": 20}

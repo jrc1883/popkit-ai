@@ -5,8 +5,8 @@ Shows what the enhanced HTML report will include after Phase 2-3 integration.
 """
 
 import json
-import sys
 from pathlib import Path
+
 from transcript_parser import TranscriptParser
 
 
@@ -56,11 +56,11 @@ def demo_enhanced_report():
             transcript_path = None  # Will be handled below
 
     if not transcript_path.exists():
-        print(f"[WARN] Transcript not found, skipping reasoning analysis")
+        print("[WARN] Transcript not found, skipping reasoning analysis")
         parser = None
     else:
         # Parse transcript with timestamp filtering
-        print(f"[INFO] Parsing transcript with time filter:")
+        print("[INFO] Parsing transcript with time filter:")
         print(f"  Start: {start_time}")
         print(f"  Stop:  {stop_time}")
         print()
@@ -86,7 +86,7 @@ def demo_enhanced_report():
         print(f"  Output tokens:       {usage.output_tokens:>12,}")
         print(f"  Cache writes:        {usage.cache_creation_input_tokens:>12,}")
         print(f"  Cache reads:         {usage.cache_read_input_tokens:>12,}")
-        print(f"  ----------------------------------------")
+        print("  ----------------------------------------")
         print(f"  Total tokens:        {usage.total_tokens:>12,}")
         print()
         print(f"ESTIMATED COST: ${cost:.2f}")
@@ -126,7 +126,7 @@ def demo_enhanced_report():
             reasoning = parser.get_reasoning_before_tool(tool_use_id)
 
             if reasoning["text"]:
-                print(f"\n   CLAUDE'S REASONING:")
+                print("\n   CLAUDE'S REASONING:")
                 # Show first text block
                 text = reasoning["text"][0]
                 lines = text.split("\n")

@@ -7,7 +7,7 @@ Tests agent activation logic based on keywords, file patterns, and error pattern
 import json
 import re
 from pathlib import Path
-from typing import Dict, List, Any, Set
+from typing import Any, Dict, List
 
 
 def test_keyword_routing(

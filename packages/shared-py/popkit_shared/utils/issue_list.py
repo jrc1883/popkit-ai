@@ -8,12 +8,11 @@ Used by /popkit:issues command to display issues with their orchestration status
 Part of the popkit plugin system.
 """
 
-import subprocess
 import json
-import re
-from typing import Dict, List, Optional, Any
+import subprocess
+from typing import Any, Dict, List
 
-from .github_issues import parse_popkit_guidance, infer_issue_type
+from .github_issues import infer_issue_type, parse_popkit_guidance
 
 
 def fetch_issues(
@@ -286,6 +285,7 @@ def format_issues_table(data: Dict[str, Any]) -> str:
 
 if __name__ == "__main__":
     import sys
+
     from flag_parser import parse_issues_args
 
     # CLI mode for testing

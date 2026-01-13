@@ -10,14 +10,12 @@ Detects stuck sessions, tracks progress, and enables recovery.
 Based on patterns from Anthropic's Long Horizon Coding Agent Demo.
 """
 
-import os
 import json
 import time
-from typing import Optional, Dict, Any, List
-from dataclasses import dataclass, field, asdict
-from datetime import datetime, timedelta
+from dataclasses import asdict, dataclass, field
+from datetime import datetime
 from pathlib import Path
-
+from typing import Any, Dict, List, Optional
 
 # =============================================================================
 # CONFIGURATION

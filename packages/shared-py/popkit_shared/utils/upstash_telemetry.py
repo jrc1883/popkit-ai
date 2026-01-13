@@ -38,25 +38,23 @@ import os
 import queue
 import threading
 import time
-from dataclasses import dataclass
-from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Literal
+from typing import Any, Dict, List, Literal, Optional
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
-from urllib.error import URLError, HTTPError
 
 # Try to import telemetry types
 try:
+    from local_telemetry import LocalTelemetryStorage, get_local_storage
     from test_telemetry import (
-        ToolTrace,
-        DecisionPoint,
         CustomEvent,
-        TestSession,
+        DecisionPoint,
         TestMetrics,
-        is_test_mode,
+        TestSession,
+        ToolTrace,
         get_test_session_id,
+        is_test_mode,
     )
-    from local_telemetry import get_local_storage, LocalTelemetryStorage
 
     TELEMETRY_TYPES_AVAILABLE = True
 except ImportError:
@@ -762,7 +760,7 @@ def main():
 
             # Test trace streaming
             if TELEMETRY_TYPES_AVAILABLE:
-                from test_telemetry import create_trace, create_event
+                from test_telemetry import create_event, create_trace
 
                 trace = create_trace(
                     sequence=1,
