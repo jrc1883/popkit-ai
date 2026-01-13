@@ -50,9 +50,11 @@ current_branch=$(git branch --show-current 2>/dev/null)
 **Protected Branches:** `main`, `master`, `develop`, `production`
 
 **If on protected branch:**
+
 1. ❌ BLOCK the push operation (do not just warn)
 2. Explain why: "Cannot push directly to protected branch '[branch]' due to branch protection policy"
 3. Recommend feature branch workflow:
+
    ```bash
    # Create feature branch from current state
    git checkout -b feat/descriptive-name
@@ -65,9 +67,11 @@ current_branch=$(git branch --show-current 2>/dev/null)
    git checkout [protected-branch]
    git reset --hard origin/[protected-branch]
    ```
+
 4. Reference: See CLAUDE.md "Git Workflow Principles" section
 
 **If on feature branch:**
+
 - Proceed with push
 - Use `--force-with-lease` if --force requested
 - Confirm if branch has no upstream

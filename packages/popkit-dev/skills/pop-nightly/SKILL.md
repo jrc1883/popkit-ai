@@ -186,6 +186,7 @@ if is_recording_enabled():
 **Sleep Score Impact:**
 
 If on protected branch with uncommitted work:
+
 - **Warning:** Include ⚠️ PROTECTED indicator in output
 - **Recommendation:** "Create feature branch and move uncommitted work before committing"
 - **Option Priority:** Prioritize "Create feature branch" over "Commit and push"
