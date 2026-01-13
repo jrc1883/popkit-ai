@@ -32,7 +32,7 @@ jobs:
 
       - name: Run all plugin tests
         env:
-          PYTHONPATH: ${{ github.workspace}}/packages/shared-py:$PYTHONPATH
+          PYTHONPATH: ${{ github.workspace }}/packages/shared-py
         run: |
           cd packages/popkit-core
           python run_all_tests.py --verbose
@@ -69,9 +69,9 @@ jobs:
 
       - name: Run tests (if any)
         run: |
-          # Check if there are test scripts configured
-          if npm run | grep -q "test"; then
+          # Check if test script exists in package.json
+          if npm run 2>&1 | grep -q "^  test$"; then
             npm test
           else
-            echo "No tests configured, skipping"
+            echo "No test script configured, skipping"
           fi
