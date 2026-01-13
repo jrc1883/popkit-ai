@@ -719,6 +719,37 @@ def fetch_project_issues(path: str, timeout: int = 5) -> Optional[int]:
         return None
 
 
+def refresh_project_issue_counts(registry: Dict[str, Any]) -> int:
+    """Refresh GitHub issue counts for all projects in registry.
+
+    Args:
+        registry: Project registry dict with 'projects' list
+
+    Returns:
+        Number of projects successfully updated
+    """
+    updated = 0
+    projects = registry.get("projects", [])
+
+    for project in projects:
+        path = project.get("path")
+        if not path:
+            continue
+
+        # Fetch issue count
+        count = fetch_project_issues(path, timeout=5)
+
+        if count is not None:
+            # Update project with fresh data
+            project["github_issues"] = {
+                "open_count": count,
+                "cached_at": datetime.now().isoformat()
+            }
+            updated += 1
+
+    return updated
+
+
 def format_dashboard(projects: List[Dict[str, Any]]) -> str:
     """Format full dashboard display.
 
