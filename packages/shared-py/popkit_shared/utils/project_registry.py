@@ -11,7 +11,7 @@ Part of the popkit plugin system.
 import json
 import os
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 # Constants
@@ -654,6 +654,40 @@ def format_project_table(projects: List[Dict[str, Any]], show_path: bool = False
             lines.append(f"| {name} | {health_str}  | {activity} | {tags} |")
 
     return "\n".join(lines)
+
+
+def get_cached_issue_count(project: Dict[str, Any]) -> str:
+    """Get cached GitHub issue count for project.
+
+    Args:
+        project: Project dict from registry
+
+    Returns:
+        String representation of issue count or '--'
+    """
+    # Check if project has GitHub issues data
+    issue_data = project.get("github_issues", {})
+    if not issue_data:
+        return "--"
+
+    # Check cache freshness (15 minute TTL)
+    cached_at_str = issue_data.get("cached_at")
+    if not cached_at_str:
+        return "--"
+
+    try:
+        cached_at = datetime.fromisoformat(cached_at_str)
+        ttl = timedelta(minutes=15)
+
+        if datetime.now() - cached_at < ttl:
+            # Cache is fresh
+            open_count = issue_data.get("open_count")
+            if open_count is not None:
+                return str(open_count)
+    except (ValueError, TypeError):
+        pass
+
+    return "--"
 
 
 def format_dashboard(projects: List[Dict[str, Any]]) -> str:
