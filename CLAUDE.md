@@ -566,9 +566,11 @@ As of issue #141, PopKit skills detect when working on protected branches and re
 **Detection**: Skills check `git branch --show-current` during project state analysis
 
 **Recommendation**: When on protected branch with unpushed commits:
+
 1. **Priority**: CRITICAL (score 100, highest)
 2. **Command**: `git checkout -b feat/descriptive-name`
 3. **Workflow**:
+
    ```bash
    # Create and push feature branch
    git checkout -b feat/your-feature-name
@@ -587,11 +589,13 @@ As of issue #141, PopKit skills detect when working on protected branches and re
 The following components enforce branch protection:
 
 ✅ **Implemented (v1.0.0-beta.6+)**:
+
 - `pop-next-action` skill - Detects protected branches, suppresses direct push recommendations
 - Adds "Current Branch" indicator to recommendation output
 - Shows ⚠️ CRITICAL urgency when on protected branch
 
 🚧 **To Be Audited**:
+
 - `popkit-dev:git` command - May need branch protection checks
 - `pop-morning` routine - May recommend unsafe git operations
 - Other git-related skills/commands
@@ -599,6 +603,7 @@ The following components enforce branch protection:
 ### Testing
 
 Branch protection logic is verified through:
+
 - **Unit tests** (8): `test_next_action_branch_protection.py`
 - **Integration tests** (4): `test_next_action_integration.py`
 
