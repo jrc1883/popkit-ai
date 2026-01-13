@@ -424,6 +424,45 @@ class PluginValidator:
         return bool(re.match(pattern, email))
 
 
+def find_version_line_number(raw_lines: List[str], plugin_name: str, version_value: str) -> Optional[int]:
+    """
+    Find the line number of a version field for a specific plugin in marketplace.json.
+
+    Args:
+        raw_lines: List of lines from the JSON file
+        plugin_name: Name of the plugin to find
+        version_value: Version string to locate
+
+    Returns:
+        Line number (1-indexed) or None if not found
+    """
+    in_plugin_block = False
+    plugin_start_line = None
+
+    for line_num, line in enumerate(raw_lines, start=1):
+        # Check if we're entering the plugin block
+        if f'"name": "{plugin_name}"' in line or f"'name': '{plugin_name}'" in line:
+            in_plugin_block = True
+            plugin_start_line = line_num
+            continue
+
+        # If we're in the plugin block, look for version field
+        if in_plugin_block:
+            # Check for version field (handle both single and double quotes, with/without spaces)
+            if '"version"' in line or "'version'" in line:
+                # Verify this is the correct version value
+                if f'"{version_value}"' in line or f"'{version_value}'" in line:
+                    return line_num
+
+            # Exit plugin block if we hit the next plugin or end of plugins array
+            if ('"name"' in line or "'name'" in line) and line_num > plugin_start_line + 1:
+                in_plugin_block = False
+            if '}' in line and not any(c in line for c in ['"', "'"]):  # Closing brace with no quotes
+                in_plugin_block = False
+
+    return None
+
+
 def validate_marketplace(marketplace_path: Path, plugins_dir: Path) -> Tuple[bool, List[ValidationError]]:
     """Validate marketplace.json against plugin.json files."""
     errors = []
@@ -432,6 +471,18 @@ def validate_marketplace(marketplace_path: Path, plugins_dir: Path) -> Tuple[boo
         errors.append(ValidationError(
             "ERROR",
             "Marketplace file not found",
+            str(marketplace_path)
+        ))
+        return False, errors
+
+    # Read raw lines for line number tracking
+    try:
+        with open(marketplace_path, 'r', encoding='utf-8') as f:
+            raw_lines = f.readlines()
+    except Exception as e:
+        errors.append(ValidationError(
+            "ERROR",
+            f"Failed to read file: {e}",
             str(marketplace_path)
         ))
         return False, errors
@@ -498,10 +549,16 @@ def validate_marketplace(marketplace_path: Path, plugins_dir: Path) -> Tuple[boo
             ))
 
         if plugin_entry.get('version') != plugin_json.get('version'):
+            # Find the line number for this version field
+            marketplace_version = plugin_entry.get('version')
+            plugin_version = plugin_json.get('version')
+            line_num = find_version_line_number(raw_lines, name, marketplace_version)
+
             errors.append(ValidationError(
                 "ERROR",
-                f"Version mismatch for {name}: marketplace='{plugin_entry.get('version')}' vs plugin.json='{plugin_json.get('version')}'",
-                str(marketplace_path)
+                f"Version mismatch for {name}: '{marketplace_version}' → '{plugin_version}'",
+                str(marketplace_path),
+                line_num
             ))
 
     return len(errors) == 0, errors
