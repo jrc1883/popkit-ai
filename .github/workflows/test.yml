@@ -1,0 +1,75 @@
+name: Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  python-tests:
+    name: Python Tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      - name: Install shared-py dependencies
+        run: |
+          cd packages/shared-py
+          pip install -e .
+
+      - name: Run all plugin tests
+        run: |
+          cd packages/popkit-core
+          python run_all_tests.py --verbose
+
+  typescript-tests:
+    name: TypeScript Tests (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ["20", "22"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run TypeScript type checking
+        run: |
+          # Only run if tsconfig.json exists
+          if [ -f "tsconfig.json" ]; then
+            npx tsc --noEmit
+          else
+            echo "No tsconfig.json found, skipping TypeScript checks"
+          fi
+
+      - name: Run tests (if any)
+        run: |
+          # Check if there are test scripts configured
+          if npm run | grep -q "test"; then
+            npm test
+          else
+            echo "No tests configured, skipping"
+          fi

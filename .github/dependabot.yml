@@ -1,45 +1,50 @@
-# Dependabot configuration for automated dependency updates
-# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
-
 version: 2
 updates:
-  # Cloud API (TypeScript)
+  # NPM dependencies (root + all packages)
   - package-ecosystem: "npm"
-    directory: "/packages/cloud"
+    directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
-    open-pull-requests-limit: 5
+      time: "09:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "jrc1883"
     labels:
       - "dependencies"
-      - "cloud-api"
+      - "automated"
     commit-message:
-      prefix: "chore(cloud)"
-    ignore:
-      # Ignore major version updates for now
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major"]
+      prefix: "chore(deps)"
 
-  # Python hooks and tests
+  # Python dependencies (shared-py package)
   - package-ecosystem: "pip"
-    directory: "/packages/popkit-core"
+    directory: "/packages/shared-py"
     schedule:
       interval: "weekly"
       day: "monday"
-    open-pull-requests-limit: 5
+      time: "09:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "jrc1883"
     labels:
       - "dependencies"
-      - "python"
+      - "automated"
     commit-message:
-      prefix: "chore(python)"
+      prefix: "chore(deps)"
 
-  # GitHub Actions
+  # GitHub Actions dependencies
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "jrc1883"
     labels:
       - "dependencies"
+      - "automated"
       - "ci"
     commit-message:
       prefix: "chore(ci)"
