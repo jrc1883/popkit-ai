@@ -219,6 +219,7 @@ Recalculate health scores and refresh GitHub issue counts for all or specific pr
    ```
 
 4. **Show results summary:**
+
    ```
    Dashboard Refresh Complete
    --------------------------

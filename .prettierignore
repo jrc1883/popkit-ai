@@ -35,3 +35,8 @@ venv/
 # Cache
 .cache/
 .temp/
+
+# Runtime/development files
+.claude/
+.popkit/
+logs/

@@ -16,6 +16,7 @@
 ## Task 1: Add Cache Retrieval Function
 
 **Files:**
+
 - Test: `packages/shared-py/tests/utils/test_project_registry.py`
 - Modify: `packages/shared-py/popkit_shared/utils/project_registry.py` (add function before `format_dashboard`)
 
@@ -168,6 +169,7 @@ Part of #111"
 ## Task 2: Add Issue Fetching Function
 
 **Files:**
+
 - Test: `packages/shared-py/tests/utils/test_project_registry.py`
 - Modify: `packages/shared-py/popkit_shared/utils/project_registry.py` (add function after `get_cached_issue_count`)
 
@@ -275,6 +277,7 @@ Part of #111"
 ## Task 3: Add Batch Refresh Function
 
 **Files:**
+
 - Test: `packages/shared-py/tests/utils/test_project_registry.py`
 - Modify: `packages/shared-py/popkit_shared/utils/project_registry.py` (add function after `fetch_project_issues`)
 
@@ -420,6 +423,7 @@ Part of #111"
 ## Task 4: Update Dashboard Display
 
 **Files:**
+
 - Modify: `packages/shared-py/popkit_shared/utils/project_registry.py:707`
 
 **Step 1: Write integration test (manual)**
@@ -514,6 +518,7 @@ python test_dashboard_integration.py
 ```
 
 Expected:
+
 - First dashboard shows '--'
 - After refresh, shows issue counts (if in GitHub repo)
 - Dashboard loads instantly (cached)
@@ -537,6 +542,7 @@ Closes #111"
 ## Task 5: Update Documentation
 
 **Files:**
+
 - Modify: `packages/popkit-core/skills/pop-dashboard/SKILL.md`
 - Modify: `packages/popkit-core/commands/dashboard.md`
 
@@ -544,7 +550,7 @@ Closes #111"
 
 Add to `pop-dashboard/SKILL.md` after "Step 3: Health Score Calculation":
 
-```markdown
+````markdown
 ### Step 4: Refresh Issue Counts
 
 Fetch fresh GitHub issue counts for all projects:
@@ -562,18 +568,22 @@ print(f"⏭️  Skipped: {results['skipped']} projects (no path)")
 if results['projects']:
     print(f"Projects: {', '.join(results['projects'])}")
 ```
+````
 
 **Issue count caching:**
+
 - Cached for 15 minutes
 - Manual refresh via `/dashboard refresh` command
 - Shows `--` for non-GitHub projects or fetch failures
 - Uses `gh CLI` (must be installed and authenticated)
 
 **Performance:**
+
 - Dashboard load: Instant (uses cache)
 - Refresh time: ~0.5s per project with GitHub issues
 - Total refresh: ~5-10s for 10 projects
-```
+
+````
 
 **Step 2: Update command documentation**
 
@@ -590,19 +600,21 @@ Refresh health scores and GitHub issue counts for all registered projects.
 - Updates cache timestamps (15-minute TTL)
 
 **Output:**
-```
+````
+
 Refreshing dashboard data...
 
 Health Scores:
-  ✅ Updated: 5 projects
-  ❌ Failed: 0 projects
+✅ Updated: 5 projects
+❌ Failed: 0 projects
 
 GitHub Issues:
-  ✅ Updated: 3 projects (popkit, my-website, app)
-  ❌ Failed: 1 project (gh CLI error)
-  ⏭️  Skipped: 1 project (not a GitHub repo)
+✅ Updated: 3 projects (popkit, my-website, app)
+❌ Failed: 1 project (gh CLI error)
+⏭️ Skipped: 1 project (not a GitHub repo)
 
 ✓ Dashboard data refreshed (took 7.2s)
+
 ```
 
 **Requirements:**
@@ -637,6 +649,7 @@ Part of #111"
 ## Task 6: Integration Testing
 
 **Files:**
+
 - Manual testing in actual repository
 
 **Step 1: Test in clean state**
@@ -658,6 +671,7 @@ Expected: All projects show '--' for Issues column
 ```
 
 Expected:
+
 - Progress messages for each project
 - Summary showing updated/failed/skipped counts
 - Takes 5-10 seconds for multiple projects
@@ -669,6 +683,7 @@ Expected:
 ```
 
 Expected:
+
 - Instant load (< 1 second)
 - Issue counts displayed for GitHub projects
 - '--' for non-GitHub projects
@@ -713,21 +728,21 @@ Create `test_results.md`:
 
 ## Test Cases
 
-| Test | Expected | Actual | Status |
-|------|----------|--------|--------|
-| Clean state shows '--' | '--' in Issues column | | |
-| Refresh fetches counts | Numbers displayed | | |
-| Cached display instant | < 1s load time | | |
-| Cache expires after 15min | '--' after expiry | | |
-| No gh CLI graceful | 'failed' count, '--' shown | | |
-| 0 issues shows '0' | '0' not '--' | | |
-| Non-GitHub shows '--' | '--' for local projects | | |
+| Test                      | Expected                   | Actual | Status |
+| ------------------------- | -------------------------- | ------ | ------ |
+| Clean state shows '--'    | '--' in Issues column      |        |        |
+| Refresh fetches counts    | Numbers displayed          |        |        |
+| Cached display instant    | < 1s load time             |        |        |
+| Cache expires after 15min | '--' after expiry          |        |        |
+| No gh CLI graceful        | 'failed' count, '--' shown |        |        |
+| 0 issues shows '0'        | '0' not '--'               |        |        |
+| Non-GitHub shows '--'     | '--' for local projects    |        |        |
 
 ## Performance
 
-- Dashboard load (cached): ___s
-- Refresh 1 project: ___s
-- Refresh 10 projects: ___s
+- Dashboard load (cached): \_\_\_s
+- Refresh 1 project: \_\_\_s
+- Refresh 10 projects: \_\_\_s
 
 ## Issues Found
 
@@ -766,16 +781,19 @@ Part of #111"
 ## Post-Implementation
 
 1. **Update issue #111:**
+
    ```bash
    gh issue comment 111 --body "Implemented in commits: [list commit SHAs]"
    gh issue close 111
    ```
 
 2. **Update CHANGELOG.md:**
+
    ```markdown
    ## [Unreleased]
 
    ### Added
+
    - **Dashboard**: GitHub issue counts integration with 15-minute caching (#111)
      - Displays open issue counts for each project
      - Manual refresh via `/dashboard refresh`

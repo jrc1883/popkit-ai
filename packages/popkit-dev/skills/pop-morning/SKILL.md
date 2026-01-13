@@ -31,6 +31,7 @@ Comprehensive readiness check across 6 dimensions:
 **Branch Protection Penalty (Issue #142):**
 
 If on protected branch (`main`, `master`, `develop`, `production`) with uncommitted changes:
+
 - **Penalty:** -10 points from Branches Synced score
 - **Indicator:** Show ⚠️ PROTECTED warning in Current State table
 - **Recommendation:** Create feature branch before starting work
