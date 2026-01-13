@@ -24,7 +24,7 @@ from typing import Any, Dict, List, Optional, Set
 # Import test telemetry for sandbox testing (Issue #226)
 try:
     from local_telemetry import log_event_if_test_mode
-    from test_telemetry import create_event, get_test_session_id, is_test_mode
+    from test_telemetry import create_event, is_test_mode
 
     TEST_TELEMETRY_AVAILABLE = True
 except ImportError:
