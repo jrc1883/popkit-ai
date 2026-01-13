@@ -11,6 +11,7 @@ Part of the popkit plugin system.
 import json
 import os
 import re
+import subprocess
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -688,6 +689,34 @@ def get_cached_issue_count(project: Dict[str, Any]) -> str:
         pass
 
     return "--"
+
+
+def fetch_project_issues(path: str, timeout: int = 5) -> Optional[int]:
+    """Fetch open issue count from GitHub via gh CLI.
+
+    Args:
+        path: Path to the project directory
+        timeout: Timeout in seconds (default: 5)
+
+    Returns:
+        Number of open issues, or None on error
+    """
+    try:
+        result = subprocess.run(
+            ["gh", "issue", "list", "--state", "open", "--json", "number"],
+            cwd=path,
+            capture_output=True,
+            text=True,
+            timeout=timeout
+        )
+
+        if result.returncode == 0:
+            issues = json.loads(result.stdout)
+            return len(issues)
+        else:
+            return None
+    except Exception:
+        return None
 
 
 def format_dashboard(projects: List[Dict[str, Any]]) -> str:
