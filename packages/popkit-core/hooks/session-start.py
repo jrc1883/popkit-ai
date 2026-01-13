@@ -19,9 +19,6 @@ import threading
 from pathlib import Path
 from datetime import datetime
 
-# Add utils to path
-sys.path.insert(0, str(Path(__file__).parent / "utils"))
-
 # Import version check utility
 try:
     from popkit_shared.utils.version import check_for_updates, format_update_notification, get_current_version
@@ -439,8 +436,7 @@ def load_agent_expertise():
     """
     try:
         # Import here to avoid circular dependencies
-        sys.path.insert(0, str(Path(__file__).parent / "utils"))
-        from expertise_manager import ExpertiseManager
+        from popkit_shared.utils.expertise_manager import ExpertiseManager
 
         cwd = Path(os.getcwd())
         expertise_dir = cwd / ".claude" / "expertise"

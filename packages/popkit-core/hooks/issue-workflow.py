@@ -26,14 +26,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 
-# Add utils to path
-sys.path.insert(0, str(Path(__file__).parent / "utils"))
-from github_issues import (
+from popkit_shared.utils.github_issues import (
     get_workflow_config,
     infer_issue_type,
     get_agents_for_issue_type
 )
-from flag_parser import parse_work_args
+from popkit_shared.utils.flag_parser import parse_work_args
 
 # Import quality gate hook for phase transitions
 sys.path.insert(0, str(Path(__file__).parent))

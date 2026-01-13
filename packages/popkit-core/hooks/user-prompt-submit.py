@@ -16,10 +16,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Any
 
-# Import thinking flags parser
-sys.path.insert(0, str(Path(__file__).parent / 'utils'))
+# Import thinking flags parser from shared package
 try:
-    from flag_parser import parse_thinking_flags
+    from popkit_shared.utils.flag_parser import parse_thinking_flags
 except ImportError:
     def parse_thinking_flags(args):
         """Fallback if import fails"""
@@ -27,9 +26,9 @@ except ImportError:
 
 # Import XML context generation utilities (Phase 1: XML Integration #515)
 try:
-    from context_state import load_context_state, save_context_state, compute_hash
-    from xml_generator import generate_problem_xml, generate_project_context_xml
-    from context_delta import compute_context_delta, extract_new_context, should_send_full_context
+    from popkit_shared.utils.context_state import load_context_state, save_context_state, compute_hash
+    from popkit_shared.utils.xml_generator import generate_problem_xml, generate_project_context_xml
+    from popkit_shared.utils.context_delta import compute_context_delta, extract_new_context, should_send_full_context
     HAS_XML_CONTEXT = True
 except ImportError:
     HAS_XML_CONTEXT = False

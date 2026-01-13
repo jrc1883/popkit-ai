@@ -196,6 +196,74 @@ Example hook command:
 - Validates PopKit's wildcard permission approach (`Bash(npm test*)`, `Bash(git log*)`)
 - Smoother UX for developers using PopKit's security-conscious agent permissions
 
+### New in Claude Code 2.1.3
+
+**Commands and Skills Merge:**
+- Unified slash commands and skills into a single mental model
+- No behavior changes - purely UX improvement
+- Skills and commands remain separate in plugin structure
+- More intuitive for users when invoking workflows
+
+**Release Channel Control:**
+- Added `/config` toggle for `stable` vs `latest` release channels
+- Users can control update frequency independently
+
+**Permission Rule Validation:**
+- Detection and warnings for unreachable permission rules
+- `/doctor` command shows rule conflicts with actionable fixes
+- Improved security configuration UX
+
+**Bug Fixes:**
+- Plan files no longer persist across `/clear` commands
+- Fixed skill duplicate detection on ExFAT filesystems
+- Corrected sub-agent model selection during conversation compaction
+
+### New in Claude Code 2.1.4
+
+**Background Task Control:**
+- New `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` environment variable
+- Allows disabling all background task functionality when needed
+- Useful for debugging or resource-constrained environments
+
+### New in Claude Code 2.1.5
+
+**Temp Directory Override:**
+- New `CLAUDE_CODE_TMPDIR` environment variable
+- Overrides default temp directory for internal files
+- Useful for custom storage configurations or permissions issues
+
+### New in Claude Code 2.1.6
+
+**Settings Search:**
+- `/config` command gained search functionality
+- Quickly filter settings by keyword
+- Improved navigation for large configuration files
+
+**Updates Visibility:**
+- `/doctor` now shows auto-update channel and available npm versions
+- Better transparency about version management
+
+**Stats Date Filtering:**
+- `/stats` command added date range filtering
+- Options: Last 7 days, Last 30 days, All time
+- More granular usage analytics
+
+**Nested Skills Discovery:**
+- Automatic discovery of skills from nested `.claude/skills` directories
+- Supports more flexible project organization
+
+**Context Window Display:**
+- Added percentage-based fields for context window usage
+- Easier to understand token consumption at a glance
+
+**Security Fixes:**
+- Resolved permission bypass via shell line continuation
+- Improved command validation and sanitization
+
+**Bug Fixes:**
+- Fixed text styling (bold, colors) getting progressively misaligned
+- Removed ability to @-mention MCP servers (use `/mcp enable <name>` instead)
+
 ---
 
 ## Testing
@@ -306,8 +374,16 @@ PopKit requires specific Claude Code versions for full functionality:
 | **SessionStart agent_type** | 2.1.2 | `--agent` flag detection in hooks |
 | **Plugin Auto-Update Control** | 2.1.2 | `FORCE_AUTOUPDATE_PLUGINS` env var |
 | **Large Output Persistence** | 2.1.2 | Tool outputs saved to disk (not truncated) |
+| **Unified Commands/Skills UX** | 2.1.3 | Mental model simplification (no code changes) |
+| **Release Channel Toggle** | 2.1.3 | `stable` vs `latest` in `/config` |
+| **Permission Rule Validation** | 2.1.3 | Unreachable rule detection in `/doctor` |
+| **Background Task Disable** | 2.1.4 | `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` env var |
+| **Temp Directory Override** | 2.1.5 | `CLAUDE_CODE_TMPDIR` env var |
+| **Settings Search** | 2.1.6 | Keyword filtering in `/config` |
+| **Nested Skills Discovery** | 2.1.6 | Auto-detect `.claude/skills` subdirectories |
+| **Shell Continuation Security** | 2.1.6 | Permission bypass fix |
 
-**Recommended**: Claude Code 2.1.2+ for full feature support.
+**Recommended**: Claude Code 2.1.6+ for full feature support and latest security fixes.
 
 ---
 
@@ -322,6 +398,7 @@ PopKit requires specific Claude Code versions for full functionality:
 
 ### Recent Updates
 
+- **2026-01-12**: Claude Code 2.1.6 compatibility verified, hook import paths fixed (v1.0.0-rc.1)
 - **2026-01-09**: Claude Code 2.1.2 integration complete (v1.0.0-beta.4)
 - **2026-01-06**: Repository field format fix (all plugin.json files)
 - **2025-12-29**: Core cleanup and account consolidation (v1.0.0-beta.3)
