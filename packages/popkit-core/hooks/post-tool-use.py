@@ -24,7 +24,7 @@ except ImportError:
 
 # Import skill state tracker for AskUserQuestion enforcement (Issue #159)
 try:
-    from popkit_shared.utils.skill_state import get_tracker, SkillStateTracker
+    from popkit_shared.utils.skill_state import get_tracker
     SKILL_STATE_AVAILABLE = True
 except ImportError:
     SKILL_STATE_AVAILABLE = False
