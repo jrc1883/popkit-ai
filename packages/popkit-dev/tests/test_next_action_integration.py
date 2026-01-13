@@ -11,7 +11,6 @@ Simulates the complete workflow from issue #141:
 """
 
 import pytest
-from unittest.mock import Mock, patch
 
 
 def test_complete_workflow_on_protected_branch():
