@@ -542,6 +542,80 @@ Before committing any skill/command:
 
 ---
 
+## Git Workflow Principles
+
+PopKit enforces standard Git workflows with branch protection awareness.
+
+### Core Principle: Feature Branch Workflow
+
+**Never commit directly to protected branches.** All work must go through feature branches and pull requests.
+
+### Protected Branches
+
+The following branches are **protected** and require feature branch workflow:
+
+- `main` - Primary integration branch
+- `master` - Legacy primary branch
+- `develop` - Development integration branch
+- `production` - Production release branch
+
+### Branch Protection Detection
+
+As of issue #141, PopKit skills detect when working on protected branches and recommend proper workflow:
+
+**Detection**: Skills check `git branch --show-current` during project state analysis
+
+**Recommendation**: When on protected branch with unpushed commits:
+1. **Priority**: CRITICAL (score 100, highest)
+2. **Command**: `git checkout -b feat/descriptive-name`
+3. **Workflow**:
+   ```bash
+   # Create and push feature branch
+   git checkout -b feat/your-feature-name
+   git push -u origin feat/your-feature-name
+
+   # Create pull request
+   gh pr create --title "..." --body "..."
+
+   # Clean up local main
+   git checkout main
+   git reset --hard origin/main
+   ```
+
+### Affected Components
+
+The following components enforce branch protection:
+
+✅ **Implemented (v1.0.0-beta.6+)**:
+- `pop-next-action` skill - Detects protected branches, suppresses direct push recommendations
+- Adds "Current Branch" indicator to recommendation output
+- Shows ⚠️ CRITICAL urgency when on protected branch
+
+🚧 **To Be Audited**:
+- `popkit-dev:git` command - May need branch protection checks
+- `pop-morning` routine - May recommend unsafe git operations
+- Other git-related skills/commands
+
+### Testing
+
+Branch protection logic is verified through:
+- **Unit tests** (8): `test_next_action_branch_protection.py`
+- **Integration tests** (4): `test_next_action_integration.py`
+
+### Quality Check
+
+Before committing git-related code:
+
+- [ ] Does it check `git branch --show-current`?
+- [ ] Does it detect protected branches (main/master/develop/production)?
+- [ ] Does it suppress direct push recommendations when on protected branch?
+- [ ] Does it recommend feature branch creation as highest priority?
+- [ ] Does it include full workflow commands (checkout, push, PR, cleanup)?
+
+**If any answer is "no", the implementation violates Git Workflow Principles.**
+
+---
+
 ## Documentation
 
 ### User Documentation
