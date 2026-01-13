@@ -6,6 +6,19 @@ All notable changes to PopKit are documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+- **Hook Import Paths**: Corrected import paths in 5 hooks to use `popkit_shared.utils` package instead of non-existent local utils directory
+  - Fixed: user-prompt-submit.py, session-start.py, post-tool-use.py, test_findings_xml.py, issue-workflow.py
+  - Resolves UserPromptSubmit hook error preventing hook execution
+
+### Changed
+- **Documentation**: Added Claude Code 2.1.3-2.1.6 feature documentation to CLAUDE.md
+- **Documentation**: Updated version requirements table with latest features
+- **Documentation**: Updated recommended version to 2.1.6+ for security fixes
+
+### Chore
+- **CI/CD**: Added tmpclaude-*-cwd files to .gitignore
+
 ---
 
 ## [1.0.0-rc.1] - 2026-01-12
