@@ -1,6 +1,6 @@
 {
   "name": "popkit-dev",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0-beta.5",
   "description": "Complete development workflow plugin - feature development, git operations, GitHub management, and daily routines",
   "author": {
     "name": "Joseph Cannon",
