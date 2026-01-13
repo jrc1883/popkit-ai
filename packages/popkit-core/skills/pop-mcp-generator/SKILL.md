@@ -92,16 +92,28 @@ grep -l "jest\|mocha\|vitest\|pytest" package.json pyproject.toml 2>/dev/null
 See `examples/tool-implementation.ts` for detailed examples
 
 ### Step 3: Server Registration
+
+**Uses Claude Code 2.0.70+ wildcard syntax:**
+
 ```json
 {
   "mcpServers": {
     "[project]-dev": {
       "command": "node",
-      "args": [".claude/mcp-servers/[project]-dev/dist/index.js"]
+      "args": [".claude/mcp-servers/[project]-dev/dist/index.js"],
+      "permissions": {
+        "allowed": ["mcp__[project]-dev__*"]
+      }
     }
   }
 }
 ```
+
+**Benefits of wildcard permissions:**
+- All current and future tools automatically allowed
+- Less configuration maintenance
+- Clearer intent: "trust this MCP server"
+- See `docs/MCP_WILDCARD_PERMISSIONS.md` for details
 </details>
 
 ## Semantic Tool Descriptions
@@ -185,6 +197,54 @@ Next steps:
 
 Would you like me to build and test it?
 ```
+
+## MCP Wildcard Permissions
+
+**Added in Claude Code 2.0.70**
+
+PopKit-generated MCP servers use wildcard permissions by default:
+
+```json
+{
+  "mcpServers": {
+    "{project-name}-dev": {
+      "permissions": {
+        "allowed": ["mcp__{project-name}-dev__*"]
+      }
+    }
+  }
+}
+```
+
+### Permission Patterns
+
+| Pattern | Use Case |
+|---------|----------|
+| `mcp__server__*` | Trust all tools (recommended for first-party servers) |
+| `mcp__server__health-*` | Trust tools by namespace prefix |
+| Explicit list | Trust specific tools only (third-party servers) |
+
+### Custom Permissions
+
+Override permissions after generation:
+
+1. Edit `.claude/settings.json` or `.mcp.json`
+2. Change from wildcard to explicit allow-list if needed
+3. Add denied list for risky operations:
+
+```json
+{
+  "permissions": {
+    "allowed": ["mcp__git-tools__*"],
+    "denied": [
+      "mcp__git-tools__force-push",
+      "mcp__git-tools__delete-branch"
+    ]
+  }
+}
+```
+
+**Documentation:** `docs/MCP_WILDCARD_PERMISSIONS.md`
 
 ## Integration Requirements
 
