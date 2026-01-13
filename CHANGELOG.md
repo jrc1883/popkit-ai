@@ -6,11 +6,22 @@ All notable changes to PopKit are documented in this file.
 
 ## [Unreleased]
 
+---
+
+## [1.0.0-beta.5] - 2026-01-13
+
 ### Fixed
 
 - **Hook Import Paths**: Corrected import paths in 5 hooks to use `popkit_shared.utils` package instead of non-existent local utils directory
   - Fixed: user-prompt-submit.py, session-start.py, post-tool-use.py, test_findings_xml.py, issue-workflow.py
   - Resolves UserPromptSubmit hook error preventing hook execution
+- **CI/CD Pipeline**: Complete test and lint infrastructure implementation (#125)
+  - Python tests (3.11, 3.12, 3.13) with proper PYTHONPATH configuration
+  - TypeScript tests and type checking (Node 20, 22)
+  - Ruff formatting validation for Python code
+  - ESLint validation for TypeScript code
+  - Prettier formatting validation for Markdown/JSON
+  - All validation checks passing (25/25 checks)
 
 ### Changed
 
@@ -21,6 +32,7 @@ All notable changes to PopKit are documented in this file.
 ### Chore
 
 - **CI/CD**: Added tmpclaude-\*-cwd files to .gitignore
+- **Testing**: Fixed hook_validator.py to use absolute paths for subprocess execution
 
 ---
 
