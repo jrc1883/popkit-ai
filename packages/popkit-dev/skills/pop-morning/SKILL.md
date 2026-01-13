@@ -28,6 +28,14 @@ Comprehensive readiness check across 6 dimensions:
 | PRs Reviewed         | 15     | No PRs waiting for review                          |
 | Issues Triaged       | 15     | All issues assigned/prioritized                    |
 
+**Branch Protection Penalty (Issue #142):**
+
+If on protected branch (`main`, `master`, `develop`, `production`) with uncommitted changes:
+
+- **Penalty:** -10 points from Branches Synced score
+- **Indicator:** Show ⚠️ PROTECTED warning in Current State table
+- **Recommendation:** Create feature branch before starting work
+
 **Score Interpretation:**
 
 - **90-100**: Excellent - Fully ready to code
@@ -183,6 +191,32 @@ Single command to gather all git data:
   echo "=== STASHES ==="
   git stash list | wc -l
 }
+```
+
+**Branch Protection Detection (Issue #142):**
+
+After collecting branch name, check if it's a protected branch:
+
+```python
+from popkit_shared.utils.session_recorder import is_recording_enabled, record_reasoning
+
+# Get current branch
+current_branch = git_output['branch']
+
+# Protected branches
+PROTECTED_BRANCHES = ["main", "master", "develop", "production"]
+is_protected = current_branch in PROTECTED_BRANCHES
+
+# Record if on protected branch
+if is_recording_enabled():
+    record_reasoning(
+        step="Check branch protection",
+        reasoning=f"Branch '{current_branch}' is {'PROTECTED' if is_protected else 'not protected'}",
+        data={
+            "current_branch": current_branch,
+            "is_protected": is_protected
+        }
+    )
 ```
 
 ### GitHub Commands (Consolidated)
