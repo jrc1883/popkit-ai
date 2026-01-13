@@ -46,10 +46,26 @@
           "prompt": "How should duplicates be handled?",
           "type": "selection",
           "options": [
-            {"label": "Keep most recent", "value": "recent", "description": "Use the most recent version"},
-            {"label": "Keep most detailed", "value": "detailed", "description": "Use the version with more content"},
-            {"label": "Merge all", "value": "merge", "description": "Combine information from all versions"},
-            {"label": "Manual review", "value": "manual", "description": "Review each duplicate manually"}
+            {
+              "label": "Keep most recent",
+              "value": "recent",
+              "description": "Use the most recent version"
+            },
+            {
+              "label": "Keep most detailed",
+              "value": "detailed",
+              "description": "Use the version with more content"
+            },
+            {
+              "label": "Merge all",
+              "value": "merge",
+              "description": "Combine information from all versions"
+            },
+            {
+              "label": "Manual review",
+              "value": "manual",
+              "description": "Review each duplicate manually"
+            }
           ]
         },
         {
@@ -84,10 +100,22 @@
           "prompt": "How should the merged research be organized?",
           "type": "selection",
           "options": [
-            {"label": "By topic", "value": "topic", "description": "Group by subject matter"},
-            {"label": "By importance", "value": "importance", "description": "Most important findings first"},
-            {"label": "Chronological", "value": "chronological", "description": "By discovery date"},
-            {"label": "By source", "value": "source", "description": "Preserve original groupings"}
+            { "label": "By topic", "value": "topic", "description": "Group by subject matter" },
+            {
+              "label": "By importance",
+              "value": "importance",
+              "description": "Most important findings first"
+            },
+            {
+              "label": "Chronological",
+              "value": "chronological",
+              "description": "By discovery date"
+            },
+            {
+              "label": "By source",
+              "value": "source",
+              "description": "Preserve original groupings"
+            }
           ]
         },
         {
@@ -107,10 +135,7 @@
   ],
   "triggers": {
     "automatic": [],
-    "manual": [
-      "Invoke pop-research-merge skill",
-      "Combine multiple research notes"
-    ]
+    "manual": ["Invoke pop-research-merge skill", "Combine multiple research notes"]
   },
   "output": {
     "primary": "docs/research/YYYY-MM-DD-<topic>-merged.md"

@@ -14,11 +14,7 @@ from unittest.mock import patch, MagicMock
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from popkit_shared.utils.skill_state import (
-    SkillState,
-    SkillStateTracker,
-    get_tracker
-)
+from popkit_shared.utils.skill_state import SkillState, SkillStateTracker, get_tracker
 
 
 class TestSkillState:
@@ -72,15 +68,7 @@ class TestConfigurationLoading:
 
     def test_load_config_success(self):
         """Test successful config loading"""
-        mock_config = {
-            "skill_decisions": {
-                "skills": {
-                    "test-skill": {
-                        "completion_decisions": []
-                    }
-                }
-            }
-        }
+        mock_config = {"skill_decisions": {"skills": {"test-skill": {"completion_decisions": []}}}}
 
         with patch("pathlib.Path.exists", return_value=True):
             with patch("pathlib.Path.read_text", return_value=json.dumps(mock_config)):
@@ -126,13 +114,7 @@ class TestConfigurationLoading:
 
     def test_get_skill_config_exact_match(self):
         """Test getting skill config with exact name match"""
-        mock_config = {
-            "skill_decisions": {
-                "skills": {
-                    "test-skill": {"id": "123"}
-                }
-            }
-        }
+        mock_config = {"skill_decisions": {"skills": {"test-skill": {"id": "123"}}}}
 
         with patch("pathlib.Path.exists", return_value=True):
             with patch("pathlib.Path.read_text", return_value=json.dumps(mock_config)):
@@ -142,13 +124,7 @@ class TestConfigurationLoading:
 
     def test_get_skill_config_with_pop_prefix(self):
         """Test getting skill config with pop- prefix"""
-        mock_config = {
-            "skill_decisions": {
-                "skills": {
-                    "pop-test-skill": {"id": "456"}
-                }
-            }
-        }
+        mock_config = {"skill_decisions": {"skills": {"pop-test-skill": {"id": "456"}}}}
 
         with patch("pathlib.Path.exists", return_value=True):
             with patch("pathlib.Path.read_text", return_value=json.dumps(mock_config)):
@@ -159,13 +135,7 @@ class TestConfigurationLoading:
 
     def test_get_skill_config_without_pop_prefix(self):
         """Test getting skill config when querying with pop- prefix"""
-        mock_config = {
-            "skill_decisions": {
-                "skills": {
-                    "test-skill": {"id": "789"}
-                }
-            }
-        }
+        mock_config = {"skill_decisions": {"skills": {"test-skill": {"id": "789"}}}}
 
         with patch("pathlib.Path.exists", return_value=True):
             with patch("pathlib.Path.read_text", return_value=json.dumps(mock_config)):
@@ -176,13 +146,7 @@ class TestConfigurationLoading:
 
     def test_get_skill_config_namespace_normalization(self):
         """Test skill config with popkit: namespace"""
-        mock_config = {
-            "skill_decisions": {
-                "skills": {
-                    "test-skill": {"id": "abc"}
-                }
-            }
-        }
+        mock_config = {"skill_decisions": {"skills": {"test-skill": {"id": "abc"}}}}
 
         with patch("pathlib.Path.exists", return_value=True):
             with patch("pathlib.Path.read_text", return_value=json.dumps(mock_config)):
@@ -192,11 +156,7 @@ class TestConfigurationLoading:
 
     def test_get_skill_config_not_found(self):
         """Test getting config for non-existent skill"""
-        mock_config = {
-            "skill_decisions": {
-                "skills": {}
-            }
-        }
+        mock_config = {"skill_decisions": {"skills": {}}}
 
         with patch("pathlib.Path.exists", return_value=True):
             with patch("pathlib.Path.read_text", return_value=json.dumps(mock_config)):
@@ -211,7 +171,7 @@ class TestSkillLifecycle:
     def test_start_skill(self):
         """Test starting a skill"""
         tracker = SkillStateTracker()
-        with patch.object(tracker, '_publish_activity', return_value="activity-123"):
+        with patch.object(tracker, "_publish_activity", return_value="activity-123"):
             tracker.start_skill("test-skill", workflow_id="wf-456")
 
         assert tracker.is_skill_active()
@@ -222,7 +182,7 @@ class TestSkillLifecycle:
     def test_end_skill(self):
         """Test ending a skill"""
         tracker = SkillStateTracker()
-        with patch.object(tracker, '_publish_activity', return_value="activity-123"):
+        with patch.object(tracker, "_publish_activity", return_value="activity-123"):
             tracker.start_skill("test-skill")
             assert tracker.is_skill_active()
 
@@ -233,11 +193,11 @@ class TestSkillLifecycle:
     def test_end_skill_with_error(self):
         """Test ending a skill that had an error"""
         tracker = SkillStateTracker()
-        with patch.object(tracker, '_publish_activity', return_value="activity-123"):
+        with patch.object(tracker, "_publish_activity", return_value="activity-123"):
             tracker.start_skill("test-skill")
             tracker.record_error("Test error")
 
-            with patch.object(tracker, '_publish_activity') as mock_publish:
+            with patch.object(tracker, "_publish_activity") as mock_publish:
                 tracker.end_skill(status="complete")
 
                 # Should publish error status, not complete
@@ -250,11 +210,11 @@ class TestSkillLifecycle:
         tracker = SkillStateTracker()
         assert not tracker.is_skill_active()
 
-        with patch.object(tracker, '_publish_activity'):
+        with patch.object(tracker, "_publish_activity"):
             tracker.start_skill("test-skill")
         assert tracker.is_skill_active()
 
-        with patch.object(tracker, '_publish_activity'):
+        with patch.object(tracker, "_publish_activity"):
             tracker.end_skill()
         assert not tracker.is_skill_active()
 
@@ -270,7 +230,7 @@ class TestDecisionTracking:
     def test_record_decision(self):
         """Test recording a decision"""
         tracker = SkillStateTracker()
-        with patch.object(tracker, '_publish_activity'):
+        with patch.object(tracker, "_publish_activity"):
             tracker.start_skill("test-skill")
             tracker.record_decision("decision-123")
 
@@ -299,7 +259,7 @@ class TestDecisionTracking:
         with patch("pathlib.Path.exists", return_value=True):
             with patch("pathlib.Path.read_text", return_value=json.dumps(mock_config)):
                 tracker = SkillStateTracker()
-                with patch.object(tracker, '_publish_activity'):
+                with patch.object(tracker, "_publish_activity"):
                     tracker.start_skill("test-skill")
                     tracker.record_decision_by_header("Next Action")
 
@@ -322,7 +282,7 @@ class TestDecisionTracking:
         with patch("pathlib.Path.exists", return_value=True):
             with patch("pathlib.Path.read_text", return_value=json.dumps(mock_config)):
                 tracker = SkillStateTracker()
-                with patch.object(tracker, '_publish_activity'):
+                with patch.object(tracker, "_publish_activity"):
                     tracker.start_skill("test-skill")
                     tracker.record_decision_by_header("next action")
 
@@ -345,7 +305,7 @@ class TestDecisionTracking:
         with patch("pathlib.Path.exists", return_value=True):
             with patch("pathlib.Path.read_text", return_value=json.dumps(mock_config)):
                 tracker = SkillStateTracker()
-                with patch.object(tracker, '_publish_activity'):
+                with patch.object(tracker, "_publish_activity"):
                     tracker.start_skill("test-skill")
                     tracker.record_decision_by_header("Next Action")
 
@@ -358,7 +318,11 @@ class TestDecisionTracking:
                 "skills": {
                     "test-skill": {
                         "completion_decisions": [
-                            {"id": "dec-1", "header": "Action", "question": "What would you like to do next?"}
+                            {
+                                "id": "dec-1",
+                                "header": "Action",
+                                "question": "What would you like to do next?",
+                            }
                         ]
                     }
                 }
@@ -368,7 +332,7 @@ class TestDecisionTracking:
         with patch("pathlib.Path.exists", return_value=True):
             with patch("pathlib.Path.read_text", return_value=json.dumps(mock_config)):
                 tracker = SkillStateTracker()
-                with patch.object(tracker, '_publish_activity'):
+                with patch.object(tracker, "_publish_activity"):
                     tracker.start_skill("test-skill")
                     tracker.record_decision_by_header("like to do")
 
@@ -381,7 +345,7 @@ class TestToolCallTracking:
     def test_record_tool_use(self):
         """Test recording tool use"""
         tracker = SkillStateTracker()
-        with patch.object(tracker, '_publish_activity'):
+        with patch.object(tracker, "_publish_activity"):
             tracker.start_skill("test-skill")
             tracker.record_tool_use("Read")
 
@@ -390,7 +354,7 @@ class TestToolCallTracking:
     def test_record_tool_use_increments(self):
         """Test tool calls increment correctly"""
         tracker = SkillStateTracker()
-        with patch.object(tracker, '_publish_activity'):
+        with patch.object(tracker, "_publish_activity"):
             tracker.start_skill("test-skill")
             tracker.record_tool_use("Read")
             tracker.record_tool_use("Write")
@@ -401,7 +365,7 @@ class TestToolCallTracking:
     def test_record_tool_use_publishes_progress(self):
         """Test tool use publishes progress at intervals"""
         tracker = SkillStateTracker()
-        with patch.object(tracker, '_publish_activity') as mock_publish:
+        with patch.object(tracker, "_publish_activity") as mock_publish:
             tracker.start_skill("test-skill")
 
             # First 4 calls shouldn't publish progress
@@ -418,7 +382,7 @@ class TestToolCallTracking:
     def test_record_tool_use_with_explicit_publish(self):
         """Test tool use with explicit publish_progress flag"""
         tracker = SkillStateTracker()
-        with patch.object(tracker, '_publish_activity') as mock_publish:
+        with patch.object(tracker, "_publish_activity") as mock_publish:
             tracker.start_skill("test-skill")
             tracker.record_tool_use("Read", publish_progress=True)
 
@@ -432,7 +396,7 @@ class TestErrorHandling:
     def test_record_error(self):
         """Test recording an error"""
         tracker = SkillStateTracker()
-        with patch.object(tracker, '_publish_activity'):
+        with patch.object(tracker, "_publish_activity"):
             tracker.start_skill("test-skill")
             tracker.record_error("Test error occurred")
 
@@ -448,7 +412,7 @@ class TestErrorHandling:
     def test_has_error_when_no_error(self):
         """Test has_error when no error occurred"""
         tracker = SkillStateTracker()
-        with patch.object(tracker, '_publish_activity'):
+        with patch.object(tracker, "_publish_activity"):
             tracker.start_skill("test-skill")
         assert tracker.has_error() is False
 
@@ -460,7 +424,7 @@ class TestErrorHandling:
                     "test-skill": {
                         "completion_decisions": [
                             {"id": "dec-1", "on_error": True, "header": "Retry"},
-                            {"id": "dec-2", "on_error": False, "header": "Continue"}
+                            {"id": "dec-2", "on_error": False, "header": "Continue"},
                         ]
                     }
                 }
@@ -470,7 +434,7 @@ class TestErrorHandling:
         with patch("pathlib.Path.exists", return_value=True):
             with patch("pathlib.Path.read_text", return_value=json.dumps(mock_config)):
                 tracker = SkillStateTracker()
-                with patch.object(tracker, '_publish_activity'):
+                with patch.object(tracker, "_publish_activity"):
                     tracker.start_skill("test-skill")
                     tracker.record_error("Something failed")
 
@@ -481,7 +445,7 @@ class TestErrorHandling:
     def test_get_error_recovery_decisions_no_error(self):
         """Test getting error recovery decisions when no error occurred"""
         tracker = SkillStateTracker()
-        with patch.object(tracker, '_publish_activity'):
+        with patch.object(tracker, "_publish_activity"):
             tracker.start_skill("test-skill")
 
         recovery_decisions = tracker.get_error_recovery_decisions()
@@ -499,7 +463,7 @@ class TestPendingDecisions:
                     "test-skill": {
                         "completion_decisions": [
                             {"id": "dec-1", "header": "Action 1"},
-                            {"id": "dec-2", "header": "Action 2"}
+                            {"id": "dec-2", "header": "Action 2"},
                         ]
                     }
                 }
@@ -509,7 +473,7 @@ class TestPendingDecisions:
         with patch("pathlib.Path.exists", return_value=True):
             with patch("pathlib.Path.read_text", return_value=json.dumps(mock_config)):
                 tracker = SkillStateTracker()
-                with patch.object(tracker, '_publish_activity'):
+                with patch.object(tracker, "_publish_activity"):
                     tracker.start_skill("test-skill")
 
                 pending = tracker.get_pending_completion_decisions()
@@ -528,7 +492,7 @@ class TestPendingDecisions:
                     "test-skill": {
                         "completion_decisions": [
                             {"id": "dec-1", "on_error": False, "header": "Normal"},
-                            {"id": "dec-2", "on_error": True, "header": "Error"}
+                            {"id": "dec-2", "on_error": True, "header": "Error"},
                         ]
                     }
                 }
@@ -538,7 +502,7 @@ class TestPendingDecisions:
         with patch("pathlib.Path.exists", return_value=True):
             with patch("pathlib.Path.read_text", return_value=json.dumps(mock_config)):
                 tracker = SkillStateTracker()
-                with patch.object(tracker, '_publish_activity'):
+                with patch.object(tracker, "_publish_activity"):
                     tracker.start_skill("test-skill")
 
                 pending = tracker.get_pending_completion_decisions()
@@ -553,7 +517,7 @@ class TestPendingDecisions:
                     "test-skill": {
                         "completion_decisions": [
                             {"id": "dec-1", "on_error": False, "header": "Normal"},
-                            {"id": "dec-2", "on_error": True, "header": "Error"}
+                            {"id": "dec-2", "on_error": True, "header": "Error"},
                         ]
                     }
                 }
@@ -563,7 +527,7 @@ class TestPendingDecisions:
         with patch("pathlib.Path.exists", return_value=True):
             with patch("pathlib.Path.read_text", return_value=json.dumps(mock_config)):
                 tracker = SkillStateTracker()
-                with patch.object(tracker, '_publish_activity'):
+                with patch.object(tracker, "_publish_activity"):
                     tracker.start_skill("test-skill")
                     tracker.record_error("Test error")
 
@@ -578,7 +542,7 @@ class TestPendingDecisions:
                     "test-skill": {
                         "completion_decisions": [
                             {"id": "dec-1", "required": True, "header": "Required"},
-                            {"id": "dec-2", "required": False, "header": "Optional"}
+                            {"id": "dec-2", "required": False, "header": "Optional"},
                         ]
                     }
                 }
@@ -588,7 +552,7 @@ class TestPendingDecisions:
         with patch("pathlib.Path.exists", return_value=True):
             with patch("pathlib.Path.read_text", return_value=json.dumps(mock_config)):
                 tracker = SkillStateTracker()
-                with patch.object(tracker, '_publish_activity'):
+                with patch.object(tracker, "_publish_activity"):
                     tracker.start_skill("test-skill")
 
                 required = tracker.get_required_decisions()
@@ -600,11 +564,7 @@ class TestPendingDecisions:
         mock_config = {
             "skill_decisions": {
                 "skills": {
-                    "test-skill": {
-                        "completion_decisions": [
-                            {"id": "dec-1", "header": "Action"}
-                        ]
-                    }
+                    "test-skill": {"completion_decisions": [{"id": "dec-1", "header": "Action"}]}
                 }
             }
         }
@@ -612,7 +572,7 @@ class TestPendingDecisions:
         with patch("pathlib.Path.exists", return_value=True):
             with patch("pathlib.Path.read_text", return_value=json.dumps(mock_config)):
                 tracker = SkillStateTracker()
-                with patch.object(tracker, '_publish_activity'):
+                with patch.object(tracker, "_publish_activity"):
                     tracker.start_skill("test-skill")
 
                 assert tracker.has_pending_decisions() is True
@@ -637,7 +597,7 @@ class TestPendingDecisions:
         with patch("pathlib.Path.exists", return_value=True):
             with patch("pathlib.Path.read_text", return_value=json.dumps(mock_config)):
                 tracker = SkillStateTracker()
-                with patch.object(tracker, '_publish_activity'):
+                with patch.object(tracker, "_publish_activity"):
                     tracker.start_skill("test-skill")
 
                 assert tracker.has_required_pending() is True
@@ -677,7 +637,9 @@ class TestActivityPublishing:
     def test_publish_activity_import_error(self):
         """Test activity publishing when context_storage not available"""
         # Patch the import to raise ImportError
-        with patch("builtins.__import__", side_effect=ImportError("No module named 'context_storage'")):
+        with patch(
+            "builtins.__import__", side_effect=ImportError("No module named 'context_storage'")
+        ):
             tracker = SkillStateTracker()
             result = tracker._publish_activity("start", {"skill": "test-skill"})
             # Should not crash, returns None
@@ -713,8 +675,8 @@ class TestPhaseTracking:
     def test_record_phase_change(self):
         """Test recording a phase change"""
         tracker = SkillStateTracker()
-        with patch.object(tracker, '_publish_activity'):
-            with patch.object(tracker, '_emit_telemetry_event') as mock_emit:
+        with patch.object(tracker, "_publish_activity"):
+            with patch.object(tracker, "_emit_telemetry_event") as mock_emit:
                 tracker.start_skill("test-skill")
                 tracker.record_phase_change("exploration", {"detail": "searching codebase"})
 

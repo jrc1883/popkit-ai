@@ -24,10 +24,7 @@ from .pattern_anonymizer import anonymize_pattern, validate_anonymization
 # CONFIGURATION
 # =============================================================================
 
-POPKIT_API_URL = os.environ.get(
-    "POPKIT_API_URL",
-    "https://api.thehouseofdeals.com"
-)
+POPKIT_API_URL = os.environ.get("POPKIT_API_URL", "https://api.thehouseofdeals.com")
 PATTERNS_ENDPOINT = "/api/v1/patterns"
 
 
@@ -35,35 +32,39 @@ PATTERNS_ENDPOINT = "/api/v1/patterns"
 # DATA CLASSES
 # =============================================================================
 
+
 @dataclass
 class PatternType:
     """Types of patterns that can be shared."""
-    COMMAND: str = "command"          # Command corrections
-    ERROR: str = "error"              # Error solutions
-    WORKFLOW: str = "workflow"        # Workflow patterns
-    CONFIGURATION: str = "config"     # Configuration patterns
-    BEST_PRACTICE: str = "practice"   # Best practices
+
+    COMMAND: str = "command"  # Command corrections
+    ERROR: str = "error"  # Error solutions
+    WORKFLOW: str = "workflow"  # Workflow patterns
+    CONFIGURATION: str = "config"  # Configuration patterns
+    BEST_PRACTICE: str = "practice"  # Best practices
 
 
 @dataclass
 class ShareLevel:
     """Sharing levels for patterns."""
-    PRIVATE: str = "private"          # Local only (free tier)
-    TEAM: str = "team"                # Team members only (team tier)
-    COMMUNITY: str = "community"      # Public pattern database (pro/team)
+
+    PRIVATE: str = "private"  # Local only (free tier)
+    TEAM: str = "team"  # Team members only (team tier)
+    COMMUNITY: str = "community"  # Public pattern database (pro/team)
 
 
 @dataclass
 class Pattern:
     """Pattern structure for sharing."""
+
     id: str
     type: str  # PatternType value
     content: str
     solution: str
     share_level: str = ShareLevel.PRIVATE
-    platform: Optional[str] = None    # windows, linux, darwin
-    language: Optional[str] = None    # typescript, python, rust, etc.
-    framework: Optional[str] = None   # react, nextjs, django, etc.
+    platform: Optional[str] = None  # windows, linux, darwin
+    language: Optional[str] = None  # typescript, python, rust, etc.
+    framework: Optional[str] = None  # react, nextjs, django, etc.
     tags: List[str] = field(default_factory=list)
     quality_score: Optional[float] = None
     votes: int = 0
@@ -74,6 +75,7 @@ class Pattern:
 @dataclass
 class PatternSearchResult:
     """Result from pattern search."""
+
     patterns: List[Dict[str, Any]]
     total: int
     page: int
@@ -83,6 +85,7 @@ class PatternSearchResult:
 @dataclass
 class PatternSubmitResult:
     """Result from pattern submission."""
+
     status: str
     pattern_id: str
     quality_score: Optional[float] = None
@@ -92,6 +95,7 @@ class PatternSubmitResult:
 # =============================================================================
 # PATTERN CLIENT
 # =============================================================================
+
 
 class PatternClient:
     """
@@ -109,7 +113,7 @@ class PatternClient:
         self,
         api_key: Optional[str] = None,
         api_url: str = POPKIT_API_URL,
-        default_share_level: str = ShareLevel.PRIVATE
+        default_share_level: str = ShareLevel.PRIVATE,
     ):
         """
         Initialize pattern client.
@@ -125,11 +129,7 @@ class PatternClient:
         self._cache: Dict[str, Any] = {}
 
     def _make_request(
-        self,
-        method: str,
-        endpoint: str,
-        data: Optional[Dict[str, Any]] = None,
-        timeout: int = 30
+        self, method: str, endpoint: str, data: Optional[Dict[str, Any]] = None, timeout: int = 30
     ) -> Dict[str, Any]:
         """Make HTTP request to API.
 
@@ -157,12 +157,7 @@ class PatternClient:
 
         body = json.dumps(data).encode() if data else None
 
-        request = urllib.request.Request(
-            url,
-            data=body,
-            headers=headers,
-            method=method
-        )
+        request = urllib.request.Request(url, data=body, headers=headers, method=method)
 
         try:
             with urllib.request.urlopen(request, timeout=timeout) as response:
@@ -180,7 +175,7 @@ class PatternClient:
         solution: str,
         project_root: Optional[str] = None,
         share_level: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> PatternSubmitResult:
         """
         Submit a pattern for sharing.
@@ -204,12 +199,12 @@ class PatternClient:
 
         # Create pattern
         pattern = {
-            'id': str(uuid.uuid4()),
-            'type': pattern_type,
-            'content': content,
-            'solution': solution,
-            'share_level': share_level or self.default_share_level,
-            'created_at': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
+            "id": str(uuid.uuid4()),
+            "type": pattern_type,
+            "content": content,
+            "solution": solution,
+            "share_level": share_level or self.default_share_level,
+            "created_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         }
 
         # Add metadata
@@ -217,26 +212,22 @@ class PatternClient:
             pattern.update(metadata)
 
         # Anonymize if sharing publicly
-        if pattern['share_level'] in [ShareLevel.TEAM, ShareLevel.COMMUNITY]:
+        if pattern["share_level"] in [ShareLevel.TEAM, ShareLevel.COMMUNITY]:
             pattern = anonymize_pattern(pattern, project_root)
 
             # Validate anonymization
             issues = validate_anonymization(pattern)
-            if issues['errors']:
+            if issues["errors"]:
                 raise ValueError(f"Anonymization failed: {', '.join(issues['errors'])}")
 
         # Submit to API
-        response = self._make_request(
-            "POST",
-            f"{PATTERNS_ENDPOINT}/submit",
-            data=pattern
-        )
+        response = self._make_request("POST", f"{PATTERNS_ENDPOINT}/submit", data=pattern)
 
         return PatternSubmitResult(
-            status=response.get('status', 'unknown'),
-            pattern_id=response.get('pattern_id', pattern['id']),
-            quality_score=response.get('quality_score'),
-            message=response.get('message')
+            status=response.get("status", "unknown"),
+            pattern_id=response.get("pattern_id", pattern["id"]),
+            quality_score=response.get("quality_score"),
+            message=response.get("message"),
         )
 
     def search_patterns(
@@ -248,7 +239,7 @@ class PatternClient:
         framework: Optional[str] = None,
         min_score: float = 0.0,
         page: int = 1,
-        per_page: int = 20
+        per_page: int = 20,
     ) -> PatternSearchResult:
         """
         Search community patterns.
@@ -267,34 +258,31 @@ class PatternClient:
             PatternSearchResult with matching patterns
         """
         params = {
-            'q': query,
-            'page': page,
-            'per_page': per_page,
-            'min_score': min_score,
+            "q": query,
+            "page": page,
+            "per_page": per_page,
+            "min_score": min_score,
         }
 
         if pattern_type:
-            params['type'] = pattern_type
+            params["type"] = pattern_type
         if platform:
-            params['platform'] = platform
+            params["platform"] = platform
         if language:
-            params['language'] = language
+            params["language"] = language
         if framework:
-            params['framework'] = framework
+            params["framework"] = framework
 
         # Build query string
-        query_string = '&'.join(f"{k}={v}" for k, v in params.items())
+        query_string = "&".join(f"{k}={v}" for k, v in params.items())
 
-        response = self._make_request(
-            "GET",
-            f"{PATTERNS_ENDPOINT}/search?{query_string}"
-        )
+        response = self._make_request("GET", f"{PATTERNS_ENDPOINT}/search?{query_string}")
 
         return PatternSearchResult(
-            patterns=response.get('patterns', []),
-            total=response.get('total', 0),
-            page=response.get('page', page),
-            per_page=response.get('per_page', per_page)
+            patterns=response.get("patterns", []),
+            total=response.get("total", 0),
+            page=response.get("page", page),
+            per_page=response.get("per_page", per_page),
         )
 
     def get_pattern(self, pattern_id: str) -> Optional[Dict[str, Any]]:
@@ -308,11 +296,8 @@ class PatternClient:
             Pattern dict or None if not found
         """
         try:
-            response = self._make_request(
-                "GET",
-                f"{PATTERNS_ENDPOINT}/{pattern_id}"
-            )
-            return response.get('pattern')
+            response = self._make_request("GET", f"{PATTERNS_ENDPOINT}/{pattern_id}")
+            return response.get("pattern")
         except Exception:
             return None
 
@@ -331,17 +316,14 @@ class PatternClient:
             self._make_request(
                 "POST",
                 f"{PATTERNS_ENDPOINT}/{pattern_id}/vote",
-                data={'vote': max(-1, min(1, vote))}
+                data={"vote": max(-1, min(1, vote))},
             )
             return True
         except Exception:
             return False
 
     def get_similar_patterns(
-        self,
-        content: str,
-        pattern_type: Optional[str] = None,
-        limit: int = 5
+        self, content: str, pattern_type: Optional[str] = None, limit: int = 5
     ) -> List[Dict[str, Any]]:
         """
         Find patterns similar to the given content.
@@ -357,28 +339,21 @@ class PatternClient:
             List of similar patterns
         """
         params = {
-            'content': content,
-            'limit': limit,
+            "content": content,
+            "limit": limit,
         }
 
         if pattern_type:
-            params['type'] = pattern_type
+            params["type"] = pattern_type
 
         try:
-            response = self._make_request(
-                "POST",
-                f"{PATTERNS_ENDPOINT}/similar",
-                data=params
-            )
-            return response.get('patterns', [])
+            response = self._make_request("POST", f"{PATTERNS_ENDPOINT}/similar", data=params)
+            return response.get("patterns", [])
         except Exception:
             return []
 
     def report_pattern_usage(
-        self,
-        pattern_id: str,
-        success: bool,
-        context: Optional[str] = None
+        self, pattern_id: str, success: bool, context: Optional[str] = None
     ) -> bool:
         """
         Report that a pattern was used.
@@ -397,20 +372,14 @@ class PatternClient:
             self._make_request(
                 "POST",
                 f"{PATTERNS_ENDPOINT}/{pattern_id}/usage",
-                data={
-                    'success': success,
-                    'context': context
-                }
+                data={"success": success, "context": context},
             )
             return True
         except Exception:
             return False
 
     def get_trending_patterns(
-        self,
-        pattern_type: Optional[str] = None,
-        platform: Optional[str] = None,
-        limit: int = 10
+        self, pattern_type: Optional[str] = None, platform: Optional[str] = None, limit: int = 10
     ) -> List[Dict[str, Any]]:
         """
         Get trending/popular patterns.
@@ -423,20 +392,17 @@ class PatternClient:
         Returns:
             List of trending patterns
         """
-        params = {'limit': limit}
+        params = {"limit": limit}
         if pattern_type:
-            params['type'] = pattern_type
+            params["type"] = pattern_type
         if platform:
-            params['platform'] = platform
+            params["platform"] = platform
 
-        query_string = '&'.join(f"{k}={v}" for k, v in params.items())
+        query_string = "&".join(f"{k}={v}" for k, v in params.items())
 
         try:
-            response = self._make_request(
-                "GET",
-                f"{PATTERNS_ENDPOINT}/trending?{query_string}"
-            )
-            return response.get('patterns', [])
+            response = self._make_request("GET", f"{PATTERNS_ENDPOINT}/trending?{query_string}")
+            return response.get("patterns", [])
         except Exception:
             return []
 
@@ -444,6 +410,7 @@ class PatternClient:
 # =============================================================================
 # CONVENIENCE FUNCTIONS
 # =============================================================================
+
 
 def get_pattern_client() -> PatternClient:
     """Get a configured pattern client instance.
@@ -458,7 +425,7 @@ def share_command_correction(
     original: str,
     corrected: str,
     platform: Optional[str] = None,
-    project_root: Optional[str] = None
+    project_root: Optional[str] = None,
 ) -> Optional[str]:
     """
     Share a command correction pattern.
@@ -485,9 +452,7 @@ def share_command_correction(
             solution=f"Use: {corrected}",
             project_root=project_root,
             share_level=ShareLevel.COMMUNITY,
-            metadata={
-                'platform': platform or plat.system().lower()
-            }
+            metadata={"platform": platform or plat.system().lower()},
         )
         return result.pattern_id
     except Exception:
@@ -495,9 +460,7 @@ def share_command_correction(
 
 
 def find_error_solution(
-    error_message: str,
-    language: Optional[str] = None,
-    framework: Optional[str] = None
+    error_message: str, language: Optional[str] = None, framework: Optional[str] = None
 ) -> Optional[Dict[str, Any]]:
     """
     Find a solution for an error message.
@@ -515,9 +478,7 @@ def find_error_solution(
     client = get_pattern_client()
 
     patterns = client.get_similar_patterns(
-        content=error_message,
-        pattern_type=PatternType.ERROR,
-        limit=1
+        content=error_message, pattern_type=PatternType.ERROR, limit=1
     )
 
     return patterns[0] if patterns else None
@@ -549,7 +510,9 @@ if __name__ == "__main__":
         patterns = client.get_trending_patterns()
         print("Trending patterns:")
         for p in patterns:
-            print(f"  - [{p.get('type')}] {p.get('content')[:50]}... (score: {p.get('quality_score', 0):.1f})")
+            print(
+                f"  - [{p.get('type')}] {p.get('content')[:50]}... (score: {p.get('quality_score', 0):.1f})"
+            )
 
     elif command == "submit":
         if len(sys.argv) < 5:

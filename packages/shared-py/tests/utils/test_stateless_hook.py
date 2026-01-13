@@ -14,10 +14,7 @@ from unittest.mock import patch, MagicMock
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from popkit_shared.utils.stateless_hook import (
-    StatelessHook,
-    run_hook
-)
+from popkit_shared.utils.stateless_hook import StatelessHook, run_hook
 
 
 class TestStatelessHookAbstractBehavior:
@@ -33,8 +30,10 @@ class TestStatelessHookAbstractBehavior:
         """Test that subclass must implement process() method"""
         # Incomplete subclass (missing process)
         with pytest.raises(TypeError):
+
             class IncompleteHook(StatelessHook):
                 pass
+
             hook = IncompleteHook()
 
 
@@ -43,6 +42,7 @@ class TestConcreteHookImplementation:
 
     def test_can_instantiate_complete_subclass(self):
         """Test that complete subclass can be instantiated"""
+
         class CompleteHook(StatelessHook):
             def process(self, ctx):
                 return ctx
@@ -61,11 +61,11 @@ class TestConcreteHookImplementation:
                 return ctx
 
         # Mock the create_context to return a simple object
-        with patch('popkit_shared.utils.stateless_hook.create_context') as mock_create:
+        with patch("popkit_shared.utils.stateless_hook.create_context") as mock_create:
             mock_ctx = MagicMock()
             mock_create.return_value = mock_ctx
 
-            with patch('popkit_shared.utils.stateless_hook.serialize_context', return_value='{}'):
+            with patch("popkit_shared.utils.stateless_hook.serialize_context", return_value="{}"):
                 hook = TestHook()
                 input_json = json.dumps({"tool_name": "Test"})
                 hook.run(input_json)
@@ -83,8 +83,8 @@ class TestConcreteHookImplementation:
                 return ctx
 
         mock_ctx = MagicMock()
-        with patch('popkit_shared.utils.stateless_hook.create_context', return_value=mock_ctx):
-            with patch('popkit_shared.utils.stateless_hook.serialize_context', return_value='{}'):
+        with patch("popkit_shared.utils.stateless_hook.create_context", return_value=mock_ctx):
+            with patch("popkit_shared.utils.stateless_hook.serialize_context", return_value="{}"):
                 hook = TestHook()
                 input_json = json.dumps({"tool_name": "Test"})
                 hook.run(input_json)
@@ -97,11 +97,12 @@ class TestContextHelpers:
 
     def test_create_context_helper(self):
         """Test create_context helper delegates correctly"""
+
         class TestHook(StatelessHook):
             def process(self, ctx):
                 return ctx
 
-        with patch('popkit_shared.utils.stateless_hook.create_context') as mock_create:
+        with patch("popkit_shared.utils.stateless_hook.create_context") as mock_create:
             mock_ctx = MagicMock()
             mock_create.return_value = mock_ctx
 
@@ -113,11 +114,12 @@ class TestContextHelpers:
 
     def test_update_context_helper(self):
         """Test update_context helper delegates correctly"""
+
         class TestHook(StatelessHook):
             def process(self, ctx):
                 return ctx
 
-        with patch('popkit_shared.utils.stateless_hook.update_context') as mock_update:
+        with patch("popkit_shared.utils.stateless_hook.update_context") as mock_update:
             mock_ctx = MagicMock()
             mock_updated_ctx = MagicMock()
             mock_update.return_value = mock_updated_ctx
@@ -130,14 +132,17 @@ class TestContextHelpers:
 
     def test_context_immutability_pattern(self):
         """Test that update_context returns new context (immutability)"""
+
         class TestHook(StatelessHook):
             def process(self, ctx):
                 updated = self.update_context(ctx, new_field="value")
                 return updated
 
-        with patch('popkit_shared.utils.stateless_hook.create_context') as mock_create:
-            with patch('popkit_shared.utils.stateless_hook.update_context') as mock_update:
-                with patch('popkit_shared.utils.stateless_hook.serialize_context', return_value='{}'):
+        with patch("popkit_shared.utils.stateless_hook.create_context") as mock_create:
+            with patch("popkit_shared.utils.stateless_hook.update_context") as mock_update:
+                with patch(
+                    "popkit_shared.utils.stateless_hook.serialize_context", return_value="{}"
+                ):
                     original_ctx = MagicMock()
                     updated_ctx = MagicMock()
 
@@ -159,11 +164,12 @@ class TestMessageBuilderHelpers:
 
     def test_build_user_message_helper(self):
         """Test build_user_message helper"""
+
         class TestHook(StatelessHook):
             def process(self, ctx):
                 return ctx
 
-        with patch('popkit_shared.utils.stateless_hook.build_user_message') as mock_build:
+        with patch("popkit_shared.utils.stateless_hook.build_user_message") as mock_build:
             mock_msg = {"role": "user", "content": "test"}
             mock_build.return_value = mock_msg
 
@@ -175,11 +181,12 @@ class TestMessageBuilderHelpers:
 
     def test_build_assistant_message_helper(self):
         """Test build_assistant_message helper"""
+
         class TestHook(StatelessHook):
             def process(self, ctx):
                 return ctx
 
-        with patch('popkit_shared.utils.stateless_hook.build_assistant_message') as mock_build:
+        with patch("popkit_shared.utils.stateless_hook.build_assistant_message") as mock_build:
             mock_msg = {"role": "assistant", "content": "response"}
             mock_build.return_value = mock_msg
 
@@ -191,11 +198,12 @@ class TestMessageBuilderHelpers:
 
     def test_build_tool_use_helper(self):
         """Test build_tool_use helper"""
+
         class TestHook(StatelessHook):
             def process(self, ctx):
                 return ctx
 
-        with patch('popkit_shared.utils.stateless_hook.build_tool_use_message') as mock_build:
+        with patch("popkit_shared.utils.stateless_hook.build_tool_use_message") as mock_build:
             mock_msg = {"role": "assistant", "content": [{"type": "tool_use"}]}
             mock_build.return_value = mock_msg
 
@@ -207,11 +215,12 @@ class TestMessageBuilderHelpers:
 
     def test_build_tool_result_helper(self):
         """Test build_tool_result helper"""
+
         class TestHook(StatelessHook):
             def process(self, ctx):
                 return ctx
 
-        with patch('popkit_shared.utils.stateless_hook.build_tool_result_message') as mock_build:
+        with patch("popkit_shared.utils.stateless_hook.build_tool_result_message") as mock_build:
             mock_msg = {"role": "user", "content": [{"type": "tool_result"}]}
             mock_build.return_value = mock_msg
 
@@ -223,11 +232,12 @@ class TestMessageBuilderHelpers:
 
     def test_compose_messages_helper(self):
         """Test compose_messages helper"""
+
         class TestHook(StatelessHook):
             def process(self, ctx):
                 return ctx
 
-        with patch('popkit_shared.utils.stateless_hook.compose_conversation') as mock_compose:
+        with patch("popkit_shared.utils.stateless_hook.compose_conversation") as mock_compose:
             messages = [{"role": "user", "content": "test"}]
             mock_result = [{"role": "user", "content": "test"}]
             mock_compose.return_value = mock_result
@@ -240,11 +250,12 @@ class TestMessageBuilderHelpers:
 
     def test_rebuild_messages_helper(self):
         """Test rebuild_messages helper"""
+
         class TestHook(StatelessHook):
             def process(self, ctx):
                 return ctx
 
-        with patch('popkit_shared.utils.stateless_hook.rebuild_from_history') as mock_rebuild:
+        with patch("popkit_shared.utils.stateless_hook.rebuild_from_history") as mock_rebuild:
             history = {"user_prompt": "test", "tool_uses": [], "tool_results": []}
             mock_result = [{"role": "user", "content": "test"}]
             mock_rebuild.return_value = mock_result
@@ -261,19 +272,25 @@ class TestJSONProtocol:
 
     def test_run_with_valid_json(self):
         """Test run() with valid JSON input"""
+
         class TestHook(StatelessHook):
             def process(self, ctx):
                 return ctx
 
         mock_ctx = MagicMock()
-        with patch('popkit_shared.utils.stateless_hook.create_context', return_value=mock_ctx):
-            with patch('popkit_shared.utils.stateless_hook.serialize_context', return_value='{"session_id":"test"}'):
+        with patch("popkit_shared.utils.stateless_hook.create_context", return_value=mock_ctx):
+            with patch(
+                "popkit_shared.utils.stateless_hook.serialize_context",
+                return_value='{"session_id":"test"}',
+            ):
                 hook = TestHook()
-                input_json = json.dumps({
-                    "session_id": "sess_123",
-                    "tool_name": "Read",
-                    "tool_input": {"file_path": "test.py"}
-                })
+                input_json = json.dumps(
+                    {
+                        "session_id": "sess_123",
+                        "tool_name": "Read",
+                        "tool_input": {"file_path": "test.py"},
+                    }
+                )
                 output = hook.run(input_json)
 
                 # Should return valid JSON
@@ -284,12 +301,13 @@ class TestJSONProtocol:
 
     def test_run_creates_context_from_input(self):
         """Test that run() creates context with correct input data"""
+
         class TestHook(StatelessHook):
             def process(self, ctx):
                 return ctx
 
-        with patch('popkit_shared.utils.stateless_hook.create_context') as mock_create:
-            with patch('popkit_shared.utils.stateless_hook.serialize_context', return_value='{}'):
+        with patch("popkit_shared.utils.stateless_hook.create_context") as mock_create:
+            with patch("popkit_shared.utils.stateless_hook.serialize_context", return_value="{}"):
                 mock_ctx = MagicMock()
                 mock_create.return_value = mock_ctx
 
@@ -298,7 +316,7 @@ class TestJSONProtocol:
                     "session_id": "sess_123",
                     "tool_name": "Read",
                     "tool_input": {"file_path": "test.py"},
-                    "message_history": []
+                    "message_history": [],
                 }
                 input_json = json.dumps(input_data)
                 hook.run(input_json)
@@ -308,17 +326,18 @@ class TestJSONProtocol:
                     session_id="sess_123",
                     tool_name="Read",
                     tool_input={"file_path": "test.py"},
-                    message_history=[]
+                    message_history=[],
                 )
 
     def test_run_handles_missing_optional_fields(self):
         """Test run() handles missing optional fields with defaults"""
+
         class TestHook(StatelessHook):
             def process(self, ctx):
                 return ctx
 
-        with patch('popkit_shared.utils.stateless_hook.create_context') as mock_create:
-            with patch('popkit_shared.utils.stateless_hook.serialize_context', return_value='{}'):
+        with patch("popkit_shared.utils.stateless_hook.create_context") as mock_create:
+            with patch("popkit_shared.utils.stateless_hook.serialize_context", return_value="{}"):
                 mock_ctx = MagicMock()
                 mock_create.return_value = mock_ctx
 
@@ -329,21 +348,19 @@ class TestJSONProtocol:
 
                 # Should use defaults
                 mock_create.assert_called_once_with(
-                    session_id='unknown',
-                    tool_name='Read',
-                    tool_input={},
-                    message_history=[]
+                    session_id="unknown", tool_name="Read", tool_input={}, message_history=[]
                 )
 
     def test_run_serializes_result_context(self):
         """Test that run() serializes result context to JSON"""
+
         class TestHook(StatelessHook):
             def process(self, ctx):
                 return ctx
 
         mock_ctx = MagicMock()
-        with patch('popkit_shared.utils.stateless_hook.create_context', return_value=mock_ctx):
-            with patch('popkit_shared.utils.stateless_hook.serialize_context') as mock_serialize:
+        with patch("popkit_shared.utils.stateless_hook.create_context", return_value=mock_ctx):
+            with patch("popkit_shared.utils.stateless_hook.serialize_context") as mock_serialize:
                 mock_serialize.return_value = '{"session_id":"sess_123","result":"done"}'
 
                 hook = TestHook()
@@ -364,6 +381,7 @@ class TestErrorHandling:
 
     def test_run_handles_invalid_json(self):
         """Test run() handles invalid JSON input"""
+
         class TestHook(StatelessHook):
             def process(self, ctx):
                 return ctx
@@ -380,11 +398,12 @@ class TestErrorHandling:
 
     def test_run_handles_process_exception(self):
         """Test run() handles exceptions during process()"""
+
         class FailingHook(StatelessHook):
             def process(self, ctx):
                 raise ValueError("Process failed")
 
-        with patch('popkit_shared.utils.stateless_hook.create_context', return_value=MagicMock()):
+        with patch("popkit_shared.utils.stateless_hook.create_context", return_value=MagicMock()):
             hook = FailingHook()
             input_json = json.dumps({"tool_name": "Test"})
             output = hook.run(input_json)
@@ -396,11 +415,15 @@ class TestErrorHandling:
 
     def test_run_handles_context_creation_error(self):
         """Test run() handles errors during context creation"""
+
         class TestHook(StatelessHook):
             def process(self, ctx):
                 return ctx
 
-        with patch('popkit_shared.utils.stateless_hook.create_context', side_effect=RuntimeError("Context creation failed")):
+        with patch(
+            "popkit_shared.utils.stateless_hook.create_context",
+            side_effect=RuntimeError("Context creation failed"),
+        ):
             hook = TestHook()
             input_json = json.dumps({"tool_name": "Test"})
             output = hook.run(input_json)
@@ -412,12 +435,16 @@ class TestErrorHandling:
 
     def test_run_handles_serialization_error(self):
         """Test run() handles errors during context serialization"""
+
         class TestHook(StatelessHook):
             def process(self, ctx):
                 return ctx
 
-        with patch('popkit_shared.utils.stateless_hook.create_context', return_value=MagicMock()):
-            with patch('popkit_shared.utils.stateless_hook.serialize_context', side_effect=TypeError("Cannot serialize")):
+        with patch("popkit_shared.utils.stateless_hook.create_context", return_value=MagicMock()):
+            with patch(
+                "popkit_shared.utils.stateless_hook.serialize_context",
+                side_effect=TypeError("Cannot serialize"),
+            ):
                 hook = TestHook()
                 input_json = json.dumps({"tool_name": "Test"})
                 output = hook.run(input_json)
@@ -433,12 +460,13 @@ class TestRunHookConvenienceFunction:
 
     def test_run_hook_instantiates_and_runs(self):
         """Test run_hook() instantiates hook class and runs it"""
+
         class TestHook(StatelessHook):
             def process(self, ctx):
                 return ctx
 
-        with patch('popkit_shared.utils.stateless_hook.create_context', return_value=MagicMock()):
-            with patch('popkit_shared.utils.stateless_hook.serialize_context', return_value='{}'):
+        with patch("popkit_shared.utils.stateless_hook.create_context", return_value=MagicMock()):
+            with patch("popkit_shared.utils.stateless_hook.serialize_context", return_value="{}"):
                 input_json = json.dumps({"tool_name": "Test"})
                 output = run_hook(TestHook, input_json)
 
@@ -474,12 +502,16 @@ class TestRealWorldScenarios:
 
     def test_simple_passthrough_hook(self):
         """Test simple hook that passes context through"""
+
         class PassthroughHook(StatelessHook):
             def process(self, ctx):
                 return ctx
 
-        with patch('popkit_shared.utils.stateless_hook.create_context', return_value=MagicMock()):
-            with patch('popkit_shared.utils.stateless_hook.serialize_context', return_value='{"status":"ok"}'):
+        with patch("popkit_shared.utils.stateless_hook.create_context", return_value=MagicMock()):
+            with patch(
+                "popkit_shared.utils.stateless_hook.serialize_context",
+                return_value='{"status":"ok"}',
+            ):
                 hook = PassthroughHook()
                 input_json = json.dumps({"tool_name": "Read"})
                 output = hook.run(input_json)
@@ -490,6 +522,7 @@ class TestRealWorldScenarios:
 
     def test_hook_with_context_modification(self):
         """Test hook that modifies context"""
+
         class ModifyingHook(StatelessHook):
             def process(self, ctx):
                 return self.update_context(ctx, modified=True, result="processed")
@@ -497,9 +530,14 @@ class TestRealWorldScenarios:
         mock_ctx = MagicMock()
         modified_ctx = MagicMock()
 
-        with patch('popkit_shared.utils.stateless_hook.create_context', return_value=mock_ctx):
-            with patch('popkit_shared.utils.stateless_hook.update_context', return_value=modified_ctx):
-                with patch('popkit_shared.utils.stateless_hook.serialize_context', return_value='{"modified":true}'):
+        with patch("popkit_shared.utils.stateless_hook.create_context", return_value=mock_ctx):
+            with patch(
+                "popkit_shared.utils.stateless_hook.update_context", return_value=modified_ctx
+            ):
+                with patch(
+                    "popkit_shared.utils.stateless_hook.serialize_context",
+                    return_value='{"modified":true}',
+                ):
                     hook = ModifyingHook()
                     input_json = json.dumps({"tool_name": "Test"})
                     output = hook.run(input_json)
@@ -510,6 +548,7 @@ class TestRealWorldScenarios:
 
     def test_hook_with_message_building(self):
         """Test hook that builds messages"""
+
         class MessageBuildingHook(StatelessHook):
             def process(self, ctx):
                 # Build some messages
@@ -523,12 +562,26 @@ class TestRealWorldScenarios:
         mock_assistant_msg = {"role": "assistant", "content": "Hi there"}
         mock_composed = [mock_user_msg, mock_assistant_msg]
 
-        with patch('popkit_shared.utils.stateless_hook.create_context', return_value=mock_ctx):
-            with patch('popkit_shared.utils.stateless_hook.build_user_message', return_value=mock_user_msg):
-                with patch('popkit_shared.utils.stateless_hook.build_assistant_message', return_value=mock_assistant_msg):
-                    with patch('popkit_shared.utils.stateless_hook.compose_conversation', return_value=mock_composed):
-                        with patch('popkit_shared.utils.stateless_hook.update_context', return_value=mock_ctx):
-                            with patch('popkit_shared.utils.stateless_hook.serialize_context', return_value='{"status":"ok"}'):
+        with patch("popkit_shared.utils.stateless_hook.create_context", return_value=mock_ctx):
+            with patch(
+                "popkit_shared.utils.stateless_hook.build_user_message", return_value=mock_user_msg
+            ):
+                with patch(
+                    "popkit_shared.utils.stateless_hook.build_assistant_message",
+                    return_value=mock_assistant_msg,
+                ):
+                    with patch(
+                        "popkit_shared.utils.stateless_hook.compose_conversation",
+                        return_value=mock_composed,
+                    ):
+                        with patch(
+                            "popkit_shared.utils.stateless_hook.update_context",
+                            return_value=mock_ctx,
+                        ):
+                            with patch(
+                                "popkit_shared.utils.stateless_hook.serialize_context",
+                                return_value='{"status":"ok"}',
+                            ):
                                 hook = MessageBuildingHook()
                                 input_json = json.dumps({"tool_name": "Test"})
                                 output = hook.run(input_json)
@@ -542,12 +595,13 @@ class TestEdgeCases:
 
     def test_empty_input_json(self):
         """Test handling of empty JSON object"""
+
         class TestHook(StatelessHook):
             def process(self, ctx):
                 return ctx
 
-        with patch('popkit_shared.utils.stateless_hook.create_context', return_value=MagicMock()):
-            with patch('popkit_shared.utils.stateless_hook.serialize_context', return_value='{}'):
+        with patch("popkit_shared.utils.stateless_hook.create_context", return_value=MagicMock()):
+            with patch("popkit_shared.utils.stateless_hook.serialize_context", return_value="{}"):
                 hook = TestHook()
                 input_json = "{}"
                 output = hook.run(input_json)
@@ -557,12 +611,16 @@ class TestEdgeCases:
 
     def test_process_returns_none(self):
         """Test handling when process() returns None"""
+
         class NoneReturningHook(StatelessHook):
             def process(self, ctx):
                 return None
 
-        with patch('popkit_shared.utils.stateless_hook.create_context', return_value=MagicMock()):
-            with patch('popkit_shared.utils.stateless_hook.serialize_context', side_effect=TypeError("Cannot serialize None")):
+        with patch("popkit_shared.utils.stateless_hook.create_context", return_value=MagicMock()):
+            with patch(
+                "popkit_shared.utils.stateless_hook.serialize_context",
+                side_effect=TypeError("Cannot serialize None"),
+            ):
                 hook = NoneReturningHook()
                 input_json = json.dumps({"tool_name": "Test"})
                 output = hook.run(input_json)

@@ -36,6 +36,7 @@ from typing import Any, Dict, List, Optional
 # Data Classes
 # =============================================================================
 
+
 @dataclass
 class SkillContext:
     """Context passed between skills in a workflow chain.
@@ -43,11 +44,12 @@ class SkillContext:
     Represents the "inbox" for a skill - what previous skills produced.
     Immutable once created to prevent accidental mutation.
     """
-    workflow_id: str                    # Unique workflow run ID
-    previous_skill: Optional[str]       # Name of upstream skill
-    previous_output: Dict[str, Any]     # Structured output from upstream
-    shared_decisions: List[Dict]        # User decisions already made (AskUserQuestion)
-    artifacts: Dict[str, str]           # Files created: {"design_document": "path/to/file.md"}
+
+    workflow_id: str  # Unique workflow run ID
+    previous_skill: Optional[str]  # Name of upstream skill
+    previous_output: Dict[str, Any]  # Structured output from upstream
+    shared_decisions: List[Dict]  # User decisions already made (AskUserQuestion)
+    artifacts: Dict[str, str]  # Files created: {"design_document": "path/to/file.md"}
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
     github_issue: Optional[int] = None  # Linked GitHub issue number
     complexity_score: Optional[int] = None  # Task complexity (1-10)
@@ -60,18 +62,20 @@ class SkillOutput:
 
     Represents the "outbox" - what this skill produced for others.
     """
+
     skill_name: str
-    status: str                         # "completed", "needs_input", "error"
-    output: Dict[str, Any]              # Structured data for downstream
-    artifacts: List[str]                # Files created (paths)
+    status: str  # "completed", "needs_input", "error"
+    output: Dict[str, Any]  # Structured data for downstream
+    artifacts: List[str]  # Files created (paths)
     next_suggested: Optional[str] = None  # Suggested next skill
-    error_message: Optional[str] = None   # If status is "error"
+    error_message: Optional[str] = None  # If status is "error"
     decisions_made: List[Dict] = field(default_factory=list)  # AskUserQuestion results
 
 
 # =============================================================================
 # Storage Paths
 # =============================================================================
+
 
 def _get_popkit_dir() -> Path:
     """Get .popkit directory in current project."""
@@ -114,6 +118,7 @@ def _get_artifacts_file() -> Path:
 # File-Based Storage (Free Mode)
 # =============================================================================
 
+
 def load_skill_context() -> Optional[SkillContext]:
     """Load context from previous skill (file-based).
 
@@ -130,7 +135,7 @@ def load_skill_context() -> Optional[SkillContext]:
         return None
 
     try:
-        with open(workflow_file, 'r') as f:
+        with open(workflow_file, "r") as f:
             data = json.load(f)
 
         return SkillContext(
@@ -142,7 +147,7 @@ def load_skill_context() -> Optional[SkillContext]:
             created_at=data.get("created_at", datetime.now().isoformat()),
             github_issue=data.get("github_issue"),
             complexity_score=data.get("complexity_score"),
-            complexity_analysis=data.get("complexity_analysis")
+            complexity_analysis=data.get("complexity_analysis"),
         )
     except (json.JSONDecodeError, KeyError, TypeError):
         return None
@@ -168,7 +173,7 @@ def save_skill_context(output: SkillOutput) -> None:
     existing = {}
     if workflow_file.exists():
         try:
-            with open(workflow_file, 'r') as f:
+            with open(workflow_file, "r") as f:
                 existing = json.load(f)
         except json.JSONDecodeError:
             existing = {}
@@ -199,13 +204,13 @@ def save_skill_context(output: SkillOutput) -> None:
         "updated_at": datetime.now().isoformat(),
         "github_issue": existing.get("github_issue"),
         "complexity_score": output.output.get("complexity_score"),
-        "complexity_analysis": output.output.get("complexity_analysis")
+        "complexity_analysis": output.output.get("complexity_analysis"),
     }
 
     if output.error_message:
         state["last_error"] = output.error_message
 
-    with open(workflow_file, 'w') as f:
+    with open(workflow_file, "w") as f:
         json.dump(state, f, indent=2)
 
 
@@ -231,13 +236,14 @@ def get_workflow_summary() -> Dict[str, Any]:
         "artifact_count": len(ctx.artifacts),
         "decision_count": len(ctx.shared_decisions),
         "github_issue": ctx.github_issue,
-        "created_at": ctx.created_at
+        "created_at": ctx.created_at,
     }
 
 
 # =============================================================================
 # Decision Caching
 # =============================================================================
+
 
 def cache_decision(decision_id: str, question: str, answer: str) -> None:
     """Cache a user decision to avoid re-asking.
@@ -249,7 +255,7 @@ def cache_decision(decision_id: str, question: str, answer: str) -> None:
     decisions = {}
     if decisions_file.exists():
         try:
-            with open(decisions_file, 'r') as f:
+            with open(decisions_file, "r") as f:
                 decisions = json.load(f)
         except json.JSONDecodeError:
             decisions = {}
@@ -257,10 +263,10 @@ def cache_decision(decision_id: str, question: str, answer: str) -> None:
     decisions[decision_id] = {
         "question": question,
         "answer": answer,
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.now().isoformat(),
     }
 
-    with open(decisions_file, 'w') as f:
+    with open(decisions_file, "w") as f:
         json.dump(decisions, f, indent=2)
 
 
@@ -275,7 +281,7 @@ def get_cached_decision(decision_id: str) -> Optional[str]:
         return None
 
     try:
-        with open(decisions_file, 'r') as f:
+        with open(decisions_file, "r") as f:
             decisions = json.load(f)
         return decisions.get(decision_id, {}).get("answer")
     except (json.JSONDecodeError, KeyError):
@@ -291,6 +297,7 @@ def has_decision(decision_id: str) -> bool:
 # Artifact Registry
 # =============================================================================
 
+
 def register_artifact(name: str, path: str, artifact_type: str = "file") -> None:
     """Register an artifact created during the workflow.
 
@@ -302,7 +309,7 @@ def register_artifact(name: str, path: str, artifact_type: str = "file") -> None
     artifacts = {}
     if artifacts_file.exists():
         try:
-            with open(artifacts_file, 'r') as f:
+            with open(artifacts_file, "r") as f:
                 artifacts = json.load(f)
         except json.JSONDecodeError:
             artifacts = {}
@@ -310,10 +317,10 @@ def register_artifact(name: str, path: str, artifact_type: str = "file") -> None
     artifacts[name] = {
         "path": path,
         "type": artifact_type,
-        "created_at": datetime.now().isoformat()
+        "created_at": datetime.now().isoformat(),
     }
 
-    with open(artifacts_file, 'w') as f:
+    with open(artifacts_file, "w") as f:
         json.dump(artifacts, f, indent=2)
 
 
@@ -325,7 +332,7 @@ def get_artifact(name: str) -> Optional[str]:
         return None
 
     try:
-        with open(artifacts_file, 'r') as f:
+        with open(artifacts_file, "r") as f:
             artifacts = json.load(f)
         return artifacts.get(name, {}).get("path")
     except (json.JSONDecodeError, KeyError):
@@ -336,6 +343,7 @@ def get_artifact(name: str) -> Optional[str]:
 # Link to GitHub Issue
 # =============================================================================
 
+
 def link_workflow_to_issue(issue_number: int) -> None:
     """Link the current workflow to a GitHub issue."""
     workflow_file = _get_current_workflow_file()
@@ -343,7 +351,7 @@ def link_workflow_to_issue(issue_number: int) -> None:
     state = {}
     if workflow_file.exists():
         try:
-            with open(workflow_file, 'r') as f:
+            with open(workflow_file, "r") as f:
                 state = json.load(f)
         except json.JSONDecodeError:
             state = {}
@@ -351,7 +359,7 @@ def link_workflow_to_issue(issue_number: int) -> None:
     state["github_issue"] = issue_number
     state["updated_at"] = datetime.now().isoformat()
 
-    with open(workflow_file, 'w') as f:
+    with open(workflow_file, "w") as f:
         json.dump(state, f, indent=2)
 
 
@@ -372,14 +380,16 @@ if __name__ == "__main__":
     clear_workflow_context()
 
     # Test saving context
-    save_skill_context(SkillOutput(
-        skill_name="pop-brainstorming",
-        status="completed",
-        output={"topic": "authentication", "approach": "JWT"},
-        artifacts=["docs/plans/auth-design.md"],
-        next_suggested="pop-writing-plans",
-        decisions_made=[{"id": "auth_method", "answer": "JWT"}]
-    ))
+    save_skill_context(
+        SkillOutput(
+            skill_name="pop-brainstorming",
+            status="completed",
+            output={"topic": "authentication", "approach": "JWT"},
+            artifacts=["docs/plans/auth-design.md"],
+            next_suggested="pop-writing-plans",
+            decisions_made=[{"id": "auth_method", "answer": "JWT"}],
+        )
+    )
     print("Saved brainstorming output")
 
     # Test loading context

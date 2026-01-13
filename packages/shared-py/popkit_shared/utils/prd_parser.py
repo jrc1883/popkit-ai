@@ -30,9 +30,11 @@ from pathlib import Path
 # DATA CLASSES
 # =============================================================================
 
+
 @dataclass
 class Feature:
     """Parsed feature from PRD."""
+
     title: str
     description: str
     level: int  # H1=1, H2=2, etc.
@@ -55,13 +57,14 @@ class Feature:
             "acceptance_criteria": self.acceptance_criteria,
             "dependencies": self.dependencies,
             "parent_feature": self.parent_feature,
-            "has_complexity_analysis": self.complexity_analysis is not None
+            "has_complexity_analysis": self.complexity_analysis is not None,
         }
 
 
 @dataclass
 class Technology:
     """Identified technology from PRD."""
+
     name: str
     version: Optional[str] = None
     context: str = ""
@@ -75,13 +78,14 @@ class Technology:
             "version": self.version,
             "context": self.context,
             "should_research": self.should_research,
-            "has_research": self.research_notes is not None
+            "has_research": self.research_notes is not None,
         }
 
 
 @dataclass
 class PRDParseResult:
     """Complete PRD parsing result."""
+
     document_path: str
     title: str
     features: List[Feature]
@@ -99,13 +103,14 @@ class PRDParseResult:
             "features": [f.to_dict() for f in self.features],
             "technologies": [t.to_dict() for t in self.technologies],
             "complexity_distribution": self.complexity_distribution,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
 
 # =============================================================================
 # PRD PARSER
 # =============================================================================
+
 
 class PRDParser:
     """
@@ -122,32 +127,32 @@ class PRDParser:
     # Technology patterns to detect
     TECH_PATTERNS = [
         # Framework + version
-        r'\b([A-Z][a-z]+(?:\.[a-z]+)?)\s+v?(\d+(?:\.\d+)?)',
+        r"\b([A-Z][a-z]+(?:\.[a-z]+)?)\s+v?(\d+(?:\.\d+)?)",
         # Known frameworks/libraries
-        r'\b(React|Vue|Angular|Next\.?js|Nuxt\.?js|Svelte|Remix)\b',
-        r'\b(Node\.?js|Express|Fastify|Koa|Hapi)\b',
-        r'\b(TypeScript|JavaScript|Python|Go|Rust|Java|C#)\b',
-        r'\b(PostgreSQL|MySQL|MongoDB|Redis|Elasticsearch)\b',
-        r'\b(Docker|Kubernetes|AWS|Azure|GCP|Vercel|Netlify)\b',
-        r'\b(Prisma|Drizzle|TypeORM|Mongoose|Sequelize)\b',
-        r'\b(JWT|OAuth|Auth0|Supabase|Firebase)\b',
-        r'\b(GraphQL|tRPC|REST|WebSocket|gRPC)\b',
+        r"\b(React|Vue|Angular|Next\.?js|Nuxt\.?js|Svelte|Remix)\b",
+        r"\b(Node\.?js|Express|Fastify|Koa|Hapi)\b",
+        r"\b(TypeScript|JavaScript|Python|Go|Rust|Java|C#)\b",
+        r"\b(PostgreSQL|MySQL|MongoDB|Redis|Elasticsearch)\b",
+        r"\b(Docker|Kubernetes|AWS|Azure|GCP|Vercel|Netlify)\b",
+        r"\b(Prisma|Drizzle|TypeORM|Mongoose|Sequelize)\b",
+        r"\b(JWT|OAuth|Auth0|Supabase|Firebase)\b",
+        r"\b(GraphQL|tRPC|REST|WebSocket|gRPC)\b",
     ]
 
     # Acceptance criteria indicators
     AC_PATTERNS = [
-        r'^[-*]\s+(?:AC|Acceptance|Given|When|Then|Should|Must):',
-        r'^[-*]\s+User (?:can|should|must)',
-        r'^[-*]\s+System (?:should|must|will)',
+        r"^[-*]\s+(?:AC|Acceptance|Given|When|Then|Should|Must):",
+        r"^[-*]\s+User (?:can|should|must)",
+        r"^[-*]\s+System (?:should|must|will)",
     ]
 
     # Dependency indicators
     DEP_PATTERNS = [
-        r'depends on',
-        r'requires',
-        r'after',
-        r'prerequisite',
-        r'blocked by',
+        r"depends on",
+        r"requires",
+        r"after",
+        r"prerequisite",
+        r"blocked by",
     ]
 
     def __init__(self):
@@ -160,16 +165,19 @@ class PRDParser:
             try:
                 # Try relative import first (when used as package)
                 from .complexity_scoring import get_complexity_analyzer
+
                 self._complexity_analyzer = get_complexity_analyzer()
             except ImportError:
                 try:
                     # Fall back to absolute import (when run as script)
                     from popkit_shared.utils.complexity_scoring import get_complexity_analyzer
+
                     self._complexity_analyzer = get_complexity_analyzer()
                 except ImportError:
                     try:
                         # Last resort: direct import from same directory
                         import complexity_scoring
+
                         self._complexity_analyzer = complexity_scoring.get_complexity_analyzer()
                     except ImportError:
                         pass
@@ -194,7 +202,7 @@ class PRDParser:
         if not path.exists():
             raise FileNotFoundError(f"PRD file not found: {file_path}")
 
-        with open(path, 'r', encoding='utf-8') as f:
+        with open(path, "r", encoding="utf-8") as f:
             content = f.read()
 
         return self.parse_content(content, str(path))
@@ -227,10 +235,10 @@ class PRDParser:
 
         # Extract metadata
         metadata = {
-            "line_count": len(content.split('\n')),
+            "line_count": len(content.split("\n")),
             "has_acceptance_criteria": any(f.acceptance_criteria for f in features),
             "has_dependencies": any(f.dependencies for f in features),
-            "avg_complexity": self._calculate_avg_complexity(features)
+            "avg_complexity": self._calculate_avg_complexity(features),
         }
 
         return PRDParseResult(
@@ -240,7 +248,7 @@ class PRDParser:
             technologies=technologies,
             total_features=len(features),
             complexity_distribution=complexity_dist,
-            metadata=metadata
+            metadata=metadata,
         )
 
     # =========================================================================
@@ -249,20 +257,20 @@ class PRDParser:
 
     def _extract_title(self, content: str) -> str:
         """Extract document title (first H1)."""
-        match = re.search(r'^#\s+(.+)$', content, re.MULTILINE)
+        match = re.search(r"^#\s+(.+)$", content, re.MULTILINE)
         return match.group(1).strip() if match else "Untitled PRD"
 
     def _parse_features(self, content: str) -> List[Feature]:
         """Parse features hierarchically from markdown headers."""
         features = []
-        lines = content.split('\n')
+        lines = content.split("\n")
 
         current_feature = None
         parent_stack: List[tuple] = []  # (level, title)
 
         for i, line in enumerate(lines, 1):
             # Check for header (H1-H4)
-            header_match = re.match(r'^(#{1,4})\s+(.+)$', line)
+            header_match = re.match(r"^(#{1,4})\s+(.+)$", line)
 
             if header_match:
                 level = len(header_match.group(1))
@@ -288,7 +296,7 @@ class PRDParser:
                     description="",
                     level=level,
                     line_number=i,
-                    parent_feature=parent_title
+                    parent_feature=parent_title,
                 )
 
                 # Add to parent stack
@@ -300,7 +308,9 @@ class PRDParser:
 
                 if stripped:
                     # Check for acceptance criteria
-                    if any(re.match(pattern, stripped, re.IGNORECASE) for pattern in self.AC_PATTERNS):
+                    if any(
+                        re.match(pattern, stripped, re.IGNORECASE) for pattern in self.AC_PATTERNS
+                    ):
                         current_feature.acceptance_criteria.append(stripped)
 
                     # Check for dependencies
@@ -335,7 +345,7 @@ class PRDParser:
                 # Get context (surrounding text)
                 start = max(0, match.start() - 50)
                 end = min(len(content), match.end() + 50)
-                context = content[start:end].replace('\n', ' ')
+                context = content[start:end].replace("\n", " ")
 
                 # Create or update technology entry
                 tech_key = tech_name.lower()
@@ -344,7 +354,7 @@ class PRDParser:
                         name=tech_name,
                         version=tech_version,
                         context=context,
-                        should_research=self._should_research_tech(tech_name, tech_version)
+                        should_research=self._should_research_tech(tech_name, tech_version),
                     )
 
         return list(technologies.values())
@@ -354,7 +364,7 @@ class PRDParser:
         # Research if version is specified (likely recent)
         if version:
             try:
-                major = int(version.split('.')[0])
+                major = int(version.split(".")[0])
                 # Research if version is recent (subjective threshold)
                 if major >= 15:  # e.g., Next.js 15, React 19
                     return True
@@ -363,9 +373,18 @@ class PRDParser:
 
         # Research newer frameworks
         recent_frameworks = {
-            'remix', 'astro', 'qwik', 'solid', 'fresh',
-            'bun', 'deno', 'elysia', 'hono',
-            'drizzle', 'trpc', 'tanstack'
+            "remix",
+            "astro",
+            "qwik",
+            "solid",
+            "fresh",
+            "bun",
+            "deno",
+            "elysia",
+            "hono",
+            "drizzle",
+            "trpc",
+            "tanstack",
         }
 
         return name.lower() in recent_frameworks
@@ -388,13 +407,12 @@ class PRDParser:
                 metadata = {
                     "acceptance_criteria": len(feature.acceptance_criteria),
                     "dependencies": len(feature.dependencies),
-                    "level": feature.level
+                    "level": feature.level,
                 }
 
                 # Analyze complexity
                 analysis = analyzer.analyze(
-                    f"{feature.title}\n\n{feature.description}",
-                    metadata=metadata
+                    f"{feature.title}\n\n{feature.description}", metadata=metadata
                 )
 
                 # Store results
@@ -434,6 +452,7 @@ class PRDParser:
 # =============================================================================
 # CONVENIENCE FUNCTIONS
 # =============================================================================
+
 
 def parse_prd_file(file_path: str) -> PRDParseResult:
     """
@@ -549,14 +568,16 @@ Technologies:
 
             print(f"Document: {result.title}")
             print(f"Features: {result.total_features}")
-            avg_complexity = result.metadata.get('avg_complexity')
+            avg_complexity = result.metadata.get("avg_complexity")
             if avg_complexity is not None:
                 print(f"Avg Complexity: {avg_complexity:.1f}/10")
             else:
                 print("Avg Complexity: N/A")
 
             print(f"\nHigh Complexity Features:")
-            high_complexity = [f for f in result.features if f.complexity_score and f.complexity_score >= 7]
+            high_complexity = [
+                f for f in result.features if f.complexity_score and f.complexity_score >= 7
+            ]
             for feature in high_complexity:
                 print(f"  - {feature.title} [{feature.complexity_score}/10]")
 

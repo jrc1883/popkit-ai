@@ -11,14 +11,18 @@ import pytest
 from pathlib import Path
 
 # Add popkit-ops skills to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "popkit-ops" / "skills" / "pop-assessment-security" / "scripts"))
-
-from scan_secrets import (
-    should_exclude,
-    is_likely_example,
-    scan_file,
-    SECRET_PATTERNS
+sys.path.insert(
+    0,
+    str(
+        Path(__file__).parent.parent.parent.parent
+        / "popkit-ops"
+        / "skills"
+        / "pop-assessment-security"
+        / "scripts"
+    ),
 )
+
+from scan_secrets import should_exclude, is_likely_example, scan_file, SECRET_PATTERNS
 
 
 class TestSecretPatterns:
@@ -27,6 +31,7 @@ class TestSecretPatterns:
     def test_api_key_pattern(self):
         """Test API key detection"""
         import re
+
         pattern = SECRET_PATTERNS["SD-001"]["pattern"]
 
         # Should match
@@ -41,18 +46,20 @@ class TestSecretPatterns:
     def test_aws_access_key_pattern(self):
         """Test AWS access key detection"""
         import re
+
         pattern = SECRET_PATTERNS["SD-002"]["pattern"]
 
         # Should match
-        assert re.search(pattern, 'AKIAIOSFODNN7EXAMPLE')
-        assert re.search(pattern, 'ASIATESTACCESSKEY123')
+        assert re.search(pattern, "AKIAIOSFODNN7EXAMPLE")
+        assert re.search(pattern, "ASIATESTACCESSKEY123")
 
         # Should not match
-        assert not re.search(pattern, 'NOTAKIAIOSFODNN7EX')
+        assert not re.search(pattern, "NOTAKIAIOSFODNN7EX")
 
     def test_password_pattern(self):
         """Test password detection"""
         import re
+
         pattern = SECRET_PATTERNS["SD-004"]["pattern"]
 
         # Should match
@@ -66,45 +73,53 @@ class TestSecretPatterns:
     def test_private_key_pattern(self):
         """Test private key detection"""
         import re
+
         pattern = SECRET_PATTERNS["SD-005"]["pattern"]
 
         # Should match
-        assert re.search(pattern, '-----BEGIN RSA PRIVATE KEY-----')
-        assert re.search(pattern, '-----BEGIN PRIVATE KEY-----')
+        assert re.search(pattern, "-----BEGIN RSA PRIVATE KEY-----")
+        assert re.search(pattern, "-----BEGIN PRIVATE KEY-----")
 
     def test_jwt_token_pattern(self):
         """Test JWT token detection"""
         import re
+
         pattern = SECRET_PATTERNS["SD-006"]["pattern"]
 
         # Should match
-        assert re.search(pattern, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U')
+        assert re.search(
+            pattern,
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U",
+        )
 
     def test_github_token_pattern(self):
         """Test GitHub token detection"""
         import re
+
         pattern = SECRET_PATTERNS["SD-007"]["pattern"]
 
         # Should match
-        assert re.search(pattern, 'ghp_1234567890abcdefghijklmnopqrstuvwxyz')
+        assert re.search(pattern, "ghp_1234567890abcdefghijklmnopqrstuvwxyz")
         assert re.search(pattern, 'github_token = "secret123"')
 
     def test_database_connection_pattern(self):
         """Test database connection string detection"""
         import re
+
         pattern = SECRET_PATTERNS["SD-008"]["pattern"]
 
         # Should match
-        assert re.search(pattern, 'mongodb://user:password@localhost:27017')
-        assert re.search(pattern, 'postgres://admin:secret@db.example.com')
+        assert re.search(pattern, "mongodb://user:password@localhost:27017")
+        assert re.search(pattern, "postgres://admin:secret@db.example.com")
 
     def test_bearer_token_pattern(self):
         """Test bearer token detection"""
         import re
+
         pattern = SECRET_PATTERNS["SD-009"]["pattern"]
 
         # Should match
-        assert re.search(pattern, 'Authorization: Bearer abcdef1234567890abcdef')
+        assert re.search(pattern, "Authorization: Bearer abcdef1234567890abcdef")
 
 
 class TestShouldExclude:
@@ -261,9 +276,9 @@ class TestScanFile:
         findings = scan_file(test_file, temp_dir)
 
         assert len(findings) >= 1
-        assert findings[0]['id'] == 'SD-001'
-        assert findings[0]['severity'] == 'critical'
-        assert 'config.py' in findings[0]['file']
+        assert findings[0]["id"] == "SD-001"
+        assert findings[0]["severity"] == "critical"
+        assert "config.py" in findings[0]["file"]
 
     def test_scan_file_with_password(self, temp_dir):
         """Test scanning file with hardcoded password"""
@@ -273,26 +288,26 @@ class TestScanFile:
         findings = scan_file(test_file, temp_dir)
 
         assert len(findings) >= 1
-        assert any(f['id'] == 'SD-004' for f in findings)
+        assert any(f["id"] == "SD-004" for f in findings)
 
     def test_scan_file_with_private_key(self, temp_dir):
         """Test scanning file with private key"""
         test_file = temp_dir / "keys.pem"
-        test_file.write_text('-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA...')
+        test_file.write_text("-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA...")
 
         findings = scan_file(test_file, temp_dir)
 
         assert len(findings) >= 1
-        assert any(f['id'] == 'SD-005' for f in findings)
+        assert any(f["id"] == "SD-005" for f in findings)
 
     def test_scan_file_with_multiple_secrets(self, temp_dir):
         """Test scanning file with multiple secrets"""
         test_file = temp_dir / "config.py"
-        test_file.write_text('''
+        test_file.write_text("""
 api_key = "sk_live_1234567890abcdefghij"
 password = "MySecretP@ssw0rd"
 db_url = "postgres://user:pass@localhost"
-        ''')
+        """)
 
         findings = scan_file(test_file, temp_dir)
 
@@ -301,10 +316,10 @@ db_url = "postgres://user:pass@localhost"
     def test_scan_file_clean(self, temp_dir):
         """Test scanning clean file with no secrets"""
         test_file = temp_dir / "utils.py"
-        test_file.write_text('''
+        test_file.write_text("""
 def calculate_total(items):
     return sum(items)
-        ''')
+        """)
 
         findings = scan_file(test_file, temp_dir)
 
@@ -332,34 +347,34 @@ def calculate_total(items):
     def test_scan_file_line_numbers(self, temp_dir):
         """Test that line numbers are captured correctly"""
         test_file = temp_dir / "config.py"
-        test_file.write_text('''
+        test_file.write_text("""
 # Config file
 api_key = "sk_live_1234567890abcdefghij"
 password = "MySecretP@ssw0rd"
-        ''')
+        """)
 
         findings = scan_file(test_file, temp_dir)
 
         # Check line numbers are correct
-        api_key_finding = next(f for f in findings if f['id'] == 'SD-001')
-        assert api_key_finding['line'] == 3
+        api_key_finding = next(f for f in findings if f["id"] == "SD-001")
+        assert api_key_finding["line"] == 3
 
     def test_scan_file_truncates_long_lines(self, temp_dir):
         """Test that long lines are truncated in output"""
         test_file = temp_dir / "config.py"
-        long_line = 'api_key = "sk_live_' + 'a' * 200 + '"'
+        long_line = 'api_key = "sk_live_' + "a" * 200 + '"'
         test_file.write_text(long_line)
 
         findings = scan_file(test_file, temp_dir)
 
         assert len(findings) >= 1
         # Content should be truncated to 80 chars + "..."
-        assert len(findings[0]['content']) <= 83
+        assert len(findings[0]["content"]) <= 83
 
     def test_scan_file_binary_file(self, temp_dir):
         """Test handling of binary file"""
         test_file = temp_dir / "binary.dat"
-        test_file.write_bytes(b'\x00\x01\x02\x03\x04')
+        test_file.write_bytes(b"\x00\x01\x02\x03\x04")
 
         findings = scan_file(test_file, temp_dir)
 
@@ -369,8 +384,9 @@ password = "MySecretP@ssw0rd"
     def test_scan_file_unicode_content(self, temp_dir):
         """Test handling of unicode content"""
         test_file = temp_dir / "unicode.py"
-        test_file.write_text('# 日本語コメント\napi_key = "sk_live_1234567890abcdefghij"',
-                             encoding='utf-8')
+        test_file.write_text(
+            '# 日本語コメント\napi_key = "sk_live_1234567890abcdefghij"', encoding="utf-8"
+        )
 
         findings = scan_file(test_file, temp_dir)
 
@@ -382,7 +398,7 @@ class TestSecretPatternsCoverage:
 
     def test_all_patterns_have_required_fields(self):
         """Test that all patterns have required fields"""
-        required_fields = ['name', 'pattern', 'severity', 'cwe', 'deduction', 'description']
+        required_fields = ["name", "pattern", "severity", "cwe", "deduction", "description"]
 
         for check_id, check in SECRET_PATTERNS.items():
             for field in required_fields:
@@ -390,31 +406,31 @@ class TestSecretPatternsCoverage:
 
     def test_all_patterns_have_valid_severity(self):
         """Test that all patterns have valid severity levels"""
-        valid_severities = ['critical', 'high', 'medium', 'low', 'info']
+        valid_severities = ["critical", "high", "medium", "low", "info"]
 
         for check_id, check in SECRET_PATTERNS.items():
-            assert check['severity'] in valid_severities, f"{check_id} has invalid severity"
+            assert check["severity"] in valid_severities, f"{check_id} has invalid severity"
 
     def test_all_patterns_have_cwe(self):
         """Test that all patterns map to CWE"""
         for check_id, check in SECRET_PATTERNS.items():
-            assert check['cwe'].startswith('CWE-'), f"{check_id} has invalid CWE format"
+            assert check["cwe"].startswith("CWE-"), f"{check_id} has invalid CWE format"
 
     def test_all_patterns_have_deduction(self):
         """Test that all patterns have point deductions"""
         for check_id, check in SECRET_PATTERNS.items():
-            assert isinstance(check['deduction'], int), f"{check_id} deduction not int"
-            assert 0 <= check['deduction'] <= 100, f"{check_id} deduction out of range"
+            assert isinstance(check["deduction"], int), f"{check_id} deduction not int"
+            assert 0 <= check["deduction"] <= 100, f"{check_id} deduction out of range"
 
     def test_pattern_severity_matches_deduction(self):
         """Test that severity levels match deduction amounts"""
         for check_id, check in SECRET_PATTERNS.items():
-            severity = check['severity']
-            deduction = check['deduction']
+            severity = check["severity"]
+            deduction = check["deduction"]
 
-            if severity == 'critical':
+            if severity == "critical":
                 assert deduction >= 20, f"{check_id} critical should deduct 20+"
-            elif severity == 'high':
+            elif severity == "high":
                 assert deduction >= 15, f"{check_id} high should deduct 15+"
 
 
@@ -468,6 +484,7 @@ def example():
 
         # Make unreadable (platform-dependent)
         import stat
+
         test_file.chmod(0o000)
 
         try:
@@ -482,7 +499,7 @@ def example():
         """Test handling of very long lines"""
         test_file = temp_dir / "long.py"
         # Create a line with 10000 characters
-        long_value = 'a' * 10000
+        long_value = "a" * 10000
         test_file.write_text(f'api_key = "{long_value}"')
 
         findings = scan_file(test_file, temp_dir)
@@ -491,7 +508,7 @@ def example():
         assert isinstance(findings, list)
         if findings:
             # Content should be truncated
-            assert len(findings[0]['content']) <= 83
+            assert len(findings[0]["content"]) <= 83
 
 
 if __name__ == "__main__":

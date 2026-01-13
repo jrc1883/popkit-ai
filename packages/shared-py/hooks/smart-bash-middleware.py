@@ -23,50 +23,50 @@ DANGEROUS_COMMANDS = [
         "pattern": r"rm\s+-rf\s+/",
         "name": "rm -rf /",
         "description": "Recursive force delete from root",
-        "severity": "critical"
+        "severity": "critical",
     },
     {
         "pattern": r"git\s+push\s+--force",
         "name": "git push --force",
         "description": "Force push to remote repository",
-        "severity": "high"
+        "severity": "high",
     },
     {
         "pattern": r"dd\s+if=",
         "name": "dd if=",
         "description": "Low-level disk operations",
-        "severity": "critical"
+        "severity": "critical",
     },
     {
         "pattern": r"mkfs\.",
         "name": "mkfs.",
         "description": "Format filesystem",
-        "severity": "critical"
+        "severity": "critical",
     },
     {
         "pattern": r":\(\)\{\s*:\|:&\s*\};:",
         "name": ":(){ :|:& };:",
         "description": "Fork bomb",
-        "severity": "critical"
+        "severity": "critical",
     },
     {
         "pattern": r">\s*/dev/sd[a-z]",
         "name": "> /dev/sd*",
         "description": "Direct write to disk device",
-        "severity": "critical"
+        "severity": "critical",
     },
     {
         "pattern": r"chmod\s+-R\s+777\s+/",
         "name": "chmod -R 777 /",
         "description": "Recursive permission change from root",
-        "severity": "high"
+        "severity": "high",
     },
     {
         "pattern": r"npm\s+install\s+-g\s+.*\s+--unsafe-perm",
         "name": "npm install -g --unsafe-perm",
         "description": "Unsafe global npm install",
-        "severity": "medium"
-    }
+        "severity": "medium",
+    },
 ]
 
 
@@ -164,7 +164,7 @@ def handle_pre_tool_use(data):
     if danger_info["severity"] == "critical":
         return {
             "decision": "deny",
-            "message": f"CRITICAL: Dangerous command '{danger_info['name']}' detected - {danger_info['description']}. Command blocked for safety."
+            "message": f"CRITICAL: Dangerous command '{danger_info['name']}' detected - {danger_info['description']}. Command blocked for safety.",
         }
 
     # For high/medium severity, try to add safety flags
@@ -177,14 +177,16 @@ def handle_pre_tool_use(data):
             "message": f"Dangerous command '{danger_info['name']}' detected - {danger_info['description']}. Auto-added safety flags. Please review before proceeding.",
             "updatedInput": {
                 "command": modified_command,
-                "description": f"[PROTECTED] {description}" if description else "[PROTECTED] Dangerous command with safety flags"
-            }
+                "description": f"[PROTECTED] {description}"
+                if description
+                else "[PROTECTED] Dangerous command with safety flags",
+            },
         }
     else:
         # Can't modify, just request consent
         return {
             "decision": "ask",
-            "message": f"Dangerous command '{danger_info['name']}' detected - {danger_info['description']}. Manual approval required."
+            "message": f"Dangerous command '{danger_info['name']}' detected - {danger_info['description']}. Manual approval required.",
         }
 
 
@@ -204,7 +206,7 @@ if __name__ == "__main__":
         # On error, allow the operation but log the error
         error_result = {
             "decision": "allow",
-            "message": f"Hook error (allowing operation): {str(e)}"
+            "message": f"Hook error (allowing operation): {str(e)}",
         }
         print(json.dumps(error_result))
         sys.exit(0)

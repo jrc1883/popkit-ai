@@ -20,10 +20,7 @@ from dataclasses import dataclass
 # CONFIGURATION
 # =============================================================================
 
-POPKIT_API_URL = os.environ.get(
-    "POPKIT_API_URL",
-    "https://api.thehouseofdeals.com"
-)
+POPKIT_API_URL = os.environ.get("POPKIT_API_URL", "https://api.thehouseofdeals.com")
 TIMEOUT_SECONDS = 3  # Fast timeout for responsive UX
 
 
@@ -31,9 +28,11 @@ TIMEOUT_SECONDS = 3  # Fast timeout for responsive UX
 # DATA CLASSES
 # =============================================================================
 
+
 @dataclass
 class AgentMatch:
     """Result from semantic agent search."""
+
     agent: str
     score: float
     tier: str
@@ -45,6 +44,7 @@ class AgentMatch:
 @dataclass
 class SearchResult:
     """Complete search result with metadata."""
+
     query: str
     matches: List[AgentMatch]
     fallback_to_keywords: bool
@@ -55,6 +55,7 @@ class SearchResult:
 # CLIENT FUNCTIONS
 # =============================================================================
 
+
 def is_available() -> bool:
     """Check if cloud agent search is configured.
 
@@ -64,10 +65,7 @@ def is_available() -> bool:
 
 
 def search_agents(
-    query: str,
-    top_k: int = 3,
-    min_score: float = 0.3,
-    tier: Optional[str] = None
+    query: str, top_k: int = 3, min_score: float = 0.3, tier: Optional[str] = None
 ) -> SearchResult:
     """
     Search for agents using semantic similarity via PopKit Cloud.
@@ -92,10 +90,7 @@ def search_agents(
 
     if not api_key:
         return SearchResult(
-            query=query,
-            matches=[],
-            fallback_to_keywords=True,
-            error="POPKIT_API_KEY not set"
+            query=query, matches=[], fallback_to_keywords=True, error="POPKIT_API_KEY not set"
         )
 
     url = f"{POPKIT_API_URL}/v1/agents/search"
@@ -116,10 +111,7 @@ def search_agents(
 
     try:
         request = urllib.request.Request(
-            url,
-            data=json.dumps(body).encode("utf-8"),
-            headers=headers,
-            method="POST"
+            url, data=json.dumps(body).encode("utf-8"), headers=headers, method="POST"
         )
 
         with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
@@ -132,7 +124,7 @@ def search_agents(
                     tier=m.get("tier", ""),
                     description=m.get("description", ""),
                     keywords=m.get("keywords", []),
-                    method="semantic"
+                    method="semantic",
                 )
                 for m in data.get("matches", [])
             ]
@@ -140,42 +132,24 @@ def search_agents(
             return SearchResult(
                 query=query,
                 matches=matches,
-                fallback_to_keywords=data.get("fallback_to_keywords", len(matches) == 0)
+                fallback_to_keywords=data.get("fallback_to_keywords", len(matches) == 0),
             )
 
     except urllib.error.HTTPError as e:
         error_msg = f"HTTP {e.code}: {e.reason}"
-        return SearchResult(
-            query=query,
-            matches=[],
-            fallback_to_keywords=True,
-            error=error_msg
-        )
+        return SearchResult(query=query, matches=[], fallback_to_keywords=True, error=error_msg)
 
     except urllib.error.URLError as e:
         error_msg = f"Connection error: {e.reason}"
-        return SearchResult(
-            query=query,
-            matches=[],
-            fallback_to_keywords=True,
-            error=error_msg
-        )
+        return SearchResult(query=query, matches=[], fallback_to_keywords=True, error=error_msg)
 
     except TimeoutError:
         return SearchResult(
-            query=query,
-            matches=[],
-            fallback_to_keywords=True,
-            error="Request timeout"
+            query=query, matches=[], fallback_to_keywords=True, error="Request timeout"
         )
 
     except Exception as e:
-        return SearchResult(
-            query=query,
-            matches=[],
-            fallback_to_keywords=True,
-            error=str(e)
-        )
+        return SearchResult(query=query, matches=[], fallback_to_keywords=True, error=str(e))
 
 
 def list_agents() -> List[dict]:
@@ -198,11 +172,7 @@ def list_agents() -> List[dict]:
     }
 
     try:
-        request = urllib.request.Request(
-            url,
-            headers=headers,
-            method="GET"
-        )
+        request = urllib.request.Request(url, headers=headers, method="GET")
 
         with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
             data = json.loads(response.read().decode("utf-8"))
@@ -235,11 +205,7 @@ def get_agent(name: str) -> Optional[dict]:
     }
 
     try:
-        request = urllib.request.Request(
-            url,
-            headers=headers,
-            method="GET"
-        )
+        request = urllib.request.Request(url, headers=headers, method="GET")
 
         with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
             return json.loads(response.read().decode("utf-8"))

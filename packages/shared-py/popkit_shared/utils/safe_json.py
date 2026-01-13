@@ -32,9 +32,9 @@ def sanitize_js_booleans(text: str) -> str:
 
     # Replace standalone false/true (not in strings) with JSON booleans
     # This regex looks for word boundaries around false/true
-    text = re.sub(r'\bfalse\b', 'false', text)
-    text = re.sub(r'\btrue\b', 'true', text)
-    text = re.sub(r'\bnull\b', 'null', text)
+    text = re.sub(r"\bfalse\b", "false", text)
+    text = re.sub(r"\btrue\b", "true", text)
+    text = re.sub(r"\bnull\b", "null", text)
 
     return text
 
@@ -93,4 +93,4 @@ def write_hook_output(response: Dict[str, Any]) -> None:
 
 
 # Convenience exports
-__all__ = ['read_hook_input', 'write_hook_output', 'sanitize_js_booleans']
+__all__ = ["read_hook_input", "write_hook_output", "sanitize_js_booleans"]

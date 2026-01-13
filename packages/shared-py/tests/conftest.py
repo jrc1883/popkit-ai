@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 # Fixtures - Temporary Directories
 # =============================================================================
 
+
 @pytest.fixture
 def temp_dir():
     """Create a temporary directory for tests"""
@@ -40,6 +41,7 @@ def temp_project_dir(temp_dir):
 # Fixtures - Sample Data
 # =============================================================================
 
+
 @pytest.fixture
 def sample_json_data():
     """Sample JSON data for testing"""
@@ -49,9 +51,7 @@ def sample_json_data():
         "boolean": True,
         "null": None,
         "array": [1, 2, 3],
-        "nested": {
-            "key": "value"
-        }
+        "nested": {"key": "value"},
     }
 
 
@@ -86,6 +86,7 @@ def sample_code_content():
 # Fixtures - Command Arguments
 # =============================================================================
 
+
 @pytest.fixture
 def work_command_samples():
     """Sample /popkit:work command arguments"""
@@ -112,10 +113,12 @@ def issues_command_samples():
 # Fixtures - Privacy Settings
 # =============================================================================
 
+
 @pytest.fixture
 def default_privacy_settings():
     """Default privacy settings"""
     from popkit_shared.utils.privacy import PrivacySettings
+
     return PrivacySettings()
 
 
@@ -123,15 +126,14 @@ def default_privacy_settings():
 def strict_privacy_settings():
     """Strict privacy settings"""
     from popkit_shared.utils.privacy import PrivacySettings
-    return PrivacySettings(
-        anonymization_level="strict",
-        sharing_enabled=False
-    )
+
+    return PrivacySettings(anonymization_level="strict", sharing_enabled=False)
 
 
 # =============================================================================
 # Fixtures - XML Test Data
 # =============================================================================
+
 
 @pytest.fixture
 def sample_problem_xml():
@@ -265,33 +267,35 @@ def xml_with_html_markers():
 # Fixtures - Platform Detection Mocks
 # =============================================================================
 
+
 @pytest.fixture
 def mock_linux_platform(monkeypatch):
     """Mock Linux platform detection"""
-    monkeypatch.setattr(sys, 'platform', 'linux')
-    monkeypatch.setenv('SHELL', '/bin/bash')
+    monkeypatch.setattr(sys, "platform", "linux")
+    monkeypatch.setenv("SHELL", "/bin/bash")
     yield
 
 
 @pytest.fixture
 def mock_windows_platform(monkeypatch):
     """Mock Windows platform detection"""
-    monkeypatch.setattr(sys, 'platform', 'win32')
-    monkeypatch.setenv('COMSPEC', 'C:\\Windows\\System32\\cmd.exe')
+    monkeypatch.setattr(sys, "platform", "win32")
+    monkeypatch.setenv("COMSPEC", "C:\\Windows\\System32\\cmd.exe")
     yield
 
 
 @pytest.fixture
 def mock_macos_platform(monkeypatch):
     """Mock macOS platform detection"""
-    monkeypatch.setattr(sys, 'platform', 'darwin')
-    monkeypatch.setenv('SHELL', '/bin/zsh')
+    monkeypatch.setattr(sys, "platform", "darwin")
+    monkeypatch.setenv("SHELL", "/bin/zsh")
     yield
 
 
 # =============================================================================
 # Utility Functions
 # =============================================================================
+
 
 def create_test_file(directory: Path, filename: str, content: str = "") -> Path:
     """
@@ -330,25 +334,21 @@ def assert_no_sensitive_data(content: str):
 # Pytest Configuration
 # =============================================================================
 
+
 def pytest_configure(config):
     """Configure pytest with custom markers"""
     config.addinivalue_line(
         "markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')"
     )
-    config.addinivalue_line(
-        "markers", "integration: marks tests as integration tests"
-    )
-    config.addinivalue_line(
-        "markers", "unit: marks tests as unit tests"
-    )
-    config.addinivalue_line(
-        "markers", "security: marks tests related to security features"
-    )
+    config.addinivalue_line("markers", "integration: marks tests as integration tests")
+    config.addinivalue_line("markers", "unit: marks tests as unit tests")
+    config.addinivalue_line("markers", "security: marks tests related to security features")
 
 
 # =============================================================================
 # Pytest Hooks
 # =============================================================================
+
 
 def pytest_collection_modifyitems(config, items):
     """Modify test collection to add markers"""

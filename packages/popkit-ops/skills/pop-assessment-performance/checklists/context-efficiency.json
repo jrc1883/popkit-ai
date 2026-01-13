@@ -119,11 +119,7 @@
           "id": "CE-010",
           "name": "Template Efficiency",
           "description": "Templates use placeholders effectively",
-          "checks": [
-            "Variables over literal text",
-            "Reusable sections",
-            "No hardcoded content"
-          ]
+          "checks": ["Variables over literal text", "Reusable sections", "No hardcoded content"]
         }
       ]
     }

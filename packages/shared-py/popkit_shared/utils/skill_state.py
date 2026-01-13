@@ -25,16 +25,22 @@ from dataclasses import dataclass, field
 try:
     from test_telemetry import is_test_mode, get_test_session_id, create_event
     from local_telemetry import log_event_if_test_mode
+
     TEST_TELEMETRY_AVAILABLE = True
 except ImportError:
     TEST_TELEMETRY_AVAILABLE = False
-    def is_test_mode(): return False
-    def get_test_session_id(): return None
+
+    def is_test_mode():
+        return False
+
+    def get_test_session_id():
+        return None
 
 
 @dataclass
 class SkillState:
     """State for a single skill execution."""
+
     skill_name: str
     workflow_id: Optional[str] = None
     decisions_made: Set[str] = field(default_factory=set)
@@ -47,14 +53,14 @@ class SkillState:
 class SkillStateTracker:
     """Tracks active skill and enforces required decisions."""
 
-    _instance: Optional['SkillStateTracker'] = None
+    _instance: Optional["SkillStateTracker"] = None
 
     def __init__(self):
         self.state: Optional[SkillState] = None
         self._config: Optional[dict] = None
 
     @classmethod
-    def get_instance(cls) -> 'SkillStateTracker':
+    def get_instance(cls) -> "SkillStateTracker":
         """Get singleton instance."""
         if cls._instance is None:
             cls._instance = cls()
@@ -124,10 +130,7 @@ class SkillStateTracker:
             return
 
         try:
-            event = create_event(
-                event_type=event_type,
-                data=data
-            )
+            event = create_event(event_type=event_type, data=data)
             log_event_if_test_mode(event)
         except Exception:
             # Don't let telemetry failures break skill tracking
@@ -142,19 +145,17 @@ class SkillStateTracker:
         self.state = SkillState(skill_name=skill_name, workflow_id=workflow_id)
 
         # Publish to activity ledger (Issue #188)
-        activity_id = self._publish_activity("start", {
-            "skill": skill_name,
-            "workflow": workflow_id
-        })
+        activity_id = self._publish_activity(
+            "start", {"skill": skill_name, "workflow": workflow_id}
+        )
         if activity_id and self.state:
             self.state.activity_id = activity_id
 
         # Emit test telemetry (Issue #226)
-        self._emit_telemetry_event("skill_start", {
-            "skill_name": skill_name,
-            "workflow_id": workflow_id,
-            "activity_id": activity_id
-        })
+        self._emit_telemetry_event(
+            "skill_start",
+            {"skill_name": skill_name, "workflow_id": workflow_id, "activity_id": activity_id},
+        )
 
     def end_skill(self, status: str = "complete", output: Optional[Dict[str, Any]] = None) -> None:
         """Called when skill completes.
@@ -172,7 +173,7 @@ class SkillStateTracker:
                 "workflow": self.state.workflow_id,
                 "tool_calls": self.state.tool_calls,
                 "decisions_made": list(self.state.decisions_made),
-                "output": output or {}
+                "output": output or {},
             }
 
             if self.state.error_occurred:
@@ -182,14 +183,17 @@ class SkillStateTracker:
             self._publish_activity(status, event_data)
 
             # Emit test telemetry (Issue #226)
-            self._emit_telemetry_event("skill_end", {
-                "skill_name": self.state.skill_name,
-                "workflow_id": self.state.workflow_id,
-                "status": status,
-                "tool_calls": self.state.tool_calls,
-                "decisions_made": list(self.state.decisions_made),
-                "error": self.state.last_error if self.state.error_occurred else None
-            })
+            self._emit_telemetry_event(
+                "skill_end",
+                {
+                    "skill_name": self.state.skill_name,
+                    "workflow_id": self.state.workflow_id,
+                    "status": status,
+                    "tool_calls": self.state.tool_calls,
+                    "decisions_made": list(self.state.decisions_made),
+                    "error": self.state.last_error if self.state.error_occurred else None,
+                },
+            )
 
         self.state = None
 
@@ -201,16 +205,14 @@ class SkillStateTracker:
         """
         try:
             from context_storage import get_context_storage
+
             storage = get_context_storage()
 
             skill_name = data.get("skill", "unknown")
             workflow_id = data.get("workflow")
 
             return storage.publish_activity(
-                skill_name=skill_name,
-                event_type=event_type,
-                data=data,
-                workflow_id=workflow_id
+                skill_name=skill_name, event_type=event_type, data=data, workflow_id=workflow_id
             )
         except ImportError:
             # context_storage not available, skip activity publishing
@@ -259,12 +261,15 @@ class SkillStateTracker:
 
             # Optionally publish progress (every 5th tool call by default)
             if publish_progress or (self.state.tool_calls % 5 == 0):
-                self._publish_activity("progress", {
-                    "skill": self.state.skill_name,
-                    "workflow": self.state.workflow_id,
-                    "tool": tool_name,
-                    "tool_calls": self.state.tool_calls
-                })
+                self._publish_activity(
+                    "progress",
+                    {
+                        "skill": self.state.skill_name,
+                        "workflow": self.state.workflow_id,
+                        "tool": tool_name,
+                        "tool_calls": self.state.tool_calls,
+                    },
+                )
 
     def record_error(self, error_message: str) -> None:
         """Record that an error occurred during skill execution (Issue #183)."""
@@ -284,13 +289,16 @@ class SkillStateTracker:
         """
         if self.state:
             # Emit test telemetry (Issue #226)
-            self._emit_telemetry_event("phase_change", {
-                "skill_name": self.state.skill_name,
-                "workflow_id": self.state.workflow_id,
-                "phase": phase,
-                "tool_calls_so_far": self.state.tool_calls,
-                **(data or {})
-            })
+            self._emit_telemetry_event(
+                "phase_change",
+                {
+                    "skill_name": self.state.skill_name,
+                    "workflow_id": self.state.workflow_id,
+                    "phase": phase,
+                    "tool_calls_so_far": self.state.tool_calls,
+                    **(data or {}),
+                },
+            )
 
     def has_error(self) -> bool:
         """Check if an error occurred during skill execution."""

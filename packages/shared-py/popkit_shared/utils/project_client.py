@@ -23,10 +23,7 @@ import urllib.error
 # CONFIGURATION
 # =============================================================================
 
-POPKIT_API_URL = os.environ.get(
-    "POPKIT_API_URL",
-    "https://api.thehouseofdeals.com"
-)
+POPKIT_API_URL = os.environ.get("POPKIT_API_URL", "https://api.thehouseofdeals.com")
 POPKIT_VERSION = "1.0.0"
 
 # Network timeouts (in seconds)
@@ -39,9 +36,11 @@ INTERACTIVE_TIMEOUT = 10  # For user-initiated commands (/popkit:project observe
 # DATA CLASSES
 # =============================================================================
 
+
 @dataclass
 class ProjectInfo:
     """Local project information for registration."""
+
     project_id: str
     name: str
     path_hint: str
@@ -53,6 +52,7 @@ class ProjectInfo:
 @dataclass
 class ProjectRegistration:
     """Response from project registration."""
+
     status: str
     project_id: str
     session_count: int
@@ -61,6 +61,7 @@ class ProjectRegistration:
 @dataclass
 class ProjectActivity:
     """Activity update for a project."""
+
     tool_name: Optional[str] = None
     agent_name: Optional[str] = None
     command_name: Optional[str] = None
@@ -72,6 +73,7 @@ class ProjectActivity:
 @dataclass
 class ProjectSummary:
     """Summary statistics across all projects."""
+
     total_projects: int
     active_projects_24h: int
     total_tool_calls: int
@@ -84,6 +86,7 @@ class ProjectSummary:
 # PROJECT CLIENT
 # =============================================================================
 
+
 class ProjectClient:
     """
     Client for PopKit Cloud project registry.
@@ -95,11 +98,7 @@ class ProjectClient:
     - Multi-project dashboard support
     """
 
-    def __init__(
-        self,
-        api_key: Optional[str] = None,
-        api_url: str = POPKIT_API_URL
-    ):
+    def __init__(self, api_key: Optional[str] = None, api_url: str = POPKIT_API_URL):
         """
         Initialize project client.
 
@@ -116,10 +115,7 @@ class ProjectClient:
     # =========================================================================
 
     def register_project(
-        self,
-        project_path: Optional[str] = None,
-        name: Optional[str] = None,
-        health_score: int = 0
+        self, project_path: Optional[str] = None, name: Optional[str] = None, health_score: int = 0
     ) -> Optional[ProjectRegistration]:
         """
         Register a project with PopKit Cloud.
@@ -141,31 +137,30 @@ class ProjectClient:
         project_info = self._get_project_info(project_path, name, health_score)
 
         try:
-            response = self._post("/v1/projects/register", {
-                "project_id": project_info.project_id,
-                "name": project_info.name,
-                "path_hint": project_info.path_hint,
-                "health_score": project_info.health_score,
-                "popkit_version": project_info.popkit_version,
-                "platform": project_info.platform,
-            })
+            response = self._post(
+                "/v1/projects/register",
+                {
+                    "project_id": project_info.project_id,
+                    "name": project_info.name,
+                    "path_hint": project_info.path_hint,
+                    "health_score": project_info.health_score,
+                    "popkit_version": project_info.popkit_version,
+                    "platform": project_info.platform,
+                },
+            )
 
             self._current_project_id = project_info.project_id
 
             return ProjectRegistration(
                 status=response.get("status", "unknown"),
                 project_id=response.get("project_id", project_info.project_id),
-                session_count=response.get("session_count", 0)
+                session_count=response.get("session_count", 0),
             )
 
         except Exception:
             return None
 
-    def record_activity(
-        self,
-        activity: ProjectActivity,
-        project_id: Optional[str] = None
-    ) -> bool:
+    def record_activity(self, activity: ProjectActivity, project_id: Optional[str] = None) -> bool:
         """
         Record activity for a project.
 
@@ -198,7 +193,7 @@ class ProjectClient:
         if activity.power_mode_active:
             body["power_mode"] = {
                 "active": activity.power_mode_active,
-                "agent_count": activity.power_mode_agents
+                "agent_count": activity.power_mode_agents,
             }
 
         try:
@@ -310,10 +305,7 @@ class ProjectClient:
     # =========================================================================
 
     def _get_project_info(
-        self,
-        project_path: str,
-        name: Optional[str],
-        health_score: int
+        self, project_path: str, name: Optional[str], health_score: int
     ) -> ProjectInfo:
         """Extract project information from path."""
         path = Path(project_path).resolve()
@@ -345,17 +337,16 @@ class ProjectClient:
             path_hint = f".../{path.name}"
 
         return ProjectInfo(
-            project_id=project_id,
-            name=name,
-            path_hint=path_hint,
-            health_score=health_score
+            project_id=project_id, name=name, path_hint=path_hint, health_score=health_score
         )
 
     def _get(self, endpoint: str, timeout: int = DEFAULT_TIMEOUT) -> Dict[str, Any]:
         """Make GET request to API."""
         return self._request("GET", endpoint, timeout=timeout)
 
-    def _post(self, endpoint: str, body: Dict[str, Any], timeout: int = DEFAULT_TIMEOUT) -> Dict[str, Any]:
+    def _post(
+        self, endpoint: str, body: Dict[str, Any], timeout: int = DEFAULT_TIMEOUT
+    ) -> Dict[str, Any]:
         """Make POST request to API."""
         return self._request("POST", endpoint, body, timeout=timeout)
 
@@ -368,7 +359,7 @@ class ProjectClient:
         method: str,
         endpoint: str,
         body: Optional[Dict[str, Any]] = None,
-        timeout: int = DEFAULT_TIMEOUT
+        timeout: int = DEFAULT_TIMEOUT,
     ) -> Dict[str, Any]:
         """
         Make HTTP request to API.
@@ -389,12 +380,7 @@ class ProjectClient:
 
         data = json.dumps(body).encode("utf-8") if body else None
 
-        request = urllib.request.Request(
-            url,
-            data=data,
-            headers=headers,
-            method=method
-        )
+        request = urllib.request.Request(url, data=data, headers=headers, method=method)
 
         try:
             with urllib.request.urlopen(request, timeout=timeout) as response:
@@ -422,9 +408,7 @@ def get_client() -> ProjectClient:
 
 
 def register_project(
-    project_path: Optional[str] = None,
-    name: Optional[str] = None,
-    health_score: int = 0
+    project_path: Optional[str] = None, name: Optional[str] = None, health_score: int = 0
 ) -> Optional[ProjectRegistration]:
     """Convenience function to register a project."""
     return get_client().register_project(project_path, name, health_score)
@@ -482,10 +466,7 @@ if __name__ == "__main__":
 
     # Test activity recording
     print("\nTesting activity recording...")
-    success = client.record_activity(ProjectActivity(
-        tool_name="Read",
-        agent_name="code-reviewer"
-    ))
+    success = client.record_activity(ProjectActivity(tool_name="Read", agent_name="code-reviewer"))
     print(f"Activity recorded: {success}")
 
     # Test listing projects

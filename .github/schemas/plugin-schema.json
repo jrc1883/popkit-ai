@@ -62,10 +62,7 @@
       "description": "Git repository URL (MUST be string, not object)",
       "format": "uri",
       "pattern": "^https://github\\.com/[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+(\\.git)?$",
-      "examples": [
-        "https://github.com/user/repo",
-        "https://github.com/user/repo.git"
-      ]
+      "examples": ["https://github.com/user/repo", "https://github.com/user/repo.git"]
     },
     "license": {
       "type": "string",

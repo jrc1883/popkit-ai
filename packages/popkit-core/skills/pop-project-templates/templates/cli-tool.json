@@ -37,7 +37,12 @@
           "value": "go",
           "label": "Go",
           "description": "Simple, fast compilation, single binary, cobra ecosystem",
-          "pros": ["Fast compilation", "Single binary", "Cobra ecosystem", "Cross-compilation easy"],
+          "pros": [
+            "Fast compilation",
+            "Single binary",
+            "Cobra ecosystem",
+            "Cross-compilation easy"
+          ],
           "cons": ["Verbose error handling", "Less expressive", "Generics newer"],
           "when": "DevOps tooling, cross-platform need, Go team",
           "cli_frameworks": ["Cobra", "urfave/cli", "Kong"],
@@ -57,7 +62,12 @@
           "value": "deno",
           "label": "Deno / TypeScript",
           "description": "Modern TypeScript runtime, single binary compilation, secure by default",
-          "pros": ["Single binary with deno compile", "Secure by default", "Modern APIs", "No package.json"],
+          "pros": [
+            "Single binary with deno compile",
+            "Secure by default",
+            "Modern APIs",
+            "No package.json"
+          ],
           "cons": ["Smaller ecosystem", "Some npm compat issues", "Newer tooling"],
           "when": "Want single binary + TypeScript, security important, modern tooling",
           "cli_frameworks": ["Cliffy", "std/flags", "yargs (via npm compat)"],
@@ -91,7 +101,12 @@
             "value": "oclif",
             "label": "oclif (Salesforce)",
             "description": "Full-featured CLI framework with plugins, hooks, testing",
-            "pros": ["Plugins system", "Auto-generated docs", "Testing utilities", "TypeScript-first"],
+            "pros": [
+              "Plugins system",
+              "Auto-generated docs",
+              "Testing utilities",
+              "TypeScript-first"
+            ],
             "cons": ["More complex", "Heavier", "Learning curve"],
             "when": "Complex CLIs with plugins, enterprise tools, need testing framework"
           },
@@ -171,7 +186,12 @@
           "value": "toml",
           "label": "TOML",
           "description": "Human-friendly config format, popular for CLI tools",
-          "pros": ["Human readable", "Comments supported", "Good for settings", "Rust ecosystem standard"],
+          "pros": [
+            "Human readable",
+            "Comments supported",
+            "Good for settings",
+            "Rust ecosystem standard"
+          ],
           "cons": ["Less widespread", "Nested structures verbose"],
           "when": "User-facing config, Rust tools, want comments"
         },
@@ -262,24 +282,10 @@
     "supporting": ["devops-automator", "test-writer-fixer"]
   },
 
-  "quality_gates": [
-    "type-check",
-    "lint",
-    "test",
-    "build-check"
-  ],
+  "quality_gates": ["type-check", "lint", "test", "build-check"],
 
   "scaffolding": {
-    "directories": [
-      "src",
-      "src/commands",
-      "src/config",
-      "src/utils",
-      "tests"
-    ],
-    "files": [
-      "README.md",
-      "LICENSE"
-    ]
+    "directories": ["src", "src/commands", "src/config", "src/utils", "tests"],
+    "files": ["README.md", "LICENSE"]
   }
 }

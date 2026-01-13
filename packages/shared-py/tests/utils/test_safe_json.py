@@ -14,13 +14,10 @@ from unittest.mock import patch
 
 # Add parent directory to path for imports
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from popkit_shared.utils.safe_json import (
-    sanitize_js_booleans,
-    read_hook_input,
-    write_hook_output
-)
+from popkit_shared.utils.safe_json import sanitize_js_booleans, read_hook_input, write_hook_output
 
 
 class TestSanitizeJsBooleans:
@@ -104,26 +101,26 @@ class TestReadHookInput:
     def test_valid_json_input(self):
         """Test reading valid JSON from stdin"""
         test_input = '{"key": "value", "number": 42}'
-        with patch('sys.stdin', io.StringIO(test_input)):
+        with patch("sys.stdin", io.StringIO(test_input)):
             result = read_hook_input()
             assert result == {"key": "value", "number": 42}
 
     def test_empty_input(self):
         """Test reading empty stdin"""
-        with patch('sys.stdin', io.StringIO("")):
+        with patch("sys.stdin", io.StringIO("")):
             result = read_hook_input()
             assert result == {}
 
     def test_whitespace_only_input(self):
         """Test reading whitespace-only stdin"""
-        with patch('sys.stdin', io.StringIO("   \n\t  ")):
+        with patch("sys.stdin", io.StringIO("   \n\t  ")):
             result = read_hook_input()
             assert result == {}
 
     def test_javascript_style_booleans(self):
         """Test reading JavaScript-style boolean input"""
         test_input = '{"enabled": false, "active": true}'
-        with patch('sys.stdin', io.StringIO(test_input)):
+        with patch("sys.stdin", io.StringIO(test_input)):
             result = read_hook_input()
             assert result["enabled"] is False
             assert result["active"] is True
@@ -131,36 +128,36 @@ class TestReadHookInput:
     def test_malformed_json(self):
         """Test reading malformed JSON returns default"""
         test_input = '{"key": invalid}'
-        with patch('sys.stdin', io.StringIO(test_input)):
+        with patch("sys.stdin", io.StringIO(test_input)):
             result = read_hook_input()
             assert result == {}
 
     def test_custom_default(self):
         """Test custom default value on error"""
-        test_input = 'invalid json'
+        test_input = "invalid json"
         custom_default = {"error": True}
-        with patch('sys.stdin', io.StringIO(test_input)):
+        with patch("sys.stdin", io.StringIO(test_input)):
             result = read_hook_input(default=custom_default)
             assert result == custom_default
 
     def test_nested_objects(self):
         """Test reading nested JSON objects"""
         test_input = '{"outer": {"inner": {"value": 42}}}'
-        with patch('sys.stdin', io.StringIO(test_input)):
+        with patch("sys.stdin", io.StringIO(test_input)):
             result = read_hook_input()
             assert result["outer"]["inner"]["value"] == 42
 
     def test_arrays(self):
         """Test reading arrays"""
         test_input = '{"items": [1, 2, 3]}'
-        with patch('sys.stdin', io.StringIO(test_input)):
+        with patch("sys.stdin", io.StringIO(test_input)):
             result = read_hook_input()
             assert result["items"] == [1, 2, 3]
 
     def test_mixed_types(self):
         """Test reading mixed data types"""
         test_input = '{"string": "text", "number": 42, "bool": true, "null": null, "array": [1, 2]}'
-        with patch('sys.stdin', io.StringIO(test_input)):
+        with patch("sys.stdin", io.StringIO(test_input)):
             result = read_hook_input()
             assert result["string"] == "text"
             assert result["number"] == 42
@@ -171,7 +168,7 @@ class TestReadHookInput:
     def test_unicode_characters(self):
         """Test reading Unicode characters"""
         test_input = '{"emoji": "🚀", "text": "Hello 世界"}'
-        with patch('sys.stdin', io.StringIO(test_input)):
+        with patch("sys.stdin", io.StringIO(test_input)):
             result = read_hook_input()
             assert result["emoji"] == "🚀"
             assert result["text"] == "Hello 世界"
@@ -179,7 +176,7 @@ class TestReadHookInput:
     def test_special_characters_in_strings(self):
         """Test special characters in JSON strings"""
         test_input = r'{"path": "C:\\Users\\test", "quote": "He said \"hello\""}'
-        with patch('sys.stdin', io.StringIO(test_input)):
+        with patch("sys.stdin", io.StringIO(test_input)):
             result = read_hook_input()
             assert "path" in result
             assert "quote" in result
@@ -188,7 +185,7 @@ class TestReadHookInput:
         """Test reading large JSON input"""
         large_object = {"key" + str(i): "value" + str(i) for i in range(1000)}
         test_input = json.dumps(large_object)
-        with patch('sys.stdin', io.StringIO(test_input)):
+        with patch("sys.stdin", io.StringIO(test_input)):
             result = read_hook_input()
             assert len(result) == 1000
             assert result["key0"] == "value0"
@@ -196,13 +193,13 @@ class TestReadHookInput:
 
     def test_stdin_read_error(self):
         """Test handling of stdin read errors"""
-        with patch('sys.stdin.read', side_effect=IOError("Read error")):
+        with patch("sys.stdin.read", side_effect=IOError("Read error")):
             result = read_hook_input()
             assert result == {}
 
     def test_none_default(self):
         """Test that None default is converted to empty dict"""
-        with patch('sys.stdin', io.StringIO("")):
+        with patch("sys.stdin", io.StringIO("")):
             result = read_hook_input(default=None)
             assert result == {}
 
@@ -213,7 +210,7 @@ class TestWriteHookOutput:
     def test_valid_output(self):
         """Test writing valid output"""
         test_output = {"status": "success", "data": {"key": "value"}}
-        with patch('sys.stdout', new_callable=io.StringIO) as mock_stdout:
+        with patch("sys.stdout", new_callable=io.StringIO) as mock_stdout:
             write_hook_output(test_output)
             output = mock_stdout.getvalue()
             parsed = json.loads(output)
@@ -221,7 +218,7 @@ class TestWriteHookOutput:
 
     def test_empty_dict(self):
         """Test writing empty dictionary"""
-        with patch('sys.stdout', new_callable=io.StringIO) as mock_stdout:
+        with patch("sys.stdout", new_callable=io.StringIO) as mock_stdout:
             write_hook_output({})
             output = mock_stdout.getvalue()
             parsed = json.loads(output)
@@ -229,14 +226,8 @@ class TestWriteHookOutput:
 
     def test_nested_output(self):
         """Test writing nested structures"""
-        test_output = {
-            "result": {
-                "nested": {
-                    "value": 42
-                }
-            }
-        }
-        with patch('sys.stdout', new_callable=io.StringIO) as mock_stdout:
+        test_output = {"result": {"nested": {"value": 42}}}
+        with patch("sys.stdout", new_callable=io.StringIO) as mock_stdout:
             write_hook_output(test_output)
             output = mock_stdout.getvalue()
             parsed = json.loads(output)
@@ -245,7 +236,7 @@ class TestWriteHookOutput:
     def test_array_output(self):
         """Test writing arrays"""
         test_output = {"items": [1, 2, 3, 4, 5]}
-        with patch('sys.stdout', new_callable=io.StringIO) as mock_stdout:
+        with patch("sys.stdout", new_callable=io.StringIO) as mock_stdout:
             write_hook_output(test_output)
             output = mock_stdout.getvalue()
             parsed = json.loads(output)
@@ -254,7 +245,7 @@ class TestWriteHookOutput:
     def test_boolean_output(self):
         """Test writing boolean values"""
         test_output = {"success": True, "failed": False}
-        with patch('sys.stdout', new_callable=io.StringIO) as mock_stdout:
+        with patch("sys.stdout", new_callable=io.StringIO) as mock_stdout:
             write_hook_output(test_output)
             output = mock_stdout.getvalue()
             parsed = json.loads(output)
@@ -264,7 +255,7 @@ class TestWriteHookOutput:
     def test_null_output(self):
         """Test writing null values"""
         test_output = {"value": None}
-        with patch('sys.stdout', new_callable=io.StringIO) as mock_stdout:
+        with patch("sys.stdout", new_callable=io.StringIO) as mock_stdout:
             write_hook_output(test_output)
             output = mock_stdout.getvalue()
             parsed = json.loads(output)
@@ -273,7 +264,7 @@ class TestWriteHookOutput:
     def test_unicode_output(self):
         """Test writing Unicode characters"""
         test_output = {"emoji": "🎉", "text": "Hello 世界"}
-        with patch('sys.stdout', new_callable=io.StringIO) as mock_stdout:
+        with patch("sys.stdout", new_callable=io.StringIO) as mock_stdout:
             write_hook_output(test_output)
             output = mock_stdout.getvalue()
             parsed = json.loads(output)
@@ -282,12 +273,13 @@ class TestWriteHookOutput:
 
     def test_serialization_error(self):
         """Test handling of serialization errors"""
+
         # Create an object that can't be serialized
         class NonSerializable:
             pass
 
         test_output = {"obj": NonSerializable()}
-        with patch('sys.stdout', new_callable=io.StringIO) as mock_stdout:
+        with patch("sys.stdout", new_callable=io.StringIO) as mock_stdout:
             write_hook_output(test_output)
             output = mock_stdout.getvalue()
             parsed = json.loads(output)
@@ -297,7 +289,7 @@ class TestWriteHookOutput:
     def test_large_output(self):
         """Test writing large output"""
         large_output = {"data": [{"key": "value"} for _ in range(1000)]}
-        with patch('sys.stdout', new_callable=io.StringIO) as mock_stdout:
+        with patch("sys.stdout", new_callable=io.StringIO) as mock_stdout:
             write_hook_output(large_output)
             output = mock_stdout.getvalue()
             parsed = json.loads(output)
@@ -315,29 +307,25 @@ class TestIntegration:
             "bool": True,
             "null": None,
             "array": [1, 2, 3],
-            "nested": {"key": "value"}
+            "nested": {"key": "value"},
         }
 
         # Write
-        with patch('sys.stdout', new_callable=io.StringIO) as mock_stdout:
+        with patch("sys.stdout", new_callable=io.StringIO) as mock_stdout:
             write_hook_output(test_data)
             output_json = mock_stdout.getvalue()
 
         # Read back
-        with patch('sys.stdin', io.StringIO(output_json)):
+        with patch("sys.stdin", io.StringIO(output_json)):
             result = read_hook_input()
 
         assert result == test_data
 
     def test_error_response_format(self):
         """Test standard error response format"""
-        error_response = {
-            "status": "error",
-            "error": "Something went wrong",
-            "code": "ERR_TEST"
-        }
+        error_response = {"status": "error", "error": "Something went wrong", "code": "ERR_TEST"}
 
-        with patch('sys.stdout', new_callable=io.StringIO) as mock_stdout:
+        with patch("sys.stdout", new_callable=io.StringIO) as mock_stdout:
             write_hook_output(error_response)
             output = mock_stdout.getvalue()
             parsed = json.loads(output)
@@ -347,12 +335,9 @@ class TestIntegration:
 
     def test_success_response_format(self):
         """Test standard success response format"""
-        success_response = {
-            "status": "success",
-            "data": {"result": "completed"}
-        }
+        success_response = {"status": "success", "data": {"result": "completed"}}
 
-        with patch('sys.stdout', new_callable=io.StringIO) as mock_stdout:
+        with patch("sys.stdout", new_callable=io.StringIO) as mock_stdout:
             write_hook_output(success_response)
             output = mock_stdout.getvalue()
             parsed = json.loads(output)

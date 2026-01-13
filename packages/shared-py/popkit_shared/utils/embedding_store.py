@@ -31,13 +31,17 @@ DEFAULT_EMBEDDING_DIM = 1024
 # DATA CLASSES
 # =============================================================================
 
+
 @dataclass
 class EmbeddingRecord:
     """A stored embedding with metadata."""
+
     id: str
     content: str
     embedding: List[float]
-    source_type: str  # "skill", "agent", "command", "project-skill", "project-agent", "project-command"
+    source_type: (
+        str  # "skill", "agent", "command", "project-skill", "project-agent", "project-command"
+    )
     source_id: str
     metadata: Dict[str, Any] = field(default_factory=dict)
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
@@ -49,7 +53,7 @@ class EmbeddingRecord:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> 'EmbeddingRecord':
+    def from_dict(cls, d: Dict[str, Any]) -> "EmbeddingRecord":
         """Create from dictionary."""
         return cls(**d)
 
@@ -62,22 +66,20 @@ class EmbeddingRecord:
 @dataclass
 class SearchResult:
     """Result from similarity search."""
+
     record: EmbeddingRecord
     similarity: float
     rank: int = 0
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
-        return {
-            "record": self.record.to_dict(),
-            "similarity": self.similarity,
-            "rank": self.rank
-        }
+        return {"record": self.record.to_dict(), "similarity": self.similarity, "rank": self.rank}
 
 
 # =============================================================================
 # EMBEDDING STORE
 # =============================================================================
+
 
 class EmbeddingStore:
     """
@@ -185,24 +187,27 @@ class EmbeddingStore:
         content_hash = hashlib.sha256(record.content.encode()).hexdigest()[:16]
 
         with self._get_connection() as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT OR REPLACE INTO embeddings
                 (id, content, embedding, source_type, source_id, metadata,
                  created_at, embedding_model, embedding_dim, content_hash, project_path)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                record.id,
-                record.content,
-                json.dumps(record.embedding),
-                record.source_type,
-                record.source_id,
-                json.dumps(record.metadata),
-                record.created_at,
-                record.embedding_model,
-                len(record.embedding),
-                content_hash,
-                record.project_path
-            ))
+            """,
+                (
+                    record.id,
+                    record.content,
+                    json.dumps(record.embedding),
+                    record.source_type,
+                    record.source_id,
+                    json.dumps(record.metadata),
+                    record.created_at,
+                    record.embedding_model,
+                    len(record.embedding),
+                    content_hash,
+                    record.project_path,
+                ),
+            )
             conn.commit()
 
     def store_batch(self, records: List[EmbeddingRecord]) -> int:
@@ -222,26 +227,31 @@ class EmbeddingStore:
             data = []
             for record in records:
                 content_hash = hashlib.sha256(record.content.encode()).hexdigest()[:16]
-                data.append((
-                    record.id,
-                    record.content,
-                    json.dumps(record.embedding),
-                    record.source_type,
-                    record.source_id,
-                    json.dumps(record.metadata),
-                    record.created_at,
-                    record.embedding_model,
-                    len(record.embedding),
-                    content_hash,
-                    record.project_path
-                ))
+                data.append(
+                    (
+                        record.id,
+                        record.content,
+                        json.dumps(record.embedding),
+                        record.source_type,
+                        record.source_id,
+                        json.dumps(record.metadata),
+                        record.created_at,
+                        record.embedding_model,
+                        len(record.embedding),
+                        content_hash,
+                        record.project_path,
+                    )
+                )
 
-            conn.executemany("""
+            conn.executemany(
+                """
                 INSERT OR REPLACE INTO embeddings
                 (id, content, embedding, source_type, source_id, metadata,
                  created_at, embedding_model, embedding_dim, content_hash, project_path)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, data)
+            """,
+                data,
+            )
             conn.commit()
 
         return len(records)
@@ -257,9 +267,7 @@ class EmbeddingStore:
             EmbeddingRecord or None if not found
         """
         with self._get_connection() as conn:
-            row = conn.execute(
-                "SELECT * FROM embeddings WHERE id = ?", (id,)
-            ).fetchone()
+            row = conn.execute("SELECT * FROM embeddings WHERE id = ?", (id,)).fetchone()
 
             if row:
                 return self._row_to_record(row)
@@ -280,7 +288,7 @@ class EmbeddingStore:
         with self._get_connection() as conn:
             row = conn.execute(
                 "SELECT * FROM embeddings WHERE source_type = ? AND source_id = ?",
-                (source_type, source_id)
+                (source_type, source_id),
             ).fetchone()
 
             if row:
@@ -318,12 +326,11 @@ class EmbeddingStore:
             if source_id:
                 cursor = conn.execute(
                     "DELETE FROM embeddings WHERE source_type = ? AND source_id = ?",
-                    (source_type, source_id)
+                    (source_type, source_id),
                 )
             else:
                 cursor = conn.execute(
-                    "DELETE FROM embeddings WHERE source_type = ?",
-                    (source_type,)
+                    "DELETE FROM embeddings WHERE source_type = ?", (source_type,)
                 )
             conn.commit()
             return cursor.rowcount
@@ -338,7 +345,7 @@ class EmbeddingStore:
         source_type: Optional[str] = None,
         top_k: int = 5,
         min_similarity: float = 0.0,
-        exclude_ids: Optional[List[str]] = None
+        exclude_ids: Optional[List[str]] = None,
     ) -> List[SearchResult]:
         """
         Find similar embeddings using cosine similarity.
@@ -358,8 +365,7 @@ class EmbeddingStore:
         with self._get_connection() as conn:
             if source_type:
                 rows = conn.execute(
-                    "SELECT * FROM embeddings WHERE source_type = ?",
-                    (source_type,)
+                    "SELECT * FROM embeddings WHERE source_type = ?", (source_type,)
                 ).fetchall()
             else:
                 rows = conn.execute("SELECT * FROM embeddings").fetchall()
@@ -391,7 +397,7 @@ class EmbeddingStore:
         embed_func,
         source_type: Optional[str] = None,
         top_k: int = 5,
-        min_similarity: float = 0.0
+        min_similarity: float = 0.0,
     ) -> List[SearchResult]:
         """
         Search by content string (embeds query first).
@@ -411,7 +417,7 @@ class EmbeddingStore:
             query_embedding=query_embedding,
             source_type=source_type,
             top_k=top_k,
-            min_similarity=min_similarity
+            min_similarity=min_similarity,
         )
 
     # =========================================================================
@@ -435,8 +441,7 @@ class EmbeddingStore:
 
         with self._get_connection() as conn:
             result = conn.execute(
-                "SELECT content_hash FROM embeddings WHERE id = ?",
-                (id,)
+                "SELECT content_hash FROM embeddings WHERE id = ?", (id,)
             ).fetchone()
 
             if not result:
@@ -452,7 +457,7 @@ class EmbeddingStore:
         top_k: int = 5,
         min_similarity: float = 0.0,
         include_global: bool = True,
-        global_boost: float = 0.0
+        global_boost: float = 0.0,
     ) -> List[SearchResult]:
         """
         Search embeddings with project scope.
@@ -480,25 +485,24 @@ class EmbeddingStore:
                         """SELECT * FROM embeddings
                            WHERE (project_path = ? OR project_path IS NULL)
                            AND source_type = ?""",
-                        (project_path, source_type)
+                        (project_path, source_type),
                     ).fetchall()
                 else:
                     rows = conn.execute(
                         """SELECT * FROM embeddings
                            WHERE project_path = ? OR project_path IS NULL""",
-                        (project_path,)
+                        (project_path,),
                     ).fetchall()
             else:
                 if source_type:
                     rows = conn.execute(
                         """SELECT * FROM embeddings
                            WHERE project_path = ? AND source_type = ?""",
-                        (project_path, source_type)
+                        (project_path, source_type),
                     ).fetchall()
                 else:
                     rows = conn.execute(
-                        "SELECT * FROM embeddings WHERE project_path = ?",
-                        (project_path,)
+                        "SELECT * FROM embeddings WHERE project_path = ?", (project_path,)
                     ).fetchall()
 
         results = []
@@ -522,11 +526,7 @@ class EmbeddingStore:
 
         return results[:top_k]
 
-    def clear_project(
-        self,
-        project_path: str,
-        source_type: Optional[str] = None
-    ) -> int:
+    def clear_project(self, project_path: str, source_type: Optional[str] = None) -> int:
         """
         Clear embeddings for a specific project.
 
@@ -541,12 +541,11 @@ class EmbeddingStore:
             if source_type:
                 cursor = conn.execute(
                     "DELETE FROM embeddings WHERE project_path = ? AND source_type = ?",
-                    (project_path, source_type)
+                    (project_path, source_type),
                 )
             else:
                 cursor = conn.execute(
-                    "DELETE FROM embeddings WHERE project_path = ?",
-                    (project_path,)
+                    "DELETE FROM embeddings WHERE project_path = ?", (project_path,)
                 )
             conn.commit()
             return cursor.rowcount
@@ -567,12 +566,11 @@ class EmbeddingStore:
                 result = conn.execute(
                     """SELECT COUNT(*) FROM embeddings
                        WHERE project_path = ? AND source_type = ?""",
-                    (project_path, source_type)
+                    (project_path, source_type),
                 ).fetchone()
             else:
                 result = conn.execute(
-                    "SELECT COUNT(*) FROM embeddings WHERE project_path = ?",
-                    (project_path,)
+                    "SELECT COUNT(*) FROM embeddings WHERE project_path = ?", (project_path,)
                 ).fetchone()
 
             return result[0] if result else 0
@@ -598,7 +596,7 @@ class EmbeddingStore:
             {
                 "project_path": row[0],
                 "count": row[1],
-                "source_types": row[2].split(",") if row[2] else []
+                "source_types": row[2].split(",") if row[2] else [],
             }
             for row in rows
         ]
@@ -620,8 +618,7 @@ class EmbeddingStore:
         with self._get_connection() as conn:
             if source_type:
                 result = conn.execute(
-                    "SELECT COUNT(*) FROM embeddings WHERE source_type = ?",
-                    (source_type,)
+                    "SELECT COUNT(*) FROM embeddings WHERE source_type = ?", (source_type,)
                 ).fetchone()
             else:
                 result = conn.execute("SELECT COUNT(*) FROM embeddings").fetchone()
@@ -650,16 +647,14 @@ class EmbeddingStore:
             ):
                 models[row[0]] = row[1]
 
-            dims = conn.execute(
-                "SELECT DISTINCT embedding_dim FROM embeddings"
-            ).fetchall()
+            dims = conn.execute("SELECT DISTINCT embedding_dim FROM embeddings").fetchall()
 
         return {
             "total": total,
             "by_type": by_type,
             "by_model": models,
             "dimensions": [d[0] for d in dims if d[0]],
-            "db_path": str(self.db_path)
+            "db_path": str(self.db_path),
         }
 
     def list_sources(self, source_type: Optional[str] = None) -> List[Dict[str, Any]]:
@@ -678,7 +673,7 @@ class EmbeddingStore:
                     """SELECT source_type, source_id, content, created_at
                        FROM embeddings WHERE source_type = ?
                        ORDER BY source_type, source_id""",
-                    (source_type,)
+                    (source_type,),
                 ).fetchall()
             else:
                 rows = conn.execute(
@@ -692,7 +687,7 @@ class EmbeddingStore:
                 "source_type": row[0],
                 "source_id": row[1],
                 "content_preview": row[2][:100] + "..." if len(row[2]) > 100 else row[2],
-                "created_at": row[3]
+                "created_at": row[3],
             }
             for row in rows
         ]
@@ -737,7 +732,7 @@ class EmbeddingStore:
             metadata=json.loads(row[5]) if row[5] else {},
             created_at=row[6],
             embedding_model=row[7] or DEFAULT_EMBEDDING_MODEL,
-            project_path=row[10] if len(row) > 10 else None
+            project_path=row[10] if len(row) > 10 else None,
         )
 
     def clear(self, source_type: Optional[str] = None) -> int:
@@ -753,8 +748,7 @@ class EmbeddingStore:
         with self._get_connection() as conn:
             if source_type:
                 cursor = conn.execute(
-                    "DELETE FROM embeddings WHERE source_type = ?",
-                    (source_type,)
+                    "DELETE FROM embeddings WHERE source_type = ?", (source_type,)
                 )
             else:
                 cursor = conn.execute("DELETE FROM embeddings")
@@ -764,9 +758,7 @@ class EmbeddingStore:
     def exists(self, id: str) -> bool:
         """Check if an embedding exists."""
         with self._get_connection() as conn:
-            result = conn.execute(
-                "SELECT 1 FROM embeddings WHERE id = ?", (id,)
-            ).fetchone()
+            result = conn.execute("SELECT 1 FROM embeddings WHERE id = ?", (id,)).fetchone()
             return result is not None
 
     def content_exists(self, content: str) -> Optional[str]:
@@ -783,8 +775,7 @@ class EmbeddingStore:
 
         with self._get_connection() as conn:
             result = conn.execute(
-                "SELECT id FROM embeddings WHERE content_hash = ?",
-                (content_hash,)
+                "SELECT id FROM embeddings WHERE content_hash = ?", (content_hash,)
             ).fetchone()
 
             return result[0] if result else None
@@ -802,6 +793,7 @@ if __name__ == "__main__":
 
     # Create test store in temp location
     import tempfile
+
     test_db = Path(tempfile.gettempdir()) / "test_embeddings.db"
     store = EmbeddingStore(test_db)
 
@@ -812,7 +804,7 @@ if __name__ == "__main__":
         embedding=[0.1, 0.2, 0.3, 0.4, 0.5],
         source_type="skill",
         source_id="test-skill",
-        metadata={"tier": "test"}
+        metadata={"tier": "test"},
     )
     store.store(record)
     print(f"Stored: {record.id}")
@@ -824,10 +816,7 @@ if __name__ == "__main__":
     print(f"Retrieved: {retrieved.id}")
 
     # Test search
-    results = store.search(
-        query_embedding=[0.1, 0.2, 0.3, 0.4, 0.5],
-        top_k=5
-    )
+    results = store.search(query_embedding=[0.1, 0.2, 0.3, 0.4, 0.5], top_k=5)
     assert len(results) == 1
     assert results[0].similarity > 0.99
     print(f"Search found: {len(results)} results, similarity={results[0].similarity:.4f}")

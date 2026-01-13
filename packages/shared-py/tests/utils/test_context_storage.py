@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from popkit_shared.utils.context_storage import (
     ContextStorage,
     FileContextStorage,
-    get_context_storage
+    get_context_storage,
 )
 
 
@@ -31,6 +31,7 @@ class TestContextStorageInterface:
 
     def test_must_implement_abstract_methods(self):
         """Test that subclass must implement required methods"""
+
         class IncompleteStorage(ContextStorage):
             pass
 
@@ -39,15 +40,20 @@ class TestContextStorageInterface:
 
     def test_can_instantiate_complete_subclass(self):
         """Test that complete implementation works"""
+
         class CompleteStorage(ContextStorage):
             def save_context(self, workflow_id, context):
                 return True
+
             def load_context(self, workflow_id):
                 return None
+
             def delete_context(self, workflow_id):
                 return True
+
             def list_workflows(self):
                 return []
+
             def get_backend_name(self):
                 return "test"
 
@@ -56,15 +62,20 @@ class TestContextStorageInterface:
 
     def test_activity_methods_have_defaults(self):
         """Test activity methods have default implementations"""
+
         class MinimalStorage(ContextStorage):
             def save_context(self, workflow_id, context):
                 return True
+
             def load_context(self, workflow_id):
                 return None
+
             def delete_context(self, workflow_id):
                 return True
+
             def list_workflows(self):
                 return []
+
             def get_backend_name(self):
                 return "minimal"
 
@@ -242,13 +253,19 @@ class TestGetContextStorage:
 
     def test_get_context_storage_returns_file_by_default(self):
         """Test factory returns FileContextStorage by default"""
-        with patch.dict('os.environ', {}, clear=True):
+        with patch.dict("os.environ", {}, clear=True):
             storage = get_context_storage()
             assert storage.get_backend_name() == "file"
 
     def test_get_context_storage_detects_upstash(self):
         """Test factory detects environment variables"""
-        with patch.dict('os.environ', {'UPSTASH_REDIS_REST_URL': 'https://test.upstash.io', 'UPSTASH_REDIS_REST_TOKEN': 'test-token'}):
+        with patch.dict(
+            "os.environ",
+            {
+                "UPSTASH_REDIS_REST_URL": "https://test.upstash.io",
+                "UPSTASH_REDIS_REST_TOKEN": "test-token",
+            },
+        ):
             storage = get_context_storage()
             # Should return a valid backend (may be cloud, upstash, or file)
             backend = storage.get_backend_name()
@@ -272,11 +289,7 @@ class TestWorkflowIDSafety:
             storage = FileContextStorage(base_dir=Path(tmpdir))
 
             # Test various special characters
-            test_ids = [
-                "workflow-with-dashes",
-                "workflow_with_underscores",
-                "workflow.with.dots"
-            ]
+            test_ids = ["workflow-with-dashes", "workflow_with_underscores", "workflow.with.dots"]
 
             for wf_id in test_ids:
                 storage.save_context(wf_id, {"id": wf_id})
@@ -293,7 +306,7 @@ class TestWorkflowIDSafety:
             dangerous_ids = [
                 "../../../etc/passwd",
                 "..\\..\\..\\windows\\system32",
-                "workflow/../other"
+                "workflow/../other",
             ]
 
             for dangerous_id in dangerous_ids:
@@ -325,7 +338,7 @@ class TestContextDataIntegrity:
                 "boolean": True,
                 "null": None,
                 "array": [1, 2, 3],
-                "nested": {"key": "value"}
+                "nested": {"key": "value"},
             }
 
             storage.save_context("types-test", original)

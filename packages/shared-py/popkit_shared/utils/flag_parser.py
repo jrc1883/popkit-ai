@@ -17,6 +17,7 @@ from typing import Dict, List, Optional, Any, Tuple
 # Work Command Parser
 # =============================================================================
 
+
 def parse_work_args(args: str) -> Dict[str, Any]:
     """Parse /popkit:work command arguments.
 
@@ -48,7 +49,7 @@ def parse_work_args(args: str) -> Dict[str, Any]:
         "force_solo": False,
         "phases": None,
         "agents": None,
-        "error": None
+        "error": None,
     }
 
     if not args or not args.strip():
@@ -59,7 +60,7 @@ def parse_work_args(args: str) -> Dict[str, Any]:
 
     # Extract issue number
     # Formats: #4, gh-4, gh4, 4
-    issue_match = re.search(r'(?:#|gh-?)?(\d+)', args, re.IGNORECASE)
+    issue_match = re.search(r"(?:#|gh-?)?(\d+)", args, re.IGNORECASE)
     if issue_match:
         result["issue_number"] = int(issue_match.group(1))
     else:
@@ -67,11 +68,11 @@ def parse_work_args(args: str) -> Dict[str, Any]:
         return result
 
     # Check for Power Mode flags
-    if re.search(r'\s-p(?:\s|$)', args) or re.search(r'--power(?:\s|$)', args):
+    if re.search(r"\s-p(?:\s|$)", args) or re.search(r"--power(?:\s|$)", args):
         result["force_power"] = True
 
     # Check for Solo mode flag
-    if re.search(r'\s-s(?:\s|$)', args) or re.search(r'--solo(?:\s|$)', args):
+    if re.search(r"\s-s(?:\s|$)", args) or re.search(r"--solo(?:\s|$)", args):
         result["force_solo"] = True
 
     # Mutually exclusive check
@@ -80,12 +81,12 @@ def parse_work_args(args: str) -> Dict[str, Any]:
         return result
 
     # Parse --phases flag
-    phases_match = re.search(r'--phases\s+([a-z,_]+)', args, re.IGNORECASE)
+    phases_match = re.search(r"--phases\s+([a-z,_]+)", args, re.IGNORECASE)
     if phases_match:
         result["phases"] = [p.strip() for p in phases_match.group(1).split(",")]
 
     # Parse --agents flag
-    agents_match = re.search(r'--agents\s+([a-z,_-]+)', args, re.IGNORECASE)
+    agents_match = re.search(r"--agents\s+([a-z,_-]+)", args, re.IGNORECASE)
     if agents_match:
         result["agents"] = [a.strip() for a in agents_match.group(1).split(",")]
 
@@ -95,6 +96,7 @@ def parse_work_args(args: str) -> Dict[str, Any]:
 # =============================================================================
 # Issues Command Parser
 # =============================================================================
+
 
 def parse_issues_args(args: str) -> Dict[str, Any]:
     """Parse /popkit:issues command arguments.
@@ -120,13 +122,7 @@ def parse_issues_args(args: str) -> Dict[str, Any]:
         - assignee: str or None
         - limit: int (default 20)
     """
-    result = {
-        "filter_power": False,
-        "label": None,
-        "state": "open",
-        "assignee": None,
-        "limit": 20
-    }
+    result = {"filter_power": False, "label": None, "state": "open", "assignee": None, "limit": 20}
 
     if not args:
         return result
@@ -134,26 +130,26 @@ def parse_issues_args(args: str) -> Dict[str, Any]:
     args = args.strip()
 
     # Check for Power Mode filter
-    if re.search(r'\s-p(?:\s|$)', args) or re.search(r'--power(?:\s|$)', args):
+    if re.search(r"\s-p(?:\s|$)", args) or re.search(r"--power(?:\s|$)", args):
         result["filter_power"] = True
 
     # Parse --label or -l flag
-    label_match = re.search(r'(?:--label|-l)\s+([a-z0-9:_-]+)', args, re.IGNORECASE)
+    label_match = re.search(r"(?:--label|-l)\s+([a-z0-9:_-]+)", args, re.IGNORECASE)
     if label_match:
         result["label"] = label_match.group(1)
 
     # Parse --state flag
-    state_match = re.search(r'--state\s+(open|closed|all)', args, re.IGNORECASE)
+    state_match = re.search(r"--state\s+(open|closed|all)", args, re.IGNORECASE)
     if state_match:
         result["state"] = state_match.group(1).lower()
 
     # Parse --assignee flag
-    assignee_match = re.search(r'--assignee\s+(@?\w+)', args)
+    assignee_match = re.search(r"--assignee\s+(@?\w+)", args)
     if assignee_match:
         result["assignee"] = assignee_match.group(1)
 
     # Parse -n or --limit flag
-    limit_match = re.search(r'(?:-n|--limit)\s+(\d+)', args)
+    limit_match = re.search(r"(?:-n|--limit)\s+(\d+)", args)
     if limit_match:
         result["limit"] = int(limit_match.group(1))
 
@@ -163,6 +159,7 @@ def parse_issues_args(args: str) -> Dict[str, Any]:
 # =============================================================================
 # Power Command Parser
 # =============================================================================
+
 
 def parse_power_args(args: str) -> Dict[str, Any]:
     """Parse /popkit:power command arguments.
@@ -191,7 +188,7 @@ def parse_power_args(args: str) -> Dict[str, Any]:
         "objective": None,
         "phases": None,
         "agents": None,
-        "timeout": 30
+        "timeout": 30,
     }
 
     if not args:
@@ -217,22 +214,22 @@ def parse_power_args(args: str) -> Dict[str, Any]:
         result["objective"] = objective_match.group(1)
     else:
         # Take first word(s) before any flag as objective
-        pre_flag = re.split(r'\s+--', args)[0].strip()
+        pre_flag = re.split(r"\s+--", args)[0].strip()
         if pre_flag and not pre_flag.startswith("-"):
             result["objective"] = pre_flag
 
     # Parse --phases flag
-    phases_match = re.search(r'--phases\s+([a-z,_]+)', args, re.IGNORECASE)
+    phases_match = re.search(r"--phases\s+([a-z,_]+)", args, re.IGNORECASE)
     if phases_match:
         result["phases"] = [p.strip() for p in phases_match.group(1).split(",")]
 
     # Parse --agents flag
-    agents_match = re.search(r'--agents\s+([a-z,_-]+)', args, re.IGNORECASE)
+    agents_match = re.search(r"--agents\s+([a-z,_-]+)", args, re.IGNORECASE)
     if agents_match:
         result["agents"] = [a.strip() for a in agents_match.group(1).split(",")]
 
     # Parse --timeout flag
-    timeout_match = re.search(r'--timeout\s+(\d+)', args)
+    timeout_match = re.search(r"--timeout\s+(\d+)", args)
     if timeout_match:
         result["timeout"] = int(timeout_match.group(1))
 
@@ -242,6 +239,7 @@ def parse_power_args(args: str) -> Dict[str, Any]:
 # =============================================================================
 # Thinking Flag Parser
 # =============================================================================
+
 
 def parse_thinking_flags(args: str) -> Dict[str, Any]:
     """Parse extended thinking flags from arguments.
@@ -261,7 +259,7 @@ def parse_thinking_flags(args: str) -> Dict[str, Any]:
     """
     result = {
         "force_thinking": None,  # None = use model default
-        "budget_tokens": 10000
+        "budget_tokens": 10000,
     }
 
     if not args:
@@ -270,16 +268,16 @@ def parse_thinking_flags(args: str) -> Dict[str, Any]:
     args = args.strip()
 
     # Check for force thinking on (-T or --thinking)
-    if re.search(r'\s-T(?:\s|$)', f" {args}") or re.search(r'--thinking(?:\s|$)', args):
+    if re.search(r"\s-T(?:\s|$)", f" {args}") or re.search(r"--thinking(?:\s|$)", args):
         result["force_thinking"] = True
 
     # Check for force thinking off (--no-thinking)
-    if re.search(r'--no-thinking(?:\s|$)', args):
+    if re.search(r"--no-thinking(?:\s|$)", args):
         result["force_thinking"] = False
 
     # Parse --think-budget flag
     # Note: specifying a budget implies thinking should be enabled
-    budget_match = re.search(r'--think-budget\s+(\d+)', args)
+    budget_match = re.search(r"--think-budget\s+(\d+)", args)
     if budget_match:
         result["budget_tokens"] = int(budget_match.group(1))
         # If budget specified but no explicit enable/disable, enable thinking
@@ -292,6 +290,7 @@ def parse_thinking_flags(args: str) -> Dict[str, Any]:
 # =============================================================================
 # Model Flag Parser
 # =============================================================================
+
 
 def parse_model_flag(args: str) -> Dict[str, Any]:
     """Parse model override flag from arguments.
@@ -319,7 +318,7 @@ def parse_model_flag(args: str) -> Dict[str, Any]:
     args = args.strip()
 
     # Parse --model or -m flag
-    model_match = re.search(r'(?:--model|-m)\s+(haiku|sonnet|opus)', args, re.IGNORECASE)
+    model_match = re.search(r"(?:--model|-m)\s+(haiku|sonnet|opus)", args, re.IGNORECASE)
     if model_match:
         result["model"] = model_match.group(1).lower()
 
@@ -329,6 +328,7 @@ def parse_model_flag(args: str) -> Dict[str, Any]:
 # =============================================================================
 # Generic Flag Utilities
 # =============================================================================
+
 
 def has_flag(args: str, short: str, long: str) -> bool:
     """Check if a flag is present in arguments.
@@ -345,11 +345,11 @@ def has_flag(args: str, short: str, long: str) -> bool:
         return False
 
     # Check short flag (must be followed by space or end)
-    if short and re.search(rf'\s{re.escape(short)}(?:\s|$)', f" {args}"):
+    if short and re.search(rf"\s{re.escape(short)}(?:\s|$)", f" {args}"):
         return True
 
     # Check long flag
-    if long and re.search(rf'{re.escape(long)}(?:\s|$)', args):
+    if long and re.search(rf"{re.escape(long)}(?:\s|$)", args):
         return True
 
     return False
@@ -368,7 +368,7 @@ def get_flag_value(args: str, flag: str) -> Optional[str]:
     if not args:
         return None
 
-    match = re.search(rf'{re.escape(flag)}\s+(\S+)', args)
+    match = re.search(rf"{re.escape(flag)}\s+(\S+)", args)
     if match:
         return match.group(1)
 
@@ -392,11 +392,11 @@ def extract_issue_number(text: str) -> Optional[int]:
 
     # Try various patterns
     patterns = [
-        r'#(\d+)',           # #4
-        r'gh-?(\d+)',        # gh-4, gh4
-        r'issue\s*(\d+)',    # issue 4
-        r'^(\d+)$',          # just 4
-        r'\s(\d+)(?:\s|$)',  # 4 surrounded by spaces
+        r"#(\d+)",  # #4
+        r"gh-?(\d+)",  # gh-4, gh4
+        r"issue\s*(\d+)",  # issue 4
+        r"^(\d+)$",  # just 4
+        r"\s(\d+)(?:\s|$)",  # 4 surrounded by spaces
     ]
 
     for pattern in patterns:

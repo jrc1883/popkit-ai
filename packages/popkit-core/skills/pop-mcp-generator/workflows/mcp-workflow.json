@@ -20,23 +20,14 @@
           "name": "Find Available Scripts",
           "prompt": "Finding available npm/pip scripts...",
           "type": "automated",
-          "sources": [
-            "package.json scripts",
-            "pyproject.toml scripts",
-            "Makefile targets"
-          ]
+          "sources": ["package.json scripts", "pyproject.toml scripts", "Makefile targets"]
         },
         {
           "id": "detect_services",
           "name": "Detect External Services",
           "prompt": "Detecting external services and integrations...",
           "type": "automated",
-          "checks": [
-            "Database connections",
-            "API integrations",
-            "Cloud services",
-            "Message queues"
-          ]
+          "checks": ["Database connections", "API integrations", "Cloud services", "Message queues"]
         },
         {
           "id": "select_tools",
@@ -45,23 +36,27 @@
           "type": "multiselect",
           "options": {
             "health": [
-              {"label": "Dev Server Health", "value": "dev_server_health", "default": true},
-              {"label": "Database Health", "value": "db_health", "default": true},
-              {"label": "API Health", "value": "api_health"}
+              { "label": "Dev Server Health", "value": "dev_server_health", "default": true },
+              { "label": "Database Health", "value": "db_health", "default": true },
+              { "label": "API Health", "value": "api_health" }
             ],
             "git": [
-              {"label": "Git Status", "value": "git_status", "default": true},
-              {"label": "Git Diff", "value": "git_diff", "default": true},
-              {"label": "Recent Commits", "value": "git_recent_commits", "default": true}
+              { "label": "Git Status", "value": "git_status", "default": true },
+              { "label": "Git Diff", "value": "git_diff", "default": true },
+              { "label": "Recent Commits", "value": "git_recent_commits", "default": true }
             ],
             "quality": [
-              {"label": "Run Tests", "value": "run_tests", "default": true},
-              {"label": "Run Lint", "value": "run_lint", "default": true},
-              {"label": "Run Typecheck", "value": "run_typecheck", "default": true},
-              {"label": "Run Build", "value": "run_build"}
+              { "label": "Run Tests", "value": "run_tests", "default": true },
+              { "label": "Run Lint", "value": "run_lint", "default": true },
+              { "label": "Run Typecheck", "value": "run_typecheck", "default": true },
+              { "label": "Run Build", "value": "run_build" }
             ],
             "custom": [
-              {"label": "Custom Tools", "value": "custom", "description": "Add project-specific tools"}
+              {
+                "label": "Custom Tools",
+                "value": "custom",
+                "description": "Add project-specific tools"
+              }
             ]
           }
         }
@@ -76,21 +71,13 @@
           "id": "create_structure",
           "name": "Create Directory Structure",
           "type": "automated",
-          "directories": [
-            "mcp-server/",
-            "mcp-server/src/",
-            "mcp-server/src/tools/"
-          ]
+          "directories": ["mcp-server/", "mcp-server/src/", "mcp-server/src/tools/"]
         },
         {
           "id": "generate_config",
           "name": "Generate Configuration",
           "type": "automated",
-          "files": [
-            "mcp-server/package.json",
-            "mcp-server/tsconfig.json",
-            "mcp-server/.mcp.json"
-          ]
+          "files": ["mcp-server/package.json", "mcp-server/tsconfig.json", "mcp-server/.mcp.json"]
         },
         {
           "id": "generate_tools",

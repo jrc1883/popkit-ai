@@ -123,10 +123,10 @@
     }
   ],
   "scoring": {
-    "excellent": {"min": 11, "description": "Comprehensive, well-sourced research"},
-    "good": {"min": 8, "description": "Solid research with minor gaps"},
-    "adequate": {"min": 5, "description": "Basic research, needs enrichment"},
-    "poor": {"min": 0, "description": "Insufficient research quality"}
+    "excellent": { "min": 11, "description": "Comprehensive, well-sourced research" },
+    "good": { "min": 8, "description": "Solid research with minor gaps" },
+    "adequate": { "min": 5, "description": "Basic research, needs enrichment" },
+    "poor": { "min": 0, "description": "Insufficient research quality" }
   },
   "scripts": {
     "assess": "python scripts/extract_findings.py --assess"

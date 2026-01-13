@@ -4,13 +4,7 @@
   "name": "Cross-Plugin Ecosystem Validation",
   "description": "Verify all PopKit plugins work together without conflicts",
   "severity": "critical",
-  "plugins": [
-    "popkit-core",
-    "popkit-dev",
-    "popkit-ops",
-    "popkit-research",
-    "popkit-suite"
-  ],
+  "plugins": ["popkit-core", "popkit-dev", "popkit-ops", "popkit-research", "popkit-suite"],
   "test_cases": [
     {
       "case_id": "no-command-name-conflicts",

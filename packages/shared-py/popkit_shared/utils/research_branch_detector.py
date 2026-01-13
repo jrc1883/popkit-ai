@@ -22,6 +22,7 @@ from dataclasses import dataclass
 @dataclass
 class ResearchBranch:
     """Represents a detected research branch."""
+
     full_name: str  # e.g., origin/claude/research-claude-code-features-01Wp...
     short_name: str  # e.g., research-claude-code-features
     topic: str  # e.g., claude-code-features
@@ -35,12 +36,7 @@ class ResearchBranch:
 def run_git(args: List[str], check: bool = False) -> Tuple[bool, str]:
     """Run a git command and return success status and output."""
     try:
-        result = subprocess.run(
-            ["git"] + args,
-            capture_output=True,
-            text=True,
-            timeout=30
-        )
+        result = subprocess.run(["git"] + args, capture_output=True, text=True, timeout=30)
         if check and result.returncode != 0:
             return False, result.stderr
         return True, result.stdout.strip()
@@ -111,21 +107,15 @@ def _analyze_branch(full_name: str, match: re.Match) -> Optional[ResearchBranch]
     topic_clean = re.sub(r"-[A-Za-z0-9]{20,}$", "", topic)
 
     # Get commit info
-    success, commit_time = run_git([
-        "log", "-1", "--format=%ar", full_name
-    ])
+    success, commit_time = run_git(["log", "-1", "--format=%ar", full_name])
     created_ago = commit_time if success else "unknown"
 
     # Get commit count ahead of master
-    success, count = run_git([
-        "rev-list", "--count", f"master..{full_name}"
-    ])
+    success, count = run_git(["rev-list", "--count", f"master..{full_name}"])
     commit_count = int(count) if success and count.isdigit() else 0
 
     # Get files changed
-    success, diff_stat = run_git([
-        "diff", "--stat", "--name-only", f"master...{full_name}"
-    ])
+    success, diff_stat = run_git(["diff", "--stat", "--name-only", f"master...{full_name}"])
     files_changed = diff_stat.split("\n") if success and diff_stat else []
     files_changed = [f.strip() for f in files_changed if f.strip()]
 
@@ -158,7 +148,7 @@ def _analyze_branch(full_name: str, match: re.Match) -> Optional[ResearchBranch]
         commit_count=commit_count,
         files_changed=files_changed,
         has_docs=has_docs,
-        doc_paths=doc_paths
+        doc_paths=doc_paths,
     )
 
 
@@ -167,10 +157,7 @@ def format_branch_table(branches: List[ResearchBranch]) -> str:
     if not branches:
         return "No research branches detected."
 
-    lines = [
-        "| Branch | Topic | Created | Files |",
-        "|--------|-------|---------|-------|"
-    ]
+    lines = ["| Branch | Topic | Created | Files |", "|--------|-------|---------|-------|"]
 
     for b in branches:
         files_summary = f"{len(b.files_changed)} files"
@@ -186,9 +173,7 @@ def get_branch_content_preview(branch: ResearchBranch, max_lines: int = 50) -> D
     previews = {}
 
     for doc_path in branch.doc_paths[:3]:  # Limit to 3 docs
-        success, content = run_git([
-            "show", f"{branch.full_name}:{doc_path}"
-        ])
+        success, content = run_git(["show", f"{branch.full_name}:{doc_path}"])
         if success:
             lines = content.split("\n")[:max_lines]
             previews[doc_path] = "\n".join(lines)
@@ -220,7 +205,7 @@ def parse_research_doc(content: str) -> Dict[str, str]:
         "priority": "P2-medium",
         "summary": "",
         "tasks": [],
-        "raw_content": content
+        "raw_content": content,
     }
 
     lines = content.split("\n")
@@ -293,29 +278,29 @@ def generate_issue_body(branch: ResearchBranch, parsed_docs: List[Dict[str, str]
     ]
 
     if branch.doc_paths:
-        body_parts.extend([
-            "",
-            "## Documentation",
-            "",
-        ])
+        body_parts.extend(
+            [
+                "",
+                "## Documentation",
+                "",
+            ]
+        )
         for path in branch.doc_paths:
             body_parts.append(f"- `{path}`")
 
     tasks = primary.get("tasks", [])
     if tasks:
-        body_parts.extend([
-            "",
-            "## Implementation Tasks",
-            "",
-        ])
+        body_parts.extend(
+            [
+                "",
+                "## Implementation Tasks",
+                "",
+            ]
+        )
         for task in tasks:
             body_parts.append(f"- [ ] {task}")
 
-    body_parts.extend([
-        "",
-        "---",
-        "*Auto-generated from research branch by PopKit*"
-    ])
+    body_parts.extend(["", "---", "*Auto-generated from research branch by PopKit*"])
 
     return "\n".join(body_parts)
 

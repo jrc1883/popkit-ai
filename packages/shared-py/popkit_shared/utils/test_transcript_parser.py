@@ -13,8 +13,8 @@ def test_parser_creation():
     """Test that parser can be created and parses file"""
     # Use current session transcript
     # Find the most recent transcript file
-    projects_dir = Path.home() / '.claude' / 'projects'
-    transcripts = list(projects_dir.glob('*/*.jsonl'))
+    projects_dir = Path.home() / ".claude" / "projects"
+    transcripts = list(projects_dir.glob("*/*.jsonl"))
     if not transcripts:
         print("SKIP: No transcript files found")
         return
@@ -33,8 +33,8 @@ def test_parser_creation():
 def test_get_all_tool_uses():
     """Test extracting all tool uses from transcript"""
     # Find the most recent transcript file
-    projects_dir = Path.home() / '.claude' / 'projects'
-    transcripts = list(projects_dir.glob('*/*.jsonl'))
+    projects_dir = Path.home() / ".claude" / "projects"
+    transcripts = list(projects_dir.glob("*/*.jsonl"))
     if not transcripts:
         print("SKIP: No transcript files found")
         return
@@ -58,8 +58,8 @@ def test_get_all_tool_uses():
 def test_get_total_token_usage():
     """Test total token calculation"""
     # Find the most recent transcript file
-    projects_dir = Path.home() / '.claude' / 'projects'
-    transcripts = list(projects_dir.glob('*/*.jsonl'))
+    projects_dir = Path.home() / ".claude" / "projects"
+    transcripts = list(projects_dir.glob("*/*.jsonl"))
     if not transcripts:
         print("SKIP: No transcript files found")
         return
@@ -89,8 +89,8 @@ def test_get_total_token_usage():
 def test_get_reasoning_for_tool():
     """Test extracting reasoning for a specific tool use"""
     # Find the most recent transcript file
-    projects_dir = Path.home() / '.claude' / 'projects'
-    transcripts = list(projects_dir.glob('*/*.jsonl'))
+    projects_dir = Path.home() / ".claude" / "projects"
+    transcripts = list(projects_dir.glob("*/*.jsonl"))
     if not transcripts:
         print("SKIP: No transcript files found")
         return
@@ -110,7 +110,7 @@ def test_get_reasoning_for_tool():
 
     # Test with last tool use
     last_tool = tool_uses[-1]
-    tool_use_id = last_tool['tool_use_id']
+    tool_use_id = last_tool["tool_use_id"]
 
     reasoning = parser.get_reasoning_before_tool(tool_use_id)
 
@@ -119,18 +119,18 @@ def test_get_reasoning_for_tool():
     print(f"  Text blocks: {len(reasoning['text'])}")
     print(f"  Thinking blocks: {len(reasoning['thinking'])}")
 
-    if reasoning['text']:
+    if reasoning["text"]:
         print(f"  Text preview: {reasoning['text'][0][:100]}...")
 
-    if reasoning['thinking']:
+    if reasoning["thinking"]:
         print(f"  Thinking preview: {reasoning['thinking'][0][:100]}...")
 
 
 def test_get_token_usage_for_tool():
     """Test getting token usage for specific tool"""
     # Find the most recent transcript file
-    projects_dir = Path.home() / '.claude' / 'projects'
-    transcripts = list(projects_dir.glob('*/*.jsonl'))
+    projects_dir = Path.home() / ".claude" / "projects"
+    transcripts = list(projects_dir.glob("*/*.jsonl"))
     if not transcripts:
         print("SKIP: No transcript files found")
         return
@@ -150,7 +150,7 @@ def test_get_token_usage_for_tool():
 
     # Test with last tool
     last_tool = tool_uses[-1]
-    tool_use_id = last_tool['tool_use_id']
+    tool_use_id = last_tool["tool_use_id"]
 
     usage = parser.get_token_usage_for_tool(tool_use_id)
 
@@ -168,8 +168,8 @@ def test_get_token_usage_for_tool():
 def test_get_assistant_messages():
     """Test extracting all assistant messages"""
     # Find the most recent transcript file
-    projects_dir = Path.home() / '.claude' / 'projects'
-    transcripts = list(projects_dir.glob('*/*.jsonl'))
+    projects_dir = Path.home() / ".claude" / "projects"
+    transcripts = list(projects_dir.glob("*/*.jsonl"))
     if not transcripts:
         print("SKIP: No transcript files found")
         return
@@ -197,8 +197,8 @@ def test_get_assistant_messages():
 def test_timestamp_filtering():
     """Test timestamp filtering reduces token counts"""
     # Find the most recent transcript file
-    projects_dir = Path.home() / '.claude' / 'projects'
-    transcripts = list(projects_dir.glob('*/*.jsonl'))
+    projects_dir = Path.home() / ".claude" / "projects"
+    transcripts = list(projects_dir.glob("*/*.jsonl"))
     if not transcripts:
         print("SKIP: No transcript files found")
         return
@@ -214,13 +214,12 @@ def test_timestamp_filtering():
 
     # Parse with timestamp filter (last 1 hour)
     from datetime import datetime, timedelta
+
     now = datetime.now()
     one_hour_ago = (now - timedelta(hours=1)).isoformat()
 
     parser_filtered = TranscriptParser(
-        str(transcript_path),
-        start_time=one_hour_ago,
-        end_time=now.isoformat()
+        str(transcript_path), start_time=one_hour_ago, end_time=now.isoformat()
     )
     usage_filtered = parser_filtered.get_total_token_usage()
 
@@ -231,10 +230,16 @@ def test_timestamp_filtering():
     print(f"  Filtered tokens: {usage_filtered.total_tokens:,}")
 
     # Filtering should reduce token count (unless all entries are within 1 hour)
-    reduction_pct = ((usage_full.total_tokens - usage_filtered.total_tokens) / usage_full.total_tokens * 100) if usage_full.total_tokens > 0 else 0
+    reduction_pct = (
+        ((usage_full.total_tokens - usage_filtered.total_tokens) / usage_full.total_tokens * 100)
+        if usage_full.total_tokens > 0
+        else 0
+    )
     print(f"  Reduction: {reduction_pct:.1f}%")
 
-    assert len(parser_filtered.entries) <= len(parser_full.entries), "Filtered should have fewer or equal entries"
+    assert len(parser_filtered.entries) <= len(parser_full.entries), (
+        "Filtered should have fewer or equal entries"
+    )
 
 
 def run_all_tests():

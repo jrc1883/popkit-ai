@@ -18,14 +18,15 @@ from pathlib import Path
 import urllib.request
 import urllib.error
 
+
 # Load .env file if available (for API keys)
 def _load_dotenv():
     """Load environment variables from .env files."""
     # Check multiple locations for .env
     env_locations = [
-        Path.cwd() / ".env",                          # Project root
-        Path(__file__).parent.parent.parent / ".env", # PopKit root
-        Path.home() / ".claude" / ".env",             # User claude config
+        Path.cwd() / ".env",  # Project root
+        Path(__file__).parent.parent.parent / ".env",  # PopKit root
+        Path.home() / ".claude" / ".env",  # User claude config
     ]
 
     for env_path in env_locations:
@@ -43,6 +44,7 @@ def _load_dotenv():
                 break  # Use first .env found
             except Exception:
                 pass
+
 
 _load_dotenv()
 
@@ -64,9 +66,11 @@ BATCH_SIZE = 128  # Max texts per request
 # DATA CLASSES
 # =============================================================================
 
+
 @dataclass
 class EmbeddingResponse:
     """Response from embedding API."""
+
     embeddings: List[List[float]]
     model: str
     usage: Dict[str, int] = field(default_factory=dict)
@@ -75,6 +79,7 @@ class EmbeddingResponse:
 @dataclass
 class EmbeddingUsage:
     """Track API usage for rate limiting."""
+
     total_tokens: int = 0
     total_requests: int = 0
     last_reset: float = field(default_factory=time.time)
@@ -117,6 +122,7 @@ class EmbeddingUsage:
 # VOYAGE CLIENT
 # =============================================================================
 
+
 class VoyageClient:
     """
     Client for Voyage embedding API.
@@ -130,10 +136,7 @@ class VoyageClient:
     """
 
     def __init__(
-        self,
-        api_key: Optional[str] = None,
-        model: str = VOYAGE_MODEL,
-        cache_enabled: bool = True
+        self, api_key: Optional[str] = None, model: str = VOYAGE_MODEL, cache_enabled: bool = True
     ):
         """
         Initialize Voyage client.
@@ -153,11 +156,7 @@ class VoyageClient:
     # PUBLIC API
     # =========================================================================
 
-    def embed(
-        self,
-        texts: List[str],
-        input_type: str = "document"
-    ) -> List[List[float]]:
+    def embed(self, texts: List[str], input_type: str = "document") -> List[List[float]]:
         """
         Generate embeddings for a list of texts.
 
@@ -174,8 +173,7 @@ class VoyageClient:
         """
         if not self.api_key:
             raise ValueError(
-                "VOYAGE_API_KEY not set. "
-                "Set environment variable or pass api_key to constructor."
+                "VOYAGE_API_KEY not set. Set environment variable or pass api_key to constructor."
             )
 
         if not texts:
@@ -224,11 +222,7 @@ class VoyageClient:
 
         return results
 
-    def embed_single(
-        self,
-        text: str,
-        input_type: str = "document"
-    ) -> List[float]:
+    def embed_single(self, text: str, input_type: str = "document") -> List[float]:
         """
         Embed a single text string.
 
@@ -268,36 +262,22 @@ class VoyageClient:
         """Get current usage stats."""
         return {
             "total_tokens": self._usage.total_tokens,
-            "total_requests": self._usage.total_requests
+            "total_requests": self._usage.total_requests,
         }
 
     # =========================================================================
     # INTERNAL METHODS
     # =========================================================================
 
-    def _call_api(
-        self,
-        texts: List[str],
-        input_type: str
-    ) -> EmbeddingResponse:
+    def _call_api(self, texts: List[str], input_type: str) -> EmbeddingResponse:
         """Make API call to Voyage."""
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
+        headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
 
-        data = json.dumps({
-            "model": self.model,
-            "input": texts,
-            "input_type": input_type
-        }).encode("utf-8")
-
-        request = urllib.request.Request(
-            VOYAGE_API_URL,
-            data=data,
-            headers=headers,
-            method="POST"
+        data = json.dumps({"model": self.model, "input": texts, "input_type": input_type}).encode(
+            "utf-8"
         )
+
+        request = urllib.request.Request(VOYAGE_API_URL, data=data, headers=headers, method="POST")
 
         try:
             with urllib.request.urlopen(request, timeout=60) as response:
@@ -305,7 +285,7 @@ class VoyageClient:
                 return EmbeddingResponse(
                     embeddings=[item["embedding"] for item in result["data"]],
                     model=result["model"],
-                    usage=result.get("usage", {})
+                    usage=result.get("usage", {}),
                 )
         except urllib.error.HTTPError as e:
             body = e.read().decode("utf-8") if e.fp else ""
@@ -314,11 +294,7 @@ class VoyageClient:
             raise RuntimeError(f"Network error: {e.reason}")
 
     def _call_api_with_retry(
-        self,
-        texts: List[str],
-        input_type: str,
-        max_attempts: int = 3,
-        initial_delay: float = 1.0
+        self, texts: List[str], input_type: str, max_attempts: int = 3, initial_delay: float = 1.0
     ) -> EmbeddingResponse:
         """Call API with exponential backoff retry."""
         last_error = None
@@ -440,7 +416,7 @@ if __name__ == "__main__":
     texts = [
         "First document about AI",
         "Second document about coding",
-        "Third document about Python"
+        "Third document about Python",
     ]
     embeddings = client.embed(texts)
     print(f"Embedded {len(embeddings)} texts")

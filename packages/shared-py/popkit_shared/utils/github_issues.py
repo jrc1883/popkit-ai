@@ -23,6 +23,7 @@ from typing import Dict, List, Optional, Any
 # Issue Parsing - PopKit Guidance Section
 # =============================================================================
 
+
 def fetch_issue(issue_number: int) -> Optional[Dict[str, Any]]:
     """Fetch issue details from GitHub.
 
@@ -34,11 +35,17 @@ def fetch_issue(issue_number: int) -> Optional[Dict[str, Any]]:
     """
     try:
         result = subprocess.run(
-            ["gh", "issue", "view", str(issue_number), "--json",
-             "number,title,body,labels,state,author"],
+            [
+                "gh",
+                "issue",
+                "view",
+                str(issue_number),
+                "--json",
+                "number,title,body,labels,state,author",
+            ],
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=30,
         )
 
         if result.returncode == 0:
@@ -74,7 +81,7 @@ def parse_popkit_guidance(issue_body: str) -> Dict[str, Any]:
         "quality_gates": [],
         "power_mode": "not_needed",
         "complexity": "medium",
-        "raw_section": None
+        "raw_section": None,
     }
 
     if not issue_body:
@@ -82,9 +89,7 @@ def parse_popkit_guidance(issue_body: str) -> Dict[str, Any]:
 
     # Find PopKit Guidance section
     guidance_match = re.search(
-        r'## PopKit Guidance\s*\n(.*?)(?=\n## |\n---|\Z)',
-        issue_body,
-        re.DOTALL | re.IGNORECASE
+        r"## PopKit Guidance\s*\n(.*?)(?=\n## |\n---|\Z)", issue_body, re.DOTALL | re.IGNORECASE
     )
 
     if not guidance_match:
@@ -94,21 +99,21 @@ def parse_popkit_guidance(issue_body: str) -> Dict[str, Any]:
     config["raw_section"] = guidance_text
 
     # Parse Workflow type
-    if re.search(r'\[x\].*Brainstorm First', guidance_text, re.IGNORECASE):
+    if re.search(r"\[x\].*Brainstorm First", guidance_text, re.IGNORECASE):
         config["workflow_type"] = "brainstorm_first"
-    elif re.search(r'\[x\].*Plan Required', guidance_text, re.IGNORECASE):
+    elif re.search(r"\[x\].*Plan Required", guidance_text, re.IGNORECASE):
         config["workflow_type"] = "plan_required"
-    elif re.search(r'\[x\].*Direct Implementation', guidance_text, re.IGNORECASE):
+    elif re.search(r"\[x\].*Direct Implementation", guidance_text, re.IGNORECASE):
         config["workflow_type"] = "direct"
 
     # Parse Development Phases
     phase_patterns = [
-        ("discovery", r'\[x\].*Discovery'),
-        ("architecture", r'\[x\].*Architecture'),
-        ("implementation", r'\[x\].*Implementation'),
-        ("testing", r'\[x\].*Testing'),
-        ("documentation", r'\[x\].*Documentation'),
-        ("review", r'\[x\].*Review'),
+        ("discovery", r"\[x\].*Discovery"),
+        ("architecture", r"\[x\].*Architecture"),
+        ("implementation", r"\[x\].*Implementation"),
+        ("testing", r"\[x\].*Testing"),
+        ("documentation", r"\[x\].*Documentation"),
+        ("review", r"\[x\].*Review"),
     ]
     for phase_name, pattern in phase_patterns:
         if re.search(pattern, guidance_text, re.IGNORECASE):
@@ -116,56 +121,54 @@ def parse_popkit_guidance(issue_body: str) -> Dict[str, Any]:
 
     # Parse Suggested Agents
     agents_match = re.search(
-        r'### Suggested Agents\s*\n(.*?)(?=\n### |\n## |\Z)',
-        guidance_text,
-        re.DOTALL
+        r"### Suggested Agents\s*\n(.*?)(?=\n### |\n## |\Z)", guidance_text, re.DOTALL
     )
     if agents_match:
         agents_text = agents_match.group(1)
 
         # Primary agents - capture everything after "Primary:" until newline
-        primary_match = re.search(r'Primary:\s*(.+?)$', agents_text, re.MULTILINE)
+        primary_match = re.search(r"Primary:\s*(.+?)$", agents_text, re.MULTILINE)
         if primary_match:
             # Remove backticks and split by comma
-            agent_str = primary_match.group(1).replace('`', '')
-            agents = [a.strip() for a in agent_str.split(',')]
-            config["agents"]["primary"] = [a for a in agents if a and a != '[agent-name]']
+            agent_str = primary_match.group(1).replace("`", "")
+            agents = [a.strip() for a in agent_str.split(",")]
+            config["agents"]["primary"] = [a for a in agents if a and a != "[agent-name]"]
 
         # Supporting agents - capture everything after "Supporting:" until newline
-        supporting_match = re.search(r'Supporting:\s*(.+?)$', agents_text, re.MULTILINE)
+        supporting_match = re.search(r"Supporting:\s*(.+?)$", agents_text, re.MULTILINE)
         if supporting_match:
-            agent_str = supporting_match.group(1).replace('`', '')
-            agents = [a.strip() for a in agent_str.split(',')]
-            config["agents"]["supporting"] = [a for a in agents if a and a != '[agent-name]']
+            agent_str = supporting_match.group(1).replace("`", "")
+            agents = [a.strip() for a in agent_str.split(",")]
+            config["agents"]["supporting"] = [a for a in agents if a and a != "[agent-name]"]
 
     # Parse Quality Gates
     gate_patterns = [
-        ("typescript", r'\[x\].*TypeScript'),
-        ("build", r'\[x\].*Build'),
-        ("lint", r'\[x\].*Lint'),
-        ("test", r'\[x\].*Test'),
-        ("review", r'\[x\].*Manual review'),
+        ("typescript", r"\[x\].*TypeScript"),
+        ("build", r"\[x\].*Build"),
+        ("lint", r"\[x\].*Lint"),
+        ("test", r"\[x\].*Test"),
+        ("review", r"\[x\].*Manual review"),
     ]
     for gate_name, pattern in gate_patterns:
         if re.search(pattern, guidance_text, re.IGNORECASE):
             config["quality_gates"].append(gate_name)
 
     # Parse Power Mode recommendation
-    if re.search(r'\[x\].*Recommended.*parallel', guidance_text, re.IGNORECASE):
+    if re.search(r"\[x\].*Recommended.*parallel", guidance_text, re.IGNORECASE):
         config["power_mode"] = "recommended"
-    elif re.search(r'\[x\].*Optional.*coordination', guidance_text, re.IGNORECASE):
+    elif re.search(r"\[x\].*Optional.*coordination", guidance_text, re.IGNORECASE):
         config["power_mode"] = "optional"
-    elif re.search(r'\[x\].*Not Needed', guidance_text, re.IGNORECASE):
+    elif re.search(r"\[x\].*Not Needed", guidance_text, re.IGNORECASE):
         config["power_mode"] = "not_needed"
 
     # Parse Complexity
-    if re.search(r'\[x\].*Small', guidance_text, re.IGNORECASE):
+    if re.search(r"\[x\].*Small", guidance_text, re.IGNORECASE):
         config["complexity"] = "small"
-    elif re.search(r'\[x\].*Medium', guidance_text, re.IGNORECASE):
+    elif re.search(r"\[x\].*Medium", guidance_text, re.IGNORECASE):
         config["complexity"] = "medium"
-    elif re.search(r'\[x\].*Large', guidance_text, re.IGNORECASE):
+    elif re.search(r"\[x\].*Large", guidance_text, re.IGNORECASE):
         config["complexity"] = "large"
-    elif re.search(r'\[x\].*Epic', guidance_text, re.IGNORECASE):
+    elif re.search(r"\[x\].*Epic", guidance_text, re.IGNORECASE):
         config["complexity"] = "epic"
 
     return config
@@ -198,7 +201,7 @@ def get_workflow_config(issue_number: int) -> Dict[str, Any]:
         "suggested_phases": [],
         "generated": False,
         "needs_guidance": False,
-        "error": None
+        "error": None,
     }
 
     # Fetch issue
@@ -211,7 +214,7 @@ def get_workflow_config(issue_number: int) -> Dict[str, Any]:
         "number": issue.get("number"),
         "title": issue.get("title"),
         "state": issue.get("state"),
-        "labels": [l.get("name") for l in issue.get("labels", [])]
+        "labels": [l.get("name") for l in issue.get("labels", [])],
     }
 
     # Parse guidance from issue body
@@ -224,11 +227,13 @@ def get_workflow_config(issue_number: int) -> Dict[str, Any]:
         result["generated"] = False
     else:
         # No PopKit Guidance - generate fallback plan
-        fallback = generate_orchestration_plan({
-            "title": issue.get("title"),
-            "body": issue.get("body"),
-            "labels": result["issue"]["labels"]
-        })
+        fallback = generate_orchestration_plan(
+            {
+                "title": issue.get("title"),
+                "body": issue.get("body"),
+                "labels": result["issue"]["labels"],
+            }
+        )
 
         # Merge fallback into config format
         config = {
@@ -242,7 +247,7 @@ def get_workflow_config(issue_number: int) -> Dict[str, Any]:
             "generated": True,
             "issue_type": fallback["issue_type"],
             "confidence": fallback["confidence"],
-            "reason": fallback["reason"]
+            "reason": fallback["reason"],
         }
         result["config"] = config
         result["generated"] = True
@@ -255,13 +260,18 @@ def get_workflow_config(issue_number: int) -> Dict[str, Any]:
     # Activate if: explicitly recommended, OR epic complexity, OR 3+ agents
     total_agents = len(config["agents"]["primary"]) + len(config["agents"]["supporting"])
     result["should_activate_power_mode"] = (
-        config["power_mode"] == "recommended" or
-        config["complexity"] == "epic" or
-        total_agents >= 3
+        config["power_mode"] == "recommended" or config["complexity"] == "epic" or total_agents >= 3
     )
 
     # Build suggested phase order
-    default_phases = ["discovery", "architecture", "implementation", "testing", "documentation", "review"]
+    default_phases = [
+        "discovery",
+        "architecture",
+        "implementation",
+        "testing",
+        "documentation",
+        "review",
+    ]
     if config["phases"]:
         # Use checked phases (or generated phases) in default order
         result["suggested_phases"] = [p for p in default_phases if p in config["phases"]]
@@ -317,26 +327,17 @@ def get_agents_for_issue_type(issue_type: str) -> Dict[str, List[str]]:
         Dict with primary and supporting agent lists
     """
     agent_map = {
-        "bug": {
-            "primary": ["bug-whisperer"],
-            "supporting": ["test-writer-fixer"]
-        },
+        "bug": {"primary": ["bug-whisperer"], "supporting": ["test-writer-fixer"]},
         "feature": {
             "primary": ["code-architect"],
-            "supporting": ["test-writer-fixer", "documentation-maintainer"]
+            "supporting": ["test-writer-fixer", "documentation-maintainer"],
         },
         "architecture": {
             "primary": ["code-architect", "refactoring-expert"],
-            "supporting": ["migration-specialist", "code-reviewer"]
+            "supporting": ["migration-specialist", "code-reviewer"],
         },
-        "research": {
-            "primary": ["researcher"],
-            "supporting": ["code-explorer"]
-        },
-        "unknown": {
-            "primary": [],
-            "supporting": []
-        }
+        "research": {"primary": ["researcher"], "supporting": ["code-explorer"]},
+        "unknown": {"primary": [], "supporting": []},
     }
     return agent_map.get(issue_type, agent_map["unknown"])
 
@@ -353,9 +354,16 @@ def get_default_phases(issue_type: str) -> List[str]:
     phase_map = {
         "bug": ["discovery", "implementation", "testing"],
         "feature": ["discovery", "architecture", "implementation", "testing", "review"],
-        "architecture": ["discovery", "architecture", "implementation", "testing", "documentation", "review"],
+        "architecture": [
+            "discovery",
+            "architecture",
+            "implementation",
+            "testing",
+            "documentation",
+            "review",
+        ],
         "research": ["discovery", "documentation", "review"],
-        "unknown": ["implementation", "testing", "review"]
+        "unknown": ["implementation", "testing", "review"],
     }
     return phase_map.get(issue_type, phase_map["unknown"])
 
@@ -433,7 +441,7 @@ def generate_orchestration_plan(issue: Dict[str, Any]) -> Dict[str, Any]:
         "power_mode": "not_needed",
         "quality_gates": [],
         "confidence": 0.0,
-        "reason": ""
+        "reason": "",
     }
 
     # Infer issue type
@@ -485,7 +493,9 @@ def generate_orchestration_plan(issue: Dict[str, Any]) -> Dict[str, Any]:
     # If confidence is too low, suggest user provides guidance
     if confidence < 0.5 or issue_type == "unknown":
         result["needs_guidance"] = True
-        result["reason"] = "Low confidence inference. Consider adding PopKit Guidance section to the issue."
+        result["reason"] = (
+            "Low confidence inference. Consider adding PopKit Guidance section to the issue."
+        )
 
     return result
 
@@ -508,50 +518,47 @@ def create_issue_from_lesson(lesson: dict) -> dict:
     title = f"[Lesson Learned] {lesson.get('type', 'unknown')}: {lesson.get('symptom', 'No description')[:50]}"
 
     body = f"""## Context
-{lesson.get('context', 'No context provided')}
+{lesson.get("context", "No context provided")}
 
 ## Symptom
-{lesson.get('symptom', 'No symptom description')}
+{lesson.get("symptom", "No symptom description")}
 
 ## Root Cause
-{lesson.get('root_cause', 'Root cause not identified')}
+{lesson.get("root_cause", "Root cause not identified")}
 
 ## Fix Applied
-{lesson.get('fix', 'No fix documented')}
+{lesson.get("fix", "No fix documented")}
 
 ## Prevention
-{lesson.get('prevention', 'No prevention measures documented')}
+{lesson.get("prevention", "No prevention measures documented")}
 
 ---
-*Auto-generated from popkit error tracking on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*
+*Auto-generated from popkit error tracking on {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}*
 """
 
     try:
         result = subprocess.run(
             [
-                "gh", "issue", "create",
-                "--title", title,
-                "--body", body,
-                "--label", "lesson-learned,automated"
+                "gh",
+                "issue",
+                "create",
+                "--title",
+                title,
+                "--body",
+                body,
+                "--label",
+                "lesson-learned,automated",
             ],
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=30,
         )
 
         if result.returncode == 0:
             issue_url = result.stdout.strip()
-            return {
-                "status": "created",
-                "url": issue_url,
-                "title": title
-            }
+            return {"status": "created", "url": issue_url, "title": title}
         else:
-            return {
-                "status": "error",
-                "error": result.stderr,
-                "title": title
-            }
+            return {"status": "error", "error": result.stderr, "title": title}
     except subprocess.TimeoutExpired:
         return {"status": "error", "error": "Timeout creating issue"}
     except FileNotFoundError:
@@ -572,9 +579,9 @@ def create_issue_from_validation_failure(validation_result: dict) -> dict:
     Returns:
         Dict with status and issue URL if successful
     """
-    agent = validation_result.get('agent', 'unknown')
-    output_style = validation_result.get('output_style', 'unknown')
-    missing = validation_result.get('missing_fields', [])
+    agent = validation_result.get("agent", "unknown")
+    output_style = validation_result.get("output_style", "unknown")
+    missing = validation_result.get("missing_fields", [])
 
     title = f"[Validation Failure] {agent}: Missing {len(missing)} required fields"
 
@@ -585,7 +592,7 @@ def create_issue_from_validation_failure(validation_result: dict) -> dict:
 `{output_style}`
 
 ## Missing Required Fields
-{chr(10).join(f'- `{field}`' for field in missing)}
+{chr(10).join(f"- `{field}`" for field in missing)}
 
 ## Context
 Agent output did not conform to the declared output_style schema.
@@ -594,28 +601,29 @@ Agent output did not conform to the declared output_style schema.
 Update the agent prompt or implementation to include the required fields.
 
 ---
-*Auto-generated from popkit output validator on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*
+*Auto-generated from popkit output validator on {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}*
 """
 
     try:
         result = subprocess.run(
             [
-                "gh", "issue", "create",
-                "--title", title,
-                "--body", body,
-                "--label", "validation-failure,agent,automated"
+                "gh",
+                "issue",
+                "create",
+                "--title",
+                title,
+                "--body",
+                body,
+                "--label",
+                "validation-failure,agent,automated",
             ],
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=30,
         )
 
         if result.returncode == 0:
-            return {
-                "status": "created",
-                "url": result.stdout.strip(),
-                "title": title
-            }
+            return {"status": "created", "url": result.stdout.strip(), "title": title}
         else:
             return {"status": "error", "error": result.stderr}
     except Exception as e:
@@ -639,32 +647,28 @@ def save_lesson_locally(lesson: dict, status_file: Path = None) -> dict:
         # Load existing status
         status = {}
         if status_file.exists():
-            with open(status_file, 'r', encoding='utf-8') as f:
+            with open(status_file, "r", encoding="utf-8") as f:
                 status = json.load(f)
 
         # Initialize lessons_learned if not present
-        if 'lessons_learned' not in status:
-            status['lessons_learned'] = []
+        if "lessons_learned" not in status:
+            status["lessons_learned"] = []
 
         # Add ID and timestamp if not present
-        if 'id' not in lesson:
-            lesson['id'] = f"LL-{len(status['lessons_learned']) + 1:03d}"
-        if 'date' not in lesson:
-            lesson['date'] = datetime.now().strftime('%Y-%m-%d')
+        if "id" not in lesson:
+            lesson["id"] = f"LL-{len(status['lessons_learned']) + 1:03d}"
+        if "date" not in lesson:
+            lesson["date"] = datetime.now().strftime("%Y-%m-%d")
 
         # Add lesson
-        status['lessons_learned'].append(lesson)
+        status["lessons_learned"].append(lesson)
 
         # Save status
         status_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(status_file, 'w', encoding='utf-8') as f:
+        with open(status_file, "w", encoding="utf-8") as f:
             json.dump(status, f, indent=2)
 
-        return {
-            "status": "saved",
-            "id": lesson['id'],
-            "file": str(status_file)
-        }
+        return {"status": "saved", "id": lesson["id"], "file": str(status_file)}
     except Exception as e:
         return {"status": "error", "error": str(e)}
 
@@ -686,27 +690,27 @@ def save_error_locally(error: dict, status_file: Path = None) -> dict:
         # Load existing status
         status = {}
         if status_file.exists():
-            with open(status_file, 'r', encoding='utf-8') as f:
+            with open(status_file, "r", encoding="utf-8") as f:
                 status = json.load(f)
 
         # Initialize error_log if not present
-        if 'error_log' not in status:
-            status['error_log'] = []
+        if "error_log" not in status:
+            status["error_log"] = []
 
         # Add timestamp if not present
-        if 'timestamp' not in error:
-            error['timestamp'] = datetime.now().isoformat()
+        if "timestamp" not in error:
+            error["timestamp"] = datetime.now().isoformat()
 
         # Add error
-        status['error_log'].append(error)
+        status["error_log"].append(error)
 
         # Keep only last 100 errors
-        if len(status['error_log']) > 100:
-            status['error_log'] = status['error_log'][-100:]
+        if len(status["error_log"]) > 100:
+            status["error_log"] = status["error_log"][-100:]
 
         # Save status
         status_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(status_file, 'w', encoding='utf-8') as f:
+        with open(status_file, "w", encoding="utf-8") as f:
             json.dump(status, f, indent=2)
 
         return {"status": "saved", "file": str(status_file)}
@@ -788,7 +792,7 @@ Test issue for parsing
         "symptom": "Specialists not triggered for lint work",
         "root_cause": "Missing 'lint', 'eslint' keywords in routing config",
         "fix": "Added lint keywords to agents/config.json",
-        "prevention": "Add routing test cases for new keywords"
+        "prevention": "Add routing test cases for new keywords",
     }
 
     print("Testing save_lesson_locally...")

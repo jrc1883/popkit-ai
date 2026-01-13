@@ -23,24 +23,24 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
     with open(recording_file) as f:
         data = json.load(f)
 
-    session_id = data.get('session_id', 'unknown')
-    events = data.get('events', [])
+    session_id = data.get("session_id", "unknown")
+    events = data.get("events", [])
 
     # Analyze events by type
-    tool_calls = [e for e in events if e.get('type') == 'tool_call']
-    file_reads = [e for e in events if e.get('type') == 'file_read']
-    reasoning_steps = [e for e in events if e.get('type') == 'reasoning']
-    recommendations = [e for e in events if e.get('type') == 'recommendation']
-    decisions = [e for e in events if e.get('type') == 'decision']
-    subagent_stops = [e for e in events if e.get('type') == 'subagent_stop']
+    tool_calls = [e for e in events if e.get("type") == "tool_call"]
+    file_reads = [e for e in events if e.get("type") == "file_read"]
+    reasoning_steps = [e for e in events if e.get("type") == "reasoning"]
+    recommendations = [e for e in events if e.get("type") == "recommendation"]
+    decisions = [e for e in events if e.get("type") == "decision"]
+    subagent_stops = [e for e in events if e.get("type") == "subagent_stop"]
 
     # Calculate stats
-    total_duration = sum(e.get('duration_ms') or 0 for e in tool_calls)
-    error_count = sum(1 for e in tool_calls if e.get('error'))
+    total_duration = sum(e.get("duration_ms") or 0 for e in tool_calls)
+    error_count = sum(1 for e in tool_calls if e.get("error"))
     success_rate = ((len(tool_calls) - error_count) / len(tool_calls) * 100) if tool_calls else 100
 
     # Generate HTML
-    html = f'''<!DOCTYPE html>
+    html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -253,7 +253,7 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
         </div>
         <div class="stat-card">
             <div class="label">Total Duration</div>
-            <div class="value">{total_duration/1000:.1f}<span style="font-size: 16px; color: #888;">s</span></div>
+            <div class="value">{total_duration / 1000:.1f}<span style="font-size: 16px; color: #888;">s</span></div>
         </div>
         <div class="stat-card">
             <div class="label">Success Rate</div>
@@ -264,80 +264,79 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
             <div class="value">{len(subagent_stops)}</div>
         </div>
     </div>
-'''
+"""
 
     # Context Files Section
     if file_reads:
-        html += f'''
+        html += f"""
     <div class="section">
         <h2>📂 Context Files Read ({len(file_reads)})</h2>
         <div class="section-content">
-'''
+"""
         for fr in file_reads:
-            file_path = fr.get('file_path', 'unknown')
-            summary = fr.get('content_summary', 'No summary')
-            relevant = fr.get('relevant', True)
-            relevance_badge = '✓ Relevant' if relevant else '✗ Skipped'
+            file_path = fr.get("file_path", "unknown")
+            summary = fr.get("content_summary", "No summary")
+            relevant = fr.get("relevant", True)
+            relevance_badge = "✓ Relevant" if relevant else "✗ Skipped"
 
-            html += f'''
+            html += f"""
             <div class="event-item">
                 <span class="context-file">{file_path}</span>
-                <span style="color: {'#4ec9b0' if relevant else '#888'}; margin-left: 10px;">{relevance_badge}</span>
+                <span style="color: {"#4ec9b0" if relevant else "#888"}; margin-left: 10px;">{relevance_badge}</span>
                 <div class="event-details">{summary}</div>
             </div>
-'''
-        html += '''
+"""
+        html += """
         </div>
     </div>
-'''
+"""
 
     # Decision Flow Section
-    html += f'''
+    html += f"""
     <div class="section">
         <h2>🧠 Decision Flow ({len(reasoning_steps)} steps, {len(recommendations)} recommendations)</h2>
         <div class="section-content">
             <div class="event-flow">
-'''
+"""
 
     # Combine reasoning, recommendations, and decisions in chronological order
     flow_events = sorted(
-        reasoning_steps + recommendations + decisions,
-        key=lambda e: e.get('sequence', 0)
+        reasoning_steps + recommendations + decisions, key=lambda e: e.get("sequence", 0)
     )
 
     for event in flow_events:
-        event_type = event.get('type', 'unknown')
+        event_type = event.get("type", "unknown")
 
-        if event_type == 'reasoning':
-            step = event.get('step', 'Unknown step')
-            reasoning = event.get('reasoning', '')
-            data = event.get('data', {})
+        if event_type == "reasoning":
+            step = event.get("step", "Unknown step")
+            reasoning = event.get("reasoning", "")
+            data = event.get("data", {})
 
-            html += f'''
+            html += f"""
                 <div class="event-item">
                     <span class="event-type type-reasoning">REASONING</span>
                     <div class="event-details">
                         <strong>{step}</strong><br>
                         {reasoning}
-                        {f'<pre style="margin-top: 10px; color: #888;">{json.dumps(data, indent=2)}</pre>' if data else ''}
+                        {f'<pre style="margin-top: 10px; color: #888;">{json.dumps(data, indent=2)}</pre>' if data else ""}
                     </div>
                 </div>
-'''
+"""
 
-        elif event_type == 'recommendation':
-            command = event.get('command', 'Unknown command')
-            score = event.get('priority_score', 0)
-            reason = event.get('reason', '')
+        elif event_type == "recommendation":
+            command = event.get("command", "Unknown command")
+            score = event.get("priority_score", 0)
+            reason = event.get("reason", "")
 
             # Determine priority level
             if score >= 80:
-                priority = 'high'
+                priority = "high"
             elif score >= 50:
-                priority = 'medium'
+                priority = "medium"
             else:
-                priority = 'low'
+                priority = "low"
 
-            html += f'''
+            html += f"""
                 <div class="event-item">
                     <span class="event-type type-recommendation">RECOMMENDATION</span>
                     <span class="priority-badge priority-{priority}">Priority: {score}</span>
@@ -346,36 +345,36 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                         {reason}
                     </div>
                 </div>
-'''
+"""
 
-    html += '''
+    html += """
             </div>
         </div>
     </div>
-'''
+"""
 
     # Tool Calls Timeline
-    html += f'''
+    html += f"""
     <div class="section">
         <h2>⚙️ Tool Execution Timeline ({len(tool_calls)} calls)</h2>
         <div class="section-content">
             <div class="event-flow">
-'''
+"""
 
-    max_duration = max((e.get('duration_ms') or 0 for e in tool_calls), default=1)
+    max_duration = max((e.get("duration_ms") or 0 for e in tool_calls), default=1)
 
     for i, tc in enumerate(tool_calls, 1):
-        tool_name = tc.get('tool_name', 'Unknown')
-        params = tc.get('parameters', {})
-        duration = tc.get('duration_ms') or 0
-        error = tc.get('error')
-        status = 'ERROR' if error else 'OK'
-        status_color = '#f48771' if error else '#4ec9b0'
+        tool_name = tc.get("tool_name", "Unknown")
+        params = tc.get("parameters", {})
+        duration = tc.get("duration_ms") or 0
+        error = tc.get("error")
+        status = "ERROR" if error else "OK"
+        status_color = "#f48771" if error else "#4ec9b0"
 
         # Calculate progress bar width
         bar_width = (duration / max_duration * 100) if max_duration > 0 else 0
 
-        html += f'''
+        html += f"""
                 <div class="event-item">
                     <span class="event-type type-tool_call">{tool_name}</span>
                     <span style="color: {status_color}; font-weight: bold; margin-left: 10px;">{status}</span>
@@ -390,34 +389,34 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                         <div class="collapsible-content">
                             <strong>Parameters:</strong>
                             <pre>{json.dumps(params, indent=2)}</pre>
-                            {'<strong style="color: #f48771;">Error:</strong><br>' + error if error else ''}
+                            {'<strong style="color: #f48771;">Error:</strong><br>' + error if error else ""}
                         </div>
                     </div>
                 </div>
-'''
+"""
 
-    html += '''
+    html += """
             </div>
         </div>
     </div>
-'''
+"""
 
     # Sub-Agent Completions Section
     if subagent_stops:
-        html += f'''
+        html += f"""
     <div class="section">
         <h2>🤖 Sub-Agent Completions ({len(subagent_stops)})</h2>
         <div class="section-content">
             <div class="event-flow">
-'''
+"""
         for i, sa in enumerate(subagent_stops, 1):
-            agent_id = sa.get('agent_id', 'unknown')
-            timestamp = sa.get('timestamp', 'N/A')
-            session_id = sa.get('session_id', 'N/A')
-            transcript_available = sa.get('transcript_available', False)
-            transcript_icon = '✅' if transcript_available else '❌'
+            agent_id = sa.get("agent_id", "unknown")
+            timestamp = sa.get("timestamp", "N/A")
+            session_id = sa.get("session_id", "N/A")
+            transcript_available = sa.get("transcript_available", False)
+            transcript_icon = "✅" if transcript_available else "❌"
 
-            html += f'''
+            html += f"""
                 <div class="event-item">
                     <span class="event-type" style="background: #c586c0; color: #000;">SUB-AGENT</span>
                     <span style="color: #4ec9b0; font-weight: bold; margin-left: 10px;">COMPLETED</span>
@@ -425,27 +424,27 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                         <strong>Agent ID:</strong> {agent_id}<br>
                         <strong>Session ID:</strong> {session_id[:12]}...<br>
                         <strong>Timestamp:</strong> {timestamp}<br>
-                        <strong>Transcript:</strong> {transcript_icon} {'Available' if transcript_available else 'Not Found'}
+                        <strong>Transcript:</strong> {transcript_icon} {"Available" if transcript_available else "Not Found"}
                         <div class="collapsible" onclick="toggleCollapsible(this)">
                             📋 Details (click to expand)
                         </div>
                         <div class="collapsible-content">
                             <strong>Full Event:</strong>
                             <pre>{json.dumps(sa, indent=2)}</pre>
-                            {f'<p style="color: #4ec9b0;">💡 Transcript file: <code>agent-{agent_id}.jsonl</code></p>' if transcript_available else ''}
+                            {f'<p style="color: #4ec9b0;">💡 Transcript file: <code>agent-{agent_id}.jsonl</code></p>' if transcript_available else ""}
                         </div>
                     </div>
                 </div>
-'''
+"""
 
-        html += '''
+        html += """
             </div>
         </div>
     </div>
-'''
+"""
 
     # JavaScript for interactivity
-    html += '''
+    html += """
     <script>
         // Toggle sections
         document.querySelectorAll('.section h2').forEach(header => {
@@ -470,14 +469,14 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
     </script>
 </body>
 </html>
-'''
+"""
 
     # Write HTML file (UTF-8 encoding for Windows compatibility)
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    output_file.write_text(html, encoding='utf-8')
+    output_file.write_text(html, encoding="utf-8")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
 
     if len(sys.argv) < 2:
@@ -485,7 +484,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     recording_file = Path(sys.argv[1])
-    output_file = Path(sys.argv[2]) if len(sys.argv) > 2 else recording_file.with_suffix('.html')
+    output_file = Path(sys.argv[2]) if len(sys.argv) > 2 else recording_file.with_suffix(".html")
 
     generate_html_report(recording_file, output_file)
     print(f"HTML report generated: {output_file}")

@@ -129,10 +129,7 @@
       "After agent generation",
       "After MCP server generation"
     ],
-    "manual": [
-      "/popkit:project embed",
-      "Invoke pop-embed-content skill"
-    ]
+    "manual": ["/popkit:project embed", "Invoke pop-embed-content skill"]
   },
   "configuration": {
     "embedding_model": "voyage-3.5",

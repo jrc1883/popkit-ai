@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 # Try to import lxml for XSD validation (optional dependency)
 try:
     from lxml import etree as lxml_etree
+
     HAS_LXML = True
 except ImportError:
     HAS_LXML = False
@@ -39,21 +40,20 @@ def get_schema_path(schema_type: str) -> Path:
         ValueError: If schema_type is invalid
     """
     schema_map = {
-        'problem': 'problem-context.xsd',
-        'project': 'project-context.xsd',
-        'findings': 'findings.xsd',
-        'workflow': 'workflow.xsd'
+        "problem": "problem-context.xsd",
+        "project": "project-context.xsd",
+        "findings": "findings.xsd",
+        "workflow": "workflow.xsd",
     }
 
     if schema_type not in schema_map:
         raise ValueError(
-            f"Invalid schema_type: {schema_type}. "
-            f"Must be one of: {', '.join(schema_map.keys())}"
+            f"Invalid schema_type: {schema_type}. Must be one of: {', '.join(schema_map.keys())}"
         )
 
     # Get schema directory (same directory as this file, then ../schemas/)
     current_file = Path(__file__)
-    schema_dir = current_file.parent.parent / 'schemas'
+    schema_dir = current_file.parent.parent / "schemas"
     schema_file = schema_dir / schema_map[schema_type]
 
     if not schema_file.exists():
@@ -141,10 +141,10 @@ def validate_xml_against_schema(xml_string: str, schema_type: str) -> Tuple[bool
 
     # Get expected root element based on schema type
     root_map = {
-        'problem': 'problem-context',
-        'project': 'project',
-        'findings': 'findings',
-        'workflow': 'workflow'
+        "problem": "problem-context",
+        "project": "project",
+        "findings": "findings",
+        "workflow": "workflow",
     }
     expected_root = root_map.get(schema_type)
 
@@ -163,14 +163,14 @@ def validate_xml_against_schema(xml_string: str, schema_type: str) -> Tuple[bool
 
         # Check cache
         if schema_path not in _SCHEMA_CACHE:
-            with open(schema_path, 'rb') as f:
+            with open(schema_path, "rb") as f:
                 schema_doc = lxml_etree.parse(f)
                 _SCHEMA_CACHE[schema_path] = lxml_etree.XMLSchema(schema_doc)
 
         schema = _SCHEMA_CACHE[schema_path]
 
         # Parse and validate XML
-        xml_doc = lxml_etree.fromstring(xml_string.encode('utf-8'))
+        xml_doc = lxml_etree.fromstring(xml_string.encode("utf-8"))
 
         if schema.validate(xml_doc):
             return True, None
@@ -205,21 +205,22 @@ def clear_schema_cache():
 
 # Convenience functions for specific schema types
 
+
 def validate_problem_xml(xml_string: str) -> Tuple[bool, Optional[str]]:
     """Validates problem-context XML."""
-    return validate_xml_against_schema(xml_string, 'problem')
+    return validate_xml_against_schema(xml_string, "problem")
 
 
 def validate_project_xml(xml_string: str) -> Tuple[bool, Optional[str]]:
     """Validates project XML."""
-    return validate_xml_against_schema(xml_string, 'project')
+    return validate_xml_against_schema(xml_string, "project")
 
 
 def validate_findings_xml(xml_string: str) -> Tuple[bool, Optional[str]]:
     """Validates findings XML."""
-    return validate_xml_against_schema(xml_string, 'findings')
+    return validate_xml_against_schema(xml_string, "findings")
 
 
 def validate_workflow_xml(xml_string: str) -> Tuple[bool, Optional[str]]:
     """Validates workflow XML."""
-    return validate_xml_against_schema(xml_string, 'workflow')
+    return validate_xml_against_schema(xml_string, "workflow")

@@ -32,9 +32,11 @@ MAX_CHECKPOINTS_PER_SESSION = 10  # Keep last N checkpoints
 # DATA CLASSES
 # =============================================================================
 
+
 @dataclass
 class CheckpointMetadata:
     """Metadata for a checkpoint."""
+
     checkpoint_id: str
     session_id: str
     created_at: str
@@ -48,6 +50,7 @@ class CheckpointMetadata:
 @dataclass
 class CheckpointData:
     """Complete checkpoint data."""
+
     metadata: CheckpointMetadata
     session_state: Dict[str, Any]
     file_snapshots: Dict[str, str]  # file_path -> content hash
@@ -57,6 +60,7 @@ class CheckpointData:
 @dataclass
 class RestoreResult:
     """Result of restoring a checkpoint."""
+
     success: bool
     checkpoint_id: str
     restored_files: List[str]
@@ -67,6 +71,7 @@ class RestoreResult:
 # =============================================================================
 # CHECKPOINT MANAGER
 # =============================================================================
+
 
 class CheckpointManager:
     """
@@ -97,7 +102,7 @@ class CheckpointManager:
         description: str,
         session_state: Optional[Dict[str, Any]] = None,
         context: Optional[Dict[str, Any]] = None,
-        is_auto: bool = False
+        is_auto: bool = False,
     ) -> CheckpointMetadata:
         """
         Create a new checkpoint.
@@ -127,7 +132,7 @@ class CheckpointManager:
             tool_calls=session_state.get("tool_calls", 0) if session_state else 0,
             files_modified=files_modified,
             git_ref=git_ref,
-            is_auto=is_auto
+            is_auto=is_auto,
         )
 
         # Build complete checkpoint
@@ -135,7 +140,7 @@ class CheckpointManager:
             metadata=metadata,
             session_state=session_state or {},
             file_snapshots=self._snapshot_files(files_modified),
-            context=context or {}
+            context=context or {},
         )
 
         # Save to disk
@@ -161,7 +166,7 @@ class CheckpointManager:
                 cwd=self.project_path,
                 capture_output=True,
                 text=True,
-                timeout=10
+                timeout=10,
             )
             if result.returncode == 0:
                 files = []
@@ -187,7 +192,7 @@ class CheckpointManager:
                 cwd=self.project_path,
                 capture_output=True,
                 text=True,
-                timeout=30
+                timeout=30,
             )
 
             if result.returncode == 0 and "No local changes" not in result.stdout:
@@ -197,7 +202,7 @@ class CheckpointManager:
                     cwd=self.project_path,
                     capture_output=True,
                     text=True,
-                    timeout=10
+                    timeout=10,
                 )
                 if list_result.returncode == 0 and list_result.stdout.strip():
                     stash_ref = list_result.stdout.strip().split(":")[0]
@@ -207,7 +212,7 @@ class CheckpointManager:
                         ["git", "stash", "pop"],
                         cwd=self.project_path,
                         capture_output=True,
-                        timeout=30
+                        timeout=30,
                     )
 
                     return stash_ref
@@ -219,6 +224,7 @@ class CheckpointManager:
     def _snapshot_files(self, files: List[str]) -> Dict[str, str]:
         """Create content hashes for files."""
         import hashlib
+
         snapshots = {}
 
         for file_path in files:
@@ -237,12 +243,16 @@ class CheckpointManager:
         checkpoint_file = self.checkpoint_dir / f"{checkpoint.metadata.checkpoint_id}.json"
 
         with open(checkpoint_file, "w") as f:
-            json.dump({
-                "metadata": asdict(checkpoint.metadata),
-                "session_state": checkpoint.session_state,
-                "file_snapshots": checkpoint.file_snapshots,
-                "context": checkpoint.context
-            }, f, indent=2)
+            json.dump(
+                {
+                    "metadata": asdict(checkpoint.metadata),
+                    "session_state": checkpoint.session_state,
+                    "file_snapshots": checkpoint.file_snapshots,
+                    "context": checkpoint.context,
+                },
+                f,
+                indent=2,
+            )
 
     def _cleanup_old_checkpoints(self) -> None:
         """Remove old checkpoints beyond limit."""
@@ -300,7 +310,7 @@ class CheckpointManager:
                     metadata=CheckpointMetadata(**data["metadata"]),
                     session_state=data["session_state"],
                     file_snapshots=data["file_snapshots"],
-                    context=data["context"]
+                    context=data["context"],
                 )
         except Exception:
             return None
@@ -323,7 +333,7 @@ class CheckpointManager:
                 checkpoint_id=checkpoint_id,
                 restored_files=[],
                 warnings=[],
-                error=f"Checkpoint not found: {checkpoint_id}"
+                error=f"Checkpoint not found: {checkpoint_id}",
             )
 
         warnings = []
@@ -343,7 +353,7 @@ class CheckpointManager:
                         ["git", "stash", "push", "-m", "[PopKit] Pre-restore backup"],
                         cwd=self.project_path,
                         capture_output=True,
-                        timeout=30
+                        timeout=30,
                     )
 
                 # Apply the checkpoint stash
@@ -352,7 +362,7 @@ class CheckpointManager:
                     cwd=self.project_path,
                     capture_output=True,
                     text=True,
-                    timeout=30
+                    timeout=30,
                 )
 
                 if result.returncode == 0:
@@ -367,7 +377,7 @@ class CheckpointManager:
             success=True,
             checkpoint_id=checkpoint_id,
             restored_files=restored_files,
-            warnings=warnings
+            warnings=warnings,
         )
 
     def get_latest(self) -> Optional[CheckpointData]:
@@ -381,7 +391,7 @@ class CheckpointManager:
         self,
         trigger: str,
         session_state: Optional[Dict[str, Any]] = None,
-        context: Optional[Dict[str, Any]] = None
+        context: Optional[Dict[str, Any]] = None,
     ) -> Optional[CheckpointMetadata]:
         """
         Create automatic checkpoint based on trigger.
@@ -406,16 +416,13 @@ class CheckpointManager:
             "test_failure": "Auto-checkpoint after test failure",
             "stuck_detected": "Auto-checkpoint on stuck detection",
             "phase_complete": "Auto-checkpoint after phase completion",
-            "many_changes": "Auto-checkpoint after significant changes"
+            "many_changes": "Auto-checkpoint after significant changes",
         }
 
         description = description_map.get(trigger, f"Auto-checkpoint: {trigger}")
 
         return self.create(
-            description=description,
-            session_state=session_state,
-            context=context,
-            is_auto=True
+            description=description, session_state=session_state, context=context, is_auto=True
         )
 
 
@@ -431,6 +438,7 @@ def get_manager(session_id: Optional[str] = None) -> CheckpointManager:
     global _current_manager
     if _current_manager is None or (session_id and _current_manager.session_id != session_id):
         from heartbeat import get_monitor
+
         session_id = session_id or get_monitor().session_id
         _current_manager = CheckpointManager(session_id)
     return _current_manager
@@ -459,7 +467,9 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="Checkpoint manager")
-    parser.add_argument("command", choices=["create", "list", "restore", "show"], default="list", nargs="?")
+    parser.add_argument(
+        "command", choices=["create", "list", "restore", "show"], default="list", nargs="?"
+    )
     parser.add_argument("--session", "-s", help="Session ID")
     parser.add_argument("--checkpoint", "-c", help="Checkpoint ID (for restore/show)")
     parser.add_argument("--description", "-d", help="Checkpoint description")
@@ -471,6 +481,7 @@ if __name__ == "__main__":
     session_id = args.session
     if not session_id:
         from heartbeat import get_monitor
+
         session_id = get_monitor().session_id
 
     manager = CheckpointManager(session_id)
@@ -521,11 +532,16 @@ if __name__ == "__main__":
 
         if checkpoint:
             if args.json:
-                print(json.dumps({
-                    "metadata": asdict(checkpoint.metadata),
-                    "session_state": checkpoint.session_state,
-                    "file_snapshots": checkpoint.file_snapshots
-                }, indent=2))
+                print(
+                    json.dumps(
+                        {
+                            "metadata": asdict(checkpoint.metadata),
+                            "session_state": checkpoint.session_state,
+                            "file_snapshots": checkpoint.file_snapshots,
+                        },
+                        indent=2,
+                    )
+                )
             else:
                 print(f"Checkpoint: {checkpoint.metadata.checkpoint_id}")
                 print(f"  Description: {checkpoint.metadata.description}")

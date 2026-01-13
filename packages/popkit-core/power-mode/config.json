@@ -154,14 +154,7 @@
   },
 
   "phases": {
-    "default_phases": [
-      "explore",
-      "design",
-      "implement",
-      "test",
-      "documentation",
-      "review"
-    ],
+    "default_phases": ["explore", "design", "implement", "test", "documentation", "review"],
     "sync_between_phases": true,
     "allow_phase_skip": false,
     "phase_timeout_multiplier": 1.5,
@@ -169,11 +162,7 @@
       "enabled": true,
       "required_agent": "documentation-maintainer",
       "timeout_seconds": 300,
-      "checks": [
-        "claude_md_updated",
-        "readme_version_match",
-        "no_autogen_drift"
-      ]
+      "checks": ["claude_md_updated", "readme_version_match", "no_autogen_drift"]
     }
   },
 
@@ -211,10 +200,6 @@
 
   "consensus": {
     "threshold": 0.7,
-    "require_unanimous_for": [
-      "delete_files",
-      "modify_security",
-      "push_changes"
-    ]
+    "require_unanimous_for": ["delete_files", "modify_security", "push_changes"]
   }
 }

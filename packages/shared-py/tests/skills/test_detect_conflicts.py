@@ -11,14 +11,23 @@ import pytest
 from pathlib import Path
 
 # Add popkit-research skills to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "popkit-research" / "skills" / "pop-research-merge" / "scripts"))
+sys.path.insert(
+    0,
+    str(
+        Path(__file__).parent.parent.parent.parent
+        / "popkit-research"
+        / "skills"
+        / "pop-research-merge"
+        / "scripts"
+    ),
+)
 
 from detect_conflicts import (
     tokenize,
     jaccard_similarity,
     extract_statements,
     find_duplicates,
-    find_conflicts
+    find_conflicts,
 )
 
 
@@ -29,24 +38,24 @@ class TestTokenize:
         """Test basic tokenization"""
         tokens = tokenize("The quick brown fox")
 
-        assert 'quick' in tokens
-        assert 'brown' in tokens
-        assert 'fox' in tokens
+        assert "quick" in tokens
+        assert "brown" in tokens
+        assert "fox" in tokens
         # Stop words should be removed
-        assert 'the' not in tokens
+        assert "the" not in tokens
 
     def test_tokenize_removes_stop_words(self):
         """Test that common stop words are removed"""
         tokens = tokenize("This is a test of the tokenizer")
 
         # Content words should remain
-        assert 'test' in tokens
-        assert 'tokenizer' in tokens
+        assert "test" in tokens
+        assert "tokenizer" in tokens
         # Stop words should be removed
-        assert 'this' not in tokens
-        assert 'is' not in tokens
-        assert 'a' not in tokens
-        assert 'the' not in tokens
+        assert "this" not in tokens
+        assert "is" not in tokens
+        assert "a" not in tokens
+        assert "the" not in tokens
 
     def test_tokenize_case_insensitive(self):
         """Test that tokenization is case-insensitive"""
@@ -60,10 +69,10 @@ class TestTokenize:
         """Test handling of punctuation"""
         tokens = tokenize("Hello, world! How are you?")
 
-        assert 'hello' in tokens
-        assert 'world' in tokens
+        assert "hello" in tokens
+        assert "world" in tokens
         # Punctuation should be stripped
-        assert 'hello,' not in tokens
+        assert "hello," not in tokens
 
     def test_tokenize_empty_string(self):
         """Test tokenizing empty string"""
@@ -81,17 +90,17 @@ class TestTokenize:
         """Test handling of numbers"""
         tokens = tokenize("There are 123 items in version 2.0")
 
-        assert '123' in tokens
-        assert '2' in tokens or '0' in tokens
+        assert "123" in tokens
+        assert "2" in tokens or "0" in tokens
 
     def test_tokenize_hyphenated_words(self):
         """Test handling of hyphenated words"""
         tokens = tokenize("state-of-the-art technology")
 
         # Hyphenated parts should be separate tokens
-        assert 'state' in tokens
-        assert 'art' in tokens
-        assert 'technology' in tokens
+        assert "state" in tokens
+        assert "art" in tokens
+        assert "technology" in tokens
 
 
 class TestJaccardSimilarity:
@@ -99,8 +108,8 @@ class TestJaccardSimilarity:
 
     def test_identical_sets(self):
         """Test similarity of identical sets"""
-        set1 = {'apple', 'banana', 'orange'}
-        set2 = {'apple', 'banana', 'orange'}
+        set1 = {"apple", "banana", "orange"}
+        set2 = {"apple", "banana", "orange"}
 
         similarity = jaccard_similarity(set1, set2)
 
@@ -108,8 +117,8 @@ class TestJaccardSimilarity:
 
     def test_no_overlap(self):
         """Test similarity of disjoint sets"""
-        set1 = {'apple', 'banana'}
-        set2 = {'grape', 'melon'}
+        set1 = {"apple", "banana"}
+        set2 = {"grape", "melon"}
 
         similarity = jaccard_similarity(set1, set2)
 
@@ -117,8 +126,8 @@ class TestJaccardSimilarity:
 
     def test_partial_overlap(self):
         """Test similarity with partial overlap"""
-        set1 = {'apple', 'banana', 'orange'}
-        set2 = {'banana', 'orange', 'grape'}
+        set1 = {"apple", "banana", "orange"}
+        set2 = {"banana", "orange", "grape"}
 
         similarity = jaccard_similarity(set1, set2)
 
@@ -130,7 +139,7 @@ class TestJaccardSimilarity:
     def test_empty_sets(self):
         """Test similarity with empty sets"""
         set1 = set()
-        set2 = {'apple', 'banana'}
+        set2 = {"apple", "banana"}
 
         similarity = jaccard_similarity(set1, set2)
 
@@ -147,8 +156,8 @@ class TestJaccardSimilarity:
 
     def test_subset_similarity(self):
         """Test when one set is subset of another"""
-        set1 = {'apple', 'banana'}
-        set2 = {'apple', 'banana', 'orange', 'grape'}
+        set1 = {"apple", "banana"}
+        set2 = {"apple", "banana", "orange", "grape"}
 
         similarity = jaccard_similarity(set1, set2)
 
@@ -169,10 +178,10 @@ class TestExtractStatements:
 
         statements = extract_statements(content)
 
-        bullet_texts = [s['text'] for s in statements if s['type'] == 'bullet']
-        assert 'First point' in bullet_texts
-        assert 'Second point' in bullet_texts
-        assert 'Third point' in bullet_texts
+        bullet_texts = [s["text"] for s in statements if s["type"] == "bullet"]
+        assert "First point" in bullet_texts
+        assert "Second point" in bullet_texts
+        assert "Third point" in bullet_texts
 
     def test_extract_sentences(self):
         """Test extracting sentence statements"""
@@ -180,7 +189,7 @@ class TestExtractStatements:
 
         statements = extract_statements(content)
 
-        sentence_texts = [s['text'] for s in statements if s['type'] == 'sentence']
+        sentence_texts = [s["text"] for s in statements if s["type"] == "sentence"]
         # Short sentences (<=20 chars) should be filtered, long ones kept
         assert len(sentence_texts) >= 1
 
@@ -194,9 +203,9 @@ This is actual content.
 
         statements = extract_statements(content)
 
-        statement_texts = [s['text'] for s in statements]
+        statement_texts = [s["text"] for s in statements]
         # Headers should not be extracted as sentences
-        assert not any('Header 1' in s for s in statement_texts)
+        assert not any("Header 1" in s for s in statement_texts)
 
     def test_extract_empty_content(self):
         """Test with empty content"""
@@ -212,7 +221,7 @@ This is actual content.
 
         # Only longer sentence should be extracted
         assert len(statements) >= 1
-        assert any('longer sentence' in s['text'] for s in statements)
+        assert any("longer sentence" in s["text"] for s in statements)
 
     def test_extract_multiple_paragraphs(self):
         """Test extracting from multiple paragraphs"""
@@ -242,7 +251,7 @@ class TestFindDuplicates:
         duplicates = find_duplicates([file1, file2], threshold=0.7)
 
         assert len(duplicates) > 0
-        assert duplicates[0]['similarity'] >= 0.7
+        assert duplicates[0]["similarity"] >= 0.7
 
     def test_find_duplicates_similar_content(self, temp_dir):
         """Test finding similar but not identical content"""
@@ -323,8 +332,8 @@ class TestFindDuplicates:
 
         if duplicates:
             # Statements should be truncated to 100 chars
-            assert len(duplicates[0]['statement1']) <= 100
-            assert len(duplicates[0]['statement2']) <= 100
+            assert len(duplicates[0]["statement1"]) <= 100
+            assert len(duplicates[0]["statement2"]) <= 100
 
 
 class TestFindConflicts:
@@ -341,7 +350,7 @@ class TestFindConflicts:
         conflicts = find_conflicts([file1, file2])
 
         assert len(conflicts) > 0
-        assert conflicts[0]['type'] == 'potential_contradiction'
+        assert conflicts[0]["type"] == "potential_contradiction"
 
     def test_find_conflicts_must_vs_must_not(self, temp_dir):
         """Test detecting must vs must not conflicts"""
@@ -361,7 +370,9 @@ class TestFindConflicts:
         file2 = temp_dir / "file2.md"
 
         file1.write_text("Always validate user input before processing data in the application.")
-        file2.write_text("Never validate user input at the application layer before processing data.")
+        file2.write_text(
+            "Never validate user input at the application layer before processing data."
+        )
 
         conflicts = find_conflicts([file1, file2])
 
@@ -402,8 +413,12 @@ class TestFindConflicts:
         file1 = temp_dir / "file1.md"
         file2 = temp_dir / "file2.md"
 
-        file1.write_text("Using global state management is considered best practice for application caching in React.")
-        file2.write_text("Using global state management is an anti-pattern in React applications for caching.")
+        file1.write_text(
+            "Using global state management is considered best practice for application caching in React."
+        )
+        file2.write_text(
+            "Using global state management is an anti-pattern in React applications for caching."
+        )
 
         conflicts = find_conflicts([file1, file2])
 
@@ -448,8 +463,8 @@ class TestFindConflicts:
         conflicts = find_conflicts([file1, file2])
 
         if conflicts:
-            assert len(conflicts[0]['statement1']) <= 100
-            assert len(conflicts[0]['statement2']) <= 100
+            assert len(conflicts[0]["statement1"]) <= 100
+            assert len(conflicts[0]["statement2"]) <= 100
 
 
 class TestEdgeCases:
@@ -465,10 +480,10 @@ class TestEdgeCases:
 
     def test_jaccard_with_single_element_sets(self):
         """Test Jaccard with single element sets"""
-        similarity = jaccard_similarity({'apple'}, {'apple'})
+        similarity = jaccard_similarity({"apple"}, {"apple"})
         assert similarity == 1.0
 
-        similarity = jaccard_similarity({'apple'}, {'banana'})
+        similarity = jaccard_similarity({"apple"}, {"banana"})
         assert similarity == 0.0
 
     def test_extract_statements_unicode(self):
@@ -510,8 +525,8 @@ class TestEdgeCases:
 
     def test_similarity_score_bounds(self):
         """Test that similarity scores are bounded [0, 1]"""
-        set1 = {'a', 'b', 'c'}
-        set2 = {'d', 'e', 'f'}
+        set1 = {"a", "b", "c"}
+        set2 = {"d", "e", "f"}
 
         similarity = jaccard_similarity(set1, set2)
 

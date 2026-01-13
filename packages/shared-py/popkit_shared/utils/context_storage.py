@@ -30,6 +30,7 @@ from urllib.error import URLError
 # Storage Interface
 # =============================================================================
 
+
 class ContextStorage(ABC):
     """Abstract base class for context storage backends."""
 
@@ -64,15 +65,13 @@ class ContextStorage(ABC):
         skill_name: str,
         event_type: str,
         data: Dict[str, Any],
-        workflow_id: Optional[str] = None
+        workflow_id: Optional[str] = None,
     ) -> Optional[str]:
         """Publish skill activity to activity ledger."""
         return None  # Default: no-op for backends that don't support it
 
     def get_recent_activity(
-        self,
-        count: int = 20,
-        skill_filter: Optional[str] = None
+        self, count: int = 20, skill_filter: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """Get recent activity from ledger."""
         return []  # Default: empty for backends that don't support it
@@ -85,6 +84,7 @@ class ContextStorage(ABC):
 # =============================================================================
 # File-Based Storage (Free Mode)
 # =============================================================================
+
 
 class FileContextStorage(ContextStorage):
     """File-based storage using JSON files in .popkit/context/
@@ -118,7 +118,7 @@ class FileContextStorage(ContextStorage):
         try:
             context["_updated_at"] = datetime.now().isoformat()
             context["_workflow_id"] = workflow_id
-            with open(self._workflow_file(workflow_id), 'w') as f:
+            with open(self._workflow_file(workflow_id), "w") as f:
                 json.dump(context, f, indent=2, default=str)
             return True
         except (IOError, TypeError) as e:
@@ -129,7 +129,7 @@ class FileContextStorage(ContextStorage):
         if not file_path.exists():
             return None
         try:
-            with open(file_path, 'r') as f:
+            with open(file_path, "r") as f:
                 return json.load(f)
         except (json.JSONDecodeError, IOError):
             return None
@@ -145,7 +145,7 @@ class FileContextStorage(ContextStorage):
         workflows = []
         for f in self.base_dir.glob("*.json"):
             try:
-                with open(f, 'r') as file:
+                with open(f, "r") as file:
                     data = json.load(file)
                     if wf_id := data.get("_workflow_id"):
                         workflows.append(wf_id)
@@ -166,7 +166,7 @@ class FileContextStorage(ContextStorage):
         skill_name: str,
         event_type: str,
         data: Dict[str, Any],
-        workflow_id: Optional[str] = None
+        workflow_id: Optional[str] = None,
     ) -> Optional[str]:
         """Append activity to JSONL file."""
         activity_file = self._get_activity_file()
@@ -178,20 +178,18 @@ class FileContextStorage(ContextStorage):
             "event": event_type,
             "workflow": workflow_id or "none",
             "timestamp": datetime.now().isoformat(),
-            "data": data
+            "data": data,
         }
 
         try:
-            with open(activity_file, 'a') as f:
+            with open(activity_file, "a") as f:
                 f.write(json.dumps(entry, default=str) + "\n")
             return entry_id
         except IOError:
             return None
 
     def get_recent_activity(
-        self,
-        count: int = 20,
-        skill_filter: Optional[str] = None
+        self, count: int = 20, skill_filter: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """Read recent activity from JSONL file."""
         activity_file = self._get_activity_file()
@@ -200,7 +198,7 @@ class FileContextStorage(ContextStorage):
             return []
 
         try:
-            with open(activity_file, 'r') as f:
+            with open(activity_file, "r") as f:
                 lines = f.readlines()
 
             # Get last N lines (newest)
@@ -230,15 +228,13 @@ class FileContextStorage(ContextStorage):
             event = activity.get("event", "unknown")
             skill_states[skill] = event
 
-        return [
-            skill for skill, event in skill_states.items()
-            if event in ("start", "progress")
-        ]
+        return [skill for skill, event in skill_states.items() if event in ("start", "progress")]
 
 
 # =============================================================================
 # Upstash Redis Storage (Power Mode / Premium)
 # =============================================================================
+
 
 class UpstashContextStorage(ContextStorage):
     """Upstash Redis storage for Power Mode and premium features.
@@ -272,19 +268,16 @@ class UpstashContextStorage(ContextStorage):
     def _redis_command(self, command: List[str]) -> Any:
         """Execute Redis command via Upstash REST API."""
         url = f"{self.url}"
-        headers = {
-            "Authorization": f"Bearer {self.token}",
-            "Content-Type": "application/json"
-        }
+        headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
 
         request = Request(url, method="POST")
         for key, value in headers.items():
             request.add_header(key, value)
 
-        body = json.dumps(command).encode('utf-8')
+        body = json.dumps(command).encode("utf-8")
         try:
             with urlopen(request, body, timeout=10) as response:
-                result = json.loads(response.read().decode('utf-8'))
+                result = json.loads(response.read().decode("utf-8"))
                 return result.get("result")
         except URLError as e:
             return None
@@ -351,7 +344,7 @@ class UpstashContextStorage(ContextStorage):
         skill_name: str,
         event_type: str,
         data: Dict[str, Any],
-        workflow_id: Optional[str] = None
+        workflow_id: Optional[str] = None,
     ) -> Optional[str]:
         """Publish skill activity to the central activity stream.
 
@@ -372,25 +365,32 @@ class UpstashContextStorage(ContextStorage):
             "event": event_type,
             "workflow": workflow_id or "none",
             "timestamp": datetime.now().isoformat(),
-            "data": json.dumps(data, default=str)
+            "data": json.dumps(data, default=str),
         }
 
         # XADD with auto-generated ID (*)
-        result = self._redis_command([
-            "XADD", self.STREAM_KEY, "*",
-            "skill", entry["skill"],
-            "event", entry["event"],
-            "workflow", entry["workflow"],
-            "timestamp", entry["timestamp"],
-            "data", entry["data"]
-        ])
+        result = self._redis_command(
+            [
+                "XADD",
+                self.STREAM_KEY,
+                "*",
+                "skill",
+                entry["skill"],
+                "event",
+                entry["event"],
+                "workflow",
+                entry["workflow"],
+                "timestamp",
+                entry["timestamp"],
+                "data",
+                entry["data"],
+            ]
+        )
 
         return result if isinstance(result, str) else None
 
     def get_recent_activity(
-        self,
-        count: int = 20,
-        skill_filter: Optional[str] = None
+        self, count: int = 20, skill_filter: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """Get recent activity from the stream.
 
@@ -404,9 +404,7 @@ class UpstashContextStorage(ContextStorage):
             List of activity entries
         """
         # XREVRANGE stream + - COUNT n (newest first)
-        result = self._redis_command([
-            "XREVRANGE", self.STREAM_KEY, "+", "-", "COUNT", str(count)
-        ])
+        result = self._redis_command(["XREVRANGE", self.STREAM_KEY, "+", "-", "COUNT", str(count)])
 
         if not result or not isinstance(result, list):
             return []
@@ -457,10 +455,7 @@ class UpstashContextStorage(ContextStorage):
             skill_states[skill] = event
 
         # Return skills still in "start" or "progress" state
-        return [
-            skill for skill, event in skill_states.items()
-            if event in ("start", "progress")
-        ]
+        return [skill for skill, event in skill_states.items() if event in ("start", "progress")]
 
     def trim_activity_stream(self, max_entries: int = 1000) -> int:
         """Trim the activity stream to prevent unbounded growth.
@@ -470,15 +465,14 @@ class UpstashContextStorage(ContextStorage):
         Returns:
             Number of entries removed
         """
-        result = self._redis_command([
-            "XTRIM", self.STREAM_KEY, "MAXLEN", "~", str(max_entries)
-        ])
+        result = self._redis_command(["XTRIM", self.STREAM_KEY, "MAXLEN", "~", str(max_entries)])
         return result if isinstance(result, int) else 0
 
 
 # =============================================================================
 # PopKit Cloud API Storage (Future)
 # =============================================================================
+
 
 class CloudAPIContextStorage(ContextStorage):
     """PopKit Cloud API storage via our Workers endpoint.
@@ -498,19 +492,16 @@ class CloudAPIContextStorage(ContextStorage):
     def _api_request(self, method: str, path: str, body: Optional[Dict] = None) -> Any:
         """Make authenticated API request."""
         url = f"{self.API_BASE}{path}"
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
+        headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
 
         request = Request(url, method=method)
         for key, value in headers.items():
             request.add_header(key, value)
 
-        data = json.dumps(body).encode('utf-8') if body else None
+        data = json.dumps(body).encode("utf-8") if body else None
         try:
             with urlopen(request, data, timeout=10) as response:
-                return json.loads(response.read().decode('utf-8'))
+                return json.loads(response.read().decode("utf-8"))
         except URLError:
             return None
 
@@ -537,6 +528,7 @@ class CloudAPIContextStorage(ContextStorage):
 # =============================================================================
 # Backend Selection
 # =============================================================================
+
 
 def get_context_storage(prefer: Optional[str] = None) -> ContextStorage:
     """Get appropriate context storage backend.
@@ -589,8 +581,7 @@ def get_context_storage(prefer: Optional[str] = None) -> ContextStorage:
 def is_power_mode_available() -> bool:
     """Check if Power Mode (Upstash) storage is available."""
     return bool(
-        os.environ.get("UPSTASH_REDIS_REST_URL") and
-        os.environ.get("UPSTASH_REDIS_REST_TOKEN")
+        os.environ.get("UPSTASH_REDIS_REST_URL") and os.environ.get("UPSTASH_REDIS_REST_TOKEN")
     )
 
 
@@ -605,7 +596,7 @@ def get_storage_status() -> Dict[str, Any]:
         "current": get_context_storage().get_backend_name(),
         "file": True,  # Always available
         "upstash": is_power_mode_available(),
-        "cloud": is_cloud_available()
+        "cloud": is_cloud_available(),
     }
 
 
@@ -623,11 +614,10 @@ if __name__ == "__main__":
     workflow_id = "test_workflow_123"
 
     # Save
-    success = storage.save_context(workflow_id, {
-        "skill": "pop-brainstorming",
-        "output": {"topic": "auth"},
-        "artifacts": ["design.md"]
-    })
+    success = storage.save_context(
+        workflow_id,
+        {"skill": "pop-brainstorming", "output": {"topic": "auth"}, "artifacts": ["design.md"]},
+    )
     assert success, "Save failed"
     print("Save: OK")
 

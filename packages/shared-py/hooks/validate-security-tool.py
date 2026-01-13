@@ -94,7 +94,7 @@ def handle_pre_tool_use(data):
         if is_dangerous:
             return {
                 "decision": "deny",
-                "message": f"Security auditor blocked dangerous command: '{dangerous_pattern}' detected in: {command[:100]}"
+                "message": f"Security auditor blocked dangerous command: '{dangerous_pattern}' detected in: {command[:100]}",
             }
 
     # Validate file access
@@ -105,7 +105,7 @@ def handle_pre_tool_use(data):
         if is_protected:
             return {
                 "decision": "ask",
-                "message": f"Security auditor detected access to protected file pattern '{protected_pattern}' in: {file_path}. Manual approval required."
+                "message": f"Security auditor detected access to protected file pattern '{protected_pattern}' in: {file_path}. Manual approval required.",
             }
 
     # Validate WebFetch (prevent SSRF)
@@ -118,7 +118,7 @@ def handle_pre_tool_use(data):
             if pattern in url.lower():
                 return {
                     "decision": "ask",
-                    "message": f"Security auditor detected internal URL: {url}. This could be SSRF. Manual approval required."
+                    "message": f"Security auditor detected internal URL: {url}. This could be SSRF. Manual approval required.",
                 }
 
     # Allow all other operations
@@ -141,7 +141,7 @@ if __name__ == "__main__":
         # On error, allow the operation but log the error
         error_result = {
             "decision": "allow",
-            "message": f"Hook error (allowing operation): {str(e)}"
+            "message": f"Hook error (allowing operation): {str(e)}",
         }
         print(json.dumps(error_result))
         sys.exit(0)

@@ -13,10 +13,7 @@
           "name": "Find STATUS.json",
           "type": "automated",
           "script": "scripts/restore_state.py --mode=find",
-          "locations": [
-            ".claude/STATUS.json",
-            "STATUS.json"
-          ]
+          "locations": [".claude/STATUS.json", "STATUS.json"]
         },
         {
           "id": "parse_status",
@@ -42,10 +39,7 @@
           "name": "Verify Git State",
           "type": "automated",
           "script": "scripts/restore_state.py --mode=verify-git",
-          "commands": [
-            "git branch --show-current",
-            "git status --porcelain | wc -l"
-          ]
+          "commands": ["git branch --show-current", "git status --porcelain | wc -l"]
         },
         {
           "id": "verify_services",
@@ -79,9 +73,9 @@
           "type": "interactive",
           "prompt": "How would you like to proceed?",
           "options": [
-            {"label": "Continue with next action", "value": "continue"},
-            {"label": "Review full context first", "value": "review"},
-            {"label": "Start fresh", "value": "fresh"}
+            { "label": "Continue with next action", "value": "continue" },
+            { "label": "Review full context first", "value": "review" },
+            { "label": "Start fresh", "value": "fresh" }
           ]
         }
       ]
@@ -102,13 +96,8 @@
     }
   },
   "triggers": {
-    "automatic": [
-      "Session start hook",
-      "Claude Code startup"
-    ],
-    "manual": [
-      "Invoke pop-session-resume skill"
-    ]
+    "automatic": ["Session start hook", "Claude Code startup"],
+    "manual": ["Invoke pop-session-resume skill"]
   },
   "output": {
     "format": "summary_box",

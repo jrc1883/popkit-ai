@@ -54,12 +54,7 @@
     "ready_to_code_score": "85/100"
   },
   "recommendations": {
-    "before_coding": [
-      "All set! Ready to code."
-    ],
-    "todays_focus": [
-      "Triage 30 open issues",
-      "Check overnight commits and CI results"
-    ]
+    "before_coding": ["All set! Ready to code."],
+    "todays_focus": ["Triage 30 open issues", "Check overnight commits and CI results"]
   }
 }

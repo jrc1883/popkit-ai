@@ -17,13 +17,7 @@
           "warning": "10-20 files",
           "critical": ">20 files",
           "automated": true,
-          "files": [
-            "plugin.json",
-            "marketplace.json",
-            "config.json",
-            "hooks.json",
-            ".mcp.json"
-          ]
+          "files": ["plugin.json", "marketplace.json", "config.json", "hooks.json", ".mcp.json"]
         },
         {
           "id": "SP-002",
@@ -101,11 +95,7 @@
           "id": "SP-008",
           "name": "MCP Server Startup",
           "description": "MCP servers start efficiently",
-          "checks": [
-            "Lazy tool registration",
-            "Deferred connections",
-            "Timeout handling"
-          ]
+          "checks": ["Lazy tool registration", "Deferred connections", "Timeout handling"]
         }
       ]
     }

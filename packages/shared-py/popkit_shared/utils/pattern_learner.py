@@ -23,6 +23,7 @@ from .platform_detector import OSType, ShellType, get_platform_info
 @dataclass
 class CommandCorrection:
     """A learned command correction"""
+
     id: Optional[int]
     original_command: str
     platform: str
@@ -44,6 +45,7 @@ class CommandCorrection:
 @dataclass
 class CorrectionSuggestion:
     """A suggestion for correcting a command"""
+
     original: str
     suggested: str
     confidence: float
@@ -55,7 +57,7 @@ class PatternLearner:
     """SQLite-based pattern learning system"""
 
     DB_VERSION = 1
-    DEFAULT_DB_PATH = Path.home() / '.claude' / 'config' / 'command_patterns.db'
+    DEFAULT_DB_PATH = Path.home() / ".claude" / "config" / "command_patterns.db"
 
     def __init__(self, db_path: Optional[Path] = None):
         """
@@ -147,35 +149,54 @@ class PatternLearner:
     def _seed_error_patterns(self, conn: sqlite3.Connection):
         """Seed the database with common error patterns"""
         patterns = [
-            ("'\\w+' is not recognized as an internal or external command",
-             "command_not_found", "Windows command not found", None),
+            (
+                "'\\w+' is not recognized as an internal or external command",
+                "command_not_found",
+                "Windows command not found",
+                None,
+            ),
             ("command not found", "command_not_found", "Unix command not found", None),
-            ("The system cannot find the path specified",
-             "path_not_found", "Windows path error", None),
+            (
+                "The system cannot find the path specified",
+                "path_not_found",
+                "Windows path error",
+                None,
+            ),
             ("No such file or directory", "path_not_found", "Unix path error", None),
             ("Access is denied", "permission_denied", "Windows permission error", None),
             ("Permission denied", "permission_denied", "Unix permission error", None),
             ("Invalid parameter", "invalid_params", "Invalid command parameters", None),
             ("Invalid switch", "invalid_params", "Invalid command switch", None),
-            ("cannot copy a directory", "recursive_needed",
-             "Recursive flag needed for directory", "Add -r flag"),
-            ("xcopy.*Invalid number of parameters", "xcopy_params",
-             "XCopy parameter error", "Check source and destination syntax"),
+            (
+                "cannot copy a directory",
+                "recursive_needed",
+                "Recursive flag needed for directory",
+                "Add -r flag",
+            ),
+            (
+                "xcopy.*Invalid number of parameters",
+                "xcopy_params",
+                "XCopy parameter error",
+                "Check source and destination syntax",
+            ),
         ]
 
         for pattern, ptype, desc, suggestion in patterns:
             try:
-                conn.execute("""
+                conn.execute(
+                    """
                     INSERT OR IGNORE INTO error_patterns
                     (pattern, pattern_type, description, suggestion_template)
                     VALUES (?, ?, ?, ?)
-                """, (pattern, ptype, desc, suggestion))
+                """,
+                    (pattern, ptype, desc, suggestion),
+                )
             except sqlite3.IntegrityError:
                 pass
 
     def _hash_command(self, command: str) -> str:
         """Create a hash for a command (normalizes whitespace)"""
-        normalized = ' '.join(command.split())
+        normalized = " ".join(command.split())
         return hashlib.sha256(normalized.encode()).hexdigest()[:32]
 
     def record_correction(
@@ -185,7 +206,7 @@ class PatternLearner:
         platform: Optional[str] = None,
         shell: Optional[str] = None,
         error_pattern: Optional[str] = None,
-        source: str = "auto"
+        source: str = "auto",
     ) -> CommandCorrection:
         """
         Record a command correction.
@@ -208,37 +229,56 @@ class PatternLearner:
 
         with self._get_connection() as conn:
             # Check if correction already exists
-            existing = conn.execute("""
+            existing = conn.execute(
+                """
                 SELECT id, success_count, failure_count FROM command_corrections
                 WHERE original_command_hash = ? AND platform = ? AND shell = ?
-            """, (command_hash, platform, shell)).fetchone()
+            """,
+                (command_hash, platform, shell),
+            ).fetchone()
 
             if existing:
                 # Update existing correction
-                conn.execute("""
+                conn.execute(
+                    """
                     UPDATE command_corrections
                     SET corrected_command = ?,
                         error_pattern = COALESCE(?, error_pattern),
                         updated_at = CURRENT_TIMESTAMP
                     WHERE id = ?
-                """, (corrected_command, error_pattern, existing['id']))
-                correction_id = existing['id']
+                """,
+                    (corrected_command, error_pattern, existing["id"]),
+                )
+                correction_id = existing["id"]
             else:
                 # Insert new correction
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     INSERT INTO command_corrections
                     (original_command, original_command_hash, platform, shell,
                      error_pattern, corrected_command, source)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
-                """, (original_command, command_hash, platform, shell,
-                      error_pattern, corrected_command, source))
+                """,
+                    (
+                        original_command,
+                        command_hash,
+                        platform,
+                        shell,
+                        error_pattern,
+                        corrected_command,
+                        source,
+                    ),
+                )
                 correction_id = cursor.lastrowid
 
             # Log to history
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT INTO learning_history (correction_id, action, result)
                 VALUES (?, 'record', 'created')
-            """, (correction_id,))
+            """,
+                (correction_id,),
+            )
 
         # Fetch the correction outside the with block (after commit)
         return self.get_correction(correction_id)
@@ -246,43 +286,58 @@ class PatternLearner:
     def record_success(self, correction_id: int) -> None:
         """Record a successful use of a correction"""
         with self._get_connection() as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 UPDATE command_corrections
                 SET success_count = success_count + 1,
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
-            """, (correction_id,))
+            """,
+                (correction_id,),
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT INTO learning_history (correction_id, action, result)
                 VALUES (?, 'use', 'success')
-            """, (correction_id,))
+            """,
+                (correction_id,),
+            )
 
     def record_failure(self, correction_id: int) -> None:
         """Record a failed use of a correction"""
         with self._get_connection() as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 UPDATE command_corrections
                 SET failure_count = failure_count + 1,
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
-            """, (correction_id,))
+            """,
+                (correction_id,),
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT INTO learning_history (correction_id, action, result)
                 VALUES (?, 'use', 'failure')
-            """, (correction_id,))
+            """,
+                (correction_id,),
+            )
 
     def get_correction(self, correction_id: int) -> Optional[CommandCorrection]:
         """Get a correction by ID"""
         with self._get_connection() as conn:
-            row = conn.execute("""
+            row = conn.execute(
+                """
                 SELECT id, original_command, platform, shell, error_pattern,
                        corrected_command, success_count, failure_count, source,
                        created_at, updated_at
                 FROM command_corrections
                 WHERE id = ?
-            """, (correction_id,)).fetchone()
+            """,
+                (correction_id,),
+            ).fetchone()
 
             if row:
                 return self._row_to_correction(row)
@@ -290,24 +345,24 @@ class PatternLearner:
 
     def _row_to_correction(self, row: sqlite3.Row) -> CommandCorrection:
         """Convert a database row to a CommandCorrection"""
-        success = row['success_count']
-        failure = row['failure_count']
+        success = row["success_count"]
+        failure = row["failure_count"]
         total = success + failure
         confidence = success / total if total > 0 else 0.0
 
         return CommandCorrection(
-            id=row['id'],
-            original_command=row['original_command'],
-            platform=row['platform'],
-            shell=row['shell'],
-            error_pattern=row['error_pattern'],
-            corrected_command=row['corrected_command'],
+            id=row["id"],
+            original_command=row["original_command"],
+            platform=row["platform"],
+            shell=row["shell"],
+            error_pattern=row["error_pattern"],
+            corrected_command=row["corrected_command"],
             success_count=success,
             failure_count=failure,
             confidence=confidence,
-            source=row['source'],
-            created_at=row['created_at'],
-            updated_at=row['updated_at']
+            source=row["source"],
+            created_at=row["created_at"],
+            updated_at=row["updated_at"],
         )
 
     def find_suggestions(
@@ -315,7 +370,7 @@ class PatternLearner:
         command: str,
         platform: Optional[str] = None,
         shell: Optional[str] = None,
-        min_confidence: float = 0.0
+        min_confidence: float = 0.0,
     ) -> List[CorrectionSuggestion]:
         """
         Find correction suggestions for a command.
@@ -338,30 +393,36 @@ class PatternLearner:
 
         with self._get_connection() as conn:
             # Exact match
-            row = conn.execute("""
+            row = conn.execute(
+                """
                 SELECT id, corrected_command, success_count, failure_count, source
                 FROM command_corrections
                 WHERE original_command_hash = ? AND platform = ? AND shell = ?
-            """, (command_hash, platform, shell)).fetchone()
+            """,
+                (command_hash, platform, shell),
+            ).fetchone()
 
             if row:
-                success = row['success_count']
-                failure = row['failure_count']
+                success = row["success_count"]
+                failure = row["failure_count"]
                 total = success + failure
                 confidence = success / total if total > 0 else 0.5  # Default 0.5 for new
 
                 if confidence >= min_confidence:
-                    suggestions.append(CorrectionSuggestion(
-                        original=command,
-                        suggested=row['corrected_command'],
-                        confidence=confidence,
-                        source=row['source'],
-                        reason="Exact match in learned patterns"
-                    ))
+                    suggestions.append(
+                        CorrectionSuggestion(
+                            original=command,
+                            suggested=row["corrected_command"],
+                            confidence=confidence,
+                            source=row["source"],
+                            reason="Exact match in learned patterns",
+                        )
+                    )
 
             # Also check for similar commands (same base command)
             base_command = command.split()[0] if command else ""
-            similar_rows = conn.execute("""
+            similar_rows = conn.execute(
+                """
                 SELECT corrected_command, success_count, failure_count, source,
                        original_command
                 FROM command_corrections
@@ -369,22 +430,28 @@ class PatternLearner:
                       AND original_command_hash != ?
                 ORDER BY success_count DESC
                 LIMIT 5
-            """, (f"{base_command}%", platform, shell, command_hash)).fetchall()
+            """,
+                (f"{base_command}%", platform, shell, command_hash),
+            ).fetchall()
 
             for row in similar_rows:
-                success = row['success_count']
-                failure = row['failure_count']
+                success = row["success_count"]
+                failure = row["failure_count"]
                 total = success + failure
-                confidence = (success / total if total > 0 else 0.3) * 0.7  # Lower confidence for similar
+                confidence = (
+                    success / total if total > 0 else 0.3
+                ) * 0.7  # Lower confidence for similar
 
                 if confidence >= min_confidence:
-                    suggestions.append(CorrectionSuggestion(
-                        original=command,
-                        suggested=row['corrected_command'],
-                        confidence=confidence,
-                        source=row['source'],
-                        reason=f"Similar to learned pattern: {row['original_command']}"
-                    ))
+                    suggestions.append(
+                        CorrectionSuggestion(
+                            original=command,
+                            suggested=row["corrected_command"],
+                            confidence=confidence,
+                            source=row["source"],
+                            reason=f"Similar to learned pattern: {row['original_command']}",
+                        )
+                    )
 
         # Sort by confidence
         suggestions.sort(key=lambda x: x.confidence, reverse=True)
@@ -395,7 +462,7 @@ class PatternLearner:
         command: str,
         platform: Optional[str] = None,
         shell: Optional[str] = None,
-        min_confidence: float = 0.7
+        min_confidence: float = 0.7,
     ) -> Optional[CorrectionSuggestion]:
         """
         Get the best correction suggestion for a command.
@@ -413,10 +480,7 @@ class PatternLearner:
         return suggestions[0] if suggestions else None
 
     def get_all_corrections(
-        self,
-        platform: Optional[str] = None,
-        shell: Optional[str] = None,
-        limit: int = 100
+        self, platform: Optional[str] = None, shell: Optional[str] = None, limit: int = 100
     ) -> List[CommandCorrection]:
         """Get all corrections, optionally filtered by platform/shell"""
         with self._get_connection() as conn:
@@ -448,30 +512,38 @@ class PatternLearner:
         """Delete a correction by ID"""
         with self._get_connection() as conn:
             # Delete history first (foreign key)
-            conn.execute("""
+            conn.execute(
+                """
                 DELETE FROM learning_history WHERE correction_id = ?
-            """, (correction_id,))
+            """,
+                (correction_id,),
+            )
 
-            cursor = conn.execute("""
+            cursor = conn.execute(
+                """
                 DELETE FROM command_corrections WHERE id = ?
-            """, (correction_id,))
+            """,
+                (correction_id,),
+            )
 
             return cursor.rowcount > 0
 
     def get_stats(self) -> Dict[str, any]:
         """Get statistics about learned patterns"""
         with self._get_connection() as conn:
-            total = conn.execute(
-                "SELECT COUNT(*) FROM command_corrections"
-            ).fetchone()[0]
+            total = conn.execute("SELECT COUNT(*) FROM command_corrections").fetchone()[0]
 
-            by_platform = dict(conn.execute("""
+            by_platform = dict(
+                conn.execute("""
                 SELECT platform, COUNT(*) FROM command_corrections GROUP BY platform
-            """).fetchall())
+            """).fetchall()
+            )
 
-            by_shell = dict(conn.execute("""
+            by_shell = dict(
+                conn.execute("""
                 SELECT shell, COUNT(*) FROM command_corrections GROUP BY shell
-            """).fetchall())
+            """).fetchall()
+            )
 
             high_confidence = conn.execute("""
                 SELECT COUNT(*) FROM command_corrections
@@ -489,7 +561,7 @@ class PatternLearner:
                 "by_platform": by_platform,
                 "by_shell": by_shell,
                 "high_confidence_count": high_confidence,
-                "recent_learning_events": recent_learning
+                "recent_learning_events": recent_learning,
             }
 
     def export_patterns(self, filepath: Path) -> int:
@@ -498,10 +570,10 @@ class PatternLearner:
         data = {
             "version": self.DB_VERSION,
             "exported_at": datetime.now().isoformat(),
-            "patterns": [c.to_dict() for c in corrections]
+            "patterns": [c.to_dict() for c in corrections],
         }
 
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(data, f, indent=2)
 
         return len(corrections)
@@ -520,7 +592,7 @@ class PatternLearner:
                     platform=pattern.get("platform"),
                     shell=pattern.get("shell"),
                     error_pattern=pattern.get("error_pattern"),
-                    source=source
+                    source=source,
                 )
                 imported += 1
             except Exception:
@@ -542,17 +614,11 @@ def get_learner() -> PatternLearner:
 
 
 def learn_correction(
-    original: str,
-    corrected: str,
-    error: Optional[str] = None,
-    source: str = "auto"
+    original: str, corrected: str, error: Optional[str] = None, source: str = "auto"
 ) -> CommandCorrection:
     """Convenience function to record a correction"""
     return get_learner().record_correction(
-        original_command=original,
-        corrected_command=corrected,
-        error_pattern=error,
-        source=source
+        original_command=original, corrected_command=corrected, error_pattern=error, source=source
     )
 
 

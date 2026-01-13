@@ -22,9 +22,11 @@ from pathlib import Path
 # DATA CLASSES
 # =============================================================================
 
+
 @dataclass
 class Vulnerability:
     """Represents a security vulnerability."""
+
     name: str
     severity: str  # critical, high, moderate, low
     title: str
@@ -55,6 +57,7 @@ class Vulnerability:
 @dataclass
 class ScanResult:
     """Result of a security scan."""
+
     vulnerabilities: List[Vulnerability] = field(default_factory=list)
     total_packages: int = 0
     scan_time: str = field(default_factory=lambda: datetime.now().isoformat())
@@ -67,7 +70,7 @@ class ScanResult:
             "critical": [],
             "high": [],
             "moderate": [],
-            "low": []
+            "low": [],
         }
         for vuln in self.vulnerabilities:
             severity = vuln.severity.lower()
@@ -104,6 +107,7 @@ class ScanResult:
 @dataclass
 class ExistingIssue:
     """Represents an existing GitHub issue."""
+
     number: int
     title: str
     state: str
@@ -113,6 +117,7 @@ class ExistingIssue:
 # =============================================================================
 # SCANNER
 # =============================================================================
+
 
 class SecurityScanner:
     """
@@ -151,7 +156,7 @@ class SecurityScanner:
                 cwd=self.project_path,
                 capture_output=True,
                 text=True,
-                timeout=120
+                timeout=120,
             )
 
             # npm audit returns non-zero if vulnerabilities found
@@ -181,11 +186,13 @@ class SecurityScanner:
                     title=advisory.get("title", f"Vulnerability in {name}"),
                     url=advisory.get("url", ""),
                     vulnerable_versions=vuln_data.get("range", "*"),
-                    patched_versions=vuln_data.get("fixAvailable", {}).get("version") if isinstance(vuln_data.get("fixAvailable"), dict) else None,
+                    patched_versions=vuln_data.get("fixAvailable", {}).get("version")
+                    if isinstance(vuln_data.get("fixAvailable"), dict)
+                    else None,
                     cve=advisory.get("cve"),
                     ghsa=advisory.get("ghsa") or self._extract_ghsa(advisory.get("url", "")),
                     fix_available=bool(vuln_data.get("fixAvailable")),
-                    direct=vuln_data.get("isDirect", False)
+                    direct=vuln_data.get("isDirect", False),
                 )
 
                 result.vulnerabilities.append(vuln)
@@ -224,28 +231,42 @@ class SecurityScanner:
 
         try:
             proc = subprocess.run(
-                ["gh", "issue", "list", "--label", "security", "--json", "number,title,state,url", "--limit", "100"],
+                [
+                    "gh",
+                    "issue",
+                    "list",
+                    "--label",
+                    "security",
+                    "--json",
+                    "number,title,state,url",
+                    "--limit",
+                    "100",
+                ],
                 cwd=self.project_path,
                 capture_output=True,
                 text=True,
-                timeout=30
+                timeout=30,
             )
 
             if proc.returncode == 0 and proc.stdout:
                 data = json.loads(proc.stdout)
                 for item in data:
-                    issues.append(ExistingIssue(
-                        number=item["number"],
-                        title=item["title"],
-                        state=item["state"],
-                        url=item["url"]
-                    ))
+                    issues.append(
+                        ExistingIssue(
+                            number=item["number"],
+                            title=item["title"],
+                            state=item["state"],
+                            url=item["url"],
+                        )
+                    )
         except Exception:
             pass  # Silently fail if gh not available
 
         return issues
 
-    def find_existing_issue(self, vuln: Vulnerability, existing: List[ExistingIssue]) -> Optional[ExistingIssue]:
+    def find_existing_issue(
+        self, vuln: Vulnerability, existing: List[ExistingIssue]
+    ) -> Optional[ExistingIssue]:
         """
         Check if vulnerability already has a tracking issue.
 
@@ -265,7 +286,9 @@ class SecurityScanner:
             if identifier and identifier.lower() in title_lower:
                 return issue
             # Check for package name in title
-            if name in title_lower and ("vulnerability" in title_lower or "security" in title_lower):
+            if name in title_lower and (
+                "vulnerability" in title_lower or "security" in title_lower
+            ):
                 return issue
 
         return None
@@ -283,7 +306,11 @@ class SecurityScanner:
         """
         # Build title
         id_part = vuln.cve or vuln.ghsa or ""
-        title = f"[{vuln.severity.upper()}] {id_part}: {vuln.name} vulnerability" if id_part else f"[{vuln.severity.upper()}] Security vulnerability in {vuln.name}"
+        title = (
+            f"[{vuln.severity.upper()}] {id_part}: {vuln.name} vulnerability"
+            if id_part
+            else f"[{vuln.severity.upper()}] Security vulnerability in {vuln.name}"
+        )
 
         # Build body
         body = f"""## Security Vulnerability: {vuln.name}
@@ -343,11 +370,21 @@ npm update {vuln.name}
 
         try:
             proc = subprocess.run(
-                ["gh", "issue", "create", "--title", title, "--body", body, "--label", ",".join(labels)],
+                [
+                    "gh",
+                    "issue",
+                    "create",
+                    "--title",
+                    title,
+                    "--body",
+                    body,
+                    "--label",
+                    ",".join(labels),
+                ],
                 cwd=self.project_path,
                 capture_output=True,
                 text=True,
-                timeout=30
+                timeout=30,
             )
 
             if proc.returncode == 0:
@@ -374,20 +411,11 @@ npm update {vuln.name}
         if force:
             cmd.append("--force")
 
-        result = {
-            "success": False,
-            "fixed": [],
-            "remaining": [],
-            "error": None
-        }
+        result = {"success": False, "fixed": [], "remaining": [], "error": None}
 
         try:
             proc = subprocess.run(
-                cmd,
-                cwd=self.project_path,
-                capture_output=True,
-                text=True,
-                timeout=300
+                cmd, cwd=self.project_path, capture_output=True, text=True, timeout=300
             )
 
             result["success"] = proc.returncode == 0
@@ -407,6 +435,7 @@ npm update {vuln.name}
 # REPORT FORMATTING
 # =============================================================================
 
+
 def format_scan_report(result: ScanResult, existing_issues: List[ExistingIssue] = None) -> str:
     """Format scan result as human-readable report."""
     existing_issues = existing_issues or []
@@ -425,16 +454,18 @@ def format_scan_report(result: ScanResult, existing_issues: List[ExistingIssue] 
 
     # Summary
     counts = result.counts
-    lines.extend([
-        "Vulnerabilities Found:",
-        f"  Critical: {counts['critical']}",
-        f"  High: {counts['high']}",
-        f"  Moderate: {counts['moderate']}",
-        f"  Low: {counts['low']}",
-        "",
-        f"Auto-Fixable: {result.fixable_count} of {len(result.vulnerabilities)}",
-        "",
-    ])
+    lines.extend(
+        [
+            "Vulnerabilities Found:",
+            f"  Critical: {counts['critical']}",
+            f"  High: {counts['high']}",
+            f"  Moderate: {counts['moderate']}",
+            f"  Low: {counts['low']}",
+            "",
+            f"Auto-Fixable: {result.fixable_count} of {len(result.vulnerabilities)}",
+            "",
+        ]
+    )
 
     # Details for high+ severity
     high_plus = result.by_severity["critical"] + result.by_severity["high"]
@@ -467,7 +498,7 @@ def format_github_issue_body(vuln: Vulnerability) -> str:
 **Severity:** {vuln.severity.upper()}
 **Package:** {vuln.name}
 **Vulnerable Versions:** {vuln.vulnerable_versions}
-**CVE:** {vuln.cve or 'N/A'}
+**CVE:** {vuln.cve or "N/A"}
 
 ### Description
 {vuln.title}
@@ -491,7 +522,9 @@ if __name__ == "__main__":
     parser.add_argument("--path", "-p", help="Project path", default=os.getcwd())
     parser.add_argument("--json", "-j", action="store_true", help="JSON output")
     parser.add_argument("--dry-run", action="store_true", help="Don't create issues")
-    parser.add_argument("--severity", "-s", choices=["low", "moderate", "high", "critical"], help="Minimum severity")
+    parser.add_argument(
+        "--severity", "-s", choices=["low", "moderate", "high", "critical"], help="Minimum severity"
+    )
 
     args = parser.parse_args()
 
@@ -506,13 +539,13 @@ if __name__ == "__main__":
                     "severity": v.severity,
                     "cve": v.cve,
                     "ghsa": v.ghsa,
-                    "fix_available": v.fix_available
+                    "fix_available": v.fix_available,
                 }
                 for v in result.vulnerabilities
             ],
             "counts": result.counts,
             "total_packages": result.total_packages,
-            "error": result.error
+            "error": result.error,
         }
         print(json.dumps(output, indent=2))
     else:

@@ -17,6 +17,7 @@ from typing import Any, Dict, List, Optional
 @dataclass
 class ToolCall:
     """Individual tool call record."""
+
     tool: str
     duration: float
     input_tokens: int
@@ -28,6 +29,7 @@ class ToolCall:
 @dataclass
 class RoutineMeasurement:
     """Measurement data for a routine execution."""
+
     routine_id: str
     routine_name: str
     start_time: float
@@ -71,7 +73,7 @@ class RoutineMeasurement:
                     "input_tokens": 0,
                     "output_tokens": 0,
                     "duration": 0.0,
-                    "chars": 0
+                    "chars": 0,
                 }
             breakdown[tc.tool]["count"] += 1
             breakdown[tc.tool]["input_tokens"] += tc.input_tokens
@@ -84,7 +86,7 @@ class RoutineMeasurement:
             sorted(
                 breakdown.items(),
                 key=lambda x: x[1]["input_tokens"] + x[1]["output_tokens"],
-                reverse=True
+                reverse=True,
             )
         )
         return sorted_breakdown
@@ -103,7 +105,7 @@ class RoutineMeasurement:
         return {
             "input": round(input_cost, 4),
             "output": round(output_cost, 4),
-            "total": round(total_cost, 4)
+            "total": round(total_cost, 4),
         }
 
     def to_dict(self) -> Dict[str, Any]:
@@ -120,7 +122,7 @@ class RoutineMeasurement:
             "output_tokens": self.total_output_tokens,
             "total_chars": self.total_chars,
             "tool_breakdown": self.tool_breakdown(),
-            "cost_estimate": self.estimate_cost()
+            "cost_estimate": self.estimate_cost(),
         }
 
 
@@ -138,17 +140,10 @@ class RoutineMeasurementTracker:
     def start(self, routine_id: str, routine_name: str) -> None:
         """Start tracking a new routine."""
         self._measurement = RoutineMeasurement(
-            routine_id=routine_id,
-            routine_name=routine_name,
-            start_time=time.time()
+            routine_id=routine_id, routine_name=routine_name, start_time=time.time()
         )
 
-    def track_tool_call(
-        self,
-        tool: str,
-        content: str,
-        duration: float = 0.0
-    ) -> None:
+    def track_tool_call(self, tool: str, content: str, duration: float = 0.0) -> None:
         """Track a tool call."""
         if self._measurement is None:
             return
@@ -168,7 +163,7 @@ class RoutineMeasurementTracker:
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             chars=chars,
-            timestamp=time.time()
+            timestamp=time.time(),
         )
         self._measurement.tool_calls.append(tool_call)
 
@@ -218,9 +213,15 @@ def format_measurement_report(measurement: RoutineMeasurement) -> str:
 
     # Token Summary
     report_lines.append("Context Usage:")
-    report_lines.append(f"  Input Tokens:  {measurement.total_input_tokens:,} (~{measurement.total_input_tokens // 1000}k)")
-    report_lines.append(f"  Output Tokens: {measurement.total_output_tokens:,} (~{measurement.total_output_tokens // 1000}k)")
-    report_lines.append(f"  Total Tokens:  {measurement.total_tokens:,} (~{measurement.total_tokens // 1000}k)")
+    report_lines.append(
+        f"  Input Tokens:  {measurement.total_input_tokens:,} (~{measurement.total_input_tokens // 1000}k)"
+    )
+    report_lines.append(
+        f"  Output Tokens: {measurement.total_output_tokens:,} (~{measurement.total_output_tokens // 1000}k)"
+    )
+    report_lines.append(
+        f"  Total Tokens:  {measurement.total_tokens:,} (~{measurement.total_tokens // 1000}k)"
+    )
     report_lines.append(f"  Characters:    {measurement.total_chars:,}")
     report_lines.append("")
 
