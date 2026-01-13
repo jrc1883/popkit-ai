@@ -115,6 +115,49 @@ Use AskUserQuestion tool with:
 
 ### Step 4: Execute Merge
 
+**Branch Protection Check (Issue #142):**
+
+Before merging, MUST check current branch:
+
+```bash
+# Get current branch
+current_branch=$(git branch --show-current 2>/dev/null)
+
+# Protected branches: main, master, develop, production
+PROTECTED_BRANCHES=("main" "master" "develop" "production")
+
+# Check if on protected branch
+is_protected=false
+for branch in "${PROTECTED_BRANCHES[@]}"; do
+    if [ "$current_branch" = "$branch" ]; then
+        is_protected=true
+        break
+    fi
+done
+
+# If on protected branch, BLOCK and recommend feature branch
+if [ "$is_protected" = true ]; then
+    echo "❌ ERROR: Cannot merge research directly into protected branch '$current_branch'"
+    echo ""
+    echo "Protected branch policy requires feature branch workflow."
+    echo ""
+    echo "Recommended steps:"
+    echo "  1. Create feature branch:"
+    echo "     git checkout -b feat/research-merge-[topic]"
+    echo ""
+    echo "  2. Re-run research merge (will merge into feature branch)"
+    echo ""
+    echo "  3. Push and create PR:"
+    echo "     git push -u origin feat/research-merge-[topic]"
+    echo "     gh pr create --title 'docs: merge [topic] research'"
+    echo ""
+    echo "See CLAUDE.md 'Git Workflow Principles' for details."
+    exit 1
+fi
+```
+
+**If on feature branch, proceed with merge:**
+
 Based on user choice:
 
 #### Option A: Merge + Issue (Full Processing)

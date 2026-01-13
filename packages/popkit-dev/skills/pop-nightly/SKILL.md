@@ -157,6 +157,39 @@ print(json.dumps(data))
 "
 ```
 
+**Branch Protection Detection (Issue #142):**
+
+After collecting branch name, check if it's a protected branch:
+
+```python
+from popkit_shared.utils.session_recorder import is_recording_enabled, record_reasoning
+
+# Get current branch
+current_branch = git_output['branch']
+
+# Protected branches
+PROTECTED_BRANCHES = ["main", "master", "develop", "production"]
+is_protected = current_branch in PROTECTED_BRANCHES
+
+# Record if on protected branch
+if is_recording_enabled():
+    record_reasoning(
+        step="Check branch protection",
+        reasoning=f"Branch '{current_branch}' is {'PROTECTED' if is_protected else 'not protected'}",
+        data={
+            "current_branch": current_branch,
+            "is_protected": is_protected
+        }
+    )
+```
+
+**Sleep Score Impact:**
+
+If on protected branch with uncommitted work:
+- **Warning:** Include ⚠️ PROTECTED indicator in output
+- **Recommendation:** "Create feature branch and move uncommitted work before committing"
+- **Option Priority:** Prioritize "Create feature branch" over "Commit and push"
+
 ### GitHub Commands (Consolidated)
 
 ```bash
