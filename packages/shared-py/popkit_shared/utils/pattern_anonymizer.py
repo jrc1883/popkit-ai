@@ -8,12 +8,10 @@ before they are shared with the PopKit Cloud community database.
 Part of the popkit plugin system.
 """
 
+import hashlib
 import os
 import re
-import hashlib
-from typing import Dict, Any, List, Optional, Set
-from pathlib import Path
-
+from typing import Any, Dict, List, Optional, Set
 
 # Patterns to redact
 SENSITIVE_PATTERNS = [
@@ -374,8 +372,8 @@ def prepare_batch_for_sharing(
 # =============================================================================
 
 if __name__ == "__main__":
-    import sys
     import json
+    import sys
 
     if len(sys.argv) < 2:
         print("Usage: pattern_anonymizer.py <command> [args]")

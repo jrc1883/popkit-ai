@@ -186,13 +186,14 @@ After processing all branches:
 ```markdown
 ## Research Processing Complete
 
-| Branch | Action | Result |
-|--------|--------|--------|
+| Branch               | Action         | Result             |
+| -------------------- | -------------- | ------------------ |
 | research-claude-code | Merged + Issue | Issue #182 created |
-| research-audio-hooks | Skipped | - |
-| research-old-test | Deleted | - |
+| research-audio-hooks | Skipped        | -                  |
+| research-old-test    | Deleted        | -                  |
 
 **Next Steps:**
+
 - Review created issues
 - Run `/popkit:next` to see updated recommendations
 ```
@@ -206,6 +207,7 @@ After processing all branches:
 ```
 
 Examples:
+
 - `[Research] Claude Code v2.0.65 Features Integration`
 - `[Research] Audio Feedback Hooks Architecture`
 
@@ -232,28 +234,31 @@ Examples:
 - [ ] {Task 2 from research}
 
 ---
-*Auto-generated from research branch by PopKit*
+
+_Auto-generated from research branch by PopKit_
 ```
 
 ### Labels
 
 Automatically apply:
+
 - `research` - Marks as research output
 - `documentation` - Contains documentation
 
 Optionally detect from content:
+
 - `enhancement` - If implementation tasks found
 - `P1-high` / `P2-medium` / `P3-low` - From priority metadata
 
 ## Error Handling
 
-| Situation | Response |
-|-----------|----------|
-| Dirty working directory | Prompt to commit/stash first |
-| Merge conflicts | Show conflicts, offer manual resolution |
-| gh CLI unavailable | Skip issue creation, note in output |
-| No doc files | Merge anyway, create minimal issue |
-| Branch already merged | Skip, note in output |
+| Situation               | Response                                |
+| ----------------------- | --------------------------------------- |
+| Dirty working directory | Prompt to commit/stash first            |
+| Merge conflicts         | Show conflicts, offer manual resolution |
+| gh CLI unavailable      | Skip issue creation, note in output     |
+| No doc files            | Merge anyway, create minimal issue      |
+| Branch already merged   | Skip, note in output                    |
 
 ## Research Document Standard
 
@@ -287,13 +292,13 @@ For best results, research docs should follow this format:
 
 ## Integration Points
 
-| Component | Role |
-|-----------|------|
-| `pop-next-action` | Calls this skill when branches detected |
-| `research_branch_detector.py` | Core detection logic |
-| `/popkit:next` | Entry point for auto-detection |
-| `/popkit:routine morning` | Can include in morning routine |
-| GitHub Issues | Output destination for findings |
+| Component                     | Role                                    |
+| ----------------------------- | --------------------------------------- |
+| `pop-next-action`             | Calls this skill when branches detected |
+| `research_branch_detector.py` | Core detection logic                    |
+| `/popkit:next`                | Entry point for auto-detection          |
+| `/popkit:routine morning`     | Can include in morning routine          |
+| GitHub Issues                 | Output destination for findings         |
 
 ## Related
 

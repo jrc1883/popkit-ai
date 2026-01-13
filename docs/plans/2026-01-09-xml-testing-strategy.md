@@ -23,6 +23,7 @@ The vision is a unified testing framework that provides visibility into code hea
 ## Problem Statement
 
 **Current State:**
+
 - XML implementation exists in parts of the codebase
 - No unit tests verify XML compliance or coverage
 - No systematic way to detect regression or compliance drift
@@ -30,6 +31,7 @@ The vision is a unified testing framework that provides visibility into code hea
 - Unclear impact of new features on existing compliance
 
 **Future State:**
+
 - Automated compliance testing for XML (and other critical features)
 - Regular reporting (daily reports) showing compliance metrics
 - Benchmark suite tracking multiple code quality dimensions
@@ -67,12 +69,12 @@ Feature Coverage Tests
 
 Define what "passing" means for different code aspects:
 
-| Tier | Definition | Examples |
-|------|-----------|----------|
+| Tier         | Definition   | Examples                                    |
+| ------------ | ------------ | ------------------------------------------- |
 | **Critical** | Must be 100% | XML schema compliance, hook JSON validation |
-| **High** | ≥95% | Error handling, security patterns |
-| **Standard** | ≥80% | Code coverage, type coverage |
-| **Tracking** | Any % | Performance benchmarks, feature states |
+| **High**     | ≥95%         | Error handling, security patterns           |
+| **Standard** | ≥80%         | Code coverage, type coverage                |
+| **Tracking** | Any %        | Performance benchmarks, feature states      |
 
 ### 3. Daily Reporting Integration
 
@@ -214,6 +216,7 @@ Documentation Tests:
 ## Research Opportunities
 
 **Areas to explore:**
+
 - Why XML is better for cloud code (prior article research)
 - XML testing frameworks and best practices
 - Cloud provider preferences (XML vs. JSON for IaC)

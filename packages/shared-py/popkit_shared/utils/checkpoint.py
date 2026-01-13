@@ -10,15 +10,13 @@ Enables recovery from crashes and continuation across sessions.
 Based on patterns from Anthropic's Long Horizon Coding Agent Demo.
 """
 
-import os
 import json
+import os
 import subprocess
-import shutil
-from typing import Optional, Dict, Any, List
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-
+from typing import Any, Dict, List, Optional
 
 # =============================================================================
 # CONFIGURATION

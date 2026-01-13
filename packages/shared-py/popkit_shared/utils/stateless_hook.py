@@ -10,22 +10,20 @@ Part of the popkit plugin stateless hook architecture.
 """
 
 import json
-import sys
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Type
+from typing import Type
 
 from .context_carrier import (
     HookContext,
     create_context,
-    update_context,
     serialize_context,
-    deserialize_context,
+    update_context,
 )
 from .message_builder import (
-    build_user_message,
     build_assistant_message,
-    build_tool_use_message,
     build_tool_result_message,
+    build_tool_use_message,
+    build_user_message,
     compose_conversation,
     rebuild_from_history,
 )

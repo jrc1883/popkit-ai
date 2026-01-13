@@ -15,13 +15,13 @@ Manage GitHub milestones with progress tracking, health checks, and release plan
 
 ## Subcommands
 
-| Subcommand | Description |
-|------------|-------------|
-| `list` | List all milestones with progress (default) |
-| `create` | Create a new milestone |
-| `close` | Close a milestone with summary |
-| `report` | Generate detailed milestone report |
-| `health` | Check milestone health metrics |
+| Subcommand | Description                                 |
+| ---------- | ------------------------------------------- |
+| `list`     | List all milestones with progress (default) |
+| `create`   | Create a new milestone                      |
+| `close`    | Close a milestone with summary              |
+| `report`   | Generate detailed milestone report          |
+| `health`   | Check milestone health metrics              |
 
 ---
 
@@ -38,10 +38,10 @@ List all milestones with progress indicators.
 
 ### Flags
 
-| Flag | Description |
-|------|-------------|
-| `--all` | Include closed milestones |
-| `--json` | Output as JSON |
+| Flag     | Description               |
+| -------- | ------------------------- |
+| `--all`  | Include closed milestones |
+| `--json` | Output as JSON            |
 
 ### Output Format
 
@@ -69,6 +69,7 @@ Legend:
 4. Format as table
 
 **Execute:**
+
 ```bash
 gh api repos/{owner}/{repo}/milestones --jq '.[] | {title, open_issues, closed_issues, due_on, state}'
 ```
@@ -87,10 +88,10 @@ Create a new milestone with optional due date.
 
 ### Flags
 
-| Flag | Description |
-|------|-------------|
-| `--due` | Due date (YYYY-MM-DD format) |
-| `--description` | Milestone description |
+| Flag            | Description                  |
+| --------------- | ---------------------------- |
+| `--due`         | Due date (YYYY-MM-DD format) |
+| `--description` | Milestone description        |
 
 ### Interactive Flow
 
@@ -111,6 +112,7 @@ Use AskUserQuestion tool with:
 ```
 
 Then prompt for due date:
+
 ```
 Use AskUserQuestion tool with:
 - question: "When is this milestone due?"
@@ -130,6 +132,7 @@ Use AskUserQuestion tool with:
 ### Process
 
 **Execute:**
+
 ```bash
 gh api repos/{owner}/{repo}/milestones \
   --method POST \
@@ -151,8 +154,8 @@ Close a milestone with a summary report.
 
 ### Flags
 
-| Flag | Description |
-|------|-------------|
+| Flag        | Description                                 |
+| ----------- | ------------------------------------------- |
 | `--comment` | Post summary as comment on milestone issues |
 
 ### Process
@@ -185,6 +188,7 @@ Milestone closed successfully!
 ```
 
 **Execute:**
+
 ```bash
 gh api repos/{owner}/{repo}/milestones/{number} \
   --method PATCH \
@@ -205,10 +209,10 @@ Generate a detailed milestone report.
 
 ### Flags
 
-| Flag | Description |
-|------|-------------|
-| `--format` | Output format: `text` (default), `markdown`, `json` |
-| `--verbose` | Include issue-by-issue breakdown |
+| Flag        | Description                                         |
+| ----------- | --------------------------------------------------- |
+| `--format`  | Output format: `text` (default), `markdown`, `json` |
+| `--verbose` | Include issue-by-issue breakdown                    |
 
 ### Output (Markdown)
 
@@ -217,12 +221,12 @@ Generate a detailed milestone report.
 
 ## Overview
 
-| Metric | Value |
-|--------|-------|
-| Progress | 35% (7/20) |
-| Due Date | January 15, 2025 |
-| Days Remaining | 37 |
-| Velocity | 0.5 issues/day |
+| Metric               | Value            |
+| -------------------- | ---------------- |
+| Progress             | 35% (7/20)       |
+| Due Date             | January 15, 2025 |
+| Days Remaining       | 37               |
+| Velocity             | 0.5 issues/day   |
 | Projected Completion | February 3, 2025 |
 
 ## Status
@@ -232,17 +236,20 @@ Generate a detailed milestone report.
 ## Breakdown
 
 ### Completed (7)
+
 - ✅ #125: User Signup & Billing (Epic)
 - ✅ #126: Premium Feature Gating (Epic)
 - ✅ #127: Research Management System (Epic)
 - ...
 
 ### In Progress (3)
+
 - 🔄 #128: GitHub Workflow Refinement
 - 🔄 #148: Milestone and Audit Commands
 - 🔄 #149: GitHub Projects Integration
 
 ### Not Started (10)
+
 - 📋 #111: Multi-Model Foundation
 - 📋 #112: Universal MCP Server
 - ...
@@ -267,8 +274,8 @@ Check milestone health metrics and provide recommendations.
 
 ### Flags
 
-| Flag | Description |
-|------|-------------|
+| Flag    | Description               |
+| ------- | ------------------------- |
 | `--all` | Check all open milestones |
 
 ### Health Metrics
@@ -369,18 +376,18 @@ Risk Score:
 
 ## Architecture Integration
 
-| Component | Integration |
-|-----------|-------------|
-| GitHub API | `gh api repos/{owner}/{repo}/milestones` |
-| Issue Linking | `gh issue list --milestone` |
-| Progress Tracking | Calculate from open/closed counts |
-| Velocity | Track daily closes via commit timestamps |
-| Reports | Markdown formatting with tables |
+| Component         | Integration                              |
+| ----------------- | ---------------------------------------- |
+| GitHub API        | `gh api repos/{owner}/{repo}/milestones` |
+| Issue Linking     | `gh issue list --milestone`              |
+| Progress Tracking | Calculate from open/closed counts        |
+| Velocity          | Track daily closes via commit timestamps |
+| Reports           | Markdown formatting with tables          |
 
 ## Related Commands
 
-| Command | Purpose |
-|---------|---------|
-| `/popkit-dev:issue` | Manage individual issues |
-| `/popkit-ops:audit` | Periodic review with milestone analysis |
-| `/popkit-dev:git release` | Create releases tied to milestones |
+| Command                   | Purpose                                 |
+| ------------------------- | --------------------------------------- |
+| `/popkit-dev:issue`       | Manage individual issues                |
+| `/popkit-ops:audit`       | Periodic review with milestone analysis |
+| `/popkit-dev:git release` | Create releases tied to milestones      |

@@ -6,32 +6,32 @@ Tests Voyage AI embedding API client with caching and rate limiting.
 Critical for semantic search and embeddings functionality.
 """
 
-import sys
 import json
+import sys
 import time
-import pytest
-from pathlib import Path
-from unittest.mock import patch, MagicMock
 import urllib.error
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 import popkit_shared.utils.voyage_client as voyage_client_module
 from popkit_shared.utils.voyage_client import (
+    BATCH_SIZE,
+    MAX_REQUESTS_PER_MINUTE,
+    MAX_TOKENS_PER_MINUTE,
+    VOYAGE_MODEL,
     EmbeddingResponse,
     EmbeddingUsage,
     VoyageClient,
-    get_client,
     embed,
-    embed_single,
-    embed_query,
     embed_document,
+    embed_query,
+    embed_single,
+    get_client,
     is_available,
-    VOYAGE_MODEL,
-    MAX_REQUESTS_PER_MINUTE,
-    MAX_TOKENS_PER_MINUTE,
-    BATCH_SIZE,
-    _client,
 )
 
 

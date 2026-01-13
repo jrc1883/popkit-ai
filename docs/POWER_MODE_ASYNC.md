@@ -90,6 +90,7 @@ Power Mode's **Native Async Mode** leverages Claude Code 2.0.64+'s built-in back
 #### 1. Main Agent (Coordinator)
 
 The **coordinator** is the main Claude agent that:
+
 - Receives the user's objective
 - Breaks down work into phases and subtasks
 - Spawns background agents via `Task(run_in_background: true)`
@@ -100,6 +101,7 @@ The **coordinator** is the main Claude agent that:
 #### 2. Background Agents
 
 Background agents are **spawned tasks** that:
+
 - Run in separate threads managed by Claude Code
 - Receive their specific subtask and phase context
 - Execute independently without blocking the main agent
@@ -110,12 +112,13 @@ Background agents are **spawned tasks** that:
 
 Since background agents can't communicate directly, they use **file-based pub/sub**:
 
-| File | Purpose | Format |
-|------|---------|--------|
-| `.claude/popkit/insights.json` | Shared discoveries between agents | JSON array of insight objects |
-| `.claude/popkit/power-state.json` | Session state and agent tracking | JSON object with session metadata |
+| File                              | Purpose                           | Format                            |
+| --------------------------------- | --------------------------------- | --------------------------------- |
+| `.claude/popkit/insights.json`    | Shared discoveries between agents | JSON array of insight objects     |
+| `.claude/popkit/power-state.json` | Session state and agent tracking  | JSON object with session metadata |
 
 **Insight Format:**
+
 ```json
 {
   "insights": [
@@ -258,28 +261,30 @@ Since background agents can't communicate directly, they use **file-based pub/su
 
 ### Feature Matrix
 
-| Feature | Native Async | File-Based |
-|---------|-------------|------------|
-| **Setup** | None | None |
-| **Max Agents** | 5-10 | 2 |
-| **Parallelism** | ✅ True | ❌ Sequential |
-| **Cross-Platform** | ✅ Yes | ✅ Yes |
-| **External Deps** | None | None |
-| **Communication** | File-based | File-based |
-| **Performance** | High | Low |
-| **Reliability** | High | Medium |
-| **Cost** | Free (Premium+) | Free |
-| **Claude Code** | 2.0.64+ | Any version |
+| Feature            | Native Async    | File-Based    |
+| ------------------ | --------------- | ------------- |
+| **Setup**          | None            | None          |
+| **Max Agents**     | 5-10            | 2             |
+| **Parallelism**    | ✅ True         | ❌ Sequential |
+| **Cross-Platform** | ✅ Yes          | ✅ Yes        |
+| **External Deps**  | None            | None          |
+| **Communication**  | File-based      | File-based    |
+| **Performance**    | High            | Low           |
+| **Reliability**    | High            | Medium        |
+| **Cost**           | Free (Premium+) | Free          |
+| **Claude Code**    | 2.0.64+         | Any version   |
 
 ### When to Use Each Mode
 
 #### Use Native Async When:
+
 - ✅ You have Claude Code 2.0.64+
 - ✅ You need 5-10 parallel agents
 - ✅ You want maximum performance
 - ✅ You want zero setup
 
 #### Use File-Based When:
+
 - ✅ You're on Free tier
 - ✅ You have Claude Code < 2.0.64
 - ✅ You only need 2 agents
@@ -315,6 +320,7 @@ def select_mode(self) -> Tuple[PowerMode, str]:
 ### Task Spawning Pattern
 
 **Coordinator spawns agents:**
+
 ```python
 # Pseudo-code (actual implementation uses Claude Code's Task tool)
 
@@ -348,6 +354,7 @@ Task(
 ### Progress Polling Pattern
 
 **Coordinator monitors progress:**
+
 ```python
 # Poll every 500ms (configured in config.json)
 poll_interval = 0.5  # seconds
@@ -373,6 +380,7 @@ while agents_active:
 ### Insight Sharing Pattern
 
 **Agents write to shared file:**
+
 ```python
 # Each agent appends insights
 def share_insight(agent_name, content, tags, phase):
@@ -530,29 +538,32 @@ Configuration is in `packages/popkit-core/power-mode/config.json`:
 ### Customizing Behavior
 
 **Change poll interval** (trade-off: responsiveness vs. overhead):
+
 ```json
 {
   "native": {
-    "poll_interval_ms": 1000  // Poll every 1 second (less overhead)
+    "poll_interval_ms": 1000 // Poll every 1 second (less overhead)
   }
 }
 ```
 
 **Adjust sync timeout** (for slower agents):
+
 ```json
 {
   "native": {
-    "sync_timeout_seconds": 300  // 5 minutes instead of 2
+    "sync_timeout_seconds": 300 // 5 minutes instead of 2
   }
 }
 ```
 
 **Change max agents** (Premium tier):
+
 ```json
 {
   "tier_limits": {
     "premium": {
-      "max_agents": 3  // Reduce from 5 to 3 for simpler tasks
+      "max_agents": 3 // Reduce from 5 to 3 for simpler tasks
     }
   }
 }
@@ -565,12 +576,14 @@ Configuration is in `packages/popkit-core/power-mode/config.json`:
 ### Issue: Native Async Not Detected
 
 **Symptom:**
+
 ```
 Power Mode: FILE (fallback)
 Reason: Claude Code not detected
 ```
 
 **Diagnosis:**
+
 ```bash
 # Check Claude Code version
 claude --version
@@ -579,6 +592,7 @@ claude --version
 ```
 
 **Solutions:**
+
 1. Update Claude Code: Download latest from claude.ai/code
 2. Verify installation: `which claude` (macOS/Linux) or `where claude` (Windows)
 3. Set environment variable (if detection fails):
@@ -589,6 +603,7 @@ claude --version
 ### Issue: Background Agents Not Spawning
 
 **Symptom:**
+
 ```
 Power Mode: ACTIVE (Native Async)
 Agents: 0 active, 0 completed
@@ -596,6 +611,7 @@ Status: Waiting for agents to spawn...
 ```
 
 **Diagnosis:**
+
 ```bash
 # Check tier limits
 /popkit-core:account status
@@ -604,6 +620,7 @@ Status: Waiting for agents to spawn...
 ```
 
 **Solutions:**
+
 1. Upgrade to Premium tier: `/popkit:upgrade`
 2. Verify tier: `/popkit-core:account status`
 3. Check Claude Code supports background tasks:
@@ -622,6 +639,7 @@ Status: Waiting for agents to spawn...
 Agents complete but insights.json is empty or missing.
 
 **Diagnosis:**
+
 ```bash
 # Check file exists and is writable
 ls -la .claude/popkit/insights.json
@@ -629,6 +647,7 @@ cat .claude/popkit/insights.json
 ```
 
 **Solutions:**
+
 1. Verify directory exists:
    ```bash
    mkdir -p .claude/popkit
@@ -645,6 +664,7 @@ cat .claude/popkit/insights.json
 ### Issue: Sync Barriers Timeout
 
 **Symptom:**
+
 ```
 [WARN] Phase 1 sync barrier timeout (120s exceeded)
 Continuing with partial results...
@@ -652,6 +672,7 @@ Continuing with partial results...
 
 **Diagnosis:**
 Check which agent is slow:
+
 ```bash
 # View power state
 cat .claude/popkit/power-state.json
@@ -660,9 +681,10 @@ cat .claude/popkit/power-state.json
 ```
 
 **Solutions:**
+
 1. Increase timeout in config:
    ```json
-   {"native": {"sync_timeout_seconds": 300}}
+   { "native": { "sync_timeout_seconds": 300 } }
    ```
 2. Reduce agent workload (break into smaller tasks)
 3. Check if agent is stuck (kill and restart):
@@ -677,6 +699,7 @@ cat .claude/popkit/power-state.json
 Power Mode is slow despite Native Async.
 
 **Diagnosis:**
+
 ```bash
 # Check system resources
 # - CPU usage
@@ -685,13 +708,14 @@ Power Mode is slow despite Native Async.
 ```
 
 **Solutions:**
+
 1. Reduce max agents:
    ```json
-   {"tier_limits": {"premium": {"max_agents": 3}}}
+   { "tier_limits": { "premium": { "max_agents": 3 } } }
    ```
 2. Increase poll interval (less overhead):
    ```json
-   {"native": {"poll_interval_ms": 1000}}
+   { "native": { "poll_interval_ms": 1000 } }
    ```
 3. Use fewer phases (less sync barriers)
 
@@ -702,18 +726,20 @@ Power Mode is slow despite Native Async.
 ### Benchmark: 5-Agent Parallel Exploration
 
 **Test Setup:**
+
 - Task: Analyze codebase (10,000 LOC)
 - Agents: 5 background agents (code-explorer, researcher, security-auditor, documentation-maintainer, bundle-analyzer)
 - Hardware: M1 MacBook Pro, 16GB RAM
 
 **Results:**
 
-| Mode | Duration | Agents | Insights | Overhead |
-|------|----------|--------|----------|----------|
-| Native Async | 45s | 5 parallel | 23 | ~10% (polling) |
-| File-Based | 180s | 2 sequential | 12 | ~5% (minimal) |
+| Mode         | Duration | Agents       | Insights | Overhead       |
+| ------------ | -------- | ------------ | -------- | -------------- |
+| Native Async | 45s      | 5 parallel   | 23       | ~10% (polling) |
+| File-Based   | 180s     | 2 sequential | 12       | ~5% (minimal)  |
 
 **Key Findings:**
+
 - Native Async is **4x faster** than File-Based mode
 - Polling overhead is negligible (~10%)
 - Scales linearly up to 5 agents
@@ -723,6 +749,7 @@ Power Mode is slow despite Native Async.
 ### Scalability Limits
 
 **Agent Count vs. Duration:**
+
 ```
 1 agent:  60s  (baseline)
 2 agents: 35s  (42% faster)
@@ -732,6 +759,7 @@ Power Mode is slow despite Native Async.
 ```
 
 **Diminishing Returns:**
+
 - After 5 agents, parallelism gains plateau
 - Coordination overhead increases with agent count
 - Optimal: 3-5 agents for most tasks
@@ -739,16 +767,19 @@ Power Mode is slow despite Native Async.
 ### Resource Usage
 
 **Memory:**
+
 - Base (1 agent): ~200MB
 - Per additional agent: ~50MB
 - 5 agents total: ~400MB
 
 **CPU:**
+
 - Polling loop: ~2% CPU
 - Per agent: ~20% CPU peak
 - 5 agents total: ~50-60% CPU
 
 **Disk I/O:**
+
 - Insights writes: ~1 write per agent every 10s
 - Average file size: 5-10KB
 - Total I/O: Negligible (<100KB/session)
@@ -794,6 +825,7 @@ Power Mode supports **Plan Mode** (Claude Code 2.0.70+) where agents present imp
 ```
 
 **How it works:**
+
 1. Agent generates implementation plan
 2. Plan presented to user for approval
 3. User approves/rejects/modifies
@@ -826,6 +858,7 @@ def filter_by_tags(insights, required_tags):
 Native Async Mode represents a significant leap forward for Power Mode:
 
 **Key Achievements:**
+
 - ✅ **Zero external dependencies** (no Docker, no Redis)
 - ✅ **True parallelism** (5-10 agents simultaneously)
 - ✅ **Cross-platform** (Windows, macOS, Linux)
@@ -833,12 +866,14 @@ Native Async Mode represents a significant leap forward for Power Mode:
 - ✅ **Easy to use** (just `/popkit-core:power start`)
 
 **Future Enhancements:**
+
 - Agent-to-agent direct messaging (Issue #487 - 40% remaining)
 - Dynamic agent spawning based on workload
 - Cross-project pattern sharing
 - Enhanced metrics and observability
 
 **Learn More:**
+
 - Command Reference: `packages/popkit-core/commands/power.md`
 - Skill Documentation: `packages/popkit-core/skills/pop-power-mode/SKILL.md`
 - Configuration: `packages/popkit-core/power-mode/config.json`

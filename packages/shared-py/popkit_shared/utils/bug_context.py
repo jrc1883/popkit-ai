@@ -13,16 +13,15 @@ Captures context when a bug is reported, including:
 - Git status
 """
 
+import hashlib
 import json
 import os
 import re
 import subprocess
-import hashlib
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, field, asdict
-
+from typing import Any, Dict, List, Optional
 
 # =============================================================================
 # DATA CLASSES
@@ -747,8 +746,8 @@ def share_bug_pattern(ctx: BugContext) -> Optional[Dict[str, Any]]:
     Returns:
         Result dict with status, pattern_id, or None if sharing failed
     """
-    import sys
     import os
+    import sys
 
     # Try to import pattern client
     try:
@@ -809,8 +808,8 @@ def search_patterns_for_bug(ctx: BugContext) -> List[Dict[str, Any]]:
     Returns:
         List of matching patterns with solutions
     """
-    import sys
     import os
+    import sys
 
     # Try to import pattern client
     try:
@@ -868,7 +867,6 @@ def search_patterns_for_bug(ctx: BugContext) -> List[Dict[str, Any]]:
 
 def main():
     """CLI for testing bug context capture."""
-    import sys
 
     print("Bug Context Capture Test")
     print("=" * 50)

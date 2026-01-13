@@ -59,6 +59,7 @@ Transforms ideas into working proof-of-concepts with maximum speed and minimum o
 - **Efficiency**: Features implemented, shortcuts taken, demo readiness
 
 Example:
+
 ```
 ⚡ rapid-prototyper T:30 P:75% | Core: user authentication flow working
 ```
@@ -127,6 +128,7 @@ Participates in Power Mode check-ins every 5 tool calls.
 - **Tags**: [prototype, mvp, demo, validation, shortcut]
 
 Example:
+
 ```
 ↑ "Auth implemented with hardcoded user (shortcut)" [prototype, shortcut]
 ↑ "Happy path working: login → dashboard → action" [mvp, demo]
@@ -135,6 +137,7 @@ Example:
 ### PULL (Incoming)
 
 Accept insights with tags:
+
 - `[design]` - From brainstorming about validated designs
 - `[architecture]` - From code-architect about structure
 - `[priority]` - From feature-prioritizer about what to build
@@ -154,25 +157,25 @@ Accept insights with tags:
 
 ### Upstream (Receives from)
 
-| Agent | What It Provides |
-|-------|------------------|
-| code-architect | Approved architecture |
-| feature-prioritizer | Feature to validate |
-| brainstorming skill | Validated design |
+| Agent               | What It Provides      |
+| ------------------- | --------------------- |
+| code-architect      | Approved architecture |
+| feature-prioritizer | Feature to validate   |
+| brainstorming skill | Validated design      |
 
 ### Downstream (Passes to)
 
-| Agent | What It Receives |
-|-------|------------------|
-| code-reviewer | Prototype for assessment |
+| Agent              | What It Receives                  |
+| ------------------ | --------------------------------- |
+| code-reviewer      | Prototype for assessment          |
 | refactoring-expert | Validated prototype for hardening |
-| test-writer-fixer | Working code to test |
+| test-writer-fixer  | Working code to test              |
 
 ### Parallel (Works alongside)
 
-| Agent | Collaboration Pattern |
-|-------|----------------------|
-| documentation-maintainer | Demo documentation |
+| Agent                    | Collaboration Pattern |
+| ------------------------ | --------------------- |
+| documentation-maintainer | Demo documentation    |
 
 ## Output Format
 
@@ -180,36 +183,43 @@ Accept insights with tags:
 ## Prototype Report: [Feature/Concept Name]
 
 ### Validation Summary
+
 **Hypothesis**: [What we were testing]
 **Result**: [Validated / Partially Validated / Needs Revision]
 **Time Spent**: [Actual time]
 
 ### What Was Built
+
 - **Core Features**: [List]
 - **Demo Flow**: [Step-by-step]
 - **Technologies**: [Stack]
 
 ### Shortcuts Taken
-| Area | Shortcut | Production Requirement |
-|------|----------|----------------------|
-| Auth | Hardcoded user | Real auth system |
-| DB | In-memory | Persistent storage |
+
+| Area | Shortcut       | Production Requirement |
+| ---- | -------------- | ---------------------- |
+| Auth | Hardcoded user | Real auth system       |
+| DB   | In-memory      | Persistent storage     |
 
 ### Known Limitations
+
 - [Limitation 1]
 - [Limitation 2]
 
 ### Validation Results
+
 - **Success Criteria Met**: [Which passed]
 - **Not Met**: [Which failed]
 - **Unexpected**: [What we learned]
 
 ### Production Roadmap
+
 1. [Critical: Security]
 2. [High: Error handling]
 3. [Medium: Database]
 
 ### Demo Instructions
+
 1. [Setup]
 2. [Run]
 3. [What to show]
@@ -231,13 +241,13 @@ Completion is achieved when:
 
 Report these metrics on completion:
 
-| Metric | Description |
-|--------|-------------|
-| Time spent | Actual vs. budgeted |
-| Features built | Core functionality |
-| Shortcuts taken | Documented deferrals |
-| Demo readiness | Can show to stakeholders |
-| Production items | Path forward documented |
+| Metric           | Description              |
+| ---------------- | ------------------------ |
+| Time spent       | Actual vs. budgeted      |
+| Features built   | Core functionality       |
+| Shortcuts taken  | Documented deferrals     |
+| Demo readiness   | Can show to stakeholders |
+| Production items | Path forward documented  |
 
 ## Completion Signal
 
@@ -264,19 +274,19 @@ Ready for code review and hardening.
 
 ## Reference: Acceptable Shortcuts
 
-| Area | OK to Skip | Why |
-|------|------------|-----|
-| Auth | Hardcode user | Validate logic, not auth |
-| Database | In-memory/JSON | Test without DB setup |
-| Validation | Trust inputs | Edge cases come later |
-| Error handling | Console.log | Enough to debug |
-| Testing | Manual only | Automated tests post-validation |
+| Area           | OK to Skip     | Why                             |
+| -------------- | -------------- | ------------------------------- |
+| Auth           | Hardcode user  | Validate logic, not auth        |
+| Database       | In-memory/JSON | Test without DB setup           |
+| Validation     | Trust inputs   | Edge cases come later           |
+| Error handling | Console.log    | Enough to debug                 |
+| Testing        | Manual only    | Automated tests post-validation |
 
 ## Reference: Never Skip
 
-| Area | Why |
-|------|-----|
-| Core feature logic | Defeats purpose |
-| Data model shape | Hard to change |
-| Security in demos | Could expose data |
-| Happy path | Demo must work |
+| Area               | Why               |
+| ------------------ | ----------------- |
+| Core feature logic | Defeats purpose   |
+| Data model shape   | Hard to change    |
+| Security in demos  | Could expose data |
+| Happy path         | Demo must work    |

@@ -3,16 +3,25 @@ name: systematic-debugging
 description: "Four-phase debugging: root cause → patterns → hypothesis → implement. For complex bugs, test failures, multi-component issues. NOT for obvious syntax errors."
 context: fork
 inputs:
-  - {from: any, field: error_message, required: false}
-  - {from: any, field: reproduction_steps, required: false}
+  - { from: any, field: error_message, required: false }
+  - { from: any, field: reproduction_steps, required: false }
 outputs:
-  - {field: root_cause, type: string}
-  - {field: fix_applied, type: boolean}
+  - { field: root_cause, type: string }
+  - { field: fix_applied, type: boolean }
 next_skills: [pop-test-driven-development, pop-root-cause-tracing]
 workflow:
   id: systematic-debugging
   version: 1
-  steps: [{id: initial_triage}, {id: issue_type_decision}, {id: phase1_investigate}, {id: phase2_patterns}, {id: root_cause_decision}, {id: phase3_hypothesis}, {id: phase4_implement}]
+  steps:
+    [
+      { id: initial_triage },
+      { id: issue_type_decision },
+      { id: phase1_investigate },
+      { id: phase2_patterns },
+      { id: root_cause_decision },
+      { id: phase3_hypothesis },
+      { id: phase4_implement },
+    ]
 ---
 
 # Systematic Debugging
@@ -32,6 +41,7 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION
 ANY technical issue: test failures, bugs, unexpected behavior, performance, builds, integration.
 
 **ESPECIALLY when:**
+
 - Under time pressure
 - "Just one quick fix" seems obvious
 - Already tried multiple fixes
@@ -39,6 +49,7 @@ ANY technical issue: test failures, bugs, unexpected behavior, performance, buil
 - Don't fully understand issue
 
 **Don't skip when:**
+
 - Seems simple (simple bugs have root causes)
 - You're hurrying (systematic is faster than thrashing)
 - Manager wants NOW (systematic prevents rework)
@@ -58,13 +69,13 @@ Test fails → Run 5x
 
 **Flaky test checklist:**
 
-| Check | How | Fix |
-|-------|-----|-----|
-| Isolated/connected? | Run single vs suite | State pollution |
-| Timing-dependent? | Look for timeouts/sleeps | Condition-based waiting |
-| Environment-specific? | CI vs local | Mock env vars |
-| Order-dependent? | Different order | Setup/teardown |
-| Race condition? | Async without waits | Proper async/await |
+| Check                 | How                      | Fix                     |
+| --------------------- | ------------------------ | ----------------------- |
+| Isolated/connected?   | Run single vs suite      | State pollution         |
+| Timing-dependent?     | Look for timeouts/sleeps | Condition-based waiting |
+| Environment-specific? | CI vs local              | Mock env vars           |
+| Order-dependent?      | Different order          | Setup/teardown          |
+| Race condition?       | Async without waits      | Proper async/await      |
 
 **Then continue:**
 
@@ -97,7 +108,6 @@ Test fails → Run 5x
    - STOP. Count fixes tried.
    - If < 3: Return to Phase 1 with new info
    - **If >= 3: STOP. Question architecture** (see below)
-   
 5. **If 3+ Fixes Failed: Question Architecture**
    - Each fix reveals new problems elsewhere
    - Fixes require "massive refactoring"
@@ -107,6 +117,7 @@ Test fails → Run 5x
 ## Red Flags
 
 STOP if thinking:
+
 - "Quick fix for now"
 - "Just try X and see"
 - "Add multiple changes"
@@ -121,12 +132,12 @@ STOP if thinking:
 
 ## Quick Reference
 
-| Phase | Key Activities | Success |
-|-------|---------------|---------|
+| Phase         | Key Activities                          | Success               |
+| ------------- | --------------------------------------- | --------------------- |
 | 1. Root Cause | Read errors, reproduce, gather evidence | Understand WHAT & WHY |
-| 2. Pattern | Find working examples, compare | Identify differences |
-| 3. Hypothesis | Form theory, test minimally | Confirmed or new |
-| 4. Implement | Test, fix, verify | Resolved, tests pass |
+| 2. Pattern    | Find working examples, compare          | Identify differences  |
+| 3. Hypothesis | Form theory, test minimally             | Confirmed or new      |
+| 4. Implement  | Test, fix, verify                       | Resolved, tests pass  |
 
 ## Real-World Impact
 
@@ -142,6 +153,7 @@ STOP if thinking:
 ## Examples
 
 See `examples/` for:
+
 - `flaky-test-patterns.md` - Common flaky test causes & fixes
 - `debugging-flowchart.pdf` - Visual decision tree
 - `multi-component-diagnostic.md` - Instrumentation strategy

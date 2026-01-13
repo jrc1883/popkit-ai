@@ -7,13 +7,14 @@ Critical for security boundary enforcement and tool access control.
 """
 
 import sys
-import pytest
 from pathlib import Path
-from unittest.mock import patch, mock_open
+from unittest.mock import mock_open, patch
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from popkit_shared.utils.tool_filter import load_agent_config, filter_tools_for_workflow, ToolFilter
+from popkit_shared.utils.tool_filter import ToolFilter, filter_tools_for_workflow, load_agent_config
 
 
 class TestLoadAgentConfig:

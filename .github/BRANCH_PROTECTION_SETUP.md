@@ -25,6 +25,7 @@ This guide explains how to set up branch protection for PopKit.
 Enable the following options:
 
 #### Pull Request Reviews
+
 - [x] **Require a pull request before merging**
   - [x] Require approvals: **1**
   - [x] Dismiss stale pull request approvals when new commits are pushed
@@ -32,6 +33,7 @@ Enable the following options:
   - [ ] Require approval of the most recent reviewable push
 
 #### Status Checks
+
 - [x] **Require status checks to pass before merging**
   - [x] Require branches to be up to date before merging
   - Add required status checks:
@@ -40,6 +42,7 @@ Enable the following options:
     - `lint` (optional)
 
 #### Other Settings
+
 - [ ] Require signed commits (optional - more secure but adds friction)
 - [ ] Require linear history (optional - enforces rebase workflow)
 - [x] **Do not allow bypassing the above settings** (recommended)
@@ -85,15 +88,18 @@ After configuration, verify that:
 ## Troubleshooting
 
 ### "Branch protection rule not available"
+
 - Ensure you have GitHub Pro subscription
 - Private repos require Pro/Team/Enterprise for branch protection
 
 ### "CODEOWNERS not working"
+
 - Verify file is at `.github/CODEOWNERS` (or root, or `docs/`)
 - Check file syntax (no trailing spaces, proper format)
 - Ensure usernames exist on GitHub
 
 ### "Status checks not appearing"
+
 - Run the CI workflow at least once to create the status check
 - Status checks are only available after first workflow run
 

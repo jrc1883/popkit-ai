@@ -12,6 +12,7 @@ These `.tape` files generate animated GIF demos using [VHS](https://github.com/c
 ## Generating GIFs
 
 **Install VHS:**
+
 ```bash
 # Windows
 scoop install vhs
@@ -20,12 +21,14 @@ choco install vhs
 ```
 
 **Generate a single demo:**
+
 ```bash
 cd packages/popkit-core/assets/tapes
 vhs quick-start.tape
 ```
 
 **Generate all demos:**
+
 ```bash
 cd packages/popkit-core/assets/tapes
 for tape in *.tape; do vhs "$tape"; done
@@ -36,6 +39,7 @@ Generated GIFs will appear in `../images/`
 ## Usage in README
 
 Embed in README:
+
 ```markdown
 ![Quick Start](packages/popkit-core/assets/images/quick-start.gif)
 ```

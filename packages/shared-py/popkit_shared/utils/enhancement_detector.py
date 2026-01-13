@@ -8,13 +8,12 @@ All features work without API key - this only detects enhancement opportunities.
 Replaces the old tier-based premium_checker.py (Epic #580, Issue #581)
 """
 
-import os
 import json
-import urllib.request
+import os
 import urllib.error
-from typing import Optional, Dict, Any, List
+import urllib.request
 from dataclasses import dataclass
-
+from typing import Any, Dict, List, Optional
 
 # =============================================================================
 # CONFIGURATION

@@ -62,6 +62,7 @@ Testing virtuoso who transforms untested code into bulletproof applications thro
 - **Efficiency**: Tests written, coverage increase, defects prevented
 
 Example:
+
 ```
 🧪 test-writer-fixer T:30 P:75% | Unit: 45 tests, 82% coverage
 ```
@@ -118,6 +119,7 @@ Participates in Power Mode check-ins every 5 tool calls.
 - **Tags**: [testing, coverage, unit, integration, e2e, jest, playwright]
 
 Example:
+
 ```
 ↑ "Added 25 unit tests for UserService, coverage 65% → 85%" [testing, coverage, unit]
 ↑ "Fixed 3 flaky tests caused by timing issues" [testing, e2e]
@@ -126,6 +128,7 @@ Example:
 ### PULL (Incoming)
 
 Accept insights with tags:
+
 - `[code]` - From code-reviewer about testability issues
 - `[api]` - From api-designer about contract testing needs
 - `[security]` - From security-auditor about security tests
@@ -145,25 +148,25 @@ Accept insights with tags:
 
 ### Upstream (Receives from)
 
-| Agent | What It Provides |
-|-------|------------------|
+| Agent             | What It Provides              |
+| ----------------- | ----------------------------- |
 | user-story-writer | Acceptance criteria for tests |
-| code-reviewer | Code testability feedback |
-| security-auditor | Security test requirements |
+| code-reviewer     | Code testability feedback     |
+| security-auditor  | Security test requirements    |
 
 ### Downstream (Passes to)
 
-| Agent | What It Receives |
-|-------|------------------|
-| devops-automator | CI/CD test configuration |
-| documentation-maintainer | Test documentation |
-| performance-optimizer | Performance test results |
+| Agent                    | What It Receives         |
+| ------------------------ | ------------------------ |
+| devops-automator         | CI/CD test configuration |
+| documentation-maintainer | Test documentation       |
+| performance-optimizer    | Performance test results |
 
 ### Parallel (Works alongside)
 
-| Agent | Collaboration Pattern |
-|-------|----------------------|
-| code-reviewer | Test quality review |
+| Agent            | Collaboration Pattern  |
+| ---------------- | ---------------------- |
+| code-reviewer    | Test quality review    |
 | security-auditor | Security test coverage |
 
 ## Output Format
@@ -172,6 +175,7 @@ Accept insights with tags:
 ## Test Implementation Report
 
 ### Coverage Summary
+
 **Overall Coverage**: [X]% (Target: 80%+)
 **Lines**: [X]% | **Branches**: [X]% | **Functions**: [X]%
 **Tests**: [N] total | **Passing**: [N] | **Failing**: [N]
@@ -179,33 +183,39 @@ Accept insights with tags:
 ### Tests Implemented
 
 #### Unit Tests ([N] new)
-| Component | Tests | Coverage Before | Coverage After |
-|-----------|-------|-----------------|----------------|
-| UserService | 15 | 45% | 85% |
-| OrderUtils | 10 | 30% | 92% |
+
+| Component   | Tests | Coverage Before | Coverage After |
+| ----------- | ----- | --------------- | -------------- |
+| UserService | 15    | 45%             | 85%            |
+| OrderUtils  | 10    | 30%             | 92%            |
 
 #### Integration Tests ([N] new)
+
 - API endpoints: 12 tests (GET, POST, PUT, DELETE)
 - Database operations: 8 tests with rollback
 - Service integration: 5 tests
 
 #### E2E Tests ([N] new)
+
 - Login flow: 3 scenarios
 - Checkout: 5 scenarios including error states
 - User profile: 4 scenarios
 
 ### Test Quality Metrics
+
 - **Execution Time**: [X] seconds
 - **Flaky Tests**: [N] identified, [N] fixed
 - **Assertions per Test**: [X] average
 - **Mock Coverage**: [X]% of external dependencies
 
 ### Coverage Gaps Remaining
+
 - `utils/analytics.ts`: 35% coverage (low priority)
 - `components/Chart.tsx`: 50% branches
 - Error boundaries: No tests yet
 
 ### Recommendations
+
 1. [Next priority test to write]
 2. [Test infrastructure improvement]
 3. [Coverage target adjustment]
@@ -226,13 +236,13 @@ Completion is achieved when:
 
 Report these metrics on completion:
 
-| Metric | Description |
-|--------|-------------|
-| Tests written | New test count |
+| Metric            | Description            |
+| ----------------- | ---------------------- |
+| Tests written     | New test count         |
 | Coverage increase | Percentage improvement |
-| Defects prevented | Bugs caught by tests |
-| Execution time | Suite runtime |
-| Flaky rate | Test reliability |
+| Defects prevented | Bugs caught by tests   |
+| Execution time    | Suite runtime          |
+| Flaky rate        | Test reliability       |
 
 ## Completion Signal
 
@@ -267,28 +277,28 @@ Ready for: Deployment / Code review
 
 ## Reference: Testing Pyramid
 
-| Level | Count | Speed | Cost | Confidence |
-|-------|-------|-------|------|------------|
-| Unit | Many | Fast | Low | Component |
-| Integration | Some | Medium | Medium | Contracts |
-| E2E | Few | Slow | High | Full system |
+| Level       | Count | Speed  | Cost   | Confidence  |
+| ----------- | ----- | ------ | ------ | ----------- |
+| Unit        | Many  | Fast   | Low    | Component   |
+| Integration | Some  | Medium | Medium | Contracts   |
+| E2E         | Few   | Slow   | High   | Full system |
 
 ## Reference: Test Patterns
 
-| Pattern | Use Case | Example |
-|---------|----------|---------|
-| AAA | Clear structure | Arrange, Act, Assert |
-| Given-When-Then | BDD style | Acceptance tests |
-| Page Object | E2E reuse | Playwright tests |
-| Factory | Test data | createMockUser() |
-| Builder | Complex objects | UserBuilder.with() |
+| Pattern         | Use Case        | Example              |
+| --------------- | --------------- | -------------------- |
+| AAA             | Clear structure | Arrange, Act, Assert |
+| Given-When-Then | BDD style       | Acceptance tests     |
+| Page Object     | E2E reuse       | Playwright tests     |
+| Factory         | Test data       | createMockUser()     |
+| Builder         | Complex objects | UserBuilder.with()   |
 
 ## Reference: Jest Matchers
 
-| Matcher | Usage |
-|---------|-------|
-| toBe | Primitive equality |
-| toEqual | Deep equality |
-| toHaveBeenCalled | Mock verification |
-| toThrow | Error testing |
-| toMatchSnapshot | UI regression |
+| Matcher          | Usage              |
+| ---------------- | ------------------ |
+| toBe             | Primitive equality |
+| toEqual          | Deep equality      |
+| toHaveBeenCalled | Mock verification  |
+| toThrow          | Error testing      |
+| toMatchSnapshot  | UI regression      |

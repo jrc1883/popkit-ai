@@ -9,18 +9,18 @@ Initialize, analyze, configure, and customize projects. Cross-project observabil
 
 ## Subcommands
 
-| Subcommand | Description |
-|------------|-------------|
-| init | Initialize .claude/ with Power Mode options |
-| analyze | Deep codebase analysis (default) |
-| board | GitHub Projects board management |
-| embed | Embed project items for semantic search |
-| generate | Full pipeline: analyze → skills → mcp → embed |
-| mcp | Generate project-specific MCP server |
-| setup | Configure pre-commit hooks |
-| skills | Generate custom skills from patterns |
-| observe | Cross-project dashboard (monorepo) |
-| reference | Load context from another project |
+| Subcommand | Description                                   |
+| ---------- | --------------------------------------------- |
+| init       | Initialize .claude/ with Power Mode options   |
+| analyze    | Deep codebase analysis (default)              |
+| board      | GitHub Projects board management              |
+| embed      | Embed project items for semantic search       |
+| generate   | Full pipeline: analyze → skills → mcp → embed |
+| mcp        | Generate project-specific MCP server          |
+| setup      | Configure pre-commit hooks                    |
+| skills     | Generate custom skills from patterns          |
+| observe    | Cross-project dashboard (monorepo)            |
+| reference  | Load context from another project             |
 
 ---
 
@@ -54,8 +54,7 @@ View/manage GitHub Projects board.
 
 Uses `gh project` CLI. Shows Todo/In Progress/Done with issue counts.
 
-**Prerequisites:** GitHub CLI (`gh`) installed and authenticated
----
+## **Prerequisites:** GitHub CLI (`gh`) installed and authenticated
 
 ## embed
 
@@ -134,14 +133,14 @@ Read workspace config → Load CLAUDE.md, package.json, README → Output to cha
 
 ## Architecture
 
-| Component | Integration |
-|-----------|-------------|
-| Init | skills/pop-project-init/ |
-| Analysis | skills/pop-analyze-project/ |
-| Embed | skills/pop-embed-project/, hooks/utils/embedding_project.py |
-| MCP | skills/pop-mcp-generator/, templates/mcp-server/ |
-| Board | gh project CLI |
-| Observe | packages/cloud/src/routes/projects.ts |
+| Component | Integration                                                 |
+| --------- | ----------------------------------------------------------- |
+| Init      | skills/pop-project-init/                                    |
+| Analysis  | skills/pop-analyze-project/                                 |
+| Embed     | skills/pop-embed-project/, hooks/utils/embedding_project.py |
+| MCP       | skills/pop-mcp-generator/, templates/mcp-server/            |
+| Board     | gh project CLI                                              |
+| Observe   | packages/cloud/src/routes/projects.ts                       |
 
 ## Related
 

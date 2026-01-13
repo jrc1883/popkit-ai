@@ -8,15 +8,14 @@ Stores embeddings as JSON arrays for portability (no native vector type needed).
 Part of PopKit Issue #19 (Embeddings Enhancement).
 """
 
-import os
-import json
-import sqlite3
-import math
 import hashlib
+import json
+import math
+import sqlite3
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
-from typing import List, Tuple, Optional, Dict, Any
-from dataclasses import dataclass, field, asdict
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 # =============================================================================
 # CONFIGURATION
@@ -786,8 +785,6 @@ class EmbeddingStore:
 # =============================================================================
 
 if __name__ == "__main__":
-    import sys
-
     print("EmbeddingStore Test")
     print("=" * 40)
 

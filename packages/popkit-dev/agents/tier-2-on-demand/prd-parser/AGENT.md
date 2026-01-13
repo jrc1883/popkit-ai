@@ -54,6 +54,7 @@ Transform Product Requirements Documents into structured, actionable implementat
 - **Efficiency**: Automation savings vs. manual PRD breakdown
 
 Example:
+
 ```
 📋 prd-parser T:15 P:60% | Features: 12 | Complexity: 5.8/10
 ```
@@ -74,6 +75,7 @@ Example:
 Parse PRD structure and extract features:
 
 1. **Read PRD document**
+
    ```python
    from popkit_shared.utils.prd_parser import parse_prd_file
 
@@ -107,6 +109,7 @@ for feature in result.features:
 ```
 
 **Output to user:**
+
 - Complexity distribution (LOW/MEDIUM/HIGH counts)
 - Average complexity score
 - High-complexity features flagged
@@ -128,11 +131,13 @@ for tech in result.technologies:
 ```
 
 **Technologies to research:**
+
 - New versions (Next.js 15, React 19)
 - Unfamiliar frameworks (Remix, Astro, Qwik)
 - Recent tools (Bun, Drizzle, tRPC)
 
 **Skip research for:**
+
 - Common frameworks with general knowledge
 - Established technologies (React, Express, PostgreSQL)
 
@@ -141,6 +146,7 @@ for tech in result.technologies:
 Generate structured tasks with proper breakdown:
 
 1. **Build TodoWrite list**
+
    ```python
    todos = []
 
@@ -202,28 +208,33 @@ for feature in selected_features:
 
 Use structured planning output:
 
-```markdown
+````markdown
 📋 PRD PARSER COMPLETE
 
 ## Document Analyzed
+
 **PRD:** <document title>
 **Path:** <file path>
 **Features:** 12 identified (4 LOW, 6 MEDIUM, 2 HIGH)
 
 ## Complexity Analysis
+
 **Average Complexity:** 5.8/10
 **Distribution:**
+
 - LOW (1-3): 4 features - Quick wins, start here
 - MEDIUM (4-6): 6 features - Foundation building
 - HIGH (7-10): 2 features - Requires planning
 
 **Highest Complexity:**
+
 1. User Authentication (8/10) - security_critical, breaking_changes
 2. Real-time Collaboration (7/10) - integration_complexity, architecture_impact
 
 ## Technologies Researched (via WebSearch)
 
 ### Next.js 15 (researched)
+
 - Server Actions stable in production
 - Partial Prerendering enabled by default
 - Enhanced caching with new APIs
@@ -231,11 +242,13 @@ Use structured planning output:
 - Best practices: Use Server Components by default, minimize client JS
 
 ### Prisma ORM (from existing knowledge)
+
 - Schema-first approach
 - Strong TypeScript integration
 - Migration management built-in
 
 ### Redis (from existing knowledge)
+
 - In-memory data structure store
 - Common use: session management, caching
 
@@ -246,26 +259,15 @@ Use structured planning output:
 **Recommended Implementation Order:**
 
 **Phase 1: Quick Wins (LOW complexity)**
+
 1. Dashboard UI (3/10) - 2-3 subtasks, 1 day
 2. User Profile (3/10) - 2-3 subtasks, 1 day
 3. Settings Page (2/10) - 1-2 subtasks, 0.5 day
 4. Documentation (2/10) - 1-2 subtasks, 0.5 day
 
-**Phase 2: Foundation (MEDIUM complexity)**
-5. API Integration (5/10) - 3-5 subtasks, 2-3 days
-6. Database Schema (5/10) - 3-5 subtasks, 2 days
-7. Email Service (4/10) - 2-4 subtasks, 1-2 days
-8. File Upload (4/10) - 2-4 subtasks, 1-2 days
-9. Search Functionality (6/10) - 4-6 subtasks, 3 days
-10. Notification System (6/10) - 4-6 subtasks, 3 days
+**Phase 2: Foundation (MEDIUM complexity)** 5. API Integration (5/10) - 3-5 subtasks, 2-3 days 6. Database Schema (5/10) - 3-5 subtasks, 2 days 7. Email Service (4/10) - 2-4 subtasks, 1-2 days 8. File Upload (4/10) - 2-4 subtasks, 1-2 days 9. Search Functionality (6/10) - 4-6 subtasks, 3 days 10. Notification System (6/10) - 4-6 subtasks, 3 days
 
-**Phase 3: Complex Features (HIGH complexity)**
-11. User Authentication (8/10) - 6-9 subtasks, 5-7 days
-    - Risk factors: security_critical, breaking_changes
-    - Requires: Security review, OAuth integration, JWT implementation
-12. Real-time Collaboration (7/10) - 5-7 subtasks, 4-6 days
-    - Risk factors: integration_complexity, architecture_impact
-    - Requires: WebSocket setup, conflict resolution, state sync
+**Phase 3: Complex Features (HIGH complexity)** 11. User Authentication (8/10) - 6-9 subtasks, 5-7 days - Risk factors: security_critical, breaking_changes - Requires: Security review, OAuth integration, JWT implementation 12. Real-time Collaboration (7/10) - 5-7 subtasks, 4-6 days - Risk factors: integration_complexity, architecture_impact - Requires: WebSocket setup, conflict resolution, state sync
 
 ## Generated Artifacts
 
@@ -285,6 +287,7 @@ Use structured planning output:
 ## Next Steps
 
 **Start Implementation:**
+
 ```bash
 # Begin with first LOW complexity task
 /popkit:dev work 1
@@ -295,14 +298,17 @@ Use structured planning output:
 # Or work on GitHub issue
 /popkit:dev work 42
 ```
+````
 
 **Review Breakdown:**
+
 ```bash
 # Open detailed breakdown
 Read .workspace/prd-breakdown-user-auth-system.md
 ```
 
 **Estimated Timeline:**
+
 - Phase 1 (Quick Wins): 3 days
 - Phase 2 (Foundation): 14 days
 - Phase 3 (Complex): 11 days
@@ -314,7 +320,8 @@ Read .workspace/prd-breakdown-user-auth-system.md
 ✓ Complexity analyzed automatically
 ✓ Technologies researched
 ✓ Tasks ready for implementation
-```
+
+````
 
 ## Integration Points
 
@@ -338,9 +345,10 @@ for feature in features:
 
     feature.complexity_score = analysis.complexity_score
     feature.complexity_analysis = analysis.to_dict()
-```
+````
 
 **Benefits:**
+
 - No manual complexity estimation
 - Consistent scoring across features
 - Risk factors identified automatically
@@ -350,6 +358,7 @@ for feature in features:
 ### WebSearch Integration
 
 **Automatic research for new technologies:**
+
 ```
 For each technology where should_research == True:
   1. Use WebSearch tool
@@ -360,12 +369,14 @@ For each technology where should_research == True:
 ```
 
 **Research triggers:**
+
 - Version >= 15 (e.g., Next.js 15, React 19)
 - Newer frameworks (Remix, Astro, Qwik, Solid)
 - Recent tools (Bun, Deno, Elysia, Hono)
 - Modern ORMs (Drizzle, Kysely)
 
 **Skip research for:**
+
 - Well-established frameworks (React 18 and below)
 - Common tools with stable APIs
 - Technologies covered by existing knowledge
@@ -373,6 +384,7 @@ For each technology where should_research == True:
 ### TodoWrite Integration
 
 **Automatic task list generation:**
+
 ```python
 # After parsing and analysis, generate todos
 todos = []
@@ -389,6 +401,7 @@ TodoWrite(todos=todos)
 ```
 
 **Benefits:**
+
 - Immediate task tracking
 - Complexity-informed prioritization
 - Ready for `/popkit:dev` workflows
@@ -397,6 +410,7 @@ TodoWrite(todos=todos)
 ### GitHub Issues Integration
 
 **Optional bulk issue creation:**
+
 ```bash
 # For each selected feature (after user confirmation)
 gh issue create \
@@ -454,11 +468,13 @@ Completion is achieved when:
 ## Value Delivery
 
 **Time Savings:**
+
 - Manual PRD breakdown: 2-4 hours
 - Automated parsing: 2-5 minutes
 - **Savings: 95%+ time reduction**
 
 **Quality Improvements:**
+
 - Consistent task breakdown
 - Complexity-informed estimates
 - Technology research upfront
@@ -466,6 +482,7 @@ Completion is achieved when:
 - No missed acceptance criteria
 
 **Integration Benefits:**
+
 - Seamless handoff to `/popkit:dev`
 - Complexity already analyzed (no re-work)
 - Technologies already researched
@@ -475,6 +492,7 @@ Completion is achieved when:
 ## Example Usage
 
 **Parse a PRD:**
+
 ```
 User: "Parse this PRD: docs/feature-spec.md"
 
@@ -490,6 +508,7 @@ Agent:
 ```
 
 **Result:**
+
 - 12 tasks in TodoWrite
 - 2 GitHub issues created
 - Detailed breakdown saved

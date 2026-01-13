@@ -44,6 +44,7 @@ Strategic product decision-making expert who transforms chaotic feature backlogs
 - **Efficiency**: Features scored, consensus achieved, decisions made
 
 Example:
+
 ```
 🎯 feature-prioritizer T:18 P:55% | RICE: 15 features scored, top 5 identified
 ```
@@ -100,6 +101,7 @@ Participates in Power Mode check-ins every 5 tool calls.
 - **Tags**: [priority, roadmap, rice, kano, backlog, strategy]
 
 Example:
+
 ```
 ↑ "Top 3 quick wins identified: dark mode, export CSV, bulk edit" [priority, roadmap]
 ↑ "Stakeholder conflict on mobile app priority - need exec decision" [priority, strategy]
@@ -108,6 +110,7 @@ Example:
 ### PULL (Incoming)
 
 Accept insights with tags:
+
 - `[feedback]` - From feedback-synthesizer about user demands
 - `[trend]` - From trend-researcher about market timing
 - `[technical]` - From code-reviewer about effort estimates
@@ -127,26 +130,26 @@ Accept insights with tags:
 
 ### Upstream (Receives from)
 
-| Agent | What It Provides |
-|-------|------------------|
+| Agent                | What It Provides                   |
+| -------------------- | ---------------------------------- |
 | feedback-synthesizer | User insights, pain point severity |
-| trend-researcher | Market trends, competitive intel |
-| User | Business context, constraints |
+| trend-researcher     | Market trends, competitive intel   |
+| User                 | Business context, constraints      |
 
 ### Downstream (Passes to)
 
-| Agent | What It Receives |
-|-------|------------------|
-| user-story-writer | Prioritized features for stories |
-| rapid-prototyper | Top priorities for MVP |
-| documentation-maintainer | Roadmap documentation |
+| Agent                    | What It Receives                 |
+| ------------------------ | -------------------------------- |
+| user-story-writer        | Prioritized features for stories |
+| rapid-prototyper         | Top priorities for MVP           |
+| documentation-maintainer | Roadmap documentation            |
 
 ### Parallel (Works alongside)
 
-| Agent | Collaboration Pattern |
-|-------|----------------------|
-| feedback-synthesizer | User value validation |
-| trend-researcher | Market timing alignment |
+| Agent                | Collaboration Pattern   |
+| -------------------- | ----------------------- |
+| feedback-synthesizer | User value validation   |
+| trend-researcher     | Market timing alignment |
 
 ## Output Format
 
@@ -154,6 +157,7 @@ Accept insights with tags:
 ## Feature Prioritization Report
 
 ### Executive Summary
+
 **Features Analyzed**: [N] features
 **Framework Used**: RICE + Kano + Value/Effort
 **Top Priority**: [Feature name with rationale]
@@ -161,34 +165,39 @@ Accept insights with tags:
 
 ### RICE Analysis (Top 10)
 
-| Rank | Feature | Reach | Impact | Confidence | Effort | Score |
-|------|---------|-------|--------|------------|--------|-------|
-| 1 | Dark mode | 5000 | 2 | 90% | 3w | 3000 |
-| 2 | CSV export | 2000 | 3 | 85% | 1w | 5100 |
+| Rank | Feature    | Reach | Impact | Confidence | Effort | Score |
+| ---- | ---------- | ----- | ------ | ---------- | ------ | ----- |
+| 1    | Dark mode  | 5000  | 2      | 90%        | 3w     | 3000  |
+| 2    | CSV export | 2000  | 3      | 85%        | 1w     | 5100  |
 
 ### Value vs Effort Matrix
 
 **Quick Wins** (High Value, Low Effort):
+
 - CSV export, bulk edit, keyboard shortcuts
 
 **Big Bets** (High Value, High Effort):
+
 - Mobile app, API v2, real-time sync
 
 **Fill-Ins** (Low Value, Low Effort):
+
 - Theme customization, date format options
 
 **Money Pits** (Low Value, High Effort):
+
 - Legacy browser support, PDF reports
 
 ### Kano Analysis
 
-| Category | Features | Strategy |
-|----------|----------|----------|
-| Basic | Login, data save | Must implement |
+| Category    | Features           | Strategy       |
+| ----------- | ------------------ | -------------- |
+| Basic       | Login, data save   | Must implement |
 | Performance | Speed, reliability | Invest heavily |
-| Excitement | AI assist, sharing | Differentiate |
+| Excitement  | AI assist, sharing | Differentiate  |
 
 ### Stakeholder Alignment
+
 **Consensus**: 8 features with universal support
 **Conflicts**: 3 features with >30% disagreement
 **Resolution**: [How conflicts were addressed]
@@ -196,12 +205,15 @@ Accept insights with tags:
 ### Roadmap Recommendation
 
 **Now (This Quarter)**:
+
 1. [Feature] - [Rationale]
 
 **Next (Next Quarter)**:
+
 1. [Feature] - [Rationale]
 
 **Later (Backlog)**:
+
 1. [Feature] - [Rationale]
 ```
 
@@ -220,13 +232,13 @@ Completion is achieved when:
 
 Report these metrics on completion:
 
-| Metric | Description |
-|--------|-------------|
-| Features scored | Total analyzed |
-| Frameworks applied | RICE, Kano, etc. |
+| Metric                | Description          |
+| --------------------- | -------------------- |
+| Features scored       | Total analyzed       |
+| Frameworks applied    | RICE, Kano, etc.     |
 | Stakeholder alignment | Consensus percentage |
-| Roadmap clarity | Clear prioritization |
-| Decision confidence | Data quality |
+| Roadmap clarity       | Clear prioritization |
+| Decision confidence   | Data quality         |
 
 ## Completion Signal
 
@@ -256,20 +268,20 @@ Ready for: Sprint planning / Story creation
 
 ## Reference: RICE Scoring
 
-| Component | Scale | Meaning |
-|-----------|-------|---------|
-| Reach | Users/period | How many affected |
-| Impact | 0.25-3 | How much per user |
-| Confidence | 0-100% | How sure are we |
-| Effort | Person-weeks | Development cost |
+| Component  | Scale        | Meaning           |
+| ---------- | ------------ | ----------------- |
+| Reach      | Users/period | How many affected |
+| Impact     | 0.25-3       | How much per user |
+| Confidence | 0-100%       | How sure are we   |
+| Effort     | Person-weeks | Development cost  |
 
 Score = (Reach × Impact × Confidence) / Effort
 
 ## Reference: Kano Categories
 
-| Category | If Present | If Absent | Strategy |
-|----------|------------|-----------|----------|
-| Basic | Neutral | Dissatisfied | Must have |
-| Performance | Satisfied | Dissatisfied | Invest |
-| Excitement | Delighted | Neutral | Differentiate |
-| Indifferent | Neutral | Neutral | Deprioritize |
+| Category    | If Present | If Absent    | Strategy      |
+| ----------- | ---------- | ------------ | ------------- |
+| Basic       | Neutral    | Dissatisfied | Must have     |
+| Performance | Satisfied  | Dissatisfied | Invest        |
+| Excitement  | Delighted  | Neutral      | Differentiate |
+| Indifferent | Neutral    | Neutral      | Deprioritize  |

@@ -17,12 +17,12 @@ Analyzes current project state and recommends specific popkit commands based on 
 
 ## Architecture Integration
 
-| Component | Role |
-|-----------|------|
-| **Skill** | `pop-next-action` - Core analysis and recommendation logic |
-| **Output Style** | `next-action-report` - Standardized output format |
-| **Hook** | `user-prompt-submit.py` - Uncertainty trigger detection |
-| **Related** | `/popkit:morning` - Shares state analysis |
+| Component        | Role                                                       |
+| ---------------- | ---------------------------------------------------------- |
+| **Skill**        | `pop-next-action` - Core analysis and recommendation logic |
+| **Output Style** | `next-action-report` - Standardized output format          |
+| **Hook**         | `user-prompt-submit.py` - Uncertainty trigger detection    |
+| **Related**      | `/popkit:morning` - Shares state analysis                  |
 
 ## Instructions
 
@@ -44,6 +44,7 @@ Skill(skill="popkit-dev:next")                # For full analysis
 ```
 
 The skill will:
+
 1. Gather project state (git, TypeScript, issues, etc.)
 2. Detect project context
 3. Score recommendations
@@ -54,6 +55,7 @@ The skill will:
 Use the `next-action-report` output style for consistent formatting.
 
 **Full Mode Output:**
+
 ```
 ## Current State
 
@@ -96,6 +98,7 @@ Use the `next-action-report` output style for consistent formatting.
 ```
 
 **Quick Mode Output:**
+
 ```
 ## /popkit-dev:next (quick)
 
@@ -113,34 +116,35 @@ Use the `next-action-report` output style for consistent formatting.
 
 The skill checks these sources (when available):
 
-| Source | What We Learn |
-|--------|---------------|
-| `git status` | Uncommitted changes, staging state |
-| `git branch -vv` | Ahead/behind remote, current branch |
-| `git log --oneline -5` | Recent activity |
-| `npx tsc --noEmit` | TypeScript health (if tsconfig exists) |
-| `gh issue list` | Open issues (if gh CLI available) |
-| `TECHNICAL_DEBT.md` | Known debt items |
-| `STATUS.json` | Previous session context |
+| Source                 | What We Learn                          |
+| ---------------------- | -------------------------------------- |
+| `git status`           | Uncommitted changes, staging state     |
+| `git branch -vv`       | Ahead/behind remote, current branch    |
+| `git log --oneline -5` | Recent activity                        |
+| `npx tsc --noEmit`     | TypeScript health (if tsconfig exists) |
+| `gh issue list`        | Open issues (if gh CLI available)      |
+| `TECHNICAL_DEBT.md`    | Known debt items                       |
+| `STATUS.json`          | Previous session context               |
 
 ---
 
 ## Recommendation Priority
 
-| Priority | Condition | Why |
-|----------|-----------|-----|
-| 1 (Highest) | TypeScript errors | Blocks all development |
-| 2 | Uncommitted changes | Risk of lost work |
-| 3 | Ahead of remote | Share work with team |
-| 4 | Open HIGH issues | Known important work |
-| 5 | Technical debt | Preventative maintenance |
-| 6 | No urgent items | Health check or exploration |
+| Priority    | Condition           | Why                         |
+| ----------- | ------------------- | --------------------------- |
+| 1 (Highest) | TypeScript errors   | Blocks all development      |
+| 2           | Uncommitted changes | Risk of lost work           |
+| 3           | Ahead of remote     | Share work with team        |
+| 4           | Open HIGH issues    | Known important work        |
+| 5           | Technical debt      | Preventative maintenance    |
+| 6           | No urgent items     | Health check or exploration |
 
 ---
 
 ## Examples
 
 ### Example 1: Active Development
+
 ```
 User: "what should I do next?"
 
@@ -159,6 +163,7 @@ User: "what should I do next?"
 ```
 
 ### Example 2: Clean State
+
 ```
 User: "/popkit-dev:next"
 
@@ -181,13 +186,13 @@ User: "/popkit-dev:next"
 
 ## Error Handling
 
-| Situation | Response |
-|-----------|----------|
-| Not a git repo | Skip git analysis, note in output |
-| No package.json | Skip Node checks |
-| gh CLI unavailable | Skip issue recommendations |
-| Empty project | Recommend `/popkit:init-project` |
-| All green | Recommend exploration or new feature |
+| Situation          | Response                             |
+| ------------------ | ------------------------------------ |
+| Not a git repo     | Skip git analysis, note in output    |
+| No package.json    | Skip Node checks                     |
+| gh CLI unavailable | Skip issue recommendations           |
+| Empty project      | Recommend `/popkit:init-project`     |
+| All green          | Recommend exploration or new feature |
 
 ---
 

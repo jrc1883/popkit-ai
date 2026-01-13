@@ -12,11 +12,11 @@ session-capture skill completes, ensuring state is persisted.
 """
 
 import json
-import sys
 import os
+import subprocess
+import sys
 from datetime import datetime
 from pathlib import Path
-import subprocess
 
 
 def get_git_state(cwd):

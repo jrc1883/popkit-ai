@@ -11,8 +11,8 @@ feedback fatigue. Integrates with AskUserQuestion for consistent UX.
 
 import json
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Any, Tuple
 from enum import Enum
+from typing import Any, Dict, Optional, Tuple
 
 
 class TriggerType(Enum):

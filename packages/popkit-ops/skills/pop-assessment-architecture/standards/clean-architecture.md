@@ -14,12 +14,14 @@ Inner layers → Outer layers (FORBIDDEN)
 ```
 
 **Layers (outside to inside):**
+
 1. Frameworks & Drivers (UI, DB, Web)
 2. Interface Adapters (Controllers, Gateways)
 3. Application Business Rules (Use Cases)
 4. Enterprise Business Rules (Entities)
 
 **Compliance Check:**
+
 - [ ] No direct imports from outer to inner layers
 - [ ] Dependencies inverted through interfaces
 - [ ] Framework code isolated to outer ring
@@ -29,11 +31,13 @@ Inner layers → Outer layers (FORBIDDEN)
 The architecture should not depend on frameworks.
 
 **Requirements:**
+
 - Business logic must work without framework imports
 - Framework-specific code isolated to adapters
 - Easy to swap frameworks without core changes
 
 **Compliance Check:**
+
 - [ ] Business logic has no framework imports
 - [ ] Core entities are plain objects
 - [ ] Framework adapters are thin wrappers
@@ -43,11 +47,13 @@ The architecture should not depend on frameworks.
 The UI can change without affecting business rules.
 
 **Requirements:**
+
 - Use cases define application behavior
 - UI is just a delivery mechanism
 - Multiple UIs can use same business logic
 
 **Compliance Check:**
+
 - [ ] Use cases don't reference UI components
 - [ ] Business logic testable without UI
 - [ ] Clear separation between presentation and domain
@@ -57,11 +63,13 @@ The UI can change without affecting business rules.
 Business rules don't know about database schema.
 
 **Requirements:**
+
 - Entities don't contain SQL/queries
 - Repository interfaces in domain layer
 - Implementations in infrastructure layer
 
 **Compliance Check:**
+
 - [ ] Domain entities have no DB annotations
 - [ ] Repository interfaces are abstract
 - [ ] Database operations isolated to gateways
@@ -71,11 +79,13 @@ Business rules don't know about database schema.
 Business rules isolated from external APIs.
 
 **Requirements:**
+
 - External APIs accessed through gateways
 - Gateway interfaces defined in use case layer
 - Implementations in infrastructure layer
 
 **Compliance Check:**
+
 - [ ] External API calls go through gateways
 - [ ] Gateway contracts defined abstractly
 - [ ] Easy to mock external services
@@ -92,6 +102,7 @@ src/domain/entities/
 ```
 
 **Rules:**
+
 - Pure business logic only
 - No dependencies on other layers
 - Framework-agnostic
@@ -106,6 +117,7 @@ src/application/use-cases/
 ```
 
 **Rules:**
+
 - Orchestrate entity interactions
 - Define input/output boundaries
 - No framework dependencies
@@ -121,6 +133,7 @@ src/adapters/
 ```
 
 **Rules:**
+
 - Convert data between formats
 - Implement abstract interfaces
 - Connect use cases to external world
@@ -135,6 +148,7 @@ src/infrastructure/
 ```
 
 **Rules:**
+
 - Glue code only
 - Minimal business logic
 - Framework-specific implementations
@@ -166,15 +180,15 @@ import { UserController } from '../adapters/controllers/user-controller';
 ```typescript
 // WRONG: Entity importing use case
 // entity.ts
-import { CreateUser } from '../application/create-user'; // ❌
+import { CreateUser } from "../application/create-user"; // ❌
 
 // WRONG: Use case importing controller
 // create-user.ts
-import { UserController } from '../adapters/controllers'; // ❌
+import { UserController } from "../adapters/controllers"; // ❌
 
 // WRONG: Domain importing infrastructure
 // user.ts
-import { prisma } from '../infrastructure/database'; // ❌
+import { prisma } from "../infrastructure/database"; // ❌
 ```
 
 ## Testing Strategy
@@ -183,15 +197,15 @@ import { prisma } from '../infrastructure/database'; // ❌
 
 ```typescript
 // Test entities in isolation
-describe('User', () => {
-  it('validates email format', () => {
-    expect(() => new User({ email: 'invalid' })).toThrow();
+describe("User", () => {
+  it("validates email format", () => {
+    expect(() => new User({ email: "invalid" })).toThrow();
   });
 });
 
 // Test use cases with mocked repositories
-describe('CreateUser', () => {
-  it('creates user with valid data', async () => {
+describe("CreateUser", () => {
+  it("creates user with valid data", async () => {
     const mockRepo = { save: jest.fn() };
     const useCase = new CreateUser(mockRepo);
     // ...
@@ -203,11 +217,9 @@ describe('CreateUser', () => {
 
 ```typescript
 // Test controllers with real use cases, mocked DB
-describe('UserController', () => {
-  it('handles POST /users', async () => {
-    const response = await request(app)
-      .post('/users')
-      .send({ email: 'test@example.com' });
+describe("UserController", () => {
+  it("handles POST /users", async () => {
+    const response = await request(app).post("/users").send({ email: "test@example.com" });
     // ...
   });
 });
@@ -217,8 +229,8 @@ describe('UserController', () => {
 
 ```typescript
 // Test complete flows
-describe('User Registration', () => {
-  it('registers and activates user', async () => {
+describe("User Registration", () => {
+  it("registers and activates user", async () => {
     // Full flow with real database
   });
 });
@@ -236,18 +248,18 @@ describe('User Registration', () => {
 
 ### Common Refactoring Patterns
 
-| From | To | Pattern |
-|------|-----|---------|
-| Direct DB calls in handlers | Repository pattern | Extract interface |
-| Framework entities | Domain entities | Separate models |
+| From                          | To                  | Pattern               |
+| ----------------------------- | ------------------- | --------------------- |
+| Direct DB calls in handlers   | Repository pattern  | Extract interface     |
+| Framework entities            | Domain entities     | Separate models       |
 | Mixed concerns in controllers | Use case extraction | Single responsibility |
-| Hardcoded external calls | Gateway pattern | Dependency injection |
+| Hardcoded external calls      | Gateway pattern     | Dependency injection  |
 
 ## Quality Metrics
 
-| Metric | Target | Tool |
-|--------|--------|------|
-| Layer violations | 0 | detect_patterns.py |
-| Test coverage (domain) | >90% | Coverage tools |
-| Cyclomatic complexity | <10 | Complexity analyzers |
-| Dependencies (inward) | 100% | Import analysis |
+| Metric                 | Target | Tool                 |
+| ---------------------- | ------ | -------------------- |
+| Layer violations       | 0      | detect_patterns.py   |
+| Test coverage (domain) | >90%   | Coverage tools       |
+| Cyclomatic complexity  | <10    | Complexity analyzers |
+| Dependencies (inward)  | 100%   | Import analysis      |

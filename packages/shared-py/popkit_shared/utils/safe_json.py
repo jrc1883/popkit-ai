@@ -14,10 +14,10 @@ Usage:
     data = read_hook_input()  # Returns dict, never raises
 """
 
-import sys
 import json
 import re
-from typing import Dict, Any
+import sys
+from typing import Any, Dict
 
 
 def sanitize_js_booleans(text: str) -> str:
@@ -70,7 +70,7 @@ def read_hook_input(default: Dict[str, Any] = None) -> Dict[str, Any]:
                 return json.loads(sanitized)
             except json.JSONDecodeError:
                 # Give up and return default
-                print(f"Warning: Could not parse hook input", file=sys.stderr)
+                print("Warning: Could not parse hook input", file=sys.stderr)
                 return default
 
     except Exception as e:

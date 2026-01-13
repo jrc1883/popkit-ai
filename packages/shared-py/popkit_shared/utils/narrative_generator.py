@@ -8,9 +8,9 @@ using Claude API to analyze tool calls, reasoning, and outcomes.
 
 import json
 import os
-from pathlib import Path
-from typing import Dict, Any, List, Optional
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 
 def build_timeline_summary(

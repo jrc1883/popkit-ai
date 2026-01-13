@@ -6,12 +6,12 @@ Claude Code plugins require specific configuration files with defined schemas. T
 
 ## Required Files
 
-| File | Purpose | Required |
-|------|---------|----------|
-| `.claude-plugin/plugin.json` | Plugin manifest | Yes |
-| `hooks/hooks.json` | Hook configuration | If using hooks |
-| `.mcp.json` | MCP server config | If using MCP |
-| `agents/config.json` | Agent routing | If using agents |
+| File                         | Purpose            | Required        |
+| ---------------------------- | ------------------ | --------------- |
+| `.claude-plugin/plugin.json` | Plugin manifest    | Yes             |
+| `hooks/hooks.json`           | Hook configuration | If using hooks  |
+| `.mcp.json`                  | MCP server config  | If using MCP    |
+| `agents/config.json`         | Agent routing      | If using agents |
 
 ## plugin.json Schema
 
@@ -19,10 +19,10 @@ Claude Code plugins require specific configuration files with defined schemas. T
 
 ```json
 {
-  "name": "string",           // Plugin identifier (lowercase, hyphens)
-  "description": "string",    // Human-readable description
-  "version": "string",        // Semantic version (x.y.z)
-  "author": "string"          // Author name or GitHub username
+  "name": "string", // Plugin identifier (lowercase, hyphens)
+  "description": "string", // Human-readable description
+  "version": "string", // Semantic version (x.y.z)
+  "author": "string" // Author name or GitHub username
 }
 ```
 
@@ -30,11 +30,12 @@ Claude Code plugins require specific configuration files with defined schemas. T
 
 ```json
 {
-  "repository": "string",     // GitHub repo URL
-  "homepage": "string",       // Documentation URL
-  "license": "string",        // License identifier (MIT, Apache-2.0, etc.)
-  "keywords": ["string"],     // Discovery keywords
-  "engines": {                // Compatibility
+  "repository": "string", // GitHub repo URL
+  "homepage": "string", // Documentation URL
+  "license": "string", // License identifier (MIT, Apache-2.0, etc.)
+  "keywords": ["string"], // Discovery keywords
+  "engines": {
+    // Compatibility
     "claude-code": ">=1.0.0"
   }
 }
@@ -42,12 +43,12 @@ Claude Code plugins require specific configuration files with defined schemas. T
 
 ### Validation Rules
 
-| Field | Rule | Severity |
-|-------|------|----------|
-| name | Must match `/^[a-z][a-z0-9-]*$/` | critical |
-| version | Must be valid semver | critical |
-| description | Must be non-empty | high |
-| author | Must be non-empty | high |
+| Field       | Rule                             | Severity |
+| ----------- | -------------------------------- | -------- |
+| name        | Must match `/^[a-z][a-z0-9-]*$/` | critical |
+| version     | Must be valid semver             | critical |
+| description | Must be non-empty                | high     |
+| author      | Must be non-empty                | high     |
 
 ## hooks.json Schema
 
@@ -79,13 +80,13 @@ Claude Code plugins require specific configuration files with defined schemas. T
 
 ### Validation Rules
 
-| Check | Rule | Severity |
-|-------|------|----------|
-| Schema reference | Should include `$schema` | low |
-| Event type | Must be valid event | critical |
-| Command | Script must exist | critical |
-| Timeout | Must be positive number | high |
-| Timeout | Should be < 60000ms | medium |
+| Check            | Rule                     | Severity |
+| ---------------- | ------------------------ | -------- |
+| Schema reference | Should include `$schema` | low      |
+| Event type       | Must be valid event      | critical |
+| Command          | Script must exist        | critical |
+| Timeout          | Must be positive number  | high     |
+| Timeout          | Should be < 60000ms      | medium   |
 
 ## .mcp.json Schema
 
@@ -116,11 +117,13 @@ Claude Code plugins require specific configuration files with defined schemas. T
 **Syntax:** `mcp__{server-name}__{tool-pattern}`
 
 **Examples:**
+
 - `mcp__server-name__*` - All tools from server
 - `mcp__server-name__health-*` - Tools matching prefix
 - Explicit list - Specific tools only
 
 **Recommended:**
+
 - First-party servers → Wildcard (`*`)
 - Third-party servers → Explicit list
 
@@ -128,12 +131,12 @@ See `docs/MCP_WILDCARD_PERMISSIONS.md` for detailed guide.
 
 ### Validation Rules
 
-| Check | Rule | Severity |
-|-------|------|----------|
-| Schema reference | Should include `$schema` | low |
-| Server command | Must be valid executable | critical |
-| Server args | Must be array of strings | high |
-| Permissions | Should use wildcard for first-party servers | low |
+| Check            | Rule                                        | Severity |
+| ---------------- | ------------------------------------------- | -------- |
+| Schema reference | Should include `$schema`                    | low      |
+| Server command   | Must be valid executable                    | critical |
+| Server args      | Must be array of strings                    | high     |
+| Permissions      | Should use wildcard for first-party servers | low      |
 
 ## agents/config.json Schema
 
@@ -168,37 +171,37 @@ See `docs/MCP_WILDCARD_PERMISSIONS.md` for detailed guide.
 
 ### Validation Rules
 
-| Check | Rule | Severity |
-|-------|------|----------|
-| Agent exists | Referenced agents must have AGENT.md | critical |
-| Keywords unique | No duplicate mappings | high |
-| Model valid | Must be sonnet, opus, or haiku | high |
-| Effort valid | Must be high, medium, or low | medium |
+| Check           | Rule                                 | Severity |
+| --------------- | ------------------------------------ | -------- |
+| Agent exists    | Referenced agents must have AGENT.md | critical |
+| Keywords unique | No duplicate mappings                | high     |
+| Model valid     | Must be sonnet, opus, or haiku       | high     |
+| Effort valid    | Must be high, medium, or low         | medium   |
 
 ## File Existence Checks
 
-| File | Must Exist | Severity |
-|------|------------|----------|
-| `.claude-plugin/plugin.json` | Yes | critical |
-| `hooks/hooks.json` | If hooks dir exists | critical |
-| Referenced hook scripts | Yes | critical |
-| Referenced agent AGENT.md | Yes | critical |
-| `.mcp.json` | If MCP used | high |
+| File                         | Must Exist          | Severity |
+| ---------------------------- | ------------------- | -------- |
+| `.claude-plugin/plugin.json` | Yes                 | critical |
+| `hooks/hooks.json`           | If hooks dir exists | critical |
+| Referenced hook scripts      | Yes                 | critical |
+| Referenced agent AGENT.md    | Yes                 | critical |
+| `.mcp.json`                  | If MCP used         | high     |
 
 ## Validation Checklist
 
-| Check ID | Description | Severity |
-|----------|-------------|----------|
-| PS-001 | plugin.json exists | critical |
-| PS-002 | plugin.json has name field | critical |
-| PS-003 | plugin.json has version field | critical |
-| PS-004 | plugin.json has description field | high |
-| PS-005 | plugin.json has author field | high |
-| PS-006 | hooks.json has valid event types | critical |
-| PS-007 | All referenced scripts exist | critical |
-| PS-008 | All referenced agents exist | critical |
-| PS-009 | Timeout values are reasonable | medium |
-| PS-010 | Schema references included | low |
+| Check ID | Description                       | Severity |
+| -------- | --------------------------------- | -------- |
+| PS-001   | plugin.json exists                | critical |
+| PS-002   | plugin.json has name field        | critical |
+| PS-003   | plugin.json has version field     | critical |
+| PS-004   | plugin.json has description field | high     |
+| PS-005   | plugin.json has author field      | high     |
+| PS-006   | hooks.json has valid event types  | critical |
+| PS-007   | All referenced scripts exist      | critical |
+| PS-008   | All referenced agents exist       | critical |
+| PS-009   | Timeout values are reasonable     | medium   |
+| PS-010   | Schema references included        | low      |
 
 ## References
 

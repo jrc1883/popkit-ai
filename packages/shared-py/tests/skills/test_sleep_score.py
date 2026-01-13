@@ -7,9 +7,10 @@ Critical for determining project health before shutdown.
 """
 
 import sys
-import pytest
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
+import pytest
 
 # Add popkit-dev skills to path
 sys.path.insert(
@@ -23,7 +24,7 @@ sys.path.insert(
     ),
 )
 
-from sleep_score import calculate_sleep_score, get_score_interpretation, format_breakdown_table
+from sleep_score import calculate_sleep_score, format_breakdown_table, get_score_interpretation
 
 
 class TestCalculateSleepScore:

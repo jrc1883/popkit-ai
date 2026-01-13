@@ -9,6 +9,7 @@ Examples of using `/popkit:git resolve` for AI-powered merge conflict resolution
 **Scenario:** Two branches add different dependencies to package.json
 
 **Trigger:**
+
 ```bash
 git merge feature/add-auth
 # CONFLICT (content): Merge conflict in package.json
@@ -51,6 +52,7 @@ Resolution complete!
 ```
 
 **Result:**
+
 - Time: 30 seconds
 - Strategy: Keep both (merged dependencies)
 - Validation: JSON valid
@@ -63,6 +65,7 @@ Resolution complete!
 **Scenario:** Two branches implement different authentication approaches
 
 **Trigger:**
+
 ```bash
 git merge feature/jwt-auth
 # CONFLICT (content): Merge conflict in src/auth/login.ts
@@ -127,6 +130,7 @@ Resolution complete!
 ```
 
 **Result:**
+
 - Time: 4 minutes
 - Strategy: Custom merge (architect-recommended)
 - Validation: All tests passing
@@ -139,6 +143,7 @@ Resolution complete!
 **Scenario:** Large merge with 5 conflicts of varying complexity
 
 **Trigger:**
+
 ```bash
 git merge feature/api-refactor
 # Multiple conflicts detected
@@ -266,6 +271,7 @@ Next: git push
 ```
 
 **Result:**
+
 - Time: 8 minutes 15 seconds
 - Conflicts: 5/5 resolved
 - Strategies: 2 custom, 2 keep-both, 1 keep-ours
@@ -279,6 +285,7 @@ Next: git push
 **Scenario:** Resolution initially fails validation, automatic retry
 
 **Trigger:**
+
 ```bash
 git merge feature/update-validation
 /popkit:git resolve
@@ -318,6 +325,7 @@ Resolution successful!
 ```
 
 **Result:**
+
 - Initial strategy failed validation
 - Automatic retry with alternative strategy
 - Final result: All tests passing
@@ -330,6 +338,7 @@ Resolution successful!
 **Scenario:** Using `--auto` flag to auto-resolve simple conflicts
 
 **Trigger:**
+
 ```bash
 git merge feature/docs-update
 /popkit:git resolve --auto
@@ -365,6 +374,7 @@ Manual intervention: 0
 ```
 
 **Result:**
+
 - Ultra-fast resolution for simple conflicts
 - No human intervention needed
 - Perfect for documentation and config merges
@@ -376,6 +386,7 @@ Manual intervention: 0
 **Scenario:** User decides to rollback after seeing resolutions
 
 **Trigger:**
+
 ```bash
 git merge feature/breaking-changes
 /popkit:git resolve
@@ -401,6 +412,7 @@ You can try /popkit:git resolve again with different strategies.
 ```
 
 **Result:**
+
 - Safe rollback using checkpoint
 - Repository restored to pre-resolution state
 - User can retry with different approach
@@ -412,12 +424,14 @@ You can try /popkit:git resolve again with different strategies.
 ### When to Use `/popkit:git resolve`
 
 **Good scenarios:**
+
 - Multiple conflicts with varying complexity
 - Complex conflicts needing architectural review
 - Time-sensitive merges
 - Conflicts in unfamiliar code
 
 **Consider manual resolution:**
+
 - Single trivial conflict (faster to fix manually)
 - Conflicts where business logic expertise is critical
 - Very sensitive security code (review AI suggestions carefully)
@@ -513,13 +527,13 @@ git push
 
 ## Complexity Score Guide
 
-| Score | Description | Example | Strategy |
-|-------|-------------|---------|----------|
-| 1-2 | Trivial | README, simple config | Auto-resolve |
-| 3-4 | Simple | Dependencies, docs | Keep-both usually works |
-| 5-6 | Moderate | Helper functions, utils | Review both sides |
-| 7-8 | Complex | Core logic, architecture | Code architect consultation |
-| 9-10 | Very Complex | System-wide changes | Thorough architect review |
+| Score | Description  | Example                  | Strategy                    |
+| ----- | ------------ | ------------------------ | --------------------------- |
+| 1-2   | Trivial      | README, simple config    | Auto-resolve                |
+| 3-4   | Simple       | Dependencies, docs       | Keep-both usually works     |
+| 5-6   | Moderate     | Helper functions, utils  | Review both sides           |
+| 7-8   | Complex      | Core logic, architecture | Code architect consultation |
+| 9-10  | Very Complex | System-wide changes      | Thorough architect review   |
 
 ---
 
@@ -560,14 +574,14 @@ npm test  # Verify tests pass before merge
 
 Based on real-world usage:
 
-| Metric | Value |
-|--------|-------|
-| Average time per conflict | 2-5 minutes |
-| Time saved vs manual | 90%+ |
-| Validation success rate | 95%+ |
-| Code architect accuracy | 88% (for complexity 7+) |
-| Rollback rate | <5% |
-| Test pass rate post-resolution | 98%+ |
+| Metric                         | Value                   |
+| ------------------------------ | ----------------------- |
+| Average time per conflict      | 2-5 minutes             |
+| Time saved vs manual           | 90%+                    |
+| Validation success rate        | 95%+                    |
+| Code architect accuracy        | 88% (for complexity 7+) |
+| Rollback rate                  | <5%                     |
+| Test pass rate post-resolution | 98%+                    |
 
 ---
 

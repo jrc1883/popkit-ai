@@ -16,12 +16,12 @@ Automatically update documentation sections based on codebase analysis.
 
 ## Arguments
 
-| Argument | Description |
-|----------|-------------|
+| Argument            | Description                        |
+| ------------------- | ---------------------------------- |
 | (none) or `--check` | Report what would change (default) |
-| `--sync` | Apply documentation updates |
-| `--json` | Output results as JSON |
-| `--verbose` | Show detailed changes |
+| `--sync`            | Apply documentation updates        |
+| `--json`            | Output results as JSON             |
+| `--verbose`         | Show detailed changes              |
 
 ## Process
 
@@ -179,6 +179,7 @@ Generates agent and skill counts by tier:
 
 ```markdown
 <!-- AUTO-GEN:TIER-COUNTS START -->
+
 - Tier 1: Always-active core agents (11)
 - Tier 2: On-demand specialists activated by triggers (17)
 - Feature Workflow: 7-phase development agents (3)
@@ -216,13 +217,15 @@ Generates directory tree structure:
 ```markdown
 <!-- AUTO-GEN:REPO-STRUCTURE START -->
 ```
+
 packages/
-  plugin/                  Claude Code plugin (main package)
-    .claude-plugin/        Plugin manifest
-    agents/                31 agent definitions
-    skills/                68 reusable skills
-    commands/              24 slash commands
-    hooks/                 23 Python hooks
+plugin/ Claude Code plugin (main package)
+.claude-plugin/ Plugin manifest
+agents/ 31 agent definitions
+skills/ 68 reusable skills
+commands/ 24 slash commands
+hooks/ 23 Python hooks
+
 ```
 <!-- AUTO-GEN:REPO-STRUCTURE END -->
 ```
@@ -272,11 +275,13 @@ Generates table of key configuration files:
 
 ```markdown
 <!-- AUTO-GEN:KEY-FILES START -->
-| File | Purpose |
-|------|---------|
+
+| File                                 | Purpose                         |
+| ------------------------------------ | ------------------------------- |
 | `packages/plugin/agents/config.json` | Agent routing and configuration |
-| `packages/plugin/hooks/hooks.json` | Hook event configuration |
-| `packages/cloud/wrangler.toml` | Cloudflare Workers config |
+| `packages/plugin/hooks/hooks.json`   | Hook event configuration        |
+| `packages/cloud/wrangler.toml`       | Cloudflare Workers config       |
+
 <!-- AUTO-GEN:KEY-FILES END -->
 ```
 
@@ -450,6 +455,7 @@ Invoked by `/popkit:plugin docs [--check|--sync] [--json]`
 ### Dependencies
 
 **Required utilities**:
+
 - `popkit_shared.utils.doc_sync`
 
 ### Related Skills

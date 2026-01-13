@@ -17,6 +17,7 @@ Only essential files should be read at startup.
 | hooks.json | Hook config | 3KB |
 
 **Deferred Until Needed:**
+
 - SKILL.md files
 - AGENT.md files
 - Output styles
@@ -38,6 +39,7 @@ Combined startup files should be minimal.
 Implement tiered loading for scalability.
 
 **Tier System:**
+
 ```
 Tier 0: Startup (plugin.json, config.json, hooks.json)
 Tier 1: Always-active agents (loaded after startup)
@@ -46,6 +48,7 @@ Tier 3: Skills (loaded on invocation)
 ```
 
 **Implementation:**
+
 - Index triggers at startup, not full content
 - Load agent prompts only when selected
 - Load skill content only when invoked
@@ -62,11 +65,13 @@ Distribute agents appropriately across tiers.
 | Feature | Workflow agents | 2-5 |
 
 **Tier 1 Criteria:**
+
 - Used across all projects
 - No specialized dependencies
 - Frequent activation
 
 **Tier 2 Criteria:**
+
 - Domain-specific
 - Occasional use
 - Resource-intensive
@@ -76,6 +81,7 @@ Distribute agents appropriately across tiers.
 Efficient trigger matching at startup.
 
 **Index Structure:**
+
 ```json
 {
   "keywords": {
@@ -90,6 +96,7 @@ Efficient trigger matching at startup.
 ```
 
 **Guidelines:**
+
 - Pre-compile regex patterns
 - Use hash maps for keyword lookup
 - Sort patterns by specificity
@@ -99,6 +106,7 @@ Efficient trigger matching at startup.
 Hooks should initialize quickly.
 
 **Best Practices:**
+
 ```python
 # Good: Deferred imports
 def hook_handler(input_data):
@@ -112,6 +120,7 @@ def hook_handler(input_data):
 ```
 
 **Guidelines:**
+
 - Defer non-essential imports
 - Cache parsed configurations
 - Avoid file I/O in module initialization
@@ -168,6 +177,7 @@ print(f"Config: {config_time*1000:.0f}ms, Hooks: {hooks_time*1000:.0f}ms")
 ### Automated Analysis
 
 Run startup analysis:
+
 ```bash
 python scripts/analyze_loading.py ./
 ```
@@ -175,6 +185,7 @@ python scripts/analyze_loading.py ./
 ### Manual Verification
 
 Checklist:
+
 - [ ] Startup files total <50KB
 - [ ] Tier 1 agents <=15
 - [ ] No heavy imports at module level
@@ -182,9 +193,9 @@ Checklist:
 
 ## Quality Metrics
 
-| Metric | Target | Description |
-|--------|--------|-------------|
-| Startup time | <500ms | Time to ready state |
-| File reads | <10 | Files read at startup |
-| Tier 1 ratio | <40% | Tier 1 / total agents |
-| Parse time | <100ms | JSON/YAML parsing |
+| Metric       | Target | Description           |
+| ------------ | ------ | --------------------- |
+| Startup time | <500ms | Time to ready state   |
+| File reads   | <10    | Files read at startup |
+| Tier 1 ratio | <40%   | Tier 1 / total agents |
+| Parse time   | <100ms | JSON/YAML parsing     |

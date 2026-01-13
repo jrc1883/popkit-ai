@@ -8,20 +8,21 @@ Critical for user data protection and regulatory compliance.
 
 import sys
 import tempfile
-import pytest
 from pathlib import Path
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from popkit_shared.utils.privacy import (
     AnonymizationLevel,
+    PrivacyManager,
     PrivacySettings,
-    detect_sensitive_data,
-    anonymize_content,
     abstract_code_identifiers,
     abstract_error_message,
+    anonymize_content,
+    detect_sensitive_data,
     generate_content_hash,
-    PrivacyManager,
 )
 
 

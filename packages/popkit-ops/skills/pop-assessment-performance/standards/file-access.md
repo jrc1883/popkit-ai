@@ -16,6 +16,7 @@ Each operation should read minimal files.
 | Hook execution | <2 reads | 2-4 | >4 |
 
 **Guidelines:**
+
 - Read config once, pass as parameter
 - Cache frequently accessed files
 - Combine related reads
@@ -25,6 +26,7 @@ Each operation should read minimal files.
 Cache file contents appropriately.
 
 **Cache Strategy:**
+
 ```python
 from functools import lru_cache
 from pathlib import Path
@@ -35,11 +37,13 @@ def read_config(path: str) -> dict:
 ```
 
 **When to Cache:**
+
 - Configuration files (rarely change)
 - Static reference data
 - Parsed YAML/JSON
 
 **When NOT to Cache:**
+
 - User-generated content
 - Files modified during session
 - Large binary files
@@ -49,6 +53,7 @@ def read_config(path: str) -> dict:
 Read only necessary portions.
 
 **Frontmatter Extraction:**
+
 ```python
 def read_frontmatter(path: Path) -> dict:
     content = path.read_text()
@@ -59,6 +64,7 @@ def read_frontmatter(path: Path) -> dict:
 ```
 
 **Incremental Reading:**
+
 ```python
 def read_first_n_lines(path: Path, n: int = 50) -> str:
     with open(path) as f:
@@ -70,6 +76,7 @@ def read_first_n_lines(path: Path, n: int = 50) -> str:
 Use specific patterns over wildcards.
 
 **Pattern Specificity:**
+
 ```python
 # Good: Specific pattern
 list(project_dir.glob("skills/pop-*/SKILL.md"))
@@ -79,6 +86,7 @@ list(project_dir.rglob("*.md"))
 ```
 
 **Exclusions:**
+
 ```python
 def safe_glob(pattern: str) -> list:
     results = []
@@ -94,6 +102,7 @@ def safe_glob(pattern: str) -> list:
 Optimize search operations.
 
 **File Type Filtering:**
+
 ```bash
 # Good: Filter by type
 rg "pattern" --type py --type ts
@@ -103,6 +112,7 @@ rg "pattern"
 ```
 
 **Early Termination:**
+
 ```python
 def find_first_match(pattern: str, files: list) -> str:
     for file in files:
@@ -117,6 +127,7 @@ def find_first_match(pattern: str, files: list) -> str:
 Limit recursive operations.
 
 **Depth Limits:**
+
 ```python
 def limited_walk(root: Path, max_depth: int = 3):
     def walk(path: Path, depth: int):
@@ -131,6 +142,7 @@ def limited_walk(root: Path, max_depth: int = 3):
 ```
 
 **Exclusion Patterns:**
+
 ```python
 EXCLUDE_DIRS = {
     'node_modules', '__pycache__', '.git',
@@ -146,6 +158,7 @@ def should_process(path: Path) -> bool:
 Combine related write operations.
 
 **Batch Pattern:**
+
 ```python
 class BatchWriter:
     def __init__(self):
@@ -161,6 +174,7 @@ class BatchWriter:
 ```
 
 **Atomic Writes:**
+
 ```python
 import tempfile
 import shutil
@@ -177,6 +191,7 @@ def atomic_write(path: Path, content: str):
 Efficient state persistence.
 
 **Single State File:**
+
 ```python
 # Good: One state file
 STATE_FILE = ".popkit/state.json"
@@ -191,6 +206,7 @@ def save_state(state: dict):
 ```
 
 **Cleanup:**
+
 ```python
 def cleanup_temp_files(age_hours: int = 24):
     import time
@@ -204,6 +220,7 @@ def cleanup_temp_files(age_hours: int = 24):
 ## Anti-Patterns
 
 ### Read in Loop
+
 ```python
 # Bad
 for item in items:
@@ -217,6 +234,7 @@ for item in items:
 ```
 
 ### Unbounded Glob
+
 ```python
 # Bad
 all_files = list(Path('.').rglob('*'))
@@ -227,9 +245,9 @@ py_files = list(Path('src').glob('**/*.py'))
 
 ## Quality Metrics
 
-| Metric | Target | Description |
-|--------|--------|-------------|
-| Reads/operation | <5 | Average file reads |
-| Cache hit rate | >80% | Config cache effectiveness |
-| Glob scope | Limited | No unbounded rglob |
-| Write batching | Yes | Related writes combined |
+| Metric          | Target  | Description                |
+| --------------- | ------- | -------------------------- |
+| Reads/operation | <5      | Average file reads         |
+| Cache hit rate  | >80%    | Config cache effectiveness |
+| Glob scope      | Limited | No unbounded rglob         |
+| Write batching  | Yes     | Related writes combined    |

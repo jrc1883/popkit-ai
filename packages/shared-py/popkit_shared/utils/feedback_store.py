@@ -9,15 +9,15 @@ Provides persistent storage for user feedback ratings, aggregations,
 and session tracking to avoid feedback fatigue.
 """
 
-import sqlite3
 import json
+import sqlite3
 import uuid
-from datetime import datetime
-from dataclasses import dataclass, asdict
-from typing import Dict, List, Optional, Any
-from pathlib import Path
 from contextlib import contextmanager
+from dataclasses import asdict, dataclass
+from datetime import datetime
 from enum import IntEnum
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 
 class FeedbackRating(IntEnum):
@@ -739,8 +739,8 @@ def get_feedback_store() -> FeedbackStore:
 
 if __name__ == "__main__":
     # Test the feedback store
-    import tempfile
     import shutil
+    import tempfile
 
     temp_dir = tempfile.mkdtemp()
     db_path = Path(temp_dir) / "test_feedback.db"

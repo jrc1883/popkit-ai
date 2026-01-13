@@ -6,7 +6,7 @@ Validates overall plugin structure, required files, and configuration integrity.
 
 import json
 from pathlib import Path
-from typing import Dict, List, Any, Set
+from typing import Any, Dict, List
 
 
 def validate_plugin_structure(plugin_root: Path) -> Dict[str, Any]:
@@ -415,15 +415,15 @@ def get_plugin_health_score(plugin_root: Path) -> Dict[str, Any]:
     # Deduct for configuration errors (high)
     if validation["plugin_json"].get("errors"):
         score -= 10
-        deductions.append(f"plugin.json errors (-10)")
+        deductions.append("plugin.json errors (-10)")
 
     if validation["hooks_json"].get("errors"):
         score -= 10
-        deductions.append(f"hooks.json errors (-10)")
+        deductions.append("hooks.json errors (-10)")
 
     if validation["agent_config"].get("errors"):
         score -= 10
-        deductions.append(f"agent config errors (-10)")
+        deductions.append("agent config errors (-10)")
 
     # Deduct for warnings (medium)
     total_warnings = (

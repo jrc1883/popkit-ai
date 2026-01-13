@@ -9,12 +9,11 @@ be generated instead of bash-based health checks.
 Part of the popkit plugin system.
 """
 
-import os
 import json
+import os
 import re
-from typing import Dict, List, Any, Tuple
 from pathlib import Path
-
+from typing import Any, Dict, List, Tuple
 
 # Health-related tool patterns
 HEALTH_PATTERNS = [

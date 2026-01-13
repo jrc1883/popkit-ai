@@ -23,11 +23,13 @@ During today's session, I (Claude) made critical mistakes:
 ### 1. Session Initialization
 
 **ALWAYS start with:**
+
 ```bash
 /popkit:next
 ```
 
 This:
+
 - Analyzes current project state
 - Loads context from previous sessions
 - Activates Power Mode if available
@@ -37,12 +39,12 @@ This:
 
 **Use PopKit commands, not vanilla tools:**
 
-| Instead of... | Use PopKit... | Why |
-|---------------|---------------|-----|
-| `git add . && git commit` | `/popkit:git commit` | Validates commits, follows conventions |
-| Manual PR creation | `/popkit:git pr` | Generates comprehensive PR descriptions |
-| `git status` | `/popkit:git status` | Enhanced context with project intelligence |
-| Manual testing | `/popkit:plugin test` | Validates plugin integrity |
+| Instead of...             | Use PopKit...         | Why                                        |
+| ------------------------- | --------------------- | ------------------------------------------ |
+| `git add . && git commit` | `/popkit:git commit`  | Validates commits, follows conventions     |
+| Manual PR creation        | `/popkit:git pr`      | Generates comprehensive PR descriptions    |
+| `git status`              | `/popkit:git status`  | Enhanced context with project intelligence |
+| Manual testing            | `/popkit:plugin test` | Validates plugin integrity                 |
 
 ### 3. Monitoring CI (CRITICAL)
 
@@ -60,6 +62,7 @@ gh pr view <PR_NUMBER> --json statusCheckRollup
 ```
 
 **Set up monitoring loop:**
+
 ```bash
 # Watch CI status in real-time
 watch -n 10 'gh pr checks <PR_NUMBER>'
@@ -70,18 +73,21 @@ watch -n 10 'gh pr checks <PR_NUMBER>'
 PopKit has specialized agents for specific tasks:
 
 **When working on security issues:**
+
 ```bash
 # Use the security assessment agent
 /popkit:security scan
 ```
 
 **When reviewing code:**
+
 ```bash
 # Use the code review agent
 /popkit:review
 ```
 
 **When debugging:**
+
 ```bash
 # Use the systematic debugging skill
 /popkit:debug
@@ -111,6 +117,7 @@ For complex multi-step tasks:
 **Scenario:** Fixed security vulnerabilities and pushed PR #33
 
 **What I did (WRONG):**
+
 1. Made changes locally
 2. Committed with git directly
 3. Pushed to GitHub
@@ -118,6 +125,7 @@ For complex multi-step tasks:
 5. Moved on to next task
 
 **What happened:**
+
 - CI failed (Greet First-Time Contributors workflow)
 - IP Leak Scanner found false positive
 - Had to create additional PRs to fix
@@ -127,17 +135,20 @@ For complex multi-step tasks:
 **PopKit-powered workflow:**
 
 1. **Initialize session**
+
    ```bash
    /popkit:next
    ```
 
 2. **Use PopKit git commands**
+
    ```bash
    /popkit:git commit "fix: security vulnerabilities"
    /popkit:git pr
    ```
 
 3. **Monitor CI immediately** ✅
+
    ```bash
    gh pr checks 33
    # See failure immediately: "Greet First-Time Contributors: fail"
@@ -145,6 +156,7 @@ For complex multi-step tasks:
    ```
 
 4. **Fix issues on same branch**
+
    ```bash
    # Fix greeting workflow
    # Fix IP scanner
@@ -253,4 +265,3 @@ PopKit is designed to monitor, validate, and guide development.
 We should use it when developing PopKit itself.
 
 That's what "eating your own dog food" means.
-

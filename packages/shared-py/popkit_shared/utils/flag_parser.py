@@ -10,8 +10,7 @@ Part of the popkit plugin system.
 """
 
 import re
-from typing import Dict, List, Optional, Any, Tuple
-
+from typing import Any, Dict, Optional
 
 # =============================================================================
 # Work Command Parser

@@ -8,15 +8,15 @@ Includes caching, rate limiting, and batch processing.
 Part of PopKit Issue #19 (Embeddings Enhancement).
 """
 
-import os
-import json
 import hashlib
+import json
+import os
 import time
-from typing import List, Optional, Dict, Any, Tuple
+import urllib.error
+import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
-import urllib.request
-import urllib.error
+from typing import Dict, List, Optional, Tuple
 
 
 # Load .env file if available (for API keys)

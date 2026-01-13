@@ -10,14 +10,14 @@ priority scores. Inspired by Long Horizon Coding Agent Demo.
 """
 
 import json
-import subprocess
 import sqlite3
-from datetime import datetime, timedelta
-from dataclasses import dataclass, asdict
-from typing import Dict, List, Optional, Any
-from pathlib import Path
-from contextlib import contextmanager
+import subprocess
 from collections import Counter
+from contextlib import contextmanager
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Optional
 
 
 @dataclass
@@ -305,7 +305,7 @@ class VoteFetcher:
         for num in issue_numbers:
             try:
                 results[num] = self.get_issue_votes(num, repo, use_cache)
-            except Exception as e:
+            except Exception:
                 # Log error but continue with other issues
                 results[num] = VoteResult(
                     issue_number=num,
@@ -397,7 +397,7 @@ if __name__ == "__main__":
         # Test fetching votes for an issue
         try:
             result = fetcher.get_issue_votes(88)  # Epic #88
-            print(f"\nIssue #88 votes:")
+            print("\nIssue #88 votes:")
             print(fetcher.format_vote_display(result))
 
             # Test compact format

@@ -6,20 +6,21 @@ Tests platform detection, shell detection, and capability detection.
 Critical for cross-platform command translation and compatibility.
 """
 
-import sys
 import os
-import pytest
-from unittest.mock import patch, MagicMock
+import sys
 from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from popkit_shared.utils.platform_detector import (
     OSType,
-    ShellType,
-    ShellCapabilities,
-    PlatformInfo,
     PlatformDetector,
+    PlatformInfo,
+    ShellCapabilities,
+    ShellType,
     get_platform_info,
     get_platform_summary,
 )

@@ -21,10 +21,10 @@ Output:
 import json
 import os
 import sys
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Any, List, Optional
-import uuid
+from typing import Any, Dict, List, Optional
 
 # File locking (Unix-only)
 try:
@@ -279,7 +279,6 @@ class SessionRecorder:
 
     def _record_event_unsafe(self) -> None:
         """Fallback without locking (legacy behavior for missing filelock)."""
-        import sys
 
         print(
             "Warning: filelock not installed, recording may fail on concurrent writes",

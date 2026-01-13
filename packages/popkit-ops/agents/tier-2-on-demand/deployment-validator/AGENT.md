@@ -64,6 +64,7 @@ Ensures safe, reliable deployments through comprehensive validation, testing, an
 - **Efficiency**: Validation pass rate, deployment time, issue detection
 
 Example:
+
 ```
 🚀 deployment-validator T:20 P:80% | Checks: 15/20 | Status: canary analysis
 ```
@@ -120,6 +121,7 @@ Participates in Power Mode check-ins every 5 tool calls.
 - **Tags**: [deploy, validation, canary, rollback, health, test]
 
 Example:
+
 ```
 ↑ "Pre-deployment checks: 18/20 passed, 2 warnings" [deploy, validation]
 ↑ "Canary error rate 2% vs baseline 1.5% - within threshold" [deploy, canary]
@@ -128,6 +130,7 @@ Example:
 ### PULL (Incoming)
 
 Accept insights with tags:
+
 - `[build]` - From devops-automator about build status
 - `[test]` - From test-writer about test coverage
 - `[security]` - From security-auditor about vulnerabilities
@@ -147,26 +150,26 @@ Accept insights with tags:
 
 ### Upstream (Receives from)
 
-| Agent | What It Provides |
-|-------|------------------|
-| devops-automator | Build artifacts, pipeline status |
-| test-writer-fixer | Test coverage reports |
-| security-auditor | Vulnerability scan results |
+| Agent             | What It Provides                 |
+| ----------------- | -------------------------------- |
+| devops-automator  | Build artifacts, pipeline status |
+| test-writer-fixer | Test coverage reports            |
+| security-auditor  | Vulnerability scan results       |
 
 ### Downstream (Passes to)
 
-| Agent | What It Receives |
-|-------|------------------|
-| rollback-specialist | Rollback signals if needed |
-| log-analyzer | Post-deployment monitoring |
-| documentation-maintainer | Deployment documentation |
+| Agent                    | What It Receives           |
+| ------------------------ | -------------------------- |
+| rollback-specialist      | Rollback signals if needed |
+| log-analyzer             | Post-deployment monitoring |
+| documentation-maintainer | Deployment documentation   |
 
 ### Parallel (Works alongside)
 
-| Agent | Collaboration Pattern |
-|-------|----------------------|
-| rollback-specialist | Coordinated recovery |
-| log-analyzer | Real-time monitoring |
+| Agent               | Collaboration Pattern |
+| ------------------- | --------------------- |
+| rollback-specialist | Coordinated recovery  |
+| log-analyzer        | Real-time monitoring  |
 
 ## Output Format
 
@@ -174,28 +177,30 @@ Accept insights with tags:
 ## Deployment Validation Report
 
 ### Summary
+
 **Version**: [version]
 **Status**: [Success/Failed/Rolled Back]
 **Duration**: [total time]
 
 ### Pre-Deployment Checks
 
-| Check | Status | Details |
-|-------|--------|---------|
-| Build artifact | ✅ Pass | Checksum verified |
-| Dependencies | ✅ Pass | All compatible |
-| Security scan | ⚠️ Warn | 2 low-severity issues |
-| Test coverage | ✅ Pass | 85% coverage |
+| Check          | Status  | Details               |
+| -------------- | ------- | --------------------- |
+| Build artifact | ✅ Pass | Checksum verified     |
+| Dependencies   | ✅ Pass | All compatible        |
+| Security scan  | ⚠️ Warn | 2 low-severity issues |
+| Test coverage  | ✅ Pass | 85% coverage          |
 
 ### Smoke Tests
 
-| Test | Status | Response Time |
-|------|--------|---------------|
-| Health check | ✅ Pass | 45ms |
-| Authentication | ✅ Pass | 120ms |
-| Critical endpoint | ✅ Pass | 200ms |
+| Test              | Status  | Response Time |
+| ----------------- | ------- | ------------- |
+| Health check      | ✅ Pass | 45ms          |
+| Authentication    | ✅ Pass | 120ms         |
+| Critical endpoint | ✅ Pass | 200ms         |
 
 ### Canary Analysis
+
 **Traffic**: [X]%
 **Duration**: [Y minutes]
 **Error Rate**: [baseline] → [canary]
@@ -203,11 +208,13 @@ Accept insights with tags:
 **Verdict**: [Promote/Extend/Rollback]
 
 ### Post-Deployment
+
 - Functionality: ✅ All features working
 - Integrations: ✅ All connected
 - Performance: ✅ Within baseline
 
 ### Recommendations
+
 1. [Any follow-up actions]
 ```
 
@@ -226,13 +233,13 @@ Completion is achieved when:
 
 Report these metrics on completion:
 
-| Metric | Description |
-|--------|-------------|
-| Checks passed | Pre-deployment validations |
-| Smoke test pass rate | Health verification |
-| Canary health | Metric comparison |
-| Deployment time | Total duration |
-| Rollback triggered | Yes/No |
+| Metric               | Description                |
+| -------------------- | -------------------------- |
+| Checks passed        | Pre-deployment validations |
+| Smoke test pass rate | Health verification        |
+| Canary health        | Metric comparison          |
+| Deployment time      | Total duration             |
+| Rollback triggered   | Yes/No                     |
 
 ## Completion Signal
 
@@ -256,17 +263,17 @@ Rollback ready: [Yes/No]
 
 ## Reference: Canary Thresholds
 
-| Metric | Acceptable | Concerning | Rollback |
-|--------|------------|------------|----------|
-| Error rate | <1.1x baseline | 1.1-1.5x | >1.5x |
-| Latency P99 | <1.2x baseline | 1.2-1.5x | >1.5x |
-| Success rate | >95% baseline | 90-95% | <90% |
+| Metric       | Acceptable     | Concerning | Rollback |
+| ------------ | -------------- | ---------- | -------- |
+| Error rate   | <1.1x baseline | 1.1-1.5x   | >1.5x    |
+| Latency P99  | <1.2x baseline | 1.2-1.5x   | >1.5x    |
+| Success rate | >95% baseline  | 90-95%     | <90%     |
 
 ## Reference: DORA Metrics
 
-| Metric | Definition | Target |
-|--------|------------|--------|
-| Deployment frequency | How often deploys | Daily+ |
-| Lead time | Commit to production | <1 hour |
-| Change failure rate | Deployments causing failure | <15% |
-| MTTR | Time to recover | <1 hour |
+| Metric               | Definition                  | Target  |
+| -------------------- | --------------------------- | ------- |
+| Deployment frequency | How often deploys           | Daily+  |
+| Lead time            | Commit to production        | <1 hour |
+| Change failure rate  | Deployments causing failure | <15%    |
+| MTTR                 | Time to recover             | <1 hour |

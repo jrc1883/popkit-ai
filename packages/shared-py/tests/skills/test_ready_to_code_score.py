@@ -7,8 +7,9 @@ Critical for determining if development environment is ready.
 """
 
 import sys
-import pytest
 from pathlib import Path
+
+import pytest
 
 # Add popkit-dev skills to path
 sys.path.insert(
@@ -24,8 +25,8 @@ sys.path.insert(
 
 from ready_to_code_score import (
     calculate_ready_to_code_score,
-    get_score_interpretation,
     format_breakdown_table,
+    get_score_interpretation,
 )
 
 

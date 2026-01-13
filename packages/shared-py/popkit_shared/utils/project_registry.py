@@ -8,13 +8,11 @@ Handles registration, discovery, health tracking, and project switching.
 Part of the popkit plugin system.
 """
 
-import os
 import json
+import os
 import re
-from typing import Dict, List, Any, Optional, Tuple
-from pathlib import Path
 from datetime import datetime, timezone
-
+from typing import Any, Dict, List, Optional, Tuple
 
 # Constants
 GLOBAL_POPKIT_DIR = os.path.join(os.path.expanduser("~"), ".claude", "popkit")

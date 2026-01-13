@@ -7,8 +7,9 @@ Critical for research knowledge management workflows.
 """
 
 import sys
-import pytest
 from pathlib import Path
+
+import pytest
 
 # Add popkit-research skills to path
 sys.path.insert(
@@ -23,11 +24,11 @@ sys.path.insert(
 )
 
 from detect_conflicts import (
-    tokenize,
-    jaccard_similarity,
     extract_statements,
-    find_duplicates,
     find_conflicts,
+    find_duplicates,
+    jaccard_similarity,
+    tokenize,
 )
 
 

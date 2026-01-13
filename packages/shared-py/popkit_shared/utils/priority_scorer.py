@@ -12,12 +12,12 @@ Calculates combined priority scores for GitHub issues using:
 - Epic association (child issues of epics)
 """
 
-import subprocess
 import json
-from datetime import datetime, timedelta
+import subprocess
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Any, Tuple
+from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
 
 class LabelPriority(Enum):

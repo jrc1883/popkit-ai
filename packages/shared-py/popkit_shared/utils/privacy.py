@@ -8,16 +8,15 @@ Provides robust anonymization for collective learning while ensuring
 user privacy. Supports multiple anonymization levels and user controls.
 """
 
+import hashlib
 import json
 import os
 import re
-import hashlib
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
-from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
-from dataclasses import dataclass, field, asdict
 from enum import Enum
-
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 # =============================================================================
 # ANONYMIZATION LEVELS
@@ -441,8 +440,8 @@ def request_data_deletion(api_key: str, base_url: Optional[str] = None) -> Dict[
 
     This is the GDPR "Right to be Forgotten" implementation.
     """
-    import urllib.request
     import urllib.error
+    import urllib.request
 
     base_url = base_url or "https://api.thehouseofdeals.com/v1"
     url = f"{base_url}/privacy/delete-all"
@@ -472,8 +471,8 @@ def export_user_data(api_key: str, base_url: Optional[str] = None) -> Dict[str, 
 
     This is the GDPR "Right to Data Portability" implementation.
     """
-    import urllib.request
     import urllib.error
+    import urllib.request
 
     base_url = base_url or "https://api.thehouseofdeals.com/v1"
     url = f"{base_url}/privacy/export"

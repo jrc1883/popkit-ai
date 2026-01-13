@@ -11,12 +11,10 @@ Detects and parses monorepo workspace configurations:
 Part of the popkit plugin system.
 """
 
-import os
-import json
 import glob
-from typing import Dict, List, Any, Optional, Tuple
-from pathlib import Path
-
+import json
+import os
+from typing import Any, Dict, List, Optional
 
 # =============================================================================
 # Workspace Detection

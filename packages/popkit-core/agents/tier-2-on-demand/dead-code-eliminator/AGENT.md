@@ -57,6 +57,7 @@ Specializes in intelligent detection and safe removal of unused code, exports, d
 - **Efficiency**: Items removed, bytes saved, validation pass rate
 
 Example:
+
 ```
 🧹 dead-code-eliminator T:25 P:60% | Phase 2: 15 unused exports removed
 ```
@@ -113,6 +114,7 @@ Participates in Power Mode check-ins every 5 tool calls.
 - **Tags**: [dead-code, bundle, cleanup, exports, dependencies]
 
 Example:
+
 ```
 ↑ "Found 45 unused exports across 12 files, 120KB potential savings" [dead-code, bundle]
 ↑ "Dependency lodash unused - recommend removal" [dead-code, dependencies]
@@ -121,6 +123,7 @@ Example:
 ### PULL (Incoming)
 
 Accept insights with tags:
+
 - `[bundle]` - From bundle-analyzer about size issues
 - `[code]` - From code-reviewer about unused patterns
 - `[test]` - From test-writer about test-only code
@@ -140,26 +143,26 @@ Accept insights with tags:
 
 ### Upstream (Receives from)
 
-| Agent | What It Provides |
-|-------|------------------|
-| bundle-analyzer | Size analysis, unused chunks |
-| code-reviewer | Code quality patterns |
-| User | Cleanup scope and constraints |
+| Agent           | What It Provides              |
+| --------------- | ----------------------------- |
+| bundle-analyzer | Size analysis, unused chunks  |
+| code-reviewer   | Code quality patterns         |
+| User            | Cleanup scope and constraints |
 
 ### Downstream (Passes to)
 
-| Agent | What It Receives |
-|-------|------------------|
+| Agent                    | What It Receives             |
+| ------------------------ | ---------------------------- |
 | documentation-maintainer | Updated export documentation |
-| performance-optimizer | Bundle optimization results |
-| devops-automator | Updated build configuration |
+| performance-optimizer    | Bundle optimization results  |
+| devops-automator         | Updated build configuration  |
 
 ### Parallel (Works alongside)
 
-| Agent | Collaboration Pattern |
-|-------|----------------------|
-| bundle-analyzer | Coordinated size optimization |
-| refactoring-expert | Post-cleanup restructuring |
+| Agent              | Collaboration Pattern         |
+| ------------------ | ----------------------------- |
+| bundle-analyzer    | Coordinated size optimization |
+| refactoring-expert | Post-cleanup restructuring    |
 
 ## Output Format
 
@@ -167,6 +170,7 @@ Accept insights with tags:
 ## Dead Code Elimination Report
 
 ### Summary
+
 **Items Analyzed**: [N] potential dead code items
 **Items Removed**: [N] items safely eliminated
 **Size Savings**: [X] KB ([Y]% reduction)
@@ -174,23 +178,26 @@ Accept insights with tags:
 
 ### Removal Breakdown
 
-| Category | Found | Removed | Savings |
-|----------|-------|---------|---------|
-| Unused exports | 45 | 42 | 85KB |
-| Unused imports | 30 | 30 | 10KB |
-| Unused files | 8 | 6 | 25KB |
-| Unused dependencies | 3 | 2 | 150KB |
+| Category            | Found | Removed | Savings |
+| ------------------- | ----- | ------- | ------- |
+| Unused exports      | 45    | 42      | 85KB    |
+| Unused imports      | 30    | 30      | 10KB    |
+| Unused files        | 8     | 6       | 25KB    |
+| Unused dependencies | 3     | 2       | 150KB   |
 
 ### Validation Results
+
 - TypeScript: ✅ Passed
 - Build: ✅ Passed
 - Tests: ✅ Passed (250/250)
 
 ### Items Not Removed
+
 - `utils/deprecated.ts`: Low confidence (dynamic import possible)
 - `lodash`: Used in production config only
 
 ### Recommendations
+
 1. [Next cleanup opportunity]
 2. [Prevention strategy for future dead code]
 ```
@@ -210,13 +217,13 @@ Completion is achieved when:
 
 Report these metrics on completion:
 
-| Metric | Description |
-|--------|-------------|
-| Items removed | Dead code eliminated |
-| Size savings | KB/MB saved |
-| Build improvement | Seconds faster |
-| Files removed | Orphan files eliminated |
-| Dependencies removed | Unused packages |
+| Metric               | Description             |
+| -------------------- | ----------------------- |
+| Items removed        | Dead code eliminated    |
+| Size savings         | KB/MB saved             |
+| Build improvement    | Seconds faster          |
+| Files removed        | Orphan files eliminated |
+| Dependencies removed | Unused packages         |
 
 ## Completion Signal
 
@@ -244,18 +251,18 @@ Remaining opportunities: [N] lower-confidence items
 
 ## Reference: Detection Tool Comparison
 
-| Tool | Strength | Best For |
-|------|----------|----------|
-| Knip | Comprehensive | Full project analysis |
-| ts-prune | Fast | TypeScript exports |
-| Webpack | Accurate | Build-time detection |
-| Custom | Flexible | Project-specific patterns |
+| Tool     | Strength      | Best For                  |
+| -------- | ------------- | ------------------------- |
+| Knip     | Comprehensive | Full project analysis     |
+| ts-prune | Fast          | TypeScript exports        |
+| Webpack  | Accurate      | Build-time detection      |
+| Custom   | Flexible      | Project-specific patterns |
 
 ## Reference: Risk Levels
 
-| Level | Confidence | Action |
-|-------|------------|--------|
-| Safe | >90% | Auto-remove |
-| Medium | 70-90% | Remove with validation |
-| Careful | 50-70% | Manual review required |
-| Skip | <50% | Report only |
+| Level   | Confidence | Action                 |
+| ------- | ---------- | ---------------------- |
+| Safe    | >90%       | Auto-remove            |
+| Medium  | 70-90%     | Remove with validation |
+| Careful | 50-70%     | Manual review required |
+| Skip    | <50%       | Report only            |

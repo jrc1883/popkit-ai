@@ -6,14 +6,11 @@ Loads only relevant agents using embedding-based similarity search.
 Part of Phase 2: Embedding-Based Agent Loading.
 """
 
-from typing import List, Dict, Any
-import json
 import sys
-from pathlib import Path
+from typing import Any, Dict, List
 
-from .embedding_store import EmbeddingStore, SearchResult
+from .embedding_store import EmbeddingStore
 from .voyage_client import embed
-from .cloud_agent_search import search_agents as cloud_search
 
 
 class AgentLoader:

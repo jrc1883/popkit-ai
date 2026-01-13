@@ -9,18 +9,19 @@ Manage your PopKit account and cloud connection for enhanced semantic intelligen
 
 ## Subcommands
 
-| Subcommand | Description |
-|------------|-------------|
+| Subcommand         | Description                                               |
+| ------------------ | --------------------------------------------------------- |
 | `status` (default) | Show account status, API key, cloud connection, and usage |
-| `signup` | Create new PopKit account and get API key |
-| `login` | Login to existing account |
-| `keys` | List and manage your API keys |
-| `usage` | Detailed feature usage and rate limits |
-| `logout` | Disconnect from cloud and clear local session |
+| `signup`           | Create new PopKit account and get API key                 |
+| `login`            | Login to existing account                                 |
+| `keys`             | List and manage your API keys                             |
+| `usage`            | Detailed feature usage and rate limits                    |
+| `logout`           | Disconnect from cloud and clear local session             |
 
 ## Architecture
 
 PopKit Cloud enhances local workflows with semantic intelligence:
+
 - **Always works locally**: All workflows execute without API key
 - **Enhanced with cloud**: API key adds semantic routing, pattern learning, cross-project insights
 - **Free tier**: 100 requests/day, unlimited local execution
@@ -121,13 +122,14 @@ curl -s -H "Authorization: Bearer $POPKIT_API_KEY" \
 ✅ PopKit Account Connected
 
 **Email:** user@example.com
-**API Key:** ******def456
+**API Key:** **\*\***def456
 **API Key Source:** {api_key_source}
 **Cloud Status:** Connected (82ms)
 **Tier:** Free (100 requests/day)
 **Usage Today:** 45 / 100 requests
 
 ### Available Features
+
 - All core workflows: ✅ (always available locally)
 - Semantic agent routing: ✅ (enhanced with cloud)
 - Community pattern learning: ✅ (enhanced with cloud)
@@ -135,6 +137,7 @@ curl -s -H "Authorization: Bearer $POPKIT_API_KEY" \
 - Cross-project insights: ✅ (enhanced with cloud)
 
 ### Usage This Month
+
 - API calls: 1,234
 - Embeddings: 456
 - Pattern queries: 89
@@ -151,6 +154,7 @@ Run `/popkit-core:account usage` for detailed breakdown.
 **Status:** Working locally (fully functional)
 
 ### Available Features
+
 - All core workflows: ✅ (full functionality)
 - Semantic agent routing: ⚪ (keyword-based only)
 - Community pattern learning: ⚪ (local only)
@@ -160,6 +164,7 @@ Run `/popkit-core:account usage` for detailed breakdown.
 ### Get Cloud Enhancements
 
 Run `/popkit-core:account signup` to create a free account and enable:
+
 - Semantic agent routing via embeddings
 - Community pattern learning across projects
 - Cloud-backed knowledge base
@@ -175,6 +180,7 @@ Run `/popkit-core:account signup` to create a free account and enable:
 Create a new PopKit Cloud account and obtain an API key.
 
 **Process:**
+
 1. Check for existing cloud config
 2. Prompt for email and password using AskUserQuestion
 3. POST to `https://api.thehouseofdeals.com/v1/auth/signup`
@@ -192,6 +198,7 @@ Use Skill tool with skill="popkit:pop-cloud-signup"
 ```
 
 The skill handles the full signup workflow including:
+
 - Email/password collection via AskUserQuestion
 - API request to cloud signup endpoint
 - Secure storage of API key
@@ -200,7 +207,7 @@ The skill handles the full signup workflow including:
 
 **Success Output:**
 
-```markdown
+````markdown
 ✅ PopKit Cloud Account Created
 
 **Email:** user@example.com
@@ -213,6 +220,7 @@ The skill handles the full signup workflow including:
    ```bash
    /popkit-core:account status
    ```
+````
 
 2. **Cloud enhancements now active:**
    - Semantic agent routing ✅
@@ -223,7 +231,8 @@ The skill handles the full signup workflow including:
 **Config file:** ~/.claude/popkit/cloud-config.json
 
 Run `/popkit-core:account` to see your account status.
-```
+
+````
 
 **Error Handling:**
 
@@ -237,10 +246,11 @@ This email is already associated with a PopKit Cloud account.
 Try logging in instead:
 ```bash
 /popkit-core:account login
-```
+````
 
 Or use a different email address.
-```
+
+````
 
 ---
 
@@ -327,7 +337,7 @@ if response.status_code == 200:
 else:
     error_msg = response.json().get("error", "Unknown error")
     print(f"❌ Login failed: {error_msg}")
-```
+````
 
 **Success Output:**
 
@@ -350,6 +360,7 @@ Run `/popkit-core:account status` to verify connection.
 Please check your credentials and try again.
 
 **Need help?**
+
 - Forgot password? Contact joseph@thehouseofdeals.com
 - Don't have an account? Run `/popkit-core:account signup`
 ```
@@ -395,10 +406,10 @@ curl -s -H "Authorization: Bearer $POPKIT_API_KEY" \
 ```markdown
 ## Your API Keys
 
-| Name | Key | Last Used |
-|------|-----|-----------|
-| Default Key | pk_live_...abc123 | 2 hours ago |
-| CI Pipeline | pk_live_...def456 | 1 day ago |
+| Name        | Key               | Last Used   |
+| ----------- | ----------------- | ----------- |
+| Default Key | pk*live*...abc123 | 2 hours ago |
+| CI Pipeline | pk*live*...def456 | 1 day ago   |
 
 ### Actions
 ```
@@ -467,12 +478,12 @@ curl -s -H "Authorization: Bearer $POPKIT_API_KEY" \
 
 ### This Month's Usage
 
-| Feature | Used | Notes |
-|---------|------|-------|
-| API Calls | 1,234 | Cloud enhancements active |
-| Embeddings | 456 | Semantic agent routing |
-| Pattern Queries | 89 | Community knowledge base |
-| Knowledge Base Access | 125 | Cross-project insights |
+| Feature               | Used  | Notes                     |
+| --------------------- | ----- | ------------------------- |
+| API Calls             | 1,234 | Cloud enhancements active |
+| Embeddings            | 456   | Semantic agent routing    |
+| Pattern Queries       | 89    | Community knowledge base  |
+| Knowledge Base Access | 125   | Cross-project insights    |
 
 ### Enhancement Status
 
@@ -491,16 +502,17 @@ All enhancements active. ✅
 
 ### This Month's Usage
 
-| Feature | Used | Mode |
-|---------|------|------|
-| Core Workflows | 523 | Local (fully functional) |
-| Agent Routing | 89 | Keyword-based |
-| Pattern Storage | 34 | File-based |
-| Knowledge Base | 12 | Local files |
+| Feature         | Used | Mode                     |
+| --------------- | ---- | ------------------------ |
+| Core Workflows  | 523  | Local (fully functional) |
+| Agent Routing   | 89   | Keyword-based            |
+| Pattern Storage | 34   | File-based               |
+| Knowledge Base  | 12   | Local files              |
 
 ### Get Enhanced Intelligence
 
 An API key would add:
+
 - Semantic agent routing (via embeddings)
 - Community pattern learning
 - Cloud knowledge base
@@ -516,6 +528,7 @@ Run `/popkit-core:account signup` to enhance your workflows.
 Disconnect from PopKit Cloud and clear local session.
 
 **Process:**
+
 1. Check for existing cloud config or environment variable
 2. Confirm logout using AskUserQuestion
 3. Delete `.claude/popkit/cloud-config.json`
@@ -580,6 +593,7 @@ print("\nAll workflows will continue to work locally.")
 All workflows continue to work locally without cloud enhancements.
 
 To reconnect:
+
 - `/popkit-core:account signup` - Create new account
 - `/popkit-core:account login` - Login to existing account
 ```
@@ -589,21 +603,25 @@ To reconnect:
 ## Security
 
 **API Key Storage:**
+
 - Stored in `.claude/popkit/cloud-config.json`
 - File permissions: `chmod 600` (user read/write only)
 - Never logged or printed in full (only last 6 chars shown)
 
 **Password Handling:**
+
 - Never stored locally
 - Only sent to cloud API over HTTPS
 - Never logged or printed
 
 **Environment Variable:**
+
 - `POPKIT_API_KEY` is optional
 - Config file used as fallback
 - Environment variable takes precedence
 
 **Best Practices:**
+
 - Use strong passwords (16+ characters recommended)
 - Don't share API keys
 - Use `/popkit-core:account logout` when switching accounts
@@ -624,6 +642,7 @@ Control prompt suggestions visibility:
 ```
 
 **PopKit Configuration Options:**
+
 - Disable prompt suggestions when you prefer to work without recommendations
 - Enable suggestions to get PopKit skill recommendations during development
 - Fine-tune suggestion types by feature category
@@ -646,21 +665,21 @@ Access account-related settings:
 
 ## Error Handling
 
-| Error | Response |
-|-------|----------|
-| No API key | "Run /popkit-core:account signup to create an account" |
+| Error           | Response                                                    |
+| --------------- | ----------------------------------------------------------- |
+| No API key      | "Run /popkit-core:account signup to create an account"      |
 | Invalid API key | "API key invalid. Run /popkit-core:account login or signup" |
-| Network error | "Couldn't reach PopKit Cloud. Working in local mode." |
-| API rate limit | "Rate limit reached. Working in local mode until reset." |
+| Network error   | "Couldn't reach PopKit Cloud. Working in local mode."       |
+| API rate limit  | "Rate limit reached. Working in local mode until reset."    |
 
 ---
 
 ## Related Commands
 
-| Command | Purpose |
-|---------|---------|
+| Command                | Purpose                   |
+| ---------------------- | ------------------------- |
 | `/popkit-core:privacy` | Privacy and data settings |
-| `/popkit-core:stats` | Session metrics |
+| `/popkit-core:stats`   | Session metrics           |
 
 ---
 

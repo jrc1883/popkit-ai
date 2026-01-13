@@ -17,6 +17,7 @@ Capture and report bugs with automatic context gathering, local logging, GitHub 
 ## Input
 
 User provides:
+
 - Bug description
 - Optional flags: `--issue`, `--share`, `--verbose`, `--no-context`
 - Or subcommands: `list`, `view <id>`, `clear`
@@ -26,6 +27,7 @@ User provides:
 ### 1. Parse Request
 
 Determine the action:
+
 - Default: Report new bug
 - `list`: List logged bugs
 - `view`: View specific bug
@@ -47,6 +49,7 @@ ctx = capture.capture(
 ```
 
 Context includes:
+
 - Recent tool calls (last 10)
 - Files touched
 - Error messages detected
@@ -95,18 +98,21 @@ Suggested Actions:
 Based on flags:
 
 **Default** - Log locally:
+
 ```python
 file_path = capture.save(ctx)
 print(f"Logged to: {file_path}")
 ```
 
 **--issue** - Create GitHub issue:
+
 ```python
 issue_body = format_github_issue(ctx)
 # Use gh issue create with formatted body
 ```
 
 **--share** - Share to collective (Pro/Team):
+
 ```python
 # Anonymize pattern
 # Upload to collective learning database
@@ -115,6 +121,7 @@ issue_body = format_github_issue(ctx)
 ### 5. Confirm to User
 
 Show:
+
 - Bug ID
 - Actions taken (logged, issue created, shared)
 - Link to issue if created
@@ -147,12 +154,12 @@ print(f"Cleared {cleared} bug reports")
 
 When `--share` is used, anonymize before uploading:
 
-| Original | Anonymized |
-|----------|------------|
-| `<project>/src/auth/oauth.ts` | `auth module` |
-| `handleTokenRefresh()` | `token refresh handler` |
-| API keys, secrets | `[REDACTED]` |
-| Variable names | Generic terms |
+| Original                      | Anonymized              |
+| ----------------------------- | ----------------------- |
+| `<project>/src/auth/oauth.ts` | `auth module`           |
+| `handleTokenRefresh()`        | `token refresh handler` |
+| API keys, secrets             | `[REDACTED]`            |
+| Variable names                | Generic terms           |
 
 ```python
 def anonymize_pattern(ctx: BugContext) -> Dict:
@@ -226,16 +233,17 @@ Thank you for contributing to the collective learning database!
 
 ## Integration Points
 
-| Component | Purpose |
-|-----------|---------|
-| `hooks/utils/bug_context.py` | Context capture and formatting |
-| `.claude/bugs/` | Local bug storage |
-| `power-mode/insight_embedder.py` | Pattern sharing |
-| `gh issue create` | GitHub issue creation |
+| Component                        | Purpose                        |
+| -------------------------------- | ------------------------------ |
+| `hooks/utils/bug_context.py`     | Context capture and formatting |
+| `.claude/bugs/`                  | Local bug storage              |
+| `power-mode/insight_embedder.py` | Pattern sharing                |
+| `gh issue create`                | GitHub issue creation          |
 
 ## Output Style
 
 Use a clear, structured format:
+
 - Show bug ID prominently
 - List context in organized sections
 - Highlight errors and stuck patterns

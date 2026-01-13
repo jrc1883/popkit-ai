@@ -6,18 +6,19 @@ Tests JSON input/output handling, edge cases, and security features.
 Critical for hook safety and data integrity.
 """
 
-import sys
 import io
 import json
-import pytest
-from unittest.mock import patch
+import sys
 
 # Add parent directory to path for imports
 from pathlib import Path
+from unittest.mock import patch
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from popkit_shared.utils.safe_json import sanitize_js_booleans, read_hook_input, write_hook_output
+from popkit_shared.utils.safe_json import read_hook_input, sanitize_js_booleans, write_hook_output
 
 
 class TestSanitizeJsBooleans:

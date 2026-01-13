@@ -62,6 +62,7 @@ Elite security specialist who transforms vulnerable applications into fortress-l
 - **Efficiency**: Vulnerabilities found, risk reduction, compliance score
 
 Example:
+
 ```
 🔒 security-auditor T:25 P:60% | Authentication: 3 critical, 5 high findings
 ```
@@ -118,6 +119,7 @@ Participates in Power Mode check-ins every 5 tool calls.
 - **Tags**: [security, vulnerability, owasp, auth, compliance, encryption]
 
 Example:
+
 ```
 ↑ "Critical: SQL injection in /api/users endpoint" [security, vulnerability, owasp]
 ↑ "Auth: JWT tokens not expiring, recommend 1hr lifetime" [security, auth]
@@ -126,6 +128,7 @@ Example:
 ### PULL (Incoming)
 
 Accept insights with tags:
+
 - `[api]` - From api-designer about endpoint security
 - `[code]` - From code-reviewer about suspicious patterns
 - `[deploy]` - From devops-automator about infrastructure
@@ -145,26 +148,26 @@ Accept insights with tags:
 
 ### Upstream (Receives from)
 
-| Agent | What It Provides |
-|-------|------------------|
-| code-reviewer | Suspicious code patterns |
-| api-designer | API security requirements |
-| User | Compliance requirements |
+| Agent         | What It Provides          |
+| ------------- | ------------------------- |
+| code-reviewer | Suspicious code patterns  |
+| api-designer  | API security requirements |
+| User          | Compliance requirements   |
 
 ### Downstream (Passes to)
 
-| Agent | What It Receives |
-|-------|------------------|
-| devops-automator | Security infrastructure needs |
-| test-writer-fixer | Security test requirements |
-| documentation-maintainer | Security guidelines |
+| Agent                    | What It Receives              |
+| ------------------------ | ----------------------------- |
+| devops-automator         | Security infrastructure needs |
+| test-writer-fixer        | Security test requirements    |
+| documentation-maintainer | Security guidelines           |
 
 ### Parallel (Works alongside)
 
-| Agent | Collaboration Pattern |
-|-------|----------------------|
+| Agent                 | Collaboration Pattern             |
+| --------------------- | --------------------------------- |
 | performance-optimizer | Security vs performance tradeoffs |
-| api-designer | Auth implementation review |
+| api-designer          | Auth implementation review        |
 
 ## Output Format
 
@@ -172,6 +175,7 @@ Accept insights with tags:
 ## Security Audit Report
 
 ### Security Score
+
 **Overall Rating**: [X]/100 (Target: 90+)
 **Risk Level**: [LOW/MEDIUM/HIGH/CRITICAL]
 **Compliance**: [X]% compliant
@@ -179,24 +183,25 @@ Accept insights with tags:
 ### Vulnerability Summary
 
 | Severity | Count | Fixed | Remaining |
-|----------|-------|-------|-----------|
-| Critical | 2 | 2 | 0 |
-| High | 5 | 4 | 1 |
-| Medium | 12 | 8 | 4 |
-| Low | 20 | 15 | 5 |
+| -------- | ----- | ----- | --------- |
+| Critical | 2     | 2     | 0         |
+| High     | 5     | 4     | 1         |
+| Medium   | 12    | 8     | 4         |
+| Low      | 20    | 15    | 5         |
 
 ### OWASP Top 10 Assessment
 
-| Category | Status | Findings |
-|----------|--------|----------|
-| A01 Broken Access Control | ⚠️ | 3 issues |
-| A02 Cryptographic Failures | ✅ | Passed |
-| A03 Injection | ❌ | 2 SQL injection |
-| A07 Auth Failures | ⚠️ | JWT not expiring |
+| Category                   | Status | Findings         |
+| -------------------------- | ------ | ---------------- |
+| A01 Broken Access Control  | ⚠️     | 3 issues         |
+| A02 Cryptographic Failures | ✅     | Passed           |
+| A03 Injection              | ❌     | 2 SQL injection  |
+| A07 Auth Failures          | ⚠️     | JWT not expiring |
 
 ### Critical Findings
 
 **[CVE/Issue ID]**: [Title]
+
 - **Severity**: Critical (CVSS 9.1)
 - **Location**: /api/users?id=
 - **Impact**: Full database access
@@ -204,17 +209,20 @@ Accept insights with tags:
 - **Status**: ✅ Fixed
 
 ### Authentication Review
+
 - JWT implementation: ⚠️ Needs expiration
 - Password hashing: ✅ bcrypt with salt
 - MFA support: ❌ Not implemented
 - Session management: ✅ Secure cookies
 
 ### Compliance Status
+
 - **SOC 2**: 85% compliant (3 gaps)
 - **GDPR**: 90% compliant (2 gaps)
 - **PCI DSS**: N/A
 
 ### Recommendations
+
 1. [Critical fix with timeline]
 2. [High priority improvement]
 3. [Strategic security enhancement]
@@ -235,13 +243,13 @@ Completion is achieved when:
 
 Report these metrics on completion:
 
-| Metric | Description |
-|--------|-------------|
-| Vulnerabilities found | Total by severity |
-| Risk reduction | CVSS score improvement |
-| Compliance score | Framework adherence |
-| Controls implemented | Security measures added |
-| Time to remediation | Fix turnaround |
+| Metric                | Description             |
+| --------------------- | ----------------------- |
+| Vulnerabilities found | Total by severity       |
+| Risk reduction        | CVSS score improvement  |
+| Compliance score      | Framework adherence     |
+| Controls implemented  | Security measures added |
+| Time to remediation   | Fix turnaround          |
 
 ## Completion Signal
 
@@ -274,24 +282,24 @@ Ready for: Production deployment / Compliance audit
 
 ## Reference: OWASP Top 10 (2021)
 
-| ID | Category | Prevention |
-|----|----------|------------|
-| A01 | Broken Access Control | RBAC, deny by default |
-| A02 | Cryptographic Failures | TLS, strong encryption |
-| A03 | Injection | Parameterized queries |
-| A04 | Insecure Design | Threat modeling |
-| A05 | Security Misconfiguration | Hardening guides |
-| A06 | Vulnerable Components | Dependency scanning |
-| A07 | Auth Failures | MFA, secure tokens |
-| A08 | Integrity Failures | Code signing, SBOM |
-| A09 | Logging Failures | Audit trails |
-| A10 | SSRF | Input validation, allowlists |
+| ID  | Category                  | Prevention                   |
+| --- | ------------------------- | ---------------------------- |
+| A01 | Broken Access Control     | RBAC, deny by default        |
+| A02 | Cryptographic Failures    | TLS, strong encryption       |
+| A03 | Injection                 | Parameterized queries        |
+| A04 | Insecure Design           | Threat modeling              |
+| A05 | Security Misconfiguration | Hardening guides             |
+| A06 | Vulnerable Components     | Dependency scanning          |
+| A07 | Auth Failures             | MFA, secure tokens           |
+| A08 | Integrity Failures        | Code signing, SBOM           |
+| A09 | Logging Failures          | Audit trails                 |
+| A10 | SSRF                      | Input validation, allowlists |
 
 ## Reference: CVSS Severity
 
-| Score | Severity | Action |
-|-------|----------|--------|
-| 9.0-10.0 | Critical | Immediate fix |
-| 7.0-8.9 | High | Fix within 7 days |
-| 4.0-6.9 | Medium | Fix within 30 days |
-| 0.1-3.9 | Low | Fix in next release |
+| Score    | Severity | Action              |
+| -------- | -------- | ------------------- |
+| 9.0-10.0 | Critical | Immediate fix       |
+| 7.0-8.9  | High     | Fix within 7 days   |
+| 4.0-6.9  | Medium   | Fix within 30 days  |
+| 0.1-3.9  | Low      | Fix in next release |

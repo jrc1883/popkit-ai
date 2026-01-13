@@ -6,11 +6,11 @@ Multi-agent orchestration for parallel agent collaboration via pub/sub messaging
 
 Power Mode uses a **zero-setup** architecture with three available modes:
 
-| Mode | Setup Required | Max Agents | Parallel | Best For |
-|------|----------------|------------|----------|----------|
-| **Native Async** | None (Claude Code 2.0.64+) | 5+ | True parallel | Default, recommended |
-| **Upstash Redis** | Set env vars | 10+ | True parallel | Advanced coordination |
-| **File-based** | None (automatic fallback) | 2-3 | Sequential | Legacy compatibility |
+| Mode              | Setup Required             | Max Agents | Parallel      | Best For              |
+| ----------------- | -------------------------- | ---------- | ------------- | --------------------- |
+| **Native Async**  | None (Claude Code 2.0.64+) | 5+         | True parallel | Default, recommended  |
+| **Upstash Redis** | Set env vars               | 10+        | True parallel | Advanced coordination |
+| **File-based**    | None (automatic fallback)  | 2-3        | Sequential    | Legacy compatibility  |
 
 **No Docker or local Redis installation required.** Native Async mode works out of the box with Claude Code 2.0.64+.
 
@@ -43,45 +43,46 @@ python upstash_adapter.py --test
 Free tier users don't need any setup. Power Mode automatically uses file-based coordination when Upstash isn't configured.
 
 Limitations:
+
 - 2-3 agents maximum (sequential)
 - No cross-session persistence
 - Local-only coordination
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `upstash_adapter.py` | Upstash REST API client |
-| `mode_selector.py` | Auto-detects best available mode |
-| `coordinator.py` | Mesh brain for agent orchestration |
-| `protocol.py` | Message types and serialization |
-| `checkin-hook.py` | PostToolUse hook for periodic check-ins |
-| `file_fallback.py` | File-based coordination (free tier) |
-| `config.json` | Power Mode configuration |
+| File                 | Purpose                                 |
+| -------------------- | --------------------------------------- |
+| `upstash_adapter.py` | Upstash REST API client                 |
+| `mode_selector.py`   | Auto-detects best available mode        |
+| `coordinator.py`     | Mesh brain for agent orchestration      |
+| `protocol.py`        | Message types and serialization         |
+| `checkin-hook.py`    | PostToolUse hook for periodic check-ins |
+| `file_fallback.py`   | File-based coordination (free tier)     |
+| `config.json`        | Power Mode configuration                |
 
 ## Redis Channels
 
 Power Mode uses 6 pub/sub channels (via Redis Streams for Upstash):
 
-| Channel | Publisher | Subscribers | Purpose |
-|---------|-----------|-------------|---------|
-| `pop:broadcast` | Coordinator | All agents | Broadcast messages |
-| `pop:heartbeat` | Agents | Coordinator | Health checks |
-| `pop:results` | Agents | Coordinator | Task completions |
-| `pop:insights` | Agents | Coordinator + Agents | Shared discoveries |
-| `pop:coordinator` | External | Coordinator | Control commands |
-| `pop:human` | Agents | Coordinator | Human approval requests |
+| Channel           | Publisher   | Subscribers          | Purpose                 |
+| ----------------- | ----------- | -------------------- | ----------------------- |
+| `pop:broadcast`   | Coordinator | All agents           | Broadcast messages      |
+| `pop:heartbeat`   | Agents      | Coordinator          | Health checks           |
+| `pop:results`     | Agents      | Coordinator          | Task completions        |
+| `pop:insights`    | Agents      | Coordinator + Agents | Shared discoveries      |
+| `pop:coordinator` | External    | Coordinator          | Control commands        |
+| `pop:human`       | Agents      | Coordinator          | Human approval requests |
 
 ## Data Stored in Redis
 
-| Key Pattern | Type | TTL | Purpose |
-|-------------|------|-----|---------|
-| `pop:objective` | String | Session | Current objective definition |
-| `pop:state:{agent_id}` | Hash | Session | Agent state snapshots |
-| `pop:completed:{session_id}` | String | 24h | Completed session results |
-| `pop:tasks:orphaned` | List | Session | Tasks from failed agents |
-| `pop:coordinator:status` | String | Live | Coordinator health |
-| `pop:patterns:{pattern_id}` | Hash | 24h | Learned patterns |
+| Key Pattern                  | Type   | TTL     | Purpose                      |
+| ---------------------------- | ------ | ------- | ---------------------------- |
+| `pop:objective`              | String | Session | Current objective definition |
+| `pop:state:{agent_id}`       | Hash   | Session | Agent state snapshots        |
+| `pop:completed:{session_id}` | String | 24h     | Completed session results    |
+| `pop:tasks:orphaned`         | List   | Session | Tasks from failed agents     |
+| `pop:coordinator:status`     | String | Live    | Coordinator health           |
+| `pop:patterns:{pattern_id}`  | Hash   | 24h     | Learned patterns             |
 
 ## Integration Points
 
@@ -129,6 +130,7 @@ Upstash connection failed. Check your credentials.
 ### File-Based Mode Active
 
 If you see "File-based mode" when expecting Upstash, check:
+
 1. Environment variables are set correctly
 2. Upstash database is active
 3. Run `python upstash_adapter.py --status` to diagnose

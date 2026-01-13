@@ -9,12 +9,11 @@ providing cross-platform equivalents for common operations.
 """
 
 import re
-import shlex
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
 from enum import Enum
+from typing import Dict, List, Optional, Tuple
 
-from .platform_detector import PlatformDetector, OSType, ShellType, PlatformInfo, get_platform_info
+from .platform_detector import PlatformInfo, ShellType, get_platform_info
 
 
 class CommandCategory(Enum):

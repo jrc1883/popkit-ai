@@ -13,6 +13,7 @@ All code MUST implement proper access controls to prevent unauthorized access to
 Sensitive operations must verify user authentication.
 
 **Detect**:
+
 ```python
 # BAD - No auth check before sensitive operation
 @app.route("/admin/delete-user/<id>")
@@ -21,6 +22,7 @@ def delete_user(id):
 ```
 
 **Fix**:
+
 ```python
 # GOOD - Authentication required
 @app.route("/admin/delete-user/<id>")
@@ -38,6 +40,7 @@ def delete_user(id):
 Operations must verify user has permission for the action.
 
 **Detect**:
+
 ```python
 # BAD - No authorization check
 @app.route("/document/<id>")
@@ -46,6 +49,7 @@ def view_document(id):
 ```
 
 **Fix**:
+
 ```python
 # GOOD - Authorization check
 @app.route("/document/<id>")
@@ -64,6 +68,7 @@ def view_document(id):
 Direct database IDs in URLs enable unauthorized access.
 
 **Detect**:
+
 ```python
 # BAD - Direct ID reference without ownership check
 @app.route("/api/orders/<order_id>")
@@ -72,6 +77,7 @@ def get_order(order_id):
 ```
 
 **Fix**:
+
 ```python
 # GOOD - Verify ownership
 @app.route("/api/orders/<order_id>")
@@ -91,6 +97,7 @@ def get_order(order_id):
 Users must not be able to elevate their own privileges.
 
 **Detect**:
+
 ```python
 # BAD - User can set their own role
 @app.route("/api/profile", methods=["PUT"])
@@ -101,6 +108,7 @@ def update_profile():
 ```
 
 **Fix**:
+
 ```python
 # GOOD - Whitelist allowed fields
 ALLOWED_PROFILE_FIELDS = ["name", "email", "avatar"]
@@ -122,6 +130,7 @@ def update_profile():
 Sessions must be securely managed.
 
 **Detect**:
+
 ```python
 # BAD - Session ID in URL
 @app.route("/dashboard?session=<sid>")
@@ -134,6 +143,7 @@ session.permanent = True  # Without timeout
 ```
 
 **Fix**:
+
 ```python
 # GOOD - Secure session configuration
 app.config.update(
@@ -158,6 +168,7 @@ def login():
 CORS must not allow arbitrary origins.
 
 **Detect**:
+
 ```python
 # BAD - Allow all origins
 CORS(app, origins="*")
@@ -167,6 +178,7 @@ response.headers["Access-Control-Allow-Origin"] = request.headers.get("Origin")
 ```
 
 **Fix**:
+
 ```python
 # GOOD - Explicit allowed origins
 CORS(app, origins=["https://app.example.com", "https://admin.example.com"])
@@ -180,14 +192,14 @@ if origin in ALLOWED_ORIGINS:
 
 ## Validation Checklist
 
-| Check ID | Description | Severity |
-|----------|-------------|----------|
-| AC-001 | Auth check before sensitive ops | critical |
-| AC-002 | Authorization check for resources | critical |
-| AC-003 | IDOR prevention via ownership | high |
-| AC-004 | No user-controlled privilege fields | critical |
-| AC-005 | Secure session management | high |
-| AC-006 | Restrictive CORS configuration | high |
+| Check ID | Description                         | Severity |
+| -------- | ----------------------------------- | -------- |
+| AC-001   | Auth check before sensitive ops     | critical |
+| AC-002   | Authorization check for resources   | critical |
+| AC-003   | IDOR prevention via ownership       | high     |
+| AC-004   | No user-controlled privilege fields | critical |
+| AC-005   | Secure session management           | high     |
+| AC-006   | Restrictive CORS configuration      | high     |
 
 ## Secure Patterns
 

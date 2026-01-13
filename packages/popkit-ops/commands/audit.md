@@ -9,14 +9,14 @@ Perform periodic audits to review project health, find stale issues, detect dupl
 
 ## Subcommands
 
-| Subcommand | Description |
-|------------|-------------|
-| quarterly (default) | Q1/Q2/Q3/Q4 audit report |
-| yearly | Full year audit |
-| stale | Find stale issues |
-| duplicates | Find potential duplicate issues |
-| health | Overall project health check |
-| ip-leak | Scan for intellectual property leaks |
+| Subcommand          | Description                          |
+| ------------------- | ------------------------------------ |
+| quarterly (default) | Q1/Q2/Q3/Q4 audit report             |
+| yearly              | Full year audit                      |
+| stale               | Find stale issues                    |
+| duplicates          | Find potential duplicate issues      |
+| health              | Overall project health check         |
+| ip-leak             | Scan for intellectual property leaks |
 
 ---
 
@@ -92,13 +92,13 @@ Scan for intellectual property leaks (API keys, secrets, proprietary code).
 
 ## Architecture
 
-| Component | Integration |
-|-----------|-------------|
-| Quarterly | GitHub Issues API, milestone tracking |
-| Stale | GitHub Issues API, last activity filter |
-| Duplicates | Voyage AI embeddings, similarity scoring |
-| Health | Multiple skills + tests + lint + security |
-| IP Scanner | `hooks/utils/ip_protection.py` |
-| Reports | Markdown formatting |
+| Component  | Integration                               |
+| ---------- | ----------------------------------------- |
+| Quarterly  | GitHub Issues API, milestone tracking     |
+| Stale      | GitHub Issues API, last activity filter   |
+| Duplicates | Voyage AI embeddings, similarity scoring  |
+| Health     | Multiple skills + tests + lint + security |
+| IP Scanner | `hooks/utils/ip_protection.py`            |
+| Reports    | Markdown formatting                       |
 
 **Related:** `/popkit-dev:milestone`, `/popkit-dev:issue`, `/popkit-core:stats`, `/popkit-dev:git publish`, `/popkit-dev:routine nightly`

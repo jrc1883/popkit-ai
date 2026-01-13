@@ -16,15 +16,12 @@ Usage:
 
 import json
 import os
-import hashlib
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from urllib.request import Request, urlopen
 from urllib.error import URLError
-
+from urllib.request import Request, urlopen
 
 # =============================================================================
 # Storage Interface
@@ -121,7 +118,7 @@ class FileContextStorage(ContextStorage):
             with open(self._workflow_file(workflow_id), "w") as f:
                 json.dump(context, f, indent=2, default=str)
             return True
-        except (IOError, TypeError) as e:
+        except (IOError, TypeError):
             return False
 
     def load_context(self, workflow_id: str) -> Optional[Dict[str, Any]]:
@@ -279,7 +276,7 @@ class UpstashContextStorage(ContextStorage):
             with urlopen(request, body, timeout=10) as response:
                 result = json.loads(response.read().decode("utf-8"))
                 return result.get("result")
-        except URLError as e:
+        except URLError:
             return None
 
     def save_context(self, workflow_id: str, context: Dict[str, Any]) -> bool:

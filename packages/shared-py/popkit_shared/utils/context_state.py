@@ -8,12 +8,11 @@ Used by hooks to track what context has been sent to Claude across messages.
 Storage: .claude/popkit/sessions/<session-id>-context.json
 """
 
+import hashlib
 import json
 import os
-import hashlib
 from pathlib import Path
-from typing import Dict, Any, Optional
-
+from typing import Any, Dict
 
 # Constants
 POPKIT_DIR = ".claude/popkit"

@@ -8,18 +8,17 @@ Transforms user messages into structured XML with category, severity, and workfl
 Used by: user-prompt-submit.py hook
 """
 
-import re
 import logging
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
 # Try to import validator (optional for validation)
 try:
     from popkit_shared.utils.xml_validator import (
+        validate_findings_xml,
         validate_problem_xml,
         validate_project_xml,
-        validate_findings_xml,
     )
 
     HAS_VALIDATOR = True

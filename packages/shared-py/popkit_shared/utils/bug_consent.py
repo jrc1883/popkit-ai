@@ -8,11 +8,11 @@ Handles user consent prompts for bug sharing using AskUserQuestion integration.
 Provides formatted questions for Claude to present to users.
 """
 
-from dataclasses import dataclass
-from typing import Optional, List, Dict, Any
-from enum import Enum
 import sys
+from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
+from typing import Any, Dict, List
 
 # Ensure utils directory is in path
 utils_dir = Path(__file__).parent
@@ -20,7 +20,7 @@ if str(utils_dir) not in sys.path:
     sys.path.insert(0, str(utils_dir))
 
 # Import from same module that will be used elsewhere
-from utils.bug_store import get_bug_store, ShareStatus, ConsentLevel
+from utils.bug_store import ConsentLevel, ShareStatus, get_bug_store
 
 
 class ConsentAction(Enum):

@@ -12,12 +12,14 @@ Each module/class should have one, and only one, reason to change.
 A responsibility is a reason to change. When requirements change, only one class should need modification.
 
 **Indicators of Violation:**
+
 - Class handles multiple domains (user + payment + notification)
 - File exceeds 300 lines
 - Multiple unrelated imports
 - "Manager" or "Handler" suffix doing too much
 
 **Compliance Check:**
+
 - [ ] Each class has a clear, single purpose
 - [ ] Classes under 300 lines
 - [ ] Method count under 15 per class
@@ -28,6 +30,7 @@ A responsibility is a reason to change. When requirements change, only one class
 Organize code by feature, not by technical layer alone.
 
 **Feature-Based Structure:**
+
 ```
 src/
 ├── users/
@@ -42,6 +45,7 @@ src/
 ```
 
 **vs Layer-Based (avoid for large projects):**
+
 ```
 src/
 ├── entities/       # All entities together
@@ -51,6 +55,7 @@ src/
 ```
 
 **Compliance Check:**
+
 - [ ] Related code grouped together
 - [ ] Features can be developed independently
 - [ ] Minimal cross-feature dependencies
@@ -60,11 +65,13 @@ src/
 UI/presentation logic separate from business logic.
 
 **Layers:**
+
 1. **View Layer** - Display and user interaction
 2. **ViewModel/Presenter** - Presentation logic
 3. **Business Layer** - Domain rules
 
 **Compliance Check:**
+
 - [ ] No business logic in UI components
 - [ ] Formatting done in presentation layer
 - [ ] Business rules testable without UI
@@ -91,6 +98,7 @@ class PrismaUserRepository implements UserRepository {
 ```
 
 **Compliance Check:**
+
 - [ ] Business logic doesn't contain SQL/queries
 - [ ] Repository interfaces defined abstractly
 - [ ] Easy to swap data sources
@@ -100,6 +108,7 @@ class PrismaUserRepository implements UserRepository {
 Extract concerns that span multiple modules.
 
 **Cross-Cutting Examples:**
+
 - Logging
 - Authentication
 - Caching
@@ -107,12 +116,14 @@ Extract concerns that span multiple modules.
 - Validation
 
 **Implementation Patterns:**
+
 - Middleware (for HTTP)
 - Decorators (for classes/methods)
 - Aspect-Oriented Programming
 - Interceptors
 
 **Compliance Check:**
+
 - [ ] Logging not scattered in business code
 - [ ] Auth handled by middleware/decorators
 - [ ] Error handling centralized
@@ -123,11 +134,13 @@ Extract concerns that span multiple modules.
 Configuration separate from code.
 
 **Levels:**
+
 1. **Environment** - `.env`, environment variables
 2. **Application** - `config.ts`, `settings.py`
 3. **Feature** - Feature flags, toggles
 
 **Compliance Check:**
+
 - [ ] No hardcoded secrets
 - [ ] Environment-specific config in env vars
 - [ ] Config loaded at startup, not runtime
@@ -138,6 +151,7 @@ Configuration separate from code.
 Test code separate from production code.
 
 **Structure:**
+
 ```
 src/
 ├── users/
@@ -151,6 +165,7 @@ tests/
 ```
 
 **Compliance Check:**
+
 - [ ] Test code not bundled in production
 - [ ] Test utilities separate from production
 - [ ] Mocks/fixtures organized
@@ -187,6 +202,7 @@ interface UserAnalytics {
 ```
 
 **Compliance Check:**
+
 - [ ] Interfaces are small and focused
 - [ ] Clients only depend on what they use
 - [ ] No "god interfaces"
@@ -196,16 +212,18 @@ interface UserAnalytics {
 ### Clear Boundaries
 
 Each module should:
+
 1. Export a public API
 2. Hide implementation details
 3. Define clear dependencies
 4. Have minimal surface area
 
 **Example:**
+
 ```typescript
 // users/index.ts (public API)
-export { UserService } from './user.service';
-export type { User, CreateUserData } from './types';
+export { UserService } from "./user.service";
+export type { User, CreateUserData } from "./types";
 
 // Internal - not exported
 // user.repository.ts
@@ -220,23 +238,25 @@ High-level modules ← Low-level modules
 ```
 
 **Allowed:**
+
 - Service → Repository interface
 - Controller → Service
 - Use Case → Entity
 
 **Not Allowed:**
+
 - Entity → Service
 - Repository → Controller
 - Low-level → High-level
 
 ### Communication Patterns
 
-| Pattern | Use When | Example |
-|---------|----------|---------|
-| Direct Call | Same module | service.createUser() |
-| Interface | Cross-module | IUserService |
-| Events | Loose coupling | userCreated event |
-| Message Queue | Async/distributed | Pub/sub |
+| Pattern       | Use When          | Example              |
+| ------------- | ----------------- | -------------------- |
+| Direct Call   | Same module       | service.createUser() |
+| Interface     | Cross-module      | IUserService         |
+| Events        | Loose coupling    | userCreated event    |
+| Message Queue | Async/distributed | Pub/sub              |
 
 ## Anti-Patterns
 
@@ -247,29 +267,29 @@ High-level modules ← Low-level modules
 class UserController {
   async createUser(req, res) {
     // Validation
-    if (!req.body.email.includes('@')) {
-      return res.status(400).send('Invalid email');
+    if (!req.body.email.includes("@")) {
+      return res.status(400).send("Invalid email");
     }
 
     // Business logic
     const existingUser = await db.user.findUnique({
-      where: { email: req.body.email }
+      where: { email: req.body.email },
     });
 
     if (existingUser) {
-      return res.status(409).send('Email exists');
+      return res.status(409).send("Email exists");
     }
 
     // Data access
     const user = await db.user.create({
-      data: req.body
+      data: req.body,
     });
 
     // Response formatting
     res.status(201).json({
       id: user.id,
       email: user.email,
-      createdAt: user.createdAt.toISOString()
+      createdAt: user.createdAt.toISOString(),
     });
   }
 }
@@ -300,11 +320,11 @@ class UserService {
 
 ## Quality Metrics
 
-| Metric | Target | Description |
-|--------|--------|-------------|
-| Module size | <500 lines | Per module/class |
-| Method count | <15 per class | Public methods |
-| Dependencies | <7 per module | External dependencies |
-| Cyclomatic complexity | <10 | Per method |
-| Coupling | Low | Between modules |
-| Cohesion | High | Within modules |
+| Metric                | Target        | Description           |
+| --------------------- | ------------- | --------------------- |
+| Module size           | <500 lines    | Per module/class      |
+| Method count          | <15 per class | Public methods        |
+| Dependencies          | <7 per module | External dependencies |
+| Cyclomatic complexity | <10           | Per method            |
+| Coupling              | Low           | Between modules       |
+| Cohesion              | High          | Within modules        |

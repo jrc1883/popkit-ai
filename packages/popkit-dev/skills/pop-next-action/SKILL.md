@@ -16,6 +16,7 @@ Analyzes current project state and provides prioritized, context-aware recommend
 ## When to Use
 
 Invoke this skill when:
+
 - User asks "what should I do next?"
 - User seems stuck or unsure of direction
 - User mentions "popkit" and needs guidance
@@ -149,6 +150,7 @@ if branches:
 ```
 
 **Research Branch Patterns:**
+
 - `origin/claude/research-*` - Explicit research branches
 - `origin/claude/*-research-*` - Topic-specific research
 - Branches with `docs/research/*.md` or `RESEARCH*.md` files
@@ -157,16 +159,16 @@ if branches:
 
 Identify what kind of project and what state it's in:
 
-| Indicator | What It Means | Weight |
-|-----------|---------------|--------|
-| Uncommitted changes | Active work in progress | HIGH |
-| Ahead of remote | Ready to push/PR | MEDIUM |
-| TypeScript errors | Build broken | HIGH |
-| **Research branches** | Web session findings to process | HIGH |
-| Open issues | Known work items | MEDIUM |
-| **Issue votes** | Community priority | MEDIUM |
-| TECHNICAL_DEBT.md | Documented debt | MEDIUM |
-| Recent commits | Active development | LOW |
+| Indicator             | What It Means                   | Weight |
+| --------------------- | ------------------------------- | ------ |
+| Uncommitted changes   | Active work in progress         | HIGH   |
+| Ahead of remote       | Ready to push/PR                | MEDIUM |
+| TypeScript errors     | Build broken                    | HIGH   |
+| **Research branches** | Web session findings to process | HIGH   |
+| Open issues           | Known work items                | MEDIUM |
+| **Issue votes**       | Community priority              | MEDIUM |
+| TECHNICAL_DEBT.md     | Documented debt                 | MEDIUM |
+| Recent commits        | Active development              | LOW    |
 
 ### Step 2.5: Fetch Issue Votes (NEW)
 
@@ -199,6 +201,7 @@ for issue in ranked[:3]:
 ```
 
 **Vote Weights:**
+
 - 👍 (+1) = 1 point (community interest)
 - ❤️ (heart) = 2 points (strong support)
 - 🚀 (rocket) = 3 points (approved/prioritized)
@@ -233,6 +236,7 @@ Context Multipliers:
 Create 3-5 prioritized recommendations based on scores.
 
 For each recommendation, provide:
+
 1. **Command** - The exact popkit command to run
 2. **Why** - Context-specific reason (not generic)
 3. **What it does** - Brief description
@@ -245,40 +249,44 @@ Use the `next-action-report` output style:
 ```markdown
 ## Current State
 
-| Indicator | Status | Urgency |
-|-----------|--------|---------|
-| Uncommitted | X files | [HIGH/MEDIUM/LOW] |
-| Branch Sync | [status] | [urgency] |
-| TypeScript | [clean/errors] | [urgency] |
-| Open Issues | X open | [urgency] |
+| Indicator   | Status         | Urgency           |
+| ----------- | -------------- | ----------------- |
+| Uncommitted | X files        | [HIGH/MEDIUM/LOW] |
+| Branch Sync | [status]       | [urgency]         |
+| TypeScript  | [clean/errors] | [urgency]         |
+| Open Issues | X open         | [urgency]         |
 
 ## Recommended Actions
 
 ### 1. [Primary Action] (Score: XX)
+
 **Command:** `/popkit:[command]`
 **Why:** [Specific reason based on detected state]
 **What it does:** [Brief description]
 **Benefit:** [What you gain]
 
 ### 2. [Secondary Action] (Score: XX)
+
 ...
 
 ### 3. [Tertiary Action] (Score: XX)
+
 ...
 
 ## Quick Reference
 
-| If you want to... | Use this command |
-|-------------------|------------------|
-| Commit changes | `/popkit:git commit` |
-| Review code | `/popkit:git review` |
+| If you want to...  | Use this command          |
+| ------------------ | ------------------------- |
+| Commit changes     | `/popkit:git commit`      |
+| Review code        | `/popkit:git review`      |
 | Get project health | `/popkit:routine morning` |
-| Plan a feature | `/popkit:dev brainstorm` |
-| Debug an issue | `/popkit:debug` |
+| Plan a feature     | `/popkit:dev brainstorm`  |
+| Debug an issue     | `/popkit:debug`           |
 
 ## Alternative Paths
 
 Based on your context, you could also:
+
 - [Alternative 1]
 - [Alternative 2]
 ```
@@ -289,6 +297,7 @@ Based on your context, you could also:
 
 ```markdown
 ### 1. Commit Your Current Work
+
 **Command:** `/popkit:commit`
 **Why:** You have [X] uncommitted files including [key files]
 **What it does:** Auto-generates commit message matching repo style
@@ -299,6 +308,7 @@ Based on your context, you could also:
 
 ```markdown
 ### 1. Fix Build Errors
+
 **Command:** `/popkit:debug`
 **Why:** TypeScript has [X] errors blocking build
 **What it does:** Systematic debugging with root cause analysis
@@ -309,6 +319,7 @@ Based on your context, you could also:
 
 ```markdown
 ### 1. Process Research Branches
+
 **Command:** Invoke `pop-research-merge` skill
 **Why:** Found [X] research branch(es) from Claude Code Web sessions
 **Branches:**
@@ -342,6 +353,7 @@ If user selects "Yes, process" or "Review first", invoke the `pop-research-merge
 
 ```markdown
 ### 2. Work on Open Issue
+
 **Command:** `/popkit:dev work #[number]`
 **Why:** Issue #[X] "[title]" is high priority (Score: XX)
 **Votes:** 👍5 ❤️2 🚀1
@@ -378,6 +390,7 @@ if is_recording_enabled():
 
 ```markdown
 ### 1. Check Project Health
+
 **Command:** `/popkit:routine morning`
 **Why:** No urgent items - good time for health check
 **What it does:** Comprehensive project status with "Ready to Code" score
@@ -394,6 +407,7 @@ When called with `quick` argument, provide condensed output:
 **State:** 5 uncommitted | branch synced | TS clean | 3 issues
 
 **Top 3:**
+
 1. `/popkit:git commit` - Commit 5 files (HIGH)
 2. `/popkit:dev work #42` - Work on "Add auth" (MEDIUM)
 3. `/popkit:routine morning` - Health check (LOW)
@@ -401,16 +415,17 @@ When called with `quick` argument, provide condensed output:
 
 ## Error Handling
 
-| Situation | Response |
-|-----------|----------|
-| Not a git repo | Note it, skip git-based recommendations |
-| No package.json | Skip Node-specific checks |
-| gh CLI not available | Skip issue recommendations |
-| Empty project | Recommend `/popkit:project init` |
+| Situation            | Response                                |
+| -------------------- | --------------------------------------- |
+| Not a git repo       | Note it, skip git-based recommendations |
+| No package.json      | Skip Node-specific checks               |
+| gh CLI not available | Skip issue recommendations              |
+| Empty project        | Recommend `/popkit:project init`        |
 
 ## Visual Style
 
 Use components from `output-styles/visual-components.md`:
+
 - Status indicators: ✓ (success), ✗ (failure), → (in progress)
 - Urgency levels: HIGH (red), MEDIUM (yellow), LOW (blue), OK (green)
 - Tables with status columns

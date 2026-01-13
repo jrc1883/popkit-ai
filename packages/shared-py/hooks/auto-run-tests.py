@@ -12,11 +12,10 @@ regressions early and provide immediate feedback on test status.
 """
 
 import json
-import sys
 import os
 import subprocess
+import sys
 from pathlib import Path
-
 
 # File extensions that should trigger test runs
 TEST_TRIGGER_EXTENSIONS = [

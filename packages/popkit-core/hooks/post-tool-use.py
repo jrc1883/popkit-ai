@@ -23,16 +23,15 @@ except ImportError:
     HAS_PROJECT_CLIENT = False
 
 # Import skill state tracker for AskUserQuestion enforcement (Issue #159)
-sys.path.insert(0, str(Path(__file__).parent / "utils"))
 try:
-    from skill_state import get_tracker, SkillStateTracker
+    from popkit_shared.utils.skill_state import get_tracker
     SKILL_STATE_AVAILABLE = True
 except ImportError:
     SKILL_STATE_AVAILABLE = False
 
 # Import workflow response router (Issue #206)
 try:
-    from response_router import (
+    from popkit_shared.utils.response_router import (
         route_user_response,
         should_route_response,
         format_hook_output,
@@ -45,11 +44,11 @@ except ImportError:
 
 # Import test telemetry for sandbox testing (Issue #226)
 try:
-    from test_telemetry import (
+    from popkit_shared.utils.test_telemetry import (
         is_test_mode, get_test_session_id,
         create_trace, create_decision, create_event
     )
-    from local_telemetry import (
+    from popkit_shared.utils.local_telemetry import (
         get_local_storage,
         log_trace_if_test_mode, log_decision_if_test_mode, log_event_if_test_mode
     )
@@ -988,8 +987,7 @@ def update_agent_expertise(tool_name: str, tool_input: dict, tool_output: str):
     """
     try:
         # Import here to avoid circular dependencies
-        sys.path.insert(0, str(Path(__file__).parent / "utils"))
-        from expertise_manager import ExpertiseManager, PatternExample
+        from popkit_shared.utils.expertise_manager import ExpertiseManager, PatternExample
 
         # Determine which agent is active
         # NOTE: POPKIT_ACTIVE_AGENT must be set by agent routing system

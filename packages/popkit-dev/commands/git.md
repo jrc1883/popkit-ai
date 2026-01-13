@@ -9,17 +9,17 @@ Git operations with smart commits, PRs, code review, CI/CD, releases, publishing
 
 ## Subcommands
 
-| Subcommand | Description |
-|------------|-------------|
-| commit | Smart commit with auto-generated message (default) |
-| push | Push current branch to remote |
-| pr | Pull request management (create, list, view, merge) |
-| review | Code review with confidence-based filtering |
-| ci | GitHub Actions workflow runs (list, view, rerun, watch) |
-| release | GitHub releases (create, list, view, changelog) |
-| publish | Publish plugin to public repo (monorepo → open source) |
-| prune | Remove stale local branches after PR merge |
-| finish | Complete development with 4-option flow |
+| Subcommand | Description                                             |
+| ---------- | ------------------------------------------------------- |
+| commit     | Smart commit with auto-generated message (default)      |
+| push       | Push current branch to remote                           |
+| pr         | Pull request management (create, list, view, merge)     |
+| review     | Code review with confidence-based filtering             |
+| ci         | GitHub Actions workflow runs (list, view, rerun, watch) |
+| release    | GitHub releases (create, list, view, changelog)         |
+| publish    | Publish plugin to public repo (monorepo → open source)  |
+| prune      | Remove stale local branches after PR merge              |
+| finish     | Complete development with 4-option flow                 |
 
 ---
 
@@ -49,16 +49,16 @@ Warns before pushing to main/master, uses `--force-with-lease`, confirms if bran
 
 Pull request management via `gh` CLI.
 
-| Subcommand | Description |
-|------------|-------------|
-| create (default) | Create PR from current branch |
-| list | List open/all/draft PRs |
-| view | View PR details, comments, files, checks |
-| merge | Merge with squash/rebase options |
-| checkout | Check out PR locally |
-| diff | View PR diff |
-| ready | Mark draft as ready |
-| update | Update PR branch with base |
+| Subcommand       | Description                              |
+| ---------------- | ---------------------------------------- |
+| create (default) | Create PR from current branch            |
+| list             | List open/all/draft PRs                  |
+| view             | View PR details, comments, files, checks |
+| merge            | Merge with squash/rebase options         |
+| checkout         | Check out PR locally                     |
+| diff             | View PR diff                             |
+| ready            | Mark draft as ready                      |
+| update           | Update PR branch with base               |
 
 **Process (create):** Verify clean state → Create/switch branch → Stage → Commit → Push → Create PR with template.
 
@@ -82,15 +82,15 @@ Invokes **code-reviewer** agent: Gather changes → Analyze (Simplicity/Bugs/Con
 
 Monitor and manage GitHub Actions workflows via `gh run` CLI.
 
-| Subcommand | Description |
-|------------|-------------|
-| list (default) | Recent workflow runs |
-| view | View run details, logs |
-| rerun | Rerun all/failed jobs |
-| watch | Watch running workflow |
-| cancel | Cancel running workflow |
-| download | Download artifacts |
-| logs | View logs |
+| Subcommand     | Description             |
+| -------------- | ----------------------- |
+| list (default) | Recent workflow runs    |
+| view           | View run details, logs  |
+| rerun          | Rerun all/failed jobs   |
+| watch          | Watch running workflow  |
+| cancel         | Cancel running workflow |
+| download       | Download artifacts      |
+| logs           | View logs               |
 
 **Status icons:** [ok] success, [x] failure, [...] in_progress, [ ] queued, [~] cancelled, [!] skipped
 
@@ -102,14 +102,14 @@ Monitor and manage GitHub Actions workflows via `gh run` CLI.
 
 Create and manage GitHub releases with auto-generated changelogs via `gh release` CLI.
 
-| Subcommand | Description |
-|------------|-------------|
-| list (default) | All releases |
-| create | Create release with auto-changelog |
-| view | View release details |
-| edit | Edit release notes/status |
-| delete | Delete release/tag |
-| changelog | Preview changelog |
+| Subcommand     | Description                        |
+| -------------- | ---------------------------------- |
+| list (default) | All releases                       |
+| create         | Create release with auto-changelog |
+| view           | View release details               |
+| edit           | Edit release notes/status          |
+| delete         | Delete release/tag                 |
+| changelog      | Preview changelog                  |
 
 **Process (create):** Parse commits → Generate changelog → Update CLAUDE.md (if --update-docs) → Create tag → Create GitHub release.
 
@@ -156,6 +156,7 @@ Guide completion of development work with structured options.
 Invokes **pop-finish-branch**: Verify tests → Present 4 options (merge locally, create PR, keep as-is, discard).
 
 **Options:**
+
 1. Merge back to main locally
 2. Push and create Pull Request
 3. Keep branch as-is
@@ -165,30 +166,30 @@ Invokes **pop-finish-branch**: Verify tests → Present 4 options (merge locally
 
 ## Git Safety Protocol
 
-| Rule | Action |
-|------|--------|
-| Config | NEVER update git config |
-| Destructive | NEVER run without explicit request |
-| Hooks | NEVER skip (--no-verify) unless requested |
-| Force push | NEVER to main/master |
-| Amend | AVOID unless requested, check authorship first |
-| Preview | ALWAYS before bulk operations |
+| Rule        | Action                                         |
+| ----------- | ---------------------------------------------- |
+| Config      | NEVER update git config                        |
+| Destructive | NEVER run without explicit request             |
+| Hooks       | NEVER skip (--no-verify) unless requested      |
+| Force push  | NEVER to main/master                           |
+| Amend       | AVOID unless requested, check authorship first |
+| Preview     | ALWAYS before bulk operations                  |
 
 ---
 
 ## Architecture
 
-| Component | Integration |
-|-----------|-------------|
-| Commit | Conventional commits, attribution |
-| PR Templates | output-styles/pr-description.md |
-| Code Review | skills/pop-code-review/, agent code-reviewer |
-| Finish Flow | skills/pop-finish-branch/ |
-| GitHub CLI | gh pr/run/release commands |
-| Changelog | hooks/utils/changelog_generator.py |
-| Version | package.json, Cargo.toml, git tags |
-| Publishing | git subtree split, IP scanner |
-| IP Scanner | hooks/utils/ip_protection.py |
+| Component    | Integration                                  |
+| ------------ | -------------------------------------------- |
+| Commit       | Conventional commits, attribution            |
+| PR Templates | output-styles/pr-description.md              |
+| Code Review  | skills/pop-code-review/, agent code-reviewer |
+| Finish Flow  | skills/pop-finish-branch/                    |
+| GitHub CLI   | gh pr/run/release commands                   |
+| Changelog    | hooks/utils/changelog_generator.py           |
+| Version      | package.json, Cargo.toml, git tags           |
+| Publishing   | git subtree split, IP scanner                |
+| IP Scanner   | hooks/utils/ip_protection.py                 |
 
 **Related:** /popkit-dev:worktree, /popkit-dev:dev execute, /popkit:morning
 

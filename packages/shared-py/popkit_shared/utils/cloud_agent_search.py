@@ -8,13 +8,12 @@ Falls back to local keyword matching on failure.
 Part of Issue #101 (Upstash Vector Integration).
 """
 
-import os
 import json
-import urllib.request
+import os
 import urllib.error
-from typing import List, Optional
+import urllib.request
 from dataclasses import dataclass
-
+from typing import List, Optional
 
 # =============================================================================
 # CONFIGURATION

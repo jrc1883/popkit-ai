@@ -6,22 +6,23 @@ Tests security vulnerability scanning with npm audit integration.
 Critical for automated security vulnerability detection and tracking.
 """
 
-import sys
 import json
-import pytest
+import sys
 import tempfile
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from popkit_shared.utils.security_scanner import (
-    Vulnerability,
-    ScanResult,
     ExistingIssue,
+    ScanResult,
     SecurityScanner,
-    format_scan_report,
+    Vulnerability,
     format_github_issue_body,
+    format_scan_report,
 )
 
 

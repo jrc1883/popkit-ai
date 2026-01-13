@@ -9,10 +9,9 @@ context, and matches against known solutions from collective learning.
 """
 
 import re
-from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field
 from pathlib import Path
-
+from typing import Any, Dict, List, Optional
 
 # =============================================================================
 # DETECTION PATTERNS

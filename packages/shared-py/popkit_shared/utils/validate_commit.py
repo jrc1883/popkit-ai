@@ -16,7 +16,6 @@ Usage:
 import re
 import sys
 
-
 # Valid conventional commit types
 VALID_TYPES = {
     "feat",  # New feature

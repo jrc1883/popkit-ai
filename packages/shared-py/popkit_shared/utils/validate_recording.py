@@ -10,9 +10,8 @@ Usage: python validate_recording.py <recording.json>
 
 import json
 import sys
-from pathlib import Path
 from datetime import datetime
-from typing import Dict, List, Tuple, Optional, Set
+from pathlib import Path
 
 
 class RecordingValidator:

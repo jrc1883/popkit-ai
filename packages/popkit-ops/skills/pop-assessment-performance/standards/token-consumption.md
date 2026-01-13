@@ -9,20 +9,24 @@ Standards for efficient token usage in Claude Code plugins.
 Design prompts for minimal token consumption.
 
 **Guidelines:**
+
 - Front-load critical information
 - Use structured formats (tables, lists)
 - Eliminate redundant language
 - Reference instead of embed
 
 **Token-Efficient Patterns:**
+
 ```markdown
 # Instead of:
+
 "This skill is designed to help users analyze their codebase
 for potential security vulnerabilities. It works by scanning
 all files and looking for common patterns that might indicate
 security issues."
 
 # Use:
+
 "Scans codebase for security vulnerabilities using pattern matching."
 ```
 
@@ -31,16 +35,19 @@ security issues."
 Control output token consumption.
 
 **Techniques:**
+
 - Request specific output format
 - Set explicit length limits
 - Use JSON for structured responses
 - Specify required fields only
 
 **Example:**
+
 ```markdown
 ## Output
 
 Return JSON only:
+
 - `score`: 0-100
 - `issues`: [{file, line, severity}]
 - `summary`: One sentence
@@ -61,6 +68,7 @@ Allocate token budget across components.
 | Response | 10% | Expected output |
 
 **Calculation:**
+
 ```
 Total: 200K tokens (Claude 3.5 Sonnet)
 System: 60K
@@ -74,6 +82,7 @@ Response: 20K
 Load context incrementally.
 
 **Phase Loading:**
+
 ```
 Phase 1: Core instructions only
 Phase 2: + Relevant agent prompt
@@ -82,11 +91,13 @@ Phase 4: + Additional context as needed
 ```
 
 **On-Demand Details:**
+
 ```markdown
 ## Standards Reference
 
 Standards available in `standards/` directory.
 Load specific standard when needed:
+
 - security.md for security reviews
 - performance.md for optimization
 ```
@@ -96,6 +107,7 @@ Load specific standard when needed:
 Compress content where possible.
 
 **Code Summarization:**
+
 ```python
 # Full file: 500 lines
 # Compressed summary:
@@ -108,8 +120,10 @@ utils/parser.py (500 lines)
 ```
 
 **Reference by Location:**
+
 ```markdown
 # Instead of including full code:
+
 See `src/auth/login.ts:45-60` for authentication logic.
 ```
 
@@ -118,6 +132,7 @@ See `src/auth/login.ts:45-60` for authentication logic.
 Monitor token consumption.
 
 **Estimation:**
+
 ```python
 def estimate_tokens(text: str) -> int:
     """Rough estimation: ~4 chars per token."""
@@ -129,6 +144,7 @@ def token_budget_check(content: str, budget: int) -> bool:
 ```
 
 **Monitoring:**
+
 ```python
 class TokenTracker:
     def __init__(self, budget: int):
@@ -172,10 +188,12 @@ Start minimal, add detail as needed:
 
 ```markdown
 ## Initial Context
+
 File: auth.ts (200 lines)
 Purpose: User authentication
 
 ## Detailed Context (on request)
+
 [Full file content loaded here]
 ```
 
@@ -203,12 +221,12 @@ def smart_truncate(content: str, max_tokens: int) -> str:
 
 ## Quality Metrics
 
-| Metric | Target | Description |
-|--------|--------|-------------|
-| Avg prompt tokens | <2000 | Per skill/agent |
-| Context overhead | <30% | Non-essential content |
-| Response efficiency | >50% | Useful / total output |
-| Budget utilization | 70-90% | Using available context |
+| Metric              | Target | Description             |
+| ------------------- | ------ | ----------------------- |
+| Avg prompt tokens   | <2000  | Per skill/agent         |
+| Context overhead    | <30%   | Non-essential content   |
+| Response efficiency | >50%   | Useful / total output   |
+| Budget utilization  | 70-90% | Using available context |
 
 ## Anti-Patterns
 
@@ -216,11 +234,13 @@ def smart_truncate(content: str, max_tokens: int) -> str:
 
 ```markdown
 # Bad: Verbose
+
 "The purpose of this skill is to help the user
 understand and analyze their code for potential
 issues that might cause problems in production."
 
 # Good: Concise
+
 "Analyzes code for production issues."
 ```
 
@@ -228,11 +248,13 @@ issues that might cause problems in production."
 
 ```markdown
 # Bad: Repeated instructions
+
 Step 1: Read the file carefully
 Step 2: After reading the file carefully, analyze it
 Step 3: Once you have analyzed the file you read...
 
 # Good: Single instruction
+
 1. Read file
 2. Analyze patterns
 3. Report findings
@@ -242,9 +264,11 @@ Step 3: Once you have analyzed the file you read...
 
 ```markdown
 # Bad: Embedding full docs
+
 [500 lines of documentation embedded]
 
 # Good: Reference
+
 See `docs/full-guide.md` for complete documentation.
 For this task, focus on sections 3.1 and 3.2.
 ```

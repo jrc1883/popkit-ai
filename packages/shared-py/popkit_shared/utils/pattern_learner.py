@@ -8,16 +8,16 @@ SQLite-based storage for command corrections with confidence scoring.
 Learns from failures and successes to improve future suggestions.
 """
 
-import sqlite3
-import json
 import hashlib
-from datetime import datetime
-from dataclasses import dataclass, asdict
-from typing import Dict, List, Optional, Tuple
-from pathlib import Path
+import json
+import sqlite3
 from contextlib import contextmanager
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Optional
 
-from .platform_detector import OSType, ShellType, get_platform_info
+from .platform_detector import get_platform_info
 
 
 @dataclass
@@ -653,7 +653,7 @@ if __name__ == "__main__":
     # Test suggestion
     suggestion = learner.get_best_suggestion("cp -r source/ dest/")
     if suggestion:
-        print(f"\nSuggestion for 'cp -r source/ dest/':")
+        print("\nSuggestion for 'cp -r source/ dest/':")
         print(f"  -> {suggestion.suggested} (confidence: {suggestion.confidence:.2f})")
 
     # Show stats

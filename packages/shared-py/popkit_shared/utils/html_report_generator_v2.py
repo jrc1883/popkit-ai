@@ -11,9 +11,8 @@ Redesigned for elegant, scannable timeline view with:
 """
 
 import json
-from pathlib import Path
-from typing import Dict, Any, List
 from datetime import datetime
+from pathlib import Path
 
 
 def parse_timestamp(ts_str: str) -> datetime:

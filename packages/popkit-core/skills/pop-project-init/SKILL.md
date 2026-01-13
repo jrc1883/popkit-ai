@@ -20,11 +20,11 @@ Initialize project with Claude Code configuration. **Never destroys user content
 
 ## Required Decision Points
 
-| Step | When | Decision ID |
-|------|------|-------------|
-| 0 | Plugin conflicts detected | `plugin_conflict` |
-| 6 | After directory creation | `power_mode_setup` |
-| 8 | After init complete | `next_action` |
+| Step | When                      | Decision ID        |
+| ---- | ------------------------- | ------------------ |
+| 0    | Plugin conflicts detected | `plugin_conflict`  |
+| 6    | After directory creation  | `power_mode_setup` |
+| 8    | After init complete       | `next_action`      |
 
 **Skipping these violates PopKit UX standard.**
 
@@ -64,6 +64,7 @@ mkdir -p .claude/popkit/routines/{morning,nightly}
 ### Step 3: Surgically Update CLAUDE.md (CRITICAL)
 
 **Decision Flow:**
+
 ```
 CLAUDE.md exists?
 ├─ NO  → Create with: header + PopKit section
@@ -73,12 +74,15 @@ CLAUDE.md exists?
 ```
 
 **Markers (REQUIRED):**
+
 ```markdown
 <!-- POPKIT:START -->
+
 ## PopKit Integration
 
 Quick Commands: /popkit:next, /popkit:routine morning, /popkit:git commit
 Config: .claude/popkit/, Power Mode: [status]
+
 <!-- POPKIT:END -->
 ```
 
@@ -145,12 +149,12 @@ Summary:
 
 ## Verification
 
-| Path | Purpose |
-|------|---------|
-| `.claude/popkit/config.json` | Project config |
-| `.claude/popkit/routines/` | Custom routines |
-| `.claude/STATUS.json` | Session state |
-| `CLAUDE.md` | Has markers |
+| Path                         | Purpose         |
+| ---------------------------- | --------------- |
+| `.claude/popkit/config.json` | Project config  |
+| `.claude/popkit/routines/`   | Custom routines |
+| `.claude/STATUS.json`        | Session state   |
+| `CLAUDE.md`                  | Has markers     |
 
 ## Integration
 
@@ -161,21 +165,23 @@ Summary:
 ## Visual Style
 
 From `output-styles/visual-components.md`:
+
 - Progress: `[1/5]`, `[2/5]`
 - Status: ✓ (success), ✗ (failure), ⚠️ (warning)
 - Headers: `═════════════════`
 
 ## Related
 
-| Skill | Relationship |
-|-------|--------------|
-| `pop-analyze-project` | Run after init |
-| `pop-doc-sync` | Keeps section in sync |
-| `pop-plugin-test` | Validates plugin |
+| Skill                 | Relationship          |
+| --------------------- | --------------------- |
+| `pop-analyze-project` | Run after init        |
+| `pop-doc-sync`        | Keeps section in sync |
+| `pop-plugin-test`     | Validates plugin      |
 
 ## Examples
 
 See `examples/` for:
+
 - `claude-md-update.py` - Full surgical update logic
 - `config-schema.json` - PopKit config schema
 - `status-schema.json` - STATUS.json schema

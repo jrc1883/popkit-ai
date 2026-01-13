@@ -7,20 +7,21 @@ Critical for command-line interface and user input validation.
 """
 
 import sys
-import pytest
 from pathlib import Path
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from popkit_shared.utils.flag_parser import (
-    parse_work_args,
+    extract_issue_number,
+    get_flag_value,
+    has_flag,
     parse_issues_args,
+    parse_model_flag,
     parse_power_args,
     parse_thinking_flags,
-    parse_model_flag,
-    has_flag,
-    get_flag_value,
-    extract_issue_number,
+    parse_work_args,
 )
 
 

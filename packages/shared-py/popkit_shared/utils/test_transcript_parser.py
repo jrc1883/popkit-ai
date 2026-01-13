@@ -4,9 +4,9 @@ Tests for TranscriptParser
 Run with: python test_transcript_parser.py
 """
 
-import json
 from pathlib import Path
-from transcript_parser import TranscriptParser, TokenUsage
+
+from transcript_parser import TranscriptParser
 
 
 def test_parser_creation():
@@ -25,7 +25,7 @@ def test_parser_creation():
         return
 
     parser = TranscriptParser(str(transcript_path))
-    print(f"[OK] Parser created successfully")
+    print("[OK] Parser created successfully")
     print(f"  Entries parsed: {len(parser.entries)}")
     assert len(parser.entries) > 0, "Should have parsed entries"
 
@@ -41,7 +41,7 @@ def test_get_all_tool_uses():
     transcript_path = max(transcripts, key=lambda p: p.stat().st_mtime)
 
     if not transcript_path.exists():
-        print(f"SKIP: Transcript not found")
+        print("SKIP: Transcript not found")
         return
 
     parser = TranscriptParser(str(transcript_path))
@@ -66,13 +66,13 @@ def test_get_total_token_usage():
     transcript_path = max(transcripts, key=lambda p: p.stat().st_mtime)
 
     if not transcript_path.exists():
-        print(f"SKIP: Transcript not found")
+        print("SKIP: Transcript not found")
         return
 
     parser = TranscriptParser(str(transcript_path))
     usage = parser.get_total_token_usage()
 
-    print(f"[OK] Total token usage calculated")
+    print("[OK] Total token usage calculated")
     print(f"  Input tokens: {usage.input_tokens:,}")
     print(f"  Output tokens: {usage.output_tokens:,}")
     print(f"  Cache writes: {usage.cache_creation_input_tokens:,}")
@@ -97,7 +97,7 @@ def test_get_reasoning_for_tool():
     transcript_path = max(transcripts, key=lambda p: p.stat().st_mtime)
 
     if not transcript_path.exists():
-        print(f"SKIP: Transcript not found")
+        print("SKIP: Transcript not found")
         return
 
     parser = TranscriptParser(str(transcript_path))
@@ -137,7 +137,7 @@ def test_get_token_usage_for_tool():
     transcript_path = max(transcripts, key=lambda p: p.stat().st_mtime)
 
     if not transcript_path.exists():
-        print(f"SKIP: Transcript not found")
+        print("SKIP: Transcript not found")
         return
 
     parser = TranscriptParser(str(transcript_path))
@@ -162,7 +162,7 @@ def test_get_token_usage_for_tool():
         cost = parser.calculate_cost(usage)
         print(f"  Cost: ${cost:.4f}")
     else:
-        print(f"[ERROR] No usage data found for tool")
+        print("[ERROR] No usage data found for tool")
 
 
 def test_get_assistant_messages():
@@ -176,7 +176,7 @@ def test_get_assistant_messages():
     transcript_path = max(transcripts, key=lambda p: p.stat().st_mtime)
 
     if not transcript_path.exists():
-        print(f"SKIP: Transcript not found")
+        print("SKIP: Transcript not found")
         return
 
     parser = TranscriptParser(str(transcript_path))
@@ -205,7 +205,7 @@ def test_timestamp_filtering():
     transcript_path = max(transcripts, key=lambda p: p.stat().st_mtime)
 
     if not transcript_path.exists():
-        print(f"SKIP: Transcript not found")
+        print("SKIP: Transcript not found")
         return
 
     # Parse without filtering
@@ -223,7 +223,7 @@ def test_timestamp_filtering():
     )
     usage_filtered = parser_filtered.get_total_token_usage()
 
-    print(f"[OK] Timestamp filtering test:")
+    print("[OK] Timestamp filtering test:")
     print(f"  Full transcript entries: {len(parser_full.entries)}")
     print(f"  Filtered entries: {len(parser_filtered.entries)}")
     print(f"  Full tokens: {usage_full.total_tokens:,}")

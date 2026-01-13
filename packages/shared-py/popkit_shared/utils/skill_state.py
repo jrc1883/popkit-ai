@@ -17,14 +17,14 @@ This module tracks:
 
 import json
 import os
-from pathlib import Path
-from typing import Dict, List, Optional, Set, Any
 from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set
 
 # Import test telemetry for sandbox testing (Issue #226)
 try:
-    from test_telemetry import is_test_mode, get_test_session_id, create_event
     from local_telemetry import log_event_if_test_mode
+    from test_telemetry import create_event, is_test_mode
 
     TEST_TELEMETRY_AVAILABLE = True
 except ImportError:

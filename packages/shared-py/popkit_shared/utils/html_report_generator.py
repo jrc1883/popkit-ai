@@ -12,8 +12,6 @@ Generates interactive HTML forensics reports with:
 
 import json
 from pathlib import Path
-from typing import Dict, Any, List
-from datetime import datetime
 
 
 def generate_html_report(recording_file: Path, output_file: Path) -> None:

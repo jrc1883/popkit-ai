@@ -16,11 +16,11 @@ Manage embeddings for project-local content including skills, agents, commands, 
 
 ## Arguments
 
-| Flag | Description |
-|------|-------------|
-| `--status` | Show embedding status without embedding |
-| `--force` | Re-embed all content (ignore cache) |
-| `--export` | Export embeddings to .claude/tool_embeddings.json |
+| Flag            | Description                                                   |
+| --------------- | ------------------------------------------------------------- |
+| `--status`      | Show embedding status without embedding                       |
+| `--force`       | Re-embed all content (ignore cache)                           |
+| `--export`      | Export embeddings to .claude/tool_embeddings.json             |
 | `--type <type>` | Only embed specific type: `skill`, `agent`, `command`, `tool` |
 
 ## Process
@@ -180,40 +180,44 @@ Dimension: 1024
 
 The skill respects Voyage AI rate limits:
 
-| Limit | Value | Handling |
-|-------|-------|----------|
-| Requests per minute | 3 | 21-second delay between batches |
-| Items per request | 50 | Batch items automatically |
-| Tokens per request | 120,000 | Descriptions typically small |
+| Limit               | Value   | Handling                        |
+| ------------------- | ------- | ------------------------------- |
+| Requests per minute | 3       | 21-second delay between batches |
+| Items per request   | 50      | Batch items automatically       |
+| Tokens per request  | 120,000 | Descriptions typically small    |
 
 **Typical Times:**
+
 - 10 items: ~5 seconds (1 batch)
 - 30 items: ~25 seconds (1 batch + delay)
 - 100 items: ~1 minute (2 batches + delays)
 
 ## Error Handling
 
-| Error | Handling |
-|-------|----------|
-| No API key | Report and skip embedding, suggest setting VOYAGE_API_KEY |
-| Rate limit hit | Wait and retry automatically |
-| Network error | Report item, continue with others |
-| Invalid content | Skip item, report in summary |
+| Error           | Handling                                                  |
+| --------------- | --------------------------------------------------------- |
+| No API key      | Report and skip embedding, suggest setting VOYAGE_API_KEY |
+| Rate limit hit  | Wait and retry automatically                              |
+| Network error   | Report item, continue with others                         |
+| Invalid content | Skip item, report in summary                              |
 
 ## Integration
 
 **Uses:**
+
 - `hooks/utils/embedding_project.py` - Core embedding logic
 - `hooks/utils/voyage_client.py` - Voyage API client
 - `hooks/utils/embedding_store.py` - SQLite storage
 
 **Called by:**
+
 - `/popkit:project embed` - Manual invocation
 - `/popkit:project generate` - Final pipeline step
 - `pop-skill-generator` - After creating skills
 - `pop-mcp-generator` - After creating MCP server
 
 **Enables:**
+
 - Semantic search for project content
 - Natural language tool discovery
 - Cross-project skill discovery

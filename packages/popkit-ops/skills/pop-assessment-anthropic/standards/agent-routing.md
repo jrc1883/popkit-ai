@@ -26,11 +26,11 @@ Maps keywords in user requests to agents.
 
 **Requirements:**
 
-| Requirement | Description | Severity |
-|-------------|-------------|----------|
-| Coverage | All tier-1 agents should have at least 1 keyword | high |
-| Specificity | Keywords should be specific (not "code", "help") | medium |
-| No conflicts | Same keyword shouldn't map to competing agents | high |
+| Requirement  | Description                                      | Severity |
+| ------------ | ------------------------------------------------ | -------- |
+| Coverage     | All tier-1 agents should have at least 1 keyword | high     |
+| Specificity  | Keywords should be specific (not "code", "help") | medium   |
+| No conflicts | Same keyword shouldn't map to competing agents   | high     |
 
 ### 2. File Pattern Routing
 
@@ -50,15 +50,15 @@ Maps file extensions and paths to agents.
 
 **Required Patterns:**
 
-| Pattern | Agent | Severity |
-|---------|-------|----------|
-| `*.test.*` | test-writer-fixer | high |
-| `*.spec.*` | test-writer-fixer | high |
-| `*.sql` | query-optimizer | medium |
-| `*.md` | documentation-maintainer | medium |
-| `Dockerfile*` | devops-automator | medium |
-| `*.yaml`, `*.yml` | devops-automator | medium |
-| `.env*` | security-auditor | high |
+| Pattern           | Agent                    | Severity |
+| ----------------- | ------------------------ | -------- |
+| `*.test.*`        | test-writer-fixer        | high     |
+| `*.spec.*`        | test-writer-fixer        | high     |
+| `*.sql`           | query-optimizer          | medium   |
+| `*.md`            | documentation-maintainer | medium   |
+| `Dockerfile*`     | devops-automator         | medium   |
+| `*.yaml`, `*.yml` | devops-automator         | medium   |
+| `.env*`           | security-auditor         | high     |
 
 ### 3. Error Pattern Routing
 
@@ -77,14 +77,14 @@ Maps error types to debugging agents.
 
 **Required Error Patterns:**
 
-| Error | Agent | Severity |
-|-------|-------|----------|
-| TypeError | bug-whisperer | high |
-| SyntaxError | code-reviewer | high |
-| SecurityError | security-auditor | critical |
-| ImportError | migration-specialist | medium |
-| ConnectionError | devops-automator | medium |
-| MemoryError | performance-optimizer | medium |
+| Error           | Agent                 | Severity |
+| --------------- | --------------------- | -------- |
+| TypeError       | bug-whisperer         | high     |
+| SyntaxError     | code-reviewer         | high     |
+| SecurityError   | security-auditor      | critical |
+| ImportError     | migration-specialist  | medium   |
+| ConnectionError | devops-automator      | medium   |
+| MemoryError     | performance-optimizer | medium   |
 
 ## Coverage Requirements
 
@@ -92,19 +92,19 @@ Maps error types to debugging agents.
 
 All tier-1 (always-active) agents MUST be routable:
 
-| Check | Rule | Severity |
-|-------|------|----------|
-| Keyword coverage | At least 1 keyword per agent | high |
-| Fallback routing | Default agent for unmatched | medium |
+| Check            | Rule                         | Severity |
+| ---------------- | ---------------------------- | -------- |
+| Keyword coverage | At least 1 keyword per agent | high     |
+| Fallback routing | Default agent for unmatched  | medium   |
 
 ### Tier-2 Agent Coverage
 
 Tier-2 (on-demand) agents SHOULD have activation triggers:
 
-| Check | Rule | Severity |
-|-------|------|----------|
-| Trigger defined | Should have keyword, pattern, or error | medium |
-| Documentation | Activation conditions documented | low |
+| Check           | Rule                                   | Severity |
+| --------------- | -------------------------------------- | -------- |
+| Trigger defined | Should have keyword, pattern, or error | medium   |
+| Documentation   | Activation conditions documented       | low      |
 
 ## Conflict Resolution
 
@@ -119,24 +119,24 @@ When multiple agents match:
 
 ### Conflict Detection
 
-| Conflict Type | Example | Severity |
-|---------------|---------|----------|
-| Same keyword, different agents | "test" → [A, B] | warning |
-| Overlapping patterns | `*.ts`, `*.test.ts` | low |
-| Circular routing | A → B → A | critical |
+| Conflict Type                  | Example             | Severity |
+| ------------------------------ | ------------------- | -------- |
+| Same keyword, different agents | "test" → [A, B]     | warning  |
+| Overlapping patterns           | `*.ts`, `*.test.ts` | low      |
+| Circular routing               | A → B → A           | critical |
 
 ## Validation Checklist
 
-| Check ID | Description | Severity |
-|----------|-------------|----------|
-| AR-001 | All tier-1 agents have keywords | high |
-| AR-002 | No duplicate keyword mappings | high |
-| AR-003 | File patterns are valid globs | critical |
-| AR-004 | Error patterns match real errors | medium |
-| AR-005 | Referenced agents exist | critical |
-| AR-006 | No circular routing | critical |
-| AR-007 | Common file types covered | medium |
-| AR-008 | Common errors covered | medium |
+| Check ID | Description                      | Severity |
+| -------- | -------------------------------- | -------- |
+| AR-001   | All tier-1 agents have keywords  | high     |
+| AR-002   | No duplicate keyword mappings    | high     |
+| AR-003   | File patterns are valid globs    | critical |
+| AR-004   | Error patterns match real errors | medium   |
+| AR-005   | Referenced agents exist          | critical |
+| AR-006   | No circular routing              | critical |
+| AR-007   | Common file types covered        | medium   |
+| AR-008   | Common errors covered            | medium   |
 
 ## Calculating Coverage
 
@@ -171,4 +171,4 @@ Common errors: TypeError, SyntaxError, ReferenceError, ImportError, SecurityErro
 ## References
 
 - Source: packages/plugin/agents/config.json
-- Agent definitions: packages/plugin/agents/tier-*/*/AGENT.md
+- Agent definitions: packages/plugin/agents/tier-_/_/AGENT.md

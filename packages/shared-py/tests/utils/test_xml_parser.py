@@ -7,17 +7,18 @@ Critical for robust XML handling and backward compatibility.
 """
 
 import sys
-import pytest
 from pathlib import Path
+
+import pytest
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from popkit_shared.utils.xml_parser import (
+    extract_xml_from_conversation,
+    parse_findings,
     parse_problem_context,
     parse_project_context,
-    parse_findings,
-    extract_xml_from_conversation,
 )
 
 

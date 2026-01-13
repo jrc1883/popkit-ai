@@ -8,17 +8,15 @@ Enables sharing learned patterns, corrections, and solutions across projects.
 Part of Issue #95 (Cross-Project Pattern Sharing).
 """
 
-import os
 import json
-import hashlib
-from typing import Optional, Dict, Any, List
-from dataclasses import dataclass, field, asdict
-from datetime import datetime, timezone
-import urllib.request
+import os
 import urllib.error
+import urllib.request
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
 
 from .pattern_anonymizer import anonymize_pattern, validate_anonymization
-
 
 # =============================================================================
 # CONFIGURATION

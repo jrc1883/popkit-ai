@@ -14,10 +14,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from popkit_shared.utils.complexity_scoring import (
     ComplexityAnalyzer,
-    ComplexityLevel,
     analyze_complexity,
-    quick_score,
     get_complexity_analyzer,
+    quick_score,
 )
 
 

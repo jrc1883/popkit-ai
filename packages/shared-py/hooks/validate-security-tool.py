@@ -14,7 +14,6 @@ dangerous commands while performing security assessments.
 import json
 import sys
 
-
 # Dangerous commands that should be blocked during security audits
 DANGEROUS_COMMANDS = [
     "rm -rf /",

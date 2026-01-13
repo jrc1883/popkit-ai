@@ -15,24 +15,24 @@ Run specialized assessor agents to review PopKit from different expert perspecti
 
 ## Assessors
 
-| Assessor | Description | Focus |
-|----------|-------------|-------|
-| `anthropic` | Anthropic Engineer | Claude Code compliance, hook protocols |
-| `security` | Security Auditor | Vulnerabilities, secrets, injection |
-| `performance` | Performance Tester | Token efficiency, context usage |
-| `ux` | UX Reviewer | Command naming, discoverability |
-| `architect` | Technical Architect | Code quality, DRY, patterns |
-| `docs` | Documentation Auditor | CLAUDE.md, SKILL.md, AGENT.md |
-| `all` | All Assessors | Complete assessment |
+| Assessor      | Description           | Focus                                  |
+| ------------- | --------------------- | -------------------------------------- |
+| `anthropic`   | Anthropic Engineer    | Claude Code compliance, hook protocols |
+| `security`    | Security Auditor      | Vulnerabilities, secrets, injection    |
+| `performance` | Performance Tester    | Token efficiency, context usage        |
+| `ux`          | UX Reviewer           | Command naming, discoverability        |
+| `architect`   | Technical Architect   | Code quality, DRY, patterns            |
+| `docs`        | Documentation Auditor | CLAUDE.md, SKILL.md, AGENT.md          |
+| `all`         | All Assessors         | Complete assessment                    |
 
 ## Flags
 
-| Flag | Description |
-|------|-------------|
-| `--fix` | Auto-fix issues where possible |
-| `--json` | Output JSON instead of markdown |
-| `--save FILE` | Save report to file |
-| `--critical-only` | Only show critical issues |
+| Flag              | Description                     |
+| ----------------- | ------------------------------- |
+| `--fix`           | Auto-fix issues where possible  |
+| `--json`          | Output JSON instead of markdown |
+| `--save FILE`     | Save report to file             |
+| `--critical-only` | Only show critical issues       |
 
 ## Examples
 
@@ -57,18 +57,19 @@ Run specialized assessor agents to review PopKit from different expert perspecti
 
 Each assessor type corresponds to a specialized agent in `agents/assessors/`:
 
-| Command | Agent |
-|---------|-------|
-| `anthropic` | `anthropic-engineer-assessor` |
-| `security` | `security-auditor-assessor` |
-| `performance` | `performance-tester-assessor` |
-| `ux` | `ux-reviewer-assessor` |
-| `architect` | `technical-architect-assessor` |
-| `docs` | `documentation-auditor-assessor` |
+| Command       | Agent                            |
+| ------------- | -------------------------------- |
+| `anthropic`   | `anthropic-engineer-assessor`    |
+| `security`    | `security-auditor-assessor`      |
+| `performance` | `performance-tester-assessor`    |
+| `ux`          | `ux-reviewer-assessor`           |
+| `architect`   | `technical-architect-assessor`   |
+| `docs`        | `documentation-auditor-assessor` |
 
 ### 2. Run Assessment
 
 The assessor agent:
+
 1. Loads its specific checklist
 2. Scans relevant files
 3. Evaluates against criteria
@@ -77,6 +78,7 @@ The assessor agent:
 ### 3. Generate Report
 
 Produces a report with:
+
 - Overall score (0-100)
 - Findings by severity (Critical, High, Medium, Low)
 - Specific recommendations
@@ -92,15 +94,16 @@ Produces a report with:
 
 ## Summary
 
-| Assessor | Score | Critical | High | Warnings | Passed |
-|----------|-------|----------|------|----------|--------|
-| anthropic | 92/100 | 0 | 1 | 3 | 45 |
-| security | 88/100 | 0 | 2 | 5 | 38 |
-| docs | 75/100 | 1 | 3 | 8 | 52 |
+| Assessor  | Score  | Critical | High | Warnings | Passed |
+| --------- | ------ | -------- | ---- | -------- | ------ |
+| anthropic | 92/100 | 0        | 1    | 3        | 45     |
+| security  | 88/100 | 0        | 2    | 5        | 38     |
+| docs      | 75/100 | 1        | 3    | 8        | 52     |
 
 ## Critical Issues
 
 ### [docs] Missing SKILL.md in pop-new-skill
+
 - **Severity**: Critical
 - **File**: skills/pop-new-skill/
 - **Recommendation**: Add SKILL.md with frontmatter
@@ -116,13 +119,13 @@ Produces a report with:
 
 Scores are calculated based on findings:
 
-| Finding Type | Deduction |
-|--------------|-----------|
-| Critical | -20 points |
-| High | -10 points |
-| Medium | -5 points |
-| Low | -2 points |
-| Warning | -1 point |
+| Finding Type | Deduction  |
+| ------------ | ---------- |
+| Critical     | -20 points |
+| High         | -10 points |
+| Medium       | -5 points  |
+| Low          | -2 points  |
+| Warning      | -1 point   |
 
 Starting from 100, deductions are applied up to a minimum of 0.
 
@@ -130,12 +133,12 @@ Starting from 100, deductions are applied up to a minimum of 0.
 
 With `--fix`, certain issues can be automatically resolved:
 
-| Issue Type | Auto-Fix Action |
-|------------|-----------------|
+| Issue Type          | Auto-Fix Action        |
+| ------------------- | ---------------------- |
 | Missing frontmatter | Generate from filename |
-| Outdated counts | Recalculate from files |
-| Missing sections | Add template sections |
-| Version mismatch | Sync with plugin.json |
+| Outdated counts     | Recalculate from files |
+| Missing sections    | Add template sections  |
+| Version mismatch    | Sync with plugin.json  |
 
 Issues that cannot be auto-fixed are marked for manual attention.
 

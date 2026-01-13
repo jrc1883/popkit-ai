@@ -19,16 +19,17 @@ Automated start-of-day setup that ensures optimal development environment before
 
 Comprehensive readiness check across 6 dimensions:
 
-| Check | Points | Criteria |
-|-------|--------|----------|
-| Session Restored | 20 | Previous session context restored from STATUS.json |
-| Services Healthy | 20 | All required dev services running |
-| Dependencies Updated | 15 | Package dependencies up to date |
-| Branches Synced | 15 | Local branch synced with remote |
-| PRs Reviewed | 15 | No PRs waiting for review |
-| Issues Triaged | 15 | All issues assigned/prioritized |
+| Check                | Points | Criteria                                           |
+| -------------------- | ------ | -------------------------------------------------- |
+| Session Restored     | 20     | Previous session context restored from STATUS.json |
+| Services Healthy     | 20     | All required dev services running                  |
+| Dependencies Updated | 15     | Package dependencies up to date                    |
+| Branches Synced      | 15     | Local branch synced with remote                    |
+| PRs Reviewed         | 15     | No PRs waiting for review                          |
+| Issues Triaged       | 15     | All issues assigned/prioritized                    |
 
 **Score Interpretation:**
+
 - **90-100**: Excellent - Fully ready to code
 - **80-89**: Very Good - Almost ready, minor setup
 - **70-79**: Good - Ready with minor issues
@@ -64,6 +65,7 @@ if status_file.exists():
 ```
 
 **Restored Context Includes:**
+
 - Last nightly routine Sleep Score
 - Previous work summary
 - Git branch and uncommitted work
@@ -85,21 +87,25 @@ state = capture_project_state()
 ```
 
 **Git Analysis:**
+
 - Current branch
 - Commits behind remote (after git fetch)
 - Uncommitted files
 - Stashed changes
 
 **GitHub Analysis:**
+
 - PRs needing review (no review decision or changes requested)
 - Issues needing triage (no assignee or labels)
 - Latest CI status
 
 **Service Analysis:**
+
 - Running dev services (node, npm, pnpm, redis, postgres, supabase)
 - Required services vs. running services
 
 **Dependency Analysis:**
+
 - Outdated package count
 - Major/minor updates available
 
@@ -152,6 +158,7 @@ Update STATUS.json with morning routine data:
 ### 6. Present Report to User
 
 Display morning report with:
+
 - **Ready to Code Score** (0-100) with visual indicator
 - **Score Breakdown** - What contributed to the score
 - **Setup Issues** - Services down, sync needed, outdated deps
@@ -220,6 +227,7 @@ def capture_project_state() -> dict:
 Located: `packages/shared-py/popkit_shared/utils/routine_measurement.py`
 
 When invoked with `--measure` flag:
+
 - Tracks tool call count
 - Measures duration
 - Calculates token usage
@@ -230,6 +238,7 @@ When invoked with `--measure` flag:
 Located: `packages/shared-py/popkit_shared/utils/routine_cache.py`
 
 Caching strategy:
+
 - **Never cache**: Git status (changes frequently)
 - **Cache 5 min**: Service status, dependency checks
 - **Cache 15 min**: GitHub PR/issue data
@@ -245,14 +254,14 @@ Caching strategy:
 
 ## Score Breakdown
 
-| Check | Points | Status |
-|-------|--------|--------|
-| Session Restored | 20/20 | ✅ Previous session context restored |
-| Services Healthy | 10/20 | ⚠️ Missing: redis |
-| Dependencies Updated | 15/15 | ✅ All dependencies up to date |
-| Branches Synced | 10/15 | ⚠️ 3 commits behind remote |
-| PRs Reviewed | 15/15 | ✅ No PRs pending review |
-| Issues Triaged | 10/15 | ⚠️ 2 issues need triage |
+| Check                | Points | Status                               |
+| -------------------- | ------ | ------------------------------------ |
+| Session Restored     | 20/20  | ✅ Previous session context restored |
+| Services Healthy     | 10/20  | ⚠️ Missing: redis                    |
+| Dependencies Updated | 15/15  | ✅ All dependencies up to date       |
+| Branches Synced      | 10/15  | ⚠️ 3 commits behind remote           |
+| PRs Reviewed         | 15/15  | ✅ No PRs pending review             |
+| Issues Triaged       | 10/15  | ⚠️ 2 issues need triage              |
 
 ## 🔧 Dev Services Status
 
@@ -273,10 +282,12 @@ Run `git pull` to sync with remote.
 ## 📋 Recommendations
 
 **Before Starting Work:**
+
 - Start dev services: redis
 - Sync with remote: git pull (behind by 3 commits)
 
 **Today's Focus:**
+
 - Triage 2 open issues
 - Review overnight commits and CI results
 - Continue: Fix critical build blockers
@@ -294,31 +305,37 @@ Use AskUserQuestion tool with context-aware options based on morning report:
 
 **Option 1: If services are down or sync needed (Score < 80)**
 ```
+
 What would you like to do next?
 ├─ Fix environment issues (Recommended)
-│  └─ Start redis, pull 3 commits, etc.
+│ └─ Start redis, pull 3 commits, etc.
 ├─ Start work anyway (skip setup)
 ├─ Review what changed overnight
 └─ Other
+
 ```
 
 **Option 2: If environment is healthy (Score >= 80)**
 ```
+
 Ready to code! What's your focus today?
 ├─ Work on highest priority issue
 ├─ Review open PRs (X pending)
 ├─ Continue yesterday's work: [last task]
 └─ Other
+
 ```
 
 **Option 3: If issues need triage**
 ```
+
 You have X issues needing attention. What would you like to do?
 ├─ Triage issues now (Recommended)
 ├─ Review issue #Y (highest priority)
 ├─ Skip triage, start coding
 └─ Other
-```
+
+````
 
 ### Implementation
 
@@ -352,9 +369,10 @@ questions = generate_next_action_questions(score, breakdown, state)
         ]
     }]
 }
-```
+````
 
 **Why This Matters (The PopKit Way):**
+
 - ✅ Keeps PopKit in control of the workflow
 - ✅ Forces intentional user decisions
 - ✅ Enables context-aware next actions
@@ -363,7 +381,7 @@ questions = generate_next_action_questions(score, breakdown, state)
 
 **Never just show a report and end the session!**
 
-```
+````
 
 ## Error Handling
 
@@ -375,7 +393,7 @@ try:
 except GitNotFoundError:
     print("[WARN] Git not available - skipping git checks")
     # Continue with partial score
-```
+````
 
 ### GitHub CLI Not Available
 
@@ -421,6 +439,7 @@ except Exception:
 ### Caching
 
 With `--optimized` flag:
+
 - Uses `routine_cache.py` for GitHub/service data
 - Reduces redundant API calls
 - 40-96% token reduction (per routine.md)

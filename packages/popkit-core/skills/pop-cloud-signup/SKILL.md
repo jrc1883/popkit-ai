@@ -16,10 +16,12 @@ Create a new PopKit Cloud account and obtain an API key for enhanced semantic in
 ## Input
 
 User provides (via AskUserQuestion):
+
 - Email address
 - Password (minimum 8 characters)
 
 Optional flags:
+
 - `--skip-test`: Skip connection testing after signup
 
 ## Process
@@ -61,6 +63,7 @@ if os.environ.get("POPKIT_API_KEY"):
 Use AskUserQuestion for email, then custom text input for password:
 
 **Email Collection:**
+
 ```
 Use AskUserQuestion tool with:
 - question: "What email would you like to use for your PopKit Cloud account?"
@@ -73,6 +76,7 @@ Use AskUserQuestion tool with:
 After user selects "Enter email", they'll be prompted for custom input.
 
 **Password Collection:**
+
 ```
 Use AskUserQuestion tool with:
 - question: "Create a password for your account (minimum 8 characters)"
@@ -83,6 +87,7 @@ Use AskUserQuestion tool with:
 ```
 
 **Validation:**
+
 - Email: Must contain @ and valid domain
 - Password: Minimum 8 characters, no maximum
 
@@ -227,7 +232,7 @@ except Exception as e:
 
 Show user how to use their new API key:
 
-```markdown
+````markdown
 ✅ PopKit Cloud Account Created
 
 **Email:** user@example.com
@@ -245,9 +250,11 @@ Your API key is already saved in `~/.claude/popkit/cloud-config.json`.
 PopKit will automatically use it for cloud enhancements.
 
 **Verify connection:**
+
 ```bash
 /popkit:cloud status
 ```
+````
 
 ### Option 2: Set environment variable
 
@@ -259,6 +266,7 @@ export POPKIT_API_KEY="pk_live_abc123def456..."
 ```
 
 Then restart your shell or run:
+
 ```bash
 source ~/.bashrc  # or ~/.zshrc
 ```
@@ -270,9 +278,11 @@ source ~/.bashrc  # or ~/.zshrc
 With your API key configured, PopKit now has:
 
 ### Core Workflows (Always Available)
+
 ✅ All development commands and skills work without API key
 
 ### Cloud Enhancements (Now Active)
+
 ✅ **Semantic agent routing** - Better agent selection via embeddings
 ✅ **Community pattern learning** - Learn from other developers' solutions
 ✅ **Cloud knowledge base** - Access shared documentation and patterns
@@ -283,6 +293,7 @@ With your API key configured, PopKit now has:
 ## Usage Limits
 
 **Free Tier:**
+
 - 100 API requests/day
 - Unlimited local execution
 - All workflows available
@@ -294,11 +305,13 @@ Need more? Upgrade at: `/popkit:upgrade`
 ## Next Steps
 
 1. **Verify connection:**
+
    ```bash
    /popkit:cloud status
    ```
 
 2. **Test semantic routing:**
+
    ```bash
    /popkit:next  # Uses embeddings to recommend next action
    ```
@@ -318,10 +331,12 @@ Need more? Upgrade at: `/popkit:upgrade`
 - Config file: `~/.claude/popkit/cloud-config.json`
 
 **To disconnect:**
+
 ```bash
 /popkit:cloud logout
 ```
-```
+
+````
 
 ### 7. Handle Errors
 
@@ -338,10 +353,11 @@ This email is already associated with a PopKit Cloud account.
 Try logging in instead:
 ```bash
 /popkit:cloud login
-```
+````
 
 Or use a different email address.
-```
+
+````
 
 **Invalid Email/Password (400):**
 ```markdown
@@ -354,9 +370,10 @@ Requirements:
 - Password: Minimum 8 characters
 
 Please try again with valid credentials.
-```
+````
 
 **Connection Timeout:**
+
 ```markdown
 ❌ Signup Failed
 
@@ -365,6 +382,7 @@ Please try again with valid credentials.
 Could not connect to PopKit Cloud within 10 seconds.
 
 Please check:
+
 1. Your internet connection
 2. Firewall/proxy settings
 3. Cloud status: https://status.thehouseofdeals.com
@@ -373,12 +391,14 @@ Try again in a moment.
 ```
 
 **Unknown Error:**
+
 ```markdown
 ❌ Signup Failed
 
 **Error:** {error_message}
 
 If this persists, please:
+
 1. Report the issue: `/popkit:bug report`
 2. Check cloud status: https://status.thehouseofdeals.com
 3. Contact support: joseph@thehouseofdeals.com
@@ -388,11 +408,11 @@ If this persists, please:
 
 ### Success Case
 
-```markdown
+````markdown
 ✅ PopKit Cloud Account Created
 
 **Email:** user@example.com
-**API Key:** ******def456 (saved securely)
+**API Key:** **\*\***def456 (saved securely)
 **Tier:** Free (100 requests/day)
 
 ### Quick Start
@@ -401,6 +421,7 @@ If this persists, please:
    ```bash
    /popkit:cloud status
    ```
+````
 
 2. **Cloud enhancements now active:**
    - Semantic agent routing ✅
@@ -411,7 +432,8 @@ If this persists, please:
 **Config file:** ~/.claude/popkit/cloud-config.json
 
 Run `/popkit:account` for detailed account info.
-```
+
+````
 
 ### Failure Case
 
@@ -423,7 +445,8 @@ Run `/popkit:account` for detailed account info.
 Try logging in instead:
 ```bash
 /popkit:cloud login
-```
+````
+
 ```
 
 ## Related Skills
@@ -448,3 +471,4 @@ Try logging in instead:
 - Use strong passwords (16+ characters recommended)
 - Don't share API keys
 - Use `/popkit:cloud logout` when switching accounts
+```

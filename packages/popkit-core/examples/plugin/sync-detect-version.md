@@ -13,6 +13,7 @@ Check plugin integrity without making changes:
 ```
 
 Output:
+
 ```
 PopKit Plugin Validation Report
 ============================================================
@@ -49,6 +50,7 @@ Automatically fix safe issues:
 ```
 
 Output:
+
 ```
 PopKit Plugin Validation Report
 ============================================================
@@ -71,6 +73,7 @@ Re-run validation to verify fixes.
 ```
 
 Output:
+
 ```
 Validating component: skills
 
@@ -93,6 +96,7 @@ Run: /popkit:plugin sync apply --component=skills
 ```
 
 Output:
+
 ```json
 {
   "summary": {
@@ -134,6 +138,7 @@ Check for conflicts with other installed plugins:
 ```
 
 Output:
+
 ```
 PopKit Plugin Conflict Detection
 ============================================================
@@ -176,6 +181,7 @@ One-line summary:
 ```
 
 Output:
+
 ```
 Conflicts: 2 command collisions, 1 skill collision, 1 hook collision
 ```
@@ -187,6 +193,7 @@ Conflicts: 2 command collisions, 1 skill collision, 1 hook collision
 ```
 
 Output:
+
 ```json
 {
   "plugins_scanned": 3,
@@ -245,6 +252,7 @@ For bug fixes:
 ```
 
 Output:
+
 ```
 Current version: 0.2.4
 New version: 0.2.5
@@ -277,6 +285,7 @@ For new features:
 ```
 
 Output:
+
 ```
 Current version: 0.2.5
 New version: 0.3.0
@@ -295,6 +304,7 @@ For breaking changes:
 ```
 
 Output:
+
 ```
 Current version: 0.3.0
 New version: 1.0.0
@@ -329,6 +339,7 @@ Preview changes without applying:
 ```
 
 Output:
+
 ```
 [DRY RUN] Would update:
   - .claude-plugin/plugin.json: 0.2.4 → 0.2.5
@@ -368,6 +379,7 @@ Update version without pushing:
 ```
 
 Output:
+
 ```
 Current version: 0.2.5
 New version: 0.2.6
@@ -389,6 +401,7 @@ Version 0.2.6 released successfully!
 ```
 
 Output:
+
 ```
 Analyzing 68 skills, 31 agents, 24 commands...
 
@@ -419,6 +432,7 @@ Run with --sync to apply these changes
 ```
 
 Output:
+
 ```
 Analyzing 68 skills, 31 agents, 24 commands...
 
@@ -444,6 +458,7 @@ Show detailed changes:
 ```
 
 Output:
+
 ```
 [... analysis ...]
 

@@ -13,6 +13,7 @@ Use AskUserQuestion tool with:
 ## Generating Options
 
 1. Fetch prioritized issues:
+
    ```bash
    gh issue list --state open --milestone v1.0.0 --json number,title,labels --limit 5
    ```

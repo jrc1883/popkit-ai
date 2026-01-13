@@ -10,9 +10,9 @@ Enhanced with:
 """
 
 import json
-from pathlib import Path
-from typing import Dict, Any, List, Optional
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, Optional
 
 
 def parse_timestamp(ts_str: str) -> datetime:
@@ -663,7 +663,7 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                         </div>
 """
                 elif item.get("type") == "tool_result":
-                    html += f"""
+                    html += """
                         <div class="tool-call-item" style="border-left: 3px solid #3fb950;">
                             <strong>✓ Tool Result</strong>
                             <br><span style="color: #8b949e; font-size: 11px;">Success</span>

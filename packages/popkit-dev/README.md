@@ -13,15 +13,15 @@ PopKit Dev is a complete development workflow plugin that provides comprehensive
 
 ### Commands (7)
 
-| Command | Description |
-|---------|-------------|
-| `/popkit-dev:dev` | 7-phase feature development workflow |
-| `/popkit-dev:git` | Git operations (commit, push, pr, review, release, publish) |
-| `/popkit-dev:issue` | GitHub issue management (create, list, view, close, comment, edit, link) |
-| `/popkit-dev:milestone` | Milestone tracking (list, create, close, report, health analysis) |
-| `/popkit-dev:worktree` | Git worktree management |
-| `/popkit-dev:routine` | Morning health checks and nightly cleanup |
-| `/popkit-dev:next` | Context-aware next action recommendations |
+| Command                 | Description                                                              |
+| ----------------------- | ------------------------------------------------------------------------ |
+| `/popkit-dev:dev`       | 7-phase feature development workflow                                     |
+| `/popkit-dev:git`       | Git operations (commit, push, pr, review, release, publish)              |
+| `/popkit-dev:issue`     | GitHub issue management (create, list, view, close, comment, edit, link) |
+| `/popkit-dev:milestone` | Milestone tracking (list, create, close, report, health analysis)        |
+| `/popkit-dev:worktree`  | Git worktree management                                                  |
+| `/popkit-dev:routine`   | Morning health checks and nightly cleanup                                |
+| `/popkit-dev:next`      | Context-aware next action recommendations                                |
 
 ### Skills (12)
 
@@ -65,6 +65,7 @@ PopKit Dev provides 12 specialized skills for development workflows:
 - **requests** library
 
 **Minimum Requirements**:
+
 - Claude Code 2.0.67+ (for extended thinking and plan mode)
 
 ## Architecture

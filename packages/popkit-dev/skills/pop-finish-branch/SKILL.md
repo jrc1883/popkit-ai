@@ -280,14 +280,15 @@ Use AskUserQuestion tool with:
 
 See `examples/merge-workflow.md` for detailed implementation of each option.
 
-| Option | Actions |
-|--------|---------|
+| Option            | Actions                                                                 |
+| ----------------- | ----------------------------------------------------------------------- |
 | **Merge locally** | Switch to base → Pull → Merge → Test → Delete branch → Cleanup worktree |
-| **Create PR** | Push branch → Create PR with gh → Cleanup worktree |
-| **Keep as-is** | Report preservation → Keep worktree |
-| **Discard** | Confirm → Delete branch (force) → Cleanup worktree |
+| **Create PR**     | Push branch → Create PR with gh → Cleanup worktree                      |
+| **Keep as-is**    | Report preservation → Keep worktree                                     |
+| **Discard**       | Confirm → Delete branch (force) → Cleanup worktree                      |
 
 **Worktree cleanup** (Options 1, 2, 4 only):
+
 ```bash
 git worktree list | grep $(git branch --show-current)
 git worktree remove <worktree-path>  # if found
@@ -317,6 +318,7 @@ If "Yes": `gh issue close <number> --comment "Completed via /popkit:dev work #<n
 #### 5b: Epic Parent Check
 
 Check for parent epic reference in issue body:
+
 ```bash
 gh issue view <number> --json body --jq '.body' | grep -oE '(Part of|Parent:?) #[0-9]+'
 ```
@@ -331,22 +333,24 @@ Generate dynamic options by fetching prioritized issues, sorting by priority/pha
 
 ## Quick Reference
 
-| Option | Merge | Push | Keep Worktree | Cleanup Branch | Close Prompt |
-|--------|-------|------|---------------|----------------|--------------|
-| Merge locally | ✓ | - | - | ✓ | ✓ (if issue) |
-| Create PR | - | ✓ | ✓ | - | ✓ (if issue) |
-| Keep as-is | - | - | ✓ | - | - |
-| Discard | - | - | - | ✓ (force) | - |
+| Option        | Merge | Push | Keep Worktree | Cleanup Branch | Close Prompt |
+| ------------- | ----- | ---- | ------------- | -------------- | ------------ |
+| Merge locally | ✓     | -    | -             | ✓              | ✓ (if issue) |
+| Create PR     | -     | ✓    | ✓             | -              | ✓ (if issue) |
+| Keep as-is    | -     | -    | ✓             | -              | -            |
+| Discard       | -     | -    | -             | ✓ (force)      | -            |
 
 ## Red Flags
 
 **Never:**
+
 - Proceed with failing tests
 - Merge without verifying tests on result
 - Delete work without confirmation
 - Force-push without explicit request
 
 **Always:**
+
 - Verify tests before offering options
 - Present exactly 4 options via AskUserQuestion
 - Get typed "discard" confirmation for Option 4
@@ -355,28 +359,34 @@ Generate dynamic options by fetching prioritized issues, sorting by priority/pha
 ## Integration
 
 **Called by:**
+
 - **subagent-driven-development** (Step 7) - After all tasks complete
 - **executing-plans** (Step 5) - After all batches complete
 
 **Pairs with:**
+
 - **using-git-worktrees** - Cleans up worktree created by that skill
 
 <details>
 <summary>Common Mistakes (Click to expand)</summary>
 
 **Skipping test verification**
+
 - Problem: Merge broken code, create failing PR
 - Fix: Always verify tests before offering options
 
 **Open-ended questions**
+
 - Problem: "What should I do next?" → ambiguous
 - Fix: Present exactly 4 structured options
 
 **Automatic worktree cleanup**
+
 - Problem: Remove worktree when might need it (Option 2, 3)
 - Fix: Only cleanup for Options 1 and 4
 
 **No confirmation for discard**
+
 - Problem: Accidentally delete work
 - Fix: Require typed "discard" confirmation
 

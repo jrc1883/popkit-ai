@@ -7,10 +7,7 @@ Tests generate_findings_xml() function and post-tool-use hook integration
 import sys
 from pathlib import Path
 
-# Add utils to path
-sys.path.insert(0, str(Path(__file__).parent / "utils"))
-
-from xml_generator import generate_findings_xml
+from popkit_shared.utils.xml_generator import generate_findings_xml
 
 
 def test_successful_tool_use():

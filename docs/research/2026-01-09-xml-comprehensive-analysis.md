@@ -44,6 +44,7 @@ Next Agent Context
 **File**: `packages/shared-py/popkit_shared/utils/xml_generator.py` (510 lines)
 
 #### Problem Context XML
+
 Captures user intent with structured metadata:
 
 ```xml
@@ -72,6 +73,7 @@ Captures user intent with structured metadata:
 ```
 
 **Key Functions**:
+
 - `generate_problem_xml(user_message, context)` - Infers category and severity from natural language
 - `infer_category()` - 8-category taxonomy (bug, feature, optimization, refactor, investigation, docs, test, task)
 - `infer_severity()` - 4-level severity detection
@@ -79,12 +81,14 @@ Captures user intent with structured metadata:
 - `_escape_xml()` - Proper XML character escaping (all 5 special characters)
 
 **Implementation Quality**:
+
 - ✅ Proper XML escaping for all user input
 - ✅ Nested XML structures with conditional logic
 - ✅ Well-formed XML generation
 - ✅ Context-aware workflow generation
 
 #### Project Context XML
+
 Structures environment and infrastructure metadata:
 
 ```xml
@@ -110,11 +114,13 @@ Structures environment and infrastructure metadata:
 ```
 
 **Key Functions**:
+
 - `generate_project_context_xml(context)` - Detects stack and infrastructure from analysis
 - Supported services: Redis, Postgres, MongoDB, MySQL, Elasticsearch, RabbitMQ, Kafka, Docker, Kubernetes
 - Handles nested data structures gracefully
 
 #### Findings XML
+
 Communicates tool results for next agent context:
 
 ```xml
@@ -138,6 +144,7 @@ Communicates tool results for next agent context:
 ```
 
 **Key Functions**:
+
 - `generate_findings_xml(findings)` - Wraps tool analysis results
 - Includes quality scoring, issue tracking, suggestions, and agent recommendations
 - Supports error messages with full context
@@ -147,15 +154,18 @@ Communicates tool results for next agent context:
 ### 2. **Hook Integration Layer** (already implemented)
 
 #### A. User Prompt Submit Hook
+
 **File**: `packages/popkit-core/hooks/user-prompt-submit.py` (594 lines)
 
 **What it does**:
+
 - Generates problem and project context XML on every user prompt
 - Embeds XML as invisible HTML comments in the message
 - Tracks context state for delta updates (only send changes)
 - Uses hash-based change detection to optimize message size
 
 **XML Embedding Pattern**:
+
 ```
 [User's original message]
 
@@ -166,21 +176,25 @@ Communicates tool results for next agent context:
 ```
 
 **Implementation Details**:
+
 - Line 371-465: `generate_xml_context()` method
 - Line 592: XML embedding via HTML comment markers
 - State tracking: Full context every N messages, delta for others
 - **Key insight**: Uses invisible comments so XML doesn't interfere with Claude's response
 
 #### B. Pre-Tool-Use Hook
+
 **File**: `packages/popkit-core/hooks/pre-tool-use.py` (777 lines)
 
 **What it does**:
+
 - Parses XML context from conversation history
 - Uses regex to extract problem, severity, workflow from XML
 - Detects project stack and infrastructure from XML
 - Routes to specialized agents based on XML analysis
 
 **XML Parsing Strategy** (Lines 424-526):
+
 ```python
 1. Search conversation for <!-- XML Context (Invisible) --> markers
 2. Extract content between markers
@@ -191,6 +205,7 @@ Communicates tool results for next agent context:
 ```
 
 **Agent Routing Rules** (Lines 528-591):
+
 ```
 bug + (critical/high) → bug-whisperer agent
 feature → refactoring-expert agent
@@ -202,6 +217,7 @@ investigation → research-analyst agent
 ```
 
 **Regex Patterns Used**:
+
 - Problem extraction: `r'<problem>(.*?)</problem>'`
 - Category: `r'<category>(.*?)</category>'`
 - Severity: `r'<severity>(.*?)</severity>'`
@@ -210,15 +226,18 @@ investigation → research-analyst agent
 - Infrastructure: Service-specific patterns for each supported service
 
 #### C. Post-Tool-Use Hook
+
 **File**: `packages/popkit-core/hooks/post-tool-use.py` (1270 lines)
 
 **What it does**:
+
 - Analyzes tool execution results (success/error, quality issues, suggestions)
 - Generates findings XML with structured analysis
 - Communicates results to next agents via XML
 - Outputs findings to stderr for visibility
 
 **Findings Generation** (Lines 374-438):
+
 ```python
 1. Capture tool result (stdout, stderr, return value)
 2. Analyze for:
@@ -232,9 +251,11 @@ investigation → research-analyst agent
 ```
 
 #### D. Session Start Hook
+
 **File**: `packages/popkit-core/hooks/session-start.py` (51 lines)
 
 **What it does**:
+
 - Initializes context state for XML generation
 - Prepares session-level context tracking
 - Part of Phase 1 XML integration foundation
@@ -244,9 +265,11 @@ investigation → research-analyst agent
 ### 3. **Test Layer** (already implemented)
 
 #### Test 1: XML Parsing Tests
+
 **File**: `packages/popkit-core/hooks/test_xml_parsing.py` (347 lines)
 
 **Test coverage**:
+
 - ✅ Bug with high severity + infrastructure (Redis, Postgres)
 - ✅ Feature requests routing
 - ✅ Optimization with database detection
@@ -254,14 +277,17 @@ investigation → research-analyst agent
 - ✅ Security issue routing
 
 **Test data includes**:
+
 - Complex XML with nested structures
 - Multiple infrastructure services
 - Edge cases (no XML, malformed severity)
 
 #### Test 2: XML Findings Tests
+
 **File**: `packages/popkit-core/hooks/test_findings_xml.py` (170 lines)
 
 **Test coverage**:
+
 - ✅ Successful tool execution with issues
 - ✅ Failed tool execution with error messages
 - ✅ Clean execution (no issues or suggestions)
@@ -269,6 +295,7 @@ investigation → research-analyst agent
 - ✅ Well-formedness of generated XML
 
 **Validation checks**:
+
 - XML structure validity (ElementTree parsing)
 - Special character escaping (all 5 XML entities)
 - Element presence and content
@@ -328,6 +355,7 @@ investigation → research-analyst agent
 ### Best Practice Tag Patterns
 
 **Recommended by Anthropic**:
+
 ```xml
 <instruction>Task instructions go here</instruction>
 <context>Background information</context>
@@ -340,6 +368,7 @@ investigation → research-analyst agent
 ```
 
 **PopKit Implementation**:
+
 - Follows Anthropic's approach with semantic tag names
 - Tags clearly describe their content (problem, category, severity, workflow)
 - Hierarchical nesting for complex data (workflow → step → action/target/criteria)
@@ -350,6 +379,7 @@ investigation → research-analyst agent
 ## Part 3: JSON vs XML Decision Matrix
 
 **When to Use XML** (PopKit's current approach):
+
 - ✅ Structured context for Claude understanding
 - ✅ Hierarchical data with nested relationships
 - ✅ Complex workflows with branching logic
@@ -358,6 +388,7 @@ investigation → research-analyst agent
 - ✅ Agent coordination and routing decisions
 
 **When to Use JSON** (and where PopKit uses it):
+
 - ✅ API responses and external tool integration
 - ✅ Configuration files (plugin.json, hooks.json)
 - ✅ Lightweight data exchange with other systems
@@ -365,6 +396,7 @@ investigation → research-analyst agent
 - ✅ Output that's read by machines, not Claude
 
 **PopKit's Hybrid Approach** (Best of both):
+
 ```
 Input:  JSON (API/config) → Python processing
         ↓
@@ -409,6 +441,7 @@ This is the optimal pattern: JSON for system boundaries, XML for Claude context.
 ### Recommended Improvements (Phase 2)
 
 1. **Schema Definition**
+
    ```
    Create XML schemas (XSD files) for:
    - problem-context.xsd
@@ -419,6 +452,7 @@ This is the optimal pattern: JSON for system boundaries, XML for Claude context.
    ```
 
 2. **Proper XML Parsing**
+
    ```
    Replace regex parsing with ElementTree:
    - More robust to structure changes
@@ -427,6 +461,7 @@ This is the optimal pattern: JSON for system boundaries, XML for Claude context.
    ```
 
 3. **Expanded Test Suite**
+
    ```
    Add tests for:
    - XML generation edge cases
@@ -437,6 +472,7 @@ This is the optimal pattern: JSON for system boundaries, XML for Claude context.
    ```
 
 4. **Compliance Dashboard**
+
    ```
    Track metrics:
    - % of XML well-formed
@@ -455,18 +491,21 @@ This is the optimal pattern: JSON for system boundaries, XML for Claude context.
 ### For Testing Strategy (Phase 1)
 
 **Critical Tests (≥100%)**:
+
 1. XML well-formedness (parse without errors)
 2. Required elements present (category, severity, workflow, etc.)
 3. Special character escaping (all 5 XML entities)
 4. Hook integration (XML passes between hooks correctly)
 
 **High Priority Tests (≥95%)**:
+
 1. Schema compliance (structure validation)
 2. Agent routing logic (correct agents selected)
 3. Context state management (delta updates work)
 4. Findings XML quality scoring
 
 **Standard Tests (≥80%)**:
+
 1. Performance benchmarks (generation/parsing time)
 2. Memory usage (context size impact)
 3. Coverage of all 8 categories and 4 severities
@@ -475,6 +514,7 @@ This is the optimal pattern: JSON for system boundaries, XML for Claude context.
 ### For Code Quality
 
 **Current Quality Assessment**:
+
 - ✅ Code is well-structured and readable
 - ✅ Functions have clear purposes
 - ✅ XML escaping is correct
@@ -483,6 +523,7 @@ This is the optimal pattern: JSON for system boundaries, XML for Claude context.
 - ⚠️ Regex parsing could be more robust
 
 **Recommended Refactoring**:
+
 1. Extract XML parsing into separate module
 2. Use ElementTree for all XML operations
 3. Create XML validation utility class
@@ -566,6 +607,7 @@ XML Compliance Score
 ### Strategic Impact
 
 PopKit's XML implementation is **production-ready** but could benefit from:
+
 - Schema definition for validation
 - Expanded test suite
 - Compliance tracking framework
@@ -578,18 +620,21 @@ This aligns perfectly with the testing strategy from `2026-01-09-xml-testing-str
 ## Part 8: Appendix - Industry References
 
 ### Anthropic Official Documentation
+
 - XML is Claude's preferred format for structured prompts
 - 12% higher constraint adherence with XML
 - Recommended for complex multi-component prompts
 - Works better than markdown for prompt clarity
 
 ### Community Best Practices
+
 - Tag names should be semantic and consistent
 - Nest tags for hierarchical data
 - Combine XML with few-shot examples for best results
 - Use for "important" context that shouldn't be forgotten
 
 ### PopKit-Specific Insights
+
 - XML as invisible context layer is novel and effective
 - Three-hook pipeline elegantly passes context through system
 - Agent routing based on XML analysis is practical and powerful

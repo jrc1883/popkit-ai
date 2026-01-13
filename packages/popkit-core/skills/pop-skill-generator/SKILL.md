@@ -15,12 +15,12 @@ Create custom skills tailored to the specific project's patterns, workflows, and
 
 ## Arguments
 
-| Flag | Description |
-|------|-------------|
-| `--from-analysis` | Use `.claude/analysis.json` for pattern-based generation |
-| `--patterns-only` | Only generate skills for detected patterns (skip generic skills) |
-| `--min-confidence N` | Minimum pattern confidence threshold (default: 0.6) |
-| `--no-embed` | Skip auto-embedding of generated skills |
+| Flag                 | Description                                                      |
+| -------------------- | ---------------------------------------------------------------- |
+| `--from-analysis`    | Use `.claude/analysis.json` for pattern-based generation         |
+| `--patterns-only`    | Only generate skills for detected patterns (skip generic skills) |
+| `--min-confidence N` | Minimum pattern confidence threshold (default: 0.6)              |
+| `--no-embed`         | Skip auto-embedding of generated skills                          |
 
 ## Analysis-Driven Generation
 
@@ -48,18 +48,18 @@ else:
 
 When analysis is available, generate skills based on detected patterns:
 
-| Pattern | Confidence | Generated Skill |
-|---------|------------|-----------------|
-| `nextjs` + `vercel-config` | >= 0.6 | `project:deploy` - Vercel deployment |
-| `prisma` OR `drizzle` | >= 0.6 | `project:db-migrate` - Database migrations |
-| `supabase` | >= 0.6 | `project:supabase-sync` - Supabase operations |
-| `feature-flags` | >= 0.6 | `project:feature-toggle` - Feature flag management |
-| `docker-compose` | >= 0.6 | `project:docker-dev` - Docker development |
-| `redux` OR `zustand` | >= 0.6 | `project:state-patterns` - State management |
-| `react-query` | >= 0.6 | `project:data-fetching` - Server state |
-| `colocated-tests` | >= 0.6 | `project:testing` - Test conventions |
-| `atomic-design` | >= 0.6 | `project:components` - Component patterns |
-| `express-routes` OR `controller-pattern` | >= 0.6 | `project:api-patterns` - API conventions |
+| Pattern                                  | Confidence | Generated Skill                                    |
+| ---------------------------------------- | ---------- | -------------------------------------------------- |
+| `nextjs` + `vercel-config`               | >= 0.6     | `project:deploy` - Vercel deployment               |
+| `prisma` OR `drizzle`                    | >= 0.6     | `project:db-migrate` - Database migrations         |
+| `supabase`                               | >= 0.6     | `project:supabase-sync` - Supabase operations      |
+| `feature-flags`                          | >= 0.6     | `project:feature-toggle` - Feature flag management |
+| `docker-compose`                         | >= 0.6     | `project:docker-dev` - Docker development          |
+| `redux` OR `zustand`                     | >= 0.6     | `project:state-patterns` - State management        |
+| `react-query`                            | >= 0.6     | `project:data-fetching` - Server state             |
+| `colocated-tests`                        | >= 0.6     | `project:testing` - Test conventions               |
+| `atomic-design`                          | >= 0.6     | `project:components` - Component patterns          |
+| `express-routes` OR `controller-pattern` | >= 0.6     | `project:api-patterns` - API conventions           |
 
 ### Generated Skill Format
 
@@ -86,7 +86,7 @@ Automates deployment workflow for this project.
 1. Run type check and lint
 2. Run tests
 3. Deploy to preview (PR) or production (main)
-...
+   ...
 ```
 
 ### Auto-Embedding After Generation
@@ -144,14 +144,14 @@ ls docs/ README.md CONTRIBUTING.md 2>/dev/null
 
 Analyze for:
 
-| Area | Look For | Skill Generated |
-|------|----------|-----------------|
-| Components | Repeated component patterns | component-patterns |
-| API | REST/GraphQL patterns | api-patterns |
-| State | Redux/Context/Zustand usage | state-management |
-| Testing | Test file patterns | testing-conventions |
-| Auth | Auth patterns | authentication-flow |
-| Database | ORM patterns | database-patterns |
+| Area       | Look For                    | Skill Generated     |
+| ---------- | --------------------------- | ------------------- |
+| Components | Repeated component patterns | component-patterns  |
+| API        | REST/GraphQL patterns       | api-patterns        |
+| State      | Redux/Context/Zustand usage | state-management    |
+| Testing    | Test file patterns          | testing-conventions |
+| Auth       | Auth patterns               | authentication-flow |
+| Database   | ORM patterns                | database-patterns   |
 
 ### Step 3: Generate Pattern Skill
 
@@ -168,14 +168,17 @@ description: Coding patterns and conventions for [project]
 [Based on analysis of existing components]
 
 ### Standard Component Structure
+
 \`\`\`typescript
 // [Pattern discovered from codebase]
 \`\`\`
 
 ### When to Use
+
 - [Discovered use cases]
 
 ### Examples in Codebase
+
 - `src/components/[Example1].tsx`
 - `src/components/[Example2].tsx`
 
@@ -184,6 +187,7 @@ description: Coding patterns and conventions for [project]
 [Based on analysis of API routes]
 
 ### Standard Route Structure
+
 \`\`\`typescript
 // [Pattern discovered from API routes]
 \`\`\`
@@ -206,11 +210,13 @@ description: Testing conventions and patterns for [project]
 # [Project] Testing Conventions
 
 ## Test Framework
+
 [Detected: Jest/Vitest/Pytest/etc.]
 
 ## Test Structure
 
 ### Unit Tests
+
 Location: `[discovered test path]`
 Pattern:
 \`\`\`typescript
@@ -218,6 +224,7 @@ Pattern:
 \`\`\`
 
 ### Integration Tests
+
 Location: `[discovered test path]`
 Pattern:
 \`\`\`typescript
@@ -227,13 +234,17 @@ Pattern:
 ## Running Tests
 
 \`\`\`bash
+
 # All tests
+
 [discovered command]
 
 # Single file
+
 [discovered command]
 
 # Watch mode
+
 [discovered command]
 \`\`\`
 
@@ -254,13 +265,14 @@ description: Deployment workflow for [project]
 
 ## Environments
 
-| Environment | URL | Branch |
-|-------------|-----|--------|
+| Environment                          | URL | Branch |
+| ------------------------------------ | --- | ------ |
 | [Discovered environments from CI/CD] |
 
 ## Deployment Process
 
 ### Pre-Deployment Checklist
+
 - [ ] Tests passing
 - [ ] Lint clean
 - [ ] Build successful
@@ -269,7 +281,9 @@ description: Deployment workflow for [project]
 ### Deploy Commands
 
 \`\`\`bash
+
 # [Commands discovered from CI/CD or package.json]
+
 \`\`\`
 
 ## Rollback Process
@@ -296,23 +310,28 @@ description: Development environment setup for [project]
 ## Quick Start
 
 \`\`\`bash
+
 # Clone
+
 git clone [repo]
 
 # Install dependencies
+
 [detected install command]
 
 # Setup environment
+
 [detected setup steps]
 
 # Start development
+
 [detected dev command]
 \`\`\`
 
 ## Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
+| Variable                     | Description | Default |
+| ---------------------------- | ----------- | ------- |
 | [From .env.example analysis] |
 
 ## Common Issues
@@ -378,6 +397,7 @@ Skills created:
 ## Customization
 
 Generated skills can be:
+
 1. Edited to add more patterns
 2. Extended with team-specific conventions
 3. Linked from CLAUDE.md for automatic loading
@@ -386,10 +406,12 @@ Generated skills can be:
 ## Integration
 
 **Requires:**
+
 - Project analysis (via analyze-project skill) for pattern-driven generation
 - Voyage AI API key for auto-embedding (optional, but recommended)
 
 **Enables:**
+
 - Project-specific guidance
 - Consistent coding patterns
 - Faster onboarding
