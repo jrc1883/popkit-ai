@@ -17,10 +17,7 @@ from .github_issues import parse_popkit_guidance, infer_issue_type
 
 
 def fetch_issues(
-    state: str = "open",
-    label: str = None,
-    assignee: str = None,
-    limit: int = 20
+    state: str = "open", label: str = None, assignee: str = None, limit: int = 20
 ) -> List[Dict[str, Any]]:
     """Fetch issues from GitHub.
 
@@ -34,10 +31,15 @@ def fetch_issues(
         List of issue dicts or empty list on error
     """
     cmd = [
-        "gh", "issue", "list",
-        "--state", state,
-        "--json", "number,title,body,labels,createdAt,author,state",
-        "--limit", str(limit)
+        "gh",
+        "issue",
+        "list",
+        "--state",
+        state,
+        "--json",
+        "number,title,body,labels,createdAt,author,state",
+        "--limit",
+        str(limit),
     ]
 
     if label:
@@ -47,12 +49,7 @@ def fetch_issues(
         cmd.extend(["--assignee", assignee])
 
     try:
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=30
-        )
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
 
         if result.returncode == 0:
             return json.loads(result.stdout)
@@ -134,7 +131,7 @@ def list_issues_with_power_mode_status(
     label: str = None,
     state: str = "open",
     assignee: str = None,
-    limit: int = 20
+    limit: int = 20,
 ) -> Dict[str, Any]:
     """List issues with Power Mode recommendations.
 
@@ -151,19 +148,14 @@ def list_issues_with_power_mode_status(
         - total: Total count
         - filtered: Whether filtering was applied
     """
-    result = {
-        "issues": [],
-        "total": 0,
-        "filtered": filter_power,
-        "error": None
-    }
+    result = {"issues": [], "total": 0, "filtered": filter_power, "error": None}
 
     # Fetch issues
     issues = fetch_issues(
         state=state,
         label=label,
         assignee=assignee,
-        limit=limit * 2 if filter_power else limit  # Fetch more if filtering
+        limit=limit * 2 if filter_power else limit,  # Fetch more if filtering
     )
 
     if not issues:
@@ -216,7 +208,7 @@ def list_issues_with_power_mode_status(
             "phase_count": phase_count,
             "has_guidance": bool(guidance.get("raw_section")),
             "created_at": issue.get("createdAt", ""),
-            "author": issue.get("author", {}).get("login", "")
+            "author": issue.get("author", {}).get("login", ""),
         }
 
         # Apply power filter if requested
@@ -260,7 +252,9 @@ def format_issues_table(data: Dict[str, Any]) -> str:
 
     lines.append("")
     lines.append("| #   | Title                              | Complexity | Power Mode  | Phases |")
-    lines.append("|-----|-------------------------------------|------------|-------------|--------|")
+    lines.append(
+        "|-----|-------------------------------------|------------|-------------|--------|"
+    )
 
     # Rows
     for issue in issues:
@@ -287,7 +281,7 @@ def format_issues_table(data: Dict[str, Any]) -> str:
     lines.append("Hint: Use /popkit:work #N to start working on an issue")
     lines.append("      Use /popkit:work #N -p to force Power Mode")
 
-    return '\n'.join(lines)
+    return "\n".join(lines)
 
 
 if __name__ == "__main__":
@@ -304,7 +298,7 @@ if __name__ == "__main__":
             label=flags.get("label"),
             state=flags.get("state", "open"),
             assignee=flags.get("assignee"),
-            limit=flags.get("limit", 20)
+            limit=flags.get("limit", 20),
         )
 
         print(format_issues_table(data))

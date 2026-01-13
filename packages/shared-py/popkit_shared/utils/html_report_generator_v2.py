@@ -18,11 +18,11 @@ from datetime import datetime
 
 def parse_timestamp(ts_str: str) -> datetime:
     """Parse ISO timestamp with optional timezone, return timezone-naive."""
-    if not ts_str or ts_str == 'N/A':
+    if not ts_str or ts_str == "N/A":
         return datetime.min
     try:
         # Try with timezone
-        dt = datetime.fromisoformat(ts_str.replace('Z', '+00:00'))
+        dt = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
         # Convert to naive datetime for consistent comparison
         return dt.replace(tzinfo=None) if dt.tzinfo else dt
     except:
@@ -40,43 +40,43 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
     with open(recording_file) as f:
         data = json.load(f)
 
-    session_id = data.get('session_id', 'unknown')
-    events = data.get('events', [])
+    session_id = data.get("session_id", "unknown")
+    events = data.get("events", [])
 
     # Sort all events chronologically
     for event in events:
-        event['_parsed_timestamp'] = parse_timestamp(event.get('timestamp', ''))
+        event["_parsed_timestamp"] = parse_timestamp(event.get("timestamp", ""))
 
-    sorted_events = sorted(events, key=lambda e: e['_parsed_timestamp'])
+    sorted_events = sorted(events, key=lambda e: e["_parsed_timestamp"])
 
     # Calculate stats
-    tool_calls = [e for e in events if e.get('type') == 'tool_call']
-    subagent_stops = [e for e in events if e.get('type') == 'subagent_stop']
+    tool_calls = [e for e in events if e.get("type") == "tool_call"]
+    subagent_stops = [e for e in events if e.get("type") == "subagent_stop"]
 
-    total_duration = sum(e.get('duration_ms') or 0 for e in tool_calls)
-    error_count = sum(1 for e in tool_calls if e.get('error'))
+    total_duration = sum(e.get("duration_ms") or 0 for e in tool_calls)
+    error_count = sum(1 for e in tool_calls if e.get("error"))
     success_rate = ((len(tool_calls) - error_count) / len(tool_calls) * 100) if tool_calls else 100
 
     # Build sub-agent mapping (which Task tool call launched which sub-agent)
     subagent_map = {}
     for i, event in enumerate(sorted_events):
-        if event.get('type') == 'tool_call':
-            params = event.get('parameters', {})
-            if 'subagent_type' in params:
+        if event.get("type") == "tool_call":
+            params = event.get("parameters", {})
+            if "subagent_type" in params:
                 # This Task tool call will be followed by a subagent_stop
                 # Find the next subagent_stop event
                 for j in range(i + 1, len(sorted_events)):
-                    if sorted_events[j].get('type') == 'subagent_stop':
-                        agent_id = sorted_events[j].get('agent_id')
+                    if sorted_events[j].get("type") == "subagent_stop":
+                        agent_id = sorted_events[j].get("agent_id")
                         subagent_map[agent_id] = {
-                            'task_index': i,
-                            'subagent_type': params.get('subagent_type'),
-                            'description': params.get('description', '')
+                            "task_index": i,
+                            "subagent_type": params.get("subagent_type"),
+                            "description": params.get("description", ""),
                         }
                         break
 
     # Generate HTML
-    html = f'''<!DOCTYPE html>
+    html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -288,7 +288,7 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
             </div>
             <div class="stat-card">
                 <div class="label">Duration</div>
-                <div class="value">{total_duration/1000:.1f}<span style="font-size: 14px; color: #8b949e;">s</span></div>
+                <div class="value">{total_duration / 1000:.1f}<span style="font-size: 14px; color: #8b949e;">s</span></div>
             </div>
             <div class="stat-card">
                 <div class="label">Success Rate</div>
@@ -310,23 +310,23 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                         </tr>
                     </thead>
                     <tbody>
-'''
+"""
 
     # Generate timeline rows
     for i, event in enumerate(sorted_events, 1):
-        event_type = event.get('type', 'unknown')
-        timestamp = event.get('timestamp', 'N/A')
+        event_type = event.get("type", "unknown")
+        timestamp = event.get("timestamp", "N/A")
 
         # Format timestamp
         try:
             dt = parse_timestamp(timestamp)
-            time_str = dt.strftime('%H:%M:%S') if dt != datetime.min else 'N/A'
+            time_str = dt.strftime("%H:%M:%S") if dt != datetime.min else "N/A"
         except:
-            time_str = 'N/A'
+            time_str = "N/A"
 
         # Generate row based on event type
-        if event_type == 'session_start':
-            html += f'''
+        if event_type == "session_start":
+            html += f"""
                     <tr>
                         <td>{i}</td>
                         <td>{time_str}</td>
@@ -334,32 +334,34 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                         <td>Recording session initiated</td>
                         <td><span class="status-ok">✓ OK</span></td>
                     </tr>
-'''
+"""
 
-        elif event_type == 'tool_call':
-            tool_name = event.get('tool_name', 'Unknown')
-            params = event.get('parameters', {})
-            error = event.get('error')
-            duration = event.get('duration_ms', 0)
+        elif event_type == "tool_call":
+            tool_name = event.get("tool_name", "Unknown")
+            params = event.get("parameters", {})
+            error = event.get("error")
+            duration = event.get("duration_ms", 0)
 
             # Check if this is a sub-agent launch
-            is_subagent_launch = 'subagent_type' in params
+            is_subagent_launch = "subagent_type" in params
 
             if is_subagent_launch:
-                subagent_type = params.get('subagent_type', 'unknown')
-                description = params.get('description', '')
-                badge_html = '<span class="event-badge event-subagent-launch">Sub-Agent Launch</span>'
-                desc_html = f'''
+                subagent_type = params.get("subagent_type", "unknown")
+                description = params.get("description", "")
+                badge_html = (
+                    '<span class="event-badge event-subagent-launch">Sub-Agent Launch</span>'
+                )
+                desc_html = f"""
                     <span class="tool-name">Task</span> → <span class="agent-link">{subagent_type}</span>
                     <br><span style="color: #8b949e; font-size: 12px;">{description}</span>
-                '''
+                """
             else:
                 badge_html = '<span class="event-badge event-tool">Tool Call</span>'
-                command = params.get('command', '')
-                file_path = params.get('file_path', '')
+                command = params.get("command", "")
+                file_path = params.get("file_path", "")
 
                 if command:
-                    desc_text = command[:80] + ('...' if len(command) > 80 else '')
+                    desc_text = command[:80] + ("..." if len(command) > 80 else "")
                 elif file_path:
                     desc_text = file_path
                 else:
@@ -367,22 +369,28 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
 
                 desc_html = f'<span class="tool-name">{tool_name}</span>'
                 if desc_text:
-                    desc_html += f'<br><span style="color: #8b949e; font-size: 12px;">{desc_text}</span>'
+                    desc_html += (
+                        f'<br><span style="color: #8b949e; font-size: 12px;">{desc_text}</span>'
+                    )
 
-            status_html = '<span class="status-error">✗ ERROR</span>' if error else f'<span class="status-ok">✓ {duration}ms</span>'
+            status_html = (
+                '<span class="status-error">✗ ERROR</span>'
+                if error
+                else f'<span class="status-ok">✓ {duration}ms</span>'
+            )
 
             # Add details toggle
-            details_id = f'details-{i}'
+            details_id = f"details-{i}"
             desc_html += f'''
                 <div class="details-toggle" onclick="toggleDetails('{details_id}')">⚙ View Parameters</div>
                 <div id="{details_id}" class="details-content">
                     <strong>Parameters:</strong>
                     <pre>{json.dumps(params, indent=2)}</pre>
-                    {f'<strong style="color: #f85149;">Error:</strong><pre>{json.dumps(error, indent=2) if isinstance(error, dict) else error}</pre>' if error else ''}
+                    {f'<strong style="color: #f85149;">Error:</strong><pre>{json.dumps(error, indent=2) if isinstance(error, dict) else error}</pre>' if error else ""}
                 </div>
             '''
 
-            html += f'''
+            html += f"""
                     <tr>
                         <td>{i}</td>
                         <td>{time_str}</td>
@@ -390,30 +398,30 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                         <td>{desc_html}</td>
                         <td>{status_html}</td>
                     </tr>
-'''
+"""
 
-        elif event_type == 'subagent_stop':
-            agent_id = event.get('agent_id', 'unknown')
-            transcript_available = event.get('transcript_available', False)
+        elif event_type == "subagent_stop":
+            agent_id = event.get("agent_id", "unknown")
+            transcript_available = event.get("transcript_available", False)
 
             # Find which Task call launched this
-            relationship_html = ''
+            relationship_html = ""
             if agent_id in subagent_map:
                 task_info = subagent_map[agent_id]
                 relationship_html = f'<br><span class="relationship">↳ Launched by event #{task_info["task_index"] + 1}</span>'
 
-            desc_html = f'''
+            desc_html = f"""
                 <span class="agent-link">{agent_id}</span>
                 <br><span style="color: #8b949e; font-size: 12px;">
-                    Transcript: {'✓ Available' if transcript_available else '✗ Missing'}
-                    {' • <code>agent-' + agent_id + '.jsonl</code>' if transcript_available else ''}
+                    Transcript: {"✓ Available" if transcript_available else "✗ Missing"}
+                    {" • <code>agent-" + agent_id + ".jsonl</code>" if transcript_available else ""}
                 </span>
                 {relationship_html}
-            '''
+            """
 
             # Add details toggle (filter out internal timestamp field)
-            details_id = f'details-{i}'
-            event_data = {k: v for k, v in event.items() if k != '_parsed_timestamp'}
+            details_id = f"details-{i}"
+            event_data = {k: v for k, v in event.items() if k != "_parsed_timestamp"}
             desc_html += f'''
                 <div class="details-toggle" onclick="toggleDetails('{details_id}')">📄 View Event Data</div>
                 <div id="{details_id}" class="details-content">
@@ -422,7 +430,7 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                 </div>
             '''
 
-            html += f'''
+            html += f"""
                     <tr>
                         <td>{i}</td>
                         <td>{time_str}</td>
@@ -430,9 +438,9 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                         <td>{desc_html}</td>
                         <td><span class="status-ok">✓ OK</span></td>
                     </tr>
-'''
+"""
 
-    html += '''
+    html += """
                     </tbody>
                 </table>
             </div>
@@ -447,21 +455,22 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
     </script>
 </body>
 </html>
-'''
+"""
 
     # Write HTML file
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    with open(output_file, 'w', encoding='utf-8') as f:
+    with open(output_file, "w", encoding="utf-8") as f:
         f.write(html)
 
-    print(f'HTML report generated: {output_file}')
-    print(f'Open in browser: file:///{output_file.as_posix()}')
+    print(f"HTML report generated: {output_file}")
+    print(f"Open in browser: file:///{output_file.as_posix()}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
+
     if len(sys.argv) != 3:
-        print('Usage: python html_report_generator_v2.py <recording.json> <output.html>')
+        print("Usage: python html_report_generator_v2.py <recording.json> <output.html>")
         sys.exit(1)
 
     recording_file = Path(sys.argv[1])

@@ -27,8 +27,8 @@ import re
 from typing import Optional, Dict, Any, Union, List
 
 # Environment variable checks
-BENCHMARK_MODE = os.environ.get('POPKIT_BENCHMARK_MODE', '').lower() == 'true'
-RESPONSE_FILE = os.environ.get('POPKIT_BENCHMARK_RESPONSES', '')
+BENCHMARK_MODE = os.environ.get("POPKIT_BENCHMARK_MODE", "").lower() == "true"
+RESPONSE_FILE = os.environ.get("POPKIT_BENCHMARK_RESPONSES", "")
 
 # Cache for loaded responses
 _responses_cache: Optional[Dict[str, Any]] = None
@@ -58,30 +58,21 @@ def load_responses() -> Dict[str, Any]:
         return _responses_cache
 
     if not RESPONSE_FILE or not os.path.exists(RESPONSE_FILE):
-        _responses_cache = {
-            'responses': {},
-            'standardAutoApprove': [],
-            'explicitDeclines': []
-        }
+        _responses_cache = {"responses": {}, "standardAutoApprove": [], "explicitDeclines": []}
         return _responses_cache
 
     try:
-        with open(RESPONSE_FILE, 'r', encoding='utf-8') as f:
+        with open(RESPONSE_FILE, "r", encoding="utf-8") as f:
             _responses_cache = json.load(f)
     except (json.JSONDecodeError, IOError) as e:
         print(f"[benchmark_responses] Warning: Failed to load response file: {e}")
-        _responses_cache = {
-            'responses': {},
-            'standardAutoApprove': [],
-            'explicitDeclines': []
-        }
+        _responses_cache = {"responses": {}, "standardAutoApprove": [], "explicitDeclines": []}
 
     return _responses_cache
 
 
 def get_response(
-    question_header: str,
-    question_text: str = ''
+    question_header: str, question_text: str = ""
 ) -> Optional[Union[str, bool, List[str], Dict[str, str]]]:
     """Get pre-defined response for a question.
 
@@ -103,7 +94,7 @@ def get_response(
     data = load_responses()
 
     # Check explicit declines first (always return false/no)
-    for pattern in data.get('explicitDeclines', []):
+    for pattern in data.get("explicitDeclines", []):
         try:
             if re.search(pattern, question_text, re.IGNORECASE):
                 return False
@@ -111,12 +102,12 @@ def get_response(
             continue
 
     # Check for explicit response by header
-    responses = data.get('responses', {})
+    responses = data.get("responses", {})
     if question_header in responses:
         return responses[question_header]
 
     # Check standard auto-approve patterns
-    for pattern in data.get('standardAutoApprove', []):
+    for pattern in data.get("standardAutoApprove", []):
         try:
             if re.search(pattern, question_text, re.IGNORECASE):
                 return True  # Select first/recommended option
@@ -128,10 +119,7 @@ def get_response(
     return True
 
 
-def should_skip_question(
-    question_header: str,
-    question_text: str = ''
-) -> bool:
+def should_skip_question(question_header: str, question_text: str = "") -> bool:
     """Check if we should skip AskUserQuestion and use a default response.
 
     Args:
@@ -151,7 +139,7 @@ def should_skip_question(
 def format_response_for_tool(
     response: Union[str, bool, List[str], Dict[str, str]],
     question_header: str,
-    options: Optional[List[Dict[str, str]]] = None
+    options: Optional[List[Dict[str, str]]] = None,
 ) -> Dict[str, str]:
     """Format a response for use as an AskUserQuestion tool result.
 
@@ -167,20 +155,20 @@ def format_response_for_tool(
     if response is True:
         # Auto-approve: select first option if available
         if options and len(options) > 0:
-            return {question_header: options[0].get('label', '')}
-        return {question_header: 'yes'}
+            return {question_header: options[0].get("label", "")}
+        return {question_header: "yes"}
 
     if response is False:
         # Explicit decline: select "no" or last option
         if options:
             # Look for an option that seems like "no"
             for opt in options:
-                label = opt.get('label', '').lower()
-                if label in ('no', 'skip', 'cancel', 'decline', 'not now'):
-                    return {question_header: opt.get('label', '')}
+                label = opt.get("label", "").lower()
+                if label in ("no", "skip", "cancel", "decline", "not now"):
+                    return {question_header: opt.get("label", "")}
             # Fall back to last option
-            return {question_header: options[-1].get('label', '')}
-        return {question_header: 'no'}
+            return {question_header: options[-1].get("label", "")}
+        return {question_header: "no"}
 
     if isinstance(response, str):
         # Direct string response
@@ -188,24 +176,20 @@ def format_response_for_tool(
 
     if isinstance(response, list):
         # Multi-select response - join with comma
-        return {question_header: ', '.join(response)}
+        return {question_header: ", ".join(response)}
 
-    if isinstance(response, dict) and 'other' in response:
+    if isinstance(response, dict) and "other" in response:
         # Free-text "Other" response
-        return {question_header: response['other']}
+        return {question_header: response["other"]}
 
     # Unknown format, default to first option
     if options and len(options) > 0:
-        return {question_header: options[0].get('label', '')}
+        return {question_header: options[0].get("label", "")}
 
     return {question_header: str(response)}
 
 
-def log_benchmark_response(
-    question_header: str,
-    question_text: str,
-    response: Any
-) -> None:
+def log_benchmark_response(question_header: str, question_text: str, response: Any) -> None:
     """Log a benchmark response for debugging.
 
     This helps track which responses were auto-selected during benchmarks.
@@ -213,9 +197,9 @@ def log_benchmark_response(
     import sys
 
     # Only log in verbose mode or when debugging
-    if os.environ.get('POPKIT_BENCHMARK_VERBOSE', '').lower() == 'true':
+    if os.environ.get("POPKIT_BENCHMARK_VERBOSE", "").lower() == "true":
         print(
             f"[benchmark] Auto-response: {question_header} = {response} "
             f"(question: {question_text[:50]}...)",
-            file=sys.stderr
+            file=sys.stderr,
         )

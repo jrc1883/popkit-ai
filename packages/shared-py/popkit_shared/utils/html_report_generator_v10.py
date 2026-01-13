@@ -28,6 +28,7 @@ from typing import Dict, Any, List, Optional, Tuple
 # Import transcript parser for reasoning extraction and token tracking
 try:
     from transcript_parser import TranscriptParser
+
     HAS_TRANSCRIPT_PARSER = True
 except ImportError:
     HAS_TRANSCRIPT_PARSER = False
@@ -35,6 +36,7 @@ except ImportError:
 # Import narrative generator for AI summaries
 try:
     from narrative_generator import generate_narrative
+
     HAS_NARRATIVE_GENERATOR = True
 except ImportError:
     HAS_NARRATIVE_GENERATOR = False
@@ -44,13 +46,13 @@ def parse_timestamp(ts_str: str) -> datetime:
     """Parse ISO 8601 timestamp string."""
     try:
         # Handle both with/without Z suffix
-        if ts_str.endswith('Z'):
-            ts_str = ts_str[:-1] + '+00:00'
+        if ts_str.endswith("Z"):
+            ts_str = ts_str[:-1] + "+00:00"
         return datetime.fromisoformat(ts_str)
     except ValueError:
         try:
             # Fallback: try without microseconds
-            return datetime.strptime(ts_str[:19], '%Y-%m-%dT%H:%M:%S')
+            return datetime.strptime(ts_str[:19], "%Y-%m-%dT%H:%M:%S")
         except:
             return datetime.min
 
@@ -58,20 +60,20 @@ def parse_timestamp(ts_str: str) -> datetime:
 def format_duration(duration_ms: Optional[int]) -> str:
     """Format duration in milliseconds to human-readable string."""
     if duration_ms is None:
-        return 'N/A'
+        return "N/A"
     seconds = duration_ms / 1000
     if seconds < 60:
-        return f'{seconds:.1f}s'
+        return f"{seconds:.1f}s"
     minutes = seconds / 60
-    return f'{minutes:.1f}m'
+    return f"{minutes:.1f}m"
 
 
 def clean_escaped_text(text: str) -> str:
     """Clean escaped characters from text."""
     # Replace common escape sequences
-    text = text.replace('\\n', '\n')
-    text = text.replace('\\r', '')
-    text = text.replace('\\t', '    ')
+    text = text.replace("\\n", "\n")
+    text = text.replace("\\r", "")
+    text = text.replace("\\t", "    ")
     text = text.replace('\\"', '"')
     text = text.replace("\\'", "'")
     return text
@@ -103,7 +105,7 @@ def pretty_print_structure(obj: Any) -> str:
 def format_code_content(text: str) -> str:
     """Format content with syntax highlighting."""
     if not text:
-        return '<em>empty</em>'
+        return "<em>empty</em>"
 
     # Try JSON parsing first
     parsed_json = try_parse_json(text)
@@ -122,13 +124,13 @@ def format_code_content(text: str) -> str:
 
 def detect_language(text: str) -> str:
     """Detect programming language from content."""
-    if any(kw in text for kw in ['import ', 'from ', 'def ', 'class ', 'if __name__']):
-        return 'python'
-    if any(sh in text for sh in ['#!/bin/', 'cd ', 'mkdir ', 'git ', 'npm ', 'python ']):
-        return 'bash'
-    if any(md in text for md in ['# ', '## ', '**', '```', '- [']):
-        return 'markdown'
-    return 'python'
+    if any(kw in text for kw in ["import ", "from ", "def ", "class ", "if __name__"]):
+        return "python"
+    if any(sh in text for sh in ["#!/bin/", "cd ", "mkdir ", "git ", "npm ", "python "]):
+        return "bash"
+    if any(md in text for md in ["# ", "## ", "**", "```", "- ["]):
+        return "markdown"
+    return "python"
 
 
 def make_file_link(file_path: str) -> str:
@@ -136,47 +138,47 @@ def make_file_link(file_path: str) -> str:
     escaped_path = escape_html(file_path)
     # Use file:// protocol for browser compatibility
     # Convert backslashes to forward slashes for Windows paths
-    url_path = file_path.replace('\\', '/')
+    url_path = file_path.replace("\\", "/")
     return f'<a href="file:///{url_path}" target="_blank" class="file-link">{escaped_path}</a>'
 
 
 def format_params_inline(params: Dict[str, Any]) -> str:
     """Format key parameters for inline display."""
     if not params:
-        return '<em>none</em>'
+        return "<em>none</em>"
 
     key_params = []
 
     # File path (make it clickable)
-    if 'file_path' in params:
-        file_path = params['file_path']
+    if "file_path" in params:
+        file_path = params["file_path"]
         key_params.append(make_file_link(file_path))
 
     # Command
-    if 'command' in params:
-        cmd = params['command']
+    if "command" in params:
+        cmd = params["command"]
         if len(cmd) > 100:
-            cmd_preview = cmd[:100] + '...'
+            cmd_preview = cmd[:100] + "..."
         else:
             cmd_preview = cmd
-        key_params.append(f'<code>{escape_html(cmd_preview)}</code>')
+        key_params.append(f"<code>{escape_html(cmd_preview)}</code>")
 
     # Description (tool's description parameter)
-    if 'description' in params:
-        desc = params['description']
-        key_params.append(f'<br>{escape_html(desc)}')
+    if "description" in params:
+        desc = params["description"]
+        key_params.append(f"<br>{escape_html(desc)}")
 
     # Skill name
-    if 'skill' in params:
-        skill = params['skill']
-        key_params.append(f'skill: {escape_html(skill)}')
+    if "skill" in params:
+        skill = params["skill"]
+        key_params.append(f"skill: {escape_html(skill)}")
 
     # Pattern (for Grep)
-    if 'pattern' in params:
-        pattern = params['pattern']
-        key_params.append(f'pattern: <code>{escape_html(pattern)}</code>')
+    if "pattern" in params:
+        pattern = params["pattern"]
+        key_params.append(f"pattern: <code>{escape_html(pattern)}</code>")
 
-    return '<br>'.join(key_params) if key_params else '<em>various params</em>'
+    return "<br>".join(key_params) if key_params else "<em>various params</em>"
 
 
 def get_agent_name_from_type(subagent_type: str) -> str:
@@ -184,13 +186,17 @@ def get_agent_name_from_type(subagent_type: str) -> str:
     # Examples:
     # "popkit-dev:code-reviewer" -> "code-reviewer"
     # "code-reviewer" -> "code-reviewer"
-    if ':' in subagent_type:
-        return subagent_type.split(':')[-1]
+    if ":" in subagent_type:
+        return subagent_type.split(":")[-1]
     return subagent_type
 
 
-def compute_session_token_usage(claude_dir: Path, subagent_stops: List[Dict],
-                                recording_start: str = None, recording_end: str = None) -> Dict[str, Any]:
+def compute_session_token_usage(
+    claude_dir: Path,
+    subagent_stops: List[Dict],
+    recording_start: str = None,
+    recording_end: str = None,
+) -> Dict[str, Any]:
     """
     Compute total token usage for the recording session ONLY.
 
@@ -227,9 +233,9 @@ def compute_session_token_usage(claude_dir: Path, subagent_stops: List[Dict],
     if recording_start:
         try:
             # Parse as naive (local) datetime
-            start_local = datetime.fromisoformat(recording_start.replace('Z', '+00:00'))
+            start_local = datetime.fromisoformat(recording_start.replace("Z", "+00:00"))
             # If it's already timezone-aware (has Z), use it as-is
-            if recording_start.endswith('Z') or '+' in recording_start:
+            if recording_start.endswith("Z") or "+" in recording_start:
                 start_dt = start_local
             else:
                 # Assume local time, convert to UTC
@@ -239,21 +245,27 @@ def compute_session_token_usage(claude_dir: Path, subagent_stops: List[Dict],
                 is_dst = time.daylight and time.localtime().tm_isdst > 0
                 utc_offset = -(time.altzone if is_dst else time.timezone)
                 from datetime import timedelta
-                start_dt = start_local.replace(tzinfo=timezone(timedelta(seconds=utc_offset))).astimezone(timezone.utc)
+
+                start_dt = start_local.replace(
+                    tzinfo=timezone(timedelta(seconds=utc_offset))
+                ).astimezone(timezone.utc)
             # Converted local time to UTC for comparison with transcript timestamps
         except Exception as e:
             print(f"Warning: Failed to parse recording_start: {e}")
             pass
     if recording_end:
         try:
-            end_local = datetime.fromisoformat(recording_end.replace('Z', '+00:00'))
-            if recording_end.endswith('Z') or '+' in recording_end:
+            end_local = datetime.fromisoformat(recording_end.replace("Z", "+00:00"))
+            if recording_end.endswith("Z") or "+" in recording_end:
                 end_dt = end_local
             else:
                 is_dst = time.daylight and time.localtime().tm_isdst > 0
                 utc_offset = -(time.altzone if is_dst else time.timezone)
                 from datetime import timedelta
-                end_dt = end_local.replace(tzinfo=timezone(timedelta(seconds=utc_offset))).astimezone(timezone.utc)
+
+                end_dt = end_local.replace(
+                    tzinfo=timezone(timedelta(seconds=utc_offset))
+                ).astimezone(timezone.utc)
             # Converted local time to UTC for comparison with transcript timestamps
         except Exception as e:
             print(f"Warning: Failed to parse recording_end: {e}")
@@ -264,11 +276,11 @@ def compute_session_token_usage(claude_dir: Path, subagent_stops: List[Dict],
 
     # Parse each sub-agent transcript
     for stop_event in subagent_stops:
-        agent_id = stop_event.get('agent_id')
+        agent_id = stop_event.get("agent_id")
         if not agent_id:
             continue
 
-        short_id = agent_id.split('-')[0] if '-' in agent_id else agent_id
+        short_id = agent_id.split("-")[0] if "-" in agent_id else agent_id
 
         # Find transcript file
         transcript_file = None
@@ -276,7 +288,7 @@ def compute_session_token_usage(claude_dir: Path, subagent_stops: List[Dict],
             if not project_dir.is_dir():
                 continue
 
-            candidate = project_dir / f'agent-{short_id}.jsonl'
+            candidate = project_dir / f"agent-{short_id}.jsonl"
             if candidate.exists():
                 transcript_file = candidate
                 break
@@ -291,7 +303,7 @@ def compute_session_token_usage(claude_dir: Path, subagent_stops: List[Dict],
             cache_creation_tokens = 0
             cache_read_tokens = 0
 
-            with open(transcript_file, encoding='utf-8', errors='ignore') as f:
+            with open(transcript_file, encoding="utf-8", errors="ignore") as f:
                 for line in f:
                     if not line.strip():
                         continue
@@ -300,11 +312,13 @@ def compute_session_token_usage(claude_dir: Path, subagent_stops: List[Dict],
                         msg = json.loads(line)
 
                         # Get message timestamp (transcripts are in UTC with Z suffix)
-                        msg_timestamp = msg.get('timestamp')
+                        msg_timestamp = msg.get("timestamp")
                         if msg_timestamp and start_dt and end_dt:
                             try:
                                 # Parse transcript timestamp (UTC)
-                                msg_dt = datetime.fromisoformat(msg_timestamp.replace('Z', '+00:00'))
+                                msg_dt = datetime.fromisoformat(
+                                    msg_timestamp.replace("Z", "+00:00")
+                                )
                                 # Ensure it's timezone-aware (should already be UTC)
                                 if msg_dt.tzinfo is None:
                                     msg_dt = msg_dt.replace(tzinfo=timezone.utc)
@@ -317,33 +331,35 @@ def compute_session_token_usage(claude_dir: Path, subagent_stops: List[Dict],
 
                         # Extract token usage from this message
                         # Handle both direct role and nested message.role formats
-                        message_obj = msg.get('message', msg)
-                        if message_obj.get('role') == 'assistant':
-                            usage = message_obj.get('usage', {})
-                            input_tokens += usage.get('input_tokens', 0)
-                            output_tokens += usage.get('output_tokens', 0)
-                            cache_creation_tokens += usage.get('cache_creation_input_tokens', 0)
-                            cache_read_tokens += usage.get('cache_read_input_tokens', 0)
+                        message_obj = msg.get("message", msg)
+                        if message_obj.get("role") == "assistant":
+                            usage = message_obj.get("usage", {})
+                            input_tokens += usage.get("input_tokens", 0)
+                            output_tokens += usage.get("output_tokens", 0)
+                            cache_creation_tokens += usage.get("cache_creation_input_tokens", 0)
+                            cache_read_tokens += usage.get("cache_read_input_tokens", 0)
                     except json.JSONDecodeError:
                         continue
 
             # Calculate cost (Claude Sonnet 4.5 pricing)
             cost = (
-                (input_tokens * 3.00 / 1_000_000) +
-                (output_tokens * 15.00 / 1_000_000) +
-                (cache_creation_tokens * 3.75 / 1_000_000) +
-                (cache_read_tokens * 0.30 / 1_000_000)
+                (input_tokens * 3.00 / 1_000_000)
+                + (output_tokens * 15.00 / 1_000_000)
+                + (cache_creation_tokens * 3.75 / 1_000_000)
+                + (cache_read_tokens * 0.30 / 1_000_000)
             )
 
-            total_tokens_agent = input_tokens + output_tokens + cache_creation_tokens + cache_read_tokens
+            total_tokens_agent = (
+                input_tokens + output_tokens + cache_creation_tokens + cache_read_tokens
+            )
 
             per_agent[agent_id] = {
-                'input_tokens': input_tokens,
-                'output_tokens': output_tokens,
-                'cache_creation_input_tokens': cache_creation_tokens,
-                'cache_read_input_tokens': cache_read_tokens,
-                'total_tokens': total_tokens_agent,
-                'cost': cost
+                "input_tokens": input_tokens,
+                "output_tokens": output_tokens,
+                "cache_creation_input_tokens": cache_creation_tokens,
+                "cache_read_input_tokens": cache_read_tokens,
+                "total_tokens": total_tokens_agent,
+                "cost": cost,
             }
         except Exception as e:
             print(f"Warning: Failed to parse tokens for agent {agent_id}: {e}")
@@ -353,11 +369,11 @@ def compute_session_token_usage(claude_dir: Path, subagent_stops: List[Dict],
     if not per_agent:
         return None
 
-    total_input = sum(a['input_tokens'] for a in per_agent.values())
-    total_output = sum(a['output_tokens'] for a in per_agent.values())
-    total_cache_write = sum(a['cache_creation_input_tokens'] for a in per_agent.values())
-    total_cache_read = sum(a['cache_read_input_tokens'] for a in per_agent.values())
-    total_cost = sum(a['cost'] for a in per_agent.values())
+    total_input = sum(a["input_tokens"] for a in per_agent.values())
+    total_output = sum(a["output_tokens"] for a in per_agent.values())
+    total_cache_write = sum(a["cache_creation_input_tokens"] for a in per_agent.values())
+    total_cache_read = sum(a["cache_read_input_tokens"] for a in per_agent.values())
+    total_cost = sum(a["cost"] for a in per_agent.values())
 
     total_tokens = total_input + total_output + total_cache_write + total_cache_read
 
@@ -366,14 +382,14 @@ def compute_session_token_usage(claude_dir: Path, subagent_stops: List[Dict],
     context_percentage = (total_tokens / CONTEXT_WINDOW) * 100
 
     return {
-        'input_tokens': total_input,
-        'output_tokens': total_output,
-        'cache_creation_input_tokens': total_cache_write,
-        'cache_read_input_tokens': total_cache_read,
-        'total_tokens': total_tokens,
-        'total_cost': total_cost,
-        'per_agent': per_agent,
-        'context_percentage': context_percentage
+        "input_tokens": total_input,
+        "output_tokens": total_output,
+        "cache_creation_input_tokens": total_cache_write,
+        "cache_read_input_tokens": total_cache_read,
+        "total_tokens": total_tokens,
+        "total_cost": total_cost,
+        "per_agent": per_agent,
+        "context_percentage": context_percentage,
     }
 
 
@@ -386,13 +402,13 @@ def parse_agent_transcripts(claude_dir: Path, subagent_stops: List[Dict]) -> Dic
     transcripts = {}
 
     for stop_event in subagent_stops:
-        agent_id = stop_event.get('agent_id')
+        agent_id = stop_event.get("agent_id")
         if not agent_id:
             continue
 
         # Find matching transcript file
         # Format: agent-{short_id}.jsonl
-        short_id = agent_id.split('-')[0] if '-' in agent_id else agent_id
+        short_id = agent_id.split("-")[0] if "-" in agent_id else agent_id
 
         transcript_file = None
         # Search all project directories for this agent's transcript
@@ -400,7 +416,7 @@ def parse_agent_transcripts(claude_dir: Path, subagent_stops: List[Dict]) -> Dic
             if not project_dir.is_dir():
                 continue
 
-            candidate = project_dir / f'agent-{short_id}.jsonl'
+            candidate = project_dir / f"agent-{short_id}.jsonl"
             if candidate.exists():
                 transcript_file = candidate
                 break
@@ -411,18 +427,18 @@ def parse_agent_transcripts(claude_dir: Path, subagent_stops: List[Dict]) -> Dic
         # Parse the transcript file directly
         events = []
         try:
-            with open(transcript_file, 'r', encoding='utf-8') as f:
+            with open(transcript_file, "r", encoding="utf-8") as f:
                 for line in f:
                     if not line.strip():
                         continue
                     try:
                         entry = json.loads(line)
-                        timestamp = entry.get('timestamp', '')
-                        msg = entry.get('message', {})
-                        msg_type = entry.get('type', 'unknown')
+                        timestamp = entry.get("timestamp", "")
+                        msg = entry.get("message", {})
+                        msg_type = entry.get("type", "unknown")
 
-                        if msg_type == 'user':
-                            content = msg.get('content', '')
+                        if msg_type == "user":
+                            content = msg.get("content", "")
 
                             # Check if content is a list (tool results) or string (prompt)
                             if isinstance(content, list):
@@ -430,37 +446,43 @@ def parse_agent_transcripts(claude_dir: Path, subagent_stops: List[Dict]) -> Dic
                                 continue
                             elif isinstance(content, str) and content.strip():
                                 # This is an actual user prompt
-                                events.append({
-                                    'agent_id': agent_id,
-                                    'timestamp': timestamp,
-                                    'parsed_timestamp': parse_timestamp(timestamp),
-                                    'type': 'subagent_prompt',
-                                    'content': content
-                                })
-                        elif msg_type == 'assistant':
-                            content_blocks = msg.get('content', [])
+                                events.append(
+                                    {
+                                        "agent_id": agent_id,
+                                        "timestamp": timestamp,
+                                        "parsed_timestamp": parse_timestamp(timestamp),
+                                        "type": "subagent_prompt",
+                                        "content": content,
+                                    }
+                                )
+                        elif msg_type == "assistant":
+                            content_blocks = msg.get("content", [])
                             for block in content_blocks:
                                 if isinstance(block, dict):
-                                    if block.get('type') == 'tool_use':
-                                        events.append({
-                                            'agent_id': agent_id,
-                                            'timestamp': timestamp,
-                                            'parsed_timestamp': parse_timestamp(timestamp),
-                                            'type': 'subagent_tool_call',
-                                            'tool_name': block.get('name', 'unknown'),
-                                            'tool_use_id': block.get('id'),
-                                            'parameters': block.get('input', {})
-                                        })
-                                    elif block.get('type') == 'text':
-                                        text = block.get('text', '')
+                                    if block.get("type") == "tool_use":
+                                        events.append(
+                                            {
+                                                "agent_id": agent_id,
+                                                "timestamp": timestamp,
+                                                "parsed_timestamp": parse_timestamp(timestamp),
+                                                "type": "subagent_tool_call",
+                                                "tool_name": block.get("name", "unknown"),
+                                                "tool_use_id": block.get("id"),
+                                                "parameters": block.get("input", {}),
+                                            }
+                                        )
+                                    elif block.get("type") == "text":
+                                        text = block.get("text", "")
                                         if text.strip():
-                                            events.append({
-                                                'agent_id': agent_id,
-                                                'timestamp': timestamp,
-                                                'parsed_timestamp': parse_timestamp(timestamp),
-                                                'type': 'subagent_text',
-                                                'text': text
-                                            })
+                                            events.append(
+                                                {
+                                                    "agent_id": agent_id,
+                                                    "timestamp": timestamp,
+                                                    "parsed_timestamp": parse_timestamp(timestamp),
+                                                    "type": "subagent_text",
+                                                    "text": text,
+                                                }
+                                            )
                     except json.JSONDecodeError:
                         continue
         except Exception as e:
@@ -472,7 +494,9 @@ def parse_agent_transcripts(claude_dir: Path, subagent_stops: List[Dict]) -> Dic
     return transcripts
 
 
-def build_unified_timeline(main_events: List[Dict], transcripts: Dict[str, List[Dict]]) -> List[Dict]:
+def build_unified_timeline(
+    main_events: List[Dict], transcripts: Dict[str, List[Dict]]
+) -> List[Dict]:
     """
     Build a unified timeline merging main agent and sub-agent events.
 
@@ -488,22 +512,25 @@ def build_unified_timeline(main_events: List[Dict], transcripts: Dict[str, List[
     used_transcripts = set()
 
     for i, event in enumerate(main_events):
-        timeline.append({**event, 'source': 'main'})
+        timeline.append({**event, "source": "main"})
 
         # If this is a Task tool launch, try to find matching sub-agent events
-        if event.get('type') == 'tool_call_start' and event.get('tool_name') == 'Task':
+        if event.get("type") == "tool_call_start" and event.get("tool_name") == "Task":
             # Look ahead to find the corresponding subagent_stop event
-            for future_event in main_events[i+1:]:
-                if future_event.get('type') == 'subagent_stop':
-                    agent_id = future_event.get('agent_id')
+            for future_event in main_events[i + 1 :]:
+                if future_event.get("type") == "subagent_stop":
+                    agent_id = future_event.get("agent_id")
                     if agent_id and agent_id in transcripts and agent_id not in used_transcripts:
                         # Insert sub-agent events here
                         sub_events = transcripts[agent_id]
                         for sub_event in sub_events:
-                            timeline.append({**sub_event, 'source': agent_id, 'agent_id': agent_id})
+                            timeline.append({**sub_event, "source": agent_id, "agent_id": agent_id})
                         used_transcripts.add(agent_id)
                         break
-                elif future_event.get('type') == 'tool_call_start' and future_event.get('tool_name') == 'Task':
+                elif (
+                    future_event.get("type") == "tool_call_start"
+                    and future_event.get("tool_name") == "Task"
+                ):
                     # Hit another Task launch before finding a stop, break
                     break
 
@@ -520,21 +547,21 @@ def mark_subagent_scopes(events: List[Dict]) -> List[Dict]:
     active_subagents = []  # Stack of active sub-agent IDs
 
     for event in events:
-        event_type = event.get('type')
+        event_type = event.get("type")
 
         # Track sub-agent launches
-        if event_type == 'tool_call_start':
-            params = event.get('parameters', {})
-            if 'subagent_type' in params:
+        if event_type == "tool_call_start":
+            params = event.get("parameters", {})
+            if "subagent_type" in params:
                 # This is a Task tool launching a sub-agent
                 # We'll mark subsequent events as being in this sub-agent
                 # Extract agent ID from the stop event
                 pass
 
         # Mark events from sub-agents
-        if event.get('source') != 'main':
-            event['in_subagent'] = True
-            event['subagent_id'] = event.get('source')
+        if event.get("source") != "main":
+            event["in_subagent"] = True
+            event["subagent_id"] = event.get("source")
 
         result.append(event)
 
@@ -555,18 +582,18 @@ def detect_parallel_batches(events: List[Dict]) -> List[Dict]:
         event = events[i]
 
         # Check if this is a tool_call_start
-        if event.get('type') == 'tool_call_start':
+        if event.get("type") == "tool_call_start":
             # Look ahead for consecutive tool_call_starts within 1 second
             batch = [event]
-            event_time = parse_timestamp(event.get('timestamp', ''))
+            event_time = parse_timestamp(event.get("timestamp", ""))
 
             j = i + 1
             while j < len(events):
                 next_event = events[j]
-                if next_event.get('type') != 'tool_call_start':
+                if next_event.get("type") != "tool_call_start":
                     break
 
-                next_time = parse_timestamp(next_event.get('timestamp', ''))
+                next_time = parse_timestamp(next_event.get("timestamp", ""))
                 time_diff = abs((next_time - event_time).total_seconds())
 
                 if time_diff <= 1.0:  # Within 1 second = parallel
@@ -579,9 +606,9 @@ def detect_parallel_batches(events: List[Dict]) -> List[Dict]:
             if len(batch) >= 2:
                 batch_id += 1
                 for idx, batch_event in enumerate(batch):
-                    batch_event['parallel_batch_id'] = batch_id
-                    batch_event['parallel_batch_index'] = idx
-                    batch_event['parallel_batch_size'] = len(batch)
+                    batch_event["parallel_batch_id"] = batch_id
+                    batch_event["parallel_batch_index"] = idx
+                    batch_event["parallel_batch_size"] = len(batch)
                     result.append(batch_event)
                 i = j
             else:
@@ -596,11 +623,11 @@ def detect_parallel_batches(events: List[Dict]) -> List[Dict]:
 
 def get_agent_color(source: str) -> Tuple[str, str]:
     """Get background and border color for agent badge."""
-    if source == 'main':
-        return '#1e3a5f', '#58a6ff'
+    if source == "main":
+        return "#1e3a5f", "#58a6ff"
     else:
         # Sub-agents get purple theme
-        return '#3d1e5f', '#a371f7'
+        return "#3d1e5f", "#a371f7"
 
 
 def escape_html(text: str) -> str:
@@ -608,15 +635,17 @@ def escape_html(text: str) -> str:
     if not isinstance(text, str):
         text = str(text)
 
-    text = text.replace('&', '&amp;')
-    text = text.replace('<', '&lt;')
-    text = text.replace('>', '&gt;')
-    text = text.replace('"', '&quot;')
-    text = text.replace("'", '&#x27;')
+    text = text.replace("&", "&amp;")
+    text = text.replace("<", "&lt;")
+    text = text.replace(">", "&gt;")
+    text = text.replace('"', "&quot;")
+    text = text.replace("'", "&#x27;")
     return text
 
 
-def parse_transcript_for_reasoning(data: Dict[str, Any], events: List[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
+def parse_transcript_for_reasoning(
+    data: Dict[str, Any], events: List[Dict[str, Any]]
+) -> Dict[str, Dict[str, Any]]:
     """
     Parse transcript data to extract reasoning blocks and token usage.
 
@@ -627,13 +656,13 @@ def parse_transcript_for_reasoning(data: Dict[str, Any], events: List[Dict[str, 
     if not data or not isinstance(data, dict):
         return reasoning_lookup
 
-    messages = data.get('messages', [])
+    messages = data.get("messages", [])
 
     for message in messages:
-        if message.get('role') != 'assistant':
+        if message.get("role") != "assistant":
             continue
 
-        content = message.get('content', [])
+        content = message.get("content", [])
         if not isinstance(content, list):
             continue
 
@@ -643,50 +672,47 @@ def parse_transcript_for_reasoning(data: Dict[str, Any], events: List[Dict[str, 
         tool_use_blocks = []
 
         for block in content:
-            block_type = block.get('type')
+            block_type = block.get("type")
 
-            if block_type == 'thinking':
-                thinking_blocks.append(block.get('thinking', ''))
-            elif block_type == 'text':
-                text_blocks.append(block.get('text', ''))
-            elif block_type == 'tool_use':
+            if block_type == "thinking":
+                thinking_blocks.append(block.get("thinking", ""))
+            elif block_type == "text":
+                text_blocks.append(block.get("text", ""))
+            elif block_type == "tool_use":
                 tool_use_blocks.append(block)
 
         # Associate reasoning with tool uses
         for tool_block in tool_use_blocks:
-            tool_use_id = tool_block.get('id')
+            tool_use_id = tool_block.get("id")
             if not tool_use_id:
                 continue
 
             # Get token usage from message
-            usage = message.get('usage', {})
-            input_tokens = usage.get('input_tokens', 0)
-            output_tokens = usage.get('output_tokens', 0)
-            cache_creation = usage.get('cache_creation_input_tokens', 0)
-            cache_read = usage.get('cache_read_input_tokens', 0)
+            usage = message.get("usage", {})
+            input_tokens = usage.get("input_tokens", 0)
+            output_tokens = usage.get("output_tokens", 0)
+            cache_creation = usage.get("cache_creation_input_tokens", 0)
+            cache_read = usage.get("cache_read_input_tokens", 0)
 
             # Calculate cost (Claude Sonnet 4.5 pricing)
             # Input: $3/M, Output: $15/M, Cache Write: $3.75/M, Cache Read: $0.30/M
             cost = (
-                (input_tokens * 3.00 / 1_000_000) +
-                (output_tokens * 15.00 / 1_000_000) +
-                (cache_creation * 3.75 / 1_000_000) +
-                (cache_read * 0.30 / 1_000_000)
+                (input_tokens * 3.00 / 1_000_000)
+                + (output_tokens * 15.00 / 1_000_000)
+                + (cache_creation * 3.75 / 1_000_000)
+                + (cache_read * 0.30 / 1_000_000)
             )
 
             reasoning_lookup[tool_use_id] = {
-                'reasoning': {
-                    'thinking': thinking_blocks,
-                    'text': text_blocks
+                "reasoning": {"thinking": thinking_blocks, "text": text_blocks},
+                "tokens": {
+                    "input_tokens": input_tokens,
+                    "output_tokens": output_tokens,
+                    "cache_creation_input_tokens": cache_creation,
+                    "cache_read_input_tokens": cache_read,
+                    "total_tokens": input_tokens + output_tokens + cache_creation + cache_read,
                 },
-                'tokens': {
-                    'input_tokens': input_tokens,
-                    'output_tokens': output_tokens,
-                    'cache_creation_input_tokens': cache_creation,
-                    'cache_read_input_tokens': cache_read,
-                    'total_tokens': input_tokens + output_tokens + cache_creation + cache_read
-                },
-                'cost': cost
+                "cost": cost,
             }
 
     return reasoning_lookup
@@ -699,10 +725,10 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
     with open(recording_file) as f:
         session_data = json.load(f)
 
-    events = session_data.get('events', [])
-    session_id = session_data.get('session_id', 'unknown')
-    started_at = session_data.get('started_at', '')
-    stopped_at = session_data.get('stopped_at', '')
+    events = session_data.get("events", [])
+    session_id = session_data.get("session_id", "unknown")
+    started_at = session_data.get("started_at", "")
+    stopped_at = session_data.get("stopped_at", "")
 
     # Calculate duration
     try:
@@ -711,7 +737,7 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
         if stopped_at:
             end_dt = parse_timestamp(stopped_at)
         elif events:
-            last_timestamp = events[-1].get('timestamp', started_at)
+            last_timestamp = events[-1].get("timestamp", started_at)
             end_dt = parse_timestamp(last_timestamp)
         else:
             end_dt = start_dt
@@ -724,9 +750,9 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
         duration_sec = 0.0
 
     # Count main tool calls (exclude sub-agent events)
-    tool_calls = [e for e in events if e.get('type') == 'tool_call_start']
-    tool_completes = [e for e in events if e.get('type') == 'tool_call_complete']
-    subagent_stops = [e for e in events if e.get('type') == 'subagent_stop']
+    tool_calls = [e for e in events if e.get("type") == "tool_call_start"]
+    tool_completes = [e for e in events if e.get("type") == "tool_call_complete"]
+    subagent_stops = [e for e in events if e.get("type") == "subagent_stop"]
 
     # Build completion map for status checking
     # Match tool_call_start events with their corresponding tool_call_complete
@@ -735,8 +761,8 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
     # First pass: map tool_use_id from starts
     tool_use_to_seq = {}
     for start in tool_calls:
-        tool_use_id = start.get('tool_use_id')
-        seq = start.get('sequence')
+        tool_use_id = start.get("tool_use_id")
+        seq = start.get("sequence")
         if tool_use_id and seq is not None:
             tool_use_to_seq[tool_use_id] = seq
 
@@ -744,22 +770,22 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
     # Since completions don't have tool_use_id, we match by position
     pending_starts = []
     for event in events:
-        if event.get('type') == 'tool_call_start':
+        if event.get("type") == "tool_call_start":
             pending_starts.append(event)
-        elif event.get('type') == 'tool_call_complete':
+        elif event.get("type") == "tool_call_complete":
             # Match with the oldest pending start of the same tool type
-            tool_name = event.get('tool_name')
+            tool_name = event.get("tool_name")
             for i, start in enumerate(pending_starts):
-                if start.get('tool_name') == tool_name:
+                if start.get("tool_name") == tool_name:
                     # Mark this start as complete
-                    start_seq = start.get('sequence')
+                    start_seq = start.get("sequence")
                     if start_seq is not None:
                         completion_map[start_seq] = True
                     pending_starts.pop(i)
                     break
 
     # Calculate success rate
-    errors = [e for e in tool_completes if e.get('error')]
+    errors = [e for e in tool_completes if e.get("error")]
     success_rate = (len(tool_completes) - len(errors)) / max(len(tool_completes), 1) * 100
 
     # Parse transcripts for reasoning and token data
@@ -770,7 +796,7 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
     # For now, we'll compute totals from reasoning_lookup after parsing
 
     # Parse agent transcripts if available
-    claude_dir = Path.home() / '.claude' / 'projects'
+    claude_dir = Path.home() / ".claude" / "projects"
     transcripts = parse_agent_transcripts(claude_dir, subagent_stops)
 
     # Compute comprehensive session token usage (filtered by recording window)
@@ -778,12 +804,10 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
     end_timestamp = stopped_at
     if not stopped_at and events:
         # Use last event timestamp
-        end_timestamp = events[-1].get('timestamp', started_at)
+        end_timestamp = events[-1].get("timestamp", started_at)
 
     session_token_usage = compute_session_token_usage(
-        claude_dir, subagent_stops,
-        recording_start=started_at,
-        recording_end=end_timestamp
+        claude_dir, subagent_stops, recording_start=started_at, recording_end=end_timestamp
     )
 
     # Also try to parse main agent transcript (session.jsonl or similar)
@@ -794,22 +818,22 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
 
         # Try common main session transcript names
         main_transcript_candidates = [
-            project_dir / 'session.jsonl',
-            project_dir / 'transcript.jsonl',
+            project_dir / "session.jsonl",
+            project_dir / "transcript.jsonl",
         ]
 
         for transcript_file in main_transcript_candidates:
             if transcript_file.exists():
                 try:
                     messages = []
-                    with open(transcript_file, encoding='utf-8', errors='ignore') as f:
+                    with open(transcript_file, encoding="utf-8", errors="ignore") as f:
                         for line in f:
                             if line.strip():
                                 msg = json.loads(line)
                                 messages.append(msg)
 
                     # Parse reasoning from main session
-                    transcript_data = {'messages': messages}
+                    transcript_data = {"messages": messages}
                     main_reasoning = parse_transcript_for_reasoning(transcript_data, events)
                     reasoning_lookup.update(main_reasoning)
                     break
@@ -821,13 +845,13 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
         # For each sub-agent transcript, parse reasoning
         for agent_id, sub_events in transcripts.items():
             # Find the transcript file and parse it for reasoning
-            short_id = agent_id.split('-')[0] if '-' in agent_id else agent_id
+            short_id = agent_id.split("-")[0] if "-" in agent_id else agent_id
 
             for project_dir in claude_dir.iterdir():
                 if not project_dir.is_dir():
                     continue
 
-                transcript_file = project_dir / f'agent-{short_id}.jsonl'
+                transcript_file = project_dir / f"agent-{short_id}.jsonl"
                 if not transcript_file.exists():
                     continue
 
@@ -842,7 +866,7 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                                 messages.append(msg)
 
                     # Parse reasoning from messages
-                    transcript_data = {'messages': messages}
+                    transcript_data = {"messages": messages}
                     agent_reasoning = parse_transcript_for_reasoning(transcript_data, sub_events)
                     reasoning_lookup.update(agent_reasoning)
                 except:
@@ -851,25 +875,31 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                 break
 
         # Calculate total tokens from all reasoning
-        total_input = sum(r['tokens']['input_tokens'] for r in reasoning_lookup.values())
-        total_output = sum(r['tokens']['output_tokens'] for r in reasoning_lookup.values())
-        total_cache_write = sum(r['tokens']['cache_creation_input_tokens'] for r in reasoning_lookup.values())
-        total_cache_read = sum(r['tokens']['cache_read_input_tokens'] for r in reasoning_lookup.values())
+        total_input = sum(r["tokens"]["input_tokens"] for r in reasoning_lookup.values())
+        total_output = sum(r["tokens"]["output_tokens"] for r in reasoning_lookup.values())
+        total_cache_write = sum(
+            r["tokens"]["cache_creation_input_tokens"] for r in reasoning_lookup.values()
+        )
+        total_cache_read = sum(
+            r["tokens"]["cache_read_input_tokens"] for r in reasoning_lookup.values()
+        )
 
         total_tokens = {
-            'input_tokens': total_input,
-            'output_tokens': total_output,
-            'cache_creation_input_tokens': total_cache_write,
-            'cache_read_input_tokens': total_cache_read,
-            'total_tokens': total_input + total_output + total_cache_write + total_cache_read
+            "input_tokens": total_input,
+            "output_tokens": total_output,
+            "cache_creation_input_tokens": total_cache_write,
+            "cache_read_input_tokens": total_cache_read,
+            "total_tokens": total_input + total_output + total_cache_write + total_cache_read,
         }
-        total_cost = sum(v['cost'] for v in reasoning_lookup.values())
+        total_cost = sum(v["cost"] for v in reasoning_lookup.values())
 
     # Generate AI narrative summary
     narrative_html = None
     if HAS_NARRATIVE_GENERATOR and reasoning_lookup:
         try:
-            narrative_html = generate_narrative(recording_file, events, reasoning_lookup, total_tokens)
+            narrative_html = generate_narrative(
+                recording_file, events, reasoning_lookup, total_tokens
+            )
         except Exception as e:
             print(f"Warning: Failed to generate narrative: {e}")
 
@@ -879,7 +909,7 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
     unified_timeline = detect_parallel_batches(unified_timeline)
 
     # Start HTML generation
-    html = f'''<!DOCTYPE html>
+    html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1209,24 +1239,30 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                 <div class="label">Success Rate</div>
                 <div class="value">{success_rate:.0f}<span style="font-size: 14px; color: #8b949e;">%</span></div>
             </div>
-        </div>'''
+        </div>"""
 
     # Add comprehensive context usage section if available
     if session_token_usage:
         # Extract values from session_token_usage
-        total_cost = session_token_usage['total_cost']
-        context_percentage = session_token_usage['context_percentage']
+        total_cost = session_token_usage["total_cost"]
+        context_percentage = session_token_usage["context_percentage"]
 
         cache_hit_rate = 0
-        if session_token_usage['input_tokens'] + session_token_usage['cache_read_input_tokens'] > 0:
-            cache_hit_rate = (session_token_usage['cache_read_input_tokens'] /
-                            (session_token_usage['input_tokens'] + session_token_usage['cache_read_input_tokens']) * 100)
+        if session_token_usage["input_tokens"] + session_token_usage["cache_read_input_tokens"] > 0:
+            cache_hit_rate = (
+                session_token_usage["cache_read_input_tokens"]
+                / (
+                    session_token_usage["input_tokens"]
+                    + session_token_usage["cache_read_input_tokens"]
+                )
+                * 100
+            )
 
         # Calculate cost breakdown percentages
-        input_cost = session_token_usage['input_tokens'] * 3.00 / 1_000_000
-        output_cost = session_token_usage['output_tokens'] * 15.00 / 1_000_000
-        cache_write_cost = session_token_usage['cache_creation_input_tokens'] * 3.75 / 1_000_000
-        cache_read_cost = session_token_usage['cache_read_input_tokens'] * 0.30 / 1_000_000
+        input_cost = session_token_usage["input_tokens"] * 3.00 / 1_000_000
+        output_cost = session_token_usage["output_tokens"] * 15.00 / 1_000_000
+        cache_write_cost = session_token_usage["cache_creation_input_tokens"] * 3.75 / 1_000_000
+        cache_read_cost = session_token_usage["cache_read_input_tokens"] * 0.30 / 1_000_000
 
         # Calculate percentages for visual bar
         if total_cost > 0:
@@ -1238,16 +1274,16 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
             input_pct = output_pct = cache_write_pct = cache_read_pct = 0
 
         # Calculate token distribution percentages
-        total = session_token_usage['total_tokens']
+        total = session_token_usage["total_tokens"]
         if total > 0:
-            input_token_pct = (session_token_usage['input_tokens'] / total * 100)
-            output_token_pct = (session_token_usage['output_tokens'] / total * 100)
-            cache_write_token_pct = (session_token_usage['cache_creation_input_tokens'] / total * 100)
-            cache_read_token_pct = (session_token_usage['cache_read_input_tokens'] / total * 100)
+            input_token_pct = session_token_usage["input_tokens"] / total * 100
+            output_token_pct = session_token_usage["output_tokens"] / total * 100
+            cache_write_token_pct = session_token_usage["cache_creation_input_tokens"] / total * 100
+            cache_read_token_pct = session_token_usage["cache_read_input_tokens"] / total * 100
         else:
             input_token_pct = output_token_pct = cache_write_token_pct = cache_read_token_pct = 0
 
-        html += f'''
+        html += f"""
         <div class="timeline-section">
             <h2>📊 Context Usage & Cost Analysis</h2>
             <div style="background: #161b22; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
@@ -1263,7 +1299,7 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                         <div style="background: linear-gradient(90deg, #58a6ff 0%, #a371f7 100%); height: 100%; width: {min(context_percentage, 100):.1f}%; transition: width 0.3s ease;"></div>
                     </div>
                     <div style="color: #8b949e; font-size: 12px;">
-                        {session_token_usage['total_tokens']:,} tokens consumed during this recording session
+                        {session_token_usage["total_tokens"]:,} tokens consumed during this recording session
                     </div>
                 </div>
 
@@ -1296,22 +1332,22 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
                     <div style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%); padding: 15px; border-radius: 6px;">
                         <div style="color: #8b949e; font-size: 12px; margin-bottom: 8px;">Input Tokens</div>
-                        <div style="color: #58a6ff; font-size: 20px; font-weight: 600; margin-bottom: 4px;">{session_token_usage['input_tokens']:,}</div>
+                        <div style="color: #58a6ff; font-size: 20px; font-weight: 600; margin-bottom: 4px;">{session_token_usage["input_tokens"]:,}</div>
                         <div style="color: #8b949e; font-size: 11px;">{input_token_pct:.1f}% of total • ${input_cost:.4f}</div>
                     </div>
                     <div style="background: linear-gradient(135deg, #2d1f1f 0%, #1a1111 100%); padding: 15px; border-radius: 6px;">
                         <div style="color: #8b949e; font-size: 12px; margin-bottom: 8px;">Output Tokens</div>
-                        <div style="color: #f85149; font-size: 20px; font-weight: 600; margin-bottom: 4px;">{session_token_usage['output_tokens']:,}</div>
+                        <div style="color: #f85149; font-size: 20px; font-weight: 600; margin-bottom: 4px;">{session_token_usage["output_tokens"]:,}</div>
                         <div style="color: #8b949e; font-size: 11px;">{output_token_pct:.1f}% of total • ${output_cost:.4f}</div>
                     </div>
                     <div style="background: linear-gradient(135deg, #2d2519 0%, #1a1711 100%); padding: 15px; border-radius: 6px;">
                         <div style="color: #8b949e; font-size: 12px; margin-bottom: 8px;">Cache Write</div>
-                        <div style="color: #d29922; font-size: 20px; font-weight: 600; margin-bottom: 4px;">{session_token_usage['cache_creation_input_tokens']:,}</div>
+                        <div style="color: #d29922; font-size: 20px; font-weight: 600; margin-bottom: 4px;">{session_token_usage["cache_creation_input_tokens"]:,}</div>
                         <div style="color: #8b949e; font-size: 11px;">{cache_write_token_pct:.1f}% of total • ${cache_write_cost:.4f}</div>
                     </div>
                     <div style="background: linear-gradient(135deg, #1f2d1f 0%, #111a11 100%); padding: 15px; border-radius: 6px;">
                         <div style="color: #8b949e; font-size: 12px; margin-bottom: 8px;">Cache Read</div>
-                        <div style="color: #3fb950; font-size: 20px; font-weight: 600; margin-bottom: 4px;">{session_token_usage['cache_read_input_tokens']:,}</div>
+                        <div style="color: #3fb950; font-size: 20px; font-weight: 600; margin-bottom: 4px;">{session_token_usage["cache_read_input_tokens"]:,}</div>
                         <div style="color: #8b949e; font-size: 11px;">{cache_read_token_pct:.1f}% of total • ${cache_read_cost:.4f}</div>
                     </div>
                 </div>
@@ -1332,16 +1368,16 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                         <div style="color: #8b949e; font-size: 12px; margin-bottom: 8px;">Total Session Cost</div>
                         <div style="color: #58a6ff; font-size: 24px; font-weight: 600;">${total_cost:.2f}</div>
                         <div style="color: #8b949e; font-size: 11px; margin-top: 4px;">
-                            {session_token_usage['total_tokens']:,} tokens processed
+                            {session_token_usage["total_tokens"]:,} tokens processed
                         </div>
                     </div>
                 </div>
             </div>
-        </div>'''
+        </div>"""
 
     # Add AI-generated narrative section
     if narrative_html:
-        html += f'''
+        html += f"""
         <div class="timeline-section">
             <h2>📖 Session Narrative</h2>
             <div style="background: #161b22; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
@@ -1354,9 +1390,9 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                     </div>
                 </div>
             </div>
-        </div>'''
+        </div>"""
 
-    html += f'''
+    html += f"""
         <div class="timeline-section">
             <h2>🌐 Unified Timeline ({len(unified_timeline)} events)</h2>
             <div class="timeline-scroll">
@@ -1377,7 +1413,7 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                         </tr>
                     </thead>
                     <tbody>
-'''
+"""
 
     # Track current task description for grouping
     current_task_desc = None
@@ -1385,13 +1421,13 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
 
     # Generate timeline rows
     for i, event in enumerate(unified_timeline, 1):
-        timestamp = event.get('timestamp', 'N/A')
-        source = event.get('source', event.get('agent_id', 'unknown'))
-        event_type = event.get('type', 'unknown')
-        in_subagent = event.get('in_subagent', False)
-        parallel_batch_id = event.get('parallel_batch_id')
-        parallel_batch_index = event.get('parallel_batch_index', 0)
-        parallel_batch_size = event.get('parallel_batch_size', 1)
+        timestamp = event.get("timestamp", "N/A")
+        source = event.get("source", event.get("agent_id", "unknown"))
+        event_type = event.get("type", "unknown")
+        in_subagent = event.get("in_subagent", False)
+        parallel_batch_id = event.get("parallel_batch_id")
+        parallel_batch_index = event.get("parallel_batch_index", 0)
+        parallel_batch_size = event.get("parallel_batch_size", 1)
 
         try:
             dt = parse_timestamp(timestamp)
@@ -1401,17 +1437,17 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                 if dt.tzinfo is not None:
                     # Convert to local time
                     dt = dt.astimezone()
-                time_str = dt.strftime('%H:%M:%S')
+                time_str = dt.strftime("%H:%M:%S")
             else:
-                time_str = 'N/A'
+                time_str = "N/A"
         except:
-            time_str = 'N/A'
+            time_str = "N/A"
 
         bg_color, border_color = get_agent_color(source)
 
         # NEW: Resolve agent names
-        if source == 'main':
-            agent_label = 'MAIN'
+        if source == "main":
+            agent_label = "MAIN"
         else:
             # Try to get friendly name from subagent_type
             agent_id = source
@@ -1420,30 +1456,29 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
             # Look for the agent launch event to get the type
             agent_name = None
             for e in events:
-                if e.get('type') == 'tool_call_start':
-                    params = e.get('parameters', {})
-                    if 'subagent_type' in params:
+                if e.get("type") == "tool_call_start":
+                    params = e.get("parameters", {})
+                    if "subagent_type" in params:
                         # Check if this matches our agent somehow
                         # For now, use the subagent_type directly
-                        subagent_type = params.get('subagent_type', '')
+                        subagent_type = params.get("subagent_type", "")
                         agent_name = get_agent_name_from_type(subagent_type)
                         break
 
             if agent_name:
-                agent_label = f'{agent_name} ({short_id})'
+                agent_label = f"{agent_name} ({short_id})"
             else:
                 agent_label = short_id
 
         agent_badge = f'<span class="agent-badge" style="background: {bg_color}; color: {border_color}; border: 1px solid {border_color};">{agent_label}</span>'
 
-        row_class = 'in-subagent' if in_subagent else ''
+        row_class = "in-subagent" if in_subagent else ""
 
         # NEW: Add tree connectors for visual hierarchy
-        tree_prefix = ''
+        tree_prefix = ""
         if in_subagent:
             # Check if this is the last event from this sub-agent
-            is_last = (i == len(unified_timeline) or
-                      unified_timeline[i].get('source') != source)
+            is_last = i == len(unified_timeline) or unified_timeline[i].get("source") != source
 
             if is_last:
                 tree_prefix = '<span class="tree-connector">└─</span>'
@@ -1453,67 +1488,71 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
         # NEW: Check if we need to add parallel batch header
         if parallel_batch_id and parallel_batch_id != current_parallel_batch:
             current_parallel_batch = parallel_batch_id
-            html += f'''
+            html += f"""
                     <tr>
                         <td colspan="11" class="parallel-batch-header">
                             [PARALLEL BATCH #{parallel_batch_id}] {parallel_batch_size} tools launched together
                         </td>
                     </tr>
-'''
+"""
 
-        desc_html = ''  # High-level description
-        tool_details_html = ''  # Specific tool/command info
+        desc_html = ""  # High-level description
+        tool_details_html = ""  # Specific tool/command info
         status_html = '<span class="status-ok">✓ OK</span>'
-        badge_html = ''
+        badge_html = ""
 
         # Extract token data if available
         tokens_data = None
-        tool_use_id = event.get('tool_use_id')
+        tool_use_id = event.get("tool_use_id")
         if tool_use_id and tool_use_id in reasoning_lookup:
-            tokens_data = reasoning_lookup[tool_use_id].get('tokens', {})
+            tokens_data = reasoning_lookup[tool_use_id].get("tokens", {})
 
-        if event_type == 'session_start':
+        if event_type == "session_start":
             badge_html = '<span class="event-badge event-session">Session Start</span>'
-            desc_html = 'Recording session initiated'
-            tool_details_html = '<em>Session logging enabled</em>'
+            desc_html = "Recording session initiated"
+            tool_details_html = "<em>Session logging enabled</em>"
 
-        elif event_type == 'tool_call_start':
-            tool_name = event.get('tool_name', 'Unknown')
-            params = event.get('parameters', {})
-            tool_use_id = event.get('tool_use_id')
+        elif event_type == "tool_call_start":
+            tool_name = event.get("tool_name", "Unknown")
+            params = event.get("parameters", {})
+            tool_use_id = event.get("tool_use_id")
 
             # Extract description from params
-            param_description = params.get('description', '')
+            param_description = params.get("description", "")
 
-            is_subagent_launch = 'subagent_type' in params
+            is_subagent_launch = "subagent_type" in params
             if is_subagent_launch:
-                badge_html = '<span class="event-badge event-subagent-launch">Sub-Agent Launch</span>'
-                subagent_type = params.get('subagent_type', 'unknown')
-                task_desc = params.get('description', '')
+                badge_html = (
+                    '<span class="event-badge event-subagent-launch">Sub-Agent Launch</span>'
+                )
+                subagent_type = params.get("subagent_type", "unknown")
+                task_desc = params.get("description", "")
 
                 # Set current task description for sub-events to reference
                 current_task_desc = task_desc
 
-                desc_html = task_desc if task_desc else f'Launch {subagent_type}'
+                desc_html = task_desc if task_desc else f"Launch {subagent_type}"
                 tool_details_html = f'<span class="tool-name">Task</span> → {get_agent_name_from_type(subagent_type)}'
             else:
                 badge_html = '<span class="event-badge event-tool">Tool Start</span>'
 
                 # Use description as high-level, command as details
-                desc_html = param_description if param_description else f'{tool_name} execution'
+                desc_html = param_description if param_description else f"{tool_name} execution"
                 tool_details_html = f'<span class="tool-name">{tool_name}</span>'
 
                 # Add command/params as expandable
                 params_display = format_params_inline(params)
-                if params_display and params_display != '<em>none</em>':
-                    tool_details_html += f'<br><small style="color: #8b949e;">{params_display}</small>'
+                if params_display and params_display != "<em>none</em>":
+                    tool_details_html += (
+                        f'<br><small style="color: #8b949e;">{params_display}</small>'
+                    )
 
                 # Add reasoning and token info if available
                 if tool_use_id and tool_use_id in reasoning_lookup:
                     reasoning_data = reasoning_lookup[tool_use_id]
-                    reasoning = reasoning_data['reasoning']
-                    tokens = reasoning_data['tokens']
-                    cost = reasoning_data['cost']
+                    reasoning = reasoning_data["reasoning"]
+                    tokens = reasoning_data["tokens"]
+                    cost = reasoning_data["cost"]
 
                     # Add expandable reasoning section
                     reasoning_id = f"reasoning_{i}"
@@ -1526,33 +1565,33 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                         <div id="{reasoning_id}" style="display: none; margin-top: 10px; background: #161b22; padding: 12px; border-radius: 6px; border: 1px solid #30363d;">'''
 
                     # Add text blocks
-                    if reasoning['text']:
+                    if reasoning["text"]:
                         tool_details_html += '<div style="margin-bottom: 10px;"><strong style="color: #8b949e;">Reasoning:</strong></div>'
-                        for text_block in reasoning['text'][:2]:
+                        for text_block in reasoning["text"][:2]:
                             tool_details_html += f'<div style="color: #c9d1d9; margin-bottom: 8px; line-height: 1.5;">{escape_html(text_block[:300])}</div>'
 
                     # Add thinking preview
-                    if reasoning['thinking']:
+                    if reasoning["thinking"]:
                         tool_details_html += '<div style="margin-top: 10px;"><strong style="color: #8b949e;">Extended Thinking:</strong></div>'
-                        thinking_preview = reasoning['thinking'][0][:200]
+                        thinking_preview = reasoning["thinking"][0][:200]
                         tool_details_html += f'<div style="color: #8b949e; font-style: italic; margin-top: 4px;">{escape_html(thinking_preview)}...</div>'
 
                     # Add token usage
                     if tokens:
-                        tool_details_html += f'''<div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #30363d;">
+                        tool_details_html += f"""<div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #30363d;">
                             <div style="color: #8b949e; font-size: 11px; margin-bottom: 6px;">Token Usage:</div>
                             <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                                <div><span style="color: #58a6ff;">Input:</span> {tokens['input_tokens']:,}</div>
-                                <div><span style="color: #58a6ff;">Output:</span> {tokens['output_tokens']:,}</div>
-                                <div><span style="color: #58a6ff;">Total:</span> {tokens['total_tokens']:,}</div>
+                                <div><span style="color: #58a6ff;">Input:</span> {tokens["input_tokens"]:,}</div>
+                                <div><span style="color: #58a6ff;">Output:</span> {tokens["output_tokens"]:,}</div>
+                                <div><span style="color: #58a6ff;">Total:</span> {tokens["total_tokens"]:,}</div>
                                 <div><span style="color: #3fb950;">Cost:</span> ${cost:.4f}</div>
                             </div>
-                        </div>'''
+                        </div>"""
 
-                    tool_details_html += '</div></div>'
+                    tool_details_html += "</div></div>"
 
             # Check if this tool call has a completion
-            seq = event.get('sequence')
+            seq = event.get("sequence")
             has_completion = completion_map.get(seq, False)
             # If session ended (has stopped_at or this isn't the last event), show as incomplete not running
             session_ended = bool(stopped_at) or (i < len(unified_timeline) - 1)
@@ -1563,32 +1602,36 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
             else:
                 status_html = '<span class="status-na">⏳ Running</span>'
 
-        elif event_type == 'tool_call_complete':
-            tool_name = event.get('tool_name', 'Unknown')
-            error = event.get('error')
-            duration = event.get('duration_ms')
+        elif event_type == "tool_call_complete":
+            tool_name = event.get("tool_name", "Unknown")
+            error = event.get("error")
+            duration = event.get("duration_ms")
 
             badge_html = '<span class="event-badge event-tool">Tool Complete</span>'
-            desc_html = f'{tool_name} finished'
+            desc_html = f"{tool_name} finished"
             tool_details_html = f'<span class="tool-name">{tool_name}</span>'
-            status_html = '<span class="status-error">✗ ERROR</span>' if error else f'<span class="status-ok">✓ {format_duration(duration)}</span>'
+            status_html = (
+                '<span class="status-error">✗ ERROR</span>'
+                if error
+                else f'<span class="status-ok">✓ {format_duration(duration)}</span>'
+            )
 
-        elif event_type == 'subagent_stop':
-            agent_id = event.get('agent_id', 'unknown')
+        elif event_type == "subagent_stop":
+            agent_id = event.get("agent_id", "unknown")
             badge_html = '<span class="event-badge event-subagent-stop">Sub-Agent Complete</span>'
-            desc_html = 'Task completed'
-            tool_details_html = f'Agent <strong>{agent_id[:7]}</strong> finished'
+            desc_html = "Task completed"
+            tool_details_html = f"Agent <strong>{agent_id[:7]}</strong> finished"
 
-        elif event_type == 'subagent_user_message' or event_type == 'subagent_prompt':
+        elif event_type == "subagent_user_message" or event_type == "subagent_prompt":
             badge_html = '<span class="event-badge event-subagent-prompt">SUBAGENT PROMPT</span>'
-            content = event.get('content', '')
+            content = event.get("content", "")
 
             # Use current task description
-            desc_html = current_task_desc if current_task_desc else 'Sub-agent task'
+            desc_html = current_task_desc if current_task_desc else "Sub-agent task"
 
             # Show prompt content with preview
             if len(content) > 200:
-                preview = content[:200] + '...'
+                preview = content[:200] + "..."
                 prompt_id = f"prompt_{i}"
                 tool_details_html = f'''
                     <div class="response-preview">{escape_html(preview)}</div>
@@ -1603,15 +1646,15 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
             else:
                 tool_details_html = f'<div class="response-preview">{escape_html(content)}</div>'
 
-        elif event_type == 'subagent_text':
+        elif event_type == "subagent_text":
             badge_html = '<span class="event-badge event-subagent-text">Assistant Text</span>'
-            text = event.get('text', '')
+            text = event.get("text", "")
 
-            desc_html = 'Agent response'
+            desc_html = "Agent response"
 
             # Only show expandable button if text > 150 chars
             if len(text) > 150:
-                preview = text[:150] + '...'
+                preview = text[:150] + "..."
                 response_id = f"response_{i}"
 
                 tool_details_html = f'''
@@ -1628,40 +1671,42 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                 # Text is short enough to display inline
                 tool_details_html = f'<div class="response-preview">{escape_html(text)}</div>'
 
-        elif event_type == 'subagent_tool_call':
+        elif event_type == "subagent_tool_call":
             badge_html = '<span class="event-badge event-tool">Tool Call</span>'
-            tool_name = event.get('tool_name', 'Unknown')
-            params = event.get('parameters', {})
+            tool_name = event.get("tool_name", "Unknown")
+            params = event.get("parameters", {})
 
-            param_description = params.get('description', '')
-            desc_html = param_description if param_description else f'{tool_name} execution'
+            param_description = params.get("description", "")
+            desc_html = param_description if param_description else f"{tool_name} execution"
             tool_details_html = f'<span class="tool-name">{tool_name}</span><br><small style="color: #8b949e;">{format_params_inline(params)}</small>'
 
-        elif event_type == 'assistant_message':
+        elif event_type == "assistant_message":
             badge_html = '<span class="event-badge event-assistant">💬 Claude</span>'
-            content = event.get('content', '')
-            before_tool = event.get('before_tool', '')
+            content = event.get("content", "")
+            before_tool = event.get("before_tool", "")
 
             # Truncate long messages for timeline view
             if len(content) > 200:
-                content_preview = content[:200] + '...'
+                content_preview = content[:200] + "..."
             else:
                 content_preview = content
 
             content_html = format_code_content(content_preview)
-            desc_html = 'Reasoning step'
+            desc_html = "Reasoning step"
             tool_details_html = f'<div style="color: #c9d1d9; font-style: italic; margin-bottom: 4px;">{content_html}</div>'
             if before_tool:
-                tool_details_html += f'<small style="color: #8b949e;">→ Before {before_tool} call</small>'
+                tool_details_html += (
+                    f'<small style="color: #8b949e;">→ Before {before_tool} call</small>'
+                )
             status_html = '<span class="status-ok">💭 Reasoning</span>'
 
         else:
             badge_html = f'<span class="event-badge" style="background: #6e7681; color: #fff;">{event_type}</span>'
             desc_html = event_type
-            tool_details_html = '<em>Unknown event</em>'
+            tool_details_html = "<em>Unknown event</em>"
 
         # Add tree connector prefix for parallel batches
-        row_number = f'{tree_prefix}{i}'
+        row_number = f"{tree_prefix}{i}"
         if parallel_batch_id:
             if parallel_batch_index == 0:
                 row_number += ' <span class="tree-connector">┬</span>'
@@ -1698,7 +1743,7 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                     </tr>
 '''
 
-    html += '''
+    html += """
                     </tbody>
                 </table>
             </div>
@@ -1763,22 +1808,22 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
 </body>
 </html>
-'''
+"""
 
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    with open(output_file, 'w', encoding='utf-8', errors='surrogatepass') as f:
+    with open(output_file, "w", encoding="utf-8", errors="surrogatepass") as f:
         f.write(html)
 
-    print(f'HTML report generated: {output_file}')
-    print(f'Open in browser: file:///{output_file.as_posix()}')
+    print(f"HTML report generated: {output_file}")
+    print(f"Open in browser: file:///{output_file.as_posix()}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
 
     if len(sys.argv) < 2:
-        print('Usage: python html_report_generator_v10.py <recording_file.json> [output_file.html]')
-        print('ASCII-safe console output (no Unicode checkmarks)')
+        print("Usage: python html_report_generator_v10.py <recording_file.json> [output_file.html]")
+        print("ASCII-safe console output (no Unicode checkmarks)")
         sys.exit(1)
 
     recording_file = Path(sys.argv[1])
@@ -1786,6 +1831,6 @@ if __name__ == '__main__':
     if len(sys.argv) >= 3:
         output_file = Path(sys.argv[2])
     else:
-        output_file = recording_file.with_suffix('.html')
+        output_file = recording_file.with_suffix(".html")
 
     generate_html_report(recording_file, output_file)

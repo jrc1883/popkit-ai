@@ -17,17 +17,14 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from popkit_shared.utils.xml_generator import (
     generate_problem_xml,
     generate_project_context_xml,
-    generate_findings_xml
+    generate_findings_xml,
 )
 from popkit_shared.utils.xml_parser import (
     parse_problem_context,
     parse_project_context,
-    parse_findings
+    parse_findings,
 )
-from popkit_shared.utils.xml_validator import (
-    validate_problem_xml,
-    is_well_formed_xml
-)
+from popkit_shared.utils.xml_validator import validate_problem_xml, is_well_formed_xml
 
 
 class TestGenerationPerformance:
@@ -52,7 +49,7 @@ class TestGenerationPerformance:
         context = {
             "name": "test-project",
             "stack": ["Python", "TypeScript", "React"],
-            "infrastructure": {"redis": True, "postgres": True, "docker": True}
+            "infrastructure": {"redis": True, "postgres": True, "docker": True},
         }
 
         iterations = 100
@@ -73,7 +70,7 @@ class TestGenerationPerformance:
             "status": "success",
             "quality_score": 0.85,
             "issues": ["Issue 1", "Issue 2"],
-            "suggestions": ["Suggestion 1", "Suggestion 2"]
+            "suggestions": ["Suggestion 1", "Suggestion 2"],
         }
 
         iterations = 100
@@ -93,13 +90,13 @@ class TestParsingPerformance:
 
     def test_problem_parsing_benchmark(self):
         """Test problem XML parsing speed (<0.5ms target)"""
-        xml = '''
+        xml = """
         <problem-context version="1.0">
             <category>bug</category>
             <description>Authentication fails intermittently</description>
             <severity>high</severity>
         </problem-context>
-        '''
+        """
 
         iterations = 100
         start = time.perf_counter()
@@ -115,7 +112,7 @@ class TestParsingPerformance:
 
     def test_project_parsing_benchmark(self):
         """Test project XML parsing speed (<0.5ms target)"""
-        xml = '''
+        xml = """
         <project version="1.0">
             <name>popkit-claude</name>
             <stack>
@@ -127,7 +124,7 @@ class TestParsingPerformance:
                 <postgres>true</postgres>
             </infrastructure>
         </project>
-        '''
+        """
 
         iterations = 100
         start = time.perf_counter()
@@ -142,7 +139,7 @@ class TestParsingPerformance:
 
     def test_findings_parsing_benchmark(self):
         """Test findings XML parsing speed (<0.5ms target)"""
-        xml = '''
+        xml = """
         <findings version="1.0">
             <tool>Write</tool>
             <status>success</status>
@@ -152,7 +149,7 @@ class TestParsingPerformance:
                 <issue>Issue 2</issue>
             </issues>
         </findings>
-        '''
+        """
 
         iterations = 100
         start = time.perf_counter()
@@ -171,7 +168,7 @@ class TestValidationPerformance:
 
     def test_well_formedness_check_benchmark(self):
         """Test well-formedness checking speed (<0.1ms target)"""
-        xml = '<problem-context><category>bug</category><description>Test</description><severity>high</severity></problem-context>'
+        xml = "<problem-context><category>bug</category><description>Test</description><severity>high</severity></problem-context>"
 
         iterations = 1000
         start = time.perf_counter()
@@ -187,13 +184,13 @@ class TestValidationPerformance:
 
     def test_schema_validation_benchmark(self):
         """Test schema validation speed (baseline measurement)"""
-        xml = '''
+        xml = """
         <problem-context version="1.0">
             <category>bug</category>
             <description>Test description</description>
             <severity>high</severity>
         </problem-context>
-        '''
+        """
 
         iterations = 50
         start = time.perf_counter()
@@ -219,7 +216,7 @@ class TestLargePayloadPerformance:
             "status": "success",
             "quality_score": 0.5,
             "issues": [f"Issue {i}" for i in range(100)],
-            "suggestions": [f"Suggestion {i}" for i in range(100)]
+            "suggestions": [f"Suggestion {i}" for i in range(100)],
         }
 
         start = time.perf_counter()
@@ -233,15 +230,12 @@ class TestLargePayloadPerformance:
         # Large payloads allowed more time but should still be reasonable
         assert gen_time < 5.0, f"Large XML generation {gen_time:.3f}ms too slow"
         assert parse_time < 5.0, f"Large XML parsing {parse_time:.3f}ms too slow"
-        assert len(parsed['issues']) == 100
-        assert len(parsed['suggestions']) == 100
+        assert len(parsed["issues"]) == 100
+        assert len(parsed["suggestions"]) == 100
 
     def test_large_project_stack(self):
         """Test performance with large technology stacks"""
-        context = {
-            "name": "mega-project",
-            "stack": [f"Technology-{i}" for i in range(50)]
-        }
+        context = {"name": "mega-project", "stack": [f"Technology-{i}" for i in range(50)]}
 
         start = time.perf_counter()
         xml = generate_project_context_xml(context)
@@ -253,7 +247,7 @@ class TestLargePayloadPerformance:
 
         assert gen_time < 5.0, f"Large project generation {gen_time:.3f}ms too slow"
         assert parse_time < 5.0, f"Large project parsing {parse_time:.3f}ms too slow"
-        assert len(parsed['stack']) == 50
+        assert len(parsed["stack"]) == 50
 
 
 class TestRoundTripPerformance:

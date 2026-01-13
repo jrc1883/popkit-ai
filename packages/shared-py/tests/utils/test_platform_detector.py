@@ -21,42 +21,42 @@ from popkit_shared.utils.platform_detector import (
     PlatformInfo,
     PlatformDetector,
     get_platform_info,
-    get_platform_summary
+    get_platform_summary,
 )
 
 
 class TestOSDetection:
     """Test operating system detection"""
 
-    @patch('sys.platform', 'win32')
+    @patch("sys.platform", "win32")
     def test_detect_windows(self):
         """Test Windows detection"""
         PlatformDetector._cached_info = None
         result = PlatformDetector._detect_os()
         assert result == OSType.WINDOWS
 
-    @patch('sys.platform', 'darwin')
+    @patch("sys.platform", "darwin")
     def test_detect_macos(self):
         """Test macOS detection"""
         PlatformDetector._cached_info = None
         result = PlatformDetector._detect_os()
         assert result == OSType.MACOS
 
-    @patch('sys.platform', 'linux')
+    @patch("sys.platform", "linux")
     def test_detect_linux(self):
         """Test Linux detection"""
         PlatformDetector._cached_info = None
         result = PlatformDetector._detect_os()
         assert result == OSType.LINUX
 
-    @patch('sys.platform', 'cygwin')
+    @patch("sys.platform", "cygwin")
     def test_detect_cygwin_as_windows(self):
         """Test Cygwin detected as Windows"""
         PlatformDetector._cached_info = None
         result = PlatformDetector._detect_os()
         assert result == OSType.WINDOWS
 
-    @patch('sys.platform', 'unknown-platform')
+    @patch("sys.platform", "unknown-platform")
     def test_detect_unknown_os(self):
         """Test unknown OS detection"""
         PlatformDetector._cached_info = None
@@ -67,56 +67,56 @@ class TestOSDetection:
 class TestShellDetection:
     """Test shell detection"""
 
-    @patch('sys.platform', 'linux')
+    @patch("sys.platform", "linux")
     def test_bash_detection(self):
         """Test Bash shell detection"""
-        with patch.dict(os.environ, {'SHELL': '/bin/bash'}, clear=True):
-            with patch('shutil.which', return_value='/bin/bash'):
+        with patch.dict(os.environ, {"SHELL": "/bin/bash"}, clear=True):
+            with patch("shutil.which", return_value="/bin/bash"):
                 PlatformDetector._cached_info = None
                 shell_type, shell_path = PlatformDetector._detect_shell()
                 assert shell_type == ShellType.BASH
-                assert 'bash' in shell_path.lower()
+                assert "bash" in shell_path.lower()
 
-    @patch('sys.platform', 'darwin')
+    @patch("sys.platform", "darwin")
     def test_zsh_detection(self):
         """Test Zsh shell detection"""
-        with patch.dict(os.environ, {'SHELL': '/bin/zsh'}, clear=True):
+        with patch.dict(os.environ, {"SHELL": "/bin/zsh"}, clear=True):
             PlatformDetector._cached_info = None
             shell_type, shell_path = PlatformDetector._detect_shell()
             assert shell_type == ShellType.ZSH
-            assert 'zsh' in shell_path.lower()
+            assert "zsh" in shell_path.lower()
 
-    @patch('sys.platform', 'win32')
+    @patch("sys.platform", "win32")
     def test_cmd_detection(self):
         """Test CMD detection on Windows"""
-        with patch.dict(os.environ, {'COMSPEC': 'C:\\Windows\\System32\\cmd.exe'}, clear=True):
-            with patch('shutil.which', return_value=None):
+        with patch.dict(os.environ, {"COMSPEC": "C:\\Windows\\System32\\cmd.exe"}, clear=True):
+            with patch("shutil.which", return_value=None):
                 PlatformDetector._cached_info = None
                 shell_type, shell_path = PlatformDetector._detect_shell()
                 assert shell_type == ShellType.CMD
 
-    @patch('sys.platform', 'win32')
+    @patch("sys.platform", "win32")
     def test_git_bash_detection(self):
         """Test Git Bash detection on Windows"""
-        with patch.dict(os.environ, {'MSYSTEM': 'MINGW64'}, clear=True):
-            with patch('shutil.which', return_value='/usr/bin/bash'):
+        with patch.dict(os.environ, {"MSYSTEM": "MINGW64"}, clear=True):
+            with patch("shutil.which", return_value="/usr/bin/bash"):
                 PlatformDetector._cached_info = None
                 shell_type, shell_path = PlatformDetector._detect_shell()
                 assert shell_type == ShellType.GIT_BASH
 
-    @patch('sys.platform', 'win32')
+    @patch("sys.platform", "win32")
     def test_wsl_detection(self):
         """Test WSL detection"""
-        with patch.dict(os.environ, {'WSL_DISTRO_NAME': 'Ubuntu'}, clear=True):
+        with patch.dict(os.environ, {"WSL_DISTRO_NAME": "Ubuntu"}, clear=True):
             PlatformDetector._cached_info = None
             shell_type, shell_path = PlatformDetector._detect_shell()
             assert shell_type == ShellType.WSL
 
-    @patch('sys.platform', 'win32')
+    @patch("sys.platform", "win32")
     def test_powershell_core_detection(self):
         """Test PowerShell Core (pwsh) detection"""
-        with patch('shutil.which') as mock_which:
-            mock_which.side_effect = lambda x: '/usr/bin/pwsh' if x == 'pwsh' else None
+        with patch("shutil.which") as mock_which:
+            mock_which.side_effect = lambda x: "/usr/bin/pwsh" if x == "pwsh" else None
             with patch.dict(os.environ, {}, clear=True):
                 PlatformDetector._cached_info = None
                 shell_type, shell_path = PlatformDetector._detect_shell()
@@ -179,11 +179,7 @@ class TestPlatformInfo:
 
     def test_to_dict_serialization(self):
         """Test converting PlatformInfo to dictionary"""
-        caps = ShellCapabilities(
-            unix_commands=True,
-            glob_support=True,
-            heredoc_support=True
-        )
+        caps = ShellCapabilities(unix_commands=True, glob_support=True, heredoc_support=True)
         info = PlatformInfo(
             os_type=OSType.LINUX,
             os_version="Linux 5.15.0",
@@ -191,7 +187,7 @@ class TestPlatformInfo:
             shell_path="/bin/bash",
             shell_version="5.0.0",
             capabilities=caps,
-            available_commands={"ls": "/bin/ls"}
+            available_commands={"ls": "/bin/ls"},
         )
 
         result = info.to_dict()
@@ -212,7 +208,7 @@ class TestPlatformInfo:
             shell_type=ShellType.CMD,
             shell_path="cmd.exe",
             shell_version="10.0",
-            capabilities=caps
+            capabilities=caps,
         )
 
         result = info.to_dict()
@@ -268,14 +264,14 @@ class TestPlatformDetector:
         # ls or dir should be available on any system
         PlatformDetector._cached_info = None
         # Test with a command that likely exists
-        with patch('shutil.which', return_value='/bin/test'):
+        with patch("shutil.which", return_value="/bin/test"):
             result = PlatformDetector.is_command_available("test")
             # Result depends on actual system, just ensure no crash
             assert isinstance(result, bool)
 
     def test_is_command_available_nonexistent(self):
         """Test checking nonexistent command"""
-        with patch('shutil.which', return_value=None):
+        with patch("shutil.which", return_value=None):
             PlatformDetector._cached_info = None
             # Need to also mock the available_commands
             mock_info = PlatformInfo(
@@ -285,7 +281,7 @@ class TestPlatformDetector:
                 shell_path="/bin/bash",
                 shell_version="1.0",
                 capabilities=ShellCapabilities(),
-                available_commands={}
+                available_commands={},
             )
             PlatformDetector._cached_info = mock_info
             result = PlatformDetector.is_command_available("nonexistent_command_xyz")
@@ -298,8 +294,8 @@ class TestAvailableCommandsDetection:
     def test_unix_commands_detection(self):
         """Test detection of Unix commands"""
         caps = ShellCapabilities(unix_commands=True)
-        with patch('shutil.which') as mock_which:
-            mock_which.return_value = '/bin/cp'
+        with patch("shutil.which") as mock_which:
+            mock_which.return_value = "/bin/cp"
             commands = PlatformDetector._detect_available_commands(caps)
             # Should check for Unix commands
             assert isinstance(commands, dict)
@@ -307,7 +303,7 @@ class TestAvailableCommandsDetection:
     def test_cmd_commands_detection(self):
         """Test detection of CMD commands"""
         caps = ShellCapabilities(cmd_commands=True)
-        with patch('shutil.which') as mock_which:
+        with patch("shutil.which") as mock_which:
             mock_which.return_value = None
             commands = PlatformDetector._detect_available_commands(caps)
             assert isinstance(commands, dict)
@@ -319,7 +315,7 @@ class TestAvailableCommandsDetection:
         # PowerShell cmdlets should be marked as "builtin"
         assert isinstance(commands, dict)
         # Check if any PowerShell cmdlets are detected
-        ps_cmdlets = [k for k in commands.keys() if '-' in k]
+        ps_cmdlets = [k for k in commands.keys() if "-" in k]
         # PowerShell cmdlets have hyphens and should be marked as builtin
         for cmdlet in ps_cmdlets:
             assert commands[cmdlet] == "builtin"
@@ -334,10 +330,8 @@ class TestShellVersionDetection:
         mock_result.returncode = 0
         mock_result.stdout = "GNU bash, version 5.0.0\n"
 
-        with patch('subprocess.run', return_value=mock_result):
-            version = PlatformDetector._detect_shell_version(
-                ShellType.BASH, "/bin/bash"
-            )
+        with patch("subprocess.run", return_value=mock_result):
+            version = PlatformDetector._detect_shell_version(ShellType.BASH, "/bin/bash")
             assert "bash" in version.lower() or "5.0.0" in version
 
     def test_powershell_version_detection(self):
@@ -346,26 +340,20 @@ class TestShellVersionDetection:
         mock_result.returncode = 0
         mock_result.stdout = "7.2.0"
 
-        with patch('subprocess.run', return_value=mock_result):
-            version = PlatformDetector._detect_shell_version(
-                ShellType.POWERSHELL, "powershell"
-            )
+        with patch("subprocess.run", return_value=mock_result):
+            version = PlatformDetector._detect_shell_version(ShellType.POWERSHELL, "powershell")
             assert "PowerShell" in version or "7.2.0" in version
 
     def test_version_detection_error(self):
         """Test version detection with error"""
-        with patch('subprocess.run', side_effect=Exception("Error")):
-            version = PlatformDetector._detect_shell_version(
-                ShellType.BASH, "/bin/bash"
-            )
+        with patch("subprocess.run", side_effect=Exception("Error")):
+            version = PlatformDetector._detect_shell_version(ShellType.BASH, "/bin/bash")
             assert version == "unknown"
 
     def test_version_detection_timeout(self):
         """Test version detection timeout handling"""
-        with patch('subprocess.run', side_effect=TimeoutError("Timeout")):
-            version = PlatformDetector._detect_shell_version(
-                ShellType.BASH, "/bin/bash"
-            )
+        with patch("subprocess.run", side_effect=TimeoutError("Timeout")):
+            version = PlatformDetector._detect_shell_version(ShellType.BASH, "/bin/bash")
             assert version == "unknown"
 
 
@@ -408,9 +396,7 @@ class TestEdgeCases:
 
     def test_empty_shell_path(self):
         """Test handling of empty shell path"""
-        version = PlatformDetector._detect_shell_version(
-            ShellType.UNKNOWN, ""
-        )
+        version = PlatformDetector._detect_shell_version(ShellType.UNKNOWN, "")
         assert version == "unknown"
 
     def test_detect_os_version(self):
@@ -421,9 +407,7 @@ class TestEdgeCases:
 
     def test_capabilities_with_unknown_shell(self):
         """Test capabilities for unknown shell"""
-        caps = PlatformDetector._detect_capabilities(
-            OSType.UNKNOWN, ShellType.UNKNOWN
-        )
+        caps = PlatformDetector._detect_capabilities(OSType.UNKNOWN, ShellType.UNKNOWN)
         assert isinstance(caps, ShellCapabilities)
         # Unknown shell should have minimal capabilities
         assert caps.unix_commands is False
@@ -447,7 +431,7 @@ class TestRealWorldScenarios:
         commands = [
             ("cp file1 file2", "Unix"),
             ("xcopy /s", "Windows"),
-            ("Copy-Item test.txt", "PowerShell")
+            ("Copy-Item test.txt", "PowerShell"),
         ]
 
         for cmd, platform_type in commands:

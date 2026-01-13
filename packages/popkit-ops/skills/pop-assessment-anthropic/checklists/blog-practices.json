@@ -44,10 +44,7 @@
           "name": "Rules in hooks, not prompts",
           "description": "Critical rules should be enforced via hooks, not just prompt instructions",
           "type": "concept_check",
-          "evidence_patterns": [
-            "hooks/pre-tool-use.py",
-            "hooks/post-tool-use.py"
-          ],
+          "evidence_patterns": ["hooks/pre-tool-use.py", "hooks/post-tool-use.py"],
           "severity": "medium",
           "deduction": 5,
           "reference": "Hooks provide deterministic enforcement vs probabilistic prompt compliance"
@@ -58,12 +55,7 @@
           "description": "Safety validations should happen in PreToolUse hook",
           "type": "file_contains_any",
           "pattern": "hooks/pre-tool-use.py",
-          "contains_any": [
-            "security",
-            "validate",
-            "check",
-            "block"
-          ],
+          "contains_any": ["security", "validate", "check", "block"],
           "severity": "medium",
           "deduction": 5,
           "reference": "PreToolUse is the right place for safety gates"

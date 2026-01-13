@@ -23,20 +23,13 @@
           "id": "IP-002",
           "name": "Input Validation",
           "description": "Validate user input before processing",
-          "checks": [
-            "Type checking",
-            "Range validation",
-            "Format validation"
-          ]
+          "checks": ["Type checking", "Range validation", "Format validation"]
         },
         {
           "id": "IP-003",
           "name": "Default Values",
           "description": "Provide sensible defaults where possible",
-          "examples": [
-            "Default branch: main",
-            "Default output format: json"
-          ]
+          "examples": ["Default branch: main", "Default output format: json"]
         }
       ]
     },
@@ -49,31 +42,19 @@
           "id": "IP-004",
           "name": "Progress Indication",
           "description": "Show progress for long operations",
-          "methods": [
-            "Status line updates",
-            "Progress messages",
-            "Phase indicators"
-          ]
+          "methods": ["Status line updates", "Progress messages", "Phase indicators"]
         },
         {
           "id": "IP-005",
           "name": "Completion Confirmation",
           "description": "Confirm successful operations",
-          "examples": [
-            "Created project successfully",
-            "3 files updated",
-            "Build completed in 4.2s"
-          ]
+          "examples": ["Created project successfully", "3 files updated", "Build completed in 4.2s"]
         },
         {
           "id": "IP-006",
           "name": "Operation Summary",
           "description": "Summarize what was done",
-          "includes": [
-            "Files modified",
-            "Actions taken",
-            "Next steps"
-          ]
+          "includes": ["Files modified", "Actions taken", "Next steps"]
         }
       ]
     },
@@ -86,10 +67,7 @@
           "id": "IP-007",
           "name": "Clear Entry Points",
           "description": "Easy to discover starting commands",
-          "examples": [
-            "/popkit:help for overview",
-            "/popkit:project init for setup"
-          ]
+          "examples": ["/popkit:help for overview", "/popkit:project init for setup"]
         },
         {
           "id": "IP-008",
@@ -101,11 +79,7 @@
           "id": "IP-009",
           "name": "Escape Routes",
           "description": "Users can cancel or go back",
-          "mechanisms": [
-            "Ctrl+C to cancel",
-            "Undo operations where safe",
-            "--dry-run for preview"
-          ]
+          "mechanisms": ["Ctrl+C to cancel", "Undo operations where safe", "--dry-run for preview"]
         },
         {
           "id": "IP-010",

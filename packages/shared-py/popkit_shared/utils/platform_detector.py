@@ -20,6 +20,7 @@ from enum import Enum
 
 class OSType(Enum):
     """Operating system types"""
+
     WINDOWS = "windows"
     MACOS = "macos"
     LINUX = "linux"
@@ -28,6 +29,7 @@ class OSType(Enum):
 
 class ShellType(Enum):
     """Shell types"""
+
     CMD = "cmd"
     POWERSHELL = "powershell"
     POWERSHELL_CORE = "pwsh"
@@ -43,6 +45,7 @@ class ShellType(Enum):
 @dataclass
 class ShellCapabilities:
     """Capabilities of the detected shell"""
+
     unix_commands: bool = False  # Can run cp, rm, ls, etc.
     powershell_commands: bool = False  # Can run Copy-Item, Remove-Item, etc.
     cmd_commands: bool = False  # Can run xcopy, del, dir, etc.
@@ -57,6 +60,7 @@ class ShellCapabilities:
 @dataclass
 class PlatformInfo:
     """Complete platform information"""
+
     os_type: OSType
     os_version: str
     shell_type: ShellType
@@ -145,6 +149,7 @@ class PlatformDetector:
     def _detect_os_version(cls) -> str:
         """Detect OS version string"""
         import platform
+
         return platform.platform()
 
     @classmethod
@@ -210,10 +215,7 @@ class PlatformDetector:
         try:
             if shell_type in (ShellType.BASH, ShellType.GIT_BASH, ShellType.ZSH):
                 result = subprocess.run(
-                    [shell_path, "--version"],
-                    capture_output=True,
-                    text=True,
-                    timeout=5
+                    [shell_path, "--version"], capture_output=True, text=True, timeout=5
                 )
                 if result.returncode == 0:
                     return result.stdout.split("\n")[0].strip()
@@ -223,7 +225,7 @@ class PlatformDetector:
                     [shell_path, "-Command", "$PSVersionTable.PSVersion.ToString()"],
                     capture_output=True,
                     text=True,
-                    timeout=5
+                    timeout=5,
                 )
                 if result.returncode == 0:
                     return f"PowerShell {result.stdout.strip()}"
@@ -231,10 +233,7 @@ class PlatformDetector:
             elif shell_type == ShellType.CMD:
                 # CMD doesn't have a simple version command
                 result = subprocess.run(
-                    ["cmd", "/c", "ver"],
-                    capture_output=True,
-                    text=True,
-                    timeout=5
+                    ["cmd", "/c", "ver"], capture_output=True, text=True, timeout=5
                 )
                 if result.returncode == 0:
                     return result.stdout.strip()
@@ -249,8 +248,14 @@ class PlatformDetector:
         caps = ShellCapabilities()
 
         # Unix-like shells (including Git Bash)
-        if shell_type in (ShellType.BASH, ShellType.ZSH, ShellType.FISH,
-                          ShellType.SH, ShellType.GIT_BASH, ShellType.WSL):
+        if shell_type in (
+            ShellType.BASH,
+            ShellType.ZSH,
+            ShellType.FISH,
+            ShellType.SH,
+            ShellType.GIT_BASH,
+            ShellType.WSL,
+        ):
             caps.unix_commands = True
             caps.glob_support = True
             caps.heredoc_support = True
@@ -278,20 +283,27 @@ class PlatformDetector:
         commands_to_check = []
 
         if capabilities.unix_commands:
-            commands_to_check.extend([
-                "cp", "mv", "rm", "ls", "cat", "grep", "find", "mkdir", "touch"
-            ])
+            commands_to_check.extend(
+                ["cp", "mv", "rm", "ls", "cat", "grep", "find", "mkdir", "touch"]
+            )
 
         if capabilities.cmd_commands:
-            commands_to_check.extend([
-                "xcopy", "copy", "move", "del", "dir", "type", "find", "mkdir"
-            ])
+            commands_to_check.extend(
+                ["xcopy", "copy", "move", "del", "dir", "type", "find", "mkdir"]
+            )
 
         if capabilities.powershell_commands:
-            commands_to_check.extend([
-                "Copy-Item", "Move-Item", "Remove-Item", "Get-ChildItem",
-                "Get-Content", "New-Item", "Test-Path"
-            ])
+            commands_to_check.extend(
+                [
+                    "Copy-Item",
+                    "Move-Item",
+                    "Remove-Item",
+                    "Get-ChildItem",
+                    "Get-Content",
+                    "New-Item",
+                    "Test-Path",
+                ]
+            )
 
         available = {}
         for cmd in commands_to_check:
@@ -320,16 +332,50 @@ class PlatformDetector:
         info = cls.detect()
 
         # Unix commands
-        unix_commands = {"cp", "mv", "rm", "ls", "cat", "grep", "find", "mkdir",
-                        "touch", "chmod", "chown", "tar", "gzip", "sed", "awk"}
+        unix_commands = {
+            "cp",
+            "mv",
+            "rm",
+            "ls",
+            "cat",
+            "grep",
+            "find",
+            "mkdir",
+            "touch",
+            "chmod",
+            "chown",
+            "tar",
+            "gzip",
+            "sed",
+            "awk",
+        }
 
         # Windows CMD commands
-        cmd_commands = {"xcopy", "copy", "move", "del", "dir", "type", "md",
-                       "rd", "ren", "attrib", "robocopy"}
+        cmd_commands = {
+            "xcopy",
+            "copy",
+            "move",
+            "del",
+            "dir",
+            "type",
+            "md",
+            "rd",
+            "ren",
+            "attrib",
+            "robocopy",
+        }
 
         # PowerShell cmdlets
-        ps_commands = {"Copy-Item", "Move-Item", "Remove-Item", "Get-ChildItem",
-                      "Get-Content", "Set-Content", "New-Item", "Test-Path"}
+        ps_commands = {
+            "Copy-Item",
+            "Move-Item",
+            "Remove-Item",
+            "Get-ChildItem",
+            "Get-Content",
+            "Set-Content",
+            "New-Item",
+            "Test-Path",
+        }
 
         base_command = command.split()[0].lower()
 

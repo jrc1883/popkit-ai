@@ -249,10 +249,7 @@
       "User mentions managing multiple projects",
       "User asks about project status across repos"
     ],
-    "manual": [
-      "/popkit:dashboard",
-      "Invoke pop-dashboard skill"
-    ]
+    "manual": ["/popkit:dashboard", "Invoke pop-dashboard skill"]
   },
   "output": {
     "format": "dashboard_display",

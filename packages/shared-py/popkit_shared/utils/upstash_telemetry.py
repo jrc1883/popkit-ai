@@ -48,10 +48,16 @@ from urllib.error import URLError, HTTPError
 # Try to import telemetry types
 try:
     from test_telemetry import (
-        ToolTrace, DecisionPoint, CustomEvent, TestSession, TestMetrics,
-        is_test_mode, get_test_session_id
+        ToolTrace,
+        DecisionPoint,
+        CustomEvent,
+        TestSession,
+        TestMetrics,
+        is_test_mode,
+        get_test_session_id,
     )
     from local_telemetry import get_local_storage, LocalTelemetryStorage
+
     TELEMETRY_TYPES_AVAILABLE = True
 except ImportError:
     TELEMETRY_TYPES_AVAILABLE = False
@@ -66,11 +72,11 @@ UPSTASH_REST_TOKEN = os.environ.get("UPSTASH_REDIS_REST_TOKEN")
 
 # Stream configuration
 STREAM_PREFIX = "popkit:test"
-DEFAULT_MAXLEN = 1000          # Max entries per stream
-DEFAULT_TTL = 86400 * 7        # 7 days retention
-RATE_LIMIT_REQUESTS = 100      # Max requests per second (Upstash free tier)
-RATE_LIMIT_WINDOW = 1.0        # Window in seconds
-BATCH_SIZE = 50                # Max items per batch sync
+DEFAULT_MAXLEN = 1000  # Max entries per stream
+DEFAULT_TTL = 86400 * 7  # 7 days retention
+RATE_LIMIT_REQUESTS = 100  # Max requests per second (Upstash free tier)
+RATE_LIMIT_WINDOW = 1.0  # Window in seconds
+BATCH_SIZE = 50  # Max items per batch sync
 
 SyncMode = Literal["realtime", "batch", "async"]
 
@@ -78,6 +84,7 @@ SyncMode = Literal["realtime", "batch", "async"]
 # =============================================================================
 # Rate Limiter
 # =============================================================================
+
 
 class RateLimiter:
     """Simple token bucket rate limiter."""
@@ -118,6 +125,7 @@ class RateLimiter:
 # Upstash Telemetry Client
 # =============================================================================
 
+
 class UpstashTelemetryClient:
     """
     Client for streaming telemetry to Upstash Redis Streams.
@@ -126,10 +134,7 @@ class UpstashTelemetryClient:
     """
 
     def __init__(
-        self,
-        url: Optional[str] = None,
-        token: Optional[str] = None,
-        rate_limit: bool = True
+        self, url: Optional[str] = None, token: Optional[str] = None, rate_limit: bool = True
     ):
         """Initialize the telemetry client.
 
@@ -157,10 +162,7 @@ class UpstashTelemetryClient:
         if self.rate_limiter and not self.rate_limiter.wait_for_token():
             return None  # Rate limited
 
-        headers = {
-            "Authorization": f"Bearer {self.token}",
-            "Content-Type": "application/json"
-        }
+        headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
 
         for attempt in range(retry + 1):
             try:
@@ -168,10 +170,10 @@ class UpstashTelemetryClient:
                 for key, value in headers.items():
                     request.add_header(key, value)
 
-                body = json.dumps(list(args)).encode('utf-8')
+                body = json.dumps(list(args)).encode("utf-8")
 
                 with urlopen(request, body, timeout=10) as response:
-                    result = json.loads(response.read().decode('utf-8'))
+                    result = json.loads(response.read().decode("utf-8"))
                     return result.get("result")
 
             except HTTPError as e:
@@ -196,10 +198,7 @@ class UpstashTelemetryClient:
     # =========================================================================
 
     def xadd(
-        self,
-        stream_key: str,
-        fields: Dict[str, str],
-        maxlen: int = DEFAULT_MAXLEN
+        self, stream_key: str, fields: Dict[str, str], maxlen: int = DEFAULT_MAXLEN
     ) -> Optional[str]:
         """Add entry to stream with MAXLEN limit.
 
@@ -218,12 +217,7 @@ class UpstashTelemetryClient:
         result = self._execute(*args)
         return result if isinstance(result, str) else None
 
-    def xread(
-        self,
-        streams: Dict[str, str],
-        count: int = 10,
-        block: Optional[int] = None
-    ) -> List:
+    def xread(self, streams: Dict[str, str], count: int = 10, block: Optional[int] = None) -> List:
         """Read from streams.
 
         Args:
@@ -245,11 +239,7 @@ class UpstashTelemetryClient:
         return result if isinstance(result, list) else []
 
     def xrange(
-        self,
-        stream_key: str,
-        min_id: str = "-",
-        max_id: str = "+",
-        count: Optional[int] = None
+        self, stream_key: str, min_id: str = "-", max_id: str = "+", count: Optional[int] = None
     ) -> List:
         """Get stream entries in range.
 
@@ -303,7 +293,7 @@ class UpstashTelemetryClient:
             "tool_output": trace.tool_output[:5000],  # Truncate for streams
             "duration_ms": str(trace.duration_ms),
             "success": "1" if trace.success else "0",
-            "error": trace.error or ""
+            "error": trace.error or "",
         }
 
         entry_id = self.xadd(stream_key, fields)
@@ -329,7 +319,7 @@ class UpstashTelemetryClient:
             "header": decision.header,
             "options": json.dumps(decision.options),
             "selected": decision.selected,
-            "context": decision.context[:1000]
+            "context": decision.context[:1000],
         }
 
         entry_id = self.xadd(stream_key, fields)
@@ -352,7 +342,7 @@ class UpstashTelemetryClient:
         fields = {
             "timestamp": event.timestamp,
             "event_type": event.event_type,
-            "data": json.dumps(event.data)
+            "data": json.dumps(event.data),
         }
 
         entry_id = self.xadd(stream_key, fields)
@@ -379,8 +369,10 @@ class UpstashTelemetryClient:
             "started_at": session.started_at,
             "ended_at": session.ended_at or "",
             "outcome": session.outcome,
-            "metrics": json.dumps(session.metrics.to_dict() if hasattr(session.metrics, 'to_dict') else {}),
-            "artifacts": json.dumps(session.artifacts)
+            "metrics": json.dumps(
+                session.metrics.to_dict() if hasattr(session.metrics, "to_dict") else {}
+            ),
+            "artifacts": json.dumps(session.artifacts),
         }
 
         entry_id = self.xadd(stream_key, fields, maxlen=10)  # Keep only latest
@@ -393,9 +385,7 @@ class UpstashTelemetryClient:
     # =========================================================================
 
     def sync_local_session(
-        self,
-        session_id: str,
-        storage: Optional["LocalTelemetryStorage"] = None
+        self, session_id: str, storage: Optional["LocalTelemetryStorage"] = None
     ) -> Dict[str, int]:
         """Sync a local test session to Upstash.
 
@@ -541,9 +531,7 @@ class UpstashTelemetryClient:
     # =========================================================================
 
     def get_session_traces(
-        self,
-        session_id: str,
-        count: Optional[int] = None
+        self, session_id: str, count: Optional[int] = None
     ) -> List[Dict[str, Any]]:
         """Get traces from a session stream.
 
@@ -581,9 +569,7 @@ class UpstashTelemetryClient:
         return traces
 
     def get_session_events(
-        self,
-        session_id: str,
-        count: Optional[int] = None
+        self, session_id: str, count: Optional[int] = None
     ) -> List[Dict[str, Any]]:
         """Get events from a session stream."""
         stream_key = self._stream_key(session_id, "events")
@@ -621,7 +607,7 @@ class UpstashTelemetryClient:
             "trace_count": self.xlen(self._stream_key(session_id, "traces")),
             "decision_count": self.xlen(self._stream_key(session_id, "decisions")),
             "event_count": self.xlen(self._stream_key(session_id, "events")),
-            "meta": None
+            "meta": None,
         }
 
         # Get latest metadata
@@ -707,6 +693,7 @@ def sync_local_session(session_id: str) -> Dict[str, int]:
 # CLI Interface
 # =============================================================================
 
+
 def main():
     """CLI entry point."""
     import argparse
@@ -783,7 +770,7 @@ def main():
                     tool_input={"test": "input"},
                     tool_output="test output",
                     duration_ms=100,
-                    success=True
+                    success=True,
                 )
                 result = client.stream_trace(test_session_id, trace)
                 print(f"[{'OK' if result else 'FAIL'}] Stream trace")
@@ -794,8 +781,12 @@ def main():
 
             # Query back
             summary = client.get_session_summary(test_session_id)
-            print(f"[{'OK' if summary['trace_count'] > 0 else 'FAIL'}] Query traces: {summary['trace_count']}")
-            print(f"[{'OK' if summary['event_count'] > 0 else 'FAIL'}] Query events: {summary['event_count']}")
+            print(
+                f"[{'OK' if summary['trace_count'] > 0 else 'FAIL'}] Query traces: {summary['trace_count']}"
+            )
+            print(
+                f"[{'OK' if summary['event_count'] > 0 else 'FAIL'}] Query events: {summary['event_count']}"
+            )
 
             print()
             print("Integration test complete!")
@@ -803,6 +794,7 @@ def main():
         except Exception as e:
             print(f"[FAIL] {e}")
             import traceback
+
             traceback.print_exc()
 
     else:

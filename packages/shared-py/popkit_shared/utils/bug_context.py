@@ -28,9 +28,11 @@ from dataclasses import dataclass, field, asdict
 # DATA CLASSES
 # =============================================================================
 
+
 @dataclass
 class ToolCall:
     """Represents a single tool call."""
+
     tool_name: str
     tool_input: Dict[str, Any]
     tool_output: Optional[str] = None
@@ -41,6 +43,7 @@ class ToolCall:
 @dataclass
 class ErrorInfo:
     """Represents detected error information."""
+
     message: str
     error_type: Optional[str] = None
     file_path: Optional[str] = None
@@ -51,6 +54,7 @@ class ErrorInfo:
 @dataclass
 class ProjectContext:
     """Represents project context."""
+
     language: Optional[str] = None
     framework: Optional[str] = None
     services: List[str] = field(default_factory=list)
@@ -60,6 +64,7 @@ class ProjectContext:
 @dataclass
 class GitContext:
     """Represents git context."""
+
     branch: Optional[str] = None
     uncommitted_files: int = 0
     recent_commits: List[str] = field(default_factory=list)
@@ -69,6 +74,7 @@ class GitContext:
 @dataclass
 class BugContext:
     """Full bug context capture."""
+
     id: str
     description: str
     timestamp: str
@@ -148,6 +154,7 @@ STUCK_PATTERNS = [
 # CONTEXT CAPTURE
 # =============================================================================
 
+
 class BugContextCapture:
     """Captures bug context from session state."""
 
@@ -160,7 +167,7 @@ class BugContextCapture:
         description: str,
         recent_tools: Optional[List[Dict]] = None,
         agent_state: Optional[Dict] = None,
-        verbose: bool = False
+        verbose: bool = False,
     ) -> BugContext:
         """
         Capture full bug context.
@@ -179,11 +186,7 @@ class BugContextCapture:
         bug_id = self._generate_bug_id(description, timestamp)
 
         # Create context
-        ctx = BugContext(
-            id=bug_id,
-            description=description,
-            timestamp=timestamp
-        )
+        ctx = BugContext(id=bug_id, description=description, timestamp=timestamp)
 
         # Capture tool calls
         if recent_tools:
@@ -228,11 +231,13 @@ class BugContextCapture:
         for f in sorted(self.bugs_dir.glob("*.json"), reverse=True)[:limit]:
             try:
                 data = json.loads(f.read_text())
-                bugs.append({
-                    "id": data.get("id"),
-                    "description": data.get("description"),
-                    "timestamp": data.get("timestamp"),
-                })
+                bugs.append(
+                    {
+                        "id": data.get("id"),
+                        "description": data.get("description"),
+                        "timestamp": data.get("timestamp"),
+                    }
+                )
             except (json.JSONDecodeError, KeyError):
                 continue
 
@@ -302,13 +307,15 @@ class BugContextCapture:
             if not verbose and output and len(output) > 200:
                 output = output[:200] + "..."
 
-            parsed.append(ToolCall(
-                tool_name=t.get("tool_name", "unknown"),
-                tool_input=t.get("tool_input", {}),
-                tool_output=output,
-                timestamp=t.get("timestamp"),
-                success=not self._has_error(output or "")
-            ))
+            parsed.append(
+                ToolCall(
+                    tool_name=t.get("tool_name", "unknown"),
+                    tool_input=t.get("tool_input", {}),
+                    tool_output=output,
+                    timestamp=t.get("timestamp"),
+                    success=not self._has_error(output or ""),
+                )
+            )
         return parsed
 
     def _extract_files_touched(self, tools: List[Dict]) -> List[str]:
@@ -341,10 +348,12 @@ class BugContextCapture:
                     lines = output.split("\n")
                     for line in lines:
                         if re.search(pattern, line, re.IGNORECASE):
-                            errors.append(ErrorInfo(
-                                message=line.strip()[:200],
-                                error_type=self._classify_error(line)
-                            ))
+                            errors.append(
+                                ErrorInfo(
+                                    message=line.strip()[:200],
+                                    error_type=self._classify_error(line),
+                                )
+                            )
                             break
                     break
 
@@ -360,9 +369,17 @@ class BugContextCapture:
     def _classify_error(self, message: str) -> Optional[str]:
         """Classify error type from message."""
         error_types = [
-            "TypeError", "SyntaxError", "ReferenceError", "RuntimeError",
-            "ValueError", "KeyError", "AttributeError", "ImportError",
-            "ConnectionError", "TimeoutError", "PermissionError"
+            "TypeError",
+            "SyntaxError",
+            "ReferenceError",
+            "RuntimeError",
+            "ValueError",
+            "KeyError",
+            "AttributeError",
+            "ImportError",
+            "ConnectionError",
+            "TimeoutError",
+            "PermissionError",
         ]
         for et in error_types:
             if et in message:
@@ -401,7 +418,9 @@ class BugContextCapture:
             except (json.JSONDecodeError, FileNotFoundError):
                 pass
 
-        elif (project_dir / "requirements.txt").exists() or (project_dir / "pyproject.toml").exists():
+        elif (project_dir / "requirements.txt").exists() or (
+            project_dir / "pyproject.toml"
+        ).exists():
             ctx.language = "Python"
             ctx.detected_from = "requirements.txt or pyproject.toml"
 
@@ -421,7 +440,9 @@ class BugContextCapture:
             # Get current branch
             result = subprocess.run(
                 ["git", "branch", "--show-current"],
-                capture_output=True, text=True, cwd=self.working_dir
+                capture_output=True,
+                text=True,
+                cwd=self.working_dir,
             )
             if result.returncode == 0:
                 ctx.branch = result.stdout.strip()
@@ -429,7 +450,9 @@ class BugContextCapture:
             # Get uncommitted file count
             result = subprocess.run(
                 ["git", "status", "--porcelain"],
-                capture_output=True, text=True, cwd=self.working_dir
+                capture_output=True,
+                text=True,
+                cwd=self.working_dir,
             )
             if result.returncode == 0:
                 lines = [l for l in result.stdout.strip().split("\n") if l]
@@ -439,12 +462,12 @@ class BugContextCapture:
             # Get recent commits
             result = subprocess.run(
                 ["git", "log", "--oneline", "-3"],
-                capture_output=True, text=True, cwd=self.working_dir
+                capture_output=True,
+                text=True,
+                cwd=self.working_dir,
             )
             if result.returncode == 0:
-                ctx.recent_commits = [
-                    l.strip() for l in result.stdout.strip().split("\n") if l
-                ][:3]
+                ctx.recent_commits = [l.strip() for l in result.stdout.strip().split("\n") if l][:3]
 
         except (subprocess.SubprocessError, FileNotFoundError):
             pass
@@ -526,15 +549,11 @@ class BugContextCapture:
     def _dict_to_context(self, data: Dict) -> BugContext:
         """Convert dictionary to BugContext."""
         ctx = BugContext(
-            id=data["id"],
-            description=data["description"],
-            timestamp=data["timestamp"]
+            id=data["id"], description=data["description"], timestamp=data["timestamp"]
         )
 
         if data.get("recent_tools"):
-            ctx.recent_tools = [
-                ToolCall(**t) for t in data["recent_tools"]
-            ]
+            ctx.recent_tools = [ToolCall(**t) for t in data["recent_tools"]]
 
         ctx.files_touched = data.get("files_touched", [])
 
@@ -560,6 +579,7 @@ class BugContextCapture:
 # FORMATTING
 # =============================================================================
 
+
 def format_bug_report(ctx: BugContext, verbose: bool = False) -> str:
     """Format bug context as readable report."""
     lines = [
@@ -569,7 +589,7 @@ def format_bug_report(ctx: BugContext, verbose: bool = False) -> str:
         f"Time: {ctx.timestamp}",
         "",
         f"Description: {ctx.description}",
-        ""
+        "",
     ]
 
     # Project context
@@ -649,7 +669,7 @@ def format_github_issue(ctx: BugContext) -> str:
         "",
         f"**Description:** {ctx.description}",
         "",
-        "**Context:**"
+        "**Context:**",
     ]
 
     if ctx.project and ctx.project.language:
@@ -716,6 +736,7 @@ def format_github_issue(ctx: BugContext) -> str:
 # PATTERN SHARING
 # =============================================================================
 
+
 def share_bug_pattern(ctx: BugContext) -> Optional[Dict[str, Any]]:
     """
     Share bug pattern to collective learning database.
@@ -767,15 +788,12 @@ def share_bug_pattern(ctx: BugContext) -> Optional[Dict[str, Any]]:
         pattern_context = PatternContext(
             languages=[ctx.project.language] if ctx.project and ctx.project.language else [],
             frameworks=[ctx.project.framework] if ctx.project and ctx.project.framework else [],
-            error_types=[e.error_type for e in ctx.errors if e.error_type]
+            error_types=[e.error_type for e in ctx.errors if e.error_type],
         )
 
         # Submit pattern (auto-anonymizes)
         result = client.submit_pattern(
-            trigger=trigger,
-            solution=solution,
-            context=pattern_context,
-            anonymize=True
+            trigger=trigger, solution=solution, context=pattern_context, anonymize=True
         )
 
         return result
@@ -820,15 +838,12 @@ def search_patterns_for_bug(ctx: BugContext) -> List[Dict[str, Any]]:
         # Build context
         pattern_context = PatternContext(
             languages=[ctx.project.language] if ctx.project and ctx.project.language else [],
-            frameworks=[ctx.project.framework] if ctx.project and ctx.project.framework else []
+            frameworks=[ctx.project.framework] if ctx.project and ctx.project.framework else [],
         )
 
         # Search patterns
         patterns = client.search_patterns(
-            query=query,
-            context=pattern_context,
-            limit=3,
-            threshold=0.6
+            query=query, context=pattern_context, limit=3, threshold=0.6
         )
 
         return [
@@ -837,7 +852,7 @@ def search_patterns_for_bug(ctx: BugContext) -> List[Dict[str, Any]]:
                 "trigger": p.trigger,
                 "solution": p.solution,
                 "similarity": p.similarity,
-                "quality_score": p.quality_score
+                "quality_score": p.quality_score,
             }
             for p in patterns
         ]
@@ -849,6 +864,7 @@ def search_patterns_for_bug(ctx: BugContext) -> List[Dict[str, Any]]:
 # =============================================================================
 # CLI
 # =============================================================================
+
 
 def main():
     """CLI for testing bug context capture."""
@@ -864,40 +880,35 @@ def main():
         {
             "tool_name": "Read",
             "tool_input": {"file_path": "/src/auth/oauth.ts"},
-            "tool_output": "export function handleAuth() { ... }"
+            "tool_output": "export function handleAuth() { ... }",
         },
         {
             "tool_name": "Edit",
             "tool_input": {"file_path": "/src/auth/oauth.ts", "old_string": "a", "new_string": "b"},
-            "tool_output": "File edited"
+            "tool_output": "File edited",
         },
         {
             "tool_name": "Bash",
             "tool_input": {"command": "npm run build"},
-            "tool_output": "TypeError: Cannot read property 'token' of undefined"
+            "tool_output": "TypeError: Cannot read property 'token' of undefined",
         },
         {
             "tool_name": "Edit",
             "tool_input": {"file_path": "/src/auth/oauth.ts", "old_string": "b", "new_string": "c"},
-            "tool_output": "File edited"
+            "tool_output": "File edited",
         },
         {
             "tool_name": "Edit",
             "tool_input": {"file_path": "/src/auth/oauth.ts", "old_string": "c", "new_string": "d"},
-            "tool_output": "File edited"
+            "tool_output": "File edited",
         },
     ]
 
-    mock_state = {
-        "progress": 0.3,
-        "current_task": "Implement OAuth flow"
-    }
+    mock_state = {"progress": 0.3, "current_task": "Implement OAuth flow"}
 
     # Capture context
     ctx = capture.capture(
-        description="Agent got stuck on OAuth flow",
-        recent_tools=mock_tools,
-        agent_state=mock_state
+        description="Agent got stuck on OAuth flow", recent_tools=mock_tools, agent_state=mock_state
     )
 
     # Print report

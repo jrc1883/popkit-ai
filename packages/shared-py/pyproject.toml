@@ -22,3 +22,44 @@ xml-validation = ["lxml"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.0"
+ruff = "^0.1.0"
+
+[tool.ruff]
+# Target Python 3.8+ (current minimum)
+target-version = "py38"
+
+# Line length
+line-length = 100
+
+# Exclude generated and vendored files
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "build",
+    "dist",
+    "*.egg-info",
+]
+
+[tool.ruff.lint]
+# Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default
+# Add isort (`I`) for import sorting
+select = ["E", "F", "I"]
+
+# Ignore specific rules
+ignore = [
+    "E501",  # Line too long (handled by formatter)
+]
+
+[tool.ruff.lint.isort]
+# Use single line imports
+force-single-line = false
+# Known first party
+known-first-party = ["popkit_shared"]
+
+[tool.ruff.format]
+# Use double quotes for strings
+quote-style = "double"
+
+# Indent with 4 spaces
+indent-style = "space"

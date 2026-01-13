@@ -21,7 +21,7 @@ from popkit_shared.utils.privacy import (
     abstract_code_identifiers,
     abstract_error_message,
     generate_content_hash,
-    PrivacyManager
+    PrivacyManager,
 )
 
 
@@ -51,9 +51,7 @@ class TestPrivacySettings:
     def test_to_dict(self):
         """Test converting settings to dictionary"""
         settings = PrivacySettings(
-            sharing_enabled=False,
-            consent_given=True,
-            consent_timestamp="2024-01-01T00:00:00"
+            sharing_enabled=False, consent_given=True, consent_timestamp="2024-01-01T00:00:00"
         )
         result = settings.to_dict()
 
@@ -68,7 +66,7 @@ class TestPrivacySettings:
             "sharing_enabled": False,
             "anonymization_level": "strict",
             "consent_given": True,
-            "auto_delete_days": 30
+            "auto_delete_days": 30,
         }
         settings = PrivacySettings.from_dict(data)
 

@@ -18,11 +18,11 @@ from datetime import datetime
 
 def parse_timestamp(ts_str: str) -> datetime:
     """Parse ISO timestamp with optional timezone, return timezone-naive local time."""
-    if not ts_str or ts_str == 'N/A':
+    if not ts_str or ts_str == "N/A":
         return datetime.min
     try:
         # Try with timezone
-        dt = datetime.fromisoformat(ts_str.replace('Z', '+00:00'))
+        dt = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
         if dt.tzinfo:
             # Convert UTC to local time, then strip timezone
             return dt.astimezone().replace(tzinfo=None)
@@ -38,42 +38,46 @@ def parse_timestamp(ts_str: str) -> datetime:
 def format_duration(duration_ms: Optional[int]) -> str:
     """Format duration safely, handling None values."""
     if duration_ms is None:
-        return 'N/A'
+        return "N/A"
     if duration_ms == 0:
-        return '<1ms'
+        return "<1ms"
     if duration_ms >= 1000:
-        return f'{duration_ms/1000:.1f}s'
-    return f'{duration_ms}ms'
+        return f"{duration_ms / 1000:.1f}s"
+    return f"{duration_ms}ms"
 
 
 def format_params_inline(params: Dict[str, Any]) -> str:
     """Format key parameters for inline display."""
     if not params:
-        return '<em>none</em>'
+        return "<em>none</em>"
 
     # Show most relevant params
     key_params = []
-    if 'command' in params:
-        cmd = params['command']
+    if "command" in params:
+        cmd = params["command"]
         key_params.append(f"cmd: {cmd[:60]}..." if len(cmd) > 60 else f"cmd: {cmd}")
-    if 'file_path' in params:
-        file_path = params['file_path']
-        key_params.append(f'<a href="file:///{file_path}" class="file-link">{Path(file_path).name}</a>')
-    if 'subagent_type' in params:
+    if "file_path" in params:
+        file_path = params["file_path"]
+        key_params.append(
+            f'<a href="file:///{file_path}" class="file-link">{Path(file_path).name}</a>'
+        )
+    if "subagent_type" in params:
         key_params.append(f"agent: {params['subagent_type']}")
-    if 'description' in params:
-        desc = params['description']
+    if "description" in params:
+        desc = params["description"]
         key_params.append(f"desc: {desc[:50]}..." if len(desc) > 50 else f"desc: {desc}")
-    if 'pattern' in params:
+    if "pattern" in params:
         key_params.append(f"pattern: {params['pattern']}")
 
     if not key_params:
         # Fallback: show first param
         first_key = list(params.keys())[0]
         value = str(params[first_key])
-        key_params.append(f"{first_key}: {value[:50]}..." if len(value) > 50 else f"{first_key}: {value}")
+        key_params.append(
+            f"{first_key}: {value[:50]}..." if len(value) > 50 else f"{first_key}: {value}"
+        )
 
-    return '<br>'.join(key_params)
+    return "<br>".join(key_params)
 
 
 def parse_agent_transcripts(claude_dir: Path, subagent_stops: List[Dict]) -> Dict[str, List[Dict]]:
@@ -81,12 +85,12 @@ def parse_agent_transcripts(claude_dir: Path, subagent_stops: List[Dict]) -> Dic
     transcripts = {}
 
     for sa in subagent_stops:
-        agent_id = sa.get('agent_id', 'unknown')
+        agent_id = sa.get("agent_id", "unknown")
 
         # Find transcript file
         transcript_file = None
-        for project_dir in claude_dir.glob('*'):
-            candidate = project_dir / f'agent-{agent_id}.jsonl'
+        for project_dir in claude_dir.glob("*"):
+            candidate = project_dir / f"agent-{agent_id}.jsonl"
             if candidate.exists():
                 transcript_file = candidate
                 break
@@ -97,62 +101,72 @@ def parse_agent_transcripts(claude_dir: Path, subagent_stops: List[Dict]) -> Dic
         # Parse JSONL into unified events
         events = []
         try:
-            with open(transcript_file, 'r', encoding='utf-8') as f:
+            with open(transcript_file, "r", encoding="utf-8") as f:
                 for line in f:
                     if not line.strip():
                         continue
                     try:
                         entry = json.loads(line)
-                        timestamp = entry.get('timestamp', '')
-                        msg = entry.get('message', {})
-                        msg_type = entry.get('type', 'unknown')
+                        timestamp = entry.get("timestamp", "")
+                        msg = entry.get("message", {})
+                        msg_type = entry.get("type", "unknown")
 
                         # Create event based on message type
-                        if msg_type == 'user':
-                            content = msg.get('content', '')
-                            events.append({
-                                'agent_id': agent_id,
-                                'timestamp': timestamp,
-                                'parsed_timestamp': parse_timestamp(timestamp),
-                                'type': 'subagent_user_message',
-                                'content': content if isinstance(content, str) else str(content)
-                            })
+                        if msg_type == "user":
+                            content = msg.get("content", "")
+                            events.append(
+                                {
+                                    "agent_id": agent_id,
+                                    "timestamp": timestamp,
+                                    "parsed_timestamp": parse_timestamp(timestamp),
+                                    "type": "subagent_user_message",
+                                    "content": content
+                                    if isinstance(content, str)
+                                    else str(content),
+                                }
+                            )
 
-                        elif msg_type == 'assistant':
-                            content = msg.get('content', [])
+                        elif msg_type == "assistant":
+                            content = msg.get("content", [])
                             if not isinstance(content, list):
-                                content = [{'type': 'text', 'text': str(content)}]
+                                content = [{"type": "text", "text": str(content)}]
 
                             for item in content:
-                                if item.get('type') == 'text':
-                                    events.append({
-                                        'agent_id': agent_id,
-                                        'timestamp': timestamp,
-                                        'parsed_timestamp': parse_timestamp(timestamp),
-                                        'type': 'subagent_text',
-                                        'text': item.get('text', '')
-                                    })
-                                elif item.get('type') == 'tool_use':
-                                    events.append({
-                                        'agent_id': agent_id,
-                                        'timestamp': timestamp,
-                                        'parsed_timestamp': parse_timestamp(timestamp),
-                                        'type': 'subagent_tool_call',
-                                        'tool_name': item.get('name'),
-                                        'parameters': item.get('input', {})
-                                    })
+                                if item.get("type") == "text":
+                                    events.append(
+                                        {
+                                            "agent_id": agent_id,
+                                            "timestamp": timestamp,
+                                            "parsed_timestamp": parse_timestamp(timestamp),
+                                            "type": "subagent_text",
+                                            "text": item.get("text", ""),
+                                        }
+                                    )
+                                elif item.get("type") == "tool_use":
+                                    events.append(
+                                        {
+                                            "agent_id": agent_id,
+                                            "timestamp": timestamp,
+                                            "parsed_timestamp": parse_timestamp(timestamp),
+                                            "type": "subagent_tool_call",
+                                            "tool_name": item.get("name"),
+                                            "parameters": item.get("input", {}),
+                                        }
+                                    )
 
-                        elif msg_type == 'user' and isinstance(msg.get('content'), list):
-                            for item in msg.get('content', []):
-                                if item.get('type') == 'tool_result':
-                                    events.append({
-                                        'agent_id': agent_id,
-                                        'timestamp': timestamp,
-                                        'parsed_timestamp': parse_timestamp(timestamp),
-                                        'type': 'subagent_tool_result',
-                                        'tool_use_id': item.get('tool_use_id'),
-                                        'success': not item.get('is_error', False)
-                                    })
+                        elif msg_type == "user" and isinstance(msg.get("content"), list):
+                            for item in msg.get("content", []):
+                                if item.get("type") == "tool_result":
+                                    events.append(
+                                        {
+                                            "agent_id": agent_id,
+                                            "timestamp": timestamp,
+                                            "parsed_timestamp": parse_timestamp(timestamp),
+                                            "type": "subagent_tool_result",
+                                            "tool_use_id": item.get("tool_use_id"),
+                                            "success": not item.get("is_error", False),
+                                        }
+                                    )
 
                     except json.JSONDecodeError:
                         continue
@@ -166,13 +180,15 @@ def parse_agent_transcripts(claude_dir: Path, subagent_stops: List[Dict]) -> Dic
     return transcripts
 
 
-def build_unified_timeline(main_events: List[Dict], transcripts: Dict[str, List[Dict]]) -> List[Dict]:
+def build_unified_timeline(
+    main_events: List[Dict], transcripts: Dict[str, List[Dict]]
+) -> List[Dict]:
     """Merge main session events with sub-agent events."""
     unified = []
 
     # Add main events
     for event in main_events:
-        event['source'] = 'main'
+        event["source"] = "main"
         unified.append(event)
 
     # Add sub-agent events
@@ -180,7 +196,7 @@ def build_unified_timeline(main_events: List[Dict], transcripts: Dict[str, List[
         unified.extend(events)
 
     # Sort by timestamp
-    unified.sort(key=lambda e: e.get('parsed_timestamp', datetime.min))
+    unified.sort(key=lambda e: e.get("parsed_timestamp", datetime.min))
 
     return unified
 
@@ -191,31 +207,34 @@ def mark_subagent_scopes(events: List[Dict]) -> List[Dict]:
     active_agents = {}  # agent_id -> start_index
 
     for i, event in enumerate(events):
-        event_type = event.get('type')
+        event_type = event.get("type")
 
         # Sub-agent launch
-        if event_type == 'tool_call_start':
-            params = event.get('parameters', {})
-            if 'subagent_type' in params:
+        if event_type == "tool_call_start":
+            params = event.get("parameters", {})
+            if "subagent_type" in params:
                 # Find the corresponding subagent_stop
                 for j in range(i + 1, len(events)):
-                    if events[j].get('type') == 'subagent_stop':
-                        agent_id = events[j].get('agent_id')
+                    if events[j].get("type") == "subagent_stop":
+                        agent_id = events[j].get("agent_id")
                         active_agents[agent_id] = i
                         break
 
         # Check if this event is inside any active sub-agent
-        event['in_subagent'] = False
-        event['subagent_id'] = None
+        event["in_subagent"] = False
+        event["subagent_id"] = None
 
         for agent_id, start_idx in active_agents.items():
             # Find the end index for this agent
             for j in range(start_idx + 1, len(events)):
-                if events[j].get('type') == 'subagent_stop' and events[j].get('agent_id') == agent_id:
+                if (
+                    events[j].get("type") == "subagent_stop"
+                    and events[j].get("agent_id") == agent_id
+                ):
                     # Check if current event is between start and end
                     if start_idx < i < j:
-                        event['in_subagent'] = True
-                        event['subagent_id'] = agent_id
+                        event["in_subagent"] = True
+                        event["subagent_id"] = agent_id
                     break
 
     return events
@@ -223,15 +242,15 @@ def mark_subagent_scopes(events: List[Dict]) -> List[Dict]:
 
 def get_agent_color(source: str) -> Tuple[str, str]:
     """Get color scheme for agent attribution."""
-    if source == 'main':
-        return '#1e3a5f', '#58a6ff'
+    if source == "main":
+        return "#1e3a5f", "#58a6ff"
 
     colors = [
-        ('#3d1e5f', '#a371f7'),  # Purple
-        ('#1e5f3d', '#3fb950'),  # Green
-        ('#5f3d1e', '#ff9b5e'),  # Orange
-        ('#5f1e3d', '#ff6b9d'),  # Pink
-        ('#1e5f5f', '#5ed9ff'),  # Cyan
+        ("#3d1e5f", "#a371f7"),  # Purple
+        ("#1e5f3d", "#3fb950"),  # Green
+        ("#5f3d1e", "#ff9b5e"),  # Orange
+        ("#5f1e3d", "#ff6b9d"),  # Pink
+        ("#1e5f5f", "#5ed9ff"),  # Cyan
     ]
 
     hash_val = sum(ord(c) for c in source) % len(colors)
@@ -245,16 +264,16 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
     with open(recording_file) as f:
         data = json.load(f)
 
-    session_id = data.get('session_id', 'unknown')
-    events = data.get('events', [])
+    session_id = data.get("session_id", "unknown")
+    events = data.get("events", [])
 
     # Parse timestamps
     for event in events:
-        event['parsed_timestamp'] = parse_timestamp(event.get('timestamp', ''))
+        event["parsed_timestamp"] = parse_timestamp(event.get("timestamp", ""))
 
     # Get sub-agent transcripts
-    claude_dir = Path.home() / '.claude' / 'projects'
-    subagent_stops = [e for e in events if e.get('type') == 'subagent_stop']
+    claude_dir = Path.home() / ".claude" / "projects"
+    subagent_stops = [e for e in events if e.get("type") == "subagent_stop"]
     transcripts = parse_agent_transcripts(claude_dir, subagent_stops)
 
     # Build unified timeline
@@ -264,13 +283,19 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
     unified_timeline = mark_subagent_scopes(unified_timeline)
 
     # Calculate stats
-    tool_calls = [e for e in events if e.get('type') in ['tool_call', 'tool_call_start']]
-    total_duration = sum(e.get('duration_ms') or 0 for e in events if e.get('type') == 'tool_call_complete')
-    error_count = sum(1 for e in events if e.get('type') == 'tool_call_complete' and e.get('error'))
-    success_rate = ((len([e for e in events if e.get('type') == 'tool_call_complete']) - error_count) / max(len([e for e in events if e.get('type') == 'tool_call_complete']), 1) * 100)
+    tool_calls = [e for e in events if e.get("type") in ["tool_call", "tool_call_start"]]
+    total_duration = sum(
+        e.get("duration_ms") or 0 for e in events if e.get("type") == "tool_call_complete"
+    )
+    error_count = sum(1 for e in events if e.get("type") == "tool_call_complete" and e.get("error"))
+    success_rate = (
+        (len([e for e in events if e.get("type") == "tool_call_complete"]) - error_count)
+        / max(len([e for e in events if e.get("type") == "tool_call_complete"]), 1)
+        * 100
+    )
 
     # Generate HTML
-    html = f'''<!DOCTYPE html>
+    html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -489,7 +514,7 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
             </div>
             <div class="stat-card">
                 <div class="label">Duration</div>
-                <div class="value">{total_duration/1000:.1f}<span style="font-size: 14px; color: #8b949e;">s</span></div>
+                <div class="value">{total_duration / 1000:.1f}<span style="font-size: 14px; color: #8b949e;">s</span></div>
             </div>
             <div class="stat-card">
                 <div class="label">Success Rate</div>
@@ -512,46 +537,48 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                         </tr>
                     </thead>
                     <tbody>
-'''
+"""
 
     # Generate timeline rows
     for i, event in enumerate(unified_timeline, 1):
-        timestamp = event.get('timestamp', 'N/A')
-        source = event.get('source', event.get('agent_id', 'unknown'))
-        event_type = event.get('type', 'unknown')
-        in_subagent = event.get('in_subagent', False)
+        timestamp = event.get("timestamp", "N/A")
+        source = event.get("source", event.get("agent_id", "unknown"))
+        event_type = event.get("type", "unknown")
+        in_subagent = event.get("in_subagent", False)
 
         # Format timestamp
         try:
             dt = parse_timestamp(timestamp)
-            time_str = dt.strftime('%H:%M:%S') if dt != datetime.min else 'N/A'
+            time_str = dt.strftime("%H:%M:%S") if dt != datetime.min else "N/A"
         except:
-            time_str = 'N/A'
+            time_str = "N/A"
 
         # Agent attribution badge
         bg_color, border_color = get_agent_color(source)
-        agent_label = 'MAIN' if source == 'main' else source[:7]
+        agent_label = "MAIN" if source == "main" else source[:7]
         agent_badge = f'<span class="agent-badge" style="background: {bg_color}; color: {border_color}; border: 1px solid {border_color};">{agent_label}</span>'
 
         # Row class for sub-agent scope styling
-        row_class = 'in-subagent' if in_subagent else ''
+        row_class = "in-subagent" if in_subagent else ""
 
         # Event-specific rendering
-        desc_html = ''
+        desc_html = ""
         status_html = '<span class="status-ok">✓ OK</span>'
-        badge_html = ''
+        badge_html = ""
 
-        if event_type == 'session_start':
+        if event_type == "session_start":
             badge_html = '<span class="event-badge event-session">Session Start</span>'
-            desc_html = 'Recording session initiated'
+            desc_html = "Recording session initiated"
 
-        elif event_type == 'tool_call_start':
-            tool_name = event.get('tool_name', 'Unknown')
-            params = event.get('parameters', {})
+        elif event_type == "tool_call_start":
+            tool_name = event.get("tool_name", "Unknown")
+            params = event.get("parameters", {})
 
-            is_subagent_launch = 'subagent_type' in params
+            is_subagent_launch = "subagent_type" in params
             if is_subagent_launch:
-                badge_html = '<span class="event-badge event-subagent-launch">Sub-Agent Launch</span>'
+                badge_html = (
+                    '<span class="event-badge event-subagent-launch">Sub-Agent Launch</span>'
+                )
                 desc_html = f'<span class="tool-name">Task</span> → {params.get("subagent_type", "unknown")}<br><small style="color: #8b949e;">{params.get("description", "")}</small>'
             else:
                 badge_html = '<span class="event-badge event-tool">Tool Start</span>'
@@ -559,39 +586,43 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
 
             status_html = '<span class="status-na">⏳ Running</span>'
 
-        elif event_type == 'tool_call_complete':
-            tool_name = event.get('tool_name', 'Unknown')
-            error = event.get('error')
-            duration = event.get('duration_ms')
+        elif event_type == "tool_call_complete":
+            tool_name = event.get("tool_name", "Unknown")
+            error = event.get("error")
+            duration = event.get("duration_ms")
 
             badge_html = '<span class="event-badge event-tool">Tool Complete</span>'
             desc_html = f'<span class="tool-name">{tool_name}</span> finished'
-            status_html = '<span class="status-error">✗ ERROR</span>' if error else f'<span class="status-ok">✓ {format_duration(duration)}</span>'
+            status_html = (
+                '<span class="status-error">✗ ERROR</span>'
+                if error
+                else f'<span class="status-ok">✓ {format_duration(duration)}</span>'
+            )
 
-        elif event_type == 'subagent_stop':
-            agent_id = event.get('agent_id', 'unknown')
+        elif event_type == "subagent_stop":
+            agent_id = event.get("agent_id", "unknown")
             badge_html = '<span class="event-badge event-subagent-stop">Sub-Agent Complete</span>'
-            desc_html = f'Agent <strong>{agent_id}</strong> completed'
+            desc_html = f"Agent <strong>{agent_id}</strong> completed"
 
-        elif event_type == 'subagent_user_message':
+        elif event_type == "subagent_user_message":
             badge_html = '<span class="event-badge event-subagent-prompt">User Prompt</span>'
-            content = event.get('content', '')
+            content = event.get("content", "")
             desc_html = f'<div style="color: #8b949e; font-size: 12px; max-height: 200px; overflow-y: auto;">{content}</div>'
 
-        elif event_type == 'subagent_text':
+        elif event_type == "subagent_text":
             badge_html = '<span class="event-badge event-subagent-text">Assistant Text</span>'
-            text = event.get('text', '')
+            text = event.get("text", "")
             desc_html = f'<div style="color: #8b949e; font-size: 12px; max-height: 200px; overflow-y: auto;">{text}</div>'
 
-        elif event_type == 'subagent_tool_call':
+        elif event_type == "subagent_tool_call":
             badge_html = '<span class="event-badge event-tool">Tool Call</span>'
-            tool_name = event.get('tool_name', 'Unknown')
-            params = event.get('parameters', {})
+            tool_name = event.get("tool_name", "Unknown")
+            params = event.get("parameters", {})
             desc_html = f'<span class="tool-name">{tool_name}</span><br><small style="color: #8b949e;">{format_params_inline(params)}</small>'
 
         else:
             badge_html = f'<span class="event-badge" style="background: #6e7681; color: #fff;">{event_type}</span>'
-            desc_html = '<em>Unknown event</em>'
+            desc_html = "<em>Unknown event</em>"
 
         html += f'''
                     <tr class="{row_class}">
@@ -604,7 +635,7 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                     </tr>
 '''
 
-    html += '''
+    html += """
                     </tbody>
                 </table>
             </div>
@@ -619,21 +650,22 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
     </script>
 </body>
 </html>
-'''
+"""
 
     # Write HTML file
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    with open(output_file, 'w', encoding='utf-8') as f:
+    with open(output_file, "w", encoding="utf-8") as f:
         f.write(html)
 
-    print(f'HTML report generated: {output_file}')
-    print(f'Open in browser: file:///{output_file.as_posix()}')
+    print(f"HTML report generated: {output_file}")
+    print(f"Open in browser: file:///{output_file.as_posix()}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
+
     if len(sys.argv) != 3:
-        print('Usage: python html_report_generator_v5.py <recording.json> <output.html>')
+        print("Usage: python html_report_generator_v5.py <recording.json> <output.html>")
         sys.exit(1)
 
     recording_file = Path(sys.argv[1])

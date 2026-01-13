@@ -17,7 +17,12 @@
           "value": "python-fastapi",
           "label": "Python + FastAPI",
           "description": "Native ML ecosystem, async support, auto-generated docs",
-          "pros": ["Native PyTorch/TensorFlow", "Async inference", "Auto OpenAPI docs", "Pydantic validation"],
+          "pros": [
+            "Native PyTorch/TensorFlow",
+            "Async inference",
+            "Auto OpenAPI docs",
+            "Pydantic validation"
+          ],
           "cons": ["Python GIL limitations", "Deployment complexity", "Memory management"],
           "when": "PyTorch/TensorFlow models, need Python ML libraries, auto-docs important",
           "ml_integration": "Native - direct model loading"
@@ -26,7 +31,12 @@
           "value": "node-fastify-onnx",
           "label": "Node.js + Fastify + ONNX",
           "description": "TypeScript API with ONNX.js for model inference",
-          "pros": ["TypeScript codebase", "ONNX runtime fast", "Good for production", "Easier deployment"],
+          "pros": [
+            "TypeScript codebase",
+            "ONNX runtime fast",
+            "Good for production",
+            "Easier deployment"
+          ],
           "cons": ["Must convert models to ONNX", "Some ops not supported", "Less ML tooling"],
           "when": "TypeScript team, models can export to ONNX, need unified codebase",
           "ml_integration": "ONNX Runtime - requires model conversion"
@@ -44,7 +54,12 @@
           "value": "triton",
           "label": "NVIDIA Triton Inference Server",
           "description": "Production-grade model serving, multi-model, multi-framework",
-          "pros": ["Production battle-tested", "Multi-model serving", "Dynamic batching", "GPU optimization"],
+          "pros": [
+            "Production battle-tested",
+            "Multi-model serving",
+            "Dynamic batching",
+            "GPU optimization"
+          ],
           "cons": ["Infrastructure complexity", "NVIDIA ecosystem lock-in", "Learning curve"],
           "when": "Production ML at scale, multiple models, need GPU batching",
           "ml_integration": "Native - designed for model serving"
@@ -67,7 +82,12 @@
           "value": "pytorch",
           "label": "PyTorch",
           "description": "Most popular for research and production, Hugging Face default",
-          "pros": ["Dynamic computation graphs", "Hugging Face ecosystem", "Best debugging", "Research to production"],
+          "pros": [
+            "Dynamic computation graphs",
+            "Hugging Face ecosystem",
+            "Best debugging",
+            "Research to production"
+          ],
           "cons": ["Slower than TensorFlow in some cases", "TorchScript complexity"],
           "when": "Using Hugging Face models, research-based development, dynamic models",
           "export_options": ["ONNX", "TorchScript", "Native PyTorch"]
@@ -85,7 +105,12 @@
           "value": "onnx",
           "label": "ONNX (Pre-converted)",
           "description": "Framework-agnostic model format, optimized inference",
-          "pros": ["Framework agnostic", "ONNX Runtime optimized", "Cross-platform", "Quantization support"],
+          "pros": [
+            "Framework agnostic",
+            "ONNX Runtime optimized",
+            "Cross-platform",
+            "Quantization support"
+          ],
           "cons": ["Conversion can lose ops", "Not all models convert", "Debugging harder"],
           "when": "Models already in ONNX, need cross-platform, optimization priority",
           "export_options": ["Native ONNX"]
@@ -149,7 +174,11 @@
           "value": "vllm",
           "label": "vLLM (LLM Serving)",
           "description": "Optimized LLM inference with PagedAttention",
-          "pros": ["Best LLM throughput", "PagedAttention memory efficiency", "OpenAI-compatible API"],
+          "pros": [
+            "Best LLM throughput",
+            "PagedAttention memory efficiency",
+            "OpenAI-compatible API"
+          ],
           "cons": ["LLMs only", "GPU required", "Setup complexity"],
           "when": "Serving LLMs, high concurrent requests, need OpenAI-compatible API"
         }
@@ -171,7 +200,12 @@
           "value": "modal",
           "label": "Modal",
           "description": "Serverless GPU compute, pay-per-second, excellent DX",
-          "pros": ["Pay-per-second GPUs", "Zero cold start option", "Excellent Python DX", "Auto-scaling"],
+          "pros": [
+            "Pay-per-second GPUs",
+            "Zero cold start option",
+            "Excellent Python DX",
+            "Auto-scaling"
+          ],
           "cons": ["Vendor lock-in", "Newer platform", "Limited regions"],
           "when": "Variable load, want serverless GPUs, Python codebase",
           "pricing": "Pay per second of compute"
@@ -180,7 +214,12 @@
           "value": "replicate",
           "label": "Replicate",
           "description": "Model hosting platform, easy deployment, pay-per-prediction",
-          "pros": ["Easy model deployment", "Cold boot optimization", "Pay per prediction", "Public model hosting"],
+          "pros": [
+            "Easy model deployment",
+            "Cold boot optimization",
+            "Pay per prediction",
+            "Public model hosting"
+          ],
           "cons": ["Less control", "Higher cost at scale", "Limited customization"],
           "when": "Want managed hosting, sharing models publicly, simple deployment",
           "pricing": "Pay per prediction"
@@ -189,7 +228,12 @@
           "value": "runpod",
           "label": "RunPod",
           "description": "GPU cloud with serverless endpoints, good price/performance",
-          "pros": ["Competitive GPU pricing", "Serverless endpoints", "Persistent pods", "Multiple GPU types"],
+          "pros": [
+            "Competitive GPU pricing",
+            "Serverless endpoints",
+            "Persistent pods",
+            "Multiple GPU types"
+          ],
           "cons": ["Less polished than Modal", "More ops overhead", "Community GPUs variable"],
           "when": "Cost sensitive, need persistent GPU, batch workloads",
           "pricing": "Per-second GPU billing"
@@ -207,7 +251,12 @@
           "value": "self-hosted",
           "label": "Self-hosted (K8s/Docker)",
           "description": "Full control with Kubernetes or Docker deployment",
-          "pros": ["Full control", "No vendor lock-in", "Predictable costs", "Custom infrastructure"],
+          "pros": [
+            "Full control",
+            "No vendor lock-in",
+            "Predictable costs",
+            "Custom infrastructure"
+          ],
           "cons": ["Ops overhead", "GPU management", "Scaling complexity"],
           "when": "Have DevOps team, specific compliance needs, predictable high volume",
           "pricing": "Infrastructure costs only"
@@ -227,12 +276,7 @@
     "supporting": ["performance-optimizer", "devops-automator"]
   },
 
-  "quality_gates": [
-    "python-lint",
-    "type-check",
-    "model-test",
-    "latency-benchmark"
-  ],
+  "quality_gates": ["python-lint", "type-check", "model-test", "latency-benchmark"],
 
   "scaffolding": {
     "directories": [
@@ -245,12 +289,6 @@
       "tests",
       "benchmarks"
     ],
-    "files": [
-      "pyproject.toml",
-      "requirements.txt",
-      ".env.example",
-      "Dockerfile",
-      "README.md"
-    ]
+    "files": ["pyproject.toml", "requirements.txt", ".env.example", "Dockerfile", "README.md"]
   }
 }

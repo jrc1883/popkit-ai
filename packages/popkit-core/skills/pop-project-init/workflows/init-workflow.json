@@ -26,11 +26,27 @@
           "prompt": "What type of project would you like to create?",
           "type": "selection",
           "options": [
-            {"label": "Next.js Application", "value": "nextjs", "description": "Full-stack React framework"},
-            {"label": "FastAPI Service", "value": "fastapi", "description": "Python API with async support"},
-            {"label": "CLI Tool", "value": "cli", "description": "Command-line application"},
-            {"label": "Library/Package", "value": "library", "description": "Reusable package for npm/PyPI"},
-            {"label": "Claude Code Plugin", "value": "plugin", "description": "Claude Code plugin with skills/commands"}
+            {
+              "label": "Next.js Application",
+              "value": "nextjs",
+              "description": "Full-stack React framework"
+            },
+            {
+              "label": "FastAPI Service",
+              "value": "fastapi",
+              "description": "Python API with async support"
+            },
+            { "label": "CLI Tool", "value": "cli", "description": "Command-line application" },
+            {
+              "label": "Library/Package",
+              "value": "library",
+              "description": "Reusable package for npm/PyPI"
+            },
+            {
+              "label": "Claude Code Plugin",
+              "value": "plugin",
+              "description": "Claude Code plugin with skills/commands"
+            }
           ]
         },
         {
@@ -40,10 +56,10 @@
           "type": "selection",
           "conditional": "project_type in ['cli', 'library']",
           "options": [
-            {"label": "TypeScript", "value": "typescript"},
-            {"label": "Python", "value": "python"},
-            {"label": "Go", "value": "go"},
-            {"label": "Rust", "value": "rust"}
+            { "label": "TypeScript", "value": "typescript" },
+            { "label": "Python", "value": "python" },
+            { "label": "Go", "value": "go" },
+            { "label": "Rust", "value": "rust" }
           ]
         }
       ]
@@ -73,33 +89,33 @@
           "type": "multiselect",
           "options_by_type": {
             "nextjs": [
-              {"label": "TypeScript", "value": "typescript", "default": true},
-              {"label": "Tailwind CSS", "value": "tailwind", "default": true},
-              {"label": "ESLint", "value": "eslint", "default": true},
-              {"label": "App Router", "value": "app-router", "default": true},
-              {"label": "Prisma ORM", "value": "prisma"},
-              {"label": "NextAuth.js", "value": "nextauth"},
-              {"label": "Shadcn/UI", "value": "shadcn"}
+              { "label": "TypeScript", "value": "typescript", "default": true },
+              { "label": "Tailwind CSS", "value": "tailwind", "default": true },
+              { "label": "ESLint", "value": "eslint", "default": true },
+              { "label": "App Router", "value": "app-router", "default": true },
+              { "label": "Prisma ORM", "value": "prisma" },
+              { "label": "NextAuth.js", "value": "nextauth" },
+              { "label": "Shadcn/UI", "value": "shadcn" }
             ],
             "fastapi": [
-              {"label": "SQLAlchemy ORM", "value": "sqlalchemy", "default": true},
-              {"label": "Alembic Migrations", "value": "alembic", "default": true},
-              {"label": "Pydantic Settings", "value": "pydantic-settings", "default": true},
-              {"label": "Redis Cache", "value": "redis"},
-              {"label": "Celery Tasks", "value": "celery"},
-              {"label": "OAuth2", "value": "oauth2"}
+              { "label": "SQLAlchemy ORM", "value": "sqlalchemy", "default": true },
+              { "label": "Alembic Migrations", "value": "alembic", "default": true },
+              { "label": "Pydantic Settings", "value": "pydantic-settings", "default": true },
+              { "label": "Redis Cache", "value": "redis" },
+              { "label": "Celery Tasks", "value": "celery" },
+              { "label": "OAuth2", "value": "oauth2" }
             ],
             "cli": [
-              {"label": "Rich Output", "value": "rich", "default": true},
-              {"label": "Click Framework", "value": "click", "default": true},
-              {"label": "Config File Support", "value": "config"},
-              {"label": "Shell Completion", "value": "completion"}
+              { "label": "Rich Output", "value": "rich", "default": true },
+              { "label": "Click Framework", "value": "click", "default": true },
+              { "label": "Config File Support", "value": "config" },
+              { "label": "Shell Completion", "value": "completion" }
             ],
             "library": [
-              {"label": "TypeScript Types", "value": "types", "default": true},
-              {"label": "ESM + CJS", "value": "dual-module"},
-              {"label": "Jest Testing", "value": "jest", "default": true},
-              {"label": "Changeset Versioning", "value": "changeset"}
+              { "label": "TypeScript Types", "value": "types", "default": true },
+              { "label": "ESM + CJS", "value": "dual-module" },
+              { "label": "Jest Testing", "value": "jest", "default": true },
+              { "label": "Changeset Versioning", "value": "changeset" }
             ]
           }
         },
@@ -167,11 +183,7 @@
           "name": "Git Setup",
           "type": "automated",
           "conditional": "git_init == true",
-          "commands": [
-            "git init",
-            "git add .",
-            "git commit -m 'Initial commit'"
-          ]
+          "commands": ["git init", "git add .", "git commit -m 'Initial commit'"]
         },
         {
           "id": "github_setup",

@@ -17,8 +17,17 @@
           "value": "node-fastify",
           "label": "Node.js + Fastify",
           "description": "Fastest Node framework, TypeScript-native, schema validation built-in",
-          "pros": ["Fastest Node.js framework (2x Express)", "First-class TypeScript", "JSON Schema validation", "Hooks system for lifecycle"],
-          "cons": ["Smaller ecosystem than Express", "Less middleware available", "Steeper learning curve"],
+          "pros": [
+            "Fastest Node.js framework (2x Express)",
+            "First-class TypeScript",
+            "JSON Schema validation",
+            "Hooks system for lifecycle"
+          ],
+          "cons": [
+            "Smaller ecosystem than Express",
+            "Less middleware available",
+            "Steeper learning curve"
+          ],
           "when": "Performance critical, TypeScript preferred, API-focused projects",
           "popularity": {
             "npm_weekly_downloads": 2100000,
@@ -30,8 +39,17 @@
           "value": "node-express",
           "label": "Node.js + Express",
           "description": "Most popular Node framework, massive ecosystem, easy to hire for",
-          "pros": ["Largest ecosystem", "Most tutorials/resources", "Easy to find developers", "Middleware for everything"],
-          "cons": ["Slower than alternatives", "Callback-heavy without wrappers", "Less opinionated"],
+          "pros": [
+            "Largest ecosystem",
+            "Most tutorials/resources",
+            "Easy to find developers",
+            "Middleware for everything"
+          ],
+          "cons": [
+            "Slower than alternatives",
+            "Callback-heavy without wrappers",
+            "Less opinionated"
+          ],
           "when": "Team familiarity, maximum library support, rapid prototyping",
           "popularity": {
             "npm_weekly_downloads": 35000000,
@@ -43,7 +61,12 @@
           "value": "python-fastapi",
           "label": "Python + FastAPI",
           "description": "Modern Python async framework with auto-generated OpenAPI docs",
-          "pros": ["Automatic API documentation", "Python type hints", "Async/await native", "Pydantic validation"],
+          "pros": [
+            "Automatic API documentation",
+            "Python type hints",
+            "Async/await native",
+            "Pydantic validation"
+          ],
           "cons": ["Python GIL for CPU-bound", "Deployment complexity", "Fewer hosting options"],
           "when": "Python team, ML integration needed, auto-documentation important",
           "popularity": {
@@ -56,8 +79,17 @@
           "value": "bun-hono",
           "label": "Bun + Hono",
           "description": "Fastest runtime, modern stack, excellent DX with JSX support",
-          "pros": ["Fastest JavaScript runtime", "Built-in bundler/test runner", "Web-standard APIs", "JSX middleware"],
-          "cons": ["Newer ecosystem", "Some npm packages incompatible", "Fewer production case studies"],
+          "pros": [
+            "Fastest JavaScript runtime",
+            "Built-in bundler/test runner",
+            "Web-standard APIs",
+            "JSX middleware"
+          ],
+          "cons": [
+            "Newer ecosystem",
+            "Some npm packages incompatible",
+            "Fewer production case studies"
+          ],
           "when": "Cutting-edge performance, greenfield project, comfortable with newer tools",
           "popularity": {
             "npm_weekly_downloads": 450000,
@@ -69,7 +101,12 @@
           "value": "go-fiber",
           "label": "Go + Fiber",
           "description": "Express-inspired Go framework, extremely fast, low memory footprint",
-          "pros": ["Exceptional performance", "Low memory usage", "Strong typing", "Easy deployment (single binary)"],
+          "pros": [
+            "Exceptional performance",
+            "Low memory usage",
+            "Strong typing",
+            "Easy deployment (single binary)"
+          ],
           "cons": ["Go learning curve", "Less rapid prototyping", "Smaller web ecosystem"],
           "when": "High-performance requirements, infrastructure team, microservices",
           "popularity": {
@@ -95,8 +132,17 @@
           "value": "postgresql",
           "label": "PostgreSQL",
           "description": "Most capable open-source RDBMS, excellent for complex queries and JSON",
-          "pros": ["ACID compliant", "JSON/JSONB support", "Full-text search", "Extensions ecosystem"],
-          "cons": ["Horizontal scaling complexity", "Higher resource usage", "Configuration complexity"],
+          "pros": [
+            "ACID compliant",
+            "JSON/JSONB support",
+            "Full-text search",
+            "Extensions ecosystem"
+          ],
+          "cons": [
+            "Horizontal scaling complexity",
+            "Higher resource usage",
+            "Configuration complexity"
+          ],
           "when": "Complex data relationships, need transactions, analytical queries",
           "orm_recommendations": ["Prisma", "Drizzle", "TypeORM"],
           "managed_options": ["Supabase", "Neon", "Railway", "PlanetScale"]
@@ -105,7 +151,12 @@
           "value": "mysql",
           "label": "MySQL / PlanetScale",
           "description": "Battle-tested RDBMS, excellent scaling with PlanetScale/Vitess",
-          "pros": ["Proven at scale", "PlanetScale branching", "Wide hosting support", "Simple replication"],
+          "pros": [
+            "Proven at scale",
+            "PlanetScale branching",
+            "Wide hosting support",
+            "Simple replication"
+          ],
           "cons": ["Less feature-rich than Postgres", "JSON support newer", "Character set issues"],
           "when": "Need horizontal scaling, familiar with MySQL, PlanetScale workflow appeals",
           "orm_recommendations": ["Prisma", "Drizzle", "Sequelize"],
@@ -115,8 +166,17 @@
           "value": "mongodb",
           "label": "MongoDB",
           "description": "Document database, flexible schema, excellent for rapid iteration",
-          "pros": ["Flexible schema", "Horizontal scaling built-in", "Rich query language", "Atlas managed service"],
-          "cons": ["No joins (aggregation pipelines)", "ACID only per-document", "Storage overhead"],
+          "pros": [
+            "Flexible schema",
+            "Horizontal scaling built-in",
+            "Rich query language",
+            "Atlas managed service"
+          ],
+          "cons": [
+            "No joins (aggregation pipelines)",
+            "ACID only per-document",
+            "Storage overhead"
+          ],
           "when": "Rapidly evolving schema, document-oriented data, need embedded documents",
           "orm_recommendations": ["Mongoose", "Prisma (limited)"],
           "managed_options": ["MongoDB Atlas", "Railway"]
@@ -125,8 +185,17 @@
           "value": "sqlite",
           "label": "SQLite (Turso/Libsql)",
           "description": "Embedded database, zero-config, Turso provides edge replication",
-          "pros": ["Zero configuration", "Edge deployment with Turso", "Embedded or remote", "Extremely fast reads"],
-          "cons": ["Single writer limitation", "No built-in replication (without Turso)", "Limited concurrent writes"],
+          "pros": [
+            "Zero configuration",
+            "Edge deployment with Turso",
+            "Embedded or remote",
+            "Extremely fast reads"
+          ],
+          "cons": [
+            "Single writer limitation",
+            "No built-in replication (without Turso)",
+            "Limited concurrent writes"
+          ],
           "when": "Edge deployment, read-heavy workload, simplicity priority, Turso for distributed",
           "orm_recommendations": ["Drizzle", "Prisma", "better-sqlite3"],
           "managed_options": ["Turso", "Cloudflare D1", "Self-hosted"]
@@ -149,7 +218,12 @@
           "value": "clerk",
           "label": "Clerk",
           "description": "Complete auth platform with pre-built UI components and webhooks",
-          "pros": ["Pre-built UI components", "Organization/team support", "Webhook integrations", "Session management"],
+          "pros": [
+            "Pre-built UI components",
+            "Organization/team support",
+            "Webhook integrations",
+            "Session management"
+          ],
           "cons": ["Per-MAU pricing adds up", "Vendor lock-in", "Less control over UX"],
           "when": "Fast time-to-market, need org/team features, prefer managed solution",
           "pricing": "Free tier 10k MAU, then $0.02/MAU"
@@ -158,7 +232,12 @@
           "value": "auth0",
           "label": "Auth0",
           "description": "Enterprise-grade identity platform with extensive SSO support",
-          "pros": ["Enterprise SSO (SAML, OIDC)", "Extensive integrations", "Customizable rules", "Compliance certifications"],
+          "pros": [
+            "Enterprise SSO (SAML, OIDC)",
+            "Extensive integrations",
+            "Customizable rules",
+            "Compliance certifications"
+          ],
           "cons": ["Complex pricing", "Can be overkill for startups", "Learning curve"],
           "when": "Enterprise customers, need SSO/SAML, compliance requirements",
           "pricing": "Free tier 7k MAU, custom pricing above"
@@ -167,7 +246,12 @@
           "value": "supabase-auth",
           "label": "Supabase Auth",
           "description": "Built into Supabase, PostgreSQL Row Level Security integration",
-          "pros": ["Free with Supabase", "RLS integration", "Social providers included", "Self-hostable"],
+          "pros": [
+            "Free with Supabase",
+            "RLS integration",
+            "Social providers included",
+            "Self-hostable"
+          ],
           "cons": ["Tied to Supabase ecosystem", "Less enterprise features", "Fewer integrations"],
           "when": "Using Supabase, want RLS, cost-sensitive, self-hosting option needed",
           "pricing": "Included with Supabase (free tier generous)"
@@ -208,7 +292,12 @@
           "value": "stripe",
           "label": "Stripe",
           "description": "Industry standard payment processor, excellent API and documentation",
-          "pros": ["Best documentation", "Stripe Billing for subscriptions", "Customer Portal", "Global coverage"],
+          "pros": [
+            "Best documentation",
+            "Stripe Billing for subscriptions",
+            "Customer Portal",
+            "Global coverage"
+          ],
           "cons": ["2.9% + 30¢ fees", "Complex tax handling", "Must handle webhooks"],
           "when": "Default choice, need reliability, global customers, complex billing logic",
           "pricing": "2.9% + 30¢ per transaction"
@@ -217,7 +306,12 @@
           "value": "paddle",
           "label": "Paddle",
           "description": "Merchant of Record, handles taxes/compliance for you",
-          "pros": ["Handles sales tax/VAT globally", "Merchant of Record", "Simpler compliance", "EU-friendly"],
+          "pros": [
+            "Handles sales tax/VAT globally",
+            "Merchant of Record",
+            "Simpler compliance",
+            "EU-friendly"
+          ],
           "cons": ["Higher fees (~5%)", "Less control", "Payout delays"],
           "when": "Selling to EU, want tax compliance handled, B2C focus",
           "pricing": "5% + 50¢ per transaction (includes taxes)"
@@ -226,7 +320,12 @@
           "value": "lemonsqueezy",
           "label": "LemonSqueezy",
           "description": "Merchant of Record built for digital products and SaaS",
-          "pros": ["Handles taxes globally", "Built for digital products", "Nice dashboard", "Affiliate system"],
+          "pros": [
+            "Handles taxes globally",
+            "Built for digital products",
+            "Nice dashboard",
+            "Affiliate system"
+          ],
           "cons": ["Newer (less mature)", "5% fees", "Limited customization"],
           "when": "Digital products, want simplicity, indie hackers/solo founders",
           "pricing": "5% + 50¢ per transaction"
@@ -254,12 +353,7 @@
     "supporting": ["security-auditor", "test-writer-fixer"]
   },
 
-  "quality_gates": [
-    "typescript",
-    "lint",
-    "test",
-    "security-scan"
-  ],
+  "quality_gates": ["typescript", "lint", "test", "security-scan"],
 
   "scaffolding": {
     "directories": [
@@ -273,12 +367,6 @@
       "tests/unit",
       "tests/integration"
     ],
-    "files": [
-      "package.json",
-      "tsconfig.json",
-      ".env.example",
-      ".gitignore",
-      "README.md"
-    ]
+    "files": ["package.json", "tsconfig.json", ".env.example", ".gitignore", "README.md"]
   }
 }

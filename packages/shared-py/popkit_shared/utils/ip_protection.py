@@ -19,6 +19,7 @@ from dataclasses import dataclass
 @dataclass
 class LeakFinding:
     """A potential IP leak finding."""
+
     file: str
     line_number: int
     pattern_name: str
@@ -34,92 +35,87 @@ FORBIDDEN_PATTERNS: Dict[str, Dict] = {
     "cloud_code": {
         "pattern": r"packages/cloud/",
         "severity": "critical",
-        "description": "Cloud API implementation code"
+        "description": "Cloud API implementation code",
     },
     "cloud_billing": {
         "pattern": r"packages/cloud-billing/",
         "severity": "critical",
-        "description": "Billing/payment code"
+        "description": "Billing/payment code",
     },
     "cloud_team": {
         "pattern": r"packages/cloud-team/",
         "severity": "critical",
-        "description": "Team coordination code"
+        "description": "Team coordination code",
     },
     "cloud_scripts": {
         "pattern": r"packages/cloud-scripts/",
         "severity": "critical",
-        "description": "Cloud deployment scripts"
+        "description": "Cloud deployment scripts",
     },
-
     # Environment variables and secrets
     "stripe_key": {
         "pattern": r"STRIPE_[A-Z_]+\s*[:=]",
         "severity": "critical",
-        "description": "Stripe API key reference"
+        "description": "Stripe API key reference",
     },
     "stripe_secret": {
         "pattern": r"sk_(?:live|test)_[a-zA-Z0-9]{24,}",
         "severity": "critical",
-        "description": "Stripe secret key"
+        "description": "Stripe secret key",
     },
     "upstash_token": {
         "pattern": r"UPSTASH_(?:REDIS|VECTOR)_(?:REST_)?(?:URL|TOKEN)\s*[:=]\s*['\"]?[a-zA-Z0-9_-]+",
         "severity": "critical",
-        "description": "Upstash credentials"
+        "description": "Upstash credentials",
     },
     "api_key_value": {
         "pattern": r"(?:api[_-]?key|apikey|secret[_-]?key)\s*[:=]\s*['\"][a-zA-Z0-9_-]{20,}['\"]",
         "severity": "critical",
-        "description": "Hardcoded API key"
+        "description": "Hardcoded API key",
     },
     "bearer_token": {
         "pattern": r"Bearer\s+[a-zA-Z0-9_-]{20,}",
         "severity": "critical",
-        "description": "Hardcoded bearer token"
+        "description": "Hardcoded bearer token",
     },
-
     # Explicit markers for internal content
     "proprietary_marker": {
         "pattern": r"(?i)(?:PROPRIETARY|CONFIDENTIAL|INTERNAL[_-]ONLY|SECRET[_-]SAUCE)",
         "severity": "high",
-        "description": "Proprietary content marker"
+        "description": "Proprietary content marker",
     },
     "secret_comment": {
         "pattern": r"#\s*SECRET:",
         "severity": "high",
-        "description": "Secret marker in comment"
+        "description": "Secret marker in comment",
     },
     "internal_only": {
         "pattern": r"(?i)internal[_-]?only",
         "severity": "medium",
-        "description": "Internal-only marker"
+        "description": "Internal-only marker",
     },
     "do_not_publish": {
         "pattern": r"(?i)do[_-]?not[_-]?publish",
         "severity": "high",
-        "description": "Do-not-publish marker"
+        "description": "Do-not-publish marker",
     },
-
     # Premium/paid feature detection logic
     "premium_logic": {
         "pattern": r"(?:is_?premium|check_?premium|premium_?only|paid_?feature)",
         "severity": "medium",
-        "description": "Premium feature detection logic"
+        "description": "Premium feature detection logic",
     },
-
     # Cloud URLs (production endpoints)
     "cloud_prod_url": {
         "pattern": r"https://api\.popkit\.cloud",
         "severity": "medium",
-        "description": "Production API URL"
+        "description": "Production API URL",
     },
-
     # Private repository references
     "private_repo_ref": {
         "pattern": r"jrc1883/popkit(?!\-claude)",
         "severity": "low",
-        "description": "Reference to private repo (not popkit-claude)"
+        "description": "Reference to private repo (not popkit-claude)",
     },
 }
 
@@ -137,11 +133,11 @@ SKIP_PATTERNS: List[str] = [
     r"build/",
     r"\.DS_Store",
     r"\.env\.example$",  # Examples are OK
-    r"\.lock$",          # Lock files
+    r"\.lock$",  # Lock files
     r"package-lock\.json$",
     r"yarn\.lock$",
-    r"\.d\.ts$",         # Type definitions
-    r"\.min\.js$",       # Minified files
+    r"\.d\.ts$",  # Type definitions
+    r"\.min\.js$",  # Minified files
     r"\.min\.css$",
 ]
 
@@ -150,8 +146,14 @@ ALLOWED_EXCEPTIONS: Dict[str, List[str]] = {
     # This file itself can mention patterns
     "ip_protection.py": list(FORBIDDEN_PATTERNS.keys()),
     # CLAUDE.md documents what's private
-    "CLAUDE.md": ["cloud_code", "cloud_billing", "private_repo_ref", "premium_logic",
-                  "cloud_team", "cloud_scripts"],
+    "CLAUDE.md": [
+        "cloud_code",
+        "cloud_billing",
+        "private_repo_ref",
+        "premium_logic",
+        "cloud_team",
+        "cloud_scripts",
+    ],
     # Audit command documents the ip-leak feature (lists patterns as examples)
     "audit.md": list(FORBIDDEN_PATTERNS.keys()),
     # Git command documents publishing
@@ -169,7 +171,13 @@ ALLOWED_EXCEPTIONS: Dict[str, List[str]] = {
     # Privacy module has test patterns
     "privacy.py": ["api_key_value", "stripe_secret"],
     # Plan documents can reference cloud structure
-    "2025-12-08-monorepo-conversion.md": ["cloud_code", "cloud_billing", "cloud_team", "cloud_scripts", "private_repo_ref"],
+    "2025-12-08-monorepo-conversion.md": [
+        "cloud_code",
+        "cloud_billing",
+        "cloud_team",
+        "cloud_scripts",
+        "private_repo_ref",
+    ],
     # Test files can contain patterns
     "test_ip_protection.py": list(FORBIDDEN_PATTERNS.keys()),
     # Output styles mention terms in templates
@@ -212,26 +220,32 @@ def is_exception(filepath: str, pattern_name: str) -> bool:
 def scan_content(content: str, filepath: str = "") -> List[LeakFinding]:
     """Scan content for IP leaks."""
     findings: List[LeakFinding] = []
-    lines = content.split('\n')
+    lines = content.split("\n")
 
     for pattern_name, config in FORBIDDEN_PATTERNS.items():
         # Skip if this pattern is an allowed exception for this file
         if filepath and is_exception(filepath, pattern_name):
             continue
 
-        regex = re.compile(config["pattern"], re.IGNORECASE if "(?i)" not in config["pattern"] else 0)
+        regex = re.compile(
+            config["pattern"], re.IGNORECASE if "(?i)" not in config["pattern"] else 0
+        )
 
         for line_num, line in enumerate(lines, 1):
             match = regex.search(line)
             if match:
-                findings.append(LeakFinding(
-                    file=filepath,
-                    line_number=line_num,
-                    pattern_name=pattern_name,
-                    severity=config["severity"],
-                    matched_text=match.group(0)[:50] + "..." if len(match.group(0)) > 50 else match.group(0),
-                    description=config["description"]
-                ))
+                findings.append(
+                    LeakFinding(
+                        file=filepath,
+                        line_number=line_num,
+                        pattern_name=pattern_name,
+                        severity=config["severity"],
+                        matched_text=match.group(0)[:50] + "..."
+                        if len(match.group(0)) > 50
+                        else match.group(0),
+                        description=config["description"],
+                    )
+                )
 
     return findings
 
@@ -242,7 +256,7 @@ def scan_file(filepath: Path) -> List[LeakFinding]:
         return []
 
     try:
-        content = filepath.read_text(encoding='utf-8', errors='ignore')
+        content = filepath.read_text(encoding="utf-8", errors="ignore")
         return scan_content(content, str(filepath))
     except Exception:
         return []
@@ -253,9 +267,9 @@ def scan_directory(directory: Path, recursive: bool = True) -> List[LeakFinding]
     findings: List[LeakFinding] = []
 
     if recursive:
-        files = directory.rglob('*')
+        files = directory.rglob("*")
     else:
-        files = directory.glob('*')
+        files = directory.glob("*")
 
     for filepath in files:
         if filepath.is_file():
@@ -271,10 +285,10 @@ def scan_git_history(directory: Path, depth: int = 100) -> List[LeakFinding]:
     try:
         # Get recent commits
         result = subprocess.run(
-            ['git', 'log', f'-{depth}', '--diff-filter=A', '--name-only', '--pretty=format:%H'],
+            ["git", "log", f"-{depth}", "--diff-filter=A", "--name-only", "--pretty=format:%H"],
             cwd=directory,
             capture_output=True,
-            text=True
+            text=True,
         )
 
         if result.returncode != 0:
@@ -282,20 +296,22 @@ def scan_git_history(directory: Path, depth: int = 100) -> List[LeakFinding]:
 
         # Parse commits and check added files
         current_commit = None
-        for line in result.stdout.split('\n'):
+        for line in result.stdout.split("\n"):
             if len(line) == 40:  # Commit hash
                 current_commit = line
             elif line and current_commit:
                 # Get file content at that commit
                 try:
                     file_result = subprocess.run(
-                        ['git', 'show', f'{current_commit}:{line}'],
+                        ["git", "show", f"{current_commit}:{line}"],
                         cwd=directory,
                         capture_output=True,
-                        text=True
+                        text=True,
                     )
                     if file_result.returncode == 0:
-                        content_findings = scan_content(file_result.stdout, f"{line} (commit {current_commit[:8]})")
+                        content_findings = scan_content(
+                            file_result.stdout, f"{line} (commit {current_commit[:8]})"
+                        )
                         findings.extend(content_findings)
                 except Exception:
                     pass
@@ -319,14 +335,21 @@ def format_findings_report(findings: List[LeakFinding], format_type: str = "mark
 
     if format_type == "json":
         import json
-        return json.dumps([{
-            "file": f.file,
-            "line": f.line_number,
-            "pattern": f.pattern_name,
-            "severity": f.severity,
-            "matched": f.matched_text,
-            "description": f.description
-        } for f in findings], indent=2)
+
+        return json.dumps(
+            [
+                {
+                    "file": f.file,
+                    "line": f.line_number,
+                    "pattern": f.pattern_name,
+                    "severity": f.severity,
+                    "matched": f.matched_text,
+                    "description": f.description,
+                }
+                for f in findings
+            ],
+            indent=2,
+        )
 
     # Markdown format
     lines = ["# IP Leak Scan Report", ""]
@@ -368,7 +391,7 @@ def format_findings_report(findings: List[LeakFinding], format_type: str = "mark
             lines.append(format_finding(f))
         lines.append("")
 
-    return '\n'.join(lines)
+    return "\n".join(lines)
 
 
 def scan_pre_publish(plugin_dir: Path) -> Tuple[bool, str]:
@@ -383,11 +406,17 @@ def scan_pre_publish(plugin_dir: Path) -> Tuple[bool, str]:
 
     if critical_or_high:
         report = format_findings_report(findings)
-        return False, f"BLOCKED: Found {len(critical_or_high)} critical/high severity issues.\n\n{report}"
+        return (
+            False,
+            f"BLOCKED: Found {len(critical_or_high)} critical/high severity issues.\n\n{report}",
+        )
 
     if findings:
         report = format_findings_report(findings)
-        return True, f"WARNING: Found {len(findings)} low/medium issues (allowing publish).\n\n{report}"
+        return (
+            True,
+            f"WARNING: Found {len(findings)} low/medium issues (allowing publish).\n\n{report}",
+        )
 
     return True, "No IP leaks detected. Safe to publish."
 

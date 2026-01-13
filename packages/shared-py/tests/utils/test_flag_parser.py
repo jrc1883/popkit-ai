@@ -20,7 +20,7 @@ from popkit_shared.utils.flag_parser import (
     parse_model_flag,
     has_flag,
     get_flag_value,
-    extract_issue_number
+    extract_issue_number,
 )
 
 
@@ -276,7 +276,9 @@ class TestParsePowerArgs:
 
     def test_combined_flags(self):
         """Test all flags combined"""
-        result = parse_power_args('"Complex task" --phases explore,design,implement --agents architect,tester --timeout 90')
+        result = parse_power_args(
+            '"Complex task" --phases explore,design,implement --agents architect,tester --timeout 90'
+        )
         assert result["objective"] == "Complex task"
         assert result["phases"] == ["explore", "design", "implement"]
         assert result["agents"] == ["architect", "tester"]

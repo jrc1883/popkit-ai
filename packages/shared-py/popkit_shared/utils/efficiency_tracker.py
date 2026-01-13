@@ -26,18 +26,19 @@ from typing import Dict, List, Optional, Any
 
 # Average tokens for different operations
 TOKENS_PER_DUPLICATE_INSIGHT = 100  # Tokens saved by not reprocessing duplicate
-TOKENS_PER_PATTERN_MATCH = 500      # Tokens saved by pattern-based hint (avoided debugging)
-TOKENS_PER_INSIGHT_CHAR = 0.25      # ~4 chars per token
-TOKENS_PER_CONTEXT_REUSE = 200      # Tokens saved by semantic vs brute force search
+TOKENS_PER_PATTERN_MATCH = 500  # Tokens saved by pattern-based hint (avoided debugging)
+TOKENS_PER_INSIGHT_CHAR = 0.25  # ~4 chars per token
+TOKENS_PER_CONTEXT_REUSE = 200  # Tokens saved by semantic vs brute force search
 
 # Bug detection savings
-TOKENS_PER_BUG_DETECTION = 300      # Tokens saved by early bug detection
-TOKENS_PER_STUCK_DETECTION = 800    # Tokens saved by stuck pattern detection (avoided loops)
+TOKENS_PER_BUG_DETECTION = 300  # Tokens saved by early bug detection
+TOKENS_PER_STUCK_DETECTION = 800  # Tokens saved by stuck pattern detection (avoided loops)
 
 
 # =============================================================================
 # DATA CLASSES
 # =============================================================================
+
 
 @dataclass
 class EfficiencyMetrics:
@@ -72,7 +73,7 @@ class EfficiencyMetrics:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict) -> 'EfficiencyMetrics':
+    def from_dict(cls, data: Dict) -> "EfficiencyMetrics":
         """Create from dictionary."""
         return cls(**{k: v for k, v in data.items() if k in cls.__dataclass_fields__})
 
@@ -80,6 +81,7 @@ class EfficiencyMetrics:
 # =============================================================================
 # EFFICIENCY TRACKER
 # =============================================================================
+
 
 class EfficiencyTracker:
     """
@@ -117,6 +119,7 @@ class EfficiencyTracker:
     def _generate_session_id(self) -> str:
         """Generate a session ID."""
         import hashlib
+
         return hashlib.md5(datetime.now().isoformat().encode()).hexdigest()[:8]
 
     def _get_state_file_path(self) -> Path:
@@ -274,12 +277,12 @@ class EfficiencyTracker:
         stuck_savings = self.metrics.stuck_patterns_detected * TOKENS_PER_STUCK_DETECTION
 
         return (
-            duplicate_savings +
-            pattern_savings +
-            context_savings +
-            insight_savings +
-            bug_savings +
-            stuck_savings
+            duplicate_savings
+            + pattern_savings
+            + context_savings
+            + insight_savings
+            + bug_savings
+            + stuck_savings
         )
 
     def get_efficiency_score(self) -> float:
@@ -313,7 +316,7 @@ class EfficiencyTracker:
         if self.metrics.insights_shared > 0 and self.metrics.insights_received > 0:
             collab_ratio = min(
                 self.metrics.insights_received / self.metrics.insights_shared,
-                self.metrics.insights_shared / self.metrics.insights_received
+                self.metrics.insights_shared / self.metrics.insights_received,
             )
             factors.append(collab_ratio * 25)  # Max 25 points
 
@@ -332,7 +335,6 @@ class EfficiencyTracker:
         return {
             "session_id": self.session_id,
             "started_at": self.metrics.started_at,
-
             # Raw metrics
             "duplicates_skipped": self.metrics.duplicates_skipped,
             "patterns_matched": self.metrics.patterns_matched,
@@ -342,20 +344,18 @@ class EfficiencyTracker:
             "bugs_detected": self.metrics.bugs_detected,
             "stuck_patterns_detected": self.metrics.stuck_patterns_detected,
             "tool_calls": self.metrics.tool_calls,
-
             # Calculated
             "tokens_estimated_saved": tokens_saved,
             "efficiency_score": round(efficiency_score, 1),
-
             # Power Mode specific
             "sync_barriers_hit": self.metrics.sync_barriers_hit,
             "duplicate_work_prevented": self.metrics.duplicate_work_prevented,
-
             # Derived
             "avg_resolution_time_ms": (
                 int(sum(self.metrics.resolution_times_ms) / len(self.metrics.resolution_times_ms))
-                if self.metrics.resolution_times_ms else None
-            )
+                if self.metrics.resolution_times_ms
+                else None
+            ),
         }
 
     def get_compact_summary(self) -> str:
@@ -370,7 +370,7 @@ class EfficiencyTracker:
 
         # Format tokens nicely
         if tokens >= 1000:
-            tokens_str = f"{tokens/1000:.1f}k"
+            tokens_str = f"{tokens / 1000:.1f}k"
         else:
             tokens_str = str(tokens)
 
@@ -390,23 +390,27 @@ class EfficiencyTracker:
         Returns:
             True if synced successfully
         """
-        if not cloud_client or not hasattr(cloud_client, 'connected') or not cloud_client.connected:
+        if not cloud_client or not hasattr(cloud_client, "connected") or not cloud_client.connected:
             return False
 
         try:
             summary = self.get_summary()
 
             # Use the analytics endpoint
-            response = cloud_client._request("POST", "/analytics/efficiency", {
-                "session_id": summary["session_id"],
-                "duplicates_skipped": summary["duplicates_skipped"],
-                "patterns_matched": summary["patterns_matched"],
-                "insights_shared": summary["insights_shared"],
-                "insights_received": summary["insights_received"],
-                "tokens_estimated_saved": summary["tokens_estimated_saved"],
-                "tool_calls": summary["tool_calls"],
-                "resolution_time_ms": summary.get("avg_resolution_time_ms")
-            })
+            response = cloud_client._request(
+                "POST",
+                "/analytics/efficiency",
+                {
+                    "session_id": summary["session_id"],
+                    "duplicates_skipped": summary["duplicates_skipped"],
+                    "patterns_matched": summary["patterns_matched"],
+                    "insights_shared": summary["insights_shared"],
+                    "insights_received": summary["insights_received"],
+                    "tokens_estimated_saved": summary["tokens_estimated_saved"],
+                    "tool_calls": summary["tool_calls"],
+                    "resolution_time_ms": summary.get("avg_resolution_time_ms"),
+                },
+            )
 
             return response.get("status") == "recorded"
 

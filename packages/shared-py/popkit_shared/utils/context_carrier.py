@@ -33,6 +33,7 @@ class HookContext:
         previous_hook: Name of previously executed hook
         hook_outputs: Dict of outputs from previous hooks in chain
     """
+
     session_id: str
     tool_name: str
     tool_input: Dict[str, Any]
@@ -58,7 +59,7 @@ def create_context(
     tool_name: str,
     tool_input: Dict[str, Any],
     message_history: Optional[List[Dict[str, Any]]] = None,
-    **kwargs
+    **kwargs,
 ) -> HookContext:
     """Create a new hook context.
 
@@ -85,7 +86,7 @@ def create_context(
         tool_name=tool_name,
         tool_input=tool_input,
         message_history=history_tuple,
-        **kwargs
+        **kwargs,
     )
 
 
@@ -115,17 +116,17 @@ def update_context(ctx: HookContext, **updates) -> HookContext:
         'file contents'
     """
     # Handle message specially - append, don't replace
-    if 'message' in updates:
-        message = updates.pop('message')
+    if "message" in updates:
+        message = updates.pop("message")
         new_history = ctx.message_history + (message,)
-        updates['message_history'] = new_history
+        updates["message_history"] = new_history
 
     # Handle hook_outputs specially - merge, don't replace
-    if 'hook_output' in updates:
-        hook_name, output = updates.pop('hook_output')
+    if "hook_output" in updates:
+        hook_name, output = updates.pop("hook_output")
         new_outputs = dict(ctx.hook_outputs)
         new_outputs[hook_name] = output
-        updates['hook_outputs'] = new_outputs
+        updates["hook_outputs"] = new_outputs
 
     return replace(ctx, **updates)
 
@@ -148,18 +149,20 @@ def serialize_context(ctx: HookContext) -> str:
         >>> "sess_123" in json_str
         True
     """
-    return json.dumps({
-        'session_id': ctx.session_id,
-        'tool_name': ctx.tool_name,
-        'tool_input': ctx.tool_input,
-        'message_history': list(ctx.message_history),  # Convert tuple to list for JSON
-        'tool_result': ctx.tool_result,
-        'tool_error': ctx.tool_error,
-        'created_at': ctx.created_at,
-        'environment': ctx.environment,
-        'previous_hook': ctx.previous_hook,
-        'hook_outputs': ctx.hook_outputs
-    })
+    return json.dumps(
+        {
+            "session_id": ctx.session_id,
+            "tool_name": ctx.tool_name,
+            "tool_input": ctx.tool_input,
+            "message_history": list(ctx.message_history),  # Convert tuple to list for JSON
+            "tool_result": ctx.tool_result,
+            "tool_error": ctx.tool_error,
+            "created_at": ctx.created_at,
+            "environment": ctx.environment,
+            "previous_hook": ctx.previous_hook,
+            "hook_outputs": ctx.hook_outputs,
+        }
+    )
 
 
 def deserialize_context(json_str: str) -> HookContext:
@@ -182,16 +185,16 @@ def deserialize_context(json_str: str) -> HookContext:
     """
     data = json.loads(json_str)
     return HookContext(
-        session_id=data['session_id'],
-        tool_name=data['tool_name'],
-        tool_input=data['tool_input'],
-        message_history=tuple(data.get('message_history', [])),
-        tool_result=data.get('tool_result'),
-        tool_error=data.get('tool_error'),
-        created_at=data.get('created_at', datetime.now().isoformat()),
-        environment=data.get('environment', 'development'),
-        previous_hook=data.get('previous_hook'),
-        hook_outputs=data.get('hook_outputs', {})
+        session_id=data["session_id"],
+        tool_name=data["tool_name"],
+        tool_input=data["tool_input"],
+        message_history=tuple(data.get("message_history", [])),
+        tool_result=data.get("tool_result"),
+        tool_error=data.get("tool_error"),
+        created_at=data.get("created_at", datetime.now().isoformat()),
+        environment=data.get("environment", "development"),
+        previous_hook=data.get("previous_hook"),
+        hook_outputs=data.get("hook_outputs", {}),
     )
 
 

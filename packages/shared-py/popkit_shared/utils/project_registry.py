@@ -19,11 +19,7 @@ from datetime import datetime, timezone
 # Constants
 GLOBAL_POPKIT_DIR = os.path.join(os.path.expanduser("~"), ".claude", "popkit")
 PROJECTS_FILE = "projects.json"
-DEFAULT_SETTINGS = {
-    "autoDiscover": True,
-    "healthCheckInterval": "daily",
-    "maxInactiveProjects": 20
-}
+DEFAULT_SETTINGS = {"autoDiscover": True, "healthCheckInterval": "daily", "maxInactiveProjects": 20}
 
 
 def get_global_dir() -> str:
@@ -57,6 +53,7 @@ def get_projects_path() -> str:
 # =============================================================================
 # Registry Loading/Saving
 # =============================================================================
+
 
 def load_registry() -> Dict[str, Any]:
     """Load the project registry.
@@ -104,6 +101,7 @@ def save_registry(registry: Dict[str, Any]) -> str:
 # Project Detection
 # =============================================================================
 
+
 def detect_project_info(path: str) -> Optional[Dict[str, Any]]:
     """Detect project information from a directory.
 
@@ -145,14 +143,17 @@ def detect_project_info(path: str) -> Optional[Dict[str, Any]]:
     if has_git:
         try:
             import subprocess
+
             result = subprocess.run(
                 ["git", "-C", path, "config", "--get", "remote.origin.url"],
-                capture_output=True, text=True, timeout=5
+                capture_output=True,
+                text=True,
+                timeout=5,
             )
             if result.returncode == 0:
                 remote = result.stdout.strip()
                 # Parse GitHub URL
-                match = re.search(r'github\.com[:/]([^/]+/[^/\.]+)', remote)
+                match = re.search(r"github\.com[:/]([^/]+/[^/\.]+)", remote)
                 if match:
                     repo = match.group(1)
         except Exception:
@@ -169,11 +170,13 @@ def detect_project_info(path: str) -> Optional[Dict[str, Any]]:
         "hasClaude": has_claude,
         "lastActive": now,
         "healthScore": None,
-        "tags": []
+        "tags": [],
     }
 
 
-def discover_projects(search_dirs: Optional[List[str]] = None, max_depth: int = 2) -> List[Dict[str, Any]]:
+def discover_projects(
+    search_dirs: Optional[List[str]] = None, max_depth: int = 2
+) -> List[Dict[str, Any]]:
     """Auto-discover projects in common locations.
 
     Args:
@@ -225,6 +228,7 @@ def discover_projects(search_dirs: Optional[List[str]] = None, max_depth: int = 
 # Project CRUD Operations
 # =============================================================================
 
+
 def list_projects() -> List[Dict[str, Any]]:
     """List all registered projects.
 
@@ -257,7 +261,9 @@ def get_project(identifier: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-def add_project(path: str, tags: Optional[List[str]] = None, update_if_exists: bool = True) -> Tuple[bool, str]:
+def add_project(
+    path: str, tags: Optional[List[str]] = None, update_if_exists: bool = True
+) -> Tuple[bool, str]:
     """Add a project to the registry.
 
     Args:
@@ -317,7 +323,9 @@ def remove_project(identifier: str) -> Tuple[bool, str]:
         name = project.get("name", "")
         path = project.get("path", "")
 
-        if name.lower() == identifier_lower or (identifier_abs and os.path.abspath(path) == identifier_abs):
+        if name.lower() == identifier_lower or (
+            identifier_abs and os.path.abspath(path) == identifier_abs
+        ):
             removed = registry["projects"].pop(i)
             save_registry(registry)
             return True, f"Removed project: {removed['name']}"
@@ -343,7 +351,9 @@ def update_project(identifier: str, updates: Dict[str, Any]) -> Tuple[bool, str]
         name = project.get("name", "")
         path = project.get("path", "")
 
-        if name.lower() == identifier_lower or (identifier_abs and os.path.abspath(path) == identifier_abs):
+        if name.lower() == identifier_lower or (
+            identifier_abs and os.path.abspath(path) == identifier_abs
+        ):
             # Apply updates
             for key, value in updates.items():
                 if key == "tags" and isinstance(value, list):
@@ -385,6 +395,7 @@ def touch_project(path: str) -> None:
 # Health Score Operations
 # =============================================================================
 
+
 def update_health_score(identifier: str, score: int) -> bool:
     """Update a project's health score.
 
@@ -414,7 +425,7 @@ def get_projects_by_health(ascending: bool = False) -> List[Dict[str, Any]]:
     return sorted(
         projects,
         key=lambda p: (p.get("healthScore") is None, p.get("healthScore", 0)),
-        reverse=not ascending
+        reverse=not ascending,
     )
 
 
@@ -428,7 +439,8 @@ def get_unhealthy_projects(threshold: int = 70) -> List[Dict[str, Any]]:
         List of unhealthy projects
     """
     return [
-        p for p in list_projects()
+        p
+        for p in list_projects()
         if p.get("healthScore") is not None and p["healthScore"] < threshold
     ]
 
@@ -436,6 +448,7 @@ def get_unhealthy_projects(threshold: int = 70) -> List[Dict[str, Any]]:
 # =============================================================================
 # Tag Operations
 # =============================================================================
+
 
 def add_tag(identifier: str, tag: str) -> bool:
     """Add a tag to a project.
@@ -495,10 +508,7 @@ def get_projects_by_tag(tag: str) -> List[Dict[str, Any]]:
         List of matching projects
     """
     tag_lower = tag.lower()
-    return [
-        p for p in list_projects()
-        if tag_lower in [t.lower() for t in p.get("tags", [])]
-    ]
+    return [p for p in list_projects() if tag_lower in [t.lower() for t in p.get("tags", [])]]
 
 
 def get_all_tags() -> List[str]:
@@ -517,6 +527,7 @@ def get_all_tags() -> List[str]:
 # Activity Tracking
 # =============================================================================
 
+
 def get_recent_projects(limit: int = 5) -> List[Dict[str, Any]]:
     """Get most recently active projects.
 
@@ -529,11 +540,7 @@ def get_recent_projects(limit: int = 5) -> List[Dict[str, Any]]:
     projects = list_projects()
 
     # Sort by lastActive descending
-    sorted_projects = sorted(
-        projects,
-        key=lambda p: p.get("lastActive", ""),
-        reverse=True
-    )
+    sorted_projects = sorted(projects, key=lambda p: p.get("lastActive", ""), reverse=True)
 
     return sorted_projects[:limit]
 
@@ -552,15 +559,13 @@ def get_inactive_projects(days: int = 30) -> List[Dict[str, Any]]:
     cutoff = datetime.now(timezone.utc) - timedelta(days=days)
     cutoff_str = cutoff.isoformat().replace("+00:00", "Z")
 
-    return [
-        p for p in list_projects()
-        if p.get("lastActive", "") < cutoff_str
-    ]
+    return [p for p in list_projects() if p.get("lastActive", "") < cutoff_str]
 
 
 # =============================================================================
 # Formatting Utilities
 # =============================================================================
+
 
 def format_health_indicator(score: Optional[int]) -> str:
     """Format health score as colored indicator.
@@ -677,7 +682,9 @@ def format_dashboard(projects: List[Dict[str, Any]]) -> str:
     critical = len([p for p in projects if 0 < (p.get("healthScore") or 0) < 60])
     unknown = len([p for p in projects if p.get("healthScore") is None])
 
-    lines.append(f"  Total: {total}  |  Healthy: {healthy}  |  Warning: {warning}  |  Critical: {critical}  |  Unknown: {unknown}")
+    lines.append(
+        f"  Total: {total}  |  Healthy: {healthy}  |  Warning: {warning}  |  Critical: {critical}  |  Unknown: {unknown}"
+    )
     lines.append("")
 
     # Projects table

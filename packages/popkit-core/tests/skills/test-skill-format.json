@@ -99,10 +99,7 @@
       ]
     }
   ],
-  "dependencies": [
-    "popkit_shared.utils.skill_parser",
-    "popkit_shared.utils.yaml_validator"
-  ],
+  "dependencies": ["popkit_shared.utils.skill_parser", "popkit_shared.utils.yaml_validator"],
   "notes": [
     "All skills must follow the SKILL.md format",
     "Frontmatter is YAML format with name and description required",

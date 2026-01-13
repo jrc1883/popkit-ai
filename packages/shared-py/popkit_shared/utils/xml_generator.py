@@ -19,8 +19,9 @@ try:
     from popkit_shared.utils.xml_validator import (
         validate_problem_xml,
         validate_project_xml,
-        validate_findings_xml
+        validate_findings_xml,
     )
+
     HAS_VALIDATOR = True
 except ImportError:
     HAS_VALIDATOR = False
@@ -52,18 +53,51 @@ def infer_category(message: str) -> str:
     # Define keyword categories (order matters - more specific first)
     # Check docs, test, and investigation before more general categories
     categories = {
-        "docs": ["document", "documentation", "readme", "doc", "explain", "describe",
-                "write docs"],
-        "test": ["test", "testing", "coverage", "unit test", "integration test",
-                "write tests"],
-        "investigation": ["investigate", "debug", "trace", "analyze", "why",
-                         "understand", "explore", "research"],
-        "bug": ["bug", "error", "crash", "broken", "fails", "doesn't work", "not working",
-                "issue", "problem", "wrong", "incorrect", "fix"],
-        "optimization": ["optimize", "improve", "faster", "performance", "slow",
-                        "speed up", "efficiency", "reduce"],
-        "refactor": ["refactor", "restructure", "clean up", "reorganize", "simplify",
-                    "rewrite", "cleanup"],
+        "docs": ["document", "documentation", "readme", "doc", "explain", "describe", "write docs"],
+        "test": ["test", "testing", "coverage", "unit test", "integration test", "write tests"],
+        "investigation": [
+            "investigate",
+            "debug",
+            "trace",
+            "analyze",
+            "why",
+            "understand",
+            "explore",
+            "research",
+        ],
+        "bug": [
+            "bug",
+            "error",
+            "crash",
+            "broken",
+            "fails",
+            "doesn't work",
+            "not working",
+            "issue",
+            "problem",
+            "wrong",
+            "incorrect",
+            "fix",
+        ],
+        "optimization": [
+            "optimize",
+            "improve",
+            "faster",
+            "performance",
+            "slow",
+            "speed up",
+            "efficiency",
+            "reduce",
+        ],
+        "refactor": [
+            "refactor",
+            "restructure",
+            "clean up",
+            "reorganize",
+            "simplify",
+            "rewrite",
+            "cleanup",
+        ],
         "feature": ["add", "implement", "create", "build", "new", "feature", "support"],
     }
 
@@ -100,18 +134,33 @@ def infer_severity(message: str, context: Optional[Dict[str, Any]] = None) -> st
     message_lower = message.lower()
 
     # Critical severity keywords
-    if any(word in message_lower for word in ["critical", "urgent", "production", "crash",
-                                               "down", "outage", "emergency", "blocker"]):
+    if any(
+        word in message_lower
+        for word in [
+            "critical",
+            "urgent",
+            "production",
+            "crash",
+            "down",
+            "outage",
+            "emergency",
+            "blocker",
+        ]
+    ):
         return "critical"
 
     # High severity keywords
-    if any(word in message_lower for word in ["important", "high", "major", "blocking",
-                                               "serious", "significant"]):
+    if any(
+        word in message_lower
+        for word in ["important", "high", "major", "blocking", "serious", "significant"]
+    ):
         return "high"
 
     # Low severity keywords
-    if any(word in message_lower for word in ["minor", "low", "trivial", "nice to have",
-                                               "cosmetic", "polish"]):
+    if any(
+        word in message_lower
+        for word in ["minor", "low", "trivial", "nice to have", "cosmetic", "polish"]
+    ):
         return "low"
 
     # Default to medium
@@ -291,8 +340,9 @@ def generate_workflow_steps(category: str, context: Optional[Dict[str, Any]] = N
   </workflow>"""
 
 
-def generate_problem_xml(user_message: str, context: Optional[Dict[str, Any]] = None,
-                        validate: bool = False) -> str:
+def generate_problem_xml(
+    user_message: str, context: Optional[Dict[str, Any]] = None, validate: bool = False
+) -> str:
     """
     Generate <problem> XML from user message.
 
@@ -540,20 +590,21 @@ def _escape_xml(text: str) -> str:
         >>> _escape_xml("a < b & c > d")
         'a &lt; b &amp; c &gt; d'
     """
-    return (text
-            .replace("&", "&amp;")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-            .replace('"', "&quot;")
-            .replace("'", "&apos;"))
+    return (
+        text.replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+        .replace("'", "&apos;")
+    )
 
 
 # Public API
 __all__ = [
-    'generate_problem_xml',
-    'generate_project_context_xml',
-    'generate_workflow_steps',
-    'generate_findings_xml',
-    'infer_category',
-    'infer_severity',
+    "generate_problem_xml",
+    "generate_project_context_xml",
+    "generate_workflow_steps",
+    "generate_findings_xml",
+    "infer_category",
+    "infer_severity",
 ]

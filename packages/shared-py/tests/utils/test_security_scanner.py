@@ -21,7 +21,7 @@ from popkit_shared.utils.security_scanner import (
     ExistingIssue,
     SecurityScanner,
     format_scan_report,
-    format_github_issue_body
+    format_github_issue_body,
 )
 
 
@@ -40,7 +40,7 @@ class TestVulnerabilityDataClass:
             cve="CVE-2021-1234",
             ghsa="GHSA-1234-5678-90ab",
             fix_available=True,
-            direct=True
+            direct=True,
         )
 
         assert vuln.name == "lodash"
@@ -59,7 +59,7 @@ class TestVulnerabilityDataClass:
             vulnerable_versions="*",
             patched_versions=None,
             cve="CVE-2021-1234",
-            ghsa="GHSA-1234"
+            ghsa="GHSA-1234",
         )
 
         assert vuln.identifier == "CVE-2021-1234"
@@ -74,7 +74,7 @@ class TestVulnerabilityDataClass:
             vulnerable_versions="*",
             patched_versions=None,
             cve=None,
-            ghsa="GHSA-1234"
+            ghsa="GHSA-1234",
         )
 
         assert vuln.identifier == "GHSA-1234"
@@ -87,7 +87,7 @@ class TestVulnerabilityDataClass:
             title="Test",
             url="",
             vulnerable_versions="<1.0.0",
-            patched_versions=None
+            patched_versions=None,
         )
 
         assert vuln.identifier == "test-package-<1.0.0"
@@ -95,24 +95,44 @@ class TestVulnerabilityDataClass:
     def test_vulnerability_severity_score(self):
         """Test severity score mapping"""
         critical = Vulnerability(
-            name="test", severity="critical", title="", url="",
-            vulnerable_versions="*", patched_versions=None
+            name="test",
+            severity="critical",
+            title="",
+            url="",
+            vulnerable_versions="*",
+            patched_versions=None,
         )
         high = Vulnerability(
-            name="test", severity="high", title="", url="",
-            vulnerable_versions="*", patched_versions=None
+            name="test",
+            severity="high",
+            title="",
+            url="",
+            vulnerable_versions="*",
+            patched_versions=None,
         )
         moderate = Vulnerability(
-            name="test", severity="moderate", title="", url="",
-            vulnerable_versions="*", patched_versions=None
+            name="test",
+            severity="moderate",
+            title="",
+            url="",
+            vulnerable_versions="*",
+            patched_versions=None,
         )
         low = Vulnerability(
-            name="test", severity="low", title="", url="",
-            vulnerable_versions="*", patched_versions=None
+            name="test",
+            severity="low",
+            title="",
+            url="",
+            vulnerable_versions="*",
+            patched_versions=None,
         )
         unknown = Vulnerability(
-            name="test", severity="unknown", title="", url="",
-            vulnerable_versions="*", patched_versions=None
+            name="test",
+            severity="unknown",
+            title="",
+            url="",
+            vulnerable_versions="*",
+            patched_versions=None,
         )
 
         assert critical.severity_score == 4
@@ -139,13 +159,21 @@ class TestScanResultDataClass:
         """Test scan result with vulnerabilities"""
         vulns = [
             Vulnerability(
-                name="test1", severity="critical", title="", url="",
-                vulnerable_versions="*", patched_versions=None
+                name="test1",
+                severity="critical",
+                title="",
+                url="",
+                vulnerable_versions="*",
+                patched_versions=None,
             ),
             Vulnerability(
-                name="test2", severity="high", title="", url="",
-                vulnerable_versions="*", patched_versions=None
-            )
+                name="test2",
+                severity="high",
+                title="",
+                url="",
+                vulnerable_versions="*",
+                patched_versions=None,
+            ),
         ]
 
         result = ScanResult(vulnerabilities=vulns, total_packages=10)
@@ -157,21 +185,37 @@ class TestScanResultDataClass:
         """Test grouping by severity"""
         vulns = [
             Vulnerability(
-                name="test1", severity="critical", title="", url="",
-                vulnerable_versions="*", patched_versions=None
+                name="test1",
+                severity="critical",
+                title="",
+                url="",
+                vulnerable_versions="*",
+                patched_versions=None,
             ),
             Vulnerability(
-                name="test2", severity="high", title="", url="",
-                vulnerable_versions="*", patched_versions=None
+                name="test2",
+                severity="high",
+                title="",
+                url="",
+                vulnerable_versions="*",
+                patched_versions=None,
             ),
             Vulnerability(
-                name="test3", severity="high", title="", url="",
-                vulnerable_versions="*", patched_versions=None
+                name="test3",
+                severity="high",
+                title="",
+                url="",
+                vulnerable_versions="*",
+                patched_versions=None,
             ),
             Vulnerability(
-                name="test4", severity="moderate", title="", url="",
-                vulnerable_versions="*", patched_versions=None
-            )
+                name="test4",
+                severity="moderate",
+                title="",
+                url="",
+                vulnerable_versions="*",
+                patched_versions=None,
+            ),
         ]
 
         result = ScanResult(vulnerabilities=vulns)
@@ -186,13 +230,21 @@ class TestScanResultDataClass:
         """Test count by severity"""
         vulns = [
             Vulnerability(
-                name="test1", severity="critical", title="", url="",
-                vulnerable_versions="*", patched_versions=None
+                name="test1",
+                severity="critical",
+                title="",
+                url="",
+                vulnerable_versions="*",
+                patched_versions=None,
             ),
             Vulnerability(
-                name="test2", severity="high", title="", url="",
-                vulnerable_versions="*", patched_versions=None
-            )
+                name="test2",
+                severity="high",
+                title="",
+                url="",
+                vulnerable_versions="*",
+                patched_versions=None,
+            ),
         ]
 
         result = ScanResult(vulnerabilities=vulns)
@@ -207,20 +259,32 @@ class TestScanResultDataClass:
         """Test counting auto-fixable vulnerabilities"""
         vulns = [
             Vulnerability(
-                name="test1", severity="high", title="", url="",
-                vulnerable_versions="*", patched_versions=None,
-                fix_available=True
+                name="test1",
+                severity="high",
+                title="",
+                url="",
+                vulnerable_versions="*",
+                patched_versions=None,
+                fix_available=True,
             ),
             Vulnerability(
-                name="test2", severity="high", title="", url="",
-                vulnerable_versions="*", patched_versions=None,
-                fix_available=False
+                name="test2",
+                severity="high",
+                title="",
+                url="",
+                vulnerable_versions="*",
+                patched_versions=None,
+                fix_available=False,
             ),
             Vulnerability(
-                name="test3", severity="moderate", title="", url="",
-                vulnerable_versions="*", patched_versions=None,
-                fix_available=True
-            )
+                name="test3",
+                severity="moderate",
+                title="",
+                url="",
+                vulnerable_versions="*",
+                patched_versions=None,
+                fix_available=True,
+            ),
         ]
 
         result = ScanResult(vulnerabilities=vulns)
@@ -231,21 +295,37 @@ class TestScanResultDataClass:
         """Test calculating score impact"""
         vulns = [
             Vulnerability(
-                name="test1", severity="critical", title="", url="",
-                vulnerable_versions="*", patched_versions=None
+                name="test1",
+                severity="critical",
+                title="",
+                url="",
+                vulnerable_versions="*",
+                patched_versions=None,
             ),
             Vulnerability(
-                name="test2", severity="high", title="", url="",
-                vulnerable_versions="*", patched_versions=None
+                name="test2",
+                severity="high",
+                title="",
+                url="",
+                vulnerable_versions="*",
+                patched_versions=None,
             ),
             Vulnerability(
-                name="test3", severity="moderate", title="", url="",
-                vulnerable_versions="*", patched_versions=None
+                name="test3",
+                severity="moderate",
+                title="",
+                url="",
+                vulnerable_versions="*",
+                patched_versions=None,
             ),
             Vulnerability(
-                name="test4", severity="low", title="", url="",
-                vulnerable_versions="*", patched_versions=None
-            )
+                name="test4",
+                severity="low",
+                title="",
+                url="",
+                vulnerable_versions="*",
+                patched_versions=None,
+            ),
         ]
 
         result = ScanResult(vulnerabilities=vulns)
@@ -256,13 +336,21 @@ class TestScanResultDataClass:
         """Test score impact under cap"""
         vulns = [
             Vulnerability(
-                name="test1", severity="moderate", title="", url="",
-                vulnerable_versions="*", patched_versions=None
+                name="test1",
+                severity="moderate",
+                title="",
+                url="",
+                vulnerable_versions="*",
+                patched_versions=None,
             ),
             Vulnerability(
-                name="test2", severity="low", title="", url="",
-                vulnerable_versions="*", patched_versions=None
-            )
+                name="test2",
+                severity="low",
+                title="",
+                url="",
+                vulnerable_versions="*",
+                patched_versions=None,
+            ),
         ]
 
         result = ScanResult(vulnerabilities=vulns)
@@ -279,7 +367,7 @@ class TestExistingIssueDataClass:
             number=123,
             title="[HIGH] Security vulnerability in lodash",
             state="open",
-            url="https://github.com/owner/repo/issues/123"
+            url="https://github.com/owner/repo/issues/123",
         )
 
         assert issue.number == 123
@@ -338,6 +426,7 @@ class TestSecurityScannerScan:
             scanner = SecurityScanner(project_path=tmpdir)
 
             import subprocess
+
             with patch("subprocess.run", side_effect=subprocess.TimeoutExpired("npm", 120)):
                 result = scanner.scan()
 
@@ -371,10 +460,7 @@ class TestSecurityScannerScan:
 
             scanner = SecurityScanner(project_path=tmpdir)
 
-            audit_output = {
-                "metadata": {"totalDependencies": 50},
-                "vulnerabilities": {}
-            }
+            audit_output = {"metadata": {"totalDependencies": 50}, "vulnerabilities": {}}
 
             mock_proc = MagicMock()
             mock_proc.stdout = json.dumps(audit_output)
@@ -406,14 +492,14 @@ class TestSecurityScannerScan:
                                 "title": "Prototype Pollution",
                                 "url": "https://github.com/advisories/GHSA-1234",
                                 "cve": "CVE-2021-1234",
-                                "ghsa": "GHSA-1234-5678-90ab"
+                                "ghsa": "GHSA-1234-5678-90ab",
                             }
                         ],
                         "range": "<4.17.21",
                         "fixAvailable": {"version": "4.17.21"},
-                        "isDirect": True
+                        "isDirect": True,
                     }
-                }
+                },
             }
 
             mock_proc = MagicMock()
@@ -460,14 +546,14 @@ class TestGitHubIntegration:
                 "number": 123,
                 "title": "[HIGH] Security vulnerability in lodash",
                 "state": "open",
-                "url": "https://github.com/owner/repo/issues/123"
+                "url": "https://github.com/owner/repo/issues/123",
             },
             {
                 "number": 124,
                 "title": "[CRITICAL] CVE-2021-1234",
                 "state": "open",
-                "url": "https://github.com/owner/repo/issues/124"
-            }
+                "url": "https://github.com/owner/repo/issues/124",
+            },
         ]
 
         mock_proc = MagicMock()
@@ -502,7 +588,7 @@ class TestGitHubIntegration:
             url="",
             vulnerable_versions="*",
             patched_versions=None,
-            cve="CVE-2021-1234"
+            cve="CVE-2021-1234",
         )
 
         existing = [
@@ -510,7 +596,7 @@ class TestGitHubIntegration:
                 number=123,
                 title="[HIGH] CVE-2021-1234: lodash vulnerability",
                 state="open",
-                url="https://github.com/owner/repo/issues/123"
+                url="https://github.com/owner/repo/issues/123",
             )
         ]
 
@@ -529,7 +615,7 @@ class TestGitHubIntegration:
             url="",
             vulnerable_versions="*",
             patched_versions=None,
-            ghsa="GHSA-1234-5678-90ab"
+            ghsa="GHSA-1234-5678-90ab",
         )
 
         existing = [
@@ -537,7 +623,7 @@ class TestGitHubIntegration:
                 number=123,
                 title="[HIGH] GHSA-1234-5678-90ab: lodash vulnerability",
                 state="open",
-                url="https://github.com/owner/repo/issues/123"
+                url="https://github.com/owner/repo/issues/123",
             )
         ]
 
@@ -555,7 +641,7 @@ class TestGitHubIntegration:
             title="Test",
             url="",
             vulnerable_versions="*",
-            patched_versions=None
+            patched_versions=None,
         )
 
         existing = [
@@ -563,7 +649,7 @@ class TestGitHubIntegration:
                 number=123,
                 title="Security vulnerability in lodash",
                 state="open",
-                url="https://github.com/owner/repo/issues/123"
+                url="https://github.com/owner/repo/issues/123",
             )
         ]
 
@@ -581,7 +667,7 @@ class TestGitHubIntegration:
             title="Test",
             url="",
             vulnerable_versions="*",
-            patched_versions=None
+            patched_versions=None,
         )
 
         existing = [
@@ -589,7 +675,7 @@ class TestGitHubIntegration:
                 number=123,
                 title="Security vulnerability in lodash",
                 state="open",
-                url="https://github.com/owner/repo/issues/123"
+                url="https://github.com/owner/repo/issues/123",
             )
         ]
 
@@ -607,7 +693,7 @@ class TestGitHubIntegration:
             url="https://github.com/advisories/GHSA-1234",
             vulnerable_versions="<4.17.21",
             patched_versions="4.17.21",
-            cve="CVE-2021-1234"
+            cve="CVE-2021-1234",
         )
 
         result = scanner.create_issue(vuln, dry_run=True)
@@ -624,7 +710,7 @@ class TestGitHubIntegration:
             url="https://github.com/advisories/GHSA-1234",
             vulnerable_versions="<4.17.21",
             patched_versions="4.17.21",
-            cve="CVE-2021-1234"
+            cve="CVE-2021-1234",
         )
 
         mock_proc = MagicMock()
@@ -646,7 +732,7 @@ class TestGitHubIntegration:
             title="Prototype Pollution",
             url="",
             vulnerable_versions="*",
-            patched_versions=None
+            patched_versions=None,
         )
 
         mock_proc = MagicMock()
@@ -672,15 +758,13 @@ class TestFixFunctionality:
             mock_fix_proc.returncode = 0
 
             # Mock re-scan
-            audit_output = {
-                "metadata": {"totalDependencies": 50},
-                "vulnerabilities": {}
-            }
+            audit_output = {"metadata": {"totalDependencies": 50}, "vulnerabilities": {}}
             mock_scan_proc = MagicMock()
             mock_scan_proc.stdout = json.dumps(audit_output)
             mock_scan_proc.returncode = 0
 
             with patch("subprocess.run") as mock_run:
+
                 def run_side_effect(cmd, **kwargs):
                     if "audit" in cmd and "fix" in cmd:
                         return mock_fix_proc
@@ -755,7 +839,7 @@ class TestReportFormatting:
                 vulnerable_versions="<4.17.21",
                 patched_versions="4.17.21",
                 cve="CVE-2021-1234",
-                fix_available=True
+                fix_available=True,
             ),
             Vulnerability(
                 name="axios",
@@ -764,8 +848,8 @@ class TestReportFormatting:
                 url="",
                 vulnerable_versions="<0.21.0",
                 patched_versions="0.21.0",
-                fix_available=False
-            )
+                fix_available=False,
+            ),
         ]
 
         result = ScanResult(vulnerabilities=vulns, total_packages=50)
@@ -788,7 +872,7 @@ class TestReportFormatting:
             url="https://github.com/advisories/GHSA-1234",
             vulnerable_versions="<4.17.21",
             patched_versions="4.17.21",
-            cve="CVE-2021-1234"
+            cve="CVE-2021-1234",
         )
 
         body = format_github_issue_body(vuln)
@@ -811,7 +895,7 @@ class TestEdgeCases:
             title="Test Vulnerability",
             url="",
             vulnerable_versions="*",
-            patched_versions=None
+            patched_versions=None,
         )
 
         assert vuln.name == "test"
@@ -842,9 +926,9 @@ class TestEdgeCases:
                     "test-package": {
                         "severity": "moderate",
                         "via": "string-instead-of-list",
-                        "range": "*"
+                        "range": "*",
                     }
-                }
+                },
             }
 
             mock_proc = MagicMock()
@@ -868,12 +952,8 @@ class TestEdgeCases:
             audit_output = {
                 "metadata": {"totalDependencies": 10},
                 "vulnerabilities": {
-                    "test-package": {
-                        "severity": "moderate",
-                        "via": [],
-                        "range": "*"
-                    }
-                }
+                    "test-package": {"severity": "moderate", "via": [], "range": "*"}
+                },
             }
 
             mock_proc = MagicMock()
@@ -889,12 +969,20 @@ class TestEdgeCases:
     def test_case_insensitive_severity_handling(self):
         """Test severity handling is case-insensitive"""
         vuln_upper = Vulnerability(
-            name="test", severity="HIGH", title="", url="",
-            vulnerable_versions="*", patched_versions=None
+            name="test",
+            severity="HIGH",
+            title="",
+            url="",
+            vulnerable_versions="*",
+            patched_versions=None,
         )
         vuln_lower = Vulnerability(
-            name="test", severity="high", title="", url="",
-            vulnerable_versions="*", patched_versions=None
+            name="test",
+            severity="high",
+            title="",
+            url="",
+            vulnerable_versions="*",
+            patched_versions=None,
         )
 
         assert vuln_upper.severity_score == vuln_lower.severity_score

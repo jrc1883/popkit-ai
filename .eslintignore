@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Generated files
+*.min.js
+*.bundle.js
+
+# Configuration files
+*.config.js
+.eslintrc.js
+
+# Test coverage
+coverage/
+
+# Documentation
+docs/
+
+# Examples
+examples/

@@ -84,9 +84,7 @@
           "type": "string",
           "description": "Shell command to execute (for type: command)",
           "pattern": "\\$\\{CLAUDE_PLUGIN_ROOT\\}",
-          "examples": [
-            "python \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.py\""
-          ]
+          "examples": ["python \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.py\""]
         },
         "prompt": {
           "type": "string",
