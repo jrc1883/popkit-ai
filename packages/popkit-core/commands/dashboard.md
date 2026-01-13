@@ -175,7 +175,7 @@ Remove a project from the registry (does not delete files).
 
 ## Refresh Health Scores
 
-Recalculate health scores for all or specific projects.
+Recalculate health scores and refresh GitHub issue counts for all or specific projects.
 
 ```
 /popkit-core:dashboard refresh           # Refresh all projects
@@ -206,14 +206,37 @@ Recalculate health scores for all or specific projects.
        print(f"{project['name']}: {score}/100")
    ```
 
-3. **Show results summary:**
+3. **Refresh GitHub issue counts:**
+
+   ```python
+   from project_registry import load_registry, refresh_project_issue_counts, save_registry
+
+   registry = load_registry()
+   updated_count = refresh_project_issue_counts(registry)
+   save_registry(registry)
+
+   print(f"Updated issue counts for {updated_count} projects")
    ```
-   Health Refresh Complete
-   -----------------------
-   popkit:           92 (+2)
-   popkit-cloud:     78 (-3)
-   reseller-central: 88 (=)
+
+4. **Show results summary:**
    ```
+   Dashboard Refresh Complete
+   --------------------------
+   Health Scores:
+     popkit:           92 (+2)
+     popkit-cloud:     78 (-3)
+     reseller-central: 88 (=)
+
+   Issue Counts:
+     Updated 3 projects (~5 seconds)
+   ```
+
+**Performance Notes:**
+
+- Health score refresh: instant (quick mode) to 2-5s per project (full mode)
+- Issue count refresh: ~0.5s per project with GitHub integration
+- Total time for 10 projects: ~5-10 seconds
+- Failed fetches are handled gracefully (shows `'--'` in dashboard)
 
 ### Flags
 

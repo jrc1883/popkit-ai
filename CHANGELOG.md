@@ -6,6 +6,18 @@ All notable changes to PopKit are documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- **GitHub Issue Dashboard Integration** (#111): Display real-time issue counts in the multi-project dashboard
+  - Implemented 15-minute cache with instant dashboard load times
+  - Added `get_cached_issue_count()`, `fetch_project_issues()`, and `refresh_project_issue_counts()` functions
+  - Manual refresh via `/dashboard refresh` command
+  - Graceful fallback for non-GitHub projects (displays '--')
+  - Sequential fetching (~0.5s per project, ~5-10s for 10 projects)
+  - Comprehensive test suite: 8 unit tests + 5 integration tests (all passing)
+  - Documentation updates for dashboard skill and command
+  - Cache format: `github_issues: { open_count: N, cached_at: ISO timestamp }`
+
 ---
 
 ## [1.0.0-beta.5] - 2026-01-13
