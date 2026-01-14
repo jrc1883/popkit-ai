@@ -119,31 +119,38 @@ def calculate_ready_to_code_score(state: Dict[str, Any]) -> Tuple[int, Dict[str,
     # Check if local main/master is up to date with remote
     git_data = state.get('git', {})
     behind_count = git_data.get('behind_remote', 0)
+    stale_branches = git_data.get('stale_branches', 0)
 
+    # Calculate branch sync score with stale branch penalty
+    branch_score = 0
     if behind_count == 0:
-        score += 15
-        breakdown['branches_synced'] = {
-            'points': 15,
-            'max': 15,
-            'status': '✅',
-            'reason': 'Up to date with remote'
-        }
+        branch_score = 15
+        sync_status = '✅'
+        sync_reason = 'Up to date with remote'
     elif behind_count <= 5:
-        score += 10  # Few commits behind
-        breakdown['branches_synced'] = {
-            'points': 10,
-            'max': 15,
-            'status': '⚠️',
-            'reason': f'{behind_count} commits behind remote'
-        }
+        branch_score = 10  # Few commits behind
+        sync_status = '⚠️'
+        sync_reason = f'{behind_count} commits behind remote'
     else:
-        score += 0
-        breakdown['branches_synced'] = {
-            'points': 0,
-            'max': 15,
-            'status': '❌',
-            'reason': f'{behind_count} commits behind - sync needed'
-        }
+        branch_score = 0
+        sync_status = '❌'
+        sync_reason = f'{behind_count} commits behind - sync needed'
+
+    # Apply stale branch penalty (deduct 1 point per stale branch, max 5 points)
+    if stale_branches > 0:
+        penalty = min(stale_branches, 5)
+        branch_score = max(0, branch_score - penalty)
+        sync_reason += f'; {stale_branches} stale branch{"es" if stale_branches != 1 else ""}'
+        if sync_status == '✅':
+            sync_status = '⚠️'
+
+    score += branch_score
+    breakdown['branches_synced'] = {
+        'points': branch_score,
+        'max': 15,
+        'status': sync_status,
+        'reason': sync_reason
+    }
 
     # 5. PRs Reviewed (15 points)
     # Check if there are PRs waiting for review

@@ -197,6 +197,11 @@ class NightlyWorkflow:
         import shutil
         import os
 
+        # Import git_utils from popkit-dev hooks
+        hooks_path = Path(__file__).parents[3] / 'popkit-dev' / 'hooks'
+        sys.path.insert(0, str(hooks_path))
+        from git_utils import git_fetch_prune, count_stale_branches
+
         def run_command(cmd: list) -> str:
             """
             Run command and return output.
@@ -215,6 +220,13 @@ class NightlyWorkflow:
             except Exception as e:
                 print(f"[WARN] Command failed: {' '.join(cmd)} - {e}", file=sys.stderr)
                 return ""
+
+        # Run git fetch --prune to clean up stale remote tracking branches
+        prune_success, prune_message = git_fetch_prune()
+        if prune_success:
+            print(f"[OK] {prune_message}", file=sys.stderr)
+        else:
+            print(f"[WARN] {prune_message}", file=sys.stderr)
 
         # Git state - all commands use list-based arguments (SECURE)
         status_output = run_command(['git', 'status', '--porcelain'])
@@ -240,7 +252,8 @@ class NightlyWorkflow:
                 for line in status_output.splitlines()
             ] if status_output else [],
             'stashes': stash_count,
-            'merged_branches': merged_count
+            'merged_branches': merged_count,
+            'stale_branches': count_stale_branches()
         }
 
         # GitHub state (if gh CLI available)

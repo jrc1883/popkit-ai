@@ -56,22 +56,40 @@ def calculate_sleep_score(state: Dict[str, Any]) -> Tuple[int, Dict[str, Dict[st
 
     # 2. Branches cleaned (20 points)
     merged_branches = git_state.get('merged_branches', 0)
+    stale_branches = git_state.get('stale_branches', 0)
 
-    if merged_branches == 0:
-        score += 20
-        breakdown['branches_cleaned'] = {
-            'points': 20,
-            'max': 20,
-            'status': '✅',
-            'reason': 'No stale branches'
-        }
+    # Calculate branch cleanup score
+    branch_score = 0
+    cleanup_reasons = []
+    cleanup_status = '✅'
+
+    if merged_branches > 0:
+        cleanup_reasons.append(f'{merged_branches} merged branches not deleted')
+        cleanup_status = '❌'
+
+    if stale_branches > 0:
+        cleanup_reasons.append(f'{stale_branches} stale branch{"es" if stale_branches != 1 else ""} (remote deleted)')
+        if cleanup_status == '✅':
+            cleanup_status = '⚠️'
+
+    if not cleanup_reasons:
+        branch_score = 20
+        cleanup_status = '✅'
+        cleanup_reason = 'No stale branches'
     else:
-        breakdown['branches_cleaned'] = {
-            'points': 0,
-            'max': 20,
-            'status': '❌',
-            'reason': f'{merged_branches} merged branches not deleted'
-        }
+        # Deduct points for cleanup issues
+        # 10 points for merged branches, 10 points for stale branches
+        if merged_branches == 0:
+            branch_score = max(0, 20 - min(stale_branches * 2, 10))
+        cleanup_reason = '; '.join(cleanup_reasons)
+
+    score += branch_score
+    breakdown['branches_cleaned'] = {
+        'points': branch_score,
+        'max': 20,
+        'status': cleanup_status,
+        'reason': cleanup_reason
+    }
 
     # 3. Issues updated (20 points)
     github_state = state.get('github', {})

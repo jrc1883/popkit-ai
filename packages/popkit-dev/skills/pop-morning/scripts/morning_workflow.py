@@ -254,6 +254,11 @@ class MorningWorkflow:
         import subprocess
         import shlex
 
+        # Import git_utils from popkit-dev hooks
+        hooks_path = Path(__file__).parents[3] / 'popkit-dev' / 'hooks'
+        sys.path.insert(0, str(hooks_path))
+        from git_utils import git_fetch_prune, count_stale_branches
+
         def run_command(cmd: list, stderr_redirect: bool = False) -> str:
             """
             Run command and return output.
@@ -286,8 +291,12 @@ class MorningWorkflow:
         git_data = state.get('git', {})
         branch = git_data.get('branch', 'main')
 
-        # Fetch to get latest remote info (silent)
-        run_command(['git', 'fetch', '--quiet'])
+        # Run git fetch --prune to clean up stale remote tracking branches
+        prune_success, prune_message = git_fetch_prune()
+        if prune_success:
+            print(f"[OK] {prune_message}", file=sys.stderr)
+        else:
+            print(f"[WARN] {prune_message}", file=sys.stderr)
 
         # Check commits behind - SECURE: branch is passed as a separate argument
         behind_output = run_command(['git', 'rev-list', '--count', f'HEAD..origin/{branch}'])
@@ -295,6 +304,9 @@ class MorningWorkflow:
             git_data['behind_remote'] = int(behind_output) if behind_output else 0
         except ValueError:
             git_data['behind_remote'] = 0
+
+        # Count stale local branches (whose remote tracking branches were deleted)
+        git_data['stale_branches'] = count_stale_branches()
 
         # Check for outdated dependencies
         # This is a placeholder - would need actual implementation based on package manager
