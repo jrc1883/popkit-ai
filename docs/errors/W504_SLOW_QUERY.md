@@ -1,14 +1,14 @@
-# E001_JSON_PARSE - Invalid JSON syntax in input
+# W504_SLOW_QUERY - Database query is running slowly
 
-**Category:** JSON/Input Parsing
-**Severity:** Critical
-**Status:** Blocking
+**Category:** Database
+**Severity:** Medium
+**Status:** Non-blocking
 
 ## Description
 
-Invalid JSON syntax in input
+Database query is running slowly
 
-This error occurs in the **JSON/Input Parsing** category and indicates a critical severity issue.
+This error occurs in the **Database** category and indicates a medium severity issue.
 
 ## Common Causes
 
@@ -19,11 +19,11 @@ This error occurs in the **JSON/Input Parsing** category and indicates a critica
 ## Resolution Steps
 
 1. **Step 1**
-   - Validate JSON with 'jq' or online validator
+   - Add database indexes for frequently queried fields
 2. **Step 2**
-   - Check for trailing commas (not allowed in JSON)
+   - Optimize query structure
 3. **Step 3**
-   - Ensure proper escaping of quotes and backslashes
+   - Operation will continue but performance impacted
 
 ## Prevention
 

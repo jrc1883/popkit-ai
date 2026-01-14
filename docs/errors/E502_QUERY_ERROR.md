@@ -1,14 +1,14 @@
-# E001_JSON_PARSE - Invalid JSON syntax in input
+# E502_QUERY_ERROR - Database query execution failed
 
-**Category:** JSON/Input Parsing
-**Severity:** Critical
+**Category:** Database
+**Severity:** High
 **Status:** Blocking
 
 ## Description
 
-Invalid JSON syntax in input
+Database query execution failed
 
-This error occurs in the **JSON/Input Parsing** category and indicates a critical severity issue.
+This error occurs in the **Database** category and indicates a high severity issue.
 
 ## Common Causes
 
@@ -19,11 +19,11 @@ This error occurs in the **JSON/Input Parsing** category and indicates a critica
 ## Resolution Steps
 
 1. **Step 1**
-   - Validate JSON with 'jq' or online validator
+   - Check query syntax
 2. **Step 2**
-   - Check for trailing commas (not allowed in JSON)
+   - Verify table and column names exist
 3. **Step 3**
-   - Ensure proper escaping of quotes and backslashes
+   - Review database error message for details
 
 ## Prevention
 

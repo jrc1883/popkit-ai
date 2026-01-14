@@ -1,14 +1,14 @@
-# E001_JSON_PARSE - Invalid JSON syntax in input
+# W702_MISSING_FIELD - Optional configuration field missing
 
-**Category:** JSON/Input Parsing
-**Severity:** Critical
-**Status:** Blocking
+**Category:** Configuration
+**Severity:** Medium
+**Status:** Non-blocking
 
 ## Description
 
-Invalid JSON syntax in input
+Optional configuration field missing
 
-This error occurs in the **JSON/Input Parsing** category and indicates a critical severity issue.
+This error occurs in the **Configuration** category and indicates a medium severity issue.
 
 ## Common Causes
 
@@ -19,11 +19,11 @@ This error occurs in the **JSON/Input Parsing** category and indicates a critica
 ## Resolution Steps
 
 1. **Step 1**
-   - Validate JSON with 'jq' or online validator
+   - Add missing field to configuration
 2. **Step 2**
-   - Check for trailing commas (not allowed in JSON)
+   - Feature will use default value (graceful degradation)
 3. **Step 3**
-   - Ensure proper escaping of quotes and backslashes
+   - See configuration documentation for field details
 
 ## Prevention
 

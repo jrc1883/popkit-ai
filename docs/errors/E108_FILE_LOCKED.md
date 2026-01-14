@@ -1,14 +1,14 @@
-# E001_JSON_PARSE - Invalid JSON syntax in input
+# E108_FILE_LOCKED - File is locked by another process
 
-**Category:** JSON/Input Parsing
-**Severity:** Critical
+**Category:** File I/O
+**Severity:** High
 **Status:** Blocking
 
 ## Description
 
-Invalid JSON syntax in input
+File is locked by another process
 
-This error occurs in the **JSON/Input Parsing** category and indicates a critical severity issue.
+This error occurs in the **File I/O** category and indicates a high severity issue.
 
 ## Common Causes
 
@@ -19,11 +19,11 @@ This error occurs in the **JSON/Input Parsing** category and indicates a critica
 ## Resolution Steps
 
 1. **Step 1**
-   - Validate JSON with 'jq' or online validator
+   - Close other applications using the file
 2. **Step 2**
-   - Check for trailing commas (not allowed in JSON)
+   - Wait for other processes to release the file
 3. **Step 3**
-   - Ensure proper escaping of quotes and backslashes
+   - Check with 'lsof <file>' (Unix) or Task Manager (Windows)
 
 ## Prevention
 

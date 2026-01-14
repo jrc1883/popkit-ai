@@ -1,14 +1,14 @@
-# E001_JSON_PARSE - Invalid JSON syntax in input
+# I905_MAINTENANCE_MODE - System is in maintenance mode
 
-**Category:** JSON/Input Parsing
-**Severity:** Critical
-**Status:** Blocking
+**Category:** System/Internal
+**Severity:** Info
+**Status:** Non-blocking
 
 ## Description
 
-Invalid JSON syntax in input
+System is in maintenance mode
 
-This error occurs in the **JSON/Input Parsing** category and indicates a critical severity issue.
+This error occurs in the **System/Internal** category and indicates a info severity issue.
 
 ## Common Causes
 
@@ -19,11 +19,11 @@ This error occurs in the **JSON/Input Parsing** category and indicates a critica
 ## Resolution Steps
 
 1. **Step 1**
-   - Validate JSON with 'jq' or online validator
+   - Wait for maintenance to complete
 2. **Step 2**
-   - Check for trailing commas (not allowed in JSON)
+   - Check status page for updates
 3. **Step 3**
-   - Ensure proper escaping of quotes and backslashes
+   - Some features may be temporarily unavailable
 
 ## Prevention
 

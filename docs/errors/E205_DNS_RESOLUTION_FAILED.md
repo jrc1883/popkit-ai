@@ -1,14 +1,14 @@
-# E001_JSON_PARSE - Invalid JSON syntax in input
+# E205_DNS_RESOLUTION_FAILED - Failed to resolve hostname
 
-**Category:** JSON/Input Parsing
-**Severity:** Critical
+**Category:** Network/API
+**Severity:** High
 **Status:** Blocking
 
 ## Description
 
-Invalid JSON syntax in input
+Failed to resolve hostname
 
-This error occurs in the **JSON/Input Parsing** category and indicates a critical severity issue.
+This error occurs in the **Network/API** category and indicates a high severity issue.
 
 ## Common Causes
 
@@ -19,11 +19,11 @@ This error occurs in the **JSON/Input Parsing** category and indicates a critica
 ## Resolution Steps
 
 1. **Step 1**
-   - Validate JSON with 'jq' or online validator
+   - Check DNS server configuration
 2. **Step 2**
-   - Check for trailing commas (not allowed in JSON)
+   - Verify hostname is correct
 3. **Step 3**
-   - Ensure proper escaping of quotes and backslashes
+   - Try using IP address directly as workaround
 
 ## Prevention
 

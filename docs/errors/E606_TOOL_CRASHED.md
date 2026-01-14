@@ -1,14 +1,14 @@
-# E001_JSON_PARSE - Invalid JSON syntax in input
+# E606_TOOL_CRASHED - Tool crashed or terminated unexpectedly
 
-**Category:** JSON/Input Parsing
-**Severity:** Critical
+**Category:** Tool Execution
+**Severity:** High
 **Status:** Blocking
 
 ## Description
 
-Invalid JSON syntax in input
+Tool crashed or terminated unexpectedly
 
-This error occurs in the **JSON/Input Parsing** category and indicates a critical severity issue.
+This error occurs in the **Tool Execution** category and indicates a high severity issue.
 
 ## Common Causes
 
@@ -19,11 +19,11 @@ This error occurs in the **JSON/Input Parsing** category and indicates a critica
 ## Resolution Steps
 
 1. **Step 1**
-   - Validate JSON with 'jq' or online validator
+   - Check tool logs for crash details
 2. **Step 2**
-   - Check for trailing commas (not allowed in JSON)
+   - Verify system resources are sufficient
 3. **Step 3**
-   - Ensure proper escaping of quotes and backslashes
+   - Report crash to tool maintainers if reproducible
 
 ## Prevention
 
