@@ -17,7 +17,6 @@ Issue #156: Automatic Ruff Pre-Commit Hook Integration
 import sys
 import json
 import subprocess
-from pathlib import Path
 
 
 def get_staged_python_files():
@@ -28,22 +27,23 @@ def get_staged_python_files():
     """
     try:
         result = subprocess.run(
-            ['git', 'diff', '--cached', '--name-only', '--diff-filter=ACM'],
+            ["git", "diff", "--cached", "--name-only", "--diff-filter=ACM"],
             capture_output=True,
             text=True,
-            timeout=5
+            timeout=5,
         )
 
         if result.returncode != 0:
             return None
 
         # Filter for Python files only
-        files = result.stdout.strip().split('\n')
-        python_files = [f for f in files if f.endswith('.py') and f]
+        files = result.stdout.strip().split("\n")
+        python_files = [f for f in files if f.endswith(".py") and f]
 
         return python_files if python_files else []
 
     except Exception:
+        # Git command failed or timeout - fail-open gracefully
         return None
 
 
@@ -54,11 +54,7 @@ def check_ruff_installed():
         bool: True if Ruff is installed, False otherwise
     """
     try:
-        result = subprocess.run(
-            ['ruff', '--version'],
-            capture_output=True,
-            timeout=2
-        )
+        result = subprocess.run(["ruff", "--version"], capture_output=True, timeout=2)
         return result.returncode == 0
     except Exception:
         return False
@@ -75,10 +71,10 @@ def run_ruff_check(files):
     """
     try:
         result = subprocess.run(
-            ['ruff', 'check', '--fix'] + files,
+            ["ruff", "check", "--fix"] + files,
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=30,
         )
 
         # Ruff exit codes:
@@ -88,47 +84,44 @@ def run_ruff_check(files):
 
         if result.returncode == 2:
             return {
-                'success': False,
-                'fixed_files': [],
-                'errors': result.stdout + result.stderr
+                "success": False,
+                "fixed_files": [],
+                "errors": result.stdout + result.stderr,
             }
 
         # Parse output to detect fixed files
         fixed_files = []
-        if result.returncode == 1 or 'Fixed' in result.stdout:
+        if result.returncode == 1 or "Fixed" in result.stdout:
             # Check which files were modified
             for file in files:
                 try:
                     # Check if file was modified (unstaged changes)
                     check_result = subprocess.run(
-                        ['git', 'diff', '--name-only', file],
+                        ["git", "diff", "--name-only", file],
                         capture_output=True,
                         text=True,
-                        timeout=2
+                        timeout=2,
                     )
                     if file in check_result.stdout:
                         fixed_files.append(file)
                 except Exception:
+                    # git diff failed for this file - skip detection
                     pass
 
         return {
-            'success': result.returncode in [0, 1],
-            'fixed_files': fixed_files,
-            'errors': result.stdout + result.stderr if result.returncode != 0 else ''
+            "success": result.returncode in [0, 1],
+            "fixed_files": fixed_files,
+            "errors": result.stdout + result.stderr if result.returncode != 0 else "",
         }
 
     except subprocess.TimeoutExpired:
         return {
-            'success': False,
-            'fixed_files': [],
-            'errors': 'Ruff check timed out after 30 seconds'
+            "success": False,
+            "fixed_files": [],
+            "errors": "Ruff check timed out after 30 seconds",
         }
     except Exception as e:
-        return {
-            'success': False,
-            'fixed_files': [],
-            'errors': str(e)
-        }
+        return {"success": False, "fixed_files": [], "errors": str(e)}
 
 
 def run_ruff_format(files):
@@ -142,17 +135,14 @@ def run_ruff_format(files):
     """
     try:
         result = subprocess.run(
-            ['ruff', 'format'] + files,
-            capture_output=True,
-            text=True,
-            timeout=30
+            ["ruff", "format"] + files, capture_output=True, text=True, timeout=30
         )
 
         if result.returncode != 0:
             return {
-                'success': False,
-                'formatted_files': [],
-                'errors': result.stdout + result.stderr
+                "success": False,
+                "formatted_files": [],
+                "errors": result.stdout + result.stderr,
             }
 
         # Check which files were formatted
@@ -161,34 +151,27 @@ def run_ruff_format(files):
             try:
                 # Check if file was modified (unstaged changes)
                 check_result = subprocess.run(
-                    ['git', 'diff', '--name-only', file],
+                    ["git", "diff", "--name-only", file],
                     capture_output=True,
                     text=True,
-                    timeout=2
+                    timeout=2,
                 )
                 if file in check_result.stdout:
                     formatted_files.append(file)
             except Exception:
+                # git diff failed for this file - skip detection
                 pass
 
-        return {
-            'success': True,
-            'formatted_files': formatted_files,
-            'errors': ''
-        }
+        return {"success": True, "formatted_files": formatted_files, "errors": ""}
 
     except subprocess.TimeoutExpired:
         return {
-            'success': False,
-            'formatted_files': [],
-            'errors': 'Ruff format timed out after 30 seconds'
+            "success": False,
+            "formatted_files": [],
+            "errors": "Ruff format timed out after 30 seconds",
         }
     except Exception as e:
-        return {
-            'success': False,
-            'formatted_files': [],
-            'errors': str(e)
-        }
+        return {"success": False, "formatted_files": [], "errors": str(e)}
 
 
 def restage_files(files):
@@ -204,11 +187,7 @@ def restage_files(files):
         return True
 
     try:
-        result = subprocess.run(
-            ['git', 'add'] + files,
-            capture_output=True,
-            timeout=5
-        )
+        result = subprocess.run(["git", "add"] + files, capture_output=True, timeout=5)
         return result.returncode == 0
     except Exception:
         return False
@@ -217,9 +196,9 @@ def restage_files(files):
 def main():
     """Main entry point for the hook - JSON stdin/stdout protocol"""
     try:
-        # Read input data from stdin
+        # Read input data from stdin (hook protocol expects JSON, but we don't need it for pre-commit)
         input_data = sys.stdin.read()
-        data = json.loads(input_data) if input_data.strip() else {}
+        _ = json.loads(input_data) if input_data.strip() else {}
 
         # Get staged Python files
         python_files = get_staged_python_files()
@@ -229,7 +208,7 @@ def main():
             response = {
                 "status": "success",
                 "message": "Pre-commit hook: git command failed, allowing commit",
-                "warning": "Could not detect staged files"
+                "warning": "Could not detect staged files",
             }
             print(json.dumps(response))
             sys.exit(0)
@@ -238,7 +217,7 @@ def main():
             # No Python files staged - skip hook
             response = {
                 "status": "success",
-                "message": "Pre-commit hook: no Python files staged, skipping Ruff validation"
+                "message": "Pre-commit hook: no Python files staged, skipping Ruff validation",
             }
             print(json.dumps(response))
             sys.exit(0)
@@ -256,7 +235,7 @@ def main():
                 "status": "success",
                 "message": "Pre-commit hook: Ruff not installed, allowing commit",
                 "warning": "Ruff not found - install with 'pip install ruff'",
-                "files_skipped": python_files
+                "files_skipped": python_files,
             }
             print(json.dumps(response))
             sys.exit(0)
@@ -265,7 +244,7 @@ def main():
         print(f"Running Ruff check on {len(python_files)} file(s)...", file=sys.stderr)
         check_result = run_ruff_check(python_files)
 
-        if not check_result['success']:
+        if not check_result["success"]:
             # Ruff found unfixable errors - block commit
             error_msg = (
                 "❌ Ruff found issues that could not be auto-fixed:\n\n"
@@ -277,8 +256,8 @@ def main():
             response = {
                 "status": "error",
                 "message": "Pre-commit hook: Ruff validation failed",
-                "errors": check_result['errors'],
-                "files_checked": python_files
+                "errors": check_result["errors"],
+                "files_checked": python_files,
             }
             print(json.dumps(response))
             sys.exit(1)  # Block commit
@@ -287,7 +266,7 @@ def main():
         print("Running Ruff format...", file=sys.stderr)
         format_result = run_ruff_format(python_files)
 
-        if not format_result['success']:
+        if not format_result["success"]:
             # Format failed - block commit
             error_msg = (
                 "❌ Ruff format failed:\n\n"
@@ -299,17 +278,22 @@ def main():
             response = {
                 "status": "error",
                 "message": "Pre-commit hook: Ruff format failed",
-                "errors": format_result['errors'],
-                "files_checked": python_files
+                "errors": format_result["errors"],
+                "files_checked": python_files,
             }
             print(json.dumps(response))
             sys.exit(1)  # Block commit
 
         # Re-stage files if auto-fixes were applied
-        all_modified = list(set(check_result['fixed_files'] + format_result['formatted_files']))
+        all_modified = list(
+            set(check_result["fixed_files"] + format_result["formatted_files"])
+        )
 
         if all_modified:
-            print(f"Auto-fixed {len(all_modified)} file(s), re-staging...", file=sys.stderr)
+            print(
+                f"Auto-fixed {len(all_modified)} file(s), re-staging...",
+                file=sys.stderr,
+            )
 
             if not restage_files(all_modified):
                 # Re-stage failed - warn but allow commit
@@ -321,7 +305,7 @@ def main():
                     "message": "Pre-commit hook: Ruff validation passed with fixes",
                     "warning": "Could not re-stage auto-fixed files",
                     "files_checked": python_files,
-                    "files_fixed": all_modified
+                    "files_fixed": all_modified,
                 }
                 print(json.dumps(response))
                 sys.exit(0)
@@ -337,7 +321,7 @@ def main():
             "status": "success",
             "message": "Pre-commit hook: Ruff validation passed",
             "files_checked": python_files,
-            "files_fixed": all_modified
+            "files_fixed": all_modified,
         }
         print(json.dumps(response))
         sys.exit(0)

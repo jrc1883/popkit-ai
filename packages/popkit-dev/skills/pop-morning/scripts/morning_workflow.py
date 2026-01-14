@@ -16,7 +16,7 @@ import sys
 import json
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 # Add shared-py to path for utilities
 sys.path.insert(0, str(Path.home() / ".claude" / "popkit" / "packages" / "shared-py"))
@@ -275,7 +275,6 @@ class MorningWorkflow:
     def _add_morning_checks(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """Add morning-specific checks to state."""
         import subprocess
-        import shlex
 
         # Import git_utils from popkit-dev hooks
         hooks_path = Path(__file__).parents[3] / "popkit-dev" / "hooks"
@@ -558,7 +557,6 @@ class MorningWorkflow:
 
         # Update with morning routine data
         git_state = state.get("git", {})
-        github_state = state.get("github", {})
         session_data = state.get("session", {})
 
         updated_status = {
@@ -584,7 +582,6 @@ class MorningWorkflow:
         }
 
         # Add recommendations
-        interpretation = get_score_interpretation(score)
         updated_status["recommendations"] = {
             **existing_status.get("recommendations", {}),
             "before_coding": self._get_setup_recommendations(score, state),

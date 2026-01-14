@@ -15,7 +15,7 @@ import sys
 import json
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 # Add shared-py to path for utilities
 sys.path.insert(0, str(Path.home() / ".claude" / "popkit" / "packages" / "shared-py"))
@@ -203,7 +203,6 @@ class NightlyWorkflow:
         """Fallback state collection without utilities."""
         import subprocess
         import shutil
-        import os
 
         # Import git_utils from popkit-dev hooks
         hooks_path = Path(__file__).parents[3] / "popkit-dev" / "hooks"
@@ -359,7 +358,6 @@ class NightlyWorkflow:
 
         # Update with nightly routine data
         git_state = state.get("git", {})
-        github_state = state.get("github", {})
 
         updated_status = {
             **existing_status,  # Preserve existing data
@@ -390,7 +388,6 @@ class NightlyWorkflow:
         }
 
         # Add recommendations
-        interpretation = get_score_interpretation(score)
         updated_status["recommendations"] = {
             **existing_status.get("recommendations", {}),
             "before_leaving": self._get_before_leaving_recommendations(score, state),
