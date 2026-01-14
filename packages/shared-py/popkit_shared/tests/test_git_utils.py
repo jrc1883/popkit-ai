@@ -2,7 +2,6 @@
 """Test suite for git_utils.py from popkit-dev hooks."""
 
 import sys
-import os
 import io
 import unittest
 from pathlib import Path
