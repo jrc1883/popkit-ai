@@ -5,6 +5,7 @@ import os
 import pytest
 from popkit_shared.utils.session_recorder import SessionRecorder
 
+
 def test_record_subagent_completion(tmp_path):
     """Test recording subagent completion with transcript data."""
     # Arrange
