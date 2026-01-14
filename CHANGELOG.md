@@ -8,6 +8,15 @@ All notable changes to PopKit are documented in this file.
 
 ### Added
 
+- **Power Mode Transcript Parsing** (#110): Enhanced observability for Power Mode subagent executions
+  - Added `record_subagent_completion()` method to session_recorder for structured subagent data
+  - Integrated TranscriptParser into subagent-stop.py hook (line 195 TODO resolved)
+  - Records tool call count, token usage (input/output/total), and first 10 tool details per subagent
+  - Graceful error handling: parsing failures don't block hook execution
+  - Foundation for Phase 2 cloud observability (popkit-observe plugin)
+  - Zero user-facing changes (internal enhancement)
+  - Test coverage: 7 transcript_parser tests + 1 session_recorder test (all passing)
+
 - **GitHub Issue Dashboard Integration** (#111): Display real-time issue counts in the multi-project dashboard
   - Implemented 15-minute cache with instant dashboard load times
   - Added `get_cached_issue_count()`, `fetch_project_issues()`, and `refresh_project_issue_counts()` functions
