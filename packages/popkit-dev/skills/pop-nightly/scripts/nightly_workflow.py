@@ -29,9 +29,11 @@ try:
         record_reasoning,
         record_recommendation
     )
+    from popkit_shared.utils.flag_profiles import ProfileManager
     HAS_UTILITIES = True
 except ImportError:
     HAS_UTILITIES = False
+    ProfileManager = None
     print("[WARN] PopKit utilities not available - running in degraded mode", file=sys.stderr)
 
 # Try relative import (when used as package), fall back to direct import
@@ -51,7 +53,12 @@ class NightlyWorkflow:
         quick: bool = False,
         measure: bool = False,
         optimized: bool = False,
-        no_cache: bool = False
+        no_cache: bool = False,
+        # New flags for profile system (Issue #105)
+        simple: bool = False,
+        skip_cleanup: bool = False,
+        skip_ip_scan: bool = False,
+        no_morning: bool = False
     ):
         """
         Initialize nightly workflow.
@@ -61,11 +68,19 @@ class NightlyWorkflow:
             measure: Track performance metrics
             optimized: Use caching for efficiency
             no_cache: Force fresh execution (ignore cache)
+            simple: Use markdown tables instead of ASCII dashboard
+            skip_cleanup: Skip auto-cleanup actions
+            skip_ip_scan: Skip IP leak scan
+            no_morning: Skip "Since This Morning" section
         """
         self.quick = quick
         self.measure = measure
         self.optimized = optimized
         self.no_cache = no_cache
+        self.simple = simple
+        self.skip_cleanup = skip_cleanup
+        self.skip_ip_scan = skip_ip_scan
+        self.no_morning = no_morning
 
         # Initialize measurement if requested
         self.measurement = None
@@ -378,26 +393,157 @@ class NightlyWorkflow:
         return recommendations if recommendations else ["All clear! Safe to close."]
 
 
+def print_profiles():
+    """Print available profiles (Issue #105)."""
+    if not ProfileManager:
+        print("Error: ProfileManager not available", file=sys.stderr)
+        sys.exit(1)
+
+    print("\nAvailable Nightly Routine Profiles:\n")
+
+    for profile in ProfileManager.list_profiles('routine'):
+        print(f"  {profile.name}")
+        print(f"    {profile.description}")
+        print(f"    Use case: {profile.use_case}")
+        if profile.flags:
+            flag_names = [f'--{k.replace("_", "-")}' for k in profile.flags.keys()]
+            print(f"    Flags: {', '.join(flag_names)}")
+        else:
+            print("    Flags: (defaults)")
+        print()
+
+
+def print_detailed_help():
+    """Print detailed help with examples (Issue #105)."""
+    print("""
+PopKit Nightly Routine - Detailed Help
+
+PROFILES:
+  Use --profile <name> to apply a preset configuration:
+
+  --profile minimal    Fast cleanup (< 10s)
+  --profile standard   Normal end-of-day routine (~20s)
+  --profile thorough   Deep cleanup with metrics (~60s)
+  --profile ci         CI/CD optimized
+
+EXAMPLES:
+  # Quick nightly check (minimal profile)
+  /popkit:routine nightly --profile minimal
+
+  # Standard nightly with measurement
+  /popkit:routine nightly --measure
+
+  # Thorough cleanup with all checks
+  /popkit:routine nightly --profile thorough
+
+  # CI/CD mode
+  /popkit:routine nightly --profile ci
+
+FLAGS:
+  --quick              One-line summary instead of full report
+  --measure            Track and report performance metrics
+  --optimized          Use caching for efficiency
+  --skip-cleanup       Skip auto-cleanup actions
+  --skip-ip-scan       Skip IP leak scan
+  --simple             Markdown tables instead of ASCII dashboard
+
+SMART DEFAULTS:
+  --measure automatically enables --simple for parseable output
+
+See --help-full for complete documentation from routine.md.
+""")
+
+
+def print_full_help():
+    """Print full documentation (Issue #105)."""
+    print("""
+PopKit Nightly Routine - Complete Documentation
+
+For complete documentation, see:
+  packages/popkit-dev/commands/routine.md
+
+Or use: /popkit:help routine
+""")
+
+
 def main():
     """Main entry point for nightly workflow."""
     import argparse
 
-    parser = argparse.ArgumentParser(description='PopKit Nightly Routine')
+    parser = argparse.ArgumentParser(
+        description='PopKit Nightly Routine',
+        epilog='Use --help-detailed for detailed examples'
+    )
+
+    # Profile selection
+    parser.add_argument(
+        '--profile',
+        choices=['minimal', 'standard', 'thorough', 'ci'],
+        help='Profile preset (minimal|standard|thorough|ci)'
+    )
+
+    # Individual flags (existing)
     parser.add_argument('--quick', action='store_true', help='Quick one-line summary')
     parser.add_argument('--measure', action='store_true', help='Track performance metrics')
     parser.add_argument('--optimized', action='store_true', help='Use caching')
     parser.add_argument('--no-cache', action='store_true', help='Force fresh execution')
 
+    # New flags (documented but not yet fully implemented - Issue #105)
+    parser.add_argument('--simple', action='store_true', help='Markdown tables instead of ASCII')
+    parser.add_argument('--skip-cleanup', action='store_true', help='Skip auto-cleanup actions')
+    parser.add_argument('--skip-ip-scan', action='store_true', help='Skip IP leak scan')
+    parser.add_argument('--no-morning', action='store_true', help='Skip morning comparison')
+
+    # Help tiers (Issue #105)
+    parser.add_argument('--help-detailed', action='store_true', help='Show detailed examples')
+    parser.add_argument('--help-full', action='store_true', help='Show full documentation')
+
+    # List profiles (Issue #105)
+    parser.add_argument('--list-profiles', action='store_true', help='List available profiles')
+
     args = parser.parse_args()
 
-    # Run workflow
-    workflow = NightlyWorkflow(
-        quick=args.quick,
-        measure=args.measure,
-        optimized=args.optimized,
-        no_cache=args.no_cache
-    )
+    # Handle help tiers
+    if args.help_detailed:
+        print_detailed_help()
+        sys.exit(0)
 
+    if args.help_full:
+        print_full_help()
+        sys.exit(0)
+
+    # List profiles
+    if args.list_profiles:
+        print_profiles()
+        sys.exit(0)
+
+    # Collect flags from args
+    flags = {
+        'quick': args.quick,
+        'measure': args.measure,
+        'optimized': args.optimized,
+        'no_cache': args.no_cache,
+        'simple': args.simple,
+        'skip_cleanup': args.skip_cleanup,
+        'skip_ip_scan': args.skip_ip_scan,
+        'no_morning': args.no_morning
+    }
+
+    # Apply profile if specified (Issue #105)
+    if args.profile and ProfileManager:
+        try:
+            flags = ProfileManager.apply_profile(args.profile, flags, 'routine')
+            print(f"[PROFILE] Using '{args.profile}' profile", file=sys.stderr)
+        except ValueError as e:
+            print(f"[ERROR] {e}", file=sys.stderr)
+            sys.exit(1)
+
+    # Apply smart defaults (Issue #105)
+    if ProfileManager:
+        flags = ProfileManager.apply_smart_defaults(flags)
+
+    # Run workflow with resolved flags
+    workflow = NightlyWorkflow(**flags)
     result = workflow.run()
 
     # Print report
