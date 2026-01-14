@@ -16,14 +16,12 @@ def generate_error_doc(error_code, output_dir):
 
     # Determine blocking status
     blocking_status = (
-        "Blocking"
-        if error_code.severity.value in ["critical", "high"]
-        else "Non-blocking"
+        "Blocking" if error_code.severity.value in ["critical", "high"] else "Non-blocking"
     )
 
     # Format recovery steps
     recovery_steps = "\n".join(
-        f"{i+1}. **{step.split(':')[0] if ':' in step else 'Step ' + str(i+1)}**\n   - {step}"
+        f"{i + 1}. **{step.split(':')[0] if ':' in step else 'Step ' + str(i + 1)}**\n   - {step}"
         for i, step in enumerate(error_code.recovery)
     )
 
