@@ -28,8 +28,8 @@ jobs:
         if: github.event_name == 'issues'
         uses: actions/first-interaction@v3
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          issue_message: |
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-message: |
             👋 Welcome to PopKit, @${{ github.actor }}! Thanks for opening your first issue.
 
             **What happens next:**
@@ -48,8 +48,8 @@ jobs:
         if: github.event_name == 'pull_request_target'
         uses: actions/first-interaction@v3
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          pr_message: |
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          pr-message: |
             👋 Welcome to PopKit, @${{ github.actor }}! Thanks for opening your first pull request.
 
             **What happens next:**
