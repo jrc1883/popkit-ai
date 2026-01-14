@@ -106,9 +106,7 @@ class TestErrorResponse:
     def test_create_error_response_with_additional_recovery(self):
         """Test that additional recovery steps are appended."""
         additional = ["Custom recovery step"]
-        error = ErrorResponse.create(
-            ErrorRegistry.E001_JSON_PARSE, additional_recovery=additional
-        )
+        error = ErrorResponse.create(ErrorRegistry.E001_JSON_PARSE, additional_recovery=additional)
 
         assert "Custom recovery step" in error["recovery"]
         # Original recovery steps should still be present
@@ -187,7 +185,7 @@ class TestSpecificErrorCodes:
         error = ErrorRegistry.W201_NETWORK_TIMEOUT
         assert error.code == "W201_NETWORK_TIMEOUT"
         assert error.severity == ErrorSeverity.MEDIUM
-        assert ("timeout" in error.message.lower() or "timed out" in error.message.lower())
+        assert "timeout" in error.message.lower() or "timed out" in error.message.lower()
 
     def test_destructive_cmd_safety(self):
         """Test S401_DESTRUCTIVE_CMD safety violation."""

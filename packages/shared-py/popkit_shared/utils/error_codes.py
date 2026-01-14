@@ -478,9 +478,7 @@ class ErrorRegistry:
             10
         """
         return [
-            getattr(cls, attr)
-            for attr in dir(cls)
-            if isinstance(getattr(cls, attr), ErrorCode)
+            getattr(cls, attr) for attr in dir(cls) if isinstance(getattr(cls, attr), ErrorCode)
         ]
 
 
