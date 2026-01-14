@@ -30,9 +30,11 @@ try:
         record_reasoning,
         record_recommendation
     )
+    from popkit_shared.utils.flag_profiles import ProfileManager
     HAS_UTILITIES = True
 except ImportError:
     HAS_UTILITIES = False
+    ProfileManager = None
     print("[WARN] PopKit utilities not available - running in degraded mode", file=sys.stderr)
 
 # Try relative import (when used as package), fall back to direct import
@@ -52,7 +54,14 @@ class MorningWorkflow:
         quick: bool = False,
         measure: bool = False,
         optimized: bool = False,
-        no_cache: bool = False
+        no_cache: bool = False,
+        # New flags for profile system (Issue #105)
+        simple: bool = False,
+        skip_tests: bool = False,
+        skip_services: bool = False,
+        skip_deployments: bool = False,
+        full: bool = False,
+        no_nightly: bool = False
     ):
         """
         Initialize morning workflow.
@@ -62,11 +71,23 @@ class MorningWorkflow:
             measure: Track performance metrics
             optimized: Use caching for efficiency
             no_cache: Force fresh execution (ignore cache)
+            simple: Use markdown tables instead of ASCII dashboard
+            skip_tests: Skip test execution
+            skip_services: Skip service health checks
+            skip_deployments: Skip deployment status check
+            full: Include all checks (slower)
+            no_nightly: Skip "From Last Night" section
         """
         self.quick = quick
         self.measure = measure
         self.optimized = optimized
         self.no_cache = no_cache
+        self.simple = simple
+        self.skip_tests = skip_tests
+        self.skip_services = skip_services
+        self.skip_deployments = skip_deployments
+        self.full = full
+        self.no_nightly = no_nightly
 
         # Initialize measurement if requested
         self.measurement = None
@@ -543,26 +564,167 @@ class MorningWorkflow:
         return recommendations
 
 
+def print_profiles():
+    """Print available profiles (Issue #105)."""
+    if not ProfileManager:
+        print("Error: ProfileManager not available", file=sys.stderr)
+        sys.exit(1)
+
+    print("\nAvailable Morning Routine Profiles:\n")
+
+    for profile in ProfileManager.list_profiles('routine'):
+        print(f"  {profile.name}")
+        print(f"    {profile.description}")
+        print(f"    Use case: {profile.use_case}")
+        if profile.flags:
+            flag_names = [f'--{k.replace("_", "-")}' for k in profile.flags.keys()]
+            print(f"    Flags: {', '.join(flag_names)}")
+        else:
+            print("    Flags: (defaults)")
+        print()
+
+
+def print_detailed_help():
+    """Print detailed help with examples (Issue #105)."""
+    print("""
+PopKit Morning Routine - Detailed Help
+
+PROFILES:
+  Use --profile <name> to apply a preset configuration:
+
+  --profile minimal    Fast health check (< 10s)
+  --profile standard   Normal daily routine (~20s)
+  --profile thorough   Deep analysis with metrics (~60s)
+  --profile ci         CI/CD optimized, JSON output
+
+EXAMPLES:
+  # Quick morning check (minimal profile)
+  /popkit:routine morning --profile minimal
+
+  # Standard morning with measurement
+  /popkit:routine morning --measure
+
+  # Thorough check with all validations
+  /popkit:routine morning --profile thorough
+
+  # CI/CD mode
+  /popkit:routine morning --profile ci
+
+  # Override profile flags
+  /popkit:routine morning --profile minimal --measure
+
+FLAGS:
+  --quick              One-line summary instead of full report
+  --measure            Track and report performance metrics
+  --optimized          Use caching for efficiency
+  --skip-tests         Skip running tests (faster)
+  --skip-services      Skip service health checks
+  --skip-deployments   Skip deployment status
+  --full               Include all checks (slower)
+  --simple             Markdown tables instead of ASCII dashboard
+
+SMART DEFAULTS:
+  --measure automatically enables --simple for parseable output
+  --full overrides --optimized (thorough checks can't be cached)
+
+See --help-full for complete documentation from routine.md.
+""")
+
+
+def print_full_help():
+    """Print full documentation (Issue #105)."""
+    print("""
+PopKit Morning Routine - Complete Documentation
+
+For complete documentation, see:
+  packages/popkit-dev/commands/routine.md
+
+Or use: /popkit:help routine
+""")
+
+
 def main():
     """Main entry point for morning workflow."""
     import argparse
 
-    parser = argparse.ArgumentParser(description='PopKit Morning Routine')
+    parser = argparse.ArgumentParser(
+        description='PopKit Morning Routine',
+        epilog='Use --help-detailed for detailed examples'
+    )
+
+    # Profile selection
+    parser.add_argument(
+        '--profile',
+        choices=['minimal', 'standard', 'thorough', 'ci'],
+        help='Profile preset (minimal|standard|thorough|ci)'
+    )
+
+    # Individual flags (existing)
     parser.add_argument('--quick', action='store_true', help='Quick one-line summary')
     parser.add_argument('--measure', action='store_true', help='Track performance metrics')
     parser.add_argument('--optimized', action='store_true', help='Use caching')
     parser.add_argument('--no-cache', action='store_true', help='Force fresh execution')
 
+    # New flags (documented but not yet fully implemented - Issue #105)
+    parser.add_argument('--simple', action='store_true', help='Markdown tables instead of ASCII')
+    parser.add_argument('--skip-tests', action='store_true', help='Skip test execution')
+    parser.add_argument('--skip-services', action='store_true', help='Skip service health checks')
+    parser.add_argument('--skip-deployments', action='store_true', help='Skip deployment status')
+    parser.add_argument('--full', action='store_true', help='Include all checks (slower)')
+    parser.add_argument('--no-nightly', action='store_true', help='Skip nightly comparison')
+
+    # Help tiers (Issue #105)
+    parser.add_argument('--help-detailed', action='store_true', help='Show detailed examples')
+    parser.add_argument('--help-full', action='store_true', help='Show full documentation')
+
+    # List profiles (Issue #105)
+    parser.add_argument('--list-profiles', action='store_true', help='List available profiles')
+
     args = parser.parse_args()
 
-    # Run workflow
-    workflow = MorningWorkflow(
-        quick=args.quick,
-        measure=args.measure,
-        optimized=args.optimized,
-        no_cache=args.no_cache
-    )
+    # Handle help tiers
+    if args.help_detailed:
+        print_detailed_help()
+        sys.exit(0)
 
+    if args.help_full:
+        print_full_help()
+        sys.exit(0)
+
+    # List profiles
+    if args.list_profiles:
+        print_profiles()
+        sys.exit(0)
+
+    # Collect flags from args
+    flags = {
+        'quick': args.quick,
+        'measure': args.measure,
+        'optimized': args.optimized,
+        'no_cache': args.no_cache,
+        'simple': args.simple,
+        'skip_tests': args.skip_tests,
+        'skip_services': args.skip_services,
+        'skip_deployments': args.skip_deployments,
+        'full': args.full,
+        'no_nightly': args.no_nightly
+    }
+
+    # Apply profile if specified (Issue #105)
+    if args.profile and ProfileManager:
+        try:
+            flags = ProfileManager.apply_profile(args.profile, flags, 'routine')
+            print(f"[PROFILE] Using '{args.profile}' profile", file=sys.stderr)
+        except ValueError as e:
+            print(f"[ERROR] {e}", file=sys.stderr)
+            sys.exit(1)
+
+    # Apply smart defaults (Issue #105)
+    if ProfileManager:
+        flags = ProfileManager.apply_smart_defaults(flags)
+
+    # Run workflow with resolved flags
+    workflow = MorningWorkflow(**flags)
     result = workflow.run()
 
     # Print report

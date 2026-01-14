@@ -16,6 +16,48 @@ Unified command for morning health checks and nightly maintenance routines. Supp
 
 ---
 
+## Profiles (Issue #105)
+
+Use `--profile <name>` to apply preset flag combinations and reduce cognitive load:
+
+| Profile | Flags | Use Case |
+|---------|-------|----------|
+| **minimal** | `--quick --skip-tests --skip-services --skip-deployments --simple` | Fast health check (< 10s) |
+| **standard** | (defaults) | Normal daily routine (~20s) |
+| **thorough** | `--full --measure` | Deep analysis with metrics (~60s) |
+| **ci** | `--optimized --measure --simple --no-cache` | CI/CD pipelines |
+
+**Examples:**
+```bash
+# Minimal profile - fast morning check
+/popkit:routine morning --profile minimal
+
+# Thorough profile - deep validation
+/popkit:routine morning --profile thorough
+
+# CI profile - optimized for automation
+/popkit:routine morning --profile ci
+
+# Override profile flags
+/popkit:routine morning --profile minimal --measure
+```
+
+### Smart Defaults
+
+- `--measure` automatically enables `--simple` for parseable output
+- `--full` overrides `--optimized` (thorough checks can't be cached)
+
+### Tiered Help
+
+| Command | Description |
+|---------|-------------|
+| `--help` | Quick reference (default) |
+| `--help-detailed` | Detailed examples and profile guide |
+| `--help-full` | Complete documentation link |
+| `--list-profiles` | List available profiles with descriptions |
+
+---
+
 ## morning
 
 Start your day with a comprehensive project health assessment.
