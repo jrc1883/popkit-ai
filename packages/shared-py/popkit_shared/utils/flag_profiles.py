@@ -15,6 +15,7 @@ from dataclasses import dataclass
 @dataclass
 class FlagProfile:
     """Represents a flag profile with its flag settings."""
+
     name: str
     description: str
     flags: Dict[str, Any]  # flag_name -> value
@@ -26,48 +27,40 @@ class ProfileManager:
 
     # Profile definitions for routine commands
     ROUTINE_PROFILES = {
-        'minimal': FlagProfile(
-            name='minimal',
-            description='Quick health check, skip heavy operations',
+        "minimal": FlagProfile(
+            name="minimal",
+            description="Quick health check, skip heavy operations",
             flags={
-                'quick': True,
-                'skip_tests': True,
-                'skip_services': True,
-                'skip_deployments': True,
-                'simple': True
+                "quick": True,
+                "skip_tests": True,
+                "skip_services": True,
+                "skip_deployments": True,
+                "simple": True,
             },
-            use_case='Fast morning check (< 10 seconds)'
+            use_case="Fast morning check (< 10 seconds)",
         ),
-        'standard': FlagProfile(
-            name='standard',
-            description='Default behavior, balanced checks',
+        "standard": FlagProfile(
+            name="standard",
+            description="Default behavior, balanced checks",
             flags={},  # All defaults
-            use_case='Normal daily routine (~20 seconds)'
+            use_case="Normal daily routine (~20 seconds)",
         ),
-        'thorough': FlagProfile(
-            name='thorough',
-            description='All checks including optional validations',
-            flags={
-                'full': True,
-                'measure': True
-            },
-            use_case='Deep analysis with metrics (~60 seconds)'
+        "thorough": FlagProfile(
+            name="thorough",
+            description="All checks including optional validations",
+            flags={"full": True, "measure": True},
+            use_case="Deep analysis with metrics (~60 seconds)",
         ),
-        'ci': FlagProfile(
-            name='ci',
-            description='Optimized for CI/CD environments',
-            flags={
-                'optimized': True,
-                'no_cache': True,
-                'measure': True,
-                'simple': True
-            },
-            use_case='CI/CD pipelines, JSON output'
-        )
+        "ci": FlagProfile(
+            name="ci",
+            description="Optimized for CI/CD environments",
+            flags={"optimized": True, "no_cache": True, "measure": True, "simple": True},
+            use_case="CI/CD pipelines, JSON output",
+        ),
     }
 
     @classmethod
-    def get_profile(cls, profile_name: str, command_type: str = 'routine') -> Optional[FlagProfile]:
+    def get_profile(cls, profile_name: str, command_type: str = "routine") -> Optional[FlagProfile]:
         """
         Get profile by name for a given command type.
 
@@ -83,12 +76,12 @@ class ProfileManager:
             >>> print(profile.name)
             minimal
         """
-        if command_type == 'routine':
+        if command_type == "routine":
             return cls.ROUTINE_PROFILES.get(profile_name)
         return None
 
     @classmethod
-    def list_profiles(cls, command_type: str = 'routine') -> List[FlagProfile]:
+    def list_profiles(cls, command_type: str = "routine") -> List[FlagProfile]:
         """
         List all available profiles for a command type.
 
@@ -103,13 +96,14 @@ class ProfileManager:
             >>> len(profiles)
             4
         """
-        if command_type == 'routine':
+        if command_type == "routine":
             return list(cls.ROUTINE_PROFILES.values())
         return []
 
     @classmethod
-    def apply_profile(cls, profile_name: str, current_flags: Dict[str, Any],
-                      command_type: str = 'routine') -> Dict[str, Any]:
+    def apply_profile(
+        cls, profile_name: str, current_flags: Dict[str, Any], command_type: str = "routine"
+    ) -> Dict[str, Any]:
         """
         Apply a profile to current flags.
 
@@ -172,11 +166,11 @@ class ProfileManager:
             True
         """
         # --measure implies --simple for parseable output
-        if flags.get('measure') and not flags.get('simple'):
-            flags['simple'] = True
+        if flags.get("measure") and not flags.get("simple"):
+            flags["simple"] = True
 
         # --full overrides --optimized (can't cache thorough checks)
-        if flags.get('full') and flags.get('optimized'):
-            flags['optimized'] = False
+        if flags.get("full") and flags.get("optimized"):
+            flags["optimized"] = False
 
         return flags
