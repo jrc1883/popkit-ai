@@ -160,6 +160,19 @@
           }
         ]
       }
+    ],
+    "PreCommit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/pre-commit.py\"",
+            "timeout": 30000,
+            "description": "Run Ruff validation on staged Python files (Issue #156)"
+          }
+        ]
+      }
     ]
   }
 }

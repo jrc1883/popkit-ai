@@ -118,6 +118,33 @@ Example hook command:
 }
 ```
 
+### Pre-Commit Hook (Issue #156)
+
+PopKit Core includes an automatic **Ruff pre-commit hook** that validates Python code quality:
+
+**Features:**
+- Runs `ruff check --fix` and `ruff format` on staged Python files
+- Auto-fixes formatting and linting issues transparently
+- Re-stages files automatically after fixes
+- Blocks commit only on unfixable errors
+- Fails open if Ruff is not installed (with warning)
+- Performance: <5s for typical commits
+
+**Behavior:**
+1. Detects staged Python files: `git diff --cached --name-only --diff-filter=ACM`
+2. Runs Ruff validation with auto-fix enabled
+3. Re-stages files if auto-fixes were applied
+4. Exits 0 (allow commit) or 1 (block commit)
+
+**Edge Cases:**
+- No Python files staged → Skip hook immediately
+- Ruff not installed → Fail open with warning message
+- Auto-fixes applied → Re-stage files and allow commit
+- Unfixable errors → Block commit with error details
+- Hook errors → Fail open (never block on hook failures)
+
+**Configuration:** See `packages/popkit-core/hooks/hooks.json` - timeout is 30s to handle large commits.
+
 ### New in Claude Code 2.1.0
 
 **Skill Hot-Reload:**

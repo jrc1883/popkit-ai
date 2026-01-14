@@ -1,0 +1,238 @@
+{
+  "test_id": "hook-pre-commit-ruff",
+  "category": "hooks",
+  "name": "Pre-Commit Hook Ruff Validation",
+  "description": "Verify pre-commit.py runs Ruff validation on staged Python files (Issue #156)",
+  "severity": "high",
+  "hook_file": "hooks/pre-commit.py",
+  "test_cases": [
+    {
+      "case_id": "clean-file-commit",
+      "name": "Clean Python file - commit succeeds",
+      "input": {
+        "event": "PreCommit",
+        "staged_files": ["test_module.py"],
+        "file_content": {
+          "test_module.py": "def hello():\n    return 'world'\n"
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0,
+          "description": "Clean file should allow commit"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "contains",
+          "field": "stdout",
+          "expected": "success",
+          "description": "Should report success status"
+        },
+        {
+          "type": "duration",
+          "max_ms": 5000,
+          "description": "Should complete quickly for small files"
+        }
+      ]
+    },
+    {
+      "case_id": "auto-fix-restage",
+      "name": "Auto-fixable issues - fix and re-stage",
+      "input": {
+        "event": "PreCommit",
+        "staged_files": ["bad_format.py"],
+        "file_content": {
+          "bad_format.py": "import sys\nimport os\n\ndef hello(  ):\n    x=1+2\n    return   'world'\n"
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0,
+          "description": "Auto-fixable issues should allow commit after fix"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "contains",
+          "field": "stdout",
+          "expected": "success",
+          "description": "Should report success after auto-fix"
+        },
+        {
+          "type": "duration",
+          "max_ms": 10000,
+          "description": "Auto-fix should complete within 10s"
+        }
+      ]
+    },
+    {
+      "case_id": "unfixable-error-block",
+      "name": "Unfixable errors - block commit",
+      "input": {
+        "event": "PreCommit",
+        "staged_files": ["syntax_error.py"],
+        "file_content": {
+          "syntax_error.py": "def hello(\n    return 'missing closing parenthesis'\n"
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 1,
+          "description": "Syntax errors should block commit"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "contains",
+          "field": "stdout",
+          "expected": "error",
+          "description": "Should report error status"
+        }
+      ]
+    },
+    {
+      "case_id": "no-python-files-skip",
+      "name": "No Python files staged - skip hook",
+      "input": {
+        "event": "PreCommit",
+        "staged_files": ["README.md", "config.json"]
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0,
+          "description": "Should skip when no Python files"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "contains",
+          "field": "stdout",
+          "expected": "no Python files",
+          "description": "Should indicate no Python files to check"
+        },
+        {
+          "type": "duration",
+          "max_ms": 1000,
+          "description": "Should return immediately when skipping"
+        }
+      ]
+    },
+    {
+      "case_id": "ruff-not-installed",
+      "name": "Ruff not installed - fail-open with warning",
+      "input": {
+        "event": "PreCommit",
+        "staged_files": ["test.py"],
+        "env": {
+          "PATH": "/fake/path/without/ruff"
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0,
+          "description": "Should allow commit when Ruff missing (fail-open)"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "contains",
+          "field": "stdout",
+          "expected": "not installed",
+          "description": "Should warn about missing Ruff"
+        },
+        {
+          "type": "contains",
+          "field": "stderr",
+          "expected": "Ruff is not installed",
+          "description": "Should print warning to stderr"
+        }
+      ]
+    },
+    {
+      "case_id": "multiple-files",
+      "name": "Multiple Python files - batch validation",
+      "input": {
+        "event": "PreCommit",
+        "staged_files": ["module1.py", "module2.py", "tests/test_foo.py"],
+        "file_content": {
+          "module1.py": "def foo():\n    return 1\n",
+          "module2.py": "def bar():\n    return 2\n",
+          "tests/test_foo.py": "def test_foo():\n    assert True\n"
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "contains",
+          "field": "stdout",
+          "expected": "success"
+        },
+        {
+          "type": "duration",
+          "max_ms": 10000,
+          "description": "Batch validation should be efficient"
+        }
+      ]
+    },
+    {
+      "case_id": "performance-check",
+      "name": "Performance - typical commit under 5s",
+      "input": {
+        "event": "PreCommit",
+        "staged_files": ["service.py"],
+        "file_content": {
+          "service.py": "class Service:\n    def __init__(self):\n        self.name = 'test'\n\n    def run(self):\n        return True\n"
+        }
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "duration",
+          "max_ms": 5000,
+          "description": "Typical commits should complete under 5s"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "hooks/pre-commit.py",
+    "ruff (optional - fails open if missing)"
+  ],
+  "notes": [
+    "This hook validates Python code quality before commits (Issue #156)",
+    "Auto-fixes are transparent - files are re-staged automatically",
+    "Fails open if Ruff is not installed (non-blocking)",
+    "Blocks commit only on unfixable errors",
+    "Performance target: <5s for typical commits"
+  ]
+}
