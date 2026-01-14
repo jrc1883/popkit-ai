@@ -3,7 +3,6 @@
 
 import os
 import pytest
-from pathlib import Path
 from popkit_shared.utils.session_recorder import SessionRecorder
 
 
