@@ -1,14 +1,14 @@
-# E001_JSON_PARSE - Invalid JSON syntax in input
+# E902_UNEXPECTED_STATE - System reached unexpected state
 
-**Category:** JSON/Input Parsing
+**Category:** System/Internal
 **Severity:** Critical
 **Status:** Blocking
 
 ## Description
 
-Invalid JSON syntax in input
+System reached unexpected state
 
-This error occurs in the **JSON/Input Parsing** category and indicates a critical severity issue.
+This error occurs in the **System/Internal** category and indicates a critical severity issue.
 
 ## Common Causes
 
@@ -19,11 +19,11 @@ This error occurs in the **JSON/Input Parsing** category and indicates a critica
 ## Resolution Steps
 
 1. **Step 1**
-   - Validate JSON with 'jq' or online validator
+   - Restart the application
 2. **Step 2**
-   - Check for trailing commas (not allowed in JSON)
+   - Check system logs for details
 3. **Step 3**
-   - Ensure proper escaping of quotes and backslashes
+   - Report issue if reproducible
 
 ## Prevention
 

@@ -1,14 +1,14 @@
-# E001_JSON_PARSE - Invalid JSON syntax in input
+# S403_INSECURE_OPERATION - Operation uses insecure method or protocol
 
-**Category:** JSON/Input Parsing
-**Severity:** Critical
+**Category:** Safety/Security
+**Severity:** High
 **Status:** Blocking
 
 ## Description
 
-Invalid JSON syntax in input
+Operation uses insecure method or protocol
 
-This error occurs in the **JSON/Input Parsing** category and indicates a critical severity issue.
+This error occurs in the **Safety/Security** category and indicates a high severity issue.
 
 ## Common Causes
 
@@ -19,11 +19,11 @@ This error occurs in the **JSON/Input Parsing** category and indicates a critica
 ## Resolution Steps
 
 1. **Step 1**
-   - Validate JSON with 'jq' or online validator
+   - Use secure alternative (HTTPS instead of HTTP)
 2. **Step 2**
-   - Check for trailing commas (not allowed in JSON)
+   - Enable encryption for sensitive data
 3. **Step 3**
-   - Ensure proper escaping of quotes and backslashes
+   - Review security best practices
 
 ## Prevention
 

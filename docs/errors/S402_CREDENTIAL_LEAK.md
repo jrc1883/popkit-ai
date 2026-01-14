@@ -1,14 +1,14 @@
-# E001_JSON_PARSE - Invalid JSON syntax in input
+# S402_CREDENTIAL_LEAK - Potential credential or secret detected
 
-**Category:** JSON/Input Parsing
+**Category:** Safety/Security
 **Severity:** Critical
 **Status:** Blocking
 
 ## Description
 
-Invalid JSON syntax in input
+Potential credential or secret detected
 
-This error occurs in the **JSON/Input Parsing** category and indicates a critical severity issue.
+This error occurs in the **Safety/Security** category and indicates a critical severity issue.
 
 ## Common Causes
 
@@ -19,11 +19,11 @@ This error occurs in the **JSON/Input Parsing** category and indicates a critica
 ## Resolution Steps
 
 1. **Step 1**
-   - Validate JSON with 'jq' or online validator
+   - Remove credentials from code immediately
 2. **Step 2**
-   - Check for trailing commas (not allowed in JSON)
+   - Use environment variables or secure vault
 3. **Step 3**
-   - Ensure proper escaping of quotes and backslashes
+   - Rotate compromised credentials if already committed
 
 ## Prevention
 

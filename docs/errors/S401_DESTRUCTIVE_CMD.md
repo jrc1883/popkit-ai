@@ -1,14 +1,14 @@
-# E001_JSON_PARSE - Invalid JSON syntax in input
+# S401_DESTRUCTIVE_CMD - Potentially destructive command blocked
 
-**Category:** JSON/Input Parsing
+**Category:** Safety/Security
 **Severity:** Critical
 **Status:** Blocking
 
 ## Description
 
-Invalid JSON syntax in input
+Potentially destructive command blocked
 
-This error occurs in the **JSON/Input Parsing** category and indicates a critical severity issue.
+This error occurs in the **Safety/Security** category and indicates a critical severity issue.
 
 ## Common Causes
 
@@ -19,11 +19,11 @@ This error occurs in the **JSON/Input Parsing** category and indicates a critica
 ## Resolution Steps
 
 1. **Step 1**
-   - Validate JSON with 'jq' or online validator
+   - Review command for unintended consequences
 2. **Step 2**
-   - Check for trailing commas (not allowed in JSON)
+   - Use safer alternative if available
 3. **Step 3**
-   - Ensure proper escaping of quotes and backslashes
+   - Explicitly approve if command is intentional
 
 ## Prevention
 

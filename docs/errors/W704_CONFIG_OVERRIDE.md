@@ -1,14 +1,14 @@
-# E001_JSON_PARSE - Invalid JSON syntax in input
+# W704_CONFIG_OVERRIDE - Configuration value overridden by environment variable
 
-**Category:** JSON/Input Parsing
-**Severity:** Critical
-**Status:** Blocking
+**Category:** Configuration
+**Severity:** Low
+**Status:** Non-blocking
 
 ## Description
 
-Invalid JSON syntax in input
+Configuration value overridden by environment variable
 
-This error occurs in the **JSON/Input Parsing** category and indicates a critical severity issue.
+This error occurs in the **Configuration** category and indicates a low severity issue.
 
 ## Common Causes
 
@@ -19,11 +19,11 @@ This error occurs in the **JSON/Input Parsing** category and indicates a critica
 ## Resolution Steps
 
 1. **Step 1**
-   - Validate JSON with 'jq' or online validator
+   - This is informational - environment variables take precedence
 2. **Step 2**
-   - Check for trailing commas (not allowed in JSON)
+   - Unset environment variable to use config file value
 3. **Step 3**
-   - Ensure proper escaping of quotes and backslashes
+   - See documentation for configuration precedence order
 
 ## Prevention
 

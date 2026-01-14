@@ -1,14 +1,14 @@
-# E001_JSON_PARSE - Invalid JSON syntax in input
+# E501_DB_CONNECTION_FAILED - Failed to connect to database
 
-**Category:** JSON/Input Parsing
+**Category:** Database
 **Severity:** Critical
 **Status:** Blocking
 
 ## Description
 
-Invalid JSON syntax in input
+Failed to connect to database
 
-This error occurs in the **JSON/Input Parsing** category and indicates a critical severity issue.
+This error occurs in the **Database** category and indicates a critical severity issue.
 
 ## Common Causes
 
@@ -19,11 +19,11 @@ This error occurs in the **JSON/Input Parsing** category and indicates a critica
 ## Resolution Steps
 
 1. **Step 1**
-   - Validate JSON with 'jq' or online validator
+   - Check database server is running
 2. **Step 2**
-   - Check for trailing commas (not allowed in JSON)
+   - Verify connection string and credentials
 3. **Step 3**
-   - Ensure proper escaping of quotes and backslashes
+   - Ensure network connectivity to database
 
 ## Prevention
 

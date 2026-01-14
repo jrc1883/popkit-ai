@@ -1,14 +1,14 @@
-# E001_JSON_PARSE - Invalid JSON syntax in input
+# E705_CONFIG_VALIDATION_FAILED - Configuration validation failed
 
-**Category:** JSON/Input Parsing
-**Severity:** Critical
+**Category:** Configuration
+**Severity:** High
 **Status:** Blocking
 
 ## Description
 
-Invalid JSON syntax in input
+Configuration validation failed
 
-This error occurs in the **JSON/Input Parsing** category and indicates a critical severity issue.
+This error occurs in the **Configuration** category and indicates a high severity issue.
 
 ## Common Causes
 
@@ -19,11 +19,11 @@ This error occurs in the **JSON/Input Parsing** category and indicates a critica
 ## Resolution Steps
 
 1. **Step 1**
-   - Validate JSON with 'jq' or online validator
+   - Review validation error details
 2. **Step 2**
-   - Check for trailing commas (not allowed in JSON)
+   - Ensure all required fields have valid values
 3. **Step 3**
-   - Ensure proper escaping of quotes and backslashes
+   - Check value ranges and constraints
 
 ## Prevention
 

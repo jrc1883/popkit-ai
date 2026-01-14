@@ -1,14 +1,14 @@
-# E001_JSON_PARSE - Invalid JSON syntax in input
+# E106_DIRECTORY_NOT_FOUND - Required directory not found
 
-**Category:** JSON/Input Parsing
-**Severity:** Critical
+**Category:** File I/O
+**Severity:** High
 **Status:** Blocking
 
 ## Description
 
-Invalid JSON syntax in input
+Required directory not found
 
-This error occurs in the **JSON/Input Parsing** category and indicates a critical severity issue.
+This error occurs in the **File I/O** category and indicates a high severity issue.
 
 ## Common Causes
 
@@ -19,11 +19,11 @@ This error occurs in the **JSON/Input Parsing** category and indicates a critica
 ## Resolution Steps
 
 1. **Step 1**
-   - Validate JSON with 'jq' or online validator
+   - Create directory with 'mkdir -p <path>'
 2. **Step 2**
-   - Check for trailing commas (not allowed in JSON)
+   - Verify directory path is correct
 3. **Step 3**
-   - Ensure proper escaping of quotes and backslashes
+   - Check parent directory permissions
 
 ## Prevention
 
