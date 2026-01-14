@@ -16,6 +16,14 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Tuple
 
+# Import error code system (Issue #104)
+try:
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'shared-py'))
+    from popkit_shared.utils.error_codes import ErrorRegistry, ErrorResponse
+    HAS_ERROR_CODES = True
+except ImportError:
+    HAS_ERROR_CODES = False
+
 # No longer using premium/tier-based gating (Epic #580, Issue #581)
 # All features work without API key - API key only adds enhancements
 # Premium checking code removed - see enhancement_detector.py for optional enhancements
@@ -970,7 +978,26 @@ def main():
         }
 
         if result["action"] == "block":
-            response["reason"] = "; ".join(result["safety_check"]["violations"])
+            violations = result["safety_check"]["violations"]
+            response["reason"] = "; ".join(violations)
+
+            # Use standardized error code for safety violations (Issue #104)
+            if HAS_ERROR_CODES:
+                # Check if this is a destructive command (safety violation)
+                if any("destructive" in v.lower() or "dangerous" in v.lower() for v in result["safety_check"]["violations"]):
+                    error_info = ErrorResponse.create(
+                        ErrorRegistry.S401_DESTRUCTIVE_CMD,
+                        context={
+                            "tool_name": tool_name,
+                            "violations": result["safety_check"]["violations"]
+                        },
+                        hook_name="pre-tool-use"
+                    )
+                    # Merge error code info into response
+                    response["code"] = error_info["code"]
+                    response["help_url"] = error_info["help_url"]
+                    response["recovery"] = error_info["recovery"]
+
             print(f"🚫 Tool execution blocked: {tool_name}", file=sys.stderr)
             for violation in result["safety_check"]["violations"]:
                 print(f"   - {violation}", file=sys.stderr)
@@ -994,10 +1021,26 @@ def main():
         print(json.dumps(response))
 
     except json.JSONDecodeError as e:
-        response = {"error": f"Invalid JSON input: {e}", "decision": "block"}
+        # Use standardized error response if available (Issue #104)
+        if HAS_ERROR_CODES:
+            response = ErrorResponse.create(
+                ErrorRegistry.E001_JSON_PARSE,
+                context={
+                    "parse_error": str(e),
+                    "line": getattr(e, 'lineno', None),
+                    "column": getattr(e, 'colno', None)
+                },
+                hook_name="pre-tool-use"
+            )
+            response["decision"] = "block"  # Add hook-specific field
+        else:
+            # Fallback to legacy format
+            response = {"error": f"Invalid JSON input: {e}", "decision": "block"}
         print(json.dumps(response))
         sys.exit(1)
     except Exception as e:
+        # Generic exception - approve to allow graceful degradation
+        # Only block when safety violations are detected (handled above)
         response = {"error": str(e), "decision": "approve"}
         print(json.dumps(response))
         sys.exit(0)  # Don't block on errors

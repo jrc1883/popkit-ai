@@ -26,6 +26,13 @@ try:
 except ImportError:
     HAS_VERSION_CHECK = False
 
+# Import error code system (Issue #104)
+try:
+    from popkit_shared.utils.error_codes import ErrorRegistry, ErrorResponse
+    HAS_ERROR_CODES = True
+except ImportError:
+    HAS_ERROR_CODES = False
+
 # Import project registration client
 try:
     from popkit_shared.utils.project_client import ProjectClient, ProjectRegistration
@@ -753,13 +760,28 @@ def main():
         print(json.dumps(response))
 
     except json.JSONDecodeError as e:
-        response = {"status": "error", "error": f"Invalid JSON input: {e}"}
+        # Use standardized error response if available (Issue #104)
+        if HAS_ERROR_CODES:
+            response = ErrorResponse.create(
+                ErrorRegistry.E001_JSON_PARSE,
+                context={
+                    "parse_error": str(e),
+                    "line": getattr(e, 'lineno', None),
+                    "column": getattr(e, 'colno', None)
+                },
+                hook_name="session-start"
+            )
+        else:
+            # Fallback to legacy format
+            response = {"status": "error", "error": f"Invalid JSON input: {e}"}
         print(json.dumps(response))
         sys.exit(0)  # Don't block on errors
     except Exception as e:
+        # Generic exception - graceful degradation (non-blocking)
+        # Session-start hook never blocks, even on errors
         response = {"status": "error", "error": str(e)}
         print(json.dumps(response))
-        print(f"Error in session_start hook: {e}", file=sys.stderr)
+        print(f"⚠️ Error in session-start hook: {e}", file=sys.stderr)
         sys.exit(0)  # Don't block on errors
 
 if __name__ == "__main__":
