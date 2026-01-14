@@ -177,6 +177,275 @@ class ErrorRegistry:
         ],
     )
 
+    # Additional JSON/Input Errors (001-099) - Phase 2
+    E003_MALFORMED_INPUT = ErrorCode(
+        code="E003_MALFORMED_INPUT",
+        category="JSON/Input Parsing",
+        message="Input data is malformed or corrupted",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/E003_MALFORMED_INPUT.md",
+        recovery=[
+            "Verify input format matches expected structure",
+            "Check for encoding issues (UTF-8 expected)",
+            "Try regenerating the input data",
+        ],
+    )
+
+    # Additional File I/O Errors (100-199) - Phase 2
+    E103_FILE_READ_ERROR = ErrorCode(
+        code="E103_FILE_READ_ERROR",
+        category="File I/O",
+        message="Failed to read file contents",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/E103_FILE_READ_ERROR.md",
+        recovery=[
+            "Check file is not locked by another process",
+            "Verify file is not corrupted",
+            "Ensure sufficient system resources available",
+        ],
+    )
+
+    E104_FILE_WRITE_ERROR = ErrorCode(
+        code="E104_FILE_WRITE_ERROR",
+        category="File I/O",
+        message="Failed to write to file",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/E104_FILE_WRITE_ERROR.md",
+        recovery=[
+            "Check available disk space",
+            "Verify write permissions on target directory",
+            "Ensure file is not locked by another process",
+        ],
+    )
+
+    W105_FILE_TOO_LARGE = ErrorCode(
+        code="W105_FILE_TOO_LARGE",
+        category="File I/O",
+        message="File size exceeds recommended limits",
+        severity=ErrorSeverity.MEDIUM,
+        help_doc="errors/W105_FILE_TOO_LARGE.md",
+        recovery=[
+            "Consider processing file in chunks",
+            "Use streaming approach for large files",
+            "Operation will continue with potential performance impact",
+        ],
+    )
+
+    # Additional Network/API Errors (200-299) - Phase 2
+    E202_CONNECTION_REFUSED = ErrorCode(
+        code="E202_CONNECTION_REFUSED",
+        category="Network/API",
+        message="Connection refused by remote server",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/E202_CONNECTION_REFUSED.md",
+        recovery=[
+            "Verify server is running and accessible",
+            "Check firewall and network settings",
+            "Confirm correct hostname and port",
+        ],
+    )
+
+    E203_API_ERROR = ErrorCode(
+        code="E203_API_ERROR",
+        category="Network/API",
+        message="API request failed with error response",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/E203_API_ERROR.md",
+        recovery=[
+            "Check API error message for details",
+            "Verify API credentials and permissions",
+            "Review API documentation for correct usage",
+        ],
+    )
+
+    W204_RATE_LIMIT = ErrorCode(
+        code="W204_RATE_LIMIT",
+        category="Network/API",
+        message="API rate limit exceeded",
+        severity=ErrorSeverity.MEDIUM,
+        help_doc="errors/W204_RATE_LIMIT.md",
+        recovery=[
+            "Wait before retrying (check Retry-After header)",
+            "Reduce request frequency",
+            "Consider implementing exponential backoff",
+        ],
+    )
+
+    # Additional Git Operations (300-399) - Phase 2
+    E302_MERGE_CONFLICT = ErrorCode(
+        code="E302_MERGE_CONFLICT",
+        category="Git Operations",
+        message="Git merge conflict detected",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/E302_MERGE_CONFLICT.md",
+        recovery=[
+            "Resolve conflicts manually in affected files",
+            "Use 'git status' to see conflicted files",
+            "After resolving, run 'git add' and 'git commit'",
+        ],
+    )
+
+    E303_DETACHED_HEAD = ErrorCode(
+        code="E303_DETACHED_HEAD",
+        category="Git Operations",
+        message="Git repository is in detached HEAD state",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/E303_DETACHED_HEAD.md",
+        recovery=[
+            "Create a new branch with 'git checkout -b <branch-name>'",
+            "Return to branch with 'git checkout <branch-name>'",
+            "Commit changes before switching branches",
+        ],
+    )
+
+    W304_UNCOMMITTED_CHANGES = ErrorCode(
+        code="W304_UNCOMMITTED_CHANGES",
+        category="Git Operations",
+        message="Uncommitted changes detected",
+        severity=ErrorSeverity.MEDIUM,
+        help_doc="errors/W304_UNCOMMITTED_CHANGES.md",
+        recovery=[
+            "Commit changes with 'git commit'",
+            "Stash changes with 'git stash'",
+            "Operation may continue but changes could be lost",
+        ],
+    )
+
+    # Additional Safety/Security (400-499) - Phase 2
+    S402_CREDENTIAL_LEAK = ErrorCode(
+        code="S402_CREDENTIAL_LEAK",
+        category="Safety/Security",
+        message="Potential credential or secret detected",
+        severity=ErrorSeverity.CRITICAL,
+        help_doc="errors/S402_CREDENTIAL_LEAK.md",
+        recovery=[
+            "Remove credentials from code immediately",
+            "Use environment variables or secure vault",
+            "Rotate compromised credentials if already committed",
+        ],
+    )
+
+    S403_INSECURE_OPERATION = ErrorCode(
+        code="S403_INSECURE_OPERATION",
+        category="Safety/Security",
+        message="Operation uses insecure method or protocol",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/S403_INSECURE_OPERATION.md",
+        recovery=[
+            "Use secure alternative (HTTPS instead of HTTP)",
+            "Enable encryption for sensitive data",
+            "Review security best practices",
+        ],
+    )
+
+    W404_SECURITY_WARNING = ErrorCode(
+        code="W404_SECURITY_WARNING",
+        category="Safety/Security",
+        message="Potential security concern detected",
+        severity=ErrorSeverity.MEDIUM,
+        help_doc="errors/W404_SECURITY_WARNING.md",
+        recovery=[
+            "Review security implications",
+            "Consider safer alternative approach",
+            "Operation will continue but requires attention",
+        ],
+    )
+
+    # Database Errors (500-599) - Phase 2
+    E501_DB_CONNECTION_FAILED = ErrorCode(
+        code="E501_DB_CONNECTION_FAILED",
+        category="Database",
+        message="Failed to connect to database",
+        severity=ErrorSeverity.CRITICAL,
+        help_doc="errors/E501_DB_CONNECTION_FAILED.md",
+        recovery=[
+            "Check database server is running",
+            "Verify connection string and credentials",
+            "Ensure network connectivity to database",
+        ],
+    )
+
+    E502_QUERY_ERROR = ErrorCode(
+        code="E502_QUERY_ERROR",
+        category="Database",
+        message="Database query execution failed",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/E502_QUERY_ERROR.md",
+        recovery=[
+            "Check query syntax",
+            "Verify table and column names exist",
+            "Review database error message for details",
+        ],
+    )
+
+    # Additional Tool Execution (600-699) - Phase 2
+    W602_TOOL_TIMEOUT = ErrorCode(
+        code="W602_TOOL_TIMEOUT",
+        category="Tool Execution",
+        message="Tool execution timed out",
+        severity=ErrorSeverity.MEDIUM,
+        help_doc="errors/W602_TOOL_TIMEOUT.md",
+        recovery=[
+            "Increase timeout value if appropriate",
+            "Check if operation is stuck or hanging",
+            "Consider breaking into smaller operations",
+        ],
+    )
+
+    E603_INVALID_ARGS = ErrorCode(
+        code="E603_INVALID_ARGS",
+        category="Tool Execution",
+        message="Invalid arguments provided to tool",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/E603_INVALID_ARGS.md",
+        recovery=[
+            "Review tool documentation for correct argument format",
+            "Check argument types and values",
+            "Verify all required arguments are provided",
+        ],
+    )
+
+    # Additional Configuration (700-799) - Phase 2
+    E702_CONFIG_NOT_FOUND = ErrorCode(
+        code="E702_CONFIG_NOT_FOUND",
+        category="Configuration",
+        message="Configuration file not found",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/E702_CONFIG_NOT_FOUND.md",
+        recovery=[
+            "Create configuration file with required settings",
+            "Check configuration file path",
+            "Copy from template if available",
+        ],
+    )
+
+    # Plugin/Extension Errors (800-899) - Phase 2
+    E801_PLUGIN_LOAD_FAILED = ErrorCode(
+        code="E801_PLUGIN_LOAD_FAILED",
+        category="Plugin/Extension",
+        message="Failed to load plugin or extension",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/E801_PLUGIN_LOAD_FAILED.md",
+        recovery=[
+            "Verify plugin is installed correctly",
+            "Check plugin compatibility with current version",
+            "Review plugin error logs for details",
+        ],
+    )
+
+    W802_VERSION_MISMATCH = ErrorCode(
+        code="W802_VERSION_MISMATCH",
+        category="Plugin/Extension",
+        message="Plugin version incompatibility detected",
+        severity=ErrorSeverity.MEDIUM,
+        help_doc="errors/W802_VERSION_MISMATCH.md",
+        recovery=[
+            "Update plugin to compatible version",
+            "Check plugin documentation for version requirements",
+            "Plugin may work with limited functionality",
+        ],
+    )
+
     @classmethod
     def get_error(cls, code: str) -> Optional[ErrorCode]:
         """

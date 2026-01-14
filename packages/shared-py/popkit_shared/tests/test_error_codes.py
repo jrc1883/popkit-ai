@@ -23,10 +23,10 @@ class TestErrorRegistry:
         assert len(errors) > 0
         assert all(isinstance(e, ErrorCode) for e in errors)
 
-    def test_all_errors_has_at_least_10_codes(self):
-        """Test that registry has at least 10 error codes (Phase 1 requirement)."""
+    def test_all_errors_has_at_least_30_codes(self):
+        """Test that registry has at least 30 error codes (Phase 2 requirement)."""
         errors = ErrorRegistry.all_errors()
-        assert len(errors) >= 10
+        assert len(errors) >= 30
 
     def test_get_error_returns_error_code(self):
         """Test that get_error returns correct ErrorCode object."""
