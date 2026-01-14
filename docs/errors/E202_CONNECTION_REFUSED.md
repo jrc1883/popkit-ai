@@ -1,14 +1,14 @@
-# E001_JSON_PARSE - Invalid JSON syntax in input
+# E202_CONNECTION_REFUSED - Connection refused by remote server
 
-**Category:** JSON/Input Parsing
-**Severity:** Critical
+**Category:** Network/API
+**Severity:** High
 **Status:** Blocking
 
 ## Description
 
-Invalid JSON syntax in input
+Connection refused by remote server
 
-This error occurs in the **JSON/Input Parsing** category and indicates a critical severity issue.
+This error occurs in the **Network/API** category and indicates a high severity issue.
 
 ## Common Causes
 
@@ -19,11 +19,11 @@ This error occurs in the **JSON/Input Parsing** category and indicates a critica
 ## Resolution Steps
 
 1. **Step 1**
-   - Validate JSON with 'jq' or online validator
+   - Verify server is running and accessible
 2. **Step 2**
-   - Check for trailing commas (not allowed in JSON)
+   - Check firewall and network settings
 3. **Step 3**
-   - Ensure proper escaping of quotes and backslashes
+   - Confirm correct hostname and port
 
 ## Prevention
 

@@ -1,14 +1,14 @@
-# E001_JSON_PARSE - Invalid JSON syntax in input
+# W406_DEPRECATED_SECURITY - Using deprecated security method
 
-**Category:** JSON/Input Parsing
-**Severity:** Critical
-**Status:** Blocking
+**Category:** Safety/Security
+**Severity:** Medium
+**Status:** Non-blocking
 
 ## Description
 
-Invalid JSON syntax in input
+Using deprecated security method
 
-This error occurs in the **JSON/Input Parsing** category and indicates a critical severity issue.
+This error occurs in the **Safety/Security** category and indicates a medium severity issue.
 
 ## Common Causes
 
@@ -19,11 +19,11 @@ This error occurs in the **JSON/Input Parsing** category and indicates a critica
 ## Resolution Steps
 
 1. **Step 1**
-   - Validate JSON with 'jq' or online validator
+   - Update to modern security practices
 2. **Step 2**
-   - Check for trailing commas (not allowed in JSON)
+   - See security documentation for alternatives
 3. **Step 3**
-   - Ensure proper escaping of quotes and backslashes
+   - Deprecated method will be removed in future
 
 ## Prevention
 

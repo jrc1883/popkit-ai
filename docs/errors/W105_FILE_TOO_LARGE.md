@@ -1,14 +1,14 @@
-# E001_JSON_PARSE - Invalid JSON syntax in input
+# W105_FILE_TOO_LARGE - File size exceeds recommended limits
 
-**Category:** JSON/Input Parsing
-**Severity:** Critical
-**Status:** Blocking
+**Category:** File I/O
+**Severity:** Medium
+**Status:** Non-blocking
 
 ## Description
 
-Invalid JSON syntax in input
+File size exceeds recommended limits
 
-This error occurs in the **JSON/Input Parsing** category and indicates a critical severity issue.
+This error occurs in the **File I/O** category and indicates a medium severity issue.
 
 ## Common Causes
 
@@ -19,11 +19,11 @@ This error occurs in the **JSON/Input Parsing** category and indicates a critica
 ## Resolution Steps
 
 1. **Step 1**
-   - Validate JSON with 'jq' or online validator
+   - Consider processing file in chunks
 2. **Step 2**
-   - Check for trailing commas (not allowed in JSON)
+   - Use streaming approach for large files
 3. **Step 3**
-   - Ensure proper escaping of quotes and backslashes
+   - Operation will continue with potential performance impact
 
 ## Prevention
 

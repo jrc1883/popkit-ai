@@ -1,14 +1,14 @@
-# E001_JSON_PARSE - Invalid JSON syntax in input
+# W206_SSL_CERTIFICATE_WARNING - SSL certificate verification issue
 
-**Category:** JSON/Input Parsing
-**Severity:** Critical
-**Status:** Blocking
+**Category:** Network/API
+**Severity:** Medium
+**Status:** Non-blocking
 
 ## Description
 
-Invalid JSON syntax in input
+SSL certificate verification issue
 
-This error occurs in the **JSON/Input Parsing** category and indicates a critical severity issue.
+This error occurs in the **Network/API** category and indicates a medium severity issue.
 
 ## Common Causes
 
@@ -19,11 +19,11 @@ This error occurs in the **JSON/Input Parsing** category and indicates a critica
 ## Resolution Steps
 
 1. **Step 1**
-   - Validate JSON with 'jq' or online validator
+   - Verify certificate is valid and not expired
 2. **Step 2**
-   - Check for trailing commas (not allowed in JSON)
+   - Check system time is correct
 3. **Step 3**
-   - Ensure proper escaping of quotes and backslashes
+   - Update certificate authority bundle if needed
 
 ## Prevention
 

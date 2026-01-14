@@ -1,14 +1,14 @@
-# E001_JSON_PARSE - Invalid JSON syntax in input
+# E904_RESOURCE_EXHAUSTED - System resources exhausted
 
-**Category:** JSON/Input Parsing
+**Category:** System/Internal
 **Severity:** Critical
 **Status:** Blocking
 
 ## Description
 
-Invalid JSON syntax in input
+System resources exhausted
 
-This error occurs in the **JSON/Input Parsing** category and indicates a critical severity issue.
+This error occurs in the **System/Internal** category and indicates a critical severity issue.
 
 ## Common Causes
 
@@ -19,11 +19,11 @@ This error occurs in the **JSON/Input Parsing** category and indicates a critica
 ## Resolution Steps
 
 1. **Step 1**
-   - Validate JSON with 'jq' or online validator
+   - Free up system resources (memory/disk/file handles)
 2. **Step 2**
-   - Check for trailing commas (not allowed in JSON)
+   - Restart application
 3. **Step 3**
-   - Ensure proper escaping of quotes and backslashes
+   - Check for resource leaks
 
 ## Prevention
 
