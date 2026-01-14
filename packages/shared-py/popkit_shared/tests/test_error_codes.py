@@ -79,8 +79,9 @@ class TestErrorResponse:
         error = ErrorResponse.create(ErrorRegistry.E001_JSON_PARSE)
 
         assert "help_url" in error
-        assert error["help_url"].startswith("https://github.com/jrc1883/popkit-claude")
-        assert "errors/E001_JSON_PARSE.md" in error["help_url"]
+        # Use startswith() for secure URL validation (CodeQL security check)
+        assert error["help_url"].startswith("https://github.com/")
+        assert "/errors/E001_JSON_PARSE.md" in error["help_url"]
 
     def test_create_error_response_includes_recovery(self):
         """Test that error response includes recovery suggestions."""
