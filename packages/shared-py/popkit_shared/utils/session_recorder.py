@@ -403,7 +403,7 @@ class SessionRecorder:
         input_tokens: int,
         output_tokens: int,
         total_tokens: int,
-        tool_details: Optional[List[Dict[str, Any]]] = None
+        tool_details: Optional[List[Dict[str, Any]]] = None,
     ) -> None:
         """
         Record subagent completion with transcript parsing data.
@@ -423,10 +423,10 @@ class SessionRecorder:
             "token_usage": {
                 "input_tokens": input_tokens,
                 "output_tokens": output_tokens,
-                "total_tokens": total_tokens
+                "total_tokens": total_tokens,
             },
             "tool_details": tool_details or [],
-            "timestamp": datetime.now(timezone.utc).isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
         self.record_event(event)
@@ -546,7 +546,7 @@ def record_subagent_completion(
     input_tokens: int,
     output_tokens: int,
     total_tokens: int,
-    tool_details: Optional[List[Dict[str, Any]]] = None
+    tool_details: Optional[List[Dict[str, Any]]] = None,
 ) -> None:
     """
     Convenience function to record subagent completion.
@@ -567,5 +567,5 @@ def record_subagent_completion(
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             total_tokens=total_tokens,
-            tool_details=tool_details
+            tool_details=tool_details,
         )

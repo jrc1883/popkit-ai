@@ -11,7 +11,7 @@ from popkit_shared.utils.session_recorder import SessionRecorder
 def test_record_subagent_completion(tmp_path):
     """Test recording subagent completion with transcript data."""
     # Arrange
-    os.environ['POPKIT_RECORD'] = 'true'
+    os.environ["POPKIT_RECORD"] = "true"
     recorder = SessionRecorder()
     recorder.recordings_dir = tmp_path  # Override for testing
     recorder._init_recording()
@@ -29,8 +29,8 @@ def test_record_subagent_completion(tmp_path):
         total_tokens=2000,
         tool_details=[
             {"tool_use_id": "tool_1", "tool_name": "Read"},
-            {"tool_use_id": "tool_2", "tool_name": "Write"}
-        ]
+            {"tool_use_id": "tool_2", "tool_name": "Write"},
+        ],
     )
 
     # Assert
