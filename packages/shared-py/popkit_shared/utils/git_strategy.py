@@ -12,11 +12,10 @@ Supports detection of:
 """
 
 import subprocess
-import json
-from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional, Set
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
 
 class BranchingStrategy(Enum):
@@ -104,9 +103,7 @@ class GitStrategyDetector:
             clean_name = branch_name.replace("origin/", "") if is_remote else branch_name
 
             # Get last commit date
-            date_output = self._run_git(
-                ["log", "-1", "--format=%ci", branch_name]
-            )
+            date_output = self._run_git(["log", "-1", "--format=%ci", branch_name])
             try:
                 last_commit_date = (
                     datetime.strptime(date_output[:19], "%Y-%m-%d %H:%M:%S")
@@ -225,7 +222,9 @@ class GitStrategyDetector:
 
         return patterns
 
-    def detect_strategy(self, patterns: Dict[str, Any]) -> tuple[BranchingStrategy, float, List[str]]:
+    def detect_strategy(
+        self, patterns: Dict[str, Any]
+    ) -> tuple[BranchingStrategy, float, List[str]]:
         """
         Detect branching strategy based on patterns.
 
@@ -257,7 +256,9 @@ class GitStrategyDetector:
             evidence.append("main/master as primary branch")
         if patterns["avg_branch_lifetime_days"] < 7:
             github_flow_score += 1
-            evidence.append(f"short-lived branches (avg {patterns['avg_branch_lifetime_days']} days)")
+            evidence.append(
+                f"short-lived branches (avg {patterns['avg_branch_lifetime_days']} days)"
+            )
 
         # GitLab Flow indicators
         gitlab_flow_score = 0
@@ -304,7 +305,9 @@ class GitStrategyDetector:
 
         if strategy == BranchingStrategy.TRUNK_BASED:
             recommendations.append("[OK] Good for: Small teams (2-5 developers), rapid iteration")
-            recommendations.append("[OK] Benefits: Fast merges, simple workflow, continuous integration")
+            recommendations.append(
+                "[OK] Benefits: Fast merges, simple workflow, continuous integration"
+            )
             if patterns["total_branches"] > 20:
                 recommendations.append(
                     "[WARN] Consider cleaning up old branches (detected 20+ branches)"
@@ -319,12 +322,8 @@ class GitStrategyDetector:
             )
             recommendations.append("[OK] Benefits: Simple workflow, good for continuous deployment")
             if patterns["avg_branch_lifetime_days"] > 7:
-                recommendations.append(
-                    "[WARN] Branches staying open longer than typical (>7 days)"
-                )
-            recommendations.append(
-                "[INFO] Consider Git Flow if: Need structured release process"
-            )
+                recommendations.append("[WARN] Branches staying open longer than typical (>7 days)")
+            recommendations.append("[INFO] Consider Git Flow if: Need structured release process")
 
         elif strategy == BranchingStrategy.GIT_FLOW:
             recommendations.append(
@@ -340,10 +339,10 @@ class GitStrategyDetector:
             recommendations.append("[WARN] Requires discipline and clear communication")
 
         elif strategy == BranchingStrategy.GITLAB_FLOW:
+            recommendations.append("[OK] Good for: Teams with staging/production environments")
             recommendations.append(
-                "[OK] Good for: Teams with staging/production environments"
+                "[OK] Benefits: Environment-based workflow, clear deployment path"
             )
-            recommendations.append("[OK] Benefits: Environment-based workflow, clear deployment path")
             recommendations.append("[INFO] Ensure CI/CD pipeline matches branch strategy")
 
         else:
