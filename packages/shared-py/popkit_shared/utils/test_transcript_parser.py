@@ -6,7 +6,7 @@ Run with: python test_transcript_parser.py
 
 from pathlib import Path
 
-from transcript_parser import TranscriptParser
+from popkit_shared.utils.transcript_parser import TranscriptParser
 
 
 def test_parser_creation():

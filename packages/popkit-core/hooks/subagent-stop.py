@@ -10,6 +10,7 @@ import json
 import os
 from pathlib import Path
 from datetime import datetime
+from popkit_shared.utils.transcript_parser import TranscriptParser
 
 # Import error tracking utilities
 try:
@@ -192,9 +193,32 @@ def record_subagent_completion(data: dict):
             "transcript_available": bool(transcript_path and Path(transcript_path).exists())
         })
 
-        # TODO(#687): Parse transcript_path and extract individual tool calls
-        # For now, just record that the sub-agent completed
-        # Future enhancement: Parse JSONL transcript and record each tool call
+        # Parse transcript and extract tool calls (Issue #110)
+        if transcript_path and Path(transcript_path).exists():
+            try:
+                parser = TranscriptParser(transcript_path)
+
+                # Extract all tool uses
+                tool_uses = parser.get_all_tool_uses()
+
+                # Calculate token usage
+                token_usage = parser.get_total_token_usage()
+
+                # Record structured data to session_recorder
+                from popkit_shared.utils.session_recorder import record_subagent_completion
+
+                record_subagent_completion(
+                    subagent_id=agent_id,
+                    tool_count=len(tool_uses),
+                    input_tokens=token_usage.input_tokens,
+                    output_tokens=token_usage.output_tokens,
+                    total_tokens=token_usage.total_tokens,
+                    tool_details=tool_uses[:10]  # Store first 10 for summary
+                )
+
+            except Exception as e:
+                # Don't fail the hook - gracefully degrade
+                print(f"[WARN] Failed to parse transcript: {e}", file=sys.stderr)
 
     except Exception as e:
         # Don't block on recording failures
