@@ -1,14 +1,14 @@
-# E001_JSON_PARSE - Invalid JSON syntax in input
+# W802_VERSION_MISMATCH - Plugin version incompatibility detected
 
-**Category:** JSON/Input Parsing
-**Severity:** Critical
-**Status:** Blocking
+**Category:** Plugin/Extension
+**Severity:** Medium
+**Status:** Non-blocking
 
 ## Description
 
-Invalid JSON syntax in input
+Plugin version incompatibility detected
 
-This error occurs in the **JSON/Input Parsing** category and indicates a critical severity issue.
+This error occurs in the **Plugin/Extension** category and indicates a medium severity issue.
 
 ## Common Causes
 
@@ -19,11 +19,11 @@ This error occurs in the **JSON/Input Parsing** category and indicates a critica
 ## Resolution Steps
 
 1. **Step 1**
-   - Validate JSON with 'jq' or online validator
+   - Update plugin to compatible version
 2. **Step 2**
-   - Check for trailing commas (not allowed in JSON)
+   - Check plugin documentation for version requirements
 3. **Step 3**
-   - Ensure proper escaping of quotes and backslashes
+   - Plugin may work with limited functionality
 
 ## Prevention
 

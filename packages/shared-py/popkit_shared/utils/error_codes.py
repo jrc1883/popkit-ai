@@ -446,6 +446,393 @@ class ErrorRegistry:
         ],
     )
 
+    # Additional JSON/Input Errors (001-099) - Phase 3
+    E004_ENCODING_ERROR = ErrorCode(
+        code="E004_ENCODING_ERROR",
+        category="JSON/Input Parsing",
+        message="Input encoding error (invalid UTF-8 or character set)",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/E004_ENCODING_ERROR.md",
+        recovery=[
+            "Verify input is valid UTF-8 encoding",
+            "Check for byte order marks (BOM)",
+            "Convert input to UTF-8 before processing",
+        ],
+    )
+
+    W005_DEPRECATED_FORMAT = ErrorCode(
+        code="W005_DEPRECATED_FORMAT",
+        category="JSON/Input Parsing",
+        message="Input uses deprecated format",
+        severity=ErrorSeverity.MEDIUM,
+        help_doc="errors/W005_DEPRECATED_FORMAT.md",
+        recovery=[
+            "Update to current format specification",
+            "See migration guide in documentation",
+            "Legacy format will be removed in future version",
+        ],
+    )
+
+    # Additional File I/O Errors (100-199) - Phase 3
+    E106_DIRECTORY_NOT_FOUND = ErrorCode(
+        code="E106_DIRECTORY_NOT_FOUND",
+        category="File I/O",
+        message="Required directory not found",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/E106_DIRECTORY_NOT_FOUND.md",
+        recovery=[
+            "Create directory with 'mkdir -p <path>'",
+            "Verify directory path is correct",
+            "Check parent directory permissions",
+        ],
+    )
+
+    W107_DISK_SPACE_LOW = ErrorCode(
+        code="W107_DISK_SPACE_LOW",
+        category="File I/O",
+        message="Low disk space detected",
+        severity=ErrorSeverity.MEDIUM,
+        help_doc="errors/W107_DISK_SPACE_LOW.md",
+        recovery=[
+            "Free up disk space",
+            "Check with 'df -h' command",
+            "Operation may continue but could fail if space runs out",
+        ],
+    )
+
+    E108_FILE_LOCKED = ErrorCode(
+        code="E108_FILE_LOCKED",
+        category="File I/O",
+        message="File is locked by another process",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/E108_FILE_LOCKED.md",
+        recovery=[
+            "Close other applications using the file",
+            "Wait for other processes to release the file",
+            "Check with 'lsof <file>' (Unix) or Task Manager (Windows)",
+        ],
+    )
+
+    # Additional Network/API Errors (200-299) - Phase 3
+    E205_DNS_RESOLUTION_FAILED = ErrorCode(
+        code="E205_DNS_RESOLUTION_FAILED",
+        category="Network/API",
+        message="Failed to resolve hostname",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/E205_DNS_RESOLUTION_FAILED.md",
+        recovery=[
+            "Check DNS server configuration",
+            "Verify hostname is correct",
+            "Try using IP address directly as workaround",
+        ],
+    )
+
+    W206_SSL_CERTIFICATE_WARNING = ErrorCode(
+        code="W206_SSL_CERTIFICATE_WARNING",
+        category="Network/API",
+        message="SSL certificate verification issue",
+        severity=ErrorSeverity.MEDIUM,
+        help_doc="errors/W206_SSL_CERTIFICATE_WARNING.md",
+        recovery=[
+            "Verify certificate is valid and not expired",
+            "Check system time is correct",
+            "Update certificate authority bundle if needed",
+        ],
+    )
+
+    # Additional Git Operations (300-399) - Phase 3
+    E305_BRANCH_NOT_FOUND = ErrorCode(
+        code="E305_BRANCH_NOT_FOUND",
+        category="Git Operations",
+        message="Git branch not found",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/E305_BRANCH_NOT_FOUND.md",
+        recovery=[
+            "List branches with 'git branch -a'",
+            "Create branch with 'git checkout -b <branch-name>'",
+            "Fetch remote branches with 'git fetch'",
+        ],
+    )
+
+    W306_BEHIND_REMOTE = ErrorCode(
+        code="W306_BEHIND_REMOTE",
+        category="Git Operations",
+        message="Local branch is behind remote",
+        severity=ErrorSeverity.MEDIUM,
+        help_doc="errors/W306_BEHIND_REMOTE.md",
+        recovery=[
+            "Pull latest changes with 'git pull'",
+            "Check commits with 'git log origin/<branch>..<branch>'",
+            "Operation may continue but conflicts possible",
+        ],
+    )
+
+    E307_PUSH_REJECTED = ErrorCode(
+        code="E307_PUSH_REJECTED",
+        category="Git Operations",
+        message="Git push rejected by remote",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/E307_PUSH_REJECTED.md",
+        recovery=[
+            "Pull latest changes first with 'git pull'",
+            "Resolve any conflicts",
+            "Use 'git push --force' only if you're certain (destructive)",
+        ],
+    )
+
+    # Additional Safety/Security (400-499) - Phase 3
+    S405_UNVERIFIED_SOURCE = ErrorCode(
+        code="S405_UNVERIFIED_SOURCE",
+        category="Safety/Security",
+        message="Operation involves unverified or untrusted source",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/S405_UNVERIFIED_SOURCE.md",
+        recovery=[
+            "Verify source is trusted and legitimate",
+            "Check signatures and checksums",
+            "Use official sources when possible",
+        ],
+    )
+
+    W406_DEPRECATED_SECURITY = ErrorCode(
+        code="W406_DEPRECATED_SECURITY",
+        category="Safety/Security",
+        message="Using deprecated security method",
+        severity=ErrorSeverity.MEDIUM,
+        help_doc="errors/W406_DEPRECATED_SECURITY.md",
+        recovery=[
+            "Update to modern security practices",
+            "See security documentation for alternatives",
+            "Deprecated method will be removed in future",
+        ],
+    )
+
+    # Additional Database Errors (500-599) - Phase 3
+    E503_TRANSACTION_FAILED = ErrorCode(
+        code="E503_TRANSACTION_FAILED",
+        category="Database",
+        message="Database transaction failed or rolled back",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/E503_TRANSACTION_FAILED.md",
+        recovery=[
+            "Check transaction logs for details",
+            "Verify data constraints are satisfied",
+            "Retry transaction if appropriate",
+        ],
+    )
+
+    W504_SLOW_QUERY = ErrorCode(
+        code="W504_SLOW_QUERY",
+        category="Database",
+        message="Database query is running slowly",
+        severity=ErrorSeverity.MEDIUM,
+        help_doc="errors/W504_SLOW_QUERY.md",
+        recovery=[
+            "Add database indexes for frequently queried fields",
+            "Optimize query structure",
+            "Operation will continue but performance impacted",
+        ],
+    )
+
+    E505_SCHEMA_MISMATCH = ErrorCode(
+        code="E505_SCHEMA_MISMATCH",
+        category="Database",
+        message="Database schema doesn't match expected structure",
+        severity=ErrorSeverity.CRITICAL,
+        help_doc="errors/E505_SCHEMA_MISMATCH.md",
+        recovery=[
+            "Run database migrations",
+            "Verify database version matches application",
+            "Check migration logs for failures",
+        ],
+    )
+
+    # Additional Tool Execution (600-699) - Phase 3
+    E604_TOOL_NOT_FOUND = ErrorCode(
+        code="E604_TOOL_NOT_FOUND",
+        category="Tool Execution",
+        message="Required tool or command not found",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/E604_TOOL_NOT_FOUND.md",
+        recovery=[
+            "Install required tool",
+            "Add tool to system PATH",
+            "Verify tool name is spelled correctly",
+        ],
+    )
+
+    W605_TOOL_VERSION_OLD = ErrorCode(
+        code="W605_TOOL_VERSION_OLD",
+        category="Tool Execution",
+        message="Tool version is outdated",
+        severity=ErrorSeverity.MEDIUM,
+        help_doc="errors/W605_TOOL_VERSION_OLD.md",
+        recovery=[
+            "Update tool to latest version",
+            "Check compatibility requirements",
+            "Tool may work with limited functionality",
+        ],
+    )
+
+    E606_TOOL_CRASHED = ErrorCode(
+        code="E606_TOOL_CRASHED",
+        category="Tool Execution",
+        message="Tool crashed or terminated unexpectedly",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/E606_TOOL_CRASHED.md",
+        recovery=[
+            "Check tool logs for crash details",
+            "Verify system resources are sufficient",
+            "Report crash to tool maintainers if reproducible",
+        ],
+    )
+
+    # Additional Configuration (700-799) - Phase 3
+    E703_CONFIG_PARSE_ERROR = ErrorCode(
+        code="E703_CONFIG_PARSE_ERROR",
+        category="Configuration",
+        message="Failed to parse configuration file",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/E703_CONFIG_PARSE_ERROR.md",
+        recovery=[
+            "Check configuration file syntax (YAML/JSON/TOML)",
+            "Validate with appropriate linter",
+            "Compare with example configuration",
+        ],
+    )
+
+    W704_CONFIG_OVERRIDE = ErrorCode(
+        code="W704_CONFIG_OVERRIDE",
+        category="Configuration",
+        message="Configuration value overridden by environment variable",
+        severity=ErrorSeverity.LOW,
+        help_doc="errors/W704_CONFIG_OVERRIDE.md",
+        recovery=[
+            "This is informational - environment variables take precedence",
+            "Unset environment variable to use config file value",
+            "See documentation for configuration precedence order",
+        ],
+    )
+
+    E705_CONFIG_VALIDATION_FAILED = ErrorCode(
+        code="E705_CONFIG_VALIDATION_FAILED",
+        category="Configuration",
+        message="Configuration validation failed",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/E705_CONFIG_VALIDATION_FAILED.md",
+        recovery=[
+            "Review validation error details",
+            "Ensure all required fields have valid values",
+            "Check value ranges and constraints",
+        ],
+    )
+
+    # Additional Plugin/Extension Errors (800-899) - Phase 3
+    E803_PLUGIN_CONFLICT = ErrorCode(
+        code="E803_PLUGIN_CONFLICT",
+        category="Plugin/Extension",
+        message="Plugin conflict detected",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/E803_PLUGIN_CONFLICT.md",
+        recovery=[
+            "Disable conflicting plugins",
+            "Check plugin compatibility matrix",
+            "Update plugins to compatible versions",
+        ],
+    )
+
+    W804_PLUGIN_DEPRECATED = ErrorCode(
+        code="W804_PLUGIN_DEPRECATED",
+        category="Plugin/Extension",
+        message="Plugin is deprecated",
+        severity=ErrorSeverity.MEDIUM,
+        help_doc="errors/W804_PLUGIN_DEPRECATED.md",
+        recovery=[
+            "Migrate to recommended alternative",
+            "See deprecation notice for timeline",
+            "Plugin will be removed in future version",
+        ],
+    )
+
+    E805_PLUGIN_INIT_FAILED = ErrorCode(
+        code="E805_PLUGIN_INIT_FAILED",
+        category="Plugin/Extension",
+        message="Plugin initialization failed",
+        severity=ErrorSeverity.HIGH,
+        help_doc="errors/E805_PLUGIN_INIT_FAILED.md",
+        recovery=[
+            "Check plugin configuration",
+            "Verify dependencies are installed",
+            "Review plugin initialization logs",
+        ],
+    )
+
+    # System/Internal Errors (900-999) - Phase 3
+    E901_ASSERTION_FAILED = ErrorCode(
+        code="E901_ASSERTION_FAILED",
+        category="System/Internal",
+        message="Internal assertion failed",
+        severity=ErrorSeverity.CRITICAL,
+        help_doc="errors/E901_ASSERTION_FAILED.md",
+        recovery=[
+            "This indicates an internal error",
+            "Please report this issue with full context",
+            "Check for known issues in issue tracker",
+        ],
+    )
+
+    E902_UNEXPECTED_STATE = ErrorCode(
+        code="E902_UNEXPECTED_STATE",
+        category="System/Internal",
+        message="System reached unexpected state",
+        severity=ErrorSeverity.CRITICAL,
+        help_doc="errors/E902_UNEXPECTED_STATE.md",
+        recovery=[
+            "Restart the application",
+            "Check system logs for details",
+            "Report issue if reproducible",
+        ],
+    )
+
+    W903_RESOURCE_WARNING = ErrorCode(
+        code="W903_RESOURCE_WARNING",
+        category="System/Internal",
+        message="System resource usage warning",
+        severity=ErrorSeverity.MEDIUM,
+        help_doc="errors/W903_RESOURCE_WARNING.md",
+        recovery=[
+            "Monitor resource usage (CPU/memory/disk)",
+            "Close unnecessary applications",
+            "Operation will continue with potential slowdown",
+        ],
+    )
+
+    E904_RESOURCE_EXHAUSTED = ErrorCode(
+        code="E904_RESOURCE_EXHAUSTED",
+        category="System/Internal",
+        message="System resources exhausted",
+        severity=ErrorSeverity.CRITICAL,
+        help_doc="errors/E904_RESOURCE_EXHAUSTED.md",
+        recovery=[
+            "Free up system resources (memory/disk/file handles)",
+            "Restart application",
+            "Check for resource leaks",
+        ],
+    )
+
+    I905_MAINTENANCE_MODE = ErrorCode(
+        code="I905_MAINTENANCE_MODE",
+        category="System/Internal",
+        message="System is in maintenance mode",
+        severity=ErrorSeverity.INFO,
+        help_doc="errors/I905_MAINTENANCE_MODE.md",
+        recovery=[
+            "Wait for maintenance to complete",
+            "Check status page for updates",
+            "Some features may be temporarily unavailable",
+        ],
+    )
+
     @classmethod
     def get_error(cls, code: str) -> Optional[ErrorCode]:
         """

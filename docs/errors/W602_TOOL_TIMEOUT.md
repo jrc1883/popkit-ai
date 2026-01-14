@@ -1,14 +1,14 @@
-# E001_JSON_PARSE - Invalid JSON syntax in input
+# W602_TOOL_TIMEOUT - Tool execution timed out
 
-**Category:** JSON/Input Parsing
-**Severity:** Critical
-**Status:** Blocking
+**Category:** Tool Execution
+**Severity:** Medium
+**Status:** Non-blocking
 
 ## Description
 
-Invalid JSON syntax in input
+Tool execution timed out
 
-This error occurs in the **JSON/Input Parsing** category and indicates a critical severity issue.
+This error occurs in the **Tool Execution** category and indicates a medium severity issue.
 
 ## Common Causes
 
@@ -19,11 +19,11 @@ This error occurs in the **JSON/Input Parsing** category and indicates a critica
 ## Resolution Steps
 
 1. **Step 1**
-   - Validate JSON with 'jq' or online validator
+   - Increase timeout value if appropriate
 2. **Step 2**
-   - Check for trailing commas (not allowed in JSON)
+   - Check if operation is stuck or hanging
 3. **Step 3**
-   - Ensure proper escaping of quotes and backslashes
+   - Consider breaking into smaller operations
 
 ## Prevention
 

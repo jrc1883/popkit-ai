@@ -1,14 +1,14 @@
-# E001_JSON_PARSE - Invalid JSON syntax in input
+# W306_BEHIND_REMOTE - Local branch is behind remote
 
-**Category:** JSON/Input Parsing
-**Severity:** Critical
-**Status:** Blocking
+**Category:** Git Operations
+**Severity:** Medium
+**Status:** Non-blocking
 
 ## Description
 
-Invalid JSON syntax in input
+Local branch is behind remote
 
-This error occurs in the **JSON/Input Parsing** category and indicates a critical severity issue.
+This error occurs in the **Git Operations** category and indicates a medium severity issue.
 
 ## Common Causes
 
@@ -19,11 +19,11 @@ This error occurs in the **JSON/Input Parsing** category and indicates a critica
 ## Resolution Steps
 
 1. **Step 1**
-   - Validate JSON with 'jq' or online validator
+   - Pull latest changes with 'git pull'
 2. **Step 2**
-   - Check for trailing commas (not allowed in JSON)
+   - Check commits with 'git log origin/<branch>..<branch>'
 3. **Step 3**
-   - Ensure proper escaping of quotes and backslashes
+   - Operation may continue but conflicts possible
 
 ## Prevention
 

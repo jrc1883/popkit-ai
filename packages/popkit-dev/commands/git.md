@@ -20,6 +20,7 @@ Git operations with smart commits, PRs, code review, CI/CD, releases, publishing
 | publish    | Publish plugin to public repo (monorepo → open source)  |
 | prune      | Remove stale local branches after PR merge              |
 | finish     | Complete development with 4-option flow                 |
+| analyze-strategy | Analyze repository branching strategy              |
 
 ---
 
@@ -197,6 +198,65 @@ Invokes **pop-finish-branch**: Verify tests → Present 4 options (merge locally
 2. Push and create Pull Request
 3. Keep branch as-is
 4. Discard work (requires typed confirmation)
+
+---
+
+## analyze-strategy
+
+Analyze repository branching strategy and provide recommendations.
+
+**Phase 1 Implementation (Issue #151):**
+
+Detects current branching strategy by analyzing:
+- Branch naming patterns (feat/*, fix/*, release/*, hotfix/*)
+- Long-lived vs ephemeral branches
+- Merge patterns (direct to main, via develop, etc.)
+- GitHub branch protection rules
+- Average branch lifetime
+
+**Supported Strategies:**
+- **Trunk-based Development**: Direct merges to main, short-lived feature branches
+- **GitHub Flow**: Feature branches + main, continuous deployment
+- **Git Flow**: Multiple long-lived branches (main, develop, release/*, hotfix/*)
+- **GitLab Flow**: Environment-based branches (main, staging, production)
+- **Custom/Unknown**: Non-standard patterns
+
+**Output:**
+```
+# Git Branch Strategy Analysis
+
+**Detected Strategy**: Trunk-based Development
+**Confidence**: 80%
+
+## Evidence
+- main as primary branch
+- 32 feature branches
+- short-lived branches (avg 3 days)
+
+## Branch Statistics
+- Total branches: 35
+- Feature branches: 32
+- Bugfix branches: 3
+- Average branch lifetime: 3 days
+
+## Recommendations
+✅ Good for: Small teams (2-5 developers), rapid iteration
+✅ Benefits: Fast merges, simple workflow, continuous integration
+💡 Consider Git Flow if: Need release coordination or multiple version support
+```
+
+**Technical Implementation:**
+- Uses `popkit_shared.utils.git_strategy.GitStrategyDetector`
+- Analyzes all local and remote branches
+- Queries GitHub API for protection rules (via `gh` CLI)
+- Calculates confidence scores based on pattern matching
+
+**Options:** --json (output JSON format), --verbose (detailed branch info)
+
+**Related Commands:**
+- Phase 2: `/popkit-dev:git recommend-strategy` (interactive questionnaire)
+- Phase 3: `/popkit-dev:git migrate-to <strategy>` (automated migration)
+- Phase 4: Hooks for branch naming validation
 
 ---
 
