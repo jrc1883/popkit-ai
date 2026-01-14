@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Test suite for git_utils.py from popkit-dev hooks."""
 
-import sys
 import io
+import sys
 import unittest
 from pathlib import Path
 
@@ -15,12 +15,12 @@ if sys.platform == 'win32':
 hooks_path = Path(__file__).parents[3] / 'popkit-dev' / 'hooks'
 sys.path.insert(0, str(hooks_path))
 
-from git_utils import (
-    is_git_repo,
-    git_fetch_prune,
+from git_utils import (  # noqa: E402
+    count_stale_branches,
     find_stale_local_branches,
     format_stale_branches_report,
-    count_stale_branches
+    git_fetch_prune,
+    is_git_repo,
 )
 
 

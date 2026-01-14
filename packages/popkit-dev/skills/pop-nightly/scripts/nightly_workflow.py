@@ -18,7 +18,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 # Add shared-py to path for utilities
-sys.path.insert(0, str(Path.home() / '.claude' / 'popkit' / 'packages' / 'shared-py'))
+sys.path.insert(0, str(Path.home() / ".claude" / "popkit" / "packages" / "shared-py"))
 
 try:
     from popkit_shared.utils.capture_state import capture_project_state
@@ -27,14 +27,18 @@ try:
     from popkit_shared.utils.session_recorder import (
         get_recorder,
         record_reasoning,
-        record_recommendation
+        record_recommendation,
     )
     from popkit_shared.utils.flag_profiles import ProfileManager
+
     HAS_UTILITIES = True
 except ImportError:
     HAS_UTILITIES = False
     ProfileManager = None
-    print("[WARN] PopKit utilities not available - running in degraded mode", file=sys.stderr)
+    print(
+        "[WARN] PopKit utilities not available - running in degraded mode",
+        file=sys.stderr,
+    )
 
 # Try relative import (when used as package), fall back to direct import
 try:
@@ -58,7 +62,7 @@ class NightlyWorkflow:
         simple: bool = False,
         skip_cleanup: bool = False,
         skip_ip_scan: bool = False,
-        no_morning: bool = False
+        no_morning: bool = False,
     ):
         """
         Initialize nightly workflow.
@@ -85,7 +89,7 @@ class NightlyWorkflow:
         # Initialize measurement if requested
         self.measurement = None
         if measure and HAS_UTILITIES:
-            self.measurement = RoutineMeasurement('nightly')
+            self.measurement = RoutineMeasurement("nightly")
 
         # Initialize cache if optimized mode
         self.cache = None
@@ -108,9 +112,9 @@ class NightlyWorkflow:
         """
         if self.recorder:
             record_reasoning(
-                'workflow_start',
-                'Starting nightly routine workflow',
-                {'quick': self.quick, 'optimized': self.optimized}
+                "workflow_start",
+                "Starting nightly routine workflow",
+                {"quick": self.quick, "optimized": self.optimized},
             )
 
         # Step 1: Collect project state
@@ -123,9 +127,9 @@ class NightlyWorkflow:
 
         if self.recorder:
             record_reasoning(
-                'score_calculated',
-                f'Sleep Score: {score}/100',
-                {'score': score, 'breakdown': breakdown}
+                "score_calculated",
+                f"Sleep Score: {score}/100",
+                {"score": score, "breakdown": breakdown},
             )
 
         # Step 3: Generate report
@@ -143,25 +147,29 @@ class NightlyWorkflow:
         if self.recorder:
             interpretation = get_score_interpretation(score)
             record_recommendation(
-                'nightly_complete',
-                interpretation['recommendation'],
+                "nightly_complete",
+                interpretation["recommendation"],
                 score,
-                interpretation['interpretation']
+                interpretation["interpretation"],
             )
 
         # Finalize measurement
         if self.measurement:
-            self.measurement.finalize({
-                'sleep_score': score,
-                'uncommitted_files': state.get('git', {}).get('uncommitted_files', 0),
-                'stashes': state.get('git', {}).get('stashes', 0)
-            })
+            self.measurement.finalize(
+                {
+                    "sleep_score": score,
+                    "uncommitted_files": state.get("git", {}).get(
+                        "uncommitted_files", 0
+                    ),
+                    "stashes": state.get("git", {}).get("stashes", 0),
+                }
+            )
 
         return {
-            'score': score,
-            'report': report,
-            'state': state,
-            'breakdown': breakdown
+            "score": score,
+            "report": report,
+            "state": state,
+            "breakdown": breakdown,
         }
 
     def _collect_state(self) -> Dict[str, Any]:
@@ -174,7 +182,7 @@ class NightlyWorkflow:
             # Use capture_state utility
             if self.optimized and self.cache and not self.no_cache:
                 # Try cache first
-                cached_state = self.cache.get('nightly_state')
+                cached_state = self.cache.get("nightly_state")
                 if cached_state:
                     print("[CACHE] Using cached state", file=sys.stderr)
                     return cached_state
@@ -184,7 +192,7 @@ class NightlyWorkflow:
 
             # Cache for next time if optimized
             if self.optimized and self.cache:
-                self.cache.set('nightly_state', state, ttl=300)  # 5 min TTL
+                self.cache.set("nightly_state", state, ttl=300)  # 5 min TTL
 
             return state
         else:
@@ -198,7 +206,7 @@ class NightlyWorkflow:
         import os
 
         # Import git_utils from popkit-dev hooks
-        hooks_path = Path(__file__).parents[3] / 'popkit-dev' / 'hooks'
+        hooks_path = Path(__file__).parents[3] / "popkit-dev" / "hooks"
         sys.path.insert(0, str(hooks_path))
         from git_utils import git_fetch_prune, count_stale_branches
 
@@ -210,12 +218,7 @@ class NightlyWorkflow:
                 cmd: Command as list of arguments
             """
             try:
-                result = subprocess.run(
-                    cmd,
-                    capture_output=True,
-                    text=True,
-                    timeout=10
-                )
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
                 return result.stdout.strip()
             except Exception as e:
                 print(f"[WARN] Command failed: {' '.join(cmd)} - {e}", file=sys.stderr)
@@ -229,59 +232,88 @@ class NightlyWorkflow:
             print(f"[WARN] {prune_message}", file=sys.stderr)
 
         # Git state - all commands use list-based arguments (SECURE)
-        status_output = run_command(['git', 'status', '--porcelain'])
+        status_output = run_command(["git", "status", "--porcelain"])
 
         # Count stashes without pipes - SECURE
-        stash_list = run_command(['git', 'stash', 'list'])
+        stash_list = run_command(["git", "stash", "list"])
         stash_count = len(stash_list.splitlines()) if stash_list else 0
 
         # Count merged branches - SECURE (use Python to filter instead of shell pipes)
-        all_branches = run_command(['git', 'branch', '--merged', 'main'])
+        all_branches = run_command(["git", "branch", "--merged", "main"])
         merged_count = 0
         if all_branches:
             for line in all_branches.splitlines():
                 line = line.strip()
-                if line and not line.startswith('*') and line != 'main':
+                if line and not line.startswith("*") and line != "main":
                     merged_count += 1
 
         git_state = {
-            'branch': run_command(['git', 'rev-parse', '--abbrev-ref', 'HEAD']),
-            'uncommitted_files': len(status_output.splitlines()) if status_output else 0,
-            'uncommitted_files_list': [
-                {'status': line[:2].strip(), 'path': line[3:]}
+            "branch": run_command(["git", "rev-parse", "--abbrev-ref", "HEAD"]),
+            "uncommitted_files": len(status_output.splitlines())
+            if status_output
+            else 0,
+            "uncommitted_files_list": [
+                {"status": line[:2].strip(), "path": line[3:]}
                 for line in status_output.splitlines()
-            ] if status_output else [],
-            'stashes': stash_count,
-            'merged_branches': merged_count,
-            'stale_branches': count_stale_branches()
+            ]
+            if status_output
+            else [],
+            "stashes": stash_count,
+            "merged_branches": merged_count,
+            "stale_branches": count_stale_branches(),
         }
 
         # GitHub state (if gh CLI available)
         github_state = {}
-        if shutil.which('gh'):
+        if shutil.which("gh"):
             try:
                 issues_json = run_command(
-                    ['gh', 'issue', 'list', '--state', 'open', '--limit', '5', '--json', 'number,title,updatedAt']
+                    [
+                        "gh",
+                        "issue",
+                        "list",
+                        "--state",
+                        "open",
+                        "--limit",
+                        "5",
+                        "--json",
+                        "number,title,updatedAt",
+                    ]
                 )
-                github_state['issues'] = json.loads(issues_json) if issues_json else []
+                github_state["issues"] = json.loads(issues_json) if issues_json else []
 
                 ci_json = run_command(
-                    ['gh', 'run', 'list', '--limit', '1', '--json', 'conclusion,status,createdAt']
+                    [
+                        "gh",
+                        "run",
+                        "list",
+                        "--limit",
+                        "1",
+                        "--json",
+                        "conclusion,status,createdAt",
+                    ]
                 )
                 ci_data = json.loads(ci_json) if ci_json else []
-                github_state['ci_status'] = ci_data[0] if ci_data else {}
+                github_state["ci_status"] = ci_data[0] if ci_data else {}
             except json.JSONDecodeError:
-                github_state = {'issues': [], 'ci_status': {}}
+                github_state = {"issues": [], "ci_status": {}}
 
         # Services state - SECURE: Use pgrep instead of shell pipes
         running_services = []
-        for service_name in ['node', 'npm', 'pnpm', 'redis-server', 'postgres', 'supabase']:
+        for service_name in [
+            "node",
+            "npm",
+            "pnpm",
+            "redis-server",
+            "postgres",
+            "supabase",
+        ]:
             try:
                 result = subprocess.run(
-                    ['pgrep', '-f', service_name],
+                    ["pgrep", "-f", service_name],
                     capture_output=True,
                     text=True,
-                    timeout=5
+                    timeout=5,
                 )
                 if result.returncode == 0 and result.stdout.strip():
                     running_services.append(service_name)
@@ -291,29 +323,23 @@ class NightlyWorkflow:
         # Count log files - SECURE: Use Python glob instead of shell
         log_count = 0
         try:
-            log_dir = Path.home() / '.claude' / 'logs'
+            log_dir = Path.home() / ".claude" / "logs"
             if log_dir.exists():
-                log_count = len(list(log_dir.glob('*.log')))
+                log_count = len(list(log_dir.glob("*.log")))
         except Exception:
             pass
 
-        services_state = {
-            'running_services': running_services,
-            'log_files': log_count
-        }
+        services_state = {"running_services": running_services, "log_files": log_count}
 
         return {
-            'git': git_state,
-            'github': github_state,
-            'services': services_state,
-            'timestamp': datetime.now().isoformat()
+            "git": git_state,
+            "github": github_state,
+            "services": services_state,
+            "timestamp": datetime.now().isoformat(),
         }
 
     def _capture_session_state(
-        self,
-        score: int,
-        breakdown: Dict[str, Dict[str, Any]],
-        state: Dict[str, Any]
+        self, score: int, breakdown: Dict[str, Dict[str, Any]], state: Dict[str, Any]
     ) -> None:
         """
         Capture session state to STATUS.json.
@@ -321,7 +347,7 @@ class NightlyWorkflow:
         This manually updates STATUS.json since we can't invoke
         the pop-session-capture skill from within Python.
         """
-        status_file = Path('STATUS.json')
+        status_file = Path("STATUS.json")
 
         # Load existing STATUS.json if it exists
         existing_status = {}
@@ -332,44 +358,46 @@ class NightlyWorkflow:
                 print("[WARN] Could not parse existing STATUS.json", file=sys.stderr)
 
         # Update with nightly routine data
-        git_state = state.get('git', {})
-        github_state = state.get('github', {})
+        git_state = state.get("git", {})
+        github_state = state.get("github", {})
 
         updated_status = {
             **existing_status,  # Preserve existing data
-            'session_id': f"nightly-{datetime.now().strftime('%Y-%m-%d-%H%M%S')}",
-            'timestamp': datetime.now().isoformat(),
-            'last_nightly_routine': {
-                'executed_at': datetime.now().isoformat(),
-                'sleep_score': f"{score}/100",
-                'breakdown': breakdown
+            "session_id": f"nightly-{datetime.now().strftime('%Y-%m-%d-%H%M%S')}",
+            "timestamp": datetime.now().isoformat(),
+            "last_nightly_routine": {
+                "executed_at": datetime.now().isoformat(),
+                "sleep_score": f"{score}/100",
+                "breakdown": breakdown,
             },
-            'git_status': {
-                'current_branch': git_state.get('branch', 'unknown'),
-                'last_commit': git_state.get('last_commit', 'unknown'),
-                'uncommitted_files': git_state.get('uncommitted_files', 0),
-                'files': [
+            "git_status": {
+                "current_branch": git_state.get("branch", "unknown"),
+                "last_commit": git_state.get("last_commit", "unknown"),
+                "uncommitted_files": git_state.get("uncommitted_files", 0),
+                "files": [
                     f"{item['path']} ({item['status']})"
-                    for item in git_state.get('uncommitted_files_list', [])[:10]
+                    for item in git_state.get("uncommitted_files_list", [])[:10]
                 ],
-                'stashes': git_state.get('stashes', 0),
-                'action_required': 'Commit or stash changes' if git_state.get('uncommitted_files', 0) > 0 else None
+                "stashes": git_state.get("stashes", 0),
+                "action_required": "Commit or stash changes"
+                if git_state.get("uncommitted_files", 0) > 0
+                else None,
             },
-            'metrics': {
-                **existing_status.get('metrics', {}),
-                'sleep_score': f"{score}/100"
-            }
+            "metrics": {
+                **existing_status.get("metrics", {}),
+                "sleep_score": f"{score}/100",
+            },
         }
 
         # Add recommendations
         interpretation = get_score_interpretation(score)
-        updated_status['recommendations'] = {
-            **existing_status.get('recommendations', {}),
-            'before_leaving': self._get_before_leaving_recommendations(score, state),
-            'next_session': [
+        updated_status["recommendations"] = {
+            **existing_status.get("recommendations", {}),
+            "before_leaving": self._get_before_leaving_recommendations(score, state),
+            "next_session": [
                 "Run /popkit:routine morning to check overnight changes",
-                "Review and address items from nightly report"
-            ]
+                "Review and address items from nightly report",
+            ],
         }
 
         # Write updated STATUS.json
@@ -380,28 +408,24 @@ class NightlyWorkflow:
             print(f"[ERROR] Failed to update STATUS.json: {e}", file=sys.stderr)
 
     def _get_before_leaving_recommendations(
-        self,
-        score: int,
-        state: Dict[str, Any]
+        self, score: int, state: Dict[str, Any]
     ) -> list:
         """Generate before-leaving recommendations."""
         recommendations = []
-        git_state = state.get('git', {})
+        git_state = state.get("git", {})
 
-        if git_state.get('uncommitted_files', 0) > 0:
+        if git_state.get("uncommitted_files", 0) > 0:
             recommendations.append(
                 f"Commit or stash {git_state['uncommitted_files']} uncommitted files"
             )
 
-        if git_state.get('stashes', 0) > 5:
+        if git_state.get("stashes", 0) > 5:
             recommendations.append(
                 f"Review {git_state['stashes']} stashes - consider cleanup"
             )
 
         if score < 60:
-            recommendations.append(
-                "⚠️ Low Sleep Score - address issues before leaving"
-            )
+            recommendations.append("⚠️ Low Sleep Score - address issues before leaving")
 
         return recommendations if recommendations else ["All clear! Safe to close."]
 
@@ -414,12 +438,12 @@ def print_profiles():
 
     print("\nAvailable Nightly Routine Profiles:\n")
 
-    for profile in ProfileManager.list_profiles('routine'):
+    for profile in ProfileManager.list_profiles("routine"):
         print(f"  {profile.name}")
         print(f"    {profile.description}")
         print(f"    Use case: {profile.use_case}")
         if profile.flags:
-            flag_names = [f'--{k.replace("_", "-")}' for k in profile.flags.keys()]
+            flag_names = [f"--{k.replace('_', '-')}" for k in profile.flags.keys()]
             print(f"    Flags: {', '.join(flag_names)}")
         else:
             print("    Flags: (defaults)")
@@ -484,35 +508,49 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description='PopKit Nightly Routine',
-        epilog='Use --help-detailed for detailed examples'
+        description="PopKit Nightly Routine",
+        epilog="Use --help-detailed for detailed examples",
     )
 
     # Profile selection
     parser.add_argument(
-        '--profile',
-        choices=['minimal', 'standard', 'thorough', 'ci'],
-        help='Profile preset (minimal|standard|thorough|ci)'
+        "--profile",
+        choices=["minimal", "standard", "thorough", "ci"],
+        help="Profile preset (minimal|standard|thorough|ci)",
     )
 
     # Individual flags (existing)
-    parser.add_argument('--quick', action='store_true', help='Quick one-line summary')
-    parser.add_argument('--measure', action='store_true', help='Track performance metrics')
-    parser.add_argument('--optimized', action='store_true', help='Use caching')
-    parser.add_argument('--no-cache', action='store_true', help='Force fresh execution')
+    parser.add_argument("--quick", action="store_true", help="Quick one-line summary")
+    parser.add_argument(
+        "--measure", action="store_true", help="Track performance metrics"
+    )
+    parser.add_argument("--optimized", action="store_true", help="Use caching")
+    parser.add_argument("--no-cache", action="store_true", help="Force fresh execution")
 
     # New flags (documented but not yet fully implemented - Issue #105)
-    parser.add_argument('--simple', action='store_true', help='Markdown tables instead of ASCII')
-    parser.add_argument('--skip-cleanup', action='store_true', help='Skip auto-cleanup actions')
-    parser.add_argument('--skip-ip-scan', action='store_true', help='Skip IP leak scan')
-    parser.add_argument('--no-morning', action='store_true', help='Skip morning comparison')
+    parser.add_argument(
+        "--simple", action="store_true", help="Markdown tables instead of ASCII"
+    )
+    parser.add_argument(
+        "--skip-cleanup", action="store_true", help="Skip auto-cleanup actions"
+    )
+    parser.add_argument("--skip-ip-scan", action="store_true", help="Skip IP leak scan")
+    parser.add_argument(
+        "--no-morning", action="store_true", help="Skip morning comparison"
+    )
 
     # Help tiers (Issue #105)
-    parser.add_argument('--help-detailed', action='store_true', help='Show detailed examples')
-    parser.add_argument('--help-full', action='store_true', help='Show full documentation')
+    parser.add_argument(
+        "--help-detailed", action="store_true", help="Show detailed examples"
+    )
+    parser.add_argument(
+        "--help-full", action="store_true", help="Show full documentation"
+    )
 
     # List profiles (Issue #105)
-    parser.add_argument('--list-profiles', action='store_true', help='List available profiles')
+    parser.add_argument(
+        "--list-profiles", action="store_true", help="List available profiles"
+    )
 
     args = parser.parse_args()
 
@@ -532,20 +570,20 @@ def main():
 
     # Collect flags from args
     flags = {
-        'quick': args.quick,
-        'measure': args.measure,
-        'optimized': args.optimized,
-        'no_cache': args.no_cache,
-        'simple': args.simple,
-        'skip_cleanup': args.skip_cleanup,
-        'skip_ip_scan': args.skip_ip_scan,
-        'no_morning': args.no_morning
+        "quick": args.quick,
+        "measure": args.measure,
+        "optimized": args.optimized,
+        "no_cache": args.no_cache,
+        "simple": args.simple,
+        "skip_cleanup": args.skip_cleanup,
+        "skip_ip_scan": args.skip_ip_scan,
+        "no_morning": args.no_morning,
     }
 
     # Apply profile if specified (Issue #105)
     if args.profile and ProfileManager:
         try:
-            flags = ProfileManager.apply_profile(args.profile, flags, 'routine')
+            flags = ProfileManager.apply_profile(args.profile, flags, "routine")
             print(f"[PROFILE] Using '{args.profile}' profile", file=sys.stderr)
         except ValueError as e:
             print(f"[ERROR] {e}", file=sys.stderr)
@@ -560,11 +598,11 @@ def main():
     result = workflow.run()
 
     # Print report
-    print(result['report'])
+    print(result["report"])
 
     # Exit with score as status (0-100)
-    sys.exit(0 if result['score'] >= 70 else 1)
+    sys.exit(0 if result["score"] >= 70 else 1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
