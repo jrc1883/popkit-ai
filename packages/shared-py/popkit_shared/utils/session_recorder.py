@@ -396,6 +396,41 @@ class SessionRecorder:
             }
         )
 
+    def record_subagent_completion(
+        self,
+        subagent_id: str,
+        tool_count: int,
+        input_tokens: int,
+        output_tokens: int,
+        total_tokens: int,
+        tool_details: Optional[List[Dict[str, Any]]] = None
+    ) -> None:
+        """
+        Record subagent completion with transcript parsing data.
+
+        Args:
+            subagent_id: Unique ID of the subagent
+            tool_count: Number of tool calls made by subagent
+            input_tokens: Input tokens consumed
+            output_tokens: Output tokens generated
+            total_tokens: Total tokens (input + output + cache)
+            tool_details: Optional list of first N tool calls for summary
+        """
+        event = {
+            "type": "subagent_completion",
+            "subagent_id": subagent_id,
+            "tool_count": tool_count,
+            "token_usage": {
+                "input_tokens": input_tokens,
+                "output_tokens": output_tokens,
+                "total_tokens": total_tokens
+            },
+            "tool_details": tool_details or [],
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+
+        self.record_event(event)
+
     def finalize_recording(
         self, status: str = "completed", summary: Optional[Dict[str, Any]] = None
     ) -> Optional[Path]:
@@ -503,3 +538,34 @@ def record_recommendation(
 ) -> None:
     """Convenience function to record a recommendation."""
     get_recorder().record_recommendation(recommendation_type, command, priority_score, reason)
+
+
+def record_subagent_completion(
+    subagent_id: str,
+    tool_count: int,
+    input_tokens: int,
+    output_tokens: int,
+    total_tokens: int,
+    tool_details: Optional[List[Dict[str, Any]]] = None
+) -> None:
+    """
+    Convenience function to record subagent completion.
+
+    Args:
+        subagent_id: Unique ID of the subagent
+        tool_count: Number of tool calls made by subagent
+        input_tokens: Input tokens consumed
+        output_tokens: Output tokens generated
+        total_tokens: Total tokens (input + output + cache)
+        tool_details: Optional list of first N tool calls for summary
+    """
+    recorder = get_recorder()
+    if recorder:
+        recorder.record_subagent_completion(
+            subagent_id=subagent_id,
+            tool_count=tool_count,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            total_tokens=total_tokens,
+            tool_details=tool_details
+        )
