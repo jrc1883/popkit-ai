@@ -7,7 +7,7 @@ from pathlib import Path
 # Add parent directory to path to import popkit_shared
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from popkit_shared.utils.error_codes import ErrorRegistry, ErrorSeverity
+from popkit_shared.utils.error_codes import ErrorRegistry
 
 
 def generate_error_doc(error_code, output_dir):
