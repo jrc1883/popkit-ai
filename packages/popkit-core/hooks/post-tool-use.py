@@ -15,6 +15,14 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Tuple
 
+# Import error code system (Issue #104)
+try:
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'shared-py'))
+    from popkit_shared.utils.error_codes import ErrorRegistry, ErrorResponse
+    HAS_ERROR_CODES = True
+except ImportError:
+    HAS_ERROR_CODES = False
+
 # Import project activity tracking
 try:
     from popkit_shared.utils.project_client import ProjectClient, ProjectActivity
@@ -1273,10 +1281,26 @@ def main():
         print(json.dumps(response))
 
     except json.JSONDecodeError as e:
-        response = {"error": f"Invalid JSON input: {e}", "status": "error"}
+        # Use standardized error response if available (Issue #104)
+        if HAS_ERROR_CODES:
+            response = ErrorResponse.create(
+                ErrorRegistry.E001_JSON_PARSE,
+                context={
+                    "parse_error": str(e),
+                    "line": getattr(e, 'lineno', None),
+                    "column": getattr(e, 'colno', None)
+                },
+                hook_name="post-tool-use"
+            )
+            response["status"] = "error"  # Add hook-specific field
+        else:
+            # Fallback to legacy format
+            response = {"error": f"Invalid JSON input: {e}", "status": "error"}
         print(json.dumps(response))
         sys.exit(1)
     except Exception as e:
+        # Generic exception - graceful degradation (non-blocking)
+        # Post-tool-use hook never blocks, even on errors
         response = {"error": str(e), "status": "error"}
         print(json.dumps(response))
         sys.exit(0)  # Don't block on errors
