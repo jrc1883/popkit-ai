@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Tests for session_recorder.py"""
 
-import json
 import os
 import pytest
 from pathlib import Path
