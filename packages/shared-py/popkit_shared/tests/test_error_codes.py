@@ -6,7 +6,6 @@ Tests error code registry, response formatting, and backward compatibility.
 """
 
 import pytest
-from datetime import datetime
 from popkit_shared.utils.error_codes import (
     ErrorRegistry,
     ErrorResponse,
