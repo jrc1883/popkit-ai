@@ -5,7 +5,6 @@ Unit tests for error_codes module.
 Tests error code registry, response formatting, and backward compatibility.
 """
 
-import pytest
 from popkit_shared.utils.error_codes import (
     ErrorRegistry,
     ErrorResponse,
