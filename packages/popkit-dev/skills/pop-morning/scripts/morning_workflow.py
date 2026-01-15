@@ -14,9 +14,15 @@ Coordinates all morning routine steps:
 
 import sys
 import json
+import io
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any
+
+# Fix Windows console encoding for Unicode characters
+if sys.platform == "win32":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
 
 # Add shared-py to path for utilities
 sys.path.insert(0, str(Path.home() / ".claude" / "popkit" / "packages" / "shared-py"))
@@ -207,7 +213,7 @@ class MorningWorkflow:
 
         if status_file.exists():
             try:
-                status = json.loads(status_file.read_text())
+                status = json.loads(status_file.read_text(encoding="utf-8"))
 
                 # Extract last session info
                 last_nightly = status.get("last_nightly_routine", {})
@@ -551,9 +557,11 @@ class MorningWorkflow:
         existing_status = {}
         if status_file.exists():
             try:
-                existing_status = json.loads(status_file.read_text())
-            except json.JSONDecodeError:
-                print("[WARN] Could not parse existing STATUS.json", file=sys.stderr)
+                existing_status = json.loads(status_file.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, UnicodeDecodeError) as e:
+                print(
+                    f"[WARN] Could not parse existing STATUS.json: {e}", file=sys.stderr
+                )
 
         # Update with morning routine data
         git_state = state.get("git", {})
@@ -590,7 +598,10 @@ class MorningWorkflow:
 
         # Write updated STATUS.json
         try:
-            status_file.write_text(json.dumps(updated_status, indent=2))
+            status_file.write_text(
+                json.dumps(updated_status, indent=2, ensure_ascii=False),
+                encoding="utf-8",
+            )
             print("[OK] STATUS.json updated", file=sys.stderr)
         except Exception as e:
             print(f"[ERROR] Failed to update STATUS.json: {e}", file=sys.stderr)
