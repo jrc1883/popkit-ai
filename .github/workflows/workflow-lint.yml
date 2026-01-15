@@ -36,12 +36,12 @@ jobs:
         run: |
           echo "Checking .github/workflows/greetings.yml for correct parameter naming..."
 
-          # Check for incorrect underscore parameters
-          if grep -E 'repo_token:|issue_message:|pr_message:' .github/workflows/greetings.yml 2>/dev/null; then
+          # Check for incorrect underscore parameters (ignore comments)
+          if grep -v '^\s*#' .github/workflows/greetings.yml | grep -E 'repo_token:|issue_message:|pr_message:' 2>/dev/null; then
             echo "❌ ERROR: greetings.yml uses underscores instead of hyphens"
             echo ""
             echo "Found incorrect parameters (underscores):"
-            grep -n -E 'repo_token:|issue_message:|pr_message:' .github/workflows/greetings.yml || true
+            grep -v '^\s*#' .github/workflows/greetings.yml | grep -n -E 'repo_token:|issue_message:|pr_message:' || true
             echo ""
             echo "Correct format:"
             echo "  repo-token: \${{ secrets.GITHUB_TOKEN }}"
@@ -70,9 +70,9 @@ jobs:
 
           for file in .github/workflows/*.yml .github/workflows/*.yaml; do
             if [ -f "$file" ]; then
-              # Check actions/first-interaction specifically
+              # Check actions/first-interaction specifically (ignore comments)
               if grep -q 'uses: actions/first-interaction' "$file"; then
-                if grep -E 'repo_token:|issue_message:|pr_message:' "$file" >/dev/null 2>&1; then
+                if grep -v '^\s*#' "$file" | grep -E 'repo_token:|issue_message:|pr_message:' >/dev/null 2>&1; then
                   echo "⚠️  $file: uses actions/first-interaction with underscored parameters"
                   files_with_issues+=("$file")
                 fi
