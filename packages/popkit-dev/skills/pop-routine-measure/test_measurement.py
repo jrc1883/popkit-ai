@@ -16,7 +16,7 @@ from routine_measurement import (
     disable_measurement,
     format_measurement_report,
     save_measurement,
-    check_measure_flag
+    check_measure_flag,
 )
 
 
@@ -31,7 +31,9 @@ def test_basic_tracking():
     tracker.start("test-1", "Test Routine")
 
     # Simulate some tool calls
-    tracker.track_tool_call("Bash", "git status\nOn branch master\nnothing to commit", 0.5)
+    tracker.track_tool_call(
+        "Bash", "git status\nOn branch master\nnothing to commit", 0.5
+    )
     tracker.track_tool_call("Read", "File content here...\n" * 100, 0.2)
     tracker.track_tool_call("Grep", "Search results...\n" * 50, 0.3)
 
@@ -102,6 +104,7 @@ def test_data_persistence():
 
             # Read it back
             import json
+
             with open(saved_path) as f:
                 data = json.load(f)
 
@@ -127,8 +130,6 @@ def test_environment_flag():
     print("=" * 70)
     print("Test 4: Environment Flag")
     print("=" * 70)
-
-    import os
 
     # Test disabled
     disable_measurement()
@@ -158,7 +159,7 @@ def main():
         test_basic_tracking,
         test_report_formatting,
         test_data_persistence,
-        test_environment_flag
+        test_environment_flag,
     ]
 
     passed = 0
@@ -174,6 +175,7 @@ def main():
             print(f"[FAIL] Test failed with error: {e}")
             failed += 1
             import traceback
+
             traceback.print_exc()
 
     print("=" * 70)

@@ -63,7 +63,7 @@ Use AskUserQuestion with the following configuration:
     test_input = {
         "tool": "Skill",
         "result": skill_output,
-        "timestamp": "2026-01-09T12:00:00Z"
+        "timestamp": "2026-01-09T12:00:00Z",
     }
 
     # Run the hook script
@@ -74,7 +74,7 @@ Use AskUserQuestion with the following configuration:
         input=json.dumps(test_input),
         capture_output=True,
         text=True,
-        timeout=5
+        timeout=5,
     )
 
     # Check output
@@ -91,25 +91,25 @@ Use AskUserQuestion with the following configuration:
         return False
 
     # Verify output structure
-    if output.get('type') != 'ask_user_question':
+    if output.get("type") != "ask_user_question":
         print(f"❌ Expected type 'ask_user_question', got '{output.get('type')}'")
         return False
 
-    if 'questions' not in output:
+    if "questions" not in output:
         print("❌ Missing 'questions' in output")
         return False
 
-    questions = output['questions']
+    questions = output["questions"]
     if len(questions) != 1:
         print(f"❌ Expected 1 question, got {len(questions)}")
         return False
 
     question = questions[0]
-    if question.get('question') != "What would you like to do next?":
+    if question.get("question") != "What would you like to do next?":
         print(f"❌ Incorrect question text: {question.get('question')}")
         return False
 
-    if len(question.get('options', [])) != 3:
+    if len(question.get("options", [])) != 3:
         print(f"❌ Expected 3 options, got {len(question.get('options', []))}")
         return False
 
@@ -132,7 +132,7 @@ Just regular output with no AskUserQuestion.
     test_input = {
         "tool": "Skill",
         "result": skill_output,
-        "timestamp": "2026-01-09T12:00:00Z"
+        "timestamp": "2026-01-09T12:00:00Z",
     }
 
     script_path = Path(__file__).parent / "skill-completion-handler.py"
@@ -142,7 +142,7 @@ Just regular output with no AskUserQuestion.
         input=json.dumps(test_input),
         capture_output=True,
         text=True,
-        timeout=5
+        timeout=5,
     )
 
     if result.returncode != 0:
@@ -155,7 +155,7 @@ Just regular output with no AskUserQuestion.
         print(f"❌ Hook output is not valid JSON: {e}")
         return False
 
-    if output.get('type') != 'passthrough':
+    if output.get("type") != "passthrough":
         print(f"❌ Expected 'passthrough', got '{output.get('type')}'")
         return False
 
@@ -169,7 +169,7 @@ def test_passthrough_for_non_skill_tools():
     test_input = {
         "tool": "Bash",  # Not a Skill
         "result": "some bash output",
-        "timestamp": "2026-01-09T12:00:00Z"
+        "timestamp": "2026-01-09T12:00:00Z",
     }
 
     script_path = Path(__file__).parent / "skill-completion-handler.py"
@@ -179,7 +179,7 @@ def test_passthrough_for_non_skill_tools():
         input=json.dumps(test_input),
         capture_output=True,
         text=True,
-        timeout=5
+        timeout=5,
     )
 
     if result.returncode != 0:
@@ -189,11 +189,13 @@ def test_passthrough_for_non_skill_tools():
     try:
         output = json.loads(result.stdout)
     except json.JSONDecodeError:
-        print(f"❌ Hook output is not valid JSON")
+        print("❌ Hook output is not valid JSON")
         return False
 
-    if output.get('type') != 'passthrough':
-        print(f"❌ Expected 'passthrough' for non-Skill tool, got '{output.get('type')}'")
+    if output.get("type") != "passthrough":
+        print(
+            f"❌ Expected 'passthrough' for non-Skill tool, got '{output.get('type')}'"
+        )
         return False
 
     print("[PASS] Test passed: Hook passes through for non-Skill tools")
@@ -202,15 +204,15 @@ def test_passthrough_for_non_skill_tools():
 
 def main():
     """Run all tests."""
-    print("="*60)
+    print("=" * 60)
     print("Testing Skill Completion Handler (PostToolUse Hook)")
-    print("="*60)
+    print("=" * 60)
     print()
 
     tests = [
         ("Extract AskUserQuestion Config", test_extract_ask_user_question),
         ("Passthrough Without Marker", test_passthrough_without_marker),
-        ("Passthrough for Non-Skill Tools", test_passthrough_for_non_skill_tools)
+        ("Passthrough for Non-Skill Tools", test_passthrough_for_non_skill_tools),
     ]
 
     passed = 0
@@ -228,12 +230,12 @@ def main():
             failed += 1
         print()
 
-    print("="*60)
+    print("=" * 60)
     print(f"Results: {passed} passed, {failed} failed")
-    print("="*60)
+    print("=" * 60)
 
     sys.exit(0 if failed == 0 else 1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

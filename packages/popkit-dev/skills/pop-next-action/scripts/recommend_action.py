@@ -17,7 +17,6 @@ Output:
 """
 
 import json
-import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -33,7 +32,7 @@ BASE_PRIORITIES = {
     "work_on_issue": 50,
     "tackle_tech_debt": 40,
     "start_new_feature": 30,
-    "health_check": 20
+    "health_check": 20,
 }
 
 # Context multipliers
@@ -42,7 +41,7 @@ MULTIPLIERS = {
     "typescript_errors": 30,
     "research_branches": 25,
     "many_open_issues": 10,
-    "high_priority_issue": 15
+    "high_priority_issue": 15,
 }
 
 
@@ -56,7 +55,7 @@ def load_state(state_file: Optional[str] = None) -> Dict[str, Any]:
         "git": {"uncommitted_count": 0, "ahead_count": 0, "urgency": "LOW"},
         "code": {"typescript_errors": 0, "urgency": "LOW"},
         "issues": {"open_count": 0, "issues": [], "urgency": "LOW"},
-        "research": {"has_research_branches": False, "branches": [], "urgency": "LOW"}
+        "research": {"has_research_branches": False, "branches": [], "urgency": "LOW"},
     }
 
 
@@ -72,56 +71,64 @@ def calculate_action_scores(state: Dict[str, Any]) -> List[Dict[str, Any]]:
     # Fix build errors
     if code.get("typescript_errors", 0) > 0:
         score = BASE_PRIORITIES["fix_build_errors"] + MULTIPLIERS["typescript_errors"]
-        actions.append({
-            "id": "fix_build_errors",
-            "name": "Fix Build Errors",
-            "command": "/popkit:debug",
-            "score": score,
-            "why": f"TypeScript has {code['typescript_errors']} errors blocking build",
-            "what": "Systematic debugging with root cause analysis",
-            "benefit": "Unblocked development, passing CI"
-        })
+        actions.append(
+            {
+                "id": "fix_build_errors",
+                "name": "Fix Build Errors",
+                "command": "/popkit:debug",
+                "score": score,
+                "why": f"TypeScript has {code['typescript_errors']} errors blocking build",
+                "what": "Systematic debugging with root cause analysis",
+                "benefit": "Unblocked development, passing CI",
+            }
+        )
 
     # Process research branches
     if research.get("has_research_branches") and research.get("branches"):
         score = BASE_PRIORITIES["process_research"] + MULTIPLIERS["research_branches"]
         branch_count = len(research["branches"])
-        actions.append({
-            "id": "process_research",
-            "name": "Process Research Branches",
-            "command": "Invoke pop-research-merge skill",
-            "score": score,
-            "why": f"Found {branch_count} research branch(es) from Claude Code Web sessions",
-            "what": "Merges research content, organizes docs, creates GitHub issues",
-            "benefit": "Research findings become actionable issues in your backlog",
-            "branches": research["branches"]
-        })
+        actions.append(
+            {
+                "id": "process_research",
+                "name": "Process Research Branches",
+                "command": "Invoke pop-research-merge skill",
+                "score": score,
+                "why": f"Found {branch_count} research branch(es) from Claude Code Web sessions",
+                "what": "Merges research content, organizes docs, creates GitHub issues",
+                "benefit": "Research findings become actionable issues in your backlog",
+                "branches": research["branches"],
+            }
+        )
 
     # Commit uncommitted work
     if git.get("uncommitted_count", 0) > 0:
         score = BASE_PRIORITIES["commit_work"] + MULTIPLIERS["uncommitted_changes"]
-        actions.append({
-            "id": "commit_work",
-            "name": "Commit Current Work",
-            "command": "/popkit:git commit",
-            "score": score,
-            "why": f"You have {git['uncommitted_count']} uncommitted files",
-            "what": "Auto-generates commit message matching repo style",
-            "benefit": "Clean working directory, changes safely versioned"
-        })
+        actions.append(
+            {
+                "id": "commit_work",
+                "name": "Commit Current Work",
+                "command": "/popkit:git commit",
+                "score": score,
+                "why": f"You have {git['uncommitted_count']} uncommitted files",
+                "what": "Auto-generates commit message matching repo style",
+                "benefit": "Clean working directory, changes safely versioned",
+            }
+        )
 
     # Push changes
     if git.get("ahead_count", 0) > 0:
         score = BASE_PRIORITIES["push_changes"]
-        actions.append({
-            "id": "push_changes",
-            "name": "Push Changes",
-            "command": "/popkit:git push",
-            "score": score,
-            "why": f"You have {git['ahead_count']} commits ahead of remote",
-            "what": "Push changes to remote repository",
-            "benefit": "Work backed up and visible to team"
-        })
+        actions.append(
+            {
+                "id": "push_changes",
+                "name": "Push Changes",
+                "command": "/popkit:git push",
+                "score": score,
+                "why": f"You have {git['ahead_count']} commits ahead of remote",
+                "what": "Push changes to remote repository",
+                "benefit": "Work backed up and visible to team",
+            }
+        )
 
     # Work on issue
     if issues.get("open_count", 0) > 0 and issues.get("issues"):
@@ -136,29 +143,33 @@ def calculate_action_scores(state: Dict[str, Any]) -> List[Dict[str, Any]]:
         if issues["open_count"] >= 5:
             score += MULTIPLIERS["many_open_issues"]
 
-        actions.append({
-            "id": "work_on_issue",
-            "name": "Work on Open Issue",
-            "command": f"/popkit:dev work #{top_issue['number']}",
-            "score": score,
-            "why": f"Issue #{top_issue['number']} \"{top_issue['title']}\" is high priority",
-            "what": "Issue-driven development workflow",
-            "benefit": "Structured progress on prioritized work",
-            "issue": top_issue
-        })
+        actions.append(
+            {
+                "id": "work_on_issue",
+                "name": "Work on Open Issue",
+                "command": f"/popkit:dev work #{top_issue['number']}",
+                "score": score,
+                "why": f'Issue #{top_issue["number"]} "{top_issue["title"]}" is high priority',
+                "what": "Issue-driven development workflow",
+                "benefit": "Structured progress on prioritized work",
+                "issue": top_issue,
+            }
+        )
 
     # Health check (always available)
     if not actions or all(a["score"] < 50 for a in actions):
         score = BASE_PRIORITIES["health_check"]
-        actions.append({
-            "id": "health_check",
-            "name": "Check Project Health",
-            "command": "/popkit:routine morning",
-            "score": score,
-            "why": "No urgent items - good time for health check",
-            "what": "Comprehensive project status with Ready to Code score",
-            "benefit": "Identify hidden issues before they become urgent"
-        })
+        actions.append(
+            {
+                "id": "health_check",
+                "name": "Check Project Health",
+                "command": "/popkit:routine morning",
+                "score": score,
+                "why": "No urgent items - good time for health check",
+                "what": "Comprehensive project status with Ready to Code score",
+                "benefit": "Identify hidden issues before they become urgent",
+            }
+        )
 
     return actions
 
@@ -168,15 +179,21 @@ def rank_actions(actions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return sorted(actions, key=lambda x: x["score"], reverse=True)
 
 
-def generate_report(ranked_actions: List[Dict[str, Any]], state: Dict[str, Any]) -> Dict[str, Any]:
+def generate_report(
+    ranked_actions: List[Dict[str, Any]], state: Dict[str, Any]
+) -> Dict[str, Any]:
     """Generate recommendation report."""
     report = {
         "state_summary": {
             "uncommitted": state.get("git", {}).get("uncommitted_count", 0),
-            "branch_sync": "ahead" if state.get("git", {}).get("ahead_count", 0) > 0 else "synced",
-            "typescript": "errors" if state.get("code", {}).get("typescript_errors", 0) > 0 else "clean",
+            "branch_sync": "ahead"
+            if state.get("git", {}).get("ahead_count", 0) > 0
+            else "synced",
+            "typescript": "errors"
+            if state.get("code", {}).get("typescript_errors", 0) > 0
+            else "clean",
             "open_issues": state.get("issues", {}).get("open_count", 0),
-            "research_branches": len(state.get("research", {}).get("branches", []))
+            "research_branches": len(state.get("research", {}).get("branches", [])),
         },
         "recommendations": ranked_actions[:5],  # Top 5
         "quick_reference": [
@@ -184,8 +201,8 @@ def generate_report(ranked_actions: List[Dict[str, Any]], state: Dict[str, Any])
             {"goal": "Review code", "command": "/popkit:git review"},
             {"goal": "Project health", "command": "/popkit:routine morning"},
             {"goal": "Plan a feature", "command": "/popkit:dev brainstorm"},
-            {"goal": "Debug an issue", "command": "/popkit:debug"}
-        ]
+            {"goal": "Debug an issue", "command": "/popkit:debug"},
+        ],
     }
 
     return report
@@ -199,11 +216,19 @@ def format_report_display(report: Dict[str, Any]) -> str:
     lines.append("## Current State\n")
     lines.append("| Indicator | Status | Urgency |")
     lines.append("|-----------|--------|---------|")
-    lines.append(f"| Uncommitted | {state['uncommitted']} files | {'HIGH' if state['uncommitted'] > 0 else 'OK'} |")
-    lines.append(f"| Branch Sync | {state['branch_sync']} | {'MEDIUM' if state['branch_sync'] == 'ahead' else 'OK'} |")
-    lines.append(f"| TypeScript | {state['typescript']} | {'HIGH' if state['typescript'] == 'errors' else 'OK'} |")
-    lines.append(f"| Open Issues | {state['open_issues']} | {'MEDIUM' if state['open_issues'] > 3 else 'LOW'} |")
-    if state['research_branches'] > 0:
+    lines.append(
+        f"| Uncommitted | {state['uncommitted']} files | {'HIGH' if state['uncommitted'] > 0 else 'OK'} |"
+    )
+    lines.append(
+        f"| Branch Sync | {state['branch_sync']} | {'MEDIUM' if state['branch_sync'] == 'ahead' else 'OK'} |"
+    )
+    lines.append(
+        f"| TypeScript | {state['typescript']} | {'HIGH' if state['typescript'] == 'errors' else 'OK'} |"
+    )
+    lines.append(
+        f"| Open Issues | {state['open_issues']} | {'MEDIUM' if state['open_issues'] > 3 else 'LOW'} |"
+    )
+    if state["research_branches"] > 0:
         lines.append(f"| Research Branches | {state['research_branches']} | HIGH |")
 
     lines.append("\n## Recommended Actions\n")
@@ -227,17 +252,23 @@ def format_report_display(report: Dict[str, Any]) -> str:
 
 def main():
     import argparse
+
     parser = argparse.ArgumentParser(description="Recommend next action")
-    parser.add_argument("--mode", choices=["score", "rank", "report"],
-                        default="report", help="Output mode")
+    parser.add_argument(
+        "--mode",
+        choices=["score", "rank", "report"],
+        default="report",
+        help="Output mode",
+    )
     parser.add_argument("--state-file", help="Path to state JSON file")
-    parser.add_argument("--format", choices=["json", "display"], default="json",
-                        help="Output format")
+    parser.add_argument(
+        "--format", choices=["json", "display"], default="json", help="Output format"
+    )
     args = parser.parse_args()
 
     result = {
         "operation": f"recommend_action_{args.mode}",
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.now().isoformat(),
     }
 
     # Load state

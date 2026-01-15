@@ -21,9 +21,7 @@ except ImportError:
 
 
 def generate_nightly_report(
-    score: int,
-    breakdown: Dict[str, Dict[str, Any]],
-    state: Dict[str, Any]
+    score: int, breakdown: Dict[str, Dict[str, Any]], state: Dict[str, Any]
 ) -> str:
     """
     Generate comprehensive nightly routine report.
@@ -37,9 +35,9 @@ def generate_nightly_report(
         Formatted markdown report string
     """
     interpretation = get_score_interpretation(score)
-    git_state = state.get('git', {})
-    github_state = state.get('github', {})
-    services_state = state.get('services', {})
+    git_state = state.get("git", {})
+    github_state = state.get("github", {})
+    services_state = state.get("services", {})
 
     report = []
 
@@ -51,7 +49,9 @@ def generate_nightly_report(
     report.append("")
 
     # Score interpretation
-    report.append(f"**Grade**: {interpretation['grade']} - {interpretation['interpretation']}")
+    report.append(
+        f"**Grade**: {interpretation['grade']} - {interpretation['interpretation']}"
+    )
     report.append("")
 
     # Score breakdown table
@@ -61,23 +61,23 @@ def generate_nightly_report(
     report.append("")
 
     # Uncommitted changes section (if any)
-    uncommitted_files = git_state.get('uncommitted_files_list', [])
+    uncommitted_files = git_state.get("uncommitted_files_list", [])
     if uncommitted_files:
         report.append("## 📝 Uncommitted Changes")
         report.append("")
         report.append(f"**{len(uncommitted_files)} files need attention:**")
         report.append("")
         for file_info in uncommitted_files[:10]:  # Show max 10
-            status = file_info.get('status', '?')
-            path = file_info.get('path', '')
+            status = file_info.get("status", "?")
+            path = file_info.get("path", "")
             status_label = {
-                'M': 'modified',
-                'A': 'added',
-                'D': 'deleted',
-                '??': 'untracked',
-                'R': 'renamed',
-                'U': 'unmerged'
-            }.get(status, 'changed')
+                "M": "modified",
+                "A": "added",
+                "D": "deleted",
+                "??": "untracked",
+                "R": "renamed",
+                "U": "unmerged",
+            }.get(status, "changed")
             report.append(f"- `{path}` ({status_label})")
 
         if len(uncommitted_files) > 10:
@@ -85,7 +85,7 @@ def generate_nightly_report(
         report.append("")
 
     # Stashes section (if any)
-    stash_count = git_state.get('stashes', 0)
+    stash_count = git_state.get("stashes", 0)
     if stash_count > 0:
         report.append("## 💾 Stashed Changes")
         report.append("")
@@ -98,7 +98,7 @@ def generate_nightly_report(
         report.append("")
 
     # Running services (if any)
-    running_services = services_state.get('running_services', [])
+    running_services = services_state.get("running_services", [])
     if running_services:
         report.append("## 🔧 Running Services")
         report.append("")
@@ -111,23 +111,23 @@ def generate_nightly_report(
         report.append("")
 
     # CI status (if failed)
-    ci_status = github_state.get('ci_status', {})
-    if ci_status.get('conclusion') in ['failure', 'skipped']:
+    ci_status = github_state.get("ci_status", {})
+    if ci_status.get("conclusion") in ["failure", "skipped"]:
         report.append("## 🚨 CI Status")
         report.append("")
-        conclusion = ci_status.get('conclusion', 'unknown')
-        status = ci_status.get('status', 'unknown')
-        created_at = ci_status.get('createdAt', '')
+        conclusion = ci_status.get("conclusion", "unknown")
+        status = ci_status.get("status", "unknown")
+        created_at = ci_status.get("createdAt", "")
 
         report.append(f"**Latest CI run**: {conclusion} ({status})")
         if created_at:
-            date = created_at.split('T')[0]
+            date = created_at.split("T")[0]
             report.append(f"**Created**: {date}")
         report.append("")
 
-        if conclusion == 'failure':
+        if conclusion == "failure":
             report.append("⚠️ CI is failing. Consider fixing before tomorrow.")
-        elif conclusion == 'skipped':
+        elif conclusion == "skipped":
             report.append("ℹ️ CI was skipped. May need manual trigger.")
         report.append("")
 
@@ -171,53 +171,43 @@ def generate_nightly_report(
 
 
 def _generate_recommendations_before_leaving(
-    score: int,
-    breakdown: Dict[str, Dict[str, Any]],
-    state: Dict[str, Any]
+    score: int, breakdown: Dict[str, Dict[str, Any]], state: Dict[str, Any]
 ) -> List[str]:
     """Generate recommendations for actions before leaving."""
     recommendations = []
-    git_state = state.get('git', {})
+    git_state = state.get("git", {})
 
     # Uncommitted work
-    if breakdown.get('uncommitted_work_saved', {}).get('points', 0) == 0:
-        uncommitted_count = git_state.get('uncommitted_files', 0)
-        recommendations.append(
-            f"Commit or stash {uncommitted_count} uncommitted files"
-        )
+    if breakdown.get("uncommitted_work_saved", {}).get("points", 0) == 0:
+        uncommitted_count = git_state.get("uncommitted_files", 0)
+        recommendations.append(f"Commit or stash {uncommitted_count} uncommitted files")
 
     # Stashes
-    stash_count = git_state.get('stashes', 0)
+    stash_count = git_state.get("stashes", 0)
     if stash_count > 5:
         recommendations.append(
             f"Review {stash_count} stashes - consider cleaning up old ones"
         )
 
     # Services
-    running_services = state.get('services', {}).get('running_services', [])
+    running_services = state.get("services", {}).get("running_services", [])
     if running_services:
-        recommendations.append(
-            f"Stop {len(running_services)} running dev services"
-        )
+        recommendations.append(f"Stop {len(running_services)} running dev services")
 
     # CI
-    ci_status = state.get('github', {}).get('ci_status', {})
-    if ci_status.get('conclusion') == 'failure':
+    ci_status = state.get("github", {}).get("ci_status", {})
+    if ci_status.get("conclusion") == "failure":
         recommendations.append("Investigate CI failure before leaving")
 
     # Low score warning
     if score < 50:
-        recommendations.append(
-            "⚠️ Low Sleep Score - spend a few minutes cleaning up"
-        )
+        recommendations.append("⚠️ Low Sleep Score - spend a few minutes cleaning up")
 
     return recommendations
 
 
 def _generate_recommendations_next_session(
-    score: int,
-    breakdown: Dict[str, Dict[str, Any]],
-    state: Dict[str, Any]
+    score: int, breakdown: Dict[str, Dict[str, Any]], state: Dict[str, Any]
 ) -> List[str]:
     """Generate recommendations for next morning."""
     recommendations = []
@@ -229,16 +219,16 @@ def _generate_recommendations_next_session(
     # (This would come from GitHub state if we capture PR data)
 
     # Check issues if they weren't updated today
-    if breakdown.get('issues_updated', {}).get('points', 0) < 20:
+    if breakdown.get("issues_updated", {}).get("points", 0) < 20:
         recommendations.append("Review and update open issues")
 
     # CI fixes
-    ci_status = state.get('github', {}).get('ci_status', {})
-    if ci_status.get('conclusion') in ['failure', 'skipped']:
+    ci_status = state.get("github", {}).get("ci_status", {})
+    if ci_status.get("conclusion") in ["failure", "skipped"]:
         recommendations.append("Check CI status and fix if needed")
 
     # Stash cleanup
-    stash_count = state.get('git', {}).get('stashes', 0)
+    stash_count = state.get("git", {}).get("stashes", 0)
     if stash_count > 5:
         recommendations.append("Clean up stash backlog")
 
@@ -246,9 +236,7 @@ def _generate_recommendations_next_session(
 
 
 def generate_quick_summary(
-    score: int,
-    breakdown: Dict[str, Dict[str, Any]],
-    state: Dict[str, Any]
+    score: int, breakdown: Dict[str, Dict[str, Any]], state: Dict[str, Any]
 ) -> str:
     """
     Generate one-line quick summary for --quick flag.
@@ -262,26 +250,26 @@ def generate_quick_summary(
         One-line summary string
     """
     interpretation = get_score_interpretation(score)
-    git_state = state.get('git', {})
+    git_state = state.get("git", {})
 
     issues = []
 
     # Collect issues
-    uncommitted = git_state.get('uncommitted_files', 0)
+    uncommitted = git_state.get("uncommitted_files", 0)
     if uncommitted > 0:
         issues.append(f"{uncommitted} uncommitted")
 
-    stashes = git_state.get('stashes', 0)
+    stashes = git_state.get("stashes", 0)
     if stashes > 5:
         issues.append(f"{stashes} stashes")
 
-    ci_conclusion = state.get('github', {}).get('ci_status', {}).get('conclusion')
-    if ci_conclusion == 'failure':
+    ci_conclusion = state.get("github", {}).get("ci_status", {}).get("conclusion")
+    if ci_conclusion == "failure":
         issues.append("CI failed")
-    elif ci_conclusion == 'skipped':
+    elif ci_conclusion == "skipped":
         issues.append("CI skipped")
 
-    running_services = state.get('services', {}).get('running_services', [])
+    running_services = state.get("services", {}).get("running_services", [])
     if running_services:
         issues.append(f"{len(running_services)} services running")
 
@@ -294,9 +282,7 @@ def generate_quick_summary(
 
 
 def _generate_ask_user_question_section(
-    score: int,
-    breakdown: Dict[str, Dict[str, Any]],
-    state: Dict[str, Any]
+    score: int, breakdown: Dict[str, Dict[str, Any]], state: Dict[str, Any]
 ) -> List[str]:
     """
     Generate AskUserQuestion instructions for Claude (The PopKit Way).
@@ -313,67 +299,76 @@ def _generate_ask_user_question_section(
         List of lines containing AskUserQuestion instructions for Claude
     """
     # Analyze state to determine appropriate options
-    git_state = state.get('git', {})
-    github_state = state.get('github', {})
-    services_state = state.get('services', {})
+    git_state = state.get("git", {})
+    github_state = state.get("github", {})
+    services_state = state.get("services", {})
 
-    uncommitted_files = git_state.get('uncommitted_files', 0)
-    running_services = services_state.get('running_services', [])
-    ci_status = github_state.get('ci_status', {})
-    ci_conclusion = ci_status.get('conclusion', '')
+    uncommitted_files = git_state.get("uncommitted_files", 0)
+    running_services = services_state.get("running_services", [])
+    ci_status = github_state.get("ci_status", {})
+    ci_conclusion = ci_status.get("conclusion", "")
 
     # Build context-aware AskUserQuestion options
     options = []
 
     # Option 1: Commit and push (if uncommitted work)
     if uncommitted_files > 0:
-        options.append({
-            "label": "Commit and push all changes (Recommended)",
-            "description": f"Save {uncommitted_files} uncommitted file{'s' if uncommitted_files > 1 else ''}"
-        })
+        options.append(
+            {
+                "label": "Commit and push all changes (Recommended)",
+                "description": f"Save {uncommitted_files} uncommitted file{'s' if uncommitted_files > 1 else ''}",
+            }
+        )
 
         # Alternative: Stash
-        options.append({
-            "label": "Stash changes for tomorrow",
-            "description": "Keep work-in-progress safe without committing"
-        })
+        options.append(
+            {
+                "label": "Stash changes for tomorrow",
+                "description": "Keep work-in-progress safe without committing",
+            }
+        )
 
     # Option 2: Stop services (if running)
     if running_services:
-        services_list = ', '.join(running_services[:3])
+        services_list = ", ".join(running_services[:3])
         if len(running_services) > 3:
             services_list += f", +{len(running_services) - 3} more"
 
-        options.append({
-            "label": "Stop all dev services (Recommended)",
-            "description": f"Stop {len(running_services)} running service{'s' if len(running_services) > 1 else ''}: {services_list}"
-        })
+        options.append(
+            {
+                "label": "Stop all dev services (Recommended)",
+                "description": f"Stop {len(running_services)} running service{'s' if len(running_services) > 1 else ''}: {services_list}",
+            }
+        )
 
     # Option 3: CI failure action
-    if ci_conclusion == 'failure':
-        options.append({
-            "label": "Investigate CI failure",
-            "description": "Check why the latest CI run failed"
-        })
+    if ci_conclusion == "failure":
+        options.append(
+            {
+                "label": "Investigate CI failure",
+                "description": "Check why the latest CI run failed",
+            }
+        )
 
     # Option 4: Clean shutdown (if score >= 70)
     if score >= 70:
-        options.append({
-            "label": "End session (all clean)",
-            "description": "Everything looks good, ready for tomorrow"
-        })
+        options.append(
+            {
+                "label": "End session (all clean)",
+                "description": "Everything looks good, ready for tomorrow",
+            }
+        )
     else:
         # Low score - review recommendations
-        options.append({
-            "label": "Review recommendations",
-            "description": "Check what needs attention before leaving"
-        })
+        options.append(
+            {
+                "label": "Review recommendations",
+                "description": "Check what needs attention before leaving",
+            }
+        )
 
     # Always include "Other" option
-    options.append({
-        "label": "Other",
-        "description": "I have something else in mind"
-    })
+    options.append({"label": "Other", "description": "I have something else in mind"})
 
     # Limit to 4 options (AskUserQuestion constraint)
     options = options[:4]
@@ -388,71 +383,78 @@ def _generate_ask_user_question_section(
         "{",
         '  "questions": [',
         "    {",
-        f'      "question": "What would you like to do before ending the day?",',
+        '      "question": "What would you like to do before ending the day?",',
         '      "header": "Next Action",',
         '      "multiSelect": false,',
-        '      "options": ['
+        '      "options": [',
     ]
 
     # Add each option
     for i, option in enumerate(options):
         is_last = i == len(options) - 1
-        lines.append('        {')
+        lines.append("        {")
         lines.append(f'          "label": "{option["label"]}",')
         lines.append(f'          "description": "{option["description"]}"')
-        lines.append('        }' + ('' if is_last else ','))
+        lines.append("        }" + ("" if is_last else ","))
 
-    lines.extend([
-        '      ]',
-        '    }',
-        '  ]',
-        '}',
-        '```',
-        '',
-        '**DO NOT** just end the session after showing this report. You MUST invoke AskUserQuestion to maintain The PopKit Way pattern.'
-    ])
+    lines.extend(
+        [
+            "      ]",
+            "    }",
+            "  ]",
+            "}",
+            "```",
+            "",
+            "**DO NOT** just end the session after showing this report. You MUST invoke AskUserQuestion to maintain The PopKit Way pattern.",
+        ]
+    )
 
     return lines
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Test with sample data
     # Import directly (not relative) for standalone execution
     import sleep_score
+
     calculate_sleep_score = sleep_score.calculate_sleep_score
 
     sample_state = {
-        'git': {
-            'uncommitted_files': 3,
-            'uncommitted_files_list': [
-                {'status': 'D', 'path': 'apps/popkit/packages/websitebuild-popkit-test-beta.txt'},
-                {'status': 'M', 'path': 'pnpm-lock.yaml'},
-                {'status': '??', 'path': '.npmrc'}
+        "git": {
+            "uncommitted_files": 3,
+            "uncommitted_files_list": [
+                {
+                    "status": "D",
+                    "path": "apps/popkit/packages/websitebuild-popkit-test-beta.txt",
+                },
+                {"status": "M", "path": "pnpm-lock.yaml"},
+                {"status": "??", "path": ".npmrc"},
             ],
-            'merged_branches': 0,
-            'stashes': 8
+            "merged_branches": 0,
+            "stashes": 8,
         },
-        'github': {
-            'issues': [
-                {'number': 629, 'title': 'Feature A', 'updatedAt': '2025-12-28T10:00:00Z'},
+        "github": {
+            "issues": [
+                {
+                    "number": 629,
+                    "title": "Feature A",
+                    "updatedAt": "2025-12-28T10:00:00Z",
+                },
             ],
-            'ci_status': {
-                'conclusion': 'skipped',
-                'status': 'completed',
-                'createdAt': '2025-12-28T15:00:00Z'
-            }
+            "ci_status": {
+                "conclusion": "skipped",
+                "status": "completed",
+                "createdAt": "2025-12-28T15:00:00Z",
+            },
         },
-        'services': {
-            'running_services': [],
-            'log_files': 0
-        },
-        'timestamp': '2025-12-28T15:30:00Z'
+        "services": {"running_services": [], "log_files": 0},
+        "timestamp": "2025-12-28T15:30:00Z",
     }
 
     score, breakdown = calculate_sleep_score(sample_state)
     report = generate_nightly_report(score, breakdown, sample_state)
 
     print(report)
-    print("\n" + "="*60 + "\n")
+    print("\n" + "=" * 60 + "\n")
     print("QUICK SUMMARY:")
     print(generate_quick_summary(score, breakdown, sample_state))

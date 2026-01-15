@@ -14,7 +14,7 @@ Output:
 import json
 import sys
 from pathlib import Path
-from typing import Dict, List, Set, Any
+from typing import Dict, List, Set
 
 
 def find_plugin_root(start_path: Path = None) -> Path:
@@ -26,7 +26,9 @@ def find_plugin_root(start_path: Path = None) -> Path:
     for _ in range(5):
         if (current / ".claude-plugin" / "plugin.json").exists():
             return current
-        if (current / "packages" / "plugin" / ".claude-plugin" / "plugin.json").exists():
+        if (
+            current / "packages" / "plugin" / ".claude-plugin" / "plugin.json"
+        ).exists():
             return current / "packages" / "plugin"
         current = current.parent
 
@@ -39,7 +41,7 @@ def get_all_agents(plugin_dir: Path) -> Dict[str, Set[str]]:
         "tier-1": set(),
         "tier-2": set(),
         "feature-workflow": set(),
-        "assessors": set()
+        "assessors": set(),
     }
 
     agents_dir = plugin_dir / "agents"
@@ -67,7 +69,7 @@ def load_routing_config(plugin_dir: Path) -> tuple[Dict, str]:
         return None, "config.json not found"
 
     try:
-        with open(config_path, 'r', encoding='utf-8') as f:
+        with open(config_path, "r", encoding="utf-8") as f:
             return json.load(f), None
     except Exception as e:
         return None, str(e)
@@ -81,7 +83,9 @@ def check_keyword_routing(config: Dict, all_agents: Dict) -> List[Dict]:
     keywords = routing.get("keywords", {})
 
     # Get all tier-1 agents
-    tier1_agents = all_agents.get("tier-1", set()) | all_agents.get("tier-1-always-active", set())
+    tier1_agents = all_agents.get("tier-1", set()) | all_agents.get(
+        "tier-1-always-active", set()
+    )
 
     # Find agents with keywords
     agents_with_keywords = set()
@@ -93,26 +97,32 @@ def check_keyword_routing(config: Dict, all_agents: Dict) -> List[Dict]:
     tier1_missing = tier1_agents - agents_with_keywords
 
     if tier1_missing:
-        coverage = ((len(tier1_agents) - len(tier1_missing)) / max(len(tier1_agents), 1)) * 100
-        findings.append({
-            "id": "AR-001",
-            "check": "Tier-1 agents have keywords",
-            "status": "WARN" if len(tier1_missing) <= 2 else "FAIL",
-            "severity": "high",
-            "message": f"Missing keywords for: {sorted(tier1_missing)}",
-            "coverage": round(coverage, 1),
-            "deduction": min(len(tier1_missing) * 2, 10)
-        })
+        coverage = (
+            (len(tier1_agents) - len(tier1_missing)) / max(len(tier1_agents), 1)
+        ) * 100
+        findings.append(
+            {
+                "id": "AR-001",
+                "check": "Tier-1 agents have keywords",
+                "status": "WARN" if len(tier1_missing) <= 2 else "FAIL",
+                "severity": "high",
+                "message": f"Missing keywords for: {sorted(tier1_missing)}",
+                "coverage": round(coverage, 1),
+                "deduction": min(len(tier1_missing) * 2, 10),
+            }
+        )
     else:
-        findings.append({
-            "id": "AR-001",
-            "check": "Tier-1 agents have keywords",
-            "status": "PASS",
-            "severity": "high",
-            "message": f"All {len(tier1_agents)} tier-1 agents have keywords",
-            "coverage": 100,
-            "deduction": 0
-        })
+        findings.append(
+            {
+                "id": "AR-001",
+                "check": "Tier-1 agents have keywords",
+                "status": "PASS",
+                "severity": "high",
+                "message": f"All {len(tier1_agents)} tier-1 agents have keywords",
+                "coverage": 100,
+                "deduction": 0,
+            }
+        )
 
     # Check for duplicate keywords
     keyword_agents = {}
@@ -121,23 +131,27 @@ def check_keyword_routing(config: Dict, all_agents: Dict) -> List[Dict]:
             keyword_agents[keyword] = agents
 
     if keyword_agents:
-        findings.append({
-            "id": "AR-002",
-            "check": "No duplicate keyword mappings",
-            "status": "INFO",
-            "severity": "high",
-            "message": f"Keywords with multiple agents: {list(keyword_agents.keys())[:5]}",
-            "deduction": 0  # Not necessarily wrong, just notable
-        })
+        findings.append(
+            {
+                "id": "AR-002",
+                "check": "No duplicate keyword mappings",
+                "status": "INFO",
+                "severity": "high",
+                "message": f"Keywords with multiple agents: {list(keyword_agents.keys())[:5]}",
+                "deduction": 0,  # Not necessarily wrong, just notable
+            }
+        )
     else:
-        findings.append({
-            "id": "AR-002",
-            "check": "No duplicate keyword mappings",
-            "status": "PASS",
-            "severity": "high",
-            "message": "Each keyword maps to single agent",
-            "deduction": 0
-        })
+        findings.append(
+            {
+                "id": "AR-002",
+                "check": "No duplicate keyword mappings",
+                "status": "PASS",
+                "severity": "high",
+                "message": "Each keyword maps to single agent",
+                "deduction": 0,
+            }
+        )
 
     return findings
 
@@ -158,7 +172,7 @@ def check_file_patterns(config: Dict) -> List[Dict]:
         "*.yaml": "devops-automator",
         "*.yml": "devops-automator",
         "Dockerfile*": "devops-automator",
-        ".env*": "security-auditor"
+        ".env*": "security-auditor",
     }
 
     # Check which patterns exist
@@ -173,26 +187,33 @@ def check_file_patterns(config: Dict) -> List[Dict]:
             missing_patterns.append(pattern)
 
     if missing_patterns:
-        coverage = ((len(recommended_patterns) - len(missing_patterns)) / len(recommended_patterns)) * 100
-        findings.append({
-            "id": "AR-007",
-            "check": "Common file types covered",
-            "status": "WARN" if len(missing_patterns) <= 3 else "FAIL",
-            "severity": "medium",
-            "message": f"Missing patterns: {missing_patterns[:5]}",
-            "coverage": round(coverage, 1),
-            "deduction": min(len(missing_patterns) * 2, 10)
-        })
+        coverage = (
+            (len(recommended_patterns) - len(missing_patterns))
+            / len(recommended_patterns)
+        ) * 100
+        findings.append(
+            {
+                "id": "AR-007",
+                "check": "Common file types covered",
+                "status": "WARN" if len(missing_patterns) <= 3 else "FAIL",
+                "severity": "medium",
+                "message": f"Missing patterns: {missing_patterns[:5]}",
+                "coverage": round(coverage, 1),
+                "deduction": min(len(missing_patterns) * 2, 10),
+            }
+        )
     else:
-        findings.append({
-            "id": "AR-007",
-            "check": "Common file types covered",
-            "status": "PASS",
-            "severity": "medium",
-            "message": f"All {len(recommended_patterns)} common patterns covered",
-            "coverage": 100,
-            "deduction": 0
-        })
+        findings.append(
+            {
+                "id": "AR-007",
+                "check": "Common file types covered",
+                "status": "PASS",
+                "severity": "medium",
+                "message": f"All {len(recommended_patterns)} common patterns covered",
+                "coverage": 100,
+                "deduction": 0,
+            }
+        )
 
     return findings
 
@@ -211,33 +232,39 @@ def check_error_patterns(config: Dict) -> List[Dict]:
         "SecurityError": "security-auditor",
         "ImportError": "migration-specialist",
         "ConnectionError": "devops-automator",
-        "MemoryError": "performance-optimizer"
+        "MemoryError": "performance-optimizer",
     }
 
     existing_errors = set(patterns.keys())
     missing_errors = set(recommended_errors.keys()) - existing_errors
 
     if missing_errors:
-        coverage = ((len(recommended_errors) - len(missing_errors)) / len(recommended_errors)) * 100
-        findings.append({
-            "id": "AR-008",
-            "check": "Common errors covered",
-            "status": "WARN" if len(missing_errors) <= 2 else "FAIL",
-            "severity": "medium",
-            "message": f"Missing error patterns: {sorted(missing_errors)}",
-            "coverage": round(coverage, 1),
-            "deduction": min(len(missing_errors) * 2, 10)
-        })
+        coverage = (
+            (len(recommended_errors) - len(missing_errors)) / len(recommended_errors)
+        ) * 100
+        findings.append(
+            {
+                "id": "AR-008",
+                "check": "Common errors covered",
+                "status": "WARN" if len(missing_errors) <= 2 else "FAIL",
+                "severity": "medium",
+                "message": f"Missing error patterns: {sorted(missing_errors)}",
+                "coverage": round(coverage, 1),
+                "deduction": min(len(missing_errors) * 2, 10),
+            }
+        )
     else:
-        findings.append({
-            "id": "AR-008",
-            "check": "Common errors covered",
-            "status": "PASS",
-            "severity": "medium",
-            "message": f"All {len(recommended_errors)} common errors covered",
-            "coverage": 100,
-            "deduction": 0
-        })
+        findings.append(
+            {
+                "id": "AR-008",
+                "check": "Common errors covered",
+                "status": "PASS",
+                "severity": "medium",
+                "message": f"All {len(recommended_errors)} common errors covered",
+                "coverage": 100,
+                "deduction": 0,
+            }
+        )
 
     return findings
 
@@ -268,23 +295,27 @@ def check_agent_references(config: Dict, all_agents: Dict) -> List[Dict]:
     missing_agents = referenced_agents - all_agent_names
 
     if missing_agents:
-        findings.append({
-            "id": "AR-005",
-            "check": "Referenced agents exist",
-            "status": "FAIL",
-            "severity": "critical",
-            "message": f"Missing agents: {sorted(missing_agents)}",
-            "deduction": len(missing_agents) * 10
-        })
+        findings.append(
+            {
+                "id": "AR-005",
+                "check": "Referenced agents exist",
+                "status": "FAIL",
+                "severity": "critical",
+                "message": f"Missing agents: {sorted(missing_agents)}",
+                "deduction": len(missing_agents) * 10,
+            }
+        )
     else:
-        findings.append({
-            "id": "AR-005",
-            "check": "Referenced agents exist",
-            "status": "PASS",
-            "severity": "critical",
-            "message": f"All {len(referenced_agents)} referenced agents exist",
-            "deduction": 0
-        })
+        findings.append(
+            {
+                "id": "AR-005",
+                "check": "Referenced agents exist",
+                "status": "PASS",
+                "severity": "critical",
+                "message": f"All {len(referenced_agents)} referenced agents exist",
+                "deduction": 0,
+            }
+        )
 
     return findings
 
@@ -305,17 +336,17 @@ def main():
             "plugin_dir": str(plugin_dir),
             "score": 0,
             "max_score": 100,
-            "summary": {
-                "error": error
-            },
-            "findings": [{
-                "id": "AR-000",
-                "check": "Config loadable",
-                "status": "FAIL",
-                "severity": "critical",
-                "message": error,
-                "deduction": 50
-            }]
+            "summary": {"error": error},
+            "findings": [
+                {
+                    "id": "AR-000",
+                    "check": "Config loadable",
+                    "status": "FAIL",
+                    "severity": "critical",
+                    "message": error,
+                    "deduction": 50,
+                }
+            ],
         }
         print(json.dumps(result, indent=2))
         return 1
@@ -341,7 +372,9 @@ def main():
 
     # Calculate average coverage
     coverage_checks = [f for f in all_findings if "coverage" in f]
-    avg_coverage = sum(f["coverage"] for f in coverage_checks) / max(len(coverage_checks), 1)
+    avg_coverage = sum(f["coverage"] for f in coverage_checks) / max(
+        len(coverage_checks), 1
+    )
 
     result = {
         "category": "agent-routing",
@@ -353,9 +386,9 @@ def main():
             "fails": fails,
             "warnings": warns,
             "total_deduction": total_deduction,
-            "average_coverage": round(avg_coverage, 1)
+            "average_coverage": round(avg_coverage, 1),
         },
-        "findings": all_findings
+        "findings": all_findings,
     }
 
     print(json.dumps(result, indent=2))

@@ -26,23 +26,23 @@ DOC_IMPACTING_PATTERNS = {
     "plugin.json": {
         "description": "Plugin version",
         "targets": ["marketplace.json", "CLAUDE.md", "README.md"],
-        "check": "version_sync"
+        "check": "version_sync",
     },
     "marketplace.json": {
         "description": "Marketplace version",
         "targets": ["plugin.json"],
-        "check": "version_sync"
+        "check": "version_sync",
     },
     "agents/config.json": {
         "description": "Agent configuration",
         "targets": ["CLAUDE.md"],
-        "check": "agent_counts"
+        "check": "agent_counts",
     },
     "hooks/hooks.json": {
         "description": "Hook configuration",
         "targets": ["CLAUDE.md"],
-        "check": "hook_counts"
-    }
+        "check": "hook_counts",
+    },
 }
 
 # Directory patterns (any file in these dirs)
@@ -51,20 +51,20 @@ DOC_IMPACTING_DIRS = {
         "extension": ".md",
         "description": "Command definitions",
         "targets": ["CLAUDE.md"],
-        "check": "command_counts"
+        "check": "command_counts",
     },
     "skills/": {
         "extension": "SKILL.md",
         "description": "Skill definitions",
         "targets": ["CLAUDE.md"],
-        "check": "skill_counts"
+        "check": "skill_counts",
     },
     "agents/tier-": {
         "extension": "AGENT.md",
         "description": "Agent definitions",
         "targets": ["CLAUDE.md"],
-        "check": "agent_counts"
-    }
+        "check": "agent_counts",
+    },
 }
 
 
@@ -160,7 +160,9 @@ class DocSyncChecker:
                     counts["tier1"] = len(tiers.get("tier-1-always-active", []))
                     counts["tier2"] = len(tiers.get("tier-2-on-demand", []))
                     counts["feature_workflow"] = len(tiers.get("feature-workflow", []))
-                    counts["total"] = counts["tier1"] + counts["tier2"] + counts["feature_workflow"]
+                    counts["total"] = (
+                        counts["tier1"] + counts["tier2"] + counts["feature_workflow"]
+                    )
             except (json.JSONDecodeError, IOError):
                 pass
 
@@ -175,12 +177,14 @@ class DocSyncChecker:
 
         if plugin_version and marketplace_version:
             if plugin_version != marketplace_version:
-                issues.append({
-                    "type": "version_mismatch",
-                    "severity": "high",
-                    "message": f"Version mismatch: plugin.json={plugin_version}, marketplace.json={marketplace_version}",
-                    "suggestion": f"Update marketplace.json version to {plugin_version}"
-                })
+                issues.append(
+                    {
+                        "type": "version_mismatch",
+                        "severity": "high",
+                        "message": f"Version mismatch: plugin.json={plugin_version}, marketplace.json={marketplace_version}",
+                        "suggestion": f"Update marketplace.json version to {plugin_version}",
+                    }
+                )
 
         return issues
 
@@ -191,7 +195,7 @@ class DocSyncChecker:
             "description": None,
             "targets": [],
             "check_type": None,
-            "suggestions": []
+            "suggestions": [],
         }
 
         # Normalize path
@@ -276,7 +280,7 @@ def main():
             "impacts_docs": result["impacts_docs"],
             "description": result["description"],
             "targets": result["targets"],
-            "suggestions": result["suggestions"]
+            "suggestions": result["suggestions"],
         }
 
         # Output suggestions to stderr for visibility (non-blocking)
@@ -284,7 +288,7 @@ def main():
             print(f"\n[doc-sync] {result['description']} changed", file=sys.stderr)
             for suggestion in result["suggestions"]:
                 print(f"  -> {suggestion}", file=sys.stderr)
-            print(f"  Run: /popkit:plugin docs --check", file=sys.stderr)
+            print("  Run: /popkit:plugin docs --check", file=sys.stderr)
 
         # Output JSON response
         print(json.dumps(response))

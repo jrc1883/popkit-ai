@@ -8,8 +8,8 @@ This module provides a centralized system for managing command flag presets,
 reducing cognitive load by grouping common flag combinations into named profiles.
 """
 
-from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 
 
 @dataclass

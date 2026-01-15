@@ -6,7 +6,8 @@ Tests profile retrieval, application, and smart defaults.
 """
 
 import pytest
-from popkit_shared.utils.flag_profiles import ProfileManager, FlagProfile
+
+from popkit_shared.utils.flag_profiles import FlagProfile, ProfileManager
 
 
 class TestProfileRetrieval:

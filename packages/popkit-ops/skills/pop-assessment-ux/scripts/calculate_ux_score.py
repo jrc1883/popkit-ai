@@ -12,7 +12,6 @@ Output:
 """
 
 import json
-import re
 import sys
 from pathlib import Path
 from typing import Any, Dict, List
@@ -52,7 +51,9 @@ def evaluate_nielsen_heuristics(project_dir: Path) -> Dict[str, Any]:
     # NH-001: Visibility - check for progress indicators, status messages
     skills_dir = project_dir / "skills"
     if skills_dir.exists():
-        status_skills = len(list(skills_dir.glob("*status*"))) + len(list(skills_dir.glob("*progress*")))
+        status_skills = len(list(skills_dir.glob("*status*"))) + len(
+            list(skills_dir.glob("*progress*"))
+        )
         heuristics["NH-001"]["score"] = min(10, 5 + status_skills)
 
     # NH-002: Real world match - check for natural language in commands
@@ -61,14 +62,18 @@ def evaluate_nielsen_heuristics(project_dir: Path) -> Dict[str, Any]:
         natural_commands = 0
         for cmd in commands_dir.glob("*.md"):
             name = cmd.stem.replace("-", " ")
-            if any(word in name for word in ["create", "run", "check", "review", "analyze"]):
+            if any(
+                word in name for word in ["create", "run", "check", "review", "analyze"]
+            ):
                 natural_commands += 1
         heuristics["NH-002"]["score"] = min(10, 3 + natural_commands)
 
     # NH-003: User control - check for undo/cancel options
     hooks_dir = project_dir / "hooks"
     if hooks_dir.exists():
-        control_hooks = len(list(hooks_dir.glob("*cancel*"))) + len(list(hooks_dir.glob("*undo*")))
+        control_hooks = len(list(hooks_dir.glob("*cancel*"))) + len(
+            list(hooks_dir.glob("*undo*"))
+        )
         heuristics["NH-003"]["score"] = min(10, 4 + control_hooks * 2)
 
     # NH-004: Consistency - check for consistent naming patterns
@@ -108,7 +113,9 @@ def evaluate_nielsen_heuristics(project_dir: Path) -> Dict[str, Any]:
         if skills:
             sizes = [s.stat().st_size for s in skills]
             avg_size = sum(sizes) / len(sizes)
-        heuristics["NH-008"]["score"] = 8 if avg_size < 3000 else 5 if avg_size < 6000 else 3
+        heuristics["NH-008"]["score"] = (
+            8 if avg_size < 3000 else 5 if avg_size < 6000 else 3
+        )
 
     # NH-009: Error recovery - check for error handling
     try_except_count = 0
@@ -127,7 +134,9 @@ def evaluate_nielsen_heuristics(project_dir: Path) -> Dict[str, Any]:
     claude_md = project_dir / "CLAUDE.md"
     has_docs = readme.exists() or claude_md.exists()
     docs_dir = project_dir / "docs"
-    heuristics["NH-010"]["score"] = 9 if has_docs and docs_dir.exists() else 7 if has_docs else 4
+    heuristics["NH-010"]["score"] = (
+        9 if has_docs and docs_dir.exists() else 7 if has_docs else 4
+    )
 
     # Calculate total
     total = sum(h["score"] for h in heuristics.values())
@@ -137,7 +146,7 @@ def evaluate_nielsen_heuristics(project_dir: Path) -> Dict[str, Any]:
         "heuristics": heuristics,
         "total_score": total,
         "max_score": max_total,
-        "percentage": round(total / max_total * 100, 1)
+        "percentage": round(total / max_total * 100, 1),
     }
 
 
@@ -147,7 +156,7 @@ def evaluate_interaction_patterns(project_dir: Path) -> Dict[str, Any]:
         "ask_user_question_usage": 0,
         "confirmation_prompts": 0,
         "progressive_disclosure": 0,
-        "default_values": 0
+        "default_values": 0,
     }
     issues = []
 
@@ -168,7 +177,9 @@ def evaluate_interaction_patterns(project_dir: Path) -> Dict[str, Any]:
         for skill_dir in skills_dir.iterdir():
             if skill_dir.is_dir():
                 # Check if skill has resources directory (progressive loading)
-                has_resources = (skill_dir / "scripts").exists() or (skill_dir / "standards").exists()
+                has_resources = (skill_dir / "scripts").exists() or (
+                    skill_dir / "standards"
+                ).exists()
                 if has_resources:
                     patterns["progressive_disclosure"] += 1
 
@@ -180,22 +191,18 @@ def evaluate_interaction_patterns(project_dir: Path) -> Dict[str, Any]:
 
     # Issues
     if patterns["ask_user_question_usage"] < 5:
-        issues.append({
-            "type": "low_interactivity",
-            "message": "Limited use of AskUserQuestion for user interaction",
-            "severity": "medium"
-        })
+        issues.append(
+            {
+                "type": "low_interactivity",
+                "message": "Limited use of AskUserQuestion for user interaction",
+                "severity": "medium",
+            }
+        )
 
-    return {
-        "patterns": patterns,
-        "issues": issues
-    }
+    return {"patterns": patterns, "issues": issues}
 
 
-def calculate_final_score(
-    nielsen: Dict,
-    interactions: Dict
-) -> Dict[str, Any]:
+def calculate_final_score(nielsen: Dict, interactions: Dict) -> Dict[str, Any]:
     """Calculate final UX score."""
     # Nielsen contributes 70%
     nielsen_component = nielsen.get("percentage", 0) * 0.7
@@ -215,8 +222,8 @@ def calculate_final_score(
         "score": round(final, 1),
         "breakdown": {
             "nielsen": round(nielsen_component, 1),
-            "interactions": round(interaction_component, 1)
-        }
+            "interactions": round(interaction_component, 1),
+        },
     }
 
 
@@ -228,15 +235,21 @@ def get_recommendations(nielsen: Dict, interactions: Dict) -> List[str]:
     heuristics = nielsen.get("heuristics", {})
     for hid, data in heuristics.items():
         if data["score"] < 5:
-            recommendations.append(f"Improve {data['name']} (current score: {data['score']}/10)")
+            recommendations.append(
+                f"Improve {data['name']} (current score: {data['score']}/10)"
+            )
 
     # Interaction-based recommendations
     patterns = interactions.get("patterns", {})
     if patterns.get("ask_user_question_usage", 0) < 5:
-        recommendations.append("Increase use of AskUserQuestion for better user interaction")
+        recommendations.append(
+            "Increase use of AskUserQuestion for better user interaction"
+        )
 
     if patterns.get("progressive_disclosure", 0) < 3:
-        recommendations.append("Add more progressive disclosure patterns (load details on demand)")
+        recommendations.append(
+            "Add more progressive disclosure patterns (load details on demand)"
+        )
 
     if not recommendations:
         recommendations.append("UX is in good shape - maintain current patterns")
@@ -291,7 +304,7 @@ def main():
         "scoring_breakdown": scoring["breakdown"],
         "nielsen_heuristics": nielsen,
         "interaction_patterns": interactions,
-        "recommendations": recommendations
+        "recommendations": recommendations,
     }
 
     print(json.dumps(report, indent=2))
