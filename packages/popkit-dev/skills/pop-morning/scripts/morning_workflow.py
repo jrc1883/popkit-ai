@@ -16,10 +16,10 @@ import sys
 import json
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 # Add shared-py to path for utilities
-sys.path.insert(0, str(Path.home() / '.claude' / 'popkit' / 'packages' / 'shared-py'))
+sys.path.insert(0, str(Path.home() / ".claude" / "popkit" / "packages" / "shared-py"))
 
 try:
     from popkit_shared.utils.capture_state import capture_project_state
@@ -28,21 +28,34 @@ try:
     from popkit_shared.utils.session_recorder import (
         get_recorder,
         record_reasoning,
-        record_recommendation
+        record_recommendation,
     )
     from popkit_shared.utils.flag_profiles import ProfileManager
+
     HAS_UTILITIES = True
 except ImportError:
     HAS_UTILITIES = False
     ProfileManager = None
-    print("[WARN] PopKit utilities not available - running in degraded mode", file=sys.stderr)
+    print(
+        "[WARN] PopKit utilities not available - running in degraded mode",
+        file=sys.stderr,
+    )
 
 # Try relative import (when used as package), fall back to direct import
 try:
-    from .ready_to_code_score import calculate_ready_to_code_score, get_score_interpretation
-    from .morning_report_generator import generate_morning_report, generate_quick_summary
+    from .ready_to_code_score import (
+        calculate_ready_to_code_score,
+        get_score_interpretation,
+    )
+    from .morning_report_generator import (
+        generate_morning_report,
+        generate_quick_summary,
+    )
 except ImportError:
-    from ready_to_code_score import calculate_ready_to_code_score, get_score_interpretation
+    from ready_to_code_score import (
+        calculate_ready_to_code_score,
+        get_score_interpretation,
+    )
     from morning_report_generator import generate_morning_report, generate_quick_summary
 
 
@@ -61,7 +74,7 @@ class MorningWorkflow:
         skip_services: bool = False,
         skip_deployments: bool = False,
         full: bool = False,
-        no_nightly: bool = False
+        no_nightly: bool = False,
     ):
         """
         Initialize morning workflow.
@@ -92,7 +105,7 @@ class MorningWorkflow:
         # Initialize measurement if requested
         self.measurement = None
         if measure and HAS_UTILITIES:
-            self.measurement = RoutineMeasurement('morning')
+            self.measurement = RoutineMeasurement("morning")
 
         # Initialize cache if optimized mode
         self.cache = None
@@ -115,9 +128,9 @@ class MorningWorkflow:
         """
         if self.recorder:
             record_reasoning(
-                'workflow_start',
-                'Starting morning routine workflow',
-                {'quick': self.quick, 'optimized': self.optimized}
+                "workflow_start",
+                "Starting morning routine workflow",
+                {"quick": self.quick, "optimized": self.optimized},
             )
 
         # Step 1: Restore previous session
@@ -129,7 +142,7 @@ class MorningWorkflow:
         state = self._collect_state()
 
         # Add session data to state
-        state['session'] = session_data
+        state["session"] = session_data
 
         # Step 3: Calculate Ready to Code Score
         print("[3/5] Calculating Ready to Code Score...", file=sys.stderr)
@@ -137,9 +150,9 @@ class MorningWorkflow:
 
         if self.recorder:
             record_reasoning(
-                'score_calculated',
-                f'Ready to Code Score: {score}/100',
-                {'score': score, 'breakdown': breakdown}
+                "score_calculated",
+                f"Ready to Code Score: {score}/100",
+                {"score": score, "breakdown": breakdown},
             )
 
         # Step 4: Generate report
@@ -157,25 +170,29 @@ class MorningWorkflow:
         if self.recorder:
             interpretation = get_score_interpretation(score)
             record_recommendation(
-                'morning_complete',
-                interpretation['recommendation'],
+                "morning_complete",
+                interpretation["recommendation"],
                 score,
-                interpretation['interpretation']
+                interpretation["interpretation"],
             )
 
         # Finalize measurement
         if self.measurement:
-            self.measurement.finalize({
-                'ready_to_code_score': score,
-                'services_running': len(state.get('services', {}).get('running_services', [])),
-                'commits_behind': state.get('git', {}).get('behind_remote', 0)
-            })
+            self.measurement.finalize(
+                {
+                    "ready_to_code_score": score,
+                    "services_running": len(
+                        state.get("services", {}).get("running_services", [])
+                    ),
+                    "commits_behind": state.get("git", {}).get("behind_remote", 0),
+                }
+            )
 
         return {
-            'score': score,
-            'report': report,
-            'state': state,
-            'breakdown': breakdown
+            "score": score,
+            "report": report,
+            "state": state,
+            "breakdown": breakdown,
         }
 
     def _restore_session(self) -> Dict[str, Any]:
@@ -185,33 +202,39 @@ class MorningWorkflow:
         Returns:
             Dict with session data including 'restored' flag
         """
-        status_file = Path('STATUS.json')
-        session_data = {'restored': False}
+        status_file = Path("STATUS.json")
+        session_data = {"restored": False}
 
         if status_file.exists():
             try:
                 status = json.loads(status_file.read_text())
 
                 # Extract last session info
-                last_nightly = status.get('last_nightly_routine', {})
-                git_status = status.get('git_status', {})
+                last_nightly = status.get("last_nightly_routine", {})
+                git_status = status.get("git_status", {})
 
                 session_data = {
-                    'restored': True,
-                    'last_nightly_score': last_nightly.get('sleep_score', 'unknown'),
-                    'last_nightly_time': last_nightly.get('executed_at', 'unknown'),
-                    'last_work_summary': git_status.get('action_required') or 'Check git status',
-                    'previous_branch': git_status.get('current_branch', 'unknown'),
-                    'stashed_count': git_status.get('stashes', 0)
+                    "restored": True,
+                    "last_nightly_score": last_nightly.get("sleep_score", "unknown"),
+                    "last_nightly_time": last_nightly.get("executed_at", "unknown"),
+                    "last_work_summary": git_status.get("action_required")
+                    or "Check git status",
+                    "previous_branch": git_status.get("current_branch", "unknown"),
+                    "stashed_count": git_status.get("stashes", 0),
                 }
 
-                print(f"[OK] Session restored from {status.get('timestamp', 'unknown')}", file=sys.stderr)
+                print(
+                    f"[OK] Session restored from {status.get('timestamp', 'unknown')}",
+                    file=sys.stderr,
+                )
 
             except (json.JSONDecodeError, Exception) as e:
                 print(f"[WARN] Could not restore session: {e}", file=sys.stderr)
-                session_data = {'restored': False}
+                session_data = {"restored": False}
         else:
-            print("[WARN] No STATUS.json found - cannot restore session", file=sys.stderr)
+            print(
+                "[WARN] No STATUS.json found - cannot restore session", file=sys.stderr
+            )
 
         return session_data
 
@@ -229,7 +252,7 @@ class MorningWorkflow:
             # Use capture_state utility
             if self.optimized and self.cache and not self.no_cache:
                 # Try cache first
-                cached_state = self.cache.get('morning_state')
+                cached_state = self.cache.get("morning_state")
                 if cached_state:
                     print("[CACHE] Using cached state", file=sys.stderr)
                     return cached_state
@@ -242,7 +265,7 @@ class MorningWorkflow:
 
             # Cache for next time if optimized
             if self.optimized and self.cache:
-                self.cache.set('morning_state', state, ttl=300)  # 5 min TTL
+                self.cache.set("morning_state", state, ttl=300)  # 5 min TTL
 
             return state
         else:
@@ -252,7 +275,11 @@ class MorningWorkflow:
     def _add_morning_checks(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """Add morning-specific checks to state."""
         import subprocess
-        import shlex
+
+        # Import git_utils from popkit-dev hooks
+        hooks_path = Path(__file__).parents[3] / "popkit-dev" / "hooks"
+        sys.path.insert(0, str(hooks_path))
+        from git_utils import git_fetch_prune, count_stale_branches
 
         def run_command(cmd: list, stderr_redirect: bool = False) -> str:
             """
@@ -269,87 +296,115 @@ class MorningWorkflow:
                         capture_output=True,
                         text=True,
                         timeout=10,
-                        stderr=subprocess.DEVNULL
+                        stderr=subprocess.DEVNULL,
                     )
                 else:
                     result = subprocess.run(
-                        cmd,
-                        capture_output=True,
-                        text=True,
-                        timeout=10
+                        cmd, capture_output=True, text=True, timeout=10
                     )
                 return result.stdout.strip()
             except Exception:
                 return ""
 
         # Check how many commits behind remote
-        git_data = state.get('git', {})
-        branch = git_data.get('branch', 'main')
+        git_data = state.get("git", {})
+        branch = git_data.get("branch", "main")
 
-        # Fetch to get latest remote info (silent)
-        run_command(['git', 'fetch', '--quiet'])
+        # Run git fetch --prune to clean up stale remote tracking branches
+        prune_success, prune_message = git_fetch_prune()
+        if prune_success:
+            print(f"[OK] {prune_message}", file=sys.stderr)
+        else:
+            print(f"[WARN] {prune_message}", file=sys.stderr)
 
         # Check commits behind - SECURE: branch is passed as a separate argument
-        behind_output = run_command(['git', 'rev-list', '--count', f'HEAD..origin/{branch}'])
+        behind_output = run_command(
+            ["git", "rev-list", "--count", f"HEAD..origin/{branch}"]
+        )
         try:
-            git_data['behind_remote'] = int(behind_output) if behind_output else 0
+            git_data["behind_remote"] = int(behind_output) if behind_output else 0
         except ValueError:
-            git_data['behind_remote'] = 0
+            git_data["behind_remote"] = 0
+
+        # Count stale local branches (whose remote tracking branches were deleted)
+        git_data["stale_branches"] = count_stale_branches()
 
         # Check for outdated dependencies
         # This is a placeholder - would need actual implementation based on package manager
-        deps_data = {
-            'outdated_count': 0,
-            'outdated_packages': []
-        }
+        deps_data = {"outdated_count": 0, "outdated_packages": []}
 
         # Try pnpm outdated (if available)
         # SECURE: stderr redirect handled via subprocess parameter
-        pnpm_outdated = run_command(['pnpm', 'outdated', '--json'], stderr_redirect=True)
+        pnpm_outdated = run_command(
+            ["pnpm", "outdated", "--json"], stderr_redirect=True
+        )
         if pnpm_outdated:
             try:
                 outdated = json.loads(pnpm_outdated)
-                deps_data['outdated_count'] = len(outdated)
-                deps_data['outdated_packages'] = [
+                deps_data["outdated_count"] = len(outdated)
+                deps_data["outdated_packages"] = [
                     f"{name}: {info.get('current')} → {info.get('latest')}"
                     for name, info in list(outdated.items())[:10]
                 ]
             except json.JSONDecodeError:
                 pass
 
-        state['dependencies'] = deps_data
+        state["dependencies"] = deps_data
 
         # Check PRs needing review
-        github_data = state.get('github', {})
+        github_data = state.get("github", {})
         try:
-            prs_json = run_command(['gh', 'pr', 'list', '--state', 'open', '--json', 'number,title,updatedAt,reviewDecision'])
+            prs_json = run_command(
+                [
+                    "gh",
+                    "pr",
+                    "list",
+                    "--state",
+                    "open",
+                    "--json",
+                    "number,title,updatedAt,reviewDecision",
+                ]
+            )
             if prs_json:
                 prs = json.loads(prs_json)
                 # PRs with no review decision or requested changes
-                github_data['prs_needing_review'] = [
-                    pr for pr in prs
-                    if pr.get('reviewDecision') in [None, 'REVIEW_REQUIRED', 'CHANGES_REQUESTED']
+                github_data["prs_needing_review"] = [
+                    pr
+                    for pr in prs
+                    if pr.get("reviewDecision")
+                    in [None, "REVIEW_REQUIRED", "CHANGES_REQUESTED"]
                 ]
             else:
-                github_data['prs_needing_review'] = []
+                github_data["prs_needing_review"] = []
         except (json.JSONDecodeError, Exception):
-            github_data['prs_needing_review'] = []
+            github_data["prs_needing_review"] = []
 
         # Check issues needing triage (no assignee or no labels)
         try:
-            issues_json = run_command(['gh', 'issue', 'list', '--state', 'open', '--json', 'number,title,assignees,labels'])
+            issues_json = run_command(
+                [
+                    "gh",
+                    "issue",
+                    "list",
+                    "--state",
+                    "open",
+                    "--json",
+                    "number,title,assignees,labels",
+                ]
+            )
             if issues_json:
                 issues = json.loads(issues_json)
-                github_data['issues_needing_triage'] = [
-                    issue for issue in issues
-                    if not issue.get('assignees') or not issue.get('labels')
+                github_data["issues_needing_triage"] = [
+                    issue
+                    for issue in issues
+                    if not issue.get("assignees") or not issue.get("labels")
                 ]
             else:
-                github_data['issues_needing_triage'] = []
+                github_data["issues_needing_triage"] = []
         except (json.JSONDecodeError, Exception):
-            github_data['issues_needing_triage'] = []
+            github_data["issues_needing_triage"] = []
 
-        state['github'] = github_data
+        state["github"] = github_data
 
         return state
 
@@ -366,23 +421,20 @@ class MorningWorkflow:
                 cmd: Command as list of arguments
             """
             try:
-                result = subprocess.run(
-                    cmd,
-                    capture_output=True,
-                    text=True,
-                    timeout=10
-                )
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
                 return result.stdout.strip()
             except Exception as e:
                 print(f"[WARN] Command failed: {' '.join(cmd)} - {e}", file=sys.stderr)
                 return ""
 
         # Git state
-        run_command(['git', 'fetch', '--quiet'])  # Fetch to get latest remote info
+        run_command(["git", "fetch", "--quiet"])  # Fetch to get latest remote info
 
-        branch = run_command(['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
+        branch = run_command(["git", "rev-parse", "--abbrev-ref", "HEAD"])
         # SECURE: branch is passed as separate argument, safe from injection
-        behind_output = run_command(['git', 'rev-list', '--count', f'HEAD..origin/{branch}'])
+        behind_output = run_command(
+            ["git", "rev-list", "--count", f"HEAD..origin/{branch}"]
+        )
 
         try:
             behind_count = int(behind_output) if behind_output else 0
@@ -390,38 +442,57 @@ class MorningWorkflow:
             behind_count = 0
 
         # Count stashes without pipes - SECURE
-        stash_list = run_command(['git', 'stash', 'list'])
+        stash_list = run_command(["git", "stash", "list"])
         stash_count = len(stash_list.splitlines()) if stash_list else 0
 
         git_state = {
-            'branch': branch,
-            'behind_remote': behind_count,
-            'uncommitted_files': len(run_command(['git', 'status', '--porcelain']).splitlines()),
-            'stashes': stash_count
+            "branch": branch,
+            "behind_remote": behind_count,
+            "uncommitted_files": len(
+                run_command(["git", "status", "--porcelain"]).splitlines()
+            ),
+            "stashes": stash_count,
         }
 
         # GitHub state (if gh CLI available)
-        github_state = {
-            'prs_needing_review': [],
-            'issues_needing_triage': []
-        }
+        github_state = {"prs_needing_review": [], "issues_needing_triage": []}
 
-        if shutil.which('gh'):
+        if shutil.which("gh"):
             try:
-                prs_json = run_command(['gh', 'pr', 'list', '--state', 'open', '--json', 'number,title,reviewDecision'])
+                prs_json = run_command(
+                    [
+                        "gh",
+                        "pr",
+                        "list",
+                        "--state",
+                        "open",
+                        "--json",
+                        "number,title,reviewDecision",
+                    ]
+                )
                 if prs_json:
                     prs = json.loads(prs_json)
-                    github_state['prs_needing_review'] = [
-                        pr for pr in prs
-                        if pr.get('reviewDecision') in [None, 'REVIEW_REQUIRED']
+                    github_state["prs_needing_review"] = [
+                        pr
+                        for pr in prs
+                        if pr.get("reviewDecision") in [None, "REVIEW_REQUIRED"]
                     ]
 
-                issues_json = run_command(['gh', 'issue', 'list', '--state', 'open', '--json', 'number,title,assignees'])
+                issues_json = run_command(
+                    [
+                        "gh",
+                        "issue",
+                        "list",
+                        "--state",
+                        "open",
+                        "--json",
+                        "number,title,assignees",
+                    ]
+                )
                 if issues_json:
                     issues = json.loads(issues_json)
-                    github_state['issues_needing_triage'] = [
-                        issue for issue in issues
-                        if not issue.get('assignees')
+                    github_state["issues_needing_triage"] = [
+                        issue for issue in issues if not issue.get("assignees")
                     ]
             except json.JSONDecodeError:
                 pass
@@ -429,13 +500,20 @@ class MorningWorkflow:
         # Services state - SECURE: Use ps with specific arguments (no pipes)
         # Get list of running processes that match our patterns
         running_services = []
-        for service_name in ['node', 'npm', 'pnpm', 'redis-server', 'postgres', 'supabase']:
+        for service_name in [
+            "node",
+            "npm",
+            "pnpm",
+            "redis-server",
+            "postgres",
+            "supabase",
+        ]:
             try:
                 result = subprocess.run(
-                    ['pgrep', '-f', service_name],
+                    ["pgrep", "-f", service_name],
                     capture_output=True,
                     text=True,
-                    timeout=5
+                    timeout=5,
                 )
                 if result.returncode == 0 and result.stdout.strip():
                     running_services.append(service_name)
@@ -443,29 +521,23 @@ class MorningWorkflow:
                 pass
 
         services_state = {
-            'running_services': running_services,
-            'required_services': []  # Would be configured per project
+            "running_services": running_services,
+            "required_services": [],  # Would be configured per project
         }
 
         # Dependencies state (placeholder)
-        dependencies_state = {
-            'outdated_count': 0,
-            'outdated_packages': []
-        }
+        dependencies_state = {"outdated_count": 0, "outdated_packages": []}
 
         return {
-            'git': git_state,
-            'github': github_state,
-            'services': services_state,
-            'dependencies': dependencies_state,
-            'timestamp': datetime.now().isoformat()
+            "git": git_state,
+            "github": github_state,
+            "services": services_state,
+            "dependencies": dependencies_state,
+            "timestamp": datetime.now().isoformat(),
         }
 
     def _capture_session_state(
-        self,
-        score: int,
-        breakdown: Dict[str, Dict[str, Any]],
-        state: Dict[str, Any]
+        self, score: int, breakdown: Dict[str, Dict[str, Any]], state: Dict[str, Any]
     ) -> None:
         """
         Capture session state to STATUS.json.
@@ -473,7 +545,7 @@ class MorningWorkflow:
         This manually updates STATUS.json since we can't invoke
         the pop-session-capture skill from within Python.
         """
-        status_file = Path('STATUS.json')
+        status_file = Path("STATUS.json")
 
         # Load existing STATUS.json if it exists
         existing_status = {}
@@ -484,38 +556,38 @@ class MorningWorkflow:
                 print("[WARN] Could not parse existing STATUS.json", file=sys.stderr)
 
         # Update with morning routine data
-        git_state = state.get('git', {})
-        github_state = state.get('github', {})
-        session_data = state.get('session', {})
+        git_state = state.get("git", {})
+        state.get("github", {})
+        session_data = state.get("session", {})
 
         updated_status = {
             **existing_status,  # Preserve existing data
-            'session_id': f"morning-{datetime.now().strftime('%Y-%m-%d-%H%M%S')}",
-            'timestamp': datetime.now().isoformat(),
-            'last_morning_routine': {
-                'executed_at': datetime.now().isoformat(),
-                'ready_to_code_score': f"{score}/100",
-                'breakdown': breakdown,
-                'session_restored': session_data.get('restored', False)
+            "session_id": f"morning-{datetime.now().strftime('%Y-%m-%d-%H%M%S')}",
+            "timestamp": datetime.now().isoformat(),
+            "last_morning_routine": {
+                "executed_at": datetime.now().isoformat(),
+                "ready_to_code_score": f"{score}/100",
+                "breakdown": breakdown,
+                "session_restored": session_data.get("restored", False),
             },
-            'git_status': {
-                'current_branch': git_state.get('branch', 'unknown'),
-                'commits_behind_remote': git_state.get('behind_remote', 0),
-                'uncommitted_files': git_state.get('uncommitted_files', 0),
-                'stashes': git_state.get('stashes', 0)
+            "git_status": {
+                "current_branch": git_state.get("branch", "unknown"),
+                "commits_behind_remote": git_state.get("behind_remote", 0),
+                "uncommitted_files": git_state.get("uncommitted_files", 0),
+                "stashes": git_state.get("stashes", 0),
             },
-            'metrics': {
-                **existing_status.get('metrics', {}),
-                'ready_to_code_score': f"{score}/100"
-            }
+            "metrics": {
+                **existing_status.get("metrics", {}),
+                "ready_to_code_score": f"{score}/100",
+            },
         }
 
         # Add recommendations
-        interpretation = get_score_interpretation(score)
-        updated_status['recommendations'] = {
-            **existing_status.get('recommendations', {}),
-            'before_coding': self._get_setup_recommendations(score, state),
-            'todays_focus': self._get_today_recommendations(state)
+        get_score_interpretation(score)
+        updated_status["recommendations"] = {
+            **existing_status.get("recommendations", {}),
+            "before_coding": self._get_setup_recommendations(score, state),
+            "todays_focus": self._get_today_recommendations(state),
         }
 
         # Write updated STATUS.json
@@ -529,20 +601,24 @@ class MorningWorkflow:
         """Generate setup recommendations before coding."""
         recommendations = []
 
-        services_data = state.get('services', {})
-        required = services_data.get('required_services', [])
-        running = services_data.get('running_services', [])
+        services_data = state.get("services", {})
+        required = services_data.get("required_services", [])
+        running = services_data.get("running_services", [])
         missing = [s for s in required if s not in running]
 
         if missing:
             recommendations.append(f"Start dev services: {', '.join(missing)}")
 
-        git_data = state.get('git', {})
-        if git_data.get('behind_remote', 0) > 0:
-            recommendations.append(f"Sync with remote: git pull ({git_data['behind_remote']} commits behind)")
+        git_data = state.get("git", {})
+        if git_data.get("behind_remote", 0) > 0:
+            recommendations.append(
+                f"Sync with remote: git pull ({git_data['behind_remote']} commits behind)"
+            )
 
         if score < 60:
-            recommendations.append("⚠️ Low Ready to Code Score - address setup issues first")
+            recommendations.append(
+                "⚠️ Low Ready to Code Score - address setup issues first"
+            )
 
         return recommendations if recommendations else ["All set! Ready to code."]
 
@@ -550,12 +626,12 @@ class MorningWorkflow:
         """Generate today's focus recommendations."""
         recommendations = []
 
-        github_data = state.get('github', {})
-        prs = len(github_data.get('prs_needing_review', []))
+        github_data = state.get("github", {})
+        prs = len(github_data.get("prs_needing_review", []))
         if prs > 0:
             recommendations.append(f"Review {prs} pending PRs")
 
-        issues = len(github_data.get('issues_needing_triage', []))
+        issues = len(github_data.get("issues_needing_triage", []))
         if issues > 0:
             recommendations.append(f"Triage {issues} open issues")
 
@@ -572,12 +648,12 @@ def print_profiles():
 
     print("\nAvailable Morning Routine Profiles:\n")
 
-    for profile in ProfileManager.list_profiles('routine'):
+    for profile in ProfileManager.list_profiles("routine"):
         print(f"  {profile.name}")
         print(f"    {profile.description}")
         print(f"    Use case: {profile.use_case}")
         if profile.flags:
-            flag_names = [f'--{k.replace("_", "-")}' for k in profile.flags.keys()]
+            flag_names = [f"--{k.replace('_', '-')}" for k in profile.flags.keys()]
             print(f"    Flags: {', '.join(flag_names)}")
         else:
             print("    Flags: (defaults)")
@@ -648,37 +724,55 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description='PopKit Morning Routine',
-        epilog='Use --help-detailed for detailed examples'
+        description="PopKit Morning Routine",
+        epilog="Use --help-detailed for detailed examples",
     )
 
     # Profile selection
     parser.add_argument(
-        '--profile',
-        choices=['minimal', 'standard', 'thorough', 'ci'],
-        help='Profile preset (minimal|standard|thorough|ci)'
+        "--profile",
+        choices=["minimal", "standard", "thorough", "ci"],
+        help="Profile preset (minimal|standard|thorough|ci)",
     )
 
     # Individual flags (existing)
-    parser.add_argument('--quick', action='store_true', help='Quick one-line summary')
-    parser.add_argument('--measure', action='store_true', help='Track performance metrics')
-    parser.add_argument('--optimized', action='store_true', help='Use caching')
-    parser.add_argument('--no-cache', action='store_true', help='Force fresh execution')
+    parser.add_argument("--quick", action="store_true", help="Quick one-line summary")
+    parser.add_argument(
+        "--measure", action="store_true", help="Track performance metrics"
+    )
+    parser.add_argument("--optimized", action="store_true", help="Use caching")
+    parser.add_argument("--no-cache", action="store_true", help="Force fresh execution")
 
     # New flags (documented but not yet fully implemented - Issue #105)
-    parser.add_argument('--simple', action='store_true', help='Markdown tables instead of ASCII')
-    parser.add_argument('--skip-tests', action='store_true', help='Skip test execution')
-    parser.add_argument('--skip-services', action='store_true', help='Skip service health checks')
-    parser.add_argument('--skip-deployments', action='store_true', help='Skip deployment status')
-    parser.add_argument('--full', action='store_true', help='Include all checks (slower)')
-    parser.add_argument('--no-nightly', action='store_true', help='Skip nightly comparison')
+    parser.add_argument(
+        "--simple", action="store_true", help="Markdown tables instead of ASCII"
+    )
+    parser.add_argument("--skip-tests", action="store_true", help="Skip test execution")
+    parser.add_argument(
+        "--skip-services", action="store_true", help="Skip service health checks"
+    )
+    parser.add_argument(
+        "--skip-deployments", action="store_true", help="Skip deployment status"
+    )
+    parser.add_argument(
+        "--full", action="store_true", help="Include all checks (slower)"
+    )
+    parser.add_argument(
+        "--no-nightly", action="store_true", help="Skip nightly comparison"
+    )
 
     # Help tiers (Issue #105)
-    parser.add_argument('--help-detailed', action='store_true', help='Show detailed examples')
-    parser.add_argument('--help-full', action='store_true', help='Show full documentation')
+    parser.add_argument(
+        "--help-detailed", action="store_true", help="Show detailed examples"
+    )
+    parser.add_argument(
+        "--help-full", action="store_true", help="Show full documentation"
+    )
 
     # List profiles (Issue #105)
-    parser.add_argument('--list-profiles', action='store_true', help='List available profiles')
+    parser.add_argument(
+        "--list-profiles", action="store_true", help="List available profiles"
+    )
 
     args = parser.parse_args()
 
@@ -698,22 +792,22 @@ def main():
 
     # Collect flags from args
     flags = {
-        'quick': args.quick,
-        'measure': args.measure,
-        'optimized': args.optimized,
-        'no_cache': args.no_cache,
-        'simple': args.simple,
-        'skip_tests': args.skip_tests,
-        'skip_services': args.skip_services,
-        'skip_deployments': args.skip_deployments,
-        'full': args.full,
-        'no_nightly': args.no_nightly
+        "quick": args.quick,
+        "measure": args.measure,
+        "optimized": args.optimized,
+        "no_cache": args.no_cache,
+        "simple": args.simple,
+        "skip_tests": args.skip_tests,
+        "skip_services": args.skip_services,
+        "skip_deployments": args.skip_deployments,
+        "full": args.full,
+        "no_nightly": args.no_nightly,
     }
 
     # Apply profile if specified (Issue #105)
     if args.profile and ProfileManager:
         try:
-            flags = ProfileManager.apply_profile(args.profile, flags, 'routine')
+            flags = ProfileManager.apply_profile(args.profile, flags, "routine")
             print(f"[PROFILE] Using '{args.profile}' profile", file=sys.stderr)
         except ValueError as e:
             print(f"[ERROR] {e}", file=sys.stderr)
@@ -728,11 +822,11 @@ def main():
     result = workflow.run()
 
     # Print report
-    print(result['report'])
+    print(result["report"])
 
     # Exit with score as status (0-100)
-    sys.exit(0 if result['score'] >= 70 else 1)
+    sys.exit(0 if result["score"] >= 70 else 1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
