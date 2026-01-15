@@ -283,7 +283,10 @@ class MorningWorkflow:
         import subprocess
 
         # Import git_utils from popkit-dev hooks
-        hooks_path = Path(__file__).parents[3] / "popkit-dev" / "hooks"
+        # __file__ is in packages/popkit-dev/skills/pop-morning/scripts/
+        # parents[3] gets us to popkit-dev/
+        popkit_dev_root = Path(__file__).parents[3]  # packages/popkit-dev
+        hooks_path = popkit_dev_root / "hooks"
         sys.path.insert(0, str(hooks_path))
         from git_utils import git_fetch_prune, count_stale_branches
 
