@@ -303,7 +303,7 @@ class BugDetector:
             query = " ".join(query_parts[:2])
 
             # Search patterns
-            patterns = self.pattern_client.search_patterns(query=query, limit=3, threshold=0.6)
+            patterns = self.pattern_client.search_patterns(query=query, per_page=3, min_score=0.6)
 
             return [
                 {

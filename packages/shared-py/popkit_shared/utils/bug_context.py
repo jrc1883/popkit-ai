@@ -834,15 +834,13 @@ def search_patterns_for_bug(ctx: BugContext) -> List[Dict[str, Any]]:
 
         query = " ".join(query_parts)
 
-        # Build context
-        pattern_context = PatternContext(
-            languages=[ctx.project.language] if ctx.project and ctx.project.language else [],
-            frameworks=[ctx.project.framework] if ctx.project and ctx.project.framework else [],
-        )
+        # Extract pattern search parameters
+        language = ctx.project.language if ctx.project and ctx.project.language else None
+        framework = ctx.project.framework if ctx.project and ctx.project.framework else None
 
         # Search patterns
         patterns = client.search_patterns(
-            query=query, context=pattern_context, limit=3, threshold=0.6
+            query=query, language=language, framework=framework, per_page=3, min_score=0.6
         )
 
         return [
