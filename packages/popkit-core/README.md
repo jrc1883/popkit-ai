@@ -332,6 +332,43 @@ This plugin is part of the PopKit ecosystem and depends on `popkit-shared`.
 /popkit-core:bug share --issue 123
 ```
 
+## Hooks
+
+PopKit Core provides several lifecycle hooks that enhance workflow quality and automation:
+
+### Pre-Commit Hook
+
+**Automatic Ruff validation** on staged Python files before every commit (Issue #156):
+
+- **Auto-fixes**: Automatically fixes formatting and linting issues
+- **Re-staging**: Auto-fixed files are re-staged transparently
+- **Fail-open**: If Ruff is not installed, commits proceed with a warning
+- **Performance**: Completes in <5s for typical commits
+- **Blocking**: Only blocks on unfixable errors
+
+**Behavior**:
+1. Detects staged Python files (`git diff --cached --name-only`)
+2. Runs `ruff check --fix` on staged files
+3. Runs `ruff format` on staged files
+4. Re-stages files if auto-fixes were applied
+5. Blocks commit only on unfixable errors
+
+**Installation**:
+```bash
+pip install ruff  # Required for pre-commit validation
+```
+
+**Note**: The hook is automatically active once PopKit Core is installed. No additional setup required.
+
+### Other Hooks
+
+- **SessionStart**: Initializes session context, loads agents, checks for updates
+- **PreToolUse**: Validates tool usage and agent coordination
+- **PostToolUse**: Captures metrics, observability, and quality gates
+- **Stop**: Cleanup and session summary
+
+See `hooks/hooks.json` for complete hook configuration.
+
 ## Privacy & Data
 
 PopKit Core respects user privacy:

@@ -358,7 +358,6 @@ class NightlyWorkflow:
 
         # Update with nightly routine data
         git_state = state.get("git", {})
-        state.get("github", {})
 
         updated_status = {
             **existing_status,  # Preserve existing data
@@ -389,7 +388,6 @@ class NightlyWorkflow:
         }
 
         # Add recommendations
-        get_score_interpretation(score)
         updated_status["recommendations"] = {
             **existing_status.get("recommendations", {}),
             "before_leaving": self._get_before_leaving_recommendations(score, state),

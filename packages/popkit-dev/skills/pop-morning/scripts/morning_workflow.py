@@ -557,7 +557,6 @@ class MorningWorkflow:
 
         # Update with morning routine data
         git_state = state.get("git", {})
-        state.get("github", {})
         session_data = state.get("session", {})
 
         updated_status = {
@@ -583,7 +582,6 @@ class MorningWorkflow:
         }
 
         # Add recommendations
-        get_score_interpretation(score)
         updated_status["recommendations"] = {
             **existing_status.get("recommendations", {}),
             "before_coding": self._get_setup_recommendations(score, state),
