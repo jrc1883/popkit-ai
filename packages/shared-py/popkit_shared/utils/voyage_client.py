@@ -320,6 +320,9 @@ class VoyageClient:
                     time.sleep(delay)
                     delay *= 2
 
+        # Ensure we always have an error to raise
+        if last_error is None:
+            raise RuntimeError("API call failed after all retry attempts")
         raise last_error
 
     def _wait_for_rate_limit(self, estimated_tokens: int) -> None:
@@ -397,7 +400,7 @@ if __name__ == "__main__":
         print("Set: export VOYAGE_API_KEY=your-key-here")
         sys.exit(1)
 
-    print(f"API Key: {client.api_key[:8]}...{client.api_key[-4:]}")
+    print("API Key: [REDACTED]")
     print(f"Model: {client.model}")
 
     # Test single embedding
