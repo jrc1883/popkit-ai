@@ -12,10 +12,9 @@ Output:
 """
 
 import json
-import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 
 def find_project_root(start_path: Path = None) -> Path:
@@ -61,26 +60,30 @@ def analyze_skill_context(project_dir: Path) -> Dict[str, Any]:
                     "name": skill_dir.name,
                     "tokens": tokens,
                     "chars": len(content),
-                    "lines": len(content.split("\n"))
+                    "lines": len(content.split("\n")),
                 }
 
                 # Check against targets
                 if tokens > 4000:
                     skill_data["status"] = "critical"
-                    issues.append({
-                        "skill": skill_dir.name,
-                        "issue": "Exceeds 4000 token limit",
-                        "tokens": tokens,
-                        "severity": "high"
-                    })
+                    issues.append(
+                        {
+                            "skill": skill_dir.name,
+                            "issue": "Exceeds 4000 token limit",
+                            "tokens": tokens,
+                            "severity": "high",
+                        }
+                    )
                 elif tokens > 2000:
                     skill_data["status"] = "warning"
-                    issues.append({
-                        "skill": skill_dir.name,
-                        "issue": "Exceeds 2000 token target",
-                        "tokens": tokens,
-                        "severity": "medium"
-                    })
+                    issues.append(
+                        {
+                            "skill": skill_dir.name,
+                            "issue": "Exceeds 2000 token target",
+                            "tokens": tokens,
+                            "severity": "medium",
+                        }
+                    )
                 else:
                     skill_data["status"] = "good"
 
@@ -94,7 +97,7 @@ def analyze_skill_context(project_dir: Path) -> Dict[str, Any]:
         "total_tokens": total_tokens,
         "average_tokens": round(total_tokens / len(skills)) if skills else 0,
         "skills": skills[:20],  # Top 20 by size
-        "issues": issues
+        "issues": issues,
     }
 
 
@@ -110,7 +113,9 @@ def analyze_agent_context(project_dir: Path) -> Dict[str, Any]:
 
     # Check tier directories
     for tier_dir in agents_dir.iterdir():
-        if tier_dir.is_dir() and (tier_dir.name.startswith("tier-") or tier_dir.name == "feature-workflow"):
+        if tier_dir.is_dir() and (
+            tier_dir.name.startswith("tier-") or tier_dir.name == "feature-workflow"
+        ):
             tier_name = tier_dir.name
 
             for agent_dir in tier_dir.iterdir():
@@ -125,28 +130,32 @@ def analyze_agent_context(project_dir: Path) -> Dict[str, Any]:
                             "name": agent_dir.name,
                             "tier": tier_name,
                             "tokens": tokens,
-                            "chars": len(content)
+                            "chars": len(content),
                         }
 
                         # Check against targets
                         if tokens > 8000:
                             agent_data["status"] = "critical"
-                            issues.append({
-                                "agent": agent_dir.name,
-                                "tier": tier_name,
-                                "issue": "Exceeds 8000 token limit",
-                                "tokens": tokens,
-                                "severity": "high"
-                            })
+                            issues.append(
+                                {
+                                    "agent": agent_dir.name,
+                                    "tier": tier_name,
+                                    "issue": "Exceeds 8000 token limit",
+                                    "tokens": tokens,
+                                    "severity": "high",
+                                }
+                            )
                         elif tokens > 5000:
                             agent_data["status"] = "warning"
-                            issues.append({
-                                "agent": agent_dir.name,
-                                "tier": tier_name,
-                                "issue": "Exceeds 5000 token target",
-                                "tokens": tokens,
-                                "severity": "medium"
-                            })
+                            issues.append(
+                                {
+                                    "agent": agent_dir.name,
+                                    "tier": tier_name,
+                                    "issue": "Exceeds 5000 token target",
+                                    "tokens": tokens,
+                                    "severity": "medium",
+                                }
+                            )
                         else:
                             agent_data["status"] = "good"
 
@@ -160,7 +169,7 @@ def analyze_agent_context(project_dir: Path) -> Dict[str, Any]:
         "total_tokens": total_tokens,
         "average_tokens": round(total_tokens / len(agents)) if agents else 0,
         "agents": agents[:20],
-        "issues": issues
+        "issues": issues,
     }
 
 
@@ -179,21 +188,19 @@ def analyze_command_context(project_dir: Path) -> Dict[str, Any]:
         tokens = estimate_tokens(content)
         total_tokens += tokens
 
-        cmd_data = {
-            "name": cmd_file.stem,
-            "tokens": tokens,
-            "chars": len(content)
-        }
+        cmd_data = {"name": cmd_file.stem, "tokens": tokens, "chars": len(content)}
 
         # Commands should be concise
         if tokens > 3000:
             cmd_data["status"] = "warning"
-            issues.append({
-                "command": cmd_file.stem,
-                "issue": "Command doc exceeds 3000 tokens",
-                "tokens": tokens,
-                "severity": "low"
-            })
+            issues.append(
+                {
+                    "command": cmd_file.stem,
+                    "issue": "Command doc exceeds 3000 tokens",
+                    "tokens": tokens,
+                    "severity": "low",
+                }
+            )
         else:
             cmd_data["status"] = "good"
 
@@ -206,7 +213,7 @@ def analyze_command_context(project_dir: Path) -> Dict[str, Any]:
         "total_tokens": total_tokens,
         "average_tokens": round(total_tokens / len(commands)) if commands else 0,
         "commands": commands[:10],
-        "issues": issues
+        "issues": issues,
     }
 
 
@@ -231,33 +238,29 @@ def analyze_config_size(project_dir: Path) -> Dict[str, Any]:
             config_data = {
                 "path": config_path,
                 "tokens": tokens,
-                "threshold": threshold
+                "threshold": threshold,
             }
 
             if tokens > threshold:
                 config_data["status"] = "warning"
-                issues.append({
-                    "config": config_path,
-                    "issue": f"Exceeds {threshold} token target",
-                    "tokens": tokens,
-                    "severity": "medium"
-                })
+                issues.append(
+                    {
+                        "config": config_path,
+                        "issue": f"Exceeds {threshold} token target",
+                        "tokens": tokens,
+                        "severity": "medium",
+                    }
+                )
             else:
                 config_data["status"] = "good"
 
             configs.append(config_data)
 
-    return {
-        "configs": configs,
-        "issues": issues
-    }
+    return {"configs": configs, "issues": issues}
 
 
 def calculate_context_score(
-    skills: Dict,
-    agents: Dict,
-    commands: Dict,
-    configs: Dict
+    skills: Dict, agents: Dict, commands: Dict, configs: Dict
 ) -> Dict[str, Any]:
     """Calculate overall context efficiency score."""
     score = 100
@@ -287,10 +290,10 @@ def calculate_context_score(
     return {
         "score": max(0, min(100, score)),
         "total_context_tokens": (
-            skills.get("total_tokens", 0) +
-            agents.get("total_tokens", 0) +
-            commands.get("total_tokens", 0)
-        )
+            skills.get("total_tokens", 0)
+            + agents.get("total_tokens", 0)
+            + commands.get("total_tokens", 0)
+        ),
     }
 
 
@@ -334,14 +337,14 @@ def main():
             "skills": skills,
             "agents": agents,
             "commands": commands,
-            "configs": configs
+            "configs": configs,
         },
         "all_issues": (
-            skills.get("issues", []) +
-            agents.get("issues", []) +
-            commands.get("issues", []) +
-            configs.get("issues", [])
-        )
+            skills.get("issues", [])
+            + agents.get("issues", [])
+            + commands.get("issues", [])
+            + configs.get("issues", [])
+        ),
     }
 
     print(json.dumps(report, indent=2))

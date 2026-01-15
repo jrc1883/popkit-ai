@@ -25,11 +25,9 @@ Usage:
 import json
 import os
 import time
-import threading
-from typing import Any, Callable, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Set
 from urllib.request import Request, urlopen
 from urllib.error import URLError, HTTPError
-from dataclasses import dataclass
 
 # Import Redis interface abstractions from shared package
 # Extracted from this file to packages/shared-py during Epic #580 cleanup (2025-12-29)
@@ -57,6 +55,7 @@ DEFAULT_TTL = 86400 * 7
 # =============================================================================
 # UPSTASH REST API CLIENT
 # =============================================================================
+
 
 class UpstashRedisClient(BaseRedisClient):
     """
@@ -86,7 +85,7 @@ class UpstashRedisClient(BaseRedisClient):
         """Execute Redis command via Upstash REST API."""
         headers = {
             "Authorization": f"Bearer {self.token}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         request = Request(self.url, method="POST")
@@ -94,11 +93,11 @@ class UpstashRedisClient(BaseRedisClient):
             request.add_header(key, value)
 
         # Command as JSON array
-        body = json.dumps(list(args)).encode('utf-8')
+        body = json.dumps(list(args)).encode("utf-8")
 
         try:
             with urlopen(request, body, timeout=10) as response:
-                result = json.loads(response.read().decode('utf-8'))
+                result = json.loads(response.read().decode("utf-8"))
                 return result.get("result")
         except HTTPError as e:
             if e.code == 401:
@@ -153,7 +152,7 @@ class UpstashRedisClient(BaseRedisClient):
         if not result or not isinstance(result, list):
             return {}
         # Convert flat list to dict
-        return {result[i]: result[i+1] for i in range(0, len(result), 2)}
+        return {result[i]: result[i + 1] for i in range(0, len(result), 2)}
 
     def hdel(self, name: str, *keys: str) -> int:
         if not keys:
@@ -203,9 +202,16 @@ class UpstashRedisClient(BaseRedisClient):
 
         # XADD with MAXLEN to prevent unbounded growth
         result = self._execute(
-            "XADD", stream_key, "MAXLEN", "~", "1000", "*",
-            "message", message,
-            "timestamp", str(int(time.time() * 1000))
+            "XADD",
+            stream_key,
+            "MAXLEN",
+            "~",
+            "1000",
+            "*",
+            "message",
+            message,
+            "timestamp",
+            str(int(time.time() * 1000)),
         )
 
         # Set TTL on stream
@@ -213,7 +219,7 @@ class UpstashRedisClient(BaseRedisClient):
 
         return 1 if result else 0
 
-    def pubsub(self) -> 'UpstashPubSub':
+    def pubsub(self) -> "UpstashPubSub":
         """Get pub/sub interface using streams."""
         return UpstashPubSub(self)
 
@@ -221,7 +227,13 @@ class UpstashRedisClient(BaseRedisClient):
     # STREAM OPERATIONS
     # =========================================================================
 
-    def xadd(self, name: str, fields: Dict[str, str], id: str = "*", maxlen: Optional[int] = None) -> str:
+    def xadd(
+        self,
+        name: str,
+        fields: Dict[str, str],
+        id: str = "*",
+        maxlen: Optional[int] = None,
+    ) -> str:
         args = ["XADD", name]
         if maxlen:
             args.extend(["MAXLEN", "~", str(maxlen)])
@@ -231,7 +243,12 @@ class UpstashRedisClient(BaseRedisClient):
         result = self._execute(*args)
         return result if isinstance(result, str) else ""
 
-    def xread(self, streams: Dict[str, str], count: Optional[int] = None, block: Optional[int] = None) -> List:
+    def xread(
+        self,
+        streams: Dict[str, str],
+        count: Optional[int] = None,
+        block: Optional[int] = None,
+    ) -> List:
         args = ["XREAD"]
         if count:
             args.extend(["COUNT", str(count)])
@@ -243,14 +260,18 @@ class UpstashRedisClient(BaseRedisClient):
         result = self._execute(*args)
         return result if isinstance(result, list) else []
 
-    def xrange(self, name: str, min: str = "-", max: str = "+", count: Optional[int] = None) -> List:
+    def xrange(
+        self, name: str, min: str = "-", max: str = "+", count: Optional[int] = None
+    ) -> List:
         args = ["XRANGE", name, min, max]
         if count:
             args.extend(["COUNT", str(count)])
         result = self._execute(*args)
         return result if isinstance(result, list) else []
 
-    def xrevrange(self, name: str, max: str = "+", min: str = "-", count: Optional[int] = None) -> List:
+    def xrevrange(
+        self, name: str, max: str = "+", min: str = "-", count: Optional[int] = None
+    ) -> List:
         args = ["XREVRANGE", name, max, min]
         if count:
             args.extend(["COUNT", str(count)])
@@ -344,12 +365,14 @@ class UpstashPubSub(BasePubSub):
                     for i in range(0, len(fields), 2):
                         msg_data[fields[i]] = fields[i + 1]
 
-                    messages.append({
-                        "type": "message",
-                        "channel": channel,
-                        "data": msg_data.get("message", ""),
-                        "pattern": None
-                    })
+                    messages.append(
+                        {
+                            "type": "message",
+                            "channel": channel,
+                            "data": msg_data.get("message", ""),
+                            "pattern": None,
+                        }
+                    )
 
         return messages
 
@@ -361,6 +384,7 @@ class UpstashPubSub(BasePubSub):
 # =============================================================================
 # FACTORY FUNCTION
 # =============================================================================
+
 
 def get_redis_client() -> BaseRedisClient:
     """
@@ -493,6 +517,7 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"[FAIL] {e}")
             import traceback
+
             traceback.print_exc()
 
     else:

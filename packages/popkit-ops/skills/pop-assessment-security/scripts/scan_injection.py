@@ -15,7 +15,7 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Dict, List
 
 
 # Injection patterns with CWE mappings
@@ -26,7 +26,7 @@ INJECTION_PATTERNS = {
         "severity": "critical",
         "cwe": "CWE-78",
         "deduction": 25,
-        "description": "Potential command injection via os.system() with string concatenation"
+        "description": "Potential command injection via os.system() with string concatenation",
     },
     "IP-002": {
         "name": "Command Injection - subprocess shell=True",
@@ -34,7 +34,7 @@ INJECTION_PATTERNS = {
         "severity": "critical",
         "cwe": "CWE-78",
         "deduction": 25,
-        "description": "Potential command injection via subprocess with shell=True"
+        "description": "Potential command injection via subprocess with shell=True",
     },
     "IP-003": {
         "name": "Command Injection - eval",
@@ -42,7 +42,7 @@ INJECTION_PATTERNS = {
         "severity": "critical",
         "cwe": "CWE-94",
         "deduction": 25,
-        "description": "Potential code injection via eval() with user input"
+        "description": "Potential code injection via eval() with user input",
     },
     "IP-004": {
         "name": "Command Injection - exec",
@@ -50,7 +50,7 @@ INJECTION_PATTERNS = {
         "severity": "critical",
         "cwe": "CWE-94",
         "deduction": 25,
-        "description": "Potential code injection via exec() with user input"
+        "description": "Potential code injection via exec() with user input",
     },
     "IP-005": {
         "name": "Path Traversal",
@@ -58,7 +58,7 @@ INJECTION_PATTERNS = {
         "severity": "high",
         "cwe": "CWE-22",
         "deduction": 20,
-        "description": "Potential path traversal via unsanitized file path"
+        "description": "Potential path traversal via unsanitized file path",
     },
     "IP-006": {
         "name": "SQL Injection",
@@ -66,7 +66,7 @@ INJECTION_PATTERNS = {
         "severity": "critical",
         "cwe": "CWE-89",
         "deduction": 25,
-        "description": "Potential SQL injection via string formatting"
+        "description": "Potential SQL injection via string formatting",
     },
     "IP-007": {
         "name": "Template Injection",
@@ -74,7 +74,7 @@ INJECTION_PATTERNS = {
         "severity": "high",
         "cwe": "CWE-94",
         "deduction": 20,
-        "description": "Potential template injection via user input"
+        "description": "Potential template injection via user input",
     },
     "IP-008": {
         "name": "Unsafe Deserialization",
@@ -82,8 +82,8 @@ INJECTION_PATTERNS = {
         "severity": "critical",
         "cwe": "CWE-502",
         "deduction": 25,
-        "description": "Potential unsafe deserialization"
-    }
+        "description": "Potential unsafe deserialization",
+    },
 }
 
 # Safe patterns that should not be flagged
@@ -93,15 +93,11 @@ SAFE_PATTERNS = [
     r"shlex\.split",
     r"subprocess\.run\s*\(\s*\[",  # List form is safer
     r"parameterized",
-    r"prepared_statement"
+    r"prepared_statement",
 ]
 
 # File patterns to scan
-SCAN_PATTERNS = [
-    "**/*.py",
-    "**/*.js",
-    "**/*.ts"
-]
+SCAN_PATTERNS = ["**/*.py", "**/*.js", "**/*.ts"]
 
 # Files to exclude
 EXCLUDE_PATTERNS = [
@@ -112,7 +108,7 @@ EXCLUDE_PATTERNS = [
     "**/__pycache__/**",
     "**/test*/**",
     "**/*.test.*",
-    "**/*.spec.*"
+    "**/*.spec.*",
 ]
 
 
@@ -125,7 +121,9 @@ def find_plugin_root(start_path: Path = None) -> Path:
     for _ in range(5):
         if (current / ".claude-plugin" / "plugin.json").exists():
             return current
-        if (current / "packages" / "plugin" / ".claude-plugin" / "plugin.json").exists():
+        if (
+            current / "packages" / "plugin" / ".claude-plugin" / "plugin.json"
+        ).exists():
             return current / "packages" / "plugin"
         current = current.parent
 
@@ -157,8 +155,8 @@ def scan_file(filepath: Path, plugin_dir: Path) -> List[Dict]:
     findings = []
 
     try:
-        content = filepath.read_text(encoding='utf-8', errors='ignore')
-        lines = content.split('\n')
+        content = filepath.read_text(encoding="utf-8", errors="ignore")
+        lines = content.split("\n")
     except Exception:
         return findings
 
@@ -176,7 +174,7 @@ def scan_file(filepath: Path, plugin_dir: Path) -> List[Dict]:
                 # Check context (previous/next lines for mitigation)
                 context_start = max(0, line_num - 3)
                 context_end = min(len(lines), line_num + 2)
-                context = '\n'.join(lines[context_start:context_end])
+                context = "\n".join(lines[context_start:context_end])
 
                 if has_safe_pattern(context):
                     continue
@@ -186,17 +184,19 @@ def scan_file(filepath: Path, plugin_dir: Path) -> List[Dict]:
                 if len(line.strip()) > 80:
                     display_line += "..."
 
-                findings.append({
-                    "id": check_id,
-                    "name": check["name"],
-                    "file": rel_path,
-                    "line": line_num,
-                    "content": display_line,
-                    "severity": check["severity"],
-                    "cwe": check["cwe"],
-                    "description": check["description"],
-                    "deduction": check["deduction"]
-                })
+                findings.append(
+                    {
+                        "id": check_id,
+                        "name": check["name"],
+                        "file": rel_path,
+                        "line": line_num,
+                        "content": display_line,
+                        "severity": check["severity"],
+                        "cwe": check["cwe"],
+                        "description": check["description"],
+                        "deduction": check["deduction"],
+                    }
+                )
 
     return findings
 
@@ -215,7 +215,7 @@ def main():
             "score": 0,
             "max_score": 100,
             "error": "Plugin directory not found",
-            "findings": []
+            "findings": [],
         }
         print(json.dumps(result, indent=2))
         return 1
@@ -261,10 +261,10 @@ def main():
             "high": by_severity.get("high", 0),
             "medium": by_severity.get("medium", 0),
             "by_cwe": by_cwe,
-            "total_deduction": total_deduction
+            "total_deduction": total_deduction,
         },
         "patterns_checked": list(INJECTION_PATTERNS.keys()),
-        "findings": all_findings
+        "findings": all_findings,
     }
 
     print(json.dumps(result, indent=2))

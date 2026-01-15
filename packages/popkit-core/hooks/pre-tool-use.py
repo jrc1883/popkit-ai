@@ -11,15 +11,15 @@ import json
 import re
 import requests
 import sqlite3
-import xml.etree.ElementTree as ET
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Tuple
 
 # Import error code system (Issue #104)
 try:
-    sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'shared-py'))
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent / "shared-py"))
     from popkit_shared.utils.error_codes import ErrorRegistry, ErrorResponse
+
     HAS_ERROR_CODES = True
 except ImportError:
     HAS_ERROR_CODES = False
@@ -32,6 +32,7 @@ PREMIUM_CHECKER_AVAILABLE = False
 # Import skill state tracker for AskUserQuestion enforcement (Issue #159)
 try:
     from skill_state import get_tracker, SkillStateTracker
+
     SKILL_STATE_AVAILABLE = True
 except ImportError:
     SKILL_STATE_AVAILABLE = False
@@ -39,48 +40,55 @@ except ImportError:
 # Import tool filter for context optimization (Issue #275)
 try:
     from tool_filter import ToolFilter, filter_tools_for_workflow
+
     TOOL_FILTER_AVAILABLE = True
 except ImportError:
     TOOL_FILTER_AVAILABLE = False
 
 # Import session recorder for forensic analysis (Issue #603)
 try:
-    sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'shared-py'))
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent / "shared-py"))
     from popkit_shared.utils.session_recorder import is_recording_enabled, get_recorder
+
     SESSION_RECORDER_AVAILABLE = True
 except ImportError:
     SESSION_RECORDER_AVAILABLE = False
 
 # Import XML parser for robust ElementTree-based parsing (XML Testing Strategy)
 try:
-    from popkit_shared.utils.xml_parser import parse_problem_context, parse_project_context
+    from popkit_shared.utils.xml_parser import (
+        parse_problem_context,
+        parse_project_context,
+    )
+
     XML_PARSER_AVAILABLE = True
 except ImportError:
     XML_PARSER_AVAILABLE = False
 
+
 class PreToolUseHook:
     def __init__(self):
-        self.claude_dir = Path.home() / '.claude'
-        self.config_dir = self.claude_dir / 'config'
+        self.claude_dir = Path.home() / ".claude"
+        self.config_dir = self.claude_dir / "config"
         self.session_id = self.get_session_id()
         self.observability_endpoint = "http://localhost:8001/events"
         self.orchestrator_endpoint = "http://localhost:8005/coordinate"
-        
+
         # Load configuration
         self.safety_rules = self.load_safety_rules()
         self.coordination_rules = self.load_coordination_rules()
         self.tool_permissions = self.load_tool_permissions()
-        
+
         # Initialize context database
         self.context_db = self.init_context_db()
-        
+
     def get_session_id(self) -> str:
         """Get current session ID from environment or generate new one"""
-        session_id = os.environ.get('CLAUDE_SESSION_ID')
+        session_id = os.environ.get("CLAUDE_SESSION_ID")
         if not session_id:
             # Try to get from recent context
             try:
-                db_path = self.config_dir / 'context-memory.db'
+                db_path = self.config_dir / "context-memory.db"
                 if db_path.exists():
                     conn = sqlite3.connect(str(db_path))
                     cursor = conn.execute(
@@ -92,9 +100,9 @@ class PreToolUseHook:
                     conn.close()
             except Exception:
                 pass
-        
+
         return session_id or "unknown"
-    
+
     def load_safety_rules(self) -> Dict[str, Any]:
         """Load safety rules for dangerous operations (Issue #213 - platform-aware paths)"""
         return {
@@ -153,7 +161,7 @@ class PreToolUseHook:
                     r"C:\\Windows\\Temp\\",
                     r"%TEMP%",
                     r"~\/\.cache\/",
-                ]
+                ],
             },
             "dangerous_tools": [
                 "Bash:rm -rf",
@@ -162,75 +170,108 @@ class PreToolUseHook:
                 "Write:/etc/",
                 "Write:/root/",
                 "Edit:/etc/",
-            ]
+            ],
         }
-    
+
     def load_coordination_rules(self) -> Dict[str, Any]:
         """Load agent coordination and conflict resolution rules"""
         return {
             "tool_conflicts": {
                 "Edit": ["Write", "MultiEdit"],
                 "Write": ["Edit", "MultiEdit"],
-                "MultiEdit": ["Edit", "Write"]
+                "MultiEdit": ["Edit", "Write"],
             },
             "agent_priorities": {
                 "security": ["security-auditor", "security-tester"],
-                "performance": ["performance-optimizer", "load-tester", "performance-profiler"],
+                "performance": [
+                    "performance-optimizer",
+                    "load-tester",
+                    "performance-profiler",
+                ],
                 "quality": ["code-reviewer", "quality-assurance-coordinator"],
-                "testing": ["automated-tester", "manual-tester", "compatibility-tester"]
+                "testing": [
+                    "automated-tester",
+                    "manual-tester",
+                    "compatibility-tester",
+                ],
             },
             "sequential_operations": [
                 ["security-auditor", "code-reviewer"],
                 ["test-writer-fixer", "automated-tester"],
-                ["ui-designer", "accessibility-guardian"]
+                ["ui-designer", "accessibility-guardian"],
             ],
             "parallel_operations": [
                 ["performance-optimizer", "seo-optimizer"],
                 ["growth-hacker", "tiktok-strategist"],
-                ["feedback-synthesizer", "trend-researcher"]
-            ]
+                ["feedback-synthesizer", "trend-researcher"],
+            ],
         }
-    
+
     def load_tool_permissions(self) -> Dict[str, Dict[str, Any]]:
         """Load tool permission matrix by context"""
         return {
             "production": {
                 "allowed_tools": ["Read", "Grep", "Glob", "LS", "WebFetch"],
                 "restricted_tools": ["Write", "Edit", "MultiEdit", "Bash"],
-                "requires_confirmation": ["Write", "Edit", "MultiEdit"]
+                "requires_confirmation": ["Write", "Edit", "MultiEdit"],
             },
             "development": {
-                "allowed_tools": ["Read", "Write", "Edit", "MultiEdit", "Grep", "Glob", "LS", "Bash", "WebFetch"],
+                "allowed_tools": [
+                    "Read",
+                    "Write",
+                    "Edit",
+                    "MultiEdit",
+                    "Grep",
+                    "Glob",
+                    "LS",
+                    "Bash",
+                    "WebFetch",
+                ],
                 "restricted_tools": [],
-                "requires_confirmation": ["Bash:rm", "Bash:sudo", "Write:/"]
+                "requires_confirmation": ["Bash:rm", "Bash:sudo", "Write:/"],
             },
             "testing": {
-                "allowed_tools": ["Read", "Write", "Edit", "MultiEdit", "Grep", "Glob", "LS", "Bash", "WebFetch"],
+                "allowed_tools": [
+                    "Read",
+                    "Write",
+                    "Edit",
+                    "MultiEdit",
+                    "Grep",
+                    "Glob",
+                    "LS",
+                    "Bash",
+                    "WebFetch",
+                ],
                 "restricted_tools": ["Bash:rm -rf", "Write:/etc/"],
-                "requires_confirmation": ["Bash", "Write"]
-            }
+                "requires_confirmation": ["Bash", "Write"],
+            },
         }
-    
+
     def init_context_db(self) -> Optional[sqlite3.Connection]:
         """Initialize context database connection"""
         try:
-            db_path = self.config_dir / 'context-memory.db'
+            db_path = self.config_dir / "context-memory.db"
             if db_path.exists():
                 return sqlite3.connect(str(db_path))
         except Exception:
             pass
         return None
-    
+
     def detect_environment_context(self) -> str:
         """Detect current environment context (production, development, testing)"""
         cwd = os.getcwd()
 
         # Check for production indicators
-        if any(indicator in cwd.lower() for indicator in ['prod', 'production', 'live', 'deploy']):
+        if any(
+            indicator in cwd.lower()
+            for indicator in ["prod", "production", "live", "deploy"]
+        ):
             return "production"
 
         # Check for testing indicators
-        if any(indicator in cwd.lower() for indicator in ['test', 'testing', 'spec', 'qa']):
+        if any(
+            indicator in cwd.lower() for indicator in ["test", "testing", "spec", "qa"]
+        ):
             return "testing"
 
         # Check for development indicators or default
@@ -274,7 +315,9 @@ class PreToolUseHook:
 
         return paths
 
-    def check_safety_violations(self, tool_name: str, tool_args: Dict[str, Any]) -> List[str]:
+    def check_safety_violations(
+        self, tool_name: str, tool_args: Dict[str, Any]
+    ) -> List[str]:
         """Check for safety violations in tool usage (Issue #213 - platform-aware paths)"""
         violations = []
 
@@ -294,67 +337,90 @@ class PreToolUseHook:
 
             for sensitive_pattern in sensitive_paths:
                 if re.search(sensitive_pattern, file_path, re.IGNORECASE):
-                    violations.append(f"Access to sensitive path blocked: {sensitive_pattern}")
+                    violations.append(
+                        f"Access to sensitive path blocked: {sensitive_pattern}"
+                    )
 
         # Check dangerous tool combinations
-        tool_signature = f"{tool_name}:{tool_args.get('command', tool_args.get('file_path', ''))}"
+        tool_signature = (
+            f"{tool_name}:{tool_args.get('command', tool_args.get('file_path', ''))}"
+        )
         for dangerous_tool in self.safety_rules["dangerous_tools"]:
             if dangerous_tool in tool_signature:
                 violations.append(f"Dangerous tool usage blocked: {dangerous_tool}")
 
         return violations
-    
-    def check_permission_requirements(self, tool_name: str, tool_args: Dict[str, Any], context: str) -> Tuple[bool, List[str]]:
+
+    def check_permission_requirements(
+        self, tool_name: str, tool_args: Dict[str, Any], context: str
+    ) -> Tuple[bool, List[str]]:
         """Check if tool usage requires special permissions or confirmation"""
-        permissions = self.tool_permissions.get(context, self.tool_permissions["development"])
+        permissions = self.tool_permissions.get(
+            context, self.tool_permissions["development"]
+        )
         warnings = []
-        
+
         # Check if tool is allowed
-        if tool_name not in permissions["allowed_tools"] and tool_name in permissions["restricted_tools"]:
+        if (
+            tool_name not in permissions["allowed_tools"]
+            and tool_name in permissions["restricted_tools"]
+        ):
             return False, [f"Tool {tool_name} is restricted in {context} environment"]
-        
+
         # Check if confirmation is required
-        tool_signature = f"{tool_name}:{tool_args.get('command', tool_args.get('file_path', ''))}"
+        tool_signature = (
+            f"{tool_name}:{tool_args.get('command', tool_args.get('file_path', ''))}"
+        )
         for confirmation_pattern in permissions["requires_confirmation"]:
             if confirmation_pattern in tool_signature:
-                warnings.append(f"Tool {tool_name} requires confirmation in {context} environment")
-        
+                warnings.append(
+                    f"Tool {tool_name} requires confirmation in {context} environment"
+                )
+
         return True, warnings
-    
-    def coordinate_with_agents(self, tool_name: str, tool_args: Dict[str, Any]) -> Dict[str, Any]:
+
+    def coordinate_with_agents(
+        self, tool_name: str, tool_args: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Coordinate tool usage with active agents"""
         coordination_result = {
             "conflicts": [],
             "recommendations": [],
             "agent_handoffs": [],
-            "sequential_requirements": []
+            "sequential_requirements": [],
         }
-        
+
         # Check for tool conflicts
         if tool_name in self.coordination_rules["tool_conflicts"]:
             conflicting_tools = self.coordination_rules["tool_conflicts"][tool_name]
             coordination_result["conflicts"] = [
                 f"Tool {tool_name} conflicts with: {', '.join(conflicting_tools)}"
             ]
-        
+
         # Get agent recommendations based on tool usage
         if tool_name == "Write" and "file_path" in tool_args:
             file_path = tool_args["file_path"]
-            if file_path.endswith(('.ts', '.tsx', '.js', '.jsx')):
-                coordination_result["recommendations"].append("Consider running code-reviewer after file modifications")
-            if file_path.endswith(('.test.ts', '.spec.ts')):
-                coordination_result["recommendations"].append("Consider running automated-tester after test file changes")
-        
+            if file_path.endswith((".ts", ".tsx", ".js", ".jsx")):
+                coordination_result["recommendations"].append(
+                    "Consider running code-reviewer after file modifications"
+                )
+            if file_path.endswith((".test.ts", ".spec.ts")):
+                coordination_result["recommendations"].append(
+                    "Consider running automated-tester after test file changes"
+                )
+
         # Check for required sequential operations
         for sequence in self.coordination_rules["sequential_operations"]:
             if len(sequence) > 1:
                 coordination_result["sequential_requirements"].append(
                     f"After completion, consider: {' → '.join(sequence[1:])}"
                 )
-        
+
         return coordination_result
-    
-    def log_pre_tool_event(self, tool_name: str, tool_args: Dict[str, Any], safety_check: Dict[str, Any]):
+
+    def log_pre_tool_event(
+        self, tool_name: str, tool_args: Dict[str, Any], safety_check: Dict[str, Any]
+    ):
         """Log pre-tool-use event to observability system"""
         try:
             event_data = {
@@ -367,23 +433,28 @@ class PreToolUseHook:
                 "metadata": {
                     "safety_check": safety_check,
                     "environment_context": self.detect_environment_context(),
-                    "working_directory": os.getcwd()
-                }
+                    "working_directory": os.getcwd(),
+                },
             }
-            
+
             response = requests.post(
-                self.observability_endpoint,
-                json=event_data,
-                timeout=2
+                self.observability_endpoint, json=event_data, timeout=2
             )
-            
+
             if response.status_code != 200:
-                print(f"Warning: Observability logging failed: {response.status_code}", file=sys.stderr)
-                
+                print(
+                    f"Warning: Observability logging failed: {response.status_code}",
+                    file=sys.stderr,
+                )
+
         except Exception as e:
-            print(f"Warning: Could not log to observability system: {e}", file=sys.stderr)
-    
-    def request_orchestration(self, tool_name: str, tool_args: Dict[str, Any], coordination: Dict[str, Any]) -> Optional[Dict]:
+            print(
+                f"Warning: Could not log to observability system: {e}", file=sys.stderr
+            )
+
+    def request_orchestration(
+        self, tool_name: str, tool_args: Dict[str, Any], coordination: Dict[str, Any]
+    ) -> Optional[Dict]:
         """Request orchestration guidance from orchestrator service"""
         try:
             orchestration_data = {
@@ -392,25 +463,26 @@ class PreToolUseHook:
                 "tool_args": tool_args,
                 "coordination_analysis": coordination,
                 "environment_context": self.detect_environment_context(),
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
-            
+
             response = requests.post(
-                self.orchestrator_endpoint,
-                json=orchestration_data,
-                timeout=3
+                self.orchestrator_endpoint, json=orchestration_data, timeout=3
             )
-            
+
             if response.status_code == 200:
                 return response.json()
             else:
-                print(f"Warning: Orchestration request failed: {response.status_code}", file=sys.stderr)
-                
+                print(
+                    f"Warning: Orchestration request failed: {response.status_code}",
+                    file=sys.stderr,
+                )
+
         except Exception as e:
             print(f"Warning: Could not connect to orchestrator: {e}", file=sys.stderr)
-        
+
         return None
-    
+
     def get_recent_context(self) -> Dict[str, Any]:
         """Get recent context from previous interactions"""
         context = {"recent_tools": [], "recent_agents": [], "project_context": {}}
@@ -420,23 +492,30 @@ class PreToolUseHook:
 
         try:
             # Get recent tool usage
-            cursor = self.context_db.execute("""
+            cursor = self.context_db.execute(
+                """
                 SELECT tool_name, COUNT(*) as usage_count
                 FROM pre_tool_events
                 WHERE session_id = ? AND timestamp > datetime('now', '-1 hour')
                 GROUP BY tool_name
                 ORDER BY usage_count DESC
                 LIMIT 5
-            """, (self.session_id,))
+            """,
+                (self.session_id,),
+            )
 
-            context["recent_tools"] = [{"tool": row[0], "count": row[1]} for row in cursor.fetchall()]
+            context["recent_tools"] = [
+                {"tool": row[0], "count": row[1]} for row in cursor.fetchall()
+            ]
 
         except Exception as e:
             print(f"Warning: Could not retrieve recent context: {e}", file=sys.stderr)
 
         return context
 
-    def parse_xml_context(self, conversation_history: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    def parse_xml_context(
+        self, conversation_history: List[Dict[str, Any]]
+    ) -> Optional[Dict[str, Any]]:
         """
         Parse XML context from recent messages for agent routing (Phase 1: XML Integration #516).
 
@@ -478,96 +557,155 @@ class PreToolUseHook:
                 if xml_start == -1 or xml_end == -1:
                     continue
 
-                xml_content = content[xml_start + len("<!-- XML Context (Invisible) -->"):xml_end].strip()
+                xml_content = content[
+                    xml_start + len("<!-- XML Context (Invisible) -->") : xml_end
+                ].strip()
 
                 # Try ElementTree parsing first (robust)
                 if XML_PARSER_AVAILABLE:
                     try:
                         # Look for problem-context element
-                        problem_match = re.search(r'<problem-context[^>]*>.*?</problem-context>', xml_content, re.DOTALL)
+                        problem_match = re.search(
+                            r"<problem-context[^>]*>.*?</problem-context>",
+                            xml_content,
+                            re.DOTALL,
+                        )
                         if problem_match:
                             problem_xml_str = problem_match.group(0)
                             problem_data = parse_problem_context(problem_xml_str)
 
-                            if problem_data and problem_data.get('category'):
+                            if problem_data and problem_data.get("category"):
                                 parsed_context = {
-                                    "category": problem_data.get('category'),
-                                    "severity": problem_data.get('severity'),
-                                    "workflow": problem_data.get('workflow')
+                                    "category": problem_data.get("category"),
+                                    "severity": problem_data.get("severity"),
+                                    "workflow": problem_data.get("workflow"),
                                 }
 
                                 # Parse project context for stack and infrastructure
-                                project_match = re.search(r'<project[^>]*>.*?</project>', xml_content, re.DOTALL)
+                                project_match = re.search(
+                                    r"<project[^>]*>.*?</project>",
+                                    xml_content,
+                                    re.DOTALL,
+                                )
                                 if project_match:
                                     project_xml_str = project_match.group(0)
-                                    project_data = parse_project_context(project_xml_str)
+                                    project_data = parse_project_context(
+                                        project_xml_str
+                                    )
 
                                     if project_data:
-                                        if project_data.get('stack'):
-                                            parsed_context["stack"] = project_data['stack']
-                                        if project_data.get('infrastructure'):
-                                            parsed_context["infrastructure"] = project_data['infrastructure']
+                                        if project_data.get("stack"):
+                                            parsed_context["stack"] = project_data[
+                                                "stack"
+                                            ]
+                                        if project_data.get("infrastructure"):
+                                            parsed_context["infrastructure"] = (
+                                                project_data["infrastructure"]
+                                            )
 
                                 return parsed_context
 
                     except Exception as e:
-                        print(f"ElementTree parsing failed, falling back to regex: {e}", file=sys.stderr)
+                        print(
+                            f"ElementTree parsing failed, falling back to regex: {e}",
+                            file=sys.stderr,
+                        )
                         # Fall through to regex fallback
 
                 # Fallback to regex parsing (backward compatibility)
                 parsed_context = {}
 
                 # Parse problem context (support both <problem> and <problem-context>)
-                problem_match = re.search(r'<problem-context[^>]*>(.*?)</problem-context>', xml_content, re.DOTALL)
+                problem_match = re.search(
+                    r"<problem-context[^>]*>(.*?)</problem-context>",
+                    xml_content,
+                    re.DOTALL,
+                )
                 if not problem_match:
-                    problem_match = re.search(r'<problem>(.*?)</problem>', xml_content, re.DOTALL)
+                    problem_match = re.search(
+                        r"<problem>(.*?)</problem>", xml_content, re.DOTALL
+                    )
 
                 if problem_match:
                     problem_xml = problem_match.group(1)
 
                     # Category (required)
-                    category_match = re.search(r'<category>(.*?)</category>', problem_xml)
+                    category_match = re.search(
+                        r"<category>(.*?)</category>", problem_xml
+                    )
                     if category_match:
                         parsed_context["category"] = category_match.group(1).strip()
 
                     # Severity (optional)
-                    severity_match = re.search(r'<severity>(.*?)</severity>', problem_xml)
+                    severity_match = re.search(
+                        r"<severity>(.*?)</severity>", problem_xml
+                    )
                     if severity_match:
                         parsed_context["severity"] = severity_match.group(1).strip()
 
                     # Workflow (optional) - store as string for backward compatibility
-                    workflow_match = re.search(r'<workflow>(.*?)</workflow>', problem_xml, re.DOTALL)
+                    workflow_match = re.search(
+                        r"<workflow>(.*?)</workflow>", problem_xml, re.DOTALL
+                    )
                     if workflow_match:
                         parsed_context["workflow"] = workflow_match.group(1).strip()
 
                 # Parse project context for stack and infrastructure
-                project_match = re.search(r'<project[^>]*>(.*?)</project>', xml_content, re.DOTALL)
+                project_match = re.search(
+                    r"<project[^>]*>(.*?)</project>", xml_content, re.DOTALL
+                )
                 if not project_match:
-                    project_match = re.search(r'<project-context>(.*?)</project-context>', xml_content, re.DOTALL)
+                    project_match = re.search(
+                        r"<project-context>(.*?)</project-context>",
+                        xml_content,
+                        re.DOTALL,
+                    )
 
                 if project_match:
                     project_xml = project_match.group(1)
 
                     # Extract stack (support both <technology> and <item>)
-                    stack_items = re.findall(r'<technology>(.*?)</technology>', project_xml)
+                    stack_items = re.findall(
+                        r"<technology>(.*?)</technology>", project_xml
+                    )
                     if not stack_items:
-                        stack_items = re.findall(r'<item>(.*?)</item>', project_xml)
+                        stack_items = re.findall(r"<item>(.*?)</item>", project_xml)
                     if stack_items:
                         parsed_context["stack"] = stack_items
 
                     # Extract infrastructure
-                    infra_match = re.search(r'<infrastructure>(.*?)</infrastructure>', project_xml, re.DOTALL)
+                    infra_match = re.search(
+                        r"<infrastructure>(.*?)</infrastructure>",
+                        project_xml,
+                        re.DOTALL,
+                    )
                     if infra_match:
                         infra_xml = infra_match.group(1)
                         infrastructure = {}
 
                         # Parse each infrastructure item (e.g., <redis>true</redis>)
-                        for service in ['redis', 'postgres', 'mongodb', 'mysql', 'elasticsearch',
-                                        'rabbitmq', 'kafka', 'docker', 'kubernetes', 'cloudflare',
-                                        'aws', 'gcp', 'azure']:
-                            service_match = re.search(f'<{service}>(.*?)</{service}>', infra_xml)
+                        for service in [
+                            "redis",
+                            "postgres",
+                            "mongodb",
+                            "mysql",
+                            "elasticsearch",
+                            "rabbitmq",
+                            "kafka",
+                            "docker",
+                            "kubernetes",
+                            "cloudflare",
+                            "aws",
+                            "gcp",
+                            "azure",
+                        ]:
+                            service_match = re.search(
+                                f"<{service}>(.*?)</{service}>", infra_xml
+                            )
                             if service_match:
-                                infrastructure[service] = service_match.group(1).strip().lower() == 'true'
+                                infrastructure[service] = (
+                                    service_match.group(1).strip().lower() == "true"
+                                )
 
                         parsed_context["infrastructure"] = infrastructure
 
@@ -619,7 +757,9 @@ class PreToolUseHook:
 
         # Category-to-agent mapping
         agent_map = {
-            "bug": "bug-whisperer" if severity in ["critical", "high"] else "code-reviewer",
+            "bug": "bug-whisperer"
+            if severity in ["critical", "high"]
+            else "code-reviewer",
             "feature": "refactoring-expert",
             "optimization": "performance-optimizer",
             "refactor": "refactoring-expert",
@@ -628,7 +768,7 @@ class PreToolUseHook:
             "docs": "documentation-maintainer",
             "documentation": "documentation-maintainer",
             "investigation": "code-reviewer",
-            "task": None  # Generic tasks don't need specific agent
+            "task": None,  # Generic tasks don't need specific agent
         }
 
         suggested_agent = agent_map.get(category)
@@ -637,24 +777,30 @@ class PreToolUseHook:
         infrastructure = xml_context.get("infrastructure", {})
 
         # If database-heavy task, consider query-optimizer
-        if category == "optimization" and any(db in infrastructure for db in ["postgres", "mysql", "mongodb"]):
+        if category == "optimization" and any(
+            db in infrastructure for db in ["postgres", "mysql", "mongodb"]
+        ):
             suggested_agent = "query-optimizer"
 
         # If security-related infrastructure detected, escalate to security-auditor
-        if any(sec in infrastructure for sec in ["redis", "elasticsearch"]) and category in ["bug", "feature"]:
+        if any(
+            sec in infrastructure for sec in ["redis", "elasticsearch"]
+        ) and category in ["bug", "feature"]:
             # Don't override, but note in metadata
             pass
 
         return suggested_agent
 
-    def store_pre_tool_context(self, tool_name: str, tool_args: Dict[str, Any], safety_result: Dict[str, Any]):
+    def store_pre_tool_context(
+        self, tool_name: str, tool_args: Dict[str, Any], safety_result: Dict[str, Any]
+    ):
         """Store pre-tool context for future reference"""
         if not self.context_db:
             return
-        
+
         try:
             # Create table if it doesn't exist
-            self.context_db.execute('''
+            self.context_db.execute("""
                 CREATE TABLE IF NOT EXISTS pre_tool_events (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     session_id TEXT NOT NULL,
@@ -665,32 +811,37 @@ class PreToolUseHook:
                     environment_context TEXT,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
-            ''')
-            
+            """)
+
             # Insert current event
-            self.context_db.execute('''
+            self.context_db.execute(
+                """
                 INSERT INTO pre_tool_events 
                 (session_id, timestamp, tool_name, tool_args, safety_result, environment_context)
                 VALUES (?, ?, ?, ?, ?, ?)
-            ''', (
-                self.session_id,
-                datetime.now().isoformat(),
-                tool_name,
-                json.dumps(tool_args),
-                json.dumps(safety_result),
-                self.detect_environment_context()
-            ))
-            
+            """,
+                (
+                    self.session_id,
+                    datetime.now().isoformat(),
+                    tool_name,
+                    json.dumps(tool_args),
+                    json.dumps(safety_result),
+                    self.detect_environment_context(),
+                ),
+            )
+
             self.context_db.commit()
-            
+
         except Exception as e:
             print(f"Warning: Could not store pre-tool context: {e}", file=sys.stderr)
-    
+
     # Premium gating removed (Epic #580, Issue #581)
     # All features work without API key - no feature gating or rate limiting
     # API key only adds semantic intelligence enhancements
 
-    def track_skill_invocation(self, tool_name: str, tool_args: Dict[str, Any]) -> Dict[str, Any]:
+    def track_skill_invocation(
+        self, tool_name: str, tool_args: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Track skill invocations for AskUserQuestion enforcement (Issue #159).
 
         Follows Anthropic's recommendation from the Hooks Guide:
@@ -740,22 +891,24 @@ class PreToolUseHook:
         """
         # Map tools to workflows
         workflow_map = {
-            'Edit': 'file-edit',
-            'Write': 'file-edit',
+            "Edit": "file-edit",
+            "Write": "file-edit",
         }
 
         # Check if this is a git operation
-        if tool_name == 'Bash':
-            command = tool_args.get('command', '')
-            if 'git' in command:
-                if 'commit' in command or 'add' in command:
-                    return 'git-commit'
+        if tool_name == "Bash":
+            command = tool_args.get("command", "")
+            if "git" in command:
+                if "commit" in command or "add" in command:
+                    return "git-commit"
             # Other bash operations get full access
-            return 'full-access'
+            return "full-access"
 
-        return workflow_map.get(tool_name, 'unknown')
+        return workflow_map.get(tool_name, "unknown")
 
-    def filter_tools_for_context(self, tool_name: str, tool_args: Dict[str, Any]) -> Dict[str, Any]:
+    def filter_tools_for_context(
+        self, tool_name: str, tool_args: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Apply tool filtering for context optimization (Issue #275).
 
@@ -777,8 +930,17 @@ class PreToolUseHook:
 
         # Get available tools (default set)
         available_tools = [
-            'Read', 'Write', 'Edit', 'Bash', 'Grep', 'Glob',
-            'Task', 'TodoWrite', 'WebFetch', 'WebSearch', 'AskUserQuestion'
+            "Read",
+            "Write",
+            "Edit",
+            "Bash",
+            "Grep",
+            "Glob",
+            "Task",
+            "TodoWrite",
+            "WebFetch",
+            "WebSearch",
+            "AskUserQuestion",
         ]
 
         # Apply filtering
@@ -794,11 +956,15 @@ class PreToolUseHook:
             "original_count": len(available_tools),
             "filtered_count": len(filtered_tools),
             "reduction": reduction,
-            "filtered_tools": filtered_tools
+            "filtered_tools": filtered_tools,
         }
 
-    def process_tool_request(self, tool_name: str, tool_args: Dict[str, Any],
-                             conversation_history: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
+    def process_tool_request(
+        self,
+        tool_name: str,
+        tool_args: Dict[str, Any],
+        conversation_history: Optional[List[Dict[str, Any]]] = None,
+    ) -> Dict[str, Any]:
         """Main processing function for tool requests"""
         result = {
             "action": "continue",
@@ -811,7 +977,7 @@ class PreToolUseHook:
             "recommendations": [],
             "premium_check": {},
             "xml_context": None,
-            "suggested_agent": None
+            "suggested_agent": None,
         }
 
         # Environment context detection
@@ -829,9 +995,15 @@ class PreToolUseHook:
 
                 # Log XML-based routing to stderr
                 if suggested_agent:
-                    print(f"🤖 XML-Based Routing: {xml_context.get('category', 'unknown')} → {suggested_agent}", file=sys.stderr)
+                    print(
+                        f"🤖 XML-Based Routing: {xml_context.get('category', 'unknown')} → {suggested_agent}",
+                        file=sys.stderr,
+                    )
                     if xml_context.get("severity"):
-                        print(f"   Severity: {xml_context.get('severity')}", file=sys.stderr)
+                        print(
+                            f"   Severity: {xml_context.get('severity')}",
+                            file=sys.stderr,
+                        )
 
         # Skill state tracking for AskUserQuestion enforcement (Issue #159)
         skill_tracking = self.track_skill_invocation(tool_name, tool_args)
@@ -842,8 +1014,14 @@ class PreToolUseHook:
         result["tool_filtering"] = tool_filtering
         if tool_filtering.get("filtered"):
             # Log filtering info to stderr (passthrough mode - not blocking)
-            print(f"🔧 Tool Filtering (Passthrough): {tool_filtering['workflow']}", file=sys.stderr)
-            print(f"   Tools: {tool_filtering['original_count']} → {tool_filtering['filtered_count']} ({tool_filtering['reduction']} filtered)", file=sys.stderr)
+            print(
+                f"🔧 Tool Filtering (Passthrough): {tool_filtering['workflow']}",
+                file=sys.stderr,
+            )
+            print(
+                f"   Tools: {tool_filtering['original_count']} → {tool_filtering['filtered_count']} ({tool_filtering['reduction']} filtered)",
+                file=sys.stderr,
+            )
 
         # Safety checks
         safety_violations = self.check_safety_violations(tool_name, tool_args)
@@ -861,33 +1039,41 @@ class PreToolUseHook:
         )
         if not permission_allowed:
             result["action"] = "block"
-            result["safety_check"] = {"passed": False, "violations": permission_warnings}
+            result["safety_check"] = {
+                "passed": False,
+                "violations": permission_warnings,
+            }
             return result
-        
+
         result["warnings"].extend(permission_warnings)
-        
+
         # Agent coordination
         coordination = self.coordinate_with_agents(tool_name, tool_args)
         result["coordination"] = coordination
         result["recommendations"].extend(coordination.get("recommendations", []))
-        
+
         # Orchestration request
-        orchestration_result = self.request_orchestration(tool_name, tool_args, coordination)
+        orchestration_result = self.request_orchestration(
+            tool_name, tool_args, coordination
+        )
         if orchestration_result:
             result["orchestration"] = orchestration_result
             if orchestration_result.get("action") == "modify":
-                result["tool_args"] = orchestration_result.get("modified_args", tool_args)
-        
+                result["tool_args"] = orchestration_result.get(
+                    "modified_args", tool_args
+                )
+
         # Get recent context
         result["recent_context"] = self.get_recent_context()
-        
+
         # Log event
         self.log_pre_tool_event(tool_name, tool_args, result["safety_check"])
-        
+
         # Store context
         self.store_pre_tool_context(tool_name, tool_args, result)
-        
+
         return result
+
 
 def main():
     """Main entry point for the hook - JSON stdin/stdout protocol"""
@@ -913,50 +1099,60 @@ def main():
                 if len(recorder.events) == 1:  # Only session_start event exists
                     transcript_path = input_data.get("transcript_path")
                     if transcript_path:
-                        recorder.record_event({
-                            "type": "metadata",
-                            "timestamp": datetime.now().isoformat(),
-                            "transcript_path": transcript_path
-                        })
+                        recorder.record_event(
+                            {
+                                "type": "metadata",
+                                "timestamp": datetime.now().isoformat(),
+                                "transcript_path": transcript_path,
+                            }
+                        )
 
-                recorder.record_event({
-                    "type": "tool_call_start",
-                    "timestamp": datetime.now().isoformat(),
-                    "tool_name": tool_name,
-                    "tool_use_id": input_data.get("tool_use_id"),  # For transcript correlation
-                    "parameters": tool_args
-                })
+                recorder.record_event(
+                    {
+                        "type": "tool_call_start",
+                        "timestamp": datetime.now().isoformat(),
+                        "tool_name": tool_name,
+                        "tool_use_id": input_data.get(
+                            "tool_use_id"
+                        ),  # For transcript correlation
+                        "parameters": tool_args,
+                    }
+                )
 
                 # Record assistant messages from conversation history for context
                 # This captures Claude's reasoning, analysis, and recommendations
                 if conversation_history:
                     # Look at recent messages (last 5) for assistant responses
                     for msg in reversed(conversation_history[-5:]):
-                        if msg.get('role') == 'assistant':
-                            content = msg.get('content', '')
+                        if msg.get("role") == "assistant":
+                            content = msg.get("content", "")
 
                             # Text messages contain reasoning/analysis
                             if isinstance(content, str) and content.strip():
-                                recorder.record_event({
-                                    "type": "assistant_message",
-                                    "timestamp": datetime.now().isoformat(),
-                                    "content": content,
-                                    "before_tool": tool_name
-                                })
+                                recorder.record_event(
+                                    {
+                                        "type": "assistant_message",
+                                        "timestamp": datetime.now().isoformat(),
+                                        "content": content,
+                                        "before_tool": tool_name,
+                                    }
+                                )
                             # Content can also be a list with tool_use/text blocks
                             elif isinstance(content, list):
                                 for block in content:
                                     if isinstance(block, dict):
                                         # Extract text blocks (reasoning)
-                                        if block.get('type') == 'text':
-                                            text = block.get('text', '').strip()
+                                        if block.get("type") == "text":
+                                            text = block.get("text", "").strip()
                                             if text:
-                                                recorder.record_event({
-                                                    "type": "assistant_message",
-                                                    "timestamp": datetime.now().isoformat(),
-                                                    "content": text,
-                                                    "before_tool": tool_name
-                                                })
+                                                recorder.record_event(
+                                                    {
+                                                        "type": "assistant_message",
+                                                        "timestamp": datetime.now().isoformat(),
+                                                        "content": text,
+                                                        "before_tool": tool_name,
+                                                    }
+                                                )
 
             except Exception as e:
                 # Don't block on recording failures
@@ -974,7 +1170,7 @@ def main():
             "warnings": result.get("warnings", []),
             "recommendations": result.get("recommendations", []),
             "xml_context": result.get("xml_context"),
-            "suggested_agent": result.get("suggested_agent")
+            "suggested_agent": result.get("suggested_agent"),
         }
 
         if result["action"] == "block":
@@ -984,14 +1180,17 @@ def main():
             # Use standardized error code for safety violations (Issue #104)
             if HAS_ERROR_CODES:
                 # Check if this is a destructive command (safety violation)
-                if any("destructive" in v.lower() or "dangerous" in v.lower() for v in result["safety_check"]["violations"]):
+                if any(
+                    "destructive" in v.lower() or "dangerous" in v.lower()
+                    for v in result["safety_check"]["violations"]
+                ):
                     error_info = ErrorResponse.create(
                         ErrorRegistry.S401_DESTRUCTIVE_CMD,
                         context={
                             "tool_name": tool_name,
-                            "violations": result["safety_check"]["violations"]
+                            "violations": result["safety_check"]["violations"],
                         },
-                        hook_name="pre-tool-use"
+                        hook_name="pre-tool-use",
                     )
                     # Merge error code info into response
                     response["code"] = error_info["code"]
@@ -1027,10 +1226,10 @@ def main():
                 ErrorRegistry.E001_JSON_PARSE,
                 context={
                     "parse_error": str(e),
-                    "line": getattr(e, 'lineno', None),
-                    "column": getattr(e, 'colno', None)
+                    "line": getattr(e, "lineno", None),
+                    "column": getattr(e, "colno", None),
                 },
-                hook_name="pre-tool-use"
+                hook_name="pre-tool-use",
             )
             response["decision"] = "block"  # Add hook-specific field
         else:
@@ -1044,6 +1243,7 @@ def main():
         response = {"error": str(e), "decision": "approve"}
         print(json.dumps(response))
         sys.exit(0)  # Don't block on errors
+
 
 if __name__ == "__main__":
     main()

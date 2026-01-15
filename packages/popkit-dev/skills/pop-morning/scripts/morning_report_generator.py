@@ -17,9 +17,7 @@ except ImportError:
 
 
 def generate_morning_report(
-    score: int,
-    breakdown: Dict[str, Dict[str, Any]],
-    state: Dict[str, Any]
+    score: int, breakdown: Dict[str, Dict[str, Any]], state: Dict[str, Any]
 ) -> str:
     """
     Generate complete morning routine report.
@@ -44,59 +42,56 @@ def generate_morning_report(
         "## Score Breakdown",
         "",
         format_breakdown_table(breakdown),
-        ""
+        "",
     ]
 
     # Add service status if services are not healthy
-    services_breakdown = breakdown.get('services_healthy', {})
-    if services_breakdown.get('points', 0) < services_breakdown.get('max', 20):
+    services_breakdown = breakdown.get("services_healthy", {})
+    if services_breakdown.get("points", 0) < services_breakdown.get("max", 20):
         report_lines.extend(_generate_service_status_section(state))
 
     # Add dependency updates if there are outdated packages
-    deps_breakdown = breakdown.get('dependencies_updated', {})
-    if deps_breakdown.get('points', 0) < deps_breakdown.get('max', 15):
+    deps_breakdown = breakdown.get("dependencies_updated", {})
+    if deps_breakdown.get("points", 0) < deps_breakdown.get("max", 15):
         report_lines.extend(_generate_dependencies_section(state))
 
     # Add branch sync status if behind remote
-    branches_breakdown = breakdown.get('branches_synced', {})
-    if branches_breakdown.get('points', 0) < branches_breakdown.get('max', 15):
+    branches_breakdown = breakdown.get("branches_synced", {})
+    if branches_breakdown.get("points", 0) < branches_breakdown.get("max", 15):
         report_lines.extend(_generate_sync_section(state))
 
     # Add PR review queue if there are PRs
-    prs_breakdown = breakdown.get('prs_reviewed', {})
-    if prs_breakdown.get('points', 0) < prs_breakdown.get('max', 15):
+    prs_breakdown = breakdown.get("prs_reviewed", {})
+    if prs_breakdown.get("points", 0) < prs_breakdown.get("max", 15):
         report_lines.extend(_generate_pr_section(state))
 
     # Add issue triage if there are issues
-    issues_breakdown = breakdown.get('issues_triaged', {})
-    if issues_breakdown.get('points', 0) < issues_breakdown.get('max', 15):
+    issues_breakdown = breakdown.get("issues_triaged", {})
+    if issues_breakdown.get("points", 0) < issues_breakdown.get("max", 15):
         report_lines.extend(_generate_issues_section(state))
 
     # Add recommendations
-    report_lines.extend([
-        "## 📋 Recommendations",
-        "",
-        "**Before Starting Work:**"
-    ])
-    report_lines.extend([f"- {rec}" for rec in _generate_setup_recommendations(score, state)])
+    report_lines.extend(["## 📋 Recommendations", "", "**Before Starting Work:**"])
+    report_lines.extend(
+        [f"- {rec}" for rec in _generate_setup_recommendations(score, state)]
+    )
 
-    report_lines.extend([
-        "",
-        "**Today's Focus:**"
-    ])
+    report_lines.extend(["", "**Today's Focus:**"])
     report_lines.extend([f"- {rec}" for rec in _generate_today_recommendations(state)])
 
     # Add STATUS.json confirmation
-    report_lines.extend([
-        "",
-        "---",
-        "",
-        "STATUS.json updated ✅",
-        "Morning session initialized. Ready to code!",
-        "",
-        "## 🎯 Next Steps",
-        ""
-    ])
+    report_lines.extend(
+        [
+            "",
+            "---",
+            "",
+            "STATUS.json updated ✅",
+            "Morning session initialized. Ready to code!",
+            "",
+            "## 🎯 Next Steps",
+            "",
+        ]
+    )
 
     # Add PopKit Way ending: AskUserQuestion instructions
     report_lines.extend(_generate_ask_user_question_section(score, breakdown, state))
@@ -105,9 +100,7 @@ def generate_morning_report(
 
 
 def generate_quick_summary(
-    score: int,
-    breakdown: Dict[str, Dict[str, Any]],
-    state: Dict[str, Any]
+    score: int, breakdown: Dict[str, Dict[str, Any]], state: Dict[str, Any]
 ) -> str:
     """
     Generate one-line summary for quick mode.
@@ -125,29 +118,29 @@ def generate_quick_summary(
     # Collect key issues
     issues = []
 
-    if breakdown.get('services_healthy', {}).get('points', 0) < 20:
-        services_data = state.get('services', {})
-        required = services_data.get('required_services', [])
-        running = services_data.get('running_services', [])
+    if breakdown.get("services_healthy", {}).get("points", 0) < 20:
+        services_data = state.get("services", {})
+        required = services_data.get("required_services", [])
+        running = services_data.get("running_services", [])
         missing = [s for s in required if s not in running]
         if missing:
             issues.append(f"{len(missing)} services down")
 
-    if breakdown.get('dependencies_updated', {}).get('points', 0) < 15:
-        deps_data = state.get('dependencies', {})
-        outdated = deps_data.get('outdated_count', 0)
+    if breakdown.get("dependencies_updated", {}).get("points", 0) < 15:
+        deps_data = state.get("dependencies", {})
+        outdated = deps_data.get("outdated_count", 0)
         if outdated > 0:
             issues.append(f"{outdated} outdated deps")
 
-    if breakdown.get('branches_synced', {}).get('points', 0) < 15:
-        git_data = state.get('git', {})
-        behind = git_data.get('behind_remote', 0)
+    if breakdown.get("branches_synced", {}).get("points", 0) < 15:
+        git_data = state.get("git", {})
+        behind = git_data.get("behind_remote", 0)
         if behind > 0:
             issues.append(f"{behind} commits behind")
 
-    if breakdown.get('prs_reviewed', {}).get('points', 0) < 15:
-        github_data = state.get('github', {})
-        prs = len(github_data.get('prs_needing_review', []))
+    if breakdown.get("prs_reviewed", {}).get("points", 0) < 15:
+        github_data = state.get("github", {})
+        prs = len(github_data.get("prs_needing_review", []))
         if prs > 0:
             issues.append(f"{prs} PRs to review")
 
@@ -157,9 +150,9 @@ def generate_quick_summary(
 
 def _generate_service_status_section(state: Dict[str, Any]) -> List[str]:
     """Generate service status section."""
-    services_data = state.get('services', {})
-    required = services_data.get('required_services', [])
-    running = services_data.get('running_services', [])
+    services_data = state.get("services", {})
+    required = services_data.get("required_services", [])
+    running = services_data.get("running_services", [])
     missing = [s for s in required if s not in running]
 
     lines = [
@@ -167,14 +160,11 @@ def _generate_service_status_section(state: Dict[str, Any]) -> List[str]:
         "",
         f"**Required**: {len(required)} services",
         f"**Running**: {len([s for s in required if s in running])} services",
-        ""
+        "",
     ]
 
     if missing:
-        lines.extend([
-            "**Not Running:**",
-            ""
-        ])
+        lines.extend(["**Not Running:**", ""])
         for service in missing:
             lines.append(f"- {service}")
         lines.append("")
@@ -184,15 +174,15 @@ def _generate_service_status_section(state: Dict[str, Any]) -> List[str]:
 
 def _generate_dependencies_section(state: Dict[str, Any]) -> List[str]:
     """Generate dependencies section."""
-    deps_data = state.get('dependencies', {})
-    outdated_count = deps_data.get('outdated_count', 0)
-    outdated_list = deps_data.get('outdated_packages', [])
+    deps_data = state.get("dependencies", {})
+    outdated_count = deps_data.get("outdated_count", 0)
+    outdated_list = deps_data.get("outdated_packages", [])
 
     lines = [
         "## 📦 Dependency Updates",
         "",
         f"**Outdated Packages**: {outdated_count}",
-        ""
+        "",
     ]
 
     if outdated_list:
@@ -209,9 +199,9 @@ def _generate_dependencies_section(state: Dict[str, Any]) -> List[str]:
 
 def _generate_sync_section(state: Dict[str, Any]) -> List[str]:
     """Generate branch sync section."""
-    git_data = state.get('git', {})
-    behind = git_data.get('behind_remote', 0)
-    branch = git_data.get('branch', 'unknown')
+    git_data = state.get("git", {})
+    behind = git_data.get("behind_remote", 0)
+    branch = git_data.get("branch", "unknown")
 
     return [
         "## 🔄 Branch Sync Status",
@@ -220,21 +210,16 @@ def _generate_sync_section(state: Dict[str, Any]) -> List[str]:
         f"**Commits Behind Remote**: {behind}",
         "",
         "Run `git pull` to sync with remote.",
-        ""
+        "",
     ]
 
 
 def _generate_pr_section(state: Dict[str, Any]) -> List[str]:
     """Generate PR review section."""
-    github_data = state.get('github', {})
-    prs = github_data.get('prs_needing_review', [])
+    github_data = state.get("github", {})
+    prs = github_data.get("prs_needing_review", [])
 
-    lines = [
-        "## 🔍 Pull Requests Needing Review",
-        "",
-        f"**Count**: {len(prs)} PRs",
-        ""
-    ]
+    lines = ["## 🔍 Pull Requests Needing Review", "", f"**Count**: {len(prs)} PRs", ""]
 
     if prs:
         for pr in prs[:5]:  # Show top 5
@@ -248,15 +233,10 @@ def _generate_pr_section(state: Dict[str, Any]) -> List[str]:
 
 def _generate_issues_section(state: Dict[str, Any]) -> List[str]:
     """Generate issues section."""
-    github_data = state.get('github', {})
-    issues = github_data.get('issues_needing_triage', [])
+    github_data = state.get("github", {})
+    issues = github_data.get("issues_needing_triage", [])
 
-    lines = [
-        "## 📝 Issues Needing Triage",
-        "",
-        f"**Count**: {len(issues)} issues",
-        ""
-    ]
+    lines = ["## 📝 Issues Needing Triage", "", f"**Count**: {len(issues)} issues", ""]
 
     if issues:
         for issue in issues[:5]:  # Show top 5
@@ -273,33 +253,41 @@ def _generate_setup_recommendations(score: int, state: Dict[str, Any]) -> List[s
     recommendations = []
 
     # Service recommendations
-    services_data = state.get('services', {})
-    required = services_data.get('required_services', [])
-    running = services_data.get('running_services', [])
+    services_data = state.get("services", {})
+    required = services_data.get("required_services", [])
+    running = services_data.get("running_services", [])
     missing = [s for s in required if s not in running]
 
     if missing:
-        recommendations.append(f"Start {len(missing)} dev services: {', '.join(missing)}")
+        recommendations.append(
+            f"Start {len(missing)} dev services: {', '.join(missing)}"
+        )
 
     # Sync recommendations
-    git_data = state.get('git', {})
-    behind = git_data.get('behind_remote', 0)
+    git_data = state.get("git", {})
+    behind = git_data.get("behind_remote", 0)
 
     if behind > 0:
-        recommendations.append(f"Sync with remote: git pull (behind by {behind} commits)")
+        recommendations.append(
+            f"Sync with remote: git pull (behind by {behind} commits)"
+        )
 
     # Dependency recommendations
-    deps_data = state.get('dependencies', {})
-    outdated_count = deps_data.get('outdated_count', 0)
+    deps_data = state.get("dependencies", {})
+    outdated_count = deps_data.get("outdated_count", 0)
 
     if outdated_count > 10:
-        recommendations.append(f"Update {outdated_count} outdated dependencies: pnpm update")
+        recommendations.append(
+            f"Update {outdated_count} outdated dependencies: pnpm update"
+        )
     elif outdated_count > 0:
         recommendations.append(f"Review {outdated_count} dependency updates (optional)")
 
     # Low score warning
     if score < 60:
-        recommendations.append("⚠️ Low Ready to Code Score - address critical issues first")
+        recommendations.append(
+            "⚠️ Low Ready to Code Score - address critical issues first"
+        )
 
     if not recommendations:
         recommendations.append("All set! Start coding immediately.")
@@ -312,14 +300,14 @@ def _generate_today_recommendations(state: Dict[str, Any]) -> List[str]:
     recommendations = []
 
     # PR reviews
-    github_data = state.get('github', {})
-    prs = github_data.get('prs_needing_review', [])
+    github_data = state.get("github", {})
+    prs = github_data.get("prs_needing_review", [])
 
     if prs:
         recommendations.append(f"Review {len(prs)} pending PRs")
 
     # Issue triage
-    issues = github_data.get('issues_needing_triage', [])
+    issues = github_data.get("issues_needing_triage", [])
 
     if issues:
         recommendations.append(f"Triage {len(issues)} open issues")
@@ -328,9 +316,9 @@ def _generate_today_recommendations(state: Dict[str, Any]) -> List[str]:
     recommendations.append("Review overnight commits and CI results")
 
     # Session restoration
-    session_data = state.get('session', {})
-    if session_data.get('restored', False):
-        last_work = session_data.get('last_work_summary', 'previous work')
+    session_data = state.get("session", {})
+    if session_data.get("restored", False):
+        last_work = session_data.get("last_work_summary", "previous work")
         recommendations.append(f"Continue: {last_work}")
     else:
         recommendations.append("Check STATUS.json for yesterday's context")
@@ -339,9 +327,7 @@ def _generate_today_recommendations(state: Dict[str, Any]) -> List[str]:
 
 
 def _generate_ask_user_question_section(
-    score: int,
-    breakdown: Dict[str, Dict[str, Any]],
-    state: Dict[str, Any]
+    score: int, breakdown: Dict[str, Dict[str, Any]], state: Dict[str, Any]
 ) -> List[str]:
     """
     Generate AskUserQuestion instructions for Claude (The PopKit Way).
@@ -358,17 +344,17 @@ def _generate_ask_user_question_section(
         List of lines containing AskUserQuestion instructions for Claude
     """
     # Analyze state to determine appropriate options
-    services_data = state.get('services', {})
-    git_data = state.get('git', {})
-    github_data = state.get('github', {})
+    services_data = state.get("services", {})
+    git_data = state.get("git", {})
+    github_data = state.get("github", {})
 
-    required_services = services_data.get('required_services', [])
-    running_services = services_data.get('running_services', [])
+    required_services = services_data.get("required_services", [])
+    running_services = services_data.get("running_services", [])
     missing_services = [s for s in required_services if s not in running_services]
 
-    behind_commits = git_data.get('behind_remote', 0)
-    prs_needing_review = github_data.get('prs_needing_review', [])
-    issues_needing_triage = github_data.get('issues_needing_triage', [])
+    behind_commits = git_data.get("behind_remote", 0)
+    prs_needing_review = github_data.get("prs_needing_review", [])
+    issues_needing_triage = github_data.get("issues_needing_triage", [])
 
     # Build context-aware AskUserQuestion options
     options = []
@@ -382,50 +368,57 @@ def _generate_ask_user_question_section(
             issues_list.append(f"pull {behind_commits} commits")
 
         if issues_list:
-            options.append({
-                "label": "Fix environment issues (Recommended)",
-                "description": ", ".join(issues_list).capitalize()
-            })
+            options.append(
+                {
+                    "label": "Fix environment issues (Recommended)",
+                    "description": ", ".join(issues_list).capitalize(),
+                }
+            )
 
     # Option 2: Work on highest priority issue
     if issues_needing_triage:
         first_issue = issues_needing_triage[0]
-        issue_num = first_issue.get('number', '?')
-        issue_title = first_issue.get('title', 'Unknown')
-        options.append({
-            "label": f"Work on #{issue_num}: {issue_title[:50]}",
-            "description": "Highest priority issue needing attention"
-        })
+        issue_num = first_issue.get("number", "?")
+        issue_title = first_issue.get("title", "Unknown")
+        options.append(
+            {
+                "label": f"Work on #{issue_num}: {issue_title[:50]}",
+                "description": "Highest priority issue needing attention",
+            }
+        )
     else:
         # Generic "start working" option
-        session_data = state.get('session', {})
-        last_work = session_data.get('last_work_summary', 'previous task')
-        options.append({
-            "label": f"Continue: {last_work}",
-            "description": "Pick up where you left off yesterday"
-        })
+        session_data = state.get("session", {})
+        last_work = session_data.get("last_work_summary", "previous task")
+        options.append(
+            {
+                "label": f"Continue: {last_work}",
+                "description": "Pick up where you left off yesterday",
+            }
+        )
 
     # Option 3: Review PRs (if any)
     if prs_needing_review:
         pr_count = len(prs_needing_review)
-        options.append({
-            "label": f"Review {pr_count} open PR{'s' if pr_count > 1 else ''}",
-            "description": "PRs waiting for your review"
-        })
+        options.append(
+            {
+                "label": f"Review {pr_count} open PR{'s' if pr_count > 1 else ''}",
+                "description": "PRs waiting for your review",
+            }
+        )
 
     # Option 4: Triage issues (if any and score >= 80)
     if issues_needing_triage and score >= 80:
         issue_count = len(issues_needing_triage)
-        options.append({
-            "label": f"Triage {issue_count} issue{'s' if issue_count > 1 else ''}",
-            "description": "Issues needing assignment or labels"
-        })
+        options.append(
+            {
+                "label": f"Triage {issue_count} issue{'s' if issue_count > 1 else ''}",
+                "description": "Issues needing assignment or labels",
+            }
+        )
 
     # Always include "Other" option
-    options.append({
-        "label": "Other",
-        "description": "I have something else in mind"
-    })
+    options.append({"label": "Other", "description": "I have something else in mind"})
 
     # Generate the AskUserQuestion instruction section
     lines = [
@@ -437,28 +430,30 @@ def _generate_ask_user_question_section(
         "{",
         '  "questions": [',
         "    {",
-        f'      "question": "What would you like to do next?",',
+        '      "question": "What would you like to do next?",',
         '      "header": "Next Action",',
         '      "multiSelect": false,',
-        '      "options": ['
+        '      "options": [',
     ]
 
     # Add each option
     for i, option in enumerate(options):
         is_last = i == len(options) - 1
-        lines.append('        {')
+        lines.append("        {")
         lines.append(f'          "label": "{option["label"]}",')
         lines.append(f'          "description": "{option["description"]}"')
-        lines.append('        }' + ('' if is_last else ','))
+        lines.append("        }" + ("" if is_last else ","))
 
-    lines.extend([
-        '      ]',
-        '    }',
-        '  ]',
-        '}',
-        '```',
-        '',
-        '**DO NOT** just end the session after showing this report. You MUST invoke AskUserQuestion to maintain The PopKit Way pattern.'
-    ])
+    lines.extend(
+        [
+            "      ]",
+            "    }",
+            "  ]",
+            "}",
+            "```",
+            "",
+            "**DO NOT** just end the session after showing this report. You MUST invoke AskUserQuestion to maintain The PopKit Way pattern.",
+        ]
+    )
 
     return lines

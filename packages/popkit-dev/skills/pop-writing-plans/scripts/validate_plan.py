@@ -21,6 +21,7 @@ from typing import Any, Dict, List, Optional
 @dataclass
 class ValidationIssue:
     """A validation issue found in the plan."""
+
     severity: str  # "error", "warning", "info"
     message: str
     line: Optional[int] = None
@@ -31,13 +32,14 @@ class ValidationIssue:
             "severity": self.severity,
             "message": self.message,
             "line": self.line,
-            "task": self.task
+            "task": self.task,
         }
 
 
 @dataclass
 class ValidationResult:
     """Result of plan validation."""
+
     valid: bool
     score: int  # 0-100
     issues: List[ValidationIssue] = field(default_factory=list)
@@ -48,7 +50,7 @@ class ValidationResult:
             "valid": self.valid,
             "score": self.score,
             "issues": [i.to_dict() for i in self.issues],
-            "stats": self.stats
+            "stats": self.stats,
         }
 
 
@@ -73,7 +75,7 @@ def validate_plan(plan_path: Path) -> ValidationResult:
         return ValidationResult(
             valid=False,
             score=0,
-            issues=[ValidationIssue("error", f"Plan file not found: {plan_path}")]
+            issues=[ValidationIssue("error", f"Plan file not found: {plan_path}")],
         )
 
     content = plan_path.read_text(encoding="utf-8")
@@ -86,7 +88,7 @@ def validate_plan(plan_path: Path) -> ValidationResult:
         "total_steps": 0,
         "code_blocks": 0,
         "run_commands": 0,
-        "file_references": 0
+        "file_references": 0,
     }
 
     # Check header
@@ -99,15 +101,15 @@ def validate_plan(plan_path: Path) -> ValidationResult:
 
     # Check code blocks
     issues.extend(_check_code_blocks(content, lines))
-    stats["code_blocks"] = len(re.findall(r'```\w+', content))
+    stats["code_blocks"] = len(re.findall(r"```\w+", content))
 
     # Check file paths
     issues.extend(_check_file_paths(content, lines))
-    stats["file_references"] = len(re.findall(r'`[a-zA-Z0-9_/.-]+\.[a-z]+`', content))
+    stats["file_references"] = len(re.findall(r"`[a-zA-Z0-9_/.-]+\.[a-z]+`", content))
 
     # Check run commands
     issues.extend(_check_run_commands(content, lines))
-    stats["run_commands"] = len(re.findall(r'Run:\s*`', content))
+    stats["run_commands"] = len(re.findall(r"Run:\s*`", content))
 
     # Calculate score
     error_count = sum(1 for i in issues if i.severity == "error")
@@ -120,12 +122,7 @@ def validate_plan(plan_path: Path) -> ValidationResult:
 
     valid = error_count == 0 and score >= 60
 
-    return ValidationResult(
-        valid=valid,
-        score=score,
-        issues=issues,
-        stats=stats
-    )
+    return ValidationResult(valid=valid, score=score, issues=issues, stats=stats)
 
 
 def _check_header(content: str, lines: List[str]) -> List[ValidationIssue]:
@@ -133,29 +130,30 @@ def _check_header(content: str, lines: List[str]) -> List[ValidationIssue]:
     issues = []
 
     # Check for title
-    if not re.search(r'^#\s+.+Implementation Plan', content, re.MULTILINE):
-        issues.append(ValidationIssue(
-            "warning",
-            "Plan title should include 'Implementation Plan'",
-            line=1
-        ))
+    if not re.search(r"^#\s+.+Implementation Plan", content, re.MULTILINE):
+        issues.append(
+            ValidationIssue(
+                "warning", "Plan title should include 'Implementation Plan'", line=1
+            )
+        )
 
     # Check for required fields
     required_fields = ["Goal:", "Architecture:", "Tech Stack:"]
     for field in required_fields:
         if field not in content:
-            issues.append(ValidationIssue(
-                "error",
-                f"Missing required header field: {field}",
-                line=1
-            ))
+            issues.append(
+                ValidationIssue(
+                    "error", f"Missing required header field: {field}", line=1
+                )
+            )
 
     # Check for Claude instruction
     if "For Claude:" not in content and "executing-plans" not in content:
-        issues.append(ValidationIssue(
-            "info",
-            "Consider adding Claude execution instruction in header"
-        ))
+        issues.append(
+            ValidationIssue(
+                "info", "Consider adding Claude execution instruction in header"
+            )
+        )
 
     return issues
 
@@ -166,15 +164,14 @@ def _check_tasks(content: str, lines: List[str]) -> tuple:
     stats = {"total_tasks": 0, "total_steps": 0}
 
     # Find all tasks
-    task_pattern = r'^###\s+Task\s+(\d+):\s+(.+)$'
+    task_pattern = r"^###\s+Task\s+(\d+):\s+(.+)$"
     tasks = list(re.finditer(task_pattern, content, re.MULTILINE))
     stats["total_tasks"] = len(tasks)
 
     if len(tasks) == 0:
-        issues.append(ValidationIssue(
-            "error",
-            "No tasks found. Use '### Task N: Name' format"
-        ))
+        issues.append(
+            ValidationIssue("error", "No tasks found. Use '### Task N: Name' format")
+        )
         return issues, stats
 
     # Check each task
@@ -193,39 +190,40 @@ def _check_tasks(content: str, lines: List[str]) -> tuple:
 
         # Check for Files section
         if "**Files:**" not in task_content and "Files:" not in task_content:
-            issues.append(ValidationIssue(
-                "warning",
-                f"Task {task_num} missing Files section",
-                task=task_name
-            ))
+            issues.append(
+                ValidationIssue(
+                    "warning", f"Task {task_num} missing Files section", task=task_name
+                )
+            )
 
         # Check for steps
-        steps = re.findall(r'\*\*Step\s+\d+:', task_content)
+        steps = re.findall(r"\*\*Step\s+\d+:", task_content)
         stats["total_steps"] += len(steps)
 
         if len(steps) == 0:
-            issues.append(ValidationIssue(
-                "warning",
-                f"Task {task_num} has no numbered steps",
-                task=task_name
-            ))
+            issues.append(
+                ValidationIssue(
+                    "warning", f"Task {task_num} has no numbered steps", task=task_name
+                )
+            )
 
         # Check for commit step
         if "commit" not in task_content.lower() and "Commit" not in task_content:
-            issues.append(ValidationIssue(
-                "info",
-                f"Task {task_num} missing commit step",
-                task=task_name
-            ))
+            issues.append(
+                ValidationIssue(
+                    "info", f"Task {task_num} missing commit step", task=task_name
+                )
+            )
 
     # Check task numbering
     expected_nums = [str(i) for i in range(1, len(tasks) + 1)]
     actual_nums = [m.group(1) for m in tasks]
     if actual_nums != expected_nums:
-        issues.append(ValidationIssue(
-            "warning",
-            f"Task numbering is not sequential: {actual_nums}"
-        ))
+        issues.append(
+            ValidationIssue(
+                "warning", f"Task numbering is not sequential: {actual_nums}"
+            )
+        )
 
     return issues, stats
 
@@ -235,12 +233,14 @@ def _check_code_blocks(content: str, lines: List[str]) -> List[ValidationIssue]:
     issues = []
 
     # Find code blocks without language
-    unlabeled = re.findall(r'```\s*\n', content)
+    unlabeled = re.findall(r"```\s*\n", content)
     if unlabeled:
-        issues.append(ValidationIssue(
-            "warning",
-            f"Found {len(unlabeled)} code blocks without language specifier"
-        ))
+        issues.append(
+            ValidationIssue(
+                "warning",
+                f"Found {len(unlabeled)} code blocks without language specifier",
+            )
+        )
 
     return issues
 
@@ -251,30 +251,32 @@ def _check_file_paths(content: str, lines: List[str]) -> List[ValidationIssue]:
 
     # Check for placeholder paths
     placeholders = [
-        r'path/to/',
-        r'your/',
-        r'example/',
-        r'\[path\]',
-        r'<path>',
-        r'xxx',
-        r'\.\.\./'
+        r"path/to/",
+        r"your/",
+        r"example/",
+        r"\[path\]",
+        r"<path>",
+        r"xxx",
+        r"\.\.\./",
     ]
 
     for placeholder in placeholders:
         if re.search(placeholder, content, re.IGNORECASE):
-            issues.append(ValidationIssue(
-                "error",
-                f"Found placeholder in file path: '{placeholder}'"
-            ))
+            issues.append(
+                ValidationIssue(
+                    "error", f"Found placeholder in file path: '{placeholder}'"
+                )
+            )
 
     # Check for missing file extensions in Create/Modify
-    create_modify = re.findall(r'(?:Create|Modify):\s*`([^`]+)`', content)
+    create_modify = re.findall(r"(?:Create|Modify):\s*`([^`]+)`", content)
     for path in create_modify:
-        if not re.search(r'\.\w+$', path) and not re.search(r':\d+-\d+$', path):
-            issues.append(ValidationIssue(
-                "warning",
-                f"File path may be missing extension: {path}"
-            ))
+        if not re.search(r"\.\w+$", path) and not re.search(r":\d+-\d+$", path):
+            issues.append(
+                ValidationIssue(
+                    "warning", f"File path may be missing extension: {path}"
+                )
+            )
 
     return issues
 
@@ -284,16 +286,22 @@ def _check_run_commands(content: str, lines: List[str]) -> List[ValidationIssue]
     issues = []
 
     # Find Run: commands
-    run_commands = list(re.finditer(r'Run:\s*`([^`]+)`', content))
+    run_commands = list(re.finditer(r"Run:\s*`([^`]+)`", content))
 
     for match in run_commands:
         # Check if followed by Expected:
-        after_run = content[match.end():match.end() + 200]
-        if "Expected:" not in after_run and "PASS" not in after_run and "FAIL" not in after_run:
-            issues.append(ValidationIssue(
-                "info",
-                f"Run command may be missing expected output: {match.group(1)[:50]}"
-            ))
+        after_run = content[match.end() : match.end() + 200]
+        if (
+            "Expected:" not in after_run
+            and "PASS" not in after_run
+            and "FAIL" not in after_run
+        ):
+            issues.append(
+                ValidationIssue(
+                    "info",
+                    f"Run command may be missing expected output: {match.group(1)[:50]}",
+                )
+            )
 
     return issues
 
@@ -317,14 +325,16 @@ def main():
         print(f"Plan Validation: {plan_file}")
         print(f"{'=' * 50}")
         print(f"\nScore: {result.score}/100 {'[PASS]' if result.valid else '[FAIL]'}")
-        print(f"\nStats:")
+        print("\nStats:")
         for key, value in result.stats.items():
             print(f"  {key}: {value}")
 
         if result.issues:
             print(f"\nIssues ({len(result.issues)}):")
             for issue in result.issues:
-                prefix = {"error": "[ERROR]", "warning": "[WARN]", "info": "[INFO]"}[issue.severity]
+                prefix = {"error": "[ERROR]", "warning": "[WARN]", "info": "[INFO]"}[
+                    issue.severity
+                ]
                 location = f" (Task: {issue.task})" if issue.task else ""
                 location = f" (Line: {issue.line})" if issue.line else location
                 print(f"  {prefix} {issue.message}{location}")

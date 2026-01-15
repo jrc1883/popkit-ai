@@ -19,21 +19,21 @@ Output:
 """
 
 import json
-import os
 import subprocess
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Tuple
 
 
 def run_command(cmd: str, timeout: int = 30) -> Tuple[str, bool]:
     """Run a shell command and return output and success status."""
     try:
-        result = subprocess.run(cmd.split() if isinstance(cmd, str) else cmd,
+        result = subprocess.run(
+            cmd.split() if isinstance(cmd, str) else cmd,
             capture_output=True,
             text=True,
-            timeout=timeout
+            timeout=timeout,
         )
         return result.stdout.strip(), result.returncode == 0
     except subprocess.TimeoutExpired:
@@ -47,7 +47,7 @@ def load_status_context() -> Dict[str, Any]:
     status_paths = [
         Path(".claude/STATUS.json"),
         Path("STATUS.json"),
-        Path.home() / ".claude" / "STATUS.json"
+        Path.home() / ".claude" / "STATUS.json",
     ]
 
     for path in status_paths:
@@ -65,7 +65,7 @@ def load_status_context() -> Dict[str, Any]:
                     "keyDecisions": status.get("context", {}).get("keyDecisions", []),
                     "blocker": status.get("context", {}).get("blocker"),
                     "tasks": status.get("tasks", {}),
-                    "git": status.get("git", {})
+                    "git": status.get("git", {}),
                 }
             except Exception as e:
                 return {"found": False, "error": str(e)}
@@ -75,32 +75,27 @@ def load_status_context() -> Dict[str, Any]:
 
 def find_recent_files(hours: int = 24, limit: int = 10) -> Dict[str, Any]:
     """Find files modified within the specified time window."""
-    result = {
-        "files": [],
-        "total_found": 0
-    }
+    result = {"files": [], "total_found": 0}
 
     # Use git to find recently modified files
-    cmd = f"git diff --name-only HEAD~10 2>/dev/null || git ls-files -m"
+    cmd = "git diff --name-only HEAD~10 2>/dev/null || git ls-files -m"
     output, ok = run_command(cmd)
 
     if ok and output:
-        files = output.split('\n')[:limit]
+        files = output.split("\n")[:limit]
         result["files"] = [{"path": f, "source": "git"} for f in files if f]
         result["total_found"] = len(files)
 
     # Also check for uncommitted changes
     status_output, ok = run_command("git status --porcelain")
     if ok and status_output:
-        for line in status_output.split('\n'):
+        for line in status_output.split("\n"):
             if line.strip():
                 status_code = line[:2]
                 file_path = line[3:].strip()
-                result["files"].append({
-                    "path": file_path,
-                    "status": status_code,
-                    "source": "uncommitted"
-                })
+                result["files"].append(
+                    {"path": file_path, "status": status_code, "source": "uncommitted"}
+                )
 
     return result
 
@@ -111,7 +106,7 @@ def gather_git_context() -> Dict[str, Any]:
         "branch": "",
         "recent_commits": [],
         "uncommitted_changes": [],
-        "stash_count": 0
+        "stash_count": 0,
     }
 
     # Current branch
@@ -120,19 +115,15 @@ def gather_git_context() -> Dict[str, Any]:
         context["branch"] = branch
 
     # Recent commits with details
-    commits_output, ok = run_command(
-        "git log --oneline -10 --format='%h|%s|%ar'"
-    )
+    commits_output, ok = run_command("git log --oneline -10 --format='%h|%s|%ar'")
     if ok and commits_output:
-        for line in commits_output.split('\n'):
-            if '|' in line:
-                parts = line.split('|')
+        for line in commits_output.split("\n"):
+            if "|" in line:
+                parts = line.split("|")
                 if len(parts) >= 3:
-                    context["recent_commits"].append({
-                        "hash": parts[0],
-                        "message": parts[1],
-                        "time": parts[2]
-                    })
+                    context["recent_commits"].append(
+                        {"hash": parts[0], "message": parts[1], "time": parts[2]}
+                    )
 
     # Uncommitted changes with details
     diff_stat, ok = run_command("git diff --stat")
@@ -141,23 +132,25 @@ def gather_git_context() -> Dict[str, Any]:
 
     status_output, ok = run_command("git status --porcelain")
     if ok and status_output:
-        for line in status_output.split('\n'):
+        for line in status_output.split("\n"):
             if line.strip():
                 status_code = line[:2].strip()
                 file_path = line[3:].strip()
 
                 status_meaning = {
-                    'M': 'modified',
-                    'A': 'added',
-                    'D': 'deleted',
-                    '??': 'untracked',
-                    'R': 'renamed'
+                    "M": "modified",
+                    "A": "added",
+                    "D": "deleted",
+                    "??": "untracked",
+                    "R": "renamed",
                 }
 
-                context["uncommitted_changes"].append({
-                    "file": file_path,
-                    "status": status_meaning.get(status_code, status_code)
-                })
+                context["uncommitted_changes"].append(
+                    {
+                        "file": file_path,
+                        "status": status_meaning.get(status_code, status_code),
+                    }
+                )
 
     # Check stash
     stash_output, ok = run_command("git stash list | wc -l")
@@ -175,11 +168,13 @@ def get_project_state() -> Dict[str, Any]:
     state = {
         "tests": {"status": "unknown"},
         "build": {"status": "unknown"},
-        "lint": {"status": "unknown"}
+        "lint": {"status": "unknown"},
     }
 
     # Quick test check (just see if command exists)
-    test_check, ok = run_command("npm run test --if-present 2>&1 | head -20", timeout=60)
+    test_check, ok = run_command(
+        "npm run test --if-present 2>&1 | head -20", timeout=60
+    )
     if ok:
         if "passing" in test_check.lower():
             state["tests"]["status"] = "passing"
@@ -188,7 +183,9 @@ def get_project_state() -> Dict[str, Any]:
         state["tests"]["output"] = test_check[:500]
 
     # Build check
-    build_check, ok = run_command("npm run build --if-present 2>&1 | tail -5", timeout=120)
+    build_check, ok = run_command(
+        "npm run build --if-present 2>&1 | tail -5", timeout=120
+    )
     if ok:
         state["build"]["status"] = "passing"
     else:
@@ -196,7 +193,9 @@ def get_project_state() -> Dict[str, Any]:
     state["build"]["output"] = build_check[:500] if build_check else ""
 
     # Lint check
-    lint_check, ok = run_command("npm run lint --if-present 2>&1 | tail -10", timeout=60)
+    lint_check, ok = run_command(
+        "npm run lint --if-present 2>&1 | tail -10", timeout=60
+    )
     if ok:
         state["lint"]["status"] = "passing"
         state["lint"]["errors"] = 0
@@ -204,17 +203,15 @@ def get_project_state() -> Dict[str, Any]:
         state["lint"]["status"] = "errors"
         # Try to extract error count
         import re
-        errors = re.findall(r'(\d+)\s+error', lint_check)
+
+        errors = re.findall(r"(\d+)\s+error", lint_check)
         state["lint"]["errors"] = int(errors[0]) if errors else -1
 
     return state
 
 
 def build_mental_model(
-    status_context: Dict,
-    git_context: Dict,
-    recent_files: Dict,
-    project_state: Dict
+    status_context: Dict, git_context: Dict, recent_files: Dict, project_state: Dict
 ) -> Dict[str, Any]:
     """Build a mental model from all gathered context."""
     model = {
@@ -223,7 +220,7 @@ def build_mental_model(
         "key_files": [],
         "decisions_made": [],
         "whats_next": [],
-        "potential_issues": []
+        "potential_issues": [],
     }
 
     # What we're building
@@ -233,8 +230,10 @@ def build_mental_model(
     # Where we are
     model["where_we_are"] = {
         "branch": git_context.get("branch", "unknown"),
-        "last_commit": git_context["recent_commits"][0] if git_context.get("recent_commits") else None,
-        "uncommitted_files": len(git_context.get("uncommitted_changes", []))
+        "last_commit": git_context["recent_commits"][0]
+        if git_context.get("recent_commits")
+        else None,
+        "uncommitted_files": len(git_context.get("uncommitted_changes", [])),
     }
 
     # Key files (from recent and uncommitted)
@@ -269,18 +268,27 @@ def build_mental_model(
 
 def main():
     import argparse
+
     parser = argparse.ArgumentParser(description="Find context for session restoration")
-    parser.add_argument("--source", choices=["status", "recent-files", "git", "project-state", "all"],
-                        default="all", help="Context source to gather")
+    parser.add_argument(
+        "--source",
+        choices=["status", "recent-files", "git", "project-state", "all"],
+        default="all",
+        help="Context source to gather",
+    )
     parser.add_argument("--focus", help="Focus area to filter relevant files")
-    parser.add_argument("--hours", type=int, default=24, help="Hours to look back for recent files")
-    parser.add_argument("--build-model", action="store_true", help="Build mental model from all sources")
+    parser.add_argument(
+        "--hours", type=int, default=24, help="Hours to look back for recent files"
+    )
+    parser.add_argument(
+        "--build-model", action="store_true", help="Build mental model from all sources"
+    )
     args = parser.parse_args()
 
     result = {
         "operation": "find_context",
         "source": args.source,
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.now().isoformat(),
     }
 
     status_context = {}
@@ -309,7 +317,7 @@ def main():
             status_context or load_status_context(),
             git_context or gather_git_context(),
             recent_files or find_recent_files(),
-            project_state or get_project_state()
+            project_state or get_project_state(),
         )
         result["mental_model"] = mental_model
 

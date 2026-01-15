@@ -14,17 +14,23 @@ from popkit_shared.utils.transcript_parser import TranscriptParser
 
 # Import error tracking utilities
 try:
-    from popkit_shared.utils.github_issues import save_error_locally, save_lesson_locally
+    from popkit_shared.utils.github_issues import (
+        save_error_locally,
+        save_lesson_locally,
+    )
 except ImportError:
     # Fallback if utils not available
     def save_error_locally(error, status_file=None):
         return {"status": "skip", "reason": "utils not available"}
+
     def save_lesson_locally(lesson, status_file=None):
         return {"status": "skip", "reason": "utils not available"}
+
 
 # Import session recorder for sub-agent recording
 try:
     from popkit_shared.utils.session_recorder import get_recorder, is_recording_enabled
+
     HAS_SESSION_RECORDER = True
 except ImportError:
     HAS_SESSION_RECORDER = False
@@ -59,7 +65,7 @@ def check_validation_result(data: dict) -> dict | None:
             "output_style": validation.get("output_style", "unknown"),
             "missing_fields": validation.get("missing_fields", []),
             "confidence": validation.get("confidence", 0),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
     return None
 
@@ -111,41 +117,45 @@ def create_retry_instruction(error_data: dict) -> str:
     output_style = error_data.get("output_style", "unknown")
 
     return f"""Your previous output was missing required fields for the {output_style} format.
-Missing fields: {', '.join(missing)}
+Missing fields: {", ".join(missing)}
 Please regenerate your response including these required fields."""
+
 
 def get_tts_script_path():
     """Determine the best TTS script to use based on available API keys."""
     utils_dir = Path(".claude/hooks/utils/tts")
-    
+
     # Check for API keys and return appropriate TTS script
     tts_options = [
         ("ELEVENLABS_API_KEY", utils_dir / "elevenlabs.py"),
         ("OPENAI_API_KEY", utils_dir / "openai_tts.py"),
-        (None, utils_dir / "pyttsx3_tts.py")  # Local fallback
+        (None, utils_dir / "pyttsx3_tts.py"),  # Local fallback
     ]
-    
+
     for env_key, script_path in tts_options:
         if env_key is None or (env_key and env_key in os.environ):
             if script_path.exists():
                 return script_path
-    
+
     return None
+
 
 def announce_subagent_completion():
     """Announce subagent completion using TTS if available."""
     try:
-        import os
         import subprocess
+
         tts_script = get_tts_script_path()
-        
+
         if tts_script:
-            subprocess.run([
-                sys.executable, str(tts_script), 
-                "Subagent Complete"
-            ], check=False, capture_output=True)
+            subprocess.run(
+                [sys.executable, str(tts_script), "Subagent Complete"],
+                check=False,
+                capture_output=True,
+            )
     except Exception:
         pass  # Silent failure for TTS
+
 
 def record_subagent_completion(data: dict):
     """Record sub-agent completion in session recording if enabled.
@@ -167,13 +177,13 @@ def record_subagent_completion(data: dict):
         incoming_session_id = data.get("session_id")
 
         # Verify session ID matches the recording session
-        state_file = Path.home() / '.claude' / 'popkit' / 'recording-state.json'
+        state_file = Path.home() / ".claude" / "popkit" / "recording-state.json"
         if not state_file.exists():
             return
 
         try:
             state = json.loads(state_file.read_text())
-            claude_session_id = state.get('claude_session_id')
+            claude_session_id = state.get("claude_session_id")
 
             # If no claude_session_id stored, skip session matching (legacy recordings)
             # If it IS stored, verify it matches
@@ -185,13 +195,17 @@ def record_subagent_completion(data: dict):
 
         # Session matches - record the event
         recorder = get_recorder()
-        recorder.record_event({
-            "type": "subagent_stop",
-            "timestamp": datetime.now().isoformat(),
-            "agent_id": agent_id,
-            "session_id": incoming_session_id,
-            "transcript_available": bool(transcript_path and Path(transcript_path).exists())
-        })
+        recorder.record_event(
+            {
+                "type": "subagent_stop",
+                "timestamp": datetime.now().isoformat(),
+                "agent_id": agent_id,
+                "session_id": incoming_session_id,
+                "transcript_available": bool(
+                    transcript_path and Path(transcript_path).exists()
+                ),
+            }
+        )
 
         # Parse transcript and extract tool calls (Issue #110)
         if transcript_path and Path(transcript_path).exists():
@@ -205,7 +219,9 @@ def record_subagent_completion(data: dict):
                 token_usage = parser.get_total_token_usage()
 
                 # Record structured data to session_recorder
-                from popkit_shared.utils.session_recorder import record_subagent_completion
+                from popkit_shared.utils.session_recorder import (
+                    record_subagent_completion,
+                )
 
                 record_subagent_completion(
                     subagent_id=agent_id,
@@ -213,7 +229,7 @@ def record_subagent_completion(data: dict):
                     input_tokens=token_usage.input_tokens,
                     output_tokens=token_usage.output_tokens,
                     total_tokens=token_usage.total_tokens,
-                    tool_details=tool_uses[:10]  # Store first 10 for summary
+                    tool_details=tool_uses[:10],  # Store first 10 for summary
                 )
 
             except Exception as e:
@@ -240,14 +256,14 @@ def main():
         log_data = []
         if log_file.exists():
             try:
-                with open(log_file, 'r', encoding='utf-8') as f:
+                with open(log_file, "r", encoding="utf-8") as f:
                     log_data = json.load(f)
             except json.JSONDecodeError:
                 log_data = []
 
         log_data.append(data)
 
-        with open(log_file, 'w', encoding='utf-8') as f:
+        with open(log_file, "w", encoding="utf-8") as f:
             json.dump(log_data, f, indent=2)
 
         # Record sub-agent completion in session recording
@@ -269,10 +285,10 @@ def main():
 
         # Check if chat saving is requested via data
         save_chat = data.get("save_chat", data.get("chat", False))
-        if save_chat and 'transcript' in data:
+        if save_chat and "transcript" in data:
             chat_file = logs_dir / "chat.json"
-            with open(chat_file, 'w', encoding='utf-8') as f:
-                json.dump(data['transcript'], f, indent=2)
+            with open(chat_file, "w", encoding="utf-8") as f:
+                json.dump(data["transcript"], f, indent=2)
 
         # Announce completion
         announce_subagent_completion()
@@ -282,9 +298,9 @@ def main():
             "status": "success",
             "message": "Subagent stopped - logs saved",
             "timestamp": datetime.now().isoformat(),
-            "chat_saved": save_chat and 'transcript' in data,
+            "chat_saved": save_chat and "transcript" in data,
             "validation_tracked": validation_error is not None,
-            "retry_requested": retry_requested
+            "retry_requested": retry_requested,
         }
 
         if retry_requested and retry_instruction:
@@ -302,6 +318,7 @@ def main():
         print(json.dumps(response))
         print(f"Error in subagent_stop hook: {e}", file=sys.stderr)
         sys.exit(0)  # Don't block on errors
+
 
 if __name__ == "__main__":
     main()

@@ -11,10 +11,10 @@ All state is explicit - no SQLite or environment variable dependencies.
 import os
 import sys
 import json
-from typing import Dict, List, Any, Optional
+from typing import List, Optional
 
 # Add utils to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'utils'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "utils"))
 
 from stateless_hook import StatelessHook
 from context_carrier import HookContext
@@ -65,26 +65,24 @@ class PostToolUseStateless(StatelessHook):
         # Build message for context if we have a result
         if tool_result:
             message = self.build_tool_result(
-                tool_use_id=f"toolu_{ctx.session_id}",
-                content=tool_result
+                tool_use_id=f"toolu_{ctx.session_id}", content=tool_result
             )
             ctx = self.update_context(ctx, message=message)
 
         # Update context with hook output
         return self.update_context(
             ctx,
-            hook_output=("post_tool_use", {
-                "action": "continue",
-                "followups": followups,
-                "truncation_warning": truncation_warning
-            })
+            hook_output=(
+                "post_tool_use",
+                {
+                    "action": "continue",
+                    "followups": followups,
+                    "truncation_warning": truncation_warning,
+                },
+            ),
         )
 
-    def _get_followups(
-        self,
-        tool_name: str,
-        tool_result: Optional[str]
-    ) -> List[str]:
+    def _get_followups(self, tool_name: str, tool_result: Optional[str]) -> List[str]:
         """Get followup suggestions (pure function).
 
         Args:

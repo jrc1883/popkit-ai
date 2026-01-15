@@ -15,7 +15,7 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Set
+from typing import Any, Dict
 
 
 def find_project_root(start_path: Path = None) -> Path:
@@ -40,11 +40,7 @@ def analyze_tier_distribution(project_dir: Path) -> Dict[str, Any]:
     if not agents_dir.exists():
         return {"tiers": {}, "issues": []}
 
-    tiers = {
-        "tier-1-always-active": 0,
-        "tier-2-on-demand": 0,
-        "feature-workflow": 0
-    }
+    tiers = {"tier-1-always-active": 0, "tier-2-on-demand": 0, "feature-workflow": 0}
     issues = []
 
     for tier_name in tiers.keys():
@@ -56,17 +52,21 @@ def analyze_tier_distribution(project_dir: Path) -> Dict[str, Any]:
     # Check tier 1 count
     tier1_count = tiers.get("tier-1-always-active", 0)
     if tier1_count > 20:
-        issues.append({
-            "type": "tier_1_overload",
-            "message": f"Tier 1 has {tier1_count} agents (limit: 20)",
-            "severity": "critical"
-        })
+        issues.append(
+            {
+                "type": "tier_1_overload",
+                "message": f"Tier 1 has {tier1_count} agents (limit: 20)",
+                "severity": "critical",
+            }
+        )
     elif tier1_count > 15:
-        issues.append({
-            "type": "tier_1_warning",
-            "message": f"Tier 1 has {tier1_count} agents (target: <=15)",
-            "severity": "medium"
-        })
+        issues.append(
+            {
+                "type": "tier_1_warning",
+                "message": f"Tier 1 has {tier1_count} agents (target: <=15)",
+                "severity": "medium",
+            }
+        )
 
     # Calculate ratio
     total = sum(tiers.values())
@@ -77,7 +77,7 @@ def analyze_tier_distribution(project_dir: Path) -> Dict[str, Any]:
         "total_agents": total,
         "tier_1_ratio": round(tier1_ratio, 1),
         "lazy_load_ratio": round(100 - tier1_ratio, 1),
-        "issues": issues
+        "issues": issues,
     }
 
 
@@ -101,34 +101,40 @@ def analyze_startup_files(project_dir: Path) -> Dict[str, Any]:
         if full_path.exists():
             size = full_path.stat().st_size
             total_size += size
-            found_files.append({
-                "path": file_path,
-                "size_bytes": size,
-                "size_kb": round(size / 1024, 2)
-            })
+            found_files.append(
+                {
+                    "path": file_path,
+                    "size_bytes": size,
+                    "size_kb": round(size / 1024, 2),
+                }
+            )
 
     # Check total startup size
     total_kb = total_size / 1024
     if total_kb > 100:
-        issues.append({
-            "type": "startup_size",
-            "message": f"Startup files total {round(total_kb)}KB (target: <50KB)",
-            "severity": "medium"
-        })
+        issues.append(
+            {
+                "type": "startup_size",
+                "message": f"Startup files total {round(total_kb)}KB (target: <50KB)",
+                "severity": "medium",
+            }
+        )
 
     # Check file count
     if len(found_files) > 10:
-        issues.append({
-            "type": "startup_count",
-            "message": f"{len(found_files)} startup files (target: <10)",
-            "severity": "low"
-        })
+        issues.append(
+            {
+                "type": "startup_count",
+                "message": f"{len(found_files)} startup files (target: <10)",
+                "severity": "low",
+            }
+        )
 
     return {
         "files": found_files,
         "count": len(found_files),
         "total_size_kb": round(total_kb, 2),
-        "issues": issues
+        "issues": issues,
     }
 
 
@@ -168,32 +174,32 @@ def analyze_hook_efficiency(project_dir: Path) -> Dict[str, Any]:
             "name": hook_file.stem,
             "lines": lines,
             "imports": len(imports),
-            "expensive_ops": expensive_ops
+            "expensive_ops": expensive_ops,
         }
 
         if expensive_ops:
-            issues.append({
-                "hook": hook_file.stem,
-                "type": "expensive_operations",
-                "operations": expensive_ops,
-                "severity": "medium"
-            })
+            issues.append(
+                {
+                    "hook": hook_file.stem,
+                    "type": "expensive_operations",
+                    "operations": expensive_ops,
+                    "severity": "medium",
+                }
+            )
 
         if lines > 200:
-            issues.append({
-                "hook": hook_file.stem,
-                "type": "complex_hook",
-                "message": f"Hook has {lines} lines (target: <100)",
-                "severity": "low"
-            })
+            issues.append(
+                {
+                    "hook": hook_file.stem,
+                    "type": "complex_hook",
+                    "message": f"Hook has {lines} lines (target: <100)",
+                    "severity": "low",
+                }
+            )
 
         hooks.append(hook_data)
 
-    return {
-        "hooks": hooks,
-        "total_hooks": len(hooks),
-        "issues": issues
-    }
+    return {"hooks": hooks, "total_hooks": len(hooks), "issues": issues}
 
 
 def analyze_import_patterns(project_dir: Path) -> Dict[str, Any]:
@@ -211,15 +217,14 @@ def analyze_import_patterns(project_dir: Path) -> Dict[str, Any]:
 
         # Find internal imports
         internal_imports = re.findall(
-            r"from\s+\.(\w+)\s+import|import\s+\.(\w+)",
-            content
+            r"from\s+\.(\w+)\s+import|import\s+\.(\w+)", content
         )
         flat_imports = [i[0] or i[1] for i in internal_imports if i[0] or i[1]]
 
         module_data = {
             "name": py_file.stem,
             "internal_imports": len(flat_imports),
-            "imports": flat_imports
+            "imports": flat_imports,
         }
 
         import_graph[py_file.stem] = set(flat_imports)
@@ -229,11 +234,13 @@ def analyze_import_patterns(project_dir: Path) -> Dict[str, Any]:
     for module, imports in import_graph.items():
         for imp in imports:
             if imp in import_graph and module in import_graph.get(imp, set()):
-                issues.append({
-                    "type": "potential_circular",
-                    "modules": [module, imp],
-                    "severity": "medium"
-                })
+                issues.append(
+                    {
+                        "type": "potential_circular",
+                        "modules": [module, imp],
+                        "severity": "medium",
+                    }
+                )
 
     # Find most imported modules (candidates for lazy loading)
     import_counts = {}
@@ -247,15 +254,12 @@ def analyze_import_patterns(project_dir: Path) -> Dict[str, Any]:
         "modules": modules[:20],
         "total_modules": len(modules),
         "import_hotspots": [{"module": m, "import_count": c} for m, c in hotspots],
-        "issues": issues
+        "issues": issues,
     }
 
 
 def calculate_loading_score(
-    tier_dist: Dict,
-    startup: Dict,
-    hooks: Dict,
-    imports: Dict
+    tier_dist: Dict, startup: Dict, hooks: Dict, imports: Dict
 ) -> float:
     """Calculate overall loading efficiency score."""
     score = 100
@@ -329,11 +333,11 @@ def main():
         "hook_efficiency": hooks,
         "import_patterns": imports,
         "all_issues": (
-            tier_distribution.get("issues", []) +
-            startup.get("issues", []) +
-            hooks.get("issues", []) +
-            imports.get("issues", [])
-        )
+            tier_distribution.get("issues", [])
+            + startup.get("issues", [])
+            + hooks.get("issues", [])
+            + imports.get("issues", [])
+        ),
     }
 
     print(json.dumps(report, indent=2))

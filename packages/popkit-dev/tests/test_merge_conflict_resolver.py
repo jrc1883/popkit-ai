@@ -12,9 +12,6 @@ Tests:
 """
 
 import sys
-import os
-import tempfile
-import shutil
 from pathlib import Path
 
 # Add shared-py to path
@@ -26,7 +23,9 @@ if str(shared_py_path) not in sys.path:
 
 try:
     from popkit_shared.utils.conflict_analyzer import (
-        Conflict, ConflictResolver, detect_and_analyze_conflicts
+        Conflict,
+        ConflictResolver,
+        detect_and_analyze_conflicts,
     )
     from popkit_shared.utils.complexity_scoring import analyze_complexity
 except ImportError as e:
@@ -104,7 +103,10 @@ async function authenticate(user, password) {
 >>>>>>> feature/session
 }
 """,
-            "expected_complexity": (2, 5),  # Moderate complexity (small conflict, but auth-related)
+            "expected_complexity": (
+                2,
+                5,
+            ),  # Moderate complexity (small conflict, but auth-related)
         },
     ]
 
@@ -126,8 +128,9 @@ async function authenticate(user, password) {
         print(f"  Expected range: {min_expected}-{max_expected}")
         print(f"  Risk factors: {complexity['risk_factors']}")
 
-        assert min_expected <= score <= max_expected, \
+        assert min_expected <= score <= max_expected, (
             f"Score {score} not in expected range {min_expected}-{max_expected}"
+        )
 
 
 def test_prioritization():
@@ -138,7 +141,7 @@ def test_prioritization():
     conflicts = [
         Conflict(
             file_path="README.md",
-            content="<<<<<<< HEAD\nv1\n=======\nv2\n>>>>>>> branch"
+            content="<<<<<<< HEAD\nv1\n=======\nv2\n>>>>>>> branch",
         ),
         Conflict(
             file_path="src/core/auth.ts",
@@ -152,11 +155,11 @@ class AuthService {
     authenticate() { /* different complex logic */ }
 }
 >>>>>>> feature/auth
-"""
+""",
         ),
         Conflict(
             file_path="package.json",
-            content='<<<<<<< HEAD\n"dep": "1.0"\n=======\n"dep": "2.0"\n>>>>>>> branch'
+            content='<<<<<<< HEAD\n"dep": "1.0"\n=======\n"dep": "2.0"\n>>>>>>> branch',
         ),
     ]
 
@@ -170,8 +173,9 @@ class AuthService {
         print(f"   Priority: {conflict.priority:.1f}")
 
     # Verify high-complexity conflicts come first
-    assert prioritized[0].complexity_score >= prioritized[-1].complexity_score, \
+    assert prioritized[0].complexity_score >= prioritized[-1].complexity_score, (
         "Should prioritize by complexity"
+    )
 
     print("\n[PASS] Prioritization working correctly")
 
@@ -194,8 +198,9 @@ def test_file_importance():
         importance = resolver._assess_file_importance(file_path)
         print(f"[PASS] {file_path}: {importance}/10 ({description})")
 
-        assert importance >= expected_min - 2, \
+        assert importance >= expected_min - 2, (
             f"Importance {importance} too low for {description}"
+        )
 
 
 def test_architectural_detection():
@@ -217,7 +222,7 @@ export class AuthService extends BaseService {
     constructor(private session: SessionService) {}
 }
 >>>>>>> feature/refactor
-"""
+""",
     )
 
     # Non-architectural conflict
@@ -229,7 +234,7 @@ return date.toISOString();
 =======
 return date.toLocaleDateString();
 >>>>>>> feature/format
-"""
+""",
     )
 
     is_arch = resolver._is_architectural_conflict(arch_conflict)
@@ -248,13 +253,12 @@ def test_integration_with_complexity_scorer():
 
     # Test that complexity scorer is accessible
     description = "Resolve merge conflict in authentication service"
-    result = analyze_complexity(description, metadata={
-        "files_affected": 1,
-        "loc_estimate": 50,
-        "architecture_change": True
-    })
+    result = analyze_complexity(
+        description,
+        metadata={"files_affected": 1, "loc_estimate": 50, "architecture_change": True},
+    )
 
-    print(f"[PASS] Complexity scorer accessible")
+    print("[PASS] Complexity scorer accessible")
     print(f"  Score: {result['complexity_score']}/10")
     print(f"  Level: {result['complexity_level']}")
     print(f"  Risk factors: {result['risk_factors']}")
@@ -279,7 +283,7 @@ class AuthService {
 >>>>>>> feature/auth
     }
 }
-"""
+""",
     )
 
     print(f"[PASS] Detected scope: {conflict_with_scope.scope}")

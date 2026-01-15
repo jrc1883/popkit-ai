@@ -12,20 +12,19 @@ Output:
 """
 
 import json
-import re
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List
 
 
 def parse_frontmatter(content: str) -> tuple:
     """Parse YAML frontmatter and content."""
-    if content.startswith('---'):
-        parts = content.split('---', 2)
+    if content.startswith("---"):
+        parts = content.split("---", 2)
         if len(parts) >= 3:
             return parts[1].strip(), parts[2].strip()
-    return '', content
+    return "", content
 
 
 def extract_metadata(frontmatter: str) -> Dict[str, Any]:
@@ -33,15 +32,15 @@ def extract_metadata(frontmatter: str) -> Dict[str, Any]:
     metadata = {}
 
     # Simple YAML parsing
-    for line in frontmatter.split('\n'):
-        if ':' in line:
-            key, value = line.split(':', 1)
+    for line in frontmatter.split("\n"):
+        if ":" in line:
+            key, value = line.split(":", 1)
             key = key.strip()
             value = value.strip()
 
             # Handle arrays
-            if value.startswith('['):
-                value = [v.strip().strip('"\'') for v in value[1:-1].split(',')]
+            if value.startswith("["):
+                value = [v.strip().strip("\"'") for v in value[1:-1].split(",")]
 
             metadata[key] = value
 
@@ -54,17 +53,17 @@ def extract_sections(content: str) -> Dict[str, str]:
     current_section = None
     current_content = []
 
-    for line in content.split('\n'):
-        if line.startswith('## '):
+    for line in content.split("\n"):
+        if line.startswith("## "):
             if current_section:
-                sections[current_section] = '\n'.join(current_content).strip()
+                sections[current_section] = "\n".join(current_content).strip()
             current_section = line[3:].strip()
             current_content = []
         elif current_section:
             current_content.append(line)
 
     if current_section:
-        sections[current_section] = '\n'.join(current_content).strip()
+        sections[current_section] = "\n".join(current_content).strip()
 
     return sections
 
@@ -72,9 +71,9 @@ def extract_sections(content: str) -> Dict[str, str]:
 def extract_bullet_points(content: str) -> List[str]:
     """Extract bullet points from content."""
     points = []
-    for line in content.split('\n'):
+    for line in content.split("\n"):
         line = line.strip()
-        if line.startswith('- ') or line.startswith('* '):
+        if line.startswith("- ") or line.startswith("* "):
             points.append(line[2:].strip())
     return points
 
@@ -120,7 +119,7 @@ def merge_research_notes(files: List[Path]) -> Dict[str, Any]:
         "findings": [],
         "code_examples": [],
         "references": [],
-        "questions": []
+        "questions": [],
     }
 
     all_sections = {}
@@ -178,7 +177,7 @@ def generate_merged_document(merged: Dict[str, Any], title: str = None) -> str:
     """Generate merged research document."""
     lines = [
         "---",
-        f"title: \"{title or 'Merged Research'}\"",
+        f'title: "{title or "Merged Research"}"',
         f"date: {datetime.now().strftime('%Y-%m-%d')}",
         f"tags: [{', '.join(merged['tags'])}]",
         f"sources: [{', '.join(merged['sources'])}]",
@@ -192,35 +191,23 @@ def generate_merged_document(merged: Dict[str, Any], title: str = None) -> str:
         f"This document merges research from {len(merged['sources'])} source(s).",
         "",
         "## Key Findings",
-        ""
+        "",
     ]
 
     for finding in merged["findings"]:
         lines.append(f"- {finding}")
 
     if merged["questions"]:
-        lines.extend([
-            "",
-            "## Questions & Follow-ups",
-            ""
-        ])
+        lines.extend(["", "## Questions & Follow-ups", ""])
         for question in merged["questions"]:
             lines.append(f"- [ ] {question}")
 
     if merged["references"]:
-        lines.extend([
-            "",
-            "## References",
-            ""
-        ])
+        lines.extend(["", "## References", ""])
         for ref in merged["references"]:
             lines.append(f"- {ref}")
 
-    lines.extend([
-        "",
-        "## Sources Merged",
-        ""
-    ])
+    lines.extend(["", "## Sources Merged", ""])
     for source in merged["sources"]:
         lines.append(f"- {source}")
 
@@ -229,12 +216,20 @@ def generate_merged_document(merged: Dict[str, Any], title: str = None) -> str:
 
 def main():
     import argparse
+
     parser = argparse.ArgumentParser(description="Merge research findings")
     parser.add_argument("files", nargs="+", help="Research files to merge")
     parser.add_argument("--output", "-o", help="Output file path")
     parser.add_argument("--title", "-t", help="Title for merged document")
-    parser.add_argument("--format", choices=["json", "markdown"], default="markdown", help="Output format")
-    parser.add_argument("--dry-run", action="store_true", help="Show what would be merged")
+    parser.add_argument(
+        "--format",
+        choices=["json", "markdown"],
+        default="markdown",
+        help="Output format",
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Show what would be merged"
+    )
     args = parser.parse_args()
 
     files = [Path(f) for f in args.files]
@@ -242,19 +237,29 @@ def main():
     # Validate files exist
     missing = [f for f in files if not f.exists()]
     if missing:
-        print(json.dumps({
-            "success": False,
-            "error": f"Files not found: {[str(f) for f in missing]}"
-        }, indent=2))
+        print(
+            json.dumps(
+                {
+                    "success": False,
+                    "error": f"Files not found: {[str(f) for f in missing]}",
+                },
+                indent=2,
+            )
+        )
         return 1
 
     if args.dry_run:
-        print(json.dumps({
-            "operation": "merge_findings",
-            "dry_run": True,
-            "files": [str(f) for f in files],
-            "output": args.output or "stdout"
-        }, indent=2))
+        print(
+            json.dumps(
+                {
+                    "operation": "merge_findings",
+                    "dry_run": True,
+                    "files": [str(f) for f in files],
+                    "output": args.output or "stdout",
+                },
+                indent=2,
+            )
+        )
         return 0
 
     # Merge
@@ -262,23 +267,31 @@ def main():
 
     # Output
     if args.format == "json":
-        output = json.dumps({
-            "operation": "merge_findings",
-            "success": True,
-            "files_merged": len(files),
-            **merged
-        }, indent=2)
+        output = json.dumps(
+            {
+                "operation": "merge_findings",
+                "success": True,
+                "files_merged": len(files),
+                **merged,
+            },
+            indent=2,
+        )
     else:
         output = generate_merged_document(merged, args.title)
 
     if args.output:
         Path(args.output).write_text(output)
-        print(json.dumps({
-            "operation": "merge_findings",
-            "success": True,
-            "files_merged": len(files),
-            "output_file": args.output
-        }, indent=2))
+        print(
+            json.dumps(
+                {
+                    "operation": "merge_findings",
+                    "success": True,
+                    "files_merged": len(files),
+                    "output_file": args.output,
+                },
+                indent=2,
+            )
+        )
     else:
         print(output)
 

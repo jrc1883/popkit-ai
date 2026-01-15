@@ -15,7 +15,7 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Dict
 
 
 def find_plugin_root(start_path: Path = None) -> Path:
@@ -27,7 +27,9 @@ def find_plugin_root(start_path: Path = None) -> Path:
     for _ in range(5):
         if (current / ".claude-plugin" / "plugin.json").exists():
             return current
-        if (current / "packages" / "plugin" / ".claude-plugin" / "plugin.json").exists():
+        if (
+            current / "packages" / "plugin" / ".claude-plugin" / "plugin.json"
+        ).exists():
             return current / "packages" / "plugin"
         current = current.parent
 
@@ -41,72 +43,82 @@ def check_hook_file(filepath: Path) -> Dict:
         "path": str(filepath),
         "checks": [],
         "status": "PASS",
-        "deduction": 0
+        "deduction": 0,
     }
 
     try:
-        content = filepath.read_text(encoding='utf-8')
-        lines = content.split('\n')
+        content = filepath.read_text(encoding="utf-8")
+        lines = content.split("\n")
     except Exception as e:
         findings["status"] = "ERROR"
-        findings["checks"].append({
-            "id": "HP-000",
-            "check": "File readable",
-            "status": "FAIL",
-            "message": str(e),
-            "severity": "critical",
-            "deduction": 20
-        })
+        findings["checks"].append(
+            {
+                "id": "HP-000",
+                "check": "File readable",
+                "status": "FAIL",
+                "message": str(e),
+                "severity": "critical",
+                "deduction": 20,
+            }
+        )
         findings["deduction"] = 20
         return findings
 
     # HP-001: Check shebang
     if lines and lines[0].strip() == "#!/usr/bin/env python3":
-        findings["checks"].append({
-            "id": "HP-001",
-            "check": "Has shebang",
-            "status": "PASS",
-            "message": "#!/usr/bin/env python3",
-            "severity": "critical",
-            "deduction": 0
-        })
+        findings["checks"].append(
+            {
+                "id": "HP-001",
+                "check": "Has shebang",
+                "status": "PASS",
+                "message": "#!/usr/bin/env python3",
+                "severity": "critical",
+                "deduction": 0,
+            }
+        )
     else:
-        findings["checks"].append({
-            "id": "HP-001",
-            "check": "Has shebang",
-            "status": "FAIL",
-            "message": f"First line: {lines[0][:50] if lines else 'empty'}",
-            "severity": "critical",
-            "deduction": 20
-        })
+        findings["checks"].append(
+            {
+                "id": "HP-001",
+                "check": "Has shebang",
+                "status": "FAIL",
+                "message": f"First line: {lines[0][:50] if lines else 'empty'}",
+                "severity": "critical",
+                "deduction": 20,
+            }
+        )
         findings["deduction"] += 20
         findings["status"] = "FAIL"
 
     # HP-002: Check JSON stdin reading
     stdin_patterns = [
         r"json\.load\s*\(\s*sys\.stdin\s*\)",
-        r"json\.loads\s*\(\s*sys\.stdin\.read\s*\(\s*\)\s*\)"
+        r"json\.loads\s*\(\s*sys\.stdin\.read\s*\(\s*\)\s*\)",
     ]
     has_stdin = any(re.search(p, content) for p in stdin_patterns)
 
     if has_stdin:
-        findings["checks"].append({
-            "id": "HP-002",
-            "check": "Reads JSON from stdin",
-            "status": "PASS",
-            "message": "Uses json.load(sys.stdin) or equivalent",
-            "severity": "critical",
-            "deduction": 0
-        })
+        findings["checks"].append(
+            {
+                "id": "HP-002",
+                "check": "Reads JSON from stdin",
+                "status": "PASS",
+                "message": "Uses json.load(sys.stdin) or equivalent",
+                "severity": "critical",
+                "deduction": 0,
+            }
+        )
     else:
-        findings["checks"].append({
-            "id": "HP-002",
-            "check": "Reads JSON from stdin",
-            "status": "FAIL",
-            "message": "No json.load(sys.stdin) pattern found",
-            "severity": "critical",
-            "deduction": 20
-        })
+        findings["checks"].append(
+            {
+                "id": "HP-002",
+                "check": "Reads JSON from stdin",
+                "status": "FAIL",
+                "message": "No json.load(sys.stdin) pattern found",
+                "severity": "critical",
+                "deduction": 20,
+            }
+        )
         findings["deduction"] += 20
         findings["status"] = "FAIL"
 
@@ -114,28 +126,32 @@ def check_hook_file(filepath: Path) -> Dict:
     stdout_patterns = [
         r"print\s*\(\s*json\.dumps\s*\(",
         r"json\.dump\s*\([^,]+,\s*sys\.stdout",
-        r"sys\.stdout\.write\s*\(\s*json\.dumps"
+        r"sys\.stdout\.write\s*\(\s*json\.dumps",
     ]
     has_stdout = any(re.search(p, content) for p in stdout_patterns)
 
     if has_stdout:
-        findings["checks"].append({
-            "id": "HP-003",
-            "check": "Outputs JSON to stdout",
-            "status": "PASS",
-            "message": "Uses print(json.dumps()) or equivalent",
-            "severity": "critical",
-            "deduction": 0
-        })
+        findings["checks"].append(
+            {
+                "id": "HP-003",
+                "check": "Outputs JSON to stdout",
+                "status": "PASS",
+                "message": "Uses print(json.dumps()) or equivalent",
+                "severity": "critical",
+                "deduction": 0,
+            }
+        )
     else:
-        findings["checks"].append({
-            "id": "HP-003",
-            "check": "Outputs JSON to stdout",
-            "status": "FAIL",
-            "message": "No JSON output pattern found",
-            "severity": "critical",
-            "deduction": 20
-        })
+        findings["checks"].append(
+            {
+                "id": "HP-003",
+                "check": "Outputs JSON to stdout",
+                "status": "FAIL",
+                "message": "No JSON output pattern found",
+                "severity": "critical",
+                "deduction": 20,
+            }
+        )
         findings["deduction"] += 20
         findings["status"] = "FAIL"
 
@@ -143,23 +159,27 @@ def check_hook_file(filepath: Path) -> Dict:
     has_try = re.search(r"\btry\s*:", content) is not None
 
     if has_try:
-        findings["checks"].append({
-            "id": "HP-004",
-            "check": "Has try/except",
-            "status": "PASS",
-            "message": "Error handling present",
-            "severity": "high",
-            "deduction": 0
-        })
+        findings["checks"].append(
+            {
+                "id": "HP-004",
+                "check": "Has try/except",
+                "status": "PASS",
+                "message": "Error handling present",
+                "severity": "high",
+                "deduction": 0,
+            }
+        )
     else:
-        findings["checks"].append({
-            "id": "HP-004",
-            "check": "Has try/except",
-            "status": "WARN",
-            "message": "No try/except block found",
-            "severity": "high",
-            "deduction": 10
-        })
+        findings["checks"].append(
+            {
+                "id": "HP-004",
+                "check": "Has try/except",
+                "status": "WARN",
+                "message": "No try/except block found",
+                "severity": "high",
+                "deduction": 10,
+            }
+        )
         findings["deduction"] += 10
         if findings["status"] == "PASS":
             findings["status"] = "WARN"
@@ -168,23 +188,27 @@ def check_hook_file(filepath: Path) -> Dict:
     has_exit_0 = re.search(r"sys\.exit\s*\(\s*0\s*\)", content) is not None
 
     if has_exit_0:
-        findings["checks"].append({
-            "id": "HP-005",
-            "check": "Uses sys.exit(0) on error",
-            "status": "PASS",
-            "message": "Clean exit on error",
-            "severity": "high",
-            "deduction": 0
-        })
+        findings["checks"].append(
+            {
+                "id": "HP-005",
+                "check": "Uses sys.exit(0) on error",
+                "status": "PASS",
+                "message": "Clean exit on error",
+                "severity": "high",
+                "deduction": 0,
+            }
+        )
     else:
-        findings["checks"].append({
-            "id": "HP-005",
-            "check": "Uses sys.exit(0) on error",
-            "status": "WARN",
-            "message": "No sys.exit(0) found - may break pipeline on error",
-            "severity": "high",
-            "deduction": 10
-        })
+        findings["checks"].append(
+            {
+                "id": "HP-005",
+                "check": "Uses sys.exit(0) on error",
+                "status": "WARN",
+                "message": "No sys.exit(0) found - may break pipeline on error",
+                "severity": "high",
+                "deduction": 10,
+            }
+        )
         findings["deduction"] += 10
         if findings["status"] == "PASS":
             findings["status"] = "WARN"
@@ -193,50 +217,54 @@ def check_hook_file(filepath: Path) -> Dict:
     has_stderr = re.search(r"file\s*=\s*sys\.stderr", content) is not None
 
     if has_stderr:
-        findings["checks"].append({
-            "id": "HP-006",
-            "check": "Uses stderr for messages",
-            "status": "PASS",
-            "message": "User messages go to stderr",
-            "severity": "medium",
-            "deduction": 0
-        })
+        findings["checks"].append(
+            {
+                "id": "HP-006",
+                "check": "Uses stderr for messages",
+                "status": "PASS",
+                "message": "User messages go to stderr",
+                "severity": "medium",
+                "deduction": 0,
+            }
+        )
     else:
-        findings["checks"].append({
-            "id": "HP-006",
-            "check": "Uses stderr for messages",
-            "status": "INFO",
-            "message": "No stderr output (may be intentional)",
-            "severity": "medium",
-            "deduction": 0
-        })
+        findings["checks"].append(
+            {
+                "id": "HP-006",
+                "check": "Uses stderr for messages",
+                "status": "INFO",
+                "message": "No stderr output (may be intentional)",
+                "severity": "medium",
+                "deduction": 0,
+            }
+        )
 
     # HP-007: Check action field in output
-    action_patterns = [
-        r"['\"]action['\"]\s*:",
-        r"action\s*=",
-        r"\"action\"\s*:"
-    ]
+    action_patterns = [r"['\"]action['\"]\s*:", r"action\s*=", r"\"action\"\s*:"]
     has_action = any(re.search(p, content) for p in action_patterns)
 
     if has_action:
-        findings["checks"].append({
-            "id": "HP-007",
-            "check": "Output has action field",
-            "status": "PASS",
-            "message": "Action field present in output",
-            "severity": "critical",
-            "deduction": 0
-        })
+        findings["checks"].append(
+            {
+                "id": "HP-007",
+                "check": "Output has action field",
+                "status": "PASS",
+                "message": "Action field present in output",
+                "severity": "critical",
+                "deduction": 0,
+            }
+        )
     else:
-        findings["checks"].append({
-            "id": "HP-007",
-            "check": "Output has action field",
-            "status": "WARN",
-            "message": "No 'action' field pattern found",
-            "severity": "critical",
-            "deduction": 5
-        })
+        findings["checks"].append(
+            {
+                "id": "HP-007",
+                "check": "Output has action field",
+                "status": "WARN",
+                "message": "No 'action' field pattern found",
+                "severity": "critical",
+                "deduction": 5,
+            }
+        )
         findings["deduction"] += 5
         if findings["status"] == "PASS":
             findings["status"] = "WARN"
@@ -264,16 +292,17 @@ def main():
                 "passes": 0,
                 "fails": 0,
                 "warnings": 0,
-                "message": "No hooks directory found"
+                "message": "No hooks directory found",
             },
-            "findings": []
+            "findings": [],
         }
         print(json.dumps(result, indent=2))
         return 0
 
     # Find all Python hook files (excluding utils/)
-    hook_files = [f for f in hooks_dir.glob("*.py")
-                  if f.is_file() and not f.name.startswith("__")]
+    hook_files = [
+        f for f in hooks_dir.glob("*.py") if f.is_file() and not f.name.startswith("__")
+    ]
 
     all_findings = []
     total_deduction = 0
@@ -301,9 +330,9 @@ def main():
             "passes": passes,
             "fails": fails,
             "warnings": warns,
-            "total_deduction": total_deduction
+            "total_deduction": total_deduction,
         },
-        "findings": all_findings
+        "findings": all_findings,
     }
 
     print(json.dumps(result, indent=2))
