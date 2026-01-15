@@ -1,0 +1,88 @@
+{
+  "name": "pop-project-reference",
+  "description": "Test suite for project reference skill (monorepo context loading)",
+  "tests": [
+    {
+      "name": "list_projects",
+      "description": "List all projects in monorepo workspace",
+      "assertions": [
+        {
+          "type": "output_contains",
+          "expected": "Found",
+          "description": "Should show number of projects found"
+        },
+        {
+          "type": "output_contains",
+          "expected": "| Name | Type | Path |",
+          "description": "Should display projects in table format"
+        }
+      ]
+    },
+    {
+      "name": "load_project_context",
+      "description": "Load specific project context files",
+      "input": {
+        "project_name": "popkit-core"
+      },
+      "assertions": [
+        {
+          "type": "output_contains",
+          "expected": "Project: popkit-core",
+          "description": "Should display project name"
+        },
+        {
+          "type": "output_contains",
+          "expected": "CLAUDE.md",
+          "description": "Should attempt to load CLAUDE.md"
+        },
+        {
+          "type": "output_contains",
+          "expected": "package.json",
+          "description": "Should attempt to load package.json"
+        }
+      ]
+    },
+    {
+      "name": "invalid_project",
+      "description": "Handle non-existent project gracefully",
+      "input": {
+        "project_name": "nonexistent-project-xyz"
+      },
+      "assertions": [
+        {
+          "type": "output_contains",
+          "expected": "not found",
+          "description": "Should report project not found"
+        },
+        {
+          "type": "output_contains",
+          "expected": "Available projects",
+          "description": "Should list available projects"
+        }
+      ]
+    },
+    {
+      "name": "workspace_detection",
+      "description": "Detect workspace root and type",
+      "assertions": [
+        {
+          "type": "output_contains_any",
+          "expected": ["pnpm", "npm", "yarn", "lerna", "workspace"],
+          "description": "Should detect workspace type"
+        }
+      ]
+    }
+  ],
+  "setup": {
+    "requires": ["workspace environment (pnpm/npm/yarn/lerna)"],
+    "environment": {
+      "WORKSPACE_ROOT": "auto-detect"
+    }
+  },
+  "notes": [
+    "Tests require running in a monorepo workspace",
+    "Workspace detection should work for pnpm, npm/yarn, Lerna",
+    "Missing files should be handled gracefully",
+    "Unicode in project context should display correctly"
+  ]
+}
