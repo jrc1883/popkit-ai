@@ -9,44 +9,43 @@ import sys
 import json
 import requests
 from datetime import datetime
-from pathlib import Path
 
 # OPTIMUS WebSocket server endpoint
 OPTIMUS_WS_URL = "http://localhost:3051"
 OPTIMUS_TELEMETRY_ENDPOINT = f"{OPTIMUS_WS_URL}/api/agent/activity"
 OPTIMUS_COLLABORATION_ENDPOINT = f"{OPTIMUS_WS_URL}/api/agent/collaboration"
 
+
 def send_to_optimus(endpoint, data):
     """Send data to OPTIMUS telemetry endpoint"""
     try:
         response = requests.post(
-            endpoint,
-            json=data,
-            timeout=2,
-            headers={'Content-Type': 'application/json'}
+            endpoint, json=data, timeout=2, headers={"Content-Type": "application/json"}
         )
         return response.status_code == 200
-    except Exception as e:
+    except Exception:
         # Fail silently to not disrupt Claude's workflow
         return False
+
 
 def track_tool_use(tool_name, tool_args, tool_result=None, execution_time=0):
     """Track tool usage in OPTIMUS"""
     activity_data = {
-        "agentName": os.environ.get('CLAUDE_AGENT_NAME', 'claude'),
+        "agentName": os.environ.get("CLAUDE_AGENT_NAME", "claude"),
         "activity": f"tool_use:{tool_name}",
         "metadata": {
             "toolName": tool_name,
             "toolArgs": tool_args,
             "executionTime": execution_time,
             "success": tool_result is not None,
-            "sessionId": os.environ.get('CLAUDE_SESSION_ID', 'unknown'),
+            "sessionId": os.environ.get("CLAUDE_SESSION_ID", "unknown"),
             "timestamp": datetime.now().isoformat(),
-            "projectPath": os.getcwd()
-        }
+            "projectPath": os.getcwd(),
+        },
     }
-    
+
     send_to_optimus(OPTIMUS_TELEMETRY_ENDPOINT, activity_data)
+
 
 def track_agent_activation(agent_name, task_type, context=None):
     """Track agent activation in OPTIMUS"""
@@ -56,13 +55,14 @@ def track_agent_activation(agent_name, task_type, context=None):
         "metadata": {
             "taskType": task_type,
             "context": context or {},
-            "sessionId": os.environ.get('CLAUDE_SESSION_ID', 'unknown'),
+            "sessionId": os.environ.get("CLAUDE_SESSION_ID", "unknown"),
             "timestamp": datetime.now().isoformat(),
-            "projectPath": os.getcwd()
-        }
+            "projectPath": os.getcwd(),
+        },
     }
-    
+
     send_to_optimus(OPTIMUS_TELEMETRY_ENDPOINT, activity_data)
+
 
 def track_collaboration(from_agent, to_agent, collaboration_type, metadata=None):
     """Track agent collaboration in OPTIMUS"""
@@ -70,10 +70,11 @@ def track_collaboration(from_agent, to_agent, collaboration_type, metadata=None)
         "agentName": from_agent,
         "partnerAgent": to_agent,
         "collaborationType": collaboration_type,
-        "metadata": metadata or {}
+        "metadata": metadata or {},
     }
-    
+
     send_to_optimus(OPTIMUS_COLLABORATION_ENDPOINT, collab_data)
+
 
 def main():
     """Main hook entry point - JSON stdin/stdout protocol"""
@@ -116,7 +117,7 @@ def main():
             "status": "success",
             "event_type": event_type,
             "tracked": True,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
         print(json.dumps(response))
 
@@ -126,6 +127,7 @@ def main():
     except Exception as e:
         response = {"status": "error", "error": str(e)}
         print(json.dumps(response))
+
 
 if __name__ == "__main__":
     main()

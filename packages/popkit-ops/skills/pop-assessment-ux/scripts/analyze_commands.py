@@ -15,7 +15,7 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 
 def find_project_root(start_path: Path = None) -> Path:
@@ -51,49 +51,53 @@ def analyze_command_naming(project_dir: Path) -> Dict[str, Any]:
             "name": name,
             "length": len(name),
             "has_description": "description:" in content.lower() or "## " in content,
-            "has_examples": "```" in content
+            "has_examples": "```" in content,
         }
 
         # Check naming conventions
         if len(name) > 20:
-            issues.append({
-                "command": name,
-                "issue": "Command name too long (>20 chars)",
-                "severity": "medium"
-            })
+            issues.append(
+                {
+                    "command": name,
+                    "issue": "Command name too long (>20 chars)",
+                    "severity": "medium",
+                }
+            )
 
         if name.startswith("-") or name.endswith("-"):
-            issues.append({
-                "command": name,
-                "issue": "Name starts/ends with hyphen",
-                "severity": "low"
-            })
+            issues.append(
+                {
+                    "command": name,
+                    "issue": "Name starts/ends with hyphen",
+                    "severity": "low",
+                }
+            )
 
         # Check for unclear abbreviations
         unclear_patterns = ["mgr", "mgmt", "impl", "cfg", "init"]
         for abbr in unclear_patterns:
             if abbr in name.lower() and len(name) < 8:
-                issues.append({
-                    "command": name,
-                    "issue": f"Unclear abbreviation '{abbr}' - consider full word",
-                    "severity": "low"
-                })
+                issues.append(
+                    {
+                        "command": name,
+                        "issue": f"Unclear abbreviation '{abbr}' - consider full word",
+                        "severity": "low",
+                    }
+                )
 
         # Check for consistent naming pattern
         if "-" not in name and "_" not in name and len(name) > 10:
-            issues.append({
-                "command": name,
-                "issue": "Long name without word separators",
-                "severity": "low"
-            })
+            issues.append(
+                {
+                    "command": name,
+                    "issue": "Long name without word separators",
+                    "severity": "low",
+                }
+            )
 
         commands.append(cmd_data)
 
-    return {
-        "total": len(commands),
-        "commands": commands,
-        "issues": issues
-    }
+    return {"total": len(commands), "commands": commands, "issues": issues}
 
 
 def analyze_subcommand_consistency(project_dir: Path) -> Dict[str, Any]:
@@ -128,15 +132,17 @@ def analyze_subcommand_consistency(project_dir: Path) -> Dict[str, Any]:
     for verb, alternatives in common_verbs.items():
         found = [alt for alt in alternatives if alt in subcommand_patterns]
         if verb in subcommand_patterns and found:
-            issues.append({
-                "type": "inconsistent_verb",
-                "message": f"Mixed usage: '{verb}' and '{', '.join(found)}'",
-                "severity": "medium"
-            })
+            issues.append(
+                {
+                    "type": "inconsistent_verb",
+                    "message": f"Mixed usage: '{verb}' and '{', '.join(found)}'",
+                    "severity": "medium",
+                }
+            )
 
     return {
         "subcommand_counts": {k: len(v) for k, v in subcommand_patterns.items()},
-        "issues": issues
+        "issues": issues,
     }
 
 
@@ -155,35 +161,38 @@ def analyze_discoverability(project_dir: Path) -> Dict[str, Any]:
 
         # Check for description in frontmatter
         if not re.search(r"^description:", content, re.MULTILINE):
-            issues.append({
-                "command": name,
-                "issue": "Missing description in frontmatter",
-                "severity": "high"
-            })
+            issues.append(
+                {
+                    "command": name,
+                    "issue": "Missing description in frontmatter",
+                    "severity": "high",
+                }
+            )
             score -= 5
 
         # Check for examples
         if content.count("```") < 2:
-            issues.append({
-                "command": name,
-                "issue": "Missing or insufficient examples",
-                "severity": "medium"
-            })
+            issues.append(
+                {
+                    "command": name,
+                    "issue": "Missing or insufficient examples",
+                    "severity": "medium",
+                }
+            )
             score -= 3
 
         # Check for related commands section
         if not re.search(r"related|see also", content, re.IGNORECASE):
-            issues.append({
-                "command": name,
-                "issue": "No related commands section",
-                "severity": "low"
-            })
+            issues.append(
+                {
+                    "command": name,
+                    "issue": "No related commands section",
+                    "severity": "low",
+                }
+            )
             score -= 1
 
-    return {
-        "score": max(0, score),
-        "issues": issues[:20]
-    }
+    return {"score": max(0, score), "issues": issues[:20]}
 
 
 def analyze_help_quality(project_dir: Path) -> Dict[str, Any]:
@@ -205,35 +214,33 @@ def analyze_help_quality(project_dir: Path) -> Dict[str, Any]:
             # Check if flags have descriptions
             flag_table = re.search(r"\| `?--\w+`? \|", content)
             if not flag_table:
-                issues.append({
-                    "command": name,
-                    "issue": "Flags not documented in table format",
-                    "severity": "medium"
-                })
+                issues.append(
+                    {
+                        "command": name,
+                        "issue": "Flags not documented in table format",
+                        "severity": "medium",
+                    }
+                )
                 score -= 3
 
         # Check for common sections
         expected_sections = ["Example", "Usage"]
         for section in expected_sections:
             if not re.search(rf"##.*{section}", content, re.IGNORECASE):
-                issues.append({
-                    "command": name,
-                    "issue": f"Missing '{section}' section",
-                    "severity": "low"
-                })
+                issues.append(
+                    {
+                        "command": name,
+                        "issue": f"Missing '{section}' section",
+                        "severity": "low",
+                    }
+                )
                 score -= 2
 
-    return {
-        "score": max(0, score),
-        "issues": issues[:20]
-    }
+    return {"score": max(0, score), "issues": issues[:20]}
 
 
 def calculate_naming_score(
-    naming: Dict,
-    subcommands: Dict,
-    discoverability: Dict,
-    help_quality: Dict
+    naming: Dict, subcommands: Dict, discoverability: Dict, help_quality: Dict
 ) -> float:
     """Calculate overall command naming score."""
     score = 100
@@ -252,7 +259,11 @@ def calculate_naming_score(
         score -= 5
 
     # Factor in discoverability
-    score = (score * 0.6) + (discoverability.get("score", 0) * 0.2) + (help_quality.get("score", 0) * 0.2)
+    score = (
+        (score * 0.6)
+        + (discoverability.get("score", 0) * 0.2)
+        + (help_quality.get("score", 0) * 0.2)
+    )
 
     return max(0, min(100, round(score)))
 
@@ -275,7 +286,9 @@ def main():
     help_quality = analyze_help_quality(project_dir)
 
     # Calculate score
-    naming_score = calculate_naming_score(naming, subcommands, discoverability, help_quality)
+    naming_score = calculate_naming_score(
+        naming, subcommands, discoverability, help_quality
+    )
 
     # Determine status
     if naming_score >= 90:
@@ -297,11 +310,11 @@ def main():
         "discoverability": discoverability,
         "help_quality": help_quality,
         "all_issues": (
-            naming.get("issues", []) +
-            subcommands.get("issues", []) +
-            discoverability.get("issues", []) +
-            help_quality.get("issues", [])
-        )[:30]
+            naming.get("issues", [])
+            + subcommands.get("issues", [])
+            + discoverability.get("issues", [])
+            + help_quality.get("issues", [])
+        )[:30],
     }
 
     print(json.dumps(report, indent=2))

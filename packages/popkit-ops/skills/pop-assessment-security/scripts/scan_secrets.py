@@ -213,16 +213,13 @@ def scan_file(filepath: Path, plugin_dir: Path) -> List[Dict]:
                 if len(line.strip()) > 80:
                     display_line += "..."
 
-                # Redact the matched secret pattern
-                redacted_line = re.sub(pattern, "[REDACTED]", display_line)
-
                 findings.append(
                     {
                         "id": check_id,
                         "name": check["name"],
                         "file": rel_path,
                         "line": line_num,
-                        "content": redacted_line,
+                        "content": display_line,
                         "severity": check["severity"],
                         "cwe": check["cwe"],
                         "description": check["description"],

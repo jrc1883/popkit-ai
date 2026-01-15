@@ -9,10 +9,10 @@ all PopKit hooks with clear error codes, contextual information, and actionable
 recovery suggestions.
 """
 
-from enum import Enum
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional
 
 
 class ErrorSeverity(Enum):

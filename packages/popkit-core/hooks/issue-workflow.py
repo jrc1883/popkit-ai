@@ -18,7 +18,6 @@ This hook ties together:
 Part of Issue #11 - Unified Orchestration System
 """
 
-import os
 import sys
 import json
 import subprocess
@@ -26,17 +25,14 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 
-from popkit_shared.utils.github_issues import (
-    get_workflow_config,
-    infer_issue_type,
-    get_agents_for_issue_type
-)
+from popkit_shared.utils.github_issues import get_workflow_config
 from popkit_shared.utils.flag_parser import parse_work_args
 
 # Import quality gate hook for phase transitions
 sys.path.insert(0, str(Path(__file__).parent))
 try:
     from importlib import import_module
+
     quality_gate_module = import_module("quality-gate")
     QualityGateHook = quality_gate_module.QualityGateHook
     QUALITY_GATES_AVAILABLE = True
@@ -78,7 +74,7 @@ class IssueWorkflowHook:
             "active_issue": None,
             "current_phase": None,
             "phases_completed": [],
-            "activated_at": None
+            "activated_at": None,
         }
 
     def save_state(self):
@@ -109,7 +105,8 @@ class IssueWorkflowHook:
                 "activated_at": datetime.now().isoformat(),
                 "source": f"issue #{config.get('issue_number', 'unknown')}",
                 "active_issue": config.get("issue_number"),
-                "session_id": existing_state.get("session_id") or f"pop-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                "session_id": existing_state.get("session_id")
+                or f"pop-{datetime.now().strftime('%Y%m%d%H%M%S')}",
                 # Status line fields (these are what statusline.py reads)
                 "current_phase": phases[0] if phases else "implementation",
                 "phase_index": 1,
@@ -120,14 +117,18 @@ class IssueWorkflowHook:
                 "config": {
                     "phases": phases,
                     "agents": config.get("config", {}).get("agents", {}),
-                    "quality_gates": config.get("config", {}).get("quality_gates", [])
-                }
+                    "quality_gates": config.get("config", {}).get("quality_gates", []),
+                },
             }
 
             # Merge: keep agent tracking fields from existing state
             agent_tracking_fields = [
-                "tool_call_count", "tools_used", "files_touched",
-                "decisions", "discoveries", "last_checkin"
+                "tool_call_count",
+                "tools_used",
+                "files_touched",
+                "decisions",
+                "discoveries",
+                "last_checkin",
             ]
             for field in agent_tracking_fields:
                 if field in existing_state:
@@ -162,15 +163,17 @@ class IssueWorkflowHook:
             "implementation": "Implement the solution",
             "testing": "Write and run tests",
             "documentation": "Update documentation",
-            "review": "Review and finalize changes"
+            "review": "Review and finalize changes",
         }
 
         for i, phase in enumerate(phases):
-            todos.append({
-                "content": f"Phase {i+1}: {phase.title()} - {phase_descriptions.get(phase, phase)}",
-                "status": "pending" if i > 0 else "in_progress",
-                "activeForm": f"Working on {phase}"
-            })
+            todos.append(
+                {
+                    "content": f"Phase {i + 1}: {phase.title()} - {phase_descriptions.get(phase, phase)}",
+                    "status": "pending" if i > 0 else "in_progress",
+                    "activeForm": f"Working on {phase}",
+                }
+            )
 
         return todos
 
@@ -199,29 +202,33 @@ class IssueWorkflowHook:
         for phase in workflow.get("suggested_phases", []):
             lines.append(f"  - {phase}")
 
-        lines.extend([
-            "",
-            "Agents:",
-            f"  Primary: {', '.join(config.get('agents', {}).get('primary', ['none']))}",
-            f"  Supporting: {', '.join(config.get('agents', {}).get('supporting', ['none']))}",
-            "",
-            "Quality Gates:",
-        ])
+        lines.extend(
+            [
+                "",
+                "Agents:",
+                f"  Primary: {', '.join(config.get('agents', {}).get('primary', ['none']))}",
+                f"  Supporting: {', '.join(config.get('agents', {}).get('supporting', ['none']))}",
+                "",
+                "Quality Gates:",
+            ]
+        )
 
         for gate in config.get("quality_gates", []):
             lines.append(f"  - {gate}")
 
-        lines.extend([
-            "",
-            "-" * 60,
-            "Activation:",
-            f"  Should Brainstorm: {'Yes' if workflow.get('should_brainstorm') else 'No'}",
-            f"  Should Activate Power Mode: {'Yes' if workflow.get('should_activate_power_mode') else 'No'}",
-            "-" * 60,
-            ""
-        ])
+        lines.extend(
+            [
+                "",
+                "-" * 60,
+                "Activation:",
+                f"  Should Brainstorm: {'Yes' if workflow.get('should_brainstorm') else 'No'}",
+                f"  Should Activate Power Mode: {'Yes' if workflow.get('should_activate_power_mode') else 'No'}",
+                "-" * 60,
+                "",
+            ]
+        )
 
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
     def start_issue_workflow(self, issue_number: int) -> Dict[str, Any]:
         """Start working on an issue - main entry point.
@@ -238,7 +245,7 @@ class IssueWorkflowHook:
             "workflow": None,
             "actions": [],
             "todos": [],
-            "messages": []
+            "messages": [],
         }
 
         # Fetch and parse issue
@@ -253,30 +260,35 @@ class IssueWorkflowHook:
 
         # Determine actions
         if workflow.get("should_brainstorm"):
-            result["actions"].append({
-                "type": "trigger_skill",
-                "skill": "pop-brainstorming",
-                "reason": "Issue specifies 'Brainstorm First' workflow"
-            })
+            result["actions"].append(
+                {
+                    "type": "trigger_skill",
+                    "skill": "pop-brainstorming",
+                    "reason": "Issue specifies 'Brainstorm First' workflow",
+                }
+            )
             result["messages"].append("Brainstorming recommended before implementation")
 
         if workflow.get("should_activate_power_mode"):
-            result["actions"].append({
-                "type": "activate_power_mode",
-                "reason": f"Power Mode: {workflow['config']['power_mode']}, Complexity: {workflow['config']['complexity']}"
-            })
-            self.activate_power_mode({
-                "issue_number": issue_number,
-                **workflow
-            })
-            result["messages"].append("Power Mode activated for parallel agent coordination")
+            result["actions"].append(
+                {
+                    "type": "activate_power_mode",
+                    "reason": f"Power Mode: {workflow['config']['power_mode']}, Complexity: {workflow['config']['complexity']}",
+                }
+            )
+            self.activate_power_mode({"issue_number": issue_number, **workflow})
+            result["messages"].append(
+                "Power Mode activated for parallel agent coordination"
+            )
 
         # Generate todos from phases
         result["todos"] = self.generate_todo_list(workflow)
 
         # Update state
         self.state["active_issue"] = issue_number
-        self.state["current_phase"] = workflow.get("suggested_phases", ["implementation"])[0]
+        self.state["current_phase"] = workflow.get(
+            "suggested_phases", ["implementation"]
+        )[0]
         self.state["phases_completed"] = []
         self.state["activated_at"] = datetime.now().isoformat()
         self.save_state()
@@ -286,7 +298,9 @@ class IssueWorkflowHook:
 
         return result
 
-    def start_work_on_issue(self, issue_number: int, flags: Dict[str, Any] = None) -> Dict[str, Any]:
+    def start_work_on_issue(
+        self, issue_number: int, flags: Dict[str, Any] = None
+    ) -> Dict[str, Any]:
         """Start working on an issue with flag support - for /popkit:work command.
 
         This is the enhanced version of start_issue_workflow that respects
@@ -313,7 +327,7 @@ class IssueWorkflowHook:
             "power_mode_source": None,
             "actions": [],
             "todos": [],
-            "messages": []
+            "messages": [],
         }
 
         # Fetch and parse issue
@@ -329,15 +343,19 @@ class IssueWorkflowHook:
         # Override phases if specified
         if flags.get("phases"):
             workflow["suggested_phases"] = flags["phases"]
-            result["messages"].append(f"Using custom phases: {', '.join(flags['phases'])}")
+            result["messages"].append(
+                f"Using custom phases: {', '.join(flags['phases'])}"
+            )
 
         # Override agents if specified
         if flags.get("agents"):
             workflow["config"]["agents"] = {
                 "primary": flags["agents"][:1] if flags["agents"] else [],
-                "supporting": flags["agents"][1:] if len(flags["agents"]) > 1 else []
+                "supporting": flags["agents"][1:] if len(flags["agents"]) > 1 else [],
             }
-            result["messages"].append(f"Using custom agents: {', '.join(flags['agents'])}")
+            result["messages"].append(
+                f"Using custom agents: {', '.join(flags['agents'])}"
+            )
 
         # Determine Power Mode activation (flag priority)
         should_activate_power = False
@@ -366,22 +384,20 @@ class IssueWorkflowHook:
 
         # Determine actions
         if workflow.get("should_brainstorm"):
-            result["actions"].append({
-                "type": "trigger_skill",
-                "skill": "pop-brainstorming",
-                "reason": "Issue specifies 'Brainstorm First' workflow"
-            })
+            result["actions"].append(
+                {
+                    "type": "trigger_skill",
+                    "skill": "pop-brainstorming",
+                    "reason": "Issue specifies 'Brainstorm First' workflow",
+                }
+            )
             result["messages"].append("Brainstorming recommended before implementation")
 
         if should_activate_power:
-            result["actions"].append({
-                "type": "activate_power_mode",
-                "reason": power_source
-            })
-            self.activate_power_mode({
-                "issue_number": issue_number,
-                **workflow
-            })
+            result["actions"].append(
+                {"type": "activate_power_mode", "reason": power_source}
+            )
+            self.activate_power_mode({"issue_number": issue_number, **workflow})
             result["messages"].append(f"Power Mode activated ({power_source})")
         else:
             result["messages"].append(f"Sequential mode ({power_source})")
@@ -391,7 +407,9 @@ class IssueWorkflowHook:
 
         # Update state
         self.state["active_issue"] = issue_number
-        self.state["current_phase"] = workflow.get("suggested_phases", ["implementation"])[0]
+        self.state["current_phase"] = workflow.get(
+            "suggested_phases", ["implementation"]
+        )[0]
         self.state["phases_completed"] = []
         self.state["activated_at"] = datetime.now().isoformat()
         self.state["power_mode"] = should_activate_power
@@ -421,7 +439,7 @@ class IssueWorkflowHook:
             "actions": [],
             "messages": [],
             "gate_results": None,
-            "blocked": False
+            "blocked": False,
         }
 
         # Load current workflow state
@@ -432,7 +450,9 @@ class IssueWorkflowHook:
         # Determine next phase first (before gates)
         workflow = get_workflow_config(self.state["active_issue"])
         if workflow.get("error"):
-            result["messages"].append(f"Warning: Could not fetch issue: {workflow['error']}")
+            result["messages"].append(
+                f"Warning: Could not fetch issue: {workflow['error']}"
+            )
             return result
 
         phases = workflow.get("suggested_phases", [])
@@ -455,8 +475,8 @@ class IssueWorkflowHook:
             if not gate_results["passed"] and not force:
                 result["blocked"] = True
                 result["messages"].append(
-                    f"Phase transition blocked: quality gates failed. "
-                    f"Fix errors or use force=True to proceed anyway."
+                    "Phase transition blocked: quality gates failed. "
+                    "Fix errors or use force=True to proceed anyway."
                 )
                 return result
 
@@ -479,27 +499,28 @@ class IssueWorkflowHook:
             # Create checkpoint at phase boundary
             checkpoint = self.create_phase_checkpoint(next_phase)
             if checkpoint:
-                result["actions"].append({
-                    "type": "checkpoint_created",
-                    "path": checkpoint,
-                    "phase": next_phase
-                })
+                result["actions"].append(
+                    {
+                        "type": "checkpoint_created",
+                        "path": checkpoint,
+                        "phase": next_phase,
+                    }
+                )
 
             # Update power mode state for status line
             self._update_power_mode_progress(
                 current_phase=next_phase,
                 phase_index=next_phase_index + 1,
                 total_phases=len(phases),
-                phases_completed=list(completed)
+                phases_completed=list(completed),
             )
 
             result["messages"].append(f"Transitioned to phase: {next_phase}")
         else:
             result["messages"].append("All phases complete!")
-            result["actions"].append({
-                "type": "deactivate_power_mode",
-                "reason": "All phases complete"
-            })
+            result["actions"].append(
+                {"type": "deactivate_power_mode", "reason": "All phases complete"}
+            )
             self.deactivate_power_mode()
 
         self.save_state()
@@ -510,7 +531,7 @@ class IssueWorkflowHook:
         current_phase: str,
         phase_index: int,
         total_phases: int,
-        phases_completed: List[str]
+        phases_completed: List[str],
     ):
         """Update power mode state file for status line integration."""
         try:
@@ -522,7 +543,11 @@ class IssueWorkflowHook:
                     power_state["total_phases"] = total_phases
                     power_state["phases_completed"] = phases_completed
                     # Calculate progress as percentage of phases complete
-                    power_state["progress"] = len(phases_completed) / total_phases if total_phases > 0 else 0.0
+                    power_state["progress"] = (
+                        len(phases_completed) / total_phases
+                        if total_phases > 0
+                        else 0.0
+                    )
                     self.power_mode_state.write_text(json.dumps(power_state, indent=2))
         except Exception:
             pass  # Don't fail if status update fails
@@ -552,10 +577,9 @@ class IssueWorkflowHook:
             # Capture all uncommitted changes
             result = subprocess.run(
                 ["git", "diff", "HEAD"],
-
                 capture_output=True,
                 text=True,
-                cwd=str(self.cwd)
+                cwd=str(self.cwd),
             )
 
             if result.stdout:
@@ -564,13 +588,15 @@ class IssueWorkflowHook:
                 return str(checkpoint_path)
             else:
                 # No changes to checkpoint - that's OK
-                print(f"Phase checkpoint: no uncommitted changes", file=sys.stderr)
+                print("Phase checkpoint: no uncommitted changes", file=sys.stderr)
                 return None
         except Exception as e:
             print(f"Warning: Could not create phase checkpoint: {e}", file=sys.stderr)
             return None
 
-    def run_phase_transition_gates(self, from_phase: str, to_phase: str) -> Dict[str, Any]:
+    def run_phase_transition_gates(
+        self, from_phase: str, to_phase: str
+    ) -> Dict[str, Any]:
         """Run quality gates before allowing phase transition.
 
         Executes configured quality gates (tsc, build, lint, etc.) and
@@ -593,23 +619,32 @@ class IssueWorkflowHook:
             "can_proceed": True,
             "action": "proceed",
             "from_phase": from_phase,
-            "to_phase": to_phase
+            "to_phase": to_phase,
         }
 
         # Skip if quality gates not available
         if not self.quality_gate:
-            print("Quality gates not available - proceeding without validation", file=sys.stderr)
+            print(
+                "Quality gates not available - proceeding without validation",
+                file=sys.stderr,
+            )
             return result
 
         # Run all enabled quality gates
-        print(f"Running quality gates before {from_phase} → {to_phase} transition...", file=sys.stderr)
+        print(
+            f"Running quality gates before {from_phase} → {to_phase} transition...",
+            file=sys.stderr,
+        )
         gate_results = self.quality_gate.run_all_gates()
 
         result["gates"] = gate_results.get("gates", [])
         result["passed"] = gate_results.get("passed", True)
 
         if result["passed"]:
-            print(f"All quality gates passed ({gate_results.get('duration', 0):.1f}s)", file=sys.stderr)
+            print(
+                f"All quality gates passed ({gate_results.get('duration', 0):.1f}s)",
+                file=sys.stderr,
+            )
             return result
 
         # Gates failed - determine action
@@ -620,21 +655,36 @@ class IssueWorkflowHook:
         failed_gates = [g for g in result["gates"] if not g.get("success")]
         error_count = sum(len(g.get("errors", [])) for g in failed_gates)
 
-        print(f"\nPhase transition blocked: {len(failed_gates)} gate(s) failed with {error_count} error(s)", file=sys.stderr)
-        print(f"Cannot proceed from '{from_phase}' to '{to_phase}' until issues are resolved.", file=sys.stderr)
+        print(
+            f"\nPhase transition blocked: {len(failed_gates)} gate(s) failed with {error_count} error(s)",
+            file=sys.stderr,
+        )
+        print(
+            f"Cannot proceed from '{from_phase}' to '{to_phase}' until issues are resolved.",
+            file=sys.stderr,
+        )
 
         for gate in failed_gates:
             print(f"\n  {gate['name']}:", file=sys.stderr)
             for error in gate.get("errors", [])[:3]:
                 if "file" in error:
-                    print(f"    {error['file']}:{error.get('line', '?')} - {error['message']}", file=sys.stderr)
+                    print(
+                        f"    {error['file']}:{error.get('line', '?')} - {error['message']}",
+                        file=sys.stderr,
+                    )
                 else:
                     print(f"    {error['message']}", file=sys.stderr)
 
         print("\nOptions:", file=sys.stderr)
         print("  1. Fix the errors and retry phase completion", file=sys.stderr)
-        print("  2. Use '/popkit:issue phase rollback' to restore checkpoint", file=sys.stderr)
-        print("  3. Use '/popkit:issue phase force' to proceed anyway (not recommended)", file=sys.stderr)
+        print(
+            "  2. Use '/popkit:issue phase rollback' to restore checkpoint",
+            file=sys.stderr,
+        )
+        print(
+            "  3. Use '/popkit:issue phase force' to proceed anyway (not recommended)",
+            file=sys.stderr,
+        )
 
         return result
 
@@ -653,7 +703,7 @@ class IssueWorkflowHook:
             "success": False,
             "phase": phase_name,
             "checkpoint": None,
-            "message": ""
+            "message": "",
         }
 
         # Find most recent checkpoint for this phase
@@ -671,13 +721,15 @@ class IssueWorkflowHook:
 
         try:
             # First, save current changes as a recovery file
-            recovery_path = self.phase_checkpoints_dir / f"recovery-{datetime.now().strftime('%Y%m%d-%H%M%S')}.patch"
+            recovery_path = (
+                self.phase_checkpoints_dir
+                / f"recovery-{datetime.now().strftime('%Y%m%d-%H%M%S')}.patch"
+            )
             current_diff = subprocess.run(
                 ["git", "diff", "HEAD"],
-
                 capture_output=True,
                 text=True,
-                cwd=str(self.cwd)
+                cwd=str(self.cwd),
             )
             if current_diff.stdout:
                 recovery_path.write_text(current_diff.stdout)
@@ -688,14 +740,14 @@ class IssueWorkflowHook:
             subprocess.run(["git", "clean", "-fd"], cwd=str(self.cwd), check=True)
 
             # Apply the checkpoint patch
-            subprocess.run(["git", "apply", str(latest)],
-                cwd=str(self.cwd),
-                check=True
-            )
+            subprocess.run(["git", "apply", str(latest)], cwd=str(self.cwd), check=True)
 
             result["success"] = True
             result["message"] = f"Rolled back to start of phase '{phase_name}'"
-            print(f"Rollback successful. Restored to checkpoint: {latest.name}", file=sys.stderr)
+            print(
+                f"Rollback successful. Restored to checkpoint: {latest.name}",
+                file=sys.stderr,
+            )
 
         except subprocess.CalledProcessError as e:
             result["message"] = f"Rollback failed: {e}"
@@ -719,10 +771,11 @@ class IssueWorkflowHook:
             "current_phase": self.state.get("current_phase"),
             "phases_completed": self.state.get("phases_completed", []),
             "phases_remaining": [
-                p for p in workflow.get("suggested_phases", [])
+                p
+                for p in workflow.get("suggested_phases", [])
                 if p not in self.state.get("phases_completed", [])
             ],
-            "activated_at": self.state.get("activated_at")
+            "activated_at": self.state.get("activated_at"),
         }
 
 
@@ -830,12 +883,26 @@ if __name__ == "__main__":
 
         else:
             print("Usage:")
-            print("  python issue-workflow.py start <issue_number>  # Start working on issue")
-            print("  python issue-workflow.py work #4 -p            # Start with flags (Power Mode)")
-            print("  python issue-workflow.py work #4 --solo        # Start without Power Mode")
-            print("  python issue-workflow.py status                # Get current status")
-            print("  python issue-workflow.py complete <phase>      # Complete a phase (runs quality gates)")
-            print("  python issue-workflow.py complete <phase> -f   # Complete phase, ignore gate failures")
-            print("  python issue-workflow.py rollback <phase>      # Rollback to phase checkpoint")
+            print(
+                "  python issue-workflow.py start <issue_number>  # Start working on issue"
+            )
+            print(
+                "  python issue-workflow.py work #4 -p            # Start with flags (Power Mode)"
+            )
+            print(
+                "  python issue-workflow.py work #4 --solo        # Start without Power Mode"
+            )
+            print(
+                "  python issue-workflow.py status                # Get current status"
+            )
+            print(
+                "  python issue-workflow.py complete <phase>      # Complete a phase (runs quality gates)"
+            )
+            print(
+                "  python issue-workflow.py complete <phase> -f   # Complete phase, ignore gate failures"
+            )
+            print(
+                "  python issue-workflow.py rollback <phase>      # Rollback to phase checkpoint"
+            )
     else:
         main()

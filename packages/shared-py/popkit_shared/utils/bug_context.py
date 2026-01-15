@@ -753,7 +753,7 @@ def share_bug_pattern(ctx: BugContext) -> Optional[Dict[str, Any]]:
     try:
         power_mode_path = Path(__file__).parent.parent.parent / "power-mode"
         sys.path.insert(0, str(power_mode_path))
-        from pattern_client import PatternClient, PatternContext
+        from pattern_client import PatternClient, PatternType, ShareLevel
     except ImportError:
         return None
 
@@ -783,16 +783,26 @@ def share_bug_pattern(ctx: BugContext) -> Optional[Dict[str, Any]]:
 
         solution = ". ".join(solution_parts)
 
-        # Build context
-        pattern_context = PatternContext(
-            languages=[ctx.project.language] if ctx.project and ctx.project.language else [],
-            frameworks=[ctx.project.framework] if ctx.project and ctx.project.framework else [],
-            error_types=[e.error_type for e in ctx.errors if e.error_type],
-        )
+        # Build metadata dict
+        metadata = {}
+        if ctx.project:
+            if ctx.project.language:
+                metadata["language"] = ctx.project.language
+            if ctx.project.framework:
+                metadata["framework"] = ctx.project.framework
 
-        # Submit pattern (auto-anonymizes)
+        # Add error types as tags
+        error_types = [e.error_type for e in ctx.errors if e.error_type]
+        if error_types:
+            metadata["tags"] = error_types
+
+        # Submit pattern (auto-anonymizes based on share_level)
         result = client.submit_pattern(
-            trigger=trigger, solution=solution, context=pattern_context, anonymize=True
+            pattern_type=PatternType.ERROR,
+            content=trigger,
+            solution=solution,
+            share_level=ShareLevel.COMMUNITY,
+            metadata=metadata,
         )
 
         return result
@@ -815,7 +825,7 @@ def search_patterns_for_bug(ctx: BugContext) -> List[Dict[str, Any]]:
     try:
         power_mode_path = Path(__file__).parent.parent.parent / "power-mode"
         sys.path.insert(0, str(power_mode_path))
-        from pattern_client import PatternClient, PatternContext
+        from pattern_client import PatternClient
     except ImportError:
         return []
 
@@ -838,20 +848,20 @@ def search_patterns_for_bug(ctx: BugContext) -> List[Dict[str, Any]]:
         language = ctx.project.language if ctx.project and ctx.project.language else None
         framework = ctx.project.framework if ctx.project and ctx.project.framework else None
 
-        # Search patterns
-        patterns = client.search_patterns(
+        # Search patterns - returns PatternSearchResult with .patterns list
+        result = client.search_patterns(
             query=query, language=language, framework=framework, per_page=3, min_score=0.6
         )
 
+        # Extract relevant fields from pattern dicts
         return [
             {
-                "id": p.id,
-                "trigger": p.trigger,
-                "solution": p.solution,
-                "similarity": p.similarity,
-                "quality_score": p.quality_score,
+                "id": p.get("id"),
+                "content": p.get("content"),
+                "solution": p.get("solution"),
+                "quality_score": p.get("quality_score"),
             }
-            for p in patterns
+            for p in result.patterns
         ]
 
     except Exception:

@@ -16,17 +16,19 @@ import sqlite3
 import hashlib
 from pathlib import Path
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any
 
 # Optional imports with graceful fallback
 try:
     import requests
+
     HAS_REQUESTS = True
 except ImportError:
     HAS_REQUESTS = False
 
 try:
     import html2text
+
     HAS_HTML2TEXT = True
 except ImportError:
     HAS_HTML2TEXT = False
@@ -46,11 +48,7 @@ TIME_BUDGET_SECONDS = 8  # Stay within 10s hook timeout
 # Default sources configuration
 DEFAULT_SOURCES = {
     "version": "1.0.0",
-    "settings": {
-        "defaultTTL": 86400,
-        "maxContentSize": 50000,
-        "fetchTimeout": 30000
-    },
+    "settings": {"defaultTTL": 86400, "maxContentSize": 50000, "fetchTimeout": 30000},
     "sources": [
         {
             "id": "anthropic-engineering",
@@ -59,7 +57,7 @@ DEFAULT_SOURCES = {
             "enabled": True,
             "ttl": 86400,
             "tags": ["claude", "best-practices"],
-            "priority": "high"
+            "priority": "high",
         },
         {
             "id": "claude-code-docs-overview",
@@ -68,7 +66,7 @@ DEFAULT_SOURCES = {
             "enabled": True,
             "ttl": 86400,
             "tags": ["claude-code", "documentation"],
-            "priority": "high"
+            "priority": "high",
         },
         {
             "id": "claude-code-docs-hooks",
@@ -77,9 +75,9 @@ DEFAULT_SOURCES = {
             "enabled": True,
             "ttl": 86400,
             "tags": ["claude-code", "hooks"],
-            "priority": "high"
-        }
-    ]
+            "priority": "high",
+        },
+    ],
 }
 
 
@@ -101,7 +99,7 @@ class KnowledgeSync:
         conn = sqlite3.connect(str(CACHE_DB))
         cursor = conn.cursor()
 
-        cursor.execute('''
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS knowledge_cache (
                 id TEXT PRIMARY KEY,
                 source_id TEXT NOT NULL,
@@ -115,9 +113,9 @@ class KnowledgeSync:
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
-        ''')
+        """)
 
-        cursor.execute('''
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS fetch_history (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 source_id TEXT NOT NULL,
@@ -128,14 +126,14 @@ class KnowledgeSync:
                 content_size INTEGER,
                 error_message TEXT
             )
-        ''')
+        """)
 
-        cursor.execute('''
+        cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_source_id ON knowledge_cache(source_id)
-        ''')
-        cursor.execute('''
+        """)
+        cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_expires_at ON knowledge_cache(expires_at)
-        ''')
+        """)
 
         conn.commit()
         conn.close()
@@ -147,7 +145,7 @@ class KnowledgeSync:
             return DEFAULT_SOURCES
 
         try:
-            with open(SOURCES_FILE, 'r', encoding='utf-8') as f:
+            with open(SOURCES_FILE, "r", encoding="utf-8") as f:
                 return json.load(f)
         except (json.JSONDecodeError, IOError):
             return DEFAULT_SOURCES
@@ -155,7 +153,7 @@ class KnowledgeSync:
     def save_config(self, config: Dict[str, Any]) -> bool:
         """Save sources configuration."""
         try:
-            with open(SOURCES_FILE, 'w', encoding='utf-8') as f:
+            with open(SOURCES_FILE, "w", encoding="utf-8") as f:
                 json.dump(config, f, indent=2)
             return True
         except IOError:
@@ -166,10 +164,13 @@ class KnowledgeSync:
         conn = sqlite3.connect(str(CACHE_DB))
         cursor = conn.cursor()
 
-        cursor.execute('''
+        cursor.execute(
+            """
             SELECT expires_at FROM knowledge_cache
             WHERE source_id = ? AND status = 'fresh'
-        ''', (source_id,))
+        """,
+            (source_id,),
+        )
 
         result = cursor.fetchone()
         conn.close()
@@ -188,7 +189,9 @@ class KnowledgeSync:
         elapsed = (datetime.now() - self.start_time).total_seconds()
         return max(0, TIME_BUDGET_SECONDS - elapsed)
 
-    def fetch_url(self, url: str, timeout: int = FETCH_TIMEOUT_SECONDS) -> Optional[str]:
+    def fetch_url(
+        self, url: str, timeout: int = FETCH_TIMEOUT_SECONDS
+    ) -> Optional[str]:
         """Fetch URL and convert HTML to markdown."""
         if not HAS_REQUESTS:
             return None
@@ -198,9 +201,9 @@ class KnowledgeSync:
                 url,
                 timeout=min(timeout, self.time_remaining()),
                 headers={
-                    'User-Agent': 'popkit-knowledge-sync/1.0',
-                    'Accept': 'text/html,application/xhtml+xml'
-                }
+                    "User-Agent": "popkit-knowledge-sync/1.0",
+                    "Accept": "text/html,application/xhtml+xml",
+                },
             )
 
             if response.status_code != 200:
@@ -218,8 +221,9 @@ class KnowledgeSync:
             else:
                 # Basic HTML stripping fallback
                 import re
-                content = re.sub(r'<[^>]+>', '', html_content)
-                content = re.sub(r'\s+', ' ', content)
+
+                content = re.sub(r"<[^>]+>", "", html_content)
+                content = re.sub(r"\s+", " ", content)
 
             # Truncate if too large
             if len(content) > MAX_CONTENT_SIZE:
@@ -232,14 +236,14 @@ class KnowledgeSync:
 
     def cache_content(self, source: Dict[str, Any], content: str) -> bool:
         """Store content in file and metadata in database."""
-        source_id = source.get('id', 'unknown')
-        url = source.get('url', '')
-        ttl = source.get('ttl', DEFAULT_TTL_SECONDS)
+        source_id = source.get("id", "unknown")
+        url = source.get("url", "")
+        ttl = source.get("ttl", DEFAULT_TTL_SECONDS)
 
         # Save content to file
         content_file = CONTENT_DIR / f"{source_id}.md"
         try:
-            with open(content_file, 'w', encoding='utf-8') as f:
+            with open(content_file, "w", encoding="utf-8") as f:
                 f.write(f"# {source.get('name', source_id)}\n\n")
                 f.write(f"Source: {url}\n")
                 f.write(f"Fetched: {datetime.now().isoformat()}\n\n")
@@ -256,46 +260,59 @@ class KnowledgeSync:
         conn = sqlite3.connect(str(CACHE_DB))
         cursor = conn.cursor()
 
-        cursor.execute('''
+        cursor.execute(
+            """
             INSERT OR REPLACE INTO knowledge_cache
             (id, source_id, url, fetched_at, expires_at, content_hash, content_size, status, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            source_id,
-            source_id,
-            url,
-            now.isoformat(),
-            expires.isoformat(),
-            content_hash,
-            len(content),
-            'fresh',
-            now.isoformat()
-        ))
+        """,
+            (
+                source_id,
+                source_id,
+                url,
+                now.isoformat(),
+                expires.isoformat(),
+                content_hash,
+                len(content),
+                "fresh",
+                now.isoformat(),
+            ),
+        )
 
         conn.commit()
         conn.close()
 
         return True
 
-    def log_fetch(self, source_id: str, url: str, success: bool,
-                  duration_ms: int, content_size: int = 0, error: str = None):
+    def log_fetch(
+        self,
+        source_id: str,
+        url: str,
+        success: bool,
+        duration_ms: int,
+        content_size: int = 0,
+        error: str = None,
+    ):
         """Log fetch attempt to history table."""
         conn = sqlite3.connect(str(CACHE_DB))
         cursor = conn.cursor()
 
-        cursor.execute('''
+        cursor.execute(
+            """
             INSERT INTO fetch_history
             (source_id, url, timestamp, success, duration_ms, content_size, error_message)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            source_id,
-            url,
-            datetime.now().isoformat(),
-            1 if success else 0,
-            duration_ms,
-            content_size,
-            error
-        ))
+        """,
+            (
+                source_id,
+                url,
+                datetime.now().isoformat(),
+                1 if success else 0,
+                duration_ms,
+                content_size,
+                error,
+            ),
+        )
 
         conn.commit()
         conn.close()
@@ -303,40 +320,36 @@ class KnowledgeSync:
     def sync_sources(self) -> Dict[str, Any]:
         """Sync all enabled sources within time budget."""
         config = self.load_config()
-        sources = config.get('sources', [])
+        sources = config.get("sources", [])
 
         # Sort by priority (high first)
-        priority_order = {'high': 0, 'medium': 1, 'low': 2}
-        sources = sorted(sources,
-                        key=lambda s: priority_order.get(s.get('priority', 'medium'), 1))
+        priority_order = {"high": 0, "medium": 1, "low": 2}
+        sources = sorted(
+            sources, key=lambda s: priority_order.get(s.get("priority", "medium"), 1)
+        )
 
-        results = {
-            'synced': [],
-            'fresh': [],
-            'skipped': [],
-            'errors': []
-        }
+        results = {"synced": [], "fresh": [], "skipped": [], "errors": []}
 
         for source in sources:
             # Check time budget
             if self.time_remaining() < 2:
-                results['skipped'].append(source.get('id', 'unknown'))
+                results["skipped"].append(source.get("id", "unknown"))
                 continue
 
-            source_id = source.get('id', 'unknown')
+            source_id = source.get("id", "unknown")
 
             # Skip disabled sources
-            if not source.get('enabled', True):
-                results['skipped'].append(source_id)
+            if not source.get("enabled", True):
+                results["skipped"].append(source_id)
                 continue
 
             # Check cache freshness
             if self.is_cache_fresh(source_id):
-                results['fresh'].append(source_id)
+                results["fresh"].append(source_id)
                 continue
 
             # Fetch and cache
-            url = source.get('url', '')
+            url = source.get("url", "")
             start = datetime.now()
 
             content = self.fetch_url(url)
@@ -344,13 +357,15 @@ class KnowledgeSync:
 
             if content:
                 if self.cache_content(source, content):
-                    results['synced'].append(source_id)
+                    results["synced"].append(source_id)
                     self.log_fetch(source_id, url, True, duration_ms, len(content))
                 else:
-                    results['errors'].append(source_id)
-                    self.log_fetch(source_id, url, False, duration_ms, error="Cache write failed")
+                    results["errors"].append(source_id)
+                    self.log_fetch(
+                        source_id, url, False, duration_ms, error="Cache write failed"
+                    )
             else:
-                results['errors'].append(source_id)
+                results["errors"].append(source_id)
                 self.log_fetch(source_id, url, False, duration_ms, error="Fetch failed")
 
         return results
@@ -358,32 +373,35 @@ class KnowledgeSync:
     def get_status(self) -> Dict[str, Any]:
         """Get current cache status."""
         config = self.load_config()
-        sources = config.get('sources', [])
+        sources = config.get("sources", [])
 
         conn = sqlite3.connect(str(CACHE_DB))
         cursor = conn.cursor()
 
         status = {
-            'total_sources': len(sources),
-            'enabled_sources': sum(1 for s in sources if s.get('enabled', True)),
-            'cached': 0,
-            'fresh': 0,
-            'stale': 0,
-            'sources': []
+            "total_sources": len(sources),
+            "enabled_sources": sum(1 for s in sources if s.get("enabled", True)),
+            "cached": 0,
+            "fresh": 0,
+            "stale": 0,
+            "sources": [],
         }
 
         for source in sources:
-            source_id = source.get('id', 'unknown')
+            source_id = source.get("id", "unknown")
 
-            cursor.execute('''
+            cursor.execute(
+                """
                 SELECT fetched_at, expires_at, content_size, status
                 FROM knowledge_cache WHERE source_id = ?
-            ''', (source_id,))
+            """,
+                (source_id,),
+            )
 
             result = cursor.fetchone()
 
             if result:
-                status['cached'] += 1
+                status["cached"] += 1
                 try:
                     expires = datetime.fromisoformat(result[1])
                     is_fresh = datetime.now() < expires
@@ -391,23 +409,27 @@ class KnowledgeSync:
                     is_fresh = False
 
                 if is_fresh:
-                    status['fresh'] += 1
+                    status["fresh"] += 1
                 else:
-                    status['stale'] += 1
+                    status["stale"] += 1
 
-                status['sources'].append({
-                    'id': source_id,
-                    'name': source.get('name', source_id),
-                    'status': 'fresh' if is_fresh else 'stale',
-                    'fetched_at': result[0],
-                    'size': result[2]
-                })
+                status["sources"].append(
+                    {
+                        "id": source_id,
+                        "name": source.get("name", source_id),
+                        "status": "fresh" if is_fresh else "stale",
+                        "fetched_at": result[0],
+                        "size": result[2],
+                    }
+                )
             else:
-                status['sources'].append({
-                    'id': source_id,
-                    'name': source.get('name', source_id),
-                    'status': 'not_cached'
-                })
+                status["sources"].append(
+                    {
+                        "id": source_id,
+                        "name": source.get("name", source_id),
+                        "status": "not_cached",
+                    }
+                )
 
         conn.close()
         return status
@@ -425,17 +447,20 @@ def main():
         results = syncer.sync_sources()
 
         # Log status to stderr
-        synced_count = len(results.get('synced', []))
-        fresh_count = len(results.get('fresh', []))
+        synced_count = len(results.get("synced", []))
+        fresh_count = len(results.get("fresh", []))
         if synced_count > 0:
-            print(f"Knowledge sync: {synced_count} updated, {fresh_count} cached", file=sys.stderr)
+            print(
+                f"Knowledge sync: {synced_count} updated, {fresh_count} cached",
+                file=sys.stderr,
+            )
 
         # Output JSON response
         response = {
             "status": "success",
             "knowledge_sync": results,
             "timestamp": datetime.now().isoformat(),
-            "cache_location": str(KNOWLEDGE_DIR)
+            "cache_location": str(KNOWLEDGE_DIR),
         }
         print(json.dumps(response))
 

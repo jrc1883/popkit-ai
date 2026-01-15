@@ -320,6 +320,9 @@ class VoyageClient:
                     time.sleep(delay)
                     delay *= 2
 
+        # Ensure we always have an error to raise
+        if last_error is None:
+            raise RuntimeError("API call failed after all retry attempts")
         raise last_error
 
     def _wait_for_rate_limit(self, estimated_tokens: int) -> None:

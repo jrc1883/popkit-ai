@@ -12,9 +12,7 @@ Output:
 """
 
 import json
-import os
 import sys
-from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -41,7 +39,7 @@ def measure_file_complexity(project_dir: Path) -> Dict[str, Any]:
         "total_files": 0,
         "large_files": [],
         "deep_nesting": [],
-        "complex_files": []
+        "complex_files": [],
     }
 
     for ext in ["*.py", "*.ts", "*.js", "*.md", "*.json"]:
@@ -56,10 +54,12 @@ def measure_file_complexity(project_dir: Path) -> Dict[str, Any]:
                 size_kb = stat.st_size / 1024
 
                 if size_kb > 50:
-                    metrics["large_files"].append({
-                        "path": str(file_path.relative_to(project_dir)),
-                        "size_kb": round(size_kb, 2)
-                    })
+                    metrics["large_files"].append(
+                        {
+                            "path": str(file_path.relative_to(project_dir)),
+                            "size_kb": round(size_kb, 2),
+                        }
+                    )
 
                 # Check nesting for code files
                 if ext in ["*.py", "*.ts", "*.js"]:
@@ -75,16 +75,20 @@ def measure_file_complexity(project_dir: Path) -> Dict[str, Any]:
                             max_indent = max(max_indent, spaces // 4)
 
                     if max_indent > 6:
-                        metrics["deep_nesting"].append({
-                            "path": str(file_path.relative_to(project_dir)),
-                            "max_depth": max_indent
-                        })
+                        metrics["deep_nesting"].append(
+                            {
+                                "path": str(file_path.relative_to(project_dir)),
+                                "max_depth": max_indent,
+                            }
+                        )
 
             except Exception:
                 pass
 
     # Limit lists
-    metrics["large_files"] = sorted(metrics["large_files"], key=lambda x: x["size_kb"], reverse=True)[:10]
+    metrics["large_files"] = sorted(
+        metrics["large_files"], key=lambda x: x["size_kb"], reverse=True
+    )[:10]
     metrics["deep_nesting"] = metrics["deep_nesting"][:10]
 
     return metrics
@@ -109,12 +113,12 @@ def analyze_caching_opportunities(project_dir: Path) -> Dict[str, Any]:
         content = py_file.read_text(encoding="utf-8", errors="ignore")
 
         import re
+
         for pattern, desc in cache_patterns:
             if re.search(pattern, content):
-                implementations.append({
-                    "file": str(py_file.relative_to(project_dir)),
-                    "pattern": desc
-                })
+                implementations.append(
+                    {"file": str(py_file.relative_to(project_dir)), "pattern": desc}
+                )
 
         # Look for expensive operations without caching
         expensive_uncached = [
@@ -124,14 +128,13 @@ def analyze_caching_opportunities(project_dir: Path) -> Dict[str, Any]:
 
         for pattern, desc in expensive_uncached:
             if re.search(pattern, content):
-                opportunities.append({
-                    "file": str(py_file.relative_to(project_dir)),
-                    "opportunity": desc
-                })
+                opportunities.append(
+                    {"file": str(py_file.relative_to(project_dir)), "opportunity": desc}
+                )
 
     return {
         "existing_implementations": implementations[:10],
-        "opportunities": opportunities[:10]
+        "opportunities": opportunities[:10],
     }
 
 
@@ -159,14 +162,12 @@ def measure_bundle_impact(project_dir: Path) -> Dict[str, Any]:
     return {
         "categories": categories,
         "total_size_kb": round(total_size, 2),
-        "total_size_mb": round(total_size / 1024, 2)
+        "total_size_mb": round(total_size / 1024, 2),
     }
 
 
 def calculate_efficiency_score(
-    complexity: Dict,
-    caching: Dict,
-    bundle: Dict
+    complexity: Dict, caching: Dict, bundle: Dict
 ) -> Dict[str, Any]:
     """Calculate overall efficiency score."""
     score = 100
@@ -203,32 +204,34 @@ def calculate_efficiency_score(
     elif total_mb > 2:
         score -= 5
 
-    return {
-        "score": max(0, min(100, round(score))),
-        "issues": issues
-    }
+    return {"score": max(0, min(100, round(score))), "issues": issues}
 
 
 def get_recommendations(
-    complexity: Dict,
-    caching: Dict,
-    bundle: Dict,
-    scoring: Dict
+    complexity: Dict, caching: Dict, bundle: Dict, scoring: Dict
 ) -> List[str]:
     """Generate actionable recommendations."""
     recommendations = []
 
     if len(complexity.get("large_files", [])) > 3:
-        recommendations.append("Consider splitting large files (>50KB) into smaller modules")
+        recommendations.append(
+            "Consider splitting large files (>50KB) into smaller modules"
+        )
 
     if len(complexity.get("deep_nesting", [])) > 0:
-        recommendations.append("Reduce nesting depth in complex functions (target: <5 levels)")
+        recommendations.append(
+            "Reduce nesting depth in complex functions (target: <5 levels)"
+        )
 
     if len(caching.get("opportunities", [])) > 0:
-        recommendations.append("Add caching for expensive operations (glob, JSON parsing)")
+        recommendations.append(
+            "Add caching for expensive operations (glob, JSON parsing)"
+        )
 
     if bundle.get("total_size_mb", 0) > 2:
-        recommendations.append("Review and remove unused files to reduce distribution size")
+        recommendations.append(
+            "Review and remove unused files to reduce distribution size"
+        )
 
     if not recommendations:
         recommendations.append("Plugin efficiency is good - maintain current practices")
@@ -285,20 +288,17 @@ def main():
             "file_complexity": {
                 "total_files": complexity["total_files"],
                 "large_files_count": len(complexity["large_files"]),
-                "deep_nesting_count": len(complexity["deep_nesting"])
+                "deep_nesting_count": len(complexity["deep_nesting"]),
             },
             "caching": {
                 "implementations": len(caching["existing_implementations"]),
-                "opportunities": len(caching["opportunities"])
+                "opportunities": len(caching["opportunities"]),
             },
-            "bundle": bundle
+            "bundle": bundle,
         },
-        "details": {
-            "complexity": complexity,
-            "caching": caching
-        },
+        "details": {"complexity": complexity, "caching": caching},
         "issues": scoring["issues"],
-        "recommendations": recommendations
+        "recommendations": recommendations,
     }
 
     print(json.dumps(report, indent=2))

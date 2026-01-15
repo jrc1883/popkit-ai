@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 # No longer needed - install popkit-shared instead
-from enhancement_detector import has_api_key, check_enhancement
+from enhancement_detector import check_enhancement
 
 # Check if enhancement is available
 result = check_enhancement("knowledge-base")
@@ -22,7 +22,7 @@ result = generate_mcp_server(
     dev_port=3000,
     db_port=5432,
     include_embeddings=True,
-    include_routines=True
+    include_routines=True,
 )
 
 if result.success:

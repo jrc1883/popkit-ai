@@ -15,7 +15,7 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List
 
 
 def find_project_root(start_path: Path = None) -> Path:
@@ -103,11 +103,13 @@ def detect_design_patterns(project_dir: Path) -> Dict[str, List[Dict[str, Any]]]
                 for pattern_name, rules in pattern_rules.items():
                     for rule in rules:
                         if re.search(rule, content):
-                            patterns[pattern_name].append({
-                                "file": rel_path,
-                                "pattern": rule,
-                                "confidence": "medium"
-                            })
+                            patterns[pattern_name].append(
+                                {
+                                    "file": rel_path,
+                                    "pattern": rule,
+                                    "confidence": "medium",
+                                }
+                            )
                             break  # One match per pattern per file
             except:
                 pass
@@ -148,7 +150,9 @@ def detect_anti_patterns(project_dir: Path) -> List[Dict[str, Any]]:
         {
             "name": "circular_dependency",
             "description": "Files importing each other",
-            "patterns": [r"from\s+\.\w+\s+import|import\s+\{\s*\w+\s*\}\s+from\s+['\"]\."],
+            "patterns": [
+                r"from\s+\.\w+\s+import|import\s+\{\s*\w+\s*\}\s+from\s+['\"]\."
+            ],
             "severity": "high",
         },
         {
@@ -178,32 +182,41 @@ def detect_anti_patterns(project_dir: Path) -> List[Dict[str, Any]]:
                         if matches and len(matches) > 0:
                             # Apply thresholds if defined
                             if "threshold" in rule:
-                                if rule["name"] == "god_class" and len(lines) > rule["threshold"]["lines"]:
-                                    anti_patterns.append({
-                                        "name": rule["name"],
-                                        "description": rule["description"],
-                                        "file": rel_path,
-                                        "details": f"File has {len(lines)} lines",
-                                        "severity": "high"
-                                    })
-                                elif rule["name"] == "long_method":
-                                    # Simplified check - just flag files with many function definitions
-                                    if len(matches) > 10:
-                                        anti_patterns.append({
+                                if (
+                                    rule["name"] == "god_class"
+                                    and len(lines) > rule["threshold"]["lines"]
+                                ):
+                                    anti_patterns.append(
+                                        {
                                             "name": rule["name"],
                                             "description": rule["description"],
                                             "file": rel_path,
-                                            "details": f"File has {len(matches)} methods",
-                                            "severity": "medium"
-                                        })
+                                            "details": f"File has {len(lines)} lines",
+                                            "severity": "high",
+                                        }
+                                    )
+                                elif rule["name"] == "long_method":
+                                    # Simplified check - just flag files with many function definitions
+                                    if len(matches) > 10:
+                                        anti_patterns.append(
+                                            {
+                                                "name": rule["name"],
+                                                "description": rule["description"],
+                                                "file": rel_path,
+                                                "details": f"File has {len(matches)} methods",
+                                                "severity": "medium",
+                                            }
+                                        )
                             else:
-                                anti_patterns.append({
-                                    "name": rule["name"],
-                                    "description": rule["description"],
-                                    "file": rel_path,
-                                    "details": f"Found {len(matches)} occurrences",
-                                    "severity": rule.get("severity", "medium")
-                                })
+                                anti_patterns.append(
+                                    {
+                                        "name": rule["name"],
+                                        "description": rule["description"],
+                                        "file": rel_path,
+                                        "details": f"Found {len(matches)} occurrences",
+                                        "severity": rule.get("severity", "medium"),
+                                    }
+                                )
                             break
             except:
                 pass
@@ -221,13 +234,13 @@ def detect_solid_violations(project_dir: Path) -> List[Dict[str, Any]]:
             "principle": "SRP",
             "name": "Single Responsibility",
             "check": lambda f, c: len(c.split("\n")) > 300,
-            "message": "File may have multiple responsibilities (>300 lines)"
+            "message": "File may have multiple responsibilities (>300 lines)",
         },
         {
             "principle": "DIP",
             "name": "Dependency Inversion",
             "pattern": r"new\s+\w+\s*\(",
-            "message": "Direct instantiation may violate dependency inversion"
+            "message": "Direct instantiation may violate dependency inversion",
         },
     ]
 
@@ -240,23 +253,27 @@ def detect_solid_violations(project_dir: Path) -> List[Dict[str, Any]]:
                 for check in solid_checks:
                     if "check" in check:
                         if check["check"](file_path, content):
-                            violations.append({
-                                "principle": check["principle"],
-                                "name": check["name"],
-                                "file": rel_path,
-                                "message": check["message"]
-                            })
+                            violations.append(
+                                {
+                                    "principle": check["principle"],
+                                    "name": check["name"],
+                                    "file": rel_path,
+                                    "message": check["message"],
+                                }
+                            )
                     elif "pattern" in check:
                         if re.search(check["pattern"], content):
                             # Only flag if many occurrences
                             matches = len(re.findall(check["pattern"], content))
                             if matches > 5:
-                                violations.append({
-                                    "principle": check["principle"],
-                                    "name": check["name"],
-                                    "file": rel_path,
-                                    "message": f"{check['message']} ({matches} instances)"
-                                })
+                                violations.append(
+                                    {
+                                        "principle": check["principle"],
+                                        "name": check["name"],
+                                        "file": rel_path,
+                                        "message": f"{check['message']} ({matches} instances)",
+                                    }
+                                )
             except:
                 pass
 
@@ -264,9 +281,7 @@ def detect_solid_violations(project_dir: Path) -> List[Dict[str, Any]]:
 
 
 def calculate_pattern_score(
-    patterns: Dict[str, List],
-    anti_patterns: List[Dict],
-    solid_violations: List[Dict]
+    patterns: Dict[str, List], anti_patterns: List[Dict], solid_violations: List[Dict]
 ) -> Dict[str, Any]:
     """Calculate pattern quality score."""
     score = 100
@@ -289,7 +304,7 @@ def calculate_pattern_score(
         "score": max(0, min(100, score)),
         "patterns_found": total_patterns,
         "anti_patterns_found": len(anti_patterns),
-        "solid_violations": len(solid_violations)
+        "solid_violations": len(solid_violations),
     }
 
 
@@ -320,17 +335,17 @@ def main():
         "design_patterns": {
             "summary": patterns_summary,
             "total": sum(patterns_summary.values()),
-            "details": {k: v[:5] for k, v in patterns.items() if v}  # Limit details
+            "details": {k: v[:5] for k, v in patterns.items() if v},  # Limit details
         },
         "anti_patterns": {
             "count": len(anti_patterns),
-            "findings": anti_patterns[:20]  # Limit to top 20
+            "findings": anti_patterns[:20],  # Limit to top 20
         },
         "solid_violations": {
             "count": len(solid_violations),
-            "findings": solid_violations[:10]  # Limit to top 10
+            "findings": solid_violations[:10],  # Limit to top 10
         },
-        "scoring": scoring
+        "scoring": scoring,
     }
 
     print(json.dumps(report, indent=2))

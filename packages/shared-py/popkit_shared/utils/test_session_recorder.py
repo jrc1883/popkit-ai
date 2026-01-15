@@ -2,7 +2,7 @@
 """Tests for session_recorder.py"""
 
 import os
-import pytest
+
 from popkit_shared.utils.session_recorder import SessionRecorder
 
 
