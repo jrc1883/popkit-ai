@@ -652,31 +652,33 @@ Before committing git-related code:
 
 PopKit enforces specific standards for GitHub Actions workflows to prevent configuration errors.
 
-### Core Principle: Hyphenated Parameters
+### Core Principle: Underscored Parameters for actions/first-interaction
 
-**GitHub Actions workflows MUST use hyphenated parameter names** (kebab-case), not underscores.
+**The `actions/first-interaction@v3` action MUST use underscored parameter names** (snake_case), not hyphens.
+
+**IMPORTANT**: This is action-specific. While many GitHub Actions use hyphenated parameters (kebab-case), `actions/first-interaction` explicitly requires underscores.
 
 ### Parameter Naming Convention
 
-When using actions in workflows, the `with:` section requires hyphens:
+When using `actions/first-interaction` in workflows, the `with:` section requires underscores:
 
 ```yaml
-# ✅ CORRECT - Hyphens (kebab-case)
-- uses: actions/first-interaction@v3
-  with:
-    repo-token: ${{ secrets.GITHUB_TOKEN }}
-    issue-message: |
-      Welcome message here
-    pr-message: |
-      PR welcome message here
-
-# ❌ WRONG - Underscores (snake_case)
+# ✅ CORRECT - Underscores (snake_case)
 - uses: actions/first-interaction@v3
   with:
     repo_token: ${{ secrets.GITHUB_TOKEN }}
     issue_message: |
-      This will fail!
+      Welcome message here
     pr_message: |
+      PR welcome message here
+
+# ❌ WRONG - Hyphens (kebab-case)
+- uses: actions/first-interaction@v3
+  with:
+    repo-token: ${{ secrets.GITHUB_TOKEN }}
+    issue-message: |
+      This will fail!
+    pr-message: |
       This will fail!
 ```
 
@@ -684,21 +686,31 @@ When using actions in workflows, the `with:` section requires hyphens:
 
 | Action | Parameter | Correct Format |
 |--------|-----------|----------------|
-| `actions/first-interaction@v3` | Token | `repo-token` |
-| `actions/first-interaction@v3` | Issue message | `issue-message` |
-| `actions/first-interaction@v3` | PR message | `pr-message` |
+| `actions/first-interaction@v3` | Token | `repo_token` |
+| `actions/first-interaction@v3` | Issue message | `issue_message` |
+| `actions/first-interaction@v3` | PR message | `pr_message` |
 
-### Historical Context
+### Historical Context (Lesson Learned)
 
-- **PR #154**: Fixed greetings workflow (underscores → hyphens) ✅
-- **PR #159**: Accidentally reverted (hyphens → underscores) ❌
-- **PR #161**: Re-fixed (underscores → hyphens) ✅
+- **PR #154**: Changed underscores → hyphens (broke workflow) ❌
+- **PR #159**: Reverted hyphens → underscores (fixed workflow) ✅
+- **PR #161**: Changed underscores → hyphens again (broke workflow) ❌
+  *This PR was created due to confusion about the correct format*
+- **Current PR**: Changed hyphens → underscores (correct fix) ✅
+
+**Root Cause**: The error message from `actions/first-interaction@v3` explicitly states:
+```
+Unexpected input(s) 'repo-token', 'pr-message'
+valid inputs are ['issue_message', 'pr_message', 'repo_token']
+```
+
+This action uses underscores, unlike most GitHub Actions which use hyphens.
 
 ### Validation
 
 Workflows in `.github/workflows/` are validated by:
 
-1. **CI Validation** (planned): Automated workflow linting
+1. **CI Validation** (`.github/workflows/workflow-lint.yml`): Checks for hyphenated parameters as errors
 2. **This Documentation**: Context for AI models to prevent errors
 3. **Manual Review**: PRs touching workflows require extra scrutiny
 
@@ -706,12 +718,12 @@ Workflows in `.github/workflows/` are validated by:
 
 Before modifying GitHub Actions workflows:
 
-- [ ] Does it use hyphenated parameter names (kebab-case)?
+- [ ] Does it use underscored parameter names (snake_case) for `actions/first-interaction`?
 - [ ] Have you tested the workflow in a feature branch?
 - [ ] Does it reference the correct action version?
 - [ ] Are all required parameters provided?
 
-**If any answer is "no", the workflow may fail in CI.**
+**If any answer is "no", the workflow will fail in CI.**
 
 ---
 
