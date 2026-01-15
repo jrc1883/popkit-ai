@@ -13,14 +13,15 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from upstash_adapter import get_redis_client, is_upstash_available
-from protocol import create_objective, AgentIdentity, MessageFactory, MessageType
+from protocol import create_objective, MessageFactory
+
 
 def start_power_mode_session(objective_text: str, issues: list):
     """Initialize Power Mode session with Upstash Redis."""
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("  STARTING POWER MODE SESSION (UPSTASH REDIS)")
-    print("="*70)
+    print("=" * 70)
 
     # Check Upstash availability
     if not is_upstash_available():
@@ -49,11 +50,11 @@ def start_power_mode_session(objective_text: str, issues: list):
         success_criteria=[
             "All issues completed",
             "Documentation updated",
-            "Tests passing"
+            "Tests passing",
         ],
         phases=["explore", "design", "implement", "test", "review"],
         file_patterns=["packages/plugin/**/*.md", "docs/**/*.md"],
-        restricted_tools=["Write:.env", "Edit:secrets/"]
+        restricted_tools=["Write:.env", "Edit:secrets/"],
     )
 
     # Initialize session in Redis
@@ -61,7 +62,7 @@ def start_power_mode_session(objective_text: str, issues: list):
     objective_dict = {
         "description": objective.description,
         "success_criteria": objective.success_criteria,
-        "phases": objective.phases
+        "phases": objective.phases,
     }
 
     session_data = {
@@ -72,7 +73,7 @@ def start_power_mode_session(objective_text: str, issues: list):
         "mode": "upstash_redis",
         "agents": [],
         "insights": [],
-        "phase": "initializing"
+        "phase": "initializing",
     }
 
     # Store session in Redis
@@ -80,7 +81,7 @@ def start_power_mode_session(objective_text: str, issues: list):
         redis_client.set(
             f"popkit:session:{session_id}",
             json.dumps(session_data),
-            ex=7200  # 2 hour expiry
+            ex=7200,  # 2 hour expiry
         )
         print(f"\n[OK] Session created: {session_id}")
     except Exception as e:
@@ -93,7 +94,7 @@ def start_power_mode_session(objective_text: str, issues: list):
         "popkit:heartbeat",
         "popkit:results",
         "popkit:insights",
-        "popkit:coordinator"
+        "popkit:coordinator",
     ]
 
     for channel in channels:
@@ -102,13 +103,13 @@ def start_power_mode_session(objective_text: str, issues: list):
             init_msg = MessageFactory.create_broadcast(
                 sender_id="coordinator",
                 content=f"Session {session_id} initialized",
-                metadata={"session_id": session_id, "issues": issues}
+                metadata={"session_id": session_id, "issues": issues},
             )
             redis_client.publish(channel, init_msg.to_json())
         except Exception as e:
             print(f"[WARN] Could not init channel {channel}: {e}")
 
-    print(f"\n[OK] Coordination channels initialized")
+    print("\n[OK] Coordination channels initialized")
 
     # Save session state locally
     state_file = Path.home() / ".claude" / "popkit" / "power-mode-state.json"
@@ -124,30 +125,30 @@ def start_power_mode_session(objective_text: str, issues: list):
         "phases": objective.phases,
         "current_phase": "explore",
         "agents": [],
-        "upstash_url": os.getenv('UPSTASH_REDIS_REST_URL'),
-        "last_updated": datetime.now().isoformat()
+        "upstash_url": os.getenv("UPSTASH_REDIS_REST_URL"),
+        "last_updated": datetime.now().isoformat(),
     }
 
-    with open(state_file, 'w') as f:
+    with open(state_file, "w") as f:
         json.dump(local_state, f, indent=2)
 
     print(f"[OK] Local state saved: {state_file}")
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("  POWER MODE SESSION READY")
-    print("="*70)
+    print("=" * 70)
     print(f"\nSession ID: {session_id}")
     print(f"Objective: {objective_text}")
     print(f"Issues: {', '.join(f'#{i}' for i in issues)}")
-    print(f"Mode: Upstash Redis")
+    print("Mode: Upstash Redis")
     print(f"Coordination: {len(channels)} channels active")
     print("\nNext: Spawn parallel agents with Task tool")
-    print("="*70 + "\n")
+    print("=" * 70 + "\n")
 
     return {
         "session_id": session_id,
         "redis_client": redis_client,
-        "channels": channels
+        "channels": channels,
     }
 
 
@@ -155,7 +156,7 @@ if __name__ == "__main__":
     # Test session start
     result = start_power_mode_session(
         objective_text="Parallel documentation development with 3 agents",
-        issues=[269, 261, 260]
+        issues=[269, 261, 260],
     )
 
     if result:

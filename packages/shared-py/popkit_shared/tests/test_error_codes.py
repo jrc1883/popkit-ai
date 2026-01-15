@@ -6,9 +6,9 @@ Tests error code registry, response formatting, and backward compatibility.
 """
 
 from popkit_shared.utils.error_codes import (
+    ErrorCode,
     ErrorRegistry,
     ErrorResponse,
-    ErrorCode,
     ErrorSeverity,
 )
 

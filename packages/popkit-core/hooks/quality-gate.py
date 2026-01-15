@@ -90,7 +90,7 @@ class QualityGateHook:
             "recent_file_count": 0,
             "last_checkpoint": None,
             # Session-only flaky test tracking
-            "test_results": []  # List of {"test_name": str, "passed": bool, "timestamp": str}
+            "test_results": [],  # List of {"test_name": str, "passed": bool, "timestamp": str}
         }
 
     def save_state(self):
@@ -119,12 +119,14 @@ class QualityGateHook:
 
         # TypeScript
         if (self.cwd / "tsconfig.json").exists():
-            gates.append({
-                "name": "typescript",
-                "command": "npx tsc --noEmit",
-                "timeout": 60,
-                "enabled": True
-            })
+            gates.append(
+                {
+                    "name": "typescript",
+                    "command": "npx tsc --noEmit",
+                    "timeout": 60,
+                    "enabled": True,
+                }
+            )
 
         # Package.json scripts
         pkg_path = self.cwd / "package.json"
@@ -134,48 +136,60 @@ class QualityGateHook:
                 scripts = pkg.get("scripts", {})
 
                 if "build" in scripts:
-                    gates.append({
-                        "name": "build",
-                        "command": "npm run build",
-                        "timeout": 120,
-                        "enabled": True
-                    })
+                    gates.append(
+                        {
+                            "name": "build",
+                            "command": "npm run build",
+                            "timeout": 120,
+                            "enabled": True,
+                        }
+                    )
                 if "lint" in scripts:
-                    gates.append({
-                        "name": "lint",
-                        "command": "npm run lint",
-                        "timeout": 60,
-                        "enabled": True
-                    })
+                    gates.append(
+                        {
+                            "name": "lint",
+                            "command": "npm run lint",
+                            "timeout": 60,
+                            "enabled": True,
+                        }
+                    )
                 if "typecheck" in scripts:
                     # Prefer explicit typecheck over tsc
                     gates = [g for g in gates if g["name"] != "typescript"]
-                    gates.append({
-                        "name": "typecheck",
-                        "command": "npm run typecheck",
-                        "timeout": 60,
-                        "enabled": True
-                    })
+                    gates.append(
+                        {
+                            "name": "typecheck",
+                            "command": "npm run typecheck",
+                            "timeout": 60,
+                            "enabled": True,
+                        }
+                    )
                 if "test" in scripts:
-                    gates.append({
-                        "name": "test",
-                        "command": "npm test",
-                        "timeout": 300,
-                        "enabled": False,  # Optional by default (can be slow)
-                        "optional": True
-                    })
+                    gates.append(
+                        {
+                            "name": "test",
+                            "command": "npm test",
+                            "timeout": 300,
+                            "enabled": False,  # Optional by default (can be slow)
+                            "optional": True,
+                        }
+                    )
             except json.JSONDecodeError:
                 pass
 
         # Python projects
         if (self.cwd / "pyproject.toml").exists() or (self.cwd / "setup.py").exists():
-            if (self.cwd / "mypy.ini").exists() or (self.cwd / "pyproject.toml").exists():
-                gates.append({
-                    "name": "mypy",
-                    "command": "mypy .",
-                    "timeout": 60,
-                    "enabled": True
-                })
+            if (self.cwd / "mypy.ini").exists() or (
+                self.cwd / "pyproject.toml"
+            ).exists():
+                gates.append(
+                    {
+                        "name": "mypy",
+                        "command": "mypy .",
+                        "timeout": 60,
+                        "enabled": True,
+                    }
+                )
 
         return gates
 
@@ -230,7 +244,11 @@ class QualityGateHook:
             combined = new_content + old_content
 
             import_export_keywords = [
-                "import ", "from ", "export ", "require(", "module.exports"
+                "import ",
+                "from ",
+                "export ",
+                "require(",
+                "module.exports",
             ]
             if any(kw in combined for kw in import_export_keywords):
                 return True
@@ -290,7 +308,7 @@ class QualityGateHook:
             "success": False,
             "output": "",
             "errors": [],
-            "duration": 0
+            "duration": 0,
         }
 
         start = datetime.now()
@@ -300,7 +318,7 @@ class QualityGateHook:
                 capture_output=True,
                 text=True,
                 timeout=gate.get("timeout", 60),
-                cwd=str(self.cwd)
+                cwd=str(self.cwd),
             )
 
             result["output"] = proc.stdout + proc.stderr
@@ -310,7 +328,9 @@ class QualityGateHook:
                 result["errors"] = self.parse_errors(gate["name"], result["output"])
 
         except subprocess.TimeoutExpired:
-            result["output"] = f"Gate '{gate['name']}' timed out after {gate.get('timeout', 60)}s"
+            result["output"] = (
+                f"Gate '{gate['name']}' timed out after {gate.get('timeout', 60)}s"
+            )
             result["errors"] = [{"message": result["output"]}]
         except Exception as e:
             result["output"] = str(e)
@@ -324,18 +344,21 @@ class QualityGateHook:
         gates = self.get_effective_gates()
 
         if not gates:
-            return {"passed": True, "gates": [], "total_errors": 0, "duration": 0, "skipped": "No gates detected"}
+            return {
+                "passed": True,
+                "gates": [],
+                "total_errors": 0,
+                "duration": 0,
+                "skipped": "No gates detected",
+            }
 
-        results = {
-            "passed": True,
-            "gates": [],
-            "total_errors": 0,
-            "duration": 0
-        }
+        results = {"passed": True, "gates": [], "total_errors": 0, "duration": 0}
 
         for gate in gates:
             # Skip optional gates unless explicitly enabled
-            if gate.get("optional") and not (self.config or {}).get("options", {}).get("run_tests"):
+            if gate.get("optional") and not (self.config or {}).get("options", {}).get(
+                "run_tests"
+            ):
                 continue
 
             print(f"Running quality gate: {gate['name']}...", file=sys.stderr)
@@ -373,46 +396,56 @@ class QualityGateHook:
 
         if gate_name in ["typescript", "typecheck"]:
             # TypeScript errors: file(line,col): error TS####: message
-            for match in re.finditer(r'(.+?)\((\d+),(\d+)\): error (TS\d+): (.+)', output):
-                errors.append({
-                    "file": match.group(1),
-                    "line": int(match.group(2)),
-                    "column": int(match.group(3)),
-                    "code": match.group(4),
-                    "message": match.group(5)
-                })
+            for match in re.finditer(
+                r"(.+?)\((\d+),(\d+)\): error (TS\d+): (.+)", output
+            ):
+                errors.append(
+                    {
+                        "file": match.group(1),
+                        "line": int(match.group(2)),
+                        "column": int(match.group(3)),
+                        "code": match.group(4),
+                        "message": match.group(5),
+                    }
+                )
             # Also try: file:line:col - error TS####: message
-            for match in re.finditer(r'(.+?):(\d+):(\d+) - error (TS\d+): (.+)', output):
-                errors.append({
-                    "file": match.group(1),
-                    "line": int(match.group(2)),
-                    "column": int(match.group(3)),
-                    "code": match.group(4),
-                    "message": match.group(5)
-                })
+            for match in re.finditer(
+                r"(.+?):(\d+):(\d+) - error (TS\d+): (.+)", output
+            ):
+                errors.append(
+                    {
+                        "file": match.group(1),
+                        "line": int(match.group(2)),
+                        "column": int(match.group(3)),
+                        "code": match.group(4),
+                        "message": match.group(5),
+                    }
+                )
 
         elif gate_name == "lint":
             # ESLint: file:line:col: message (rule)
-            for match in re.finditer(r'(.+?):(\d+):(\d+):\s*(.+)', output):
-                errors.append({
-                    "file": match.group(1),
-                    "line": int(match.group(2)),
-                    "column": int(match.group(3)),
-                    "message": match.group(4)
-                })
+            for match in re.finditer(r"(.+?):(\d+):(\d+):\s*(.+)", output):
+                errors.append(
+                    {
+                        "file": match.group(1),
+                        "line": int(match.group(2)),
+                        "column": int(match.group(3)),
+                        "message": match.group(4),
+                    }
+                )
 
         elif gate_name == "build":
             # Generic build errors - look for "error" lines
-            for line in output.split('\n'):
+            for line in output.split("\n"):
                 line = line.strip()
-                if line and 'error' in line.lower():
+                if line and "error" in line.lower():
                     errors.append({"message": line})
 
         else:
             # Generic: split by newlines, filter relevant lines
-            for line in output.split('\n'):
+            for line in output.split("\n"):
                 line = line.strip()
-                if line and ('error' in line.lower() or 'failed' in line.lower()):
+                if line and ("error" in line.lower() or "failed" in line.lower()):
                     errors.append({"message": line})
 
         return errors[:10]  # Limit to first 10 errors
@@ -424,11 +457,13 @@ class QualityGateHook:
     def track_test_result(self, test_name: str, passed: bool):
         """Track a test result for flaky detection (session-only)."""
         test_results = self.state.get("test_results", [])
-        test_results.append({
-            "test_name": test_name,
-            "passed": passed,
-            "timestamp": datetime.now().isoformat()
-        })
+        test_results.append(
+            {
+                "test_name": test_name,
+                "passed": passed,
+                "timestamp": datetime.now().isoformat(),
+            }
+        )
 
         # Keep only last 50 results (session memory limit)
         if len(test_results) > 50:
@@ -466,13 +501,15 @@ class QualityGateHook:
             if stats["total"] >= 2:  # Need at least 2 runs
                 pass_rate = stats["passed"] / stats["total"]
                 if 0.2 <= pass_rate <= 0.8:
-                    flaky_tests.append({
-                        "test_name": name,
-                        "pass_rate": round(pass_rate * 100, 1),
-                        "passed": stats["passed"],
-                        "failed": stats["failed"],
-                        "total": stats["total"]
-                    })
+                    flaky_tests.append(
+                        {
+                            "test_name": name,
+                            "pass_rate": round(pass_rate * 100, 1),
+                            "passed": stats["passed"],
+                            "failed": stats["failed"],
+                            "total": stats["total"],
+                        }
+                    )
 
         return flaky_tests
 
@@ -486,27 +523,31 @@ class QualityGateHook:
             "=" * 60,
             "Warning: Potentially Flaky Tests Detected",
             "=" * 60,
-            ""
+            "",
         ]
 
         for test in flaky_tests:
             lines.append(f"  {test['test_name']}")
-            lines.append(f"    Pass rate: {test['pass_rate']}% ({test['passed']}/{test['total']} runs)")
+            lines.append(
+                f"    Pass rate: {test['pass_rate']}% ({test['passed']}/{test['total']} runs)"
+            )
             lines.append("")
 
-        lines.extend([
-            "Flaky tests pass inconsistently and may indicate:",
-            "  - Race conditions or timing issues",
-            "  - State pollution between tests",
-            "  - Order-dependent test execution",
-            "",
-            "Tip: Use condition-based waiting instead of setTimeout.",
-            "See: /skill:pop-test-driven-development (Condition-Based Waiting section)",
-            "-" * 60,
-            ""
-        ])
+        lines.extend(
+            [
+                "Flaky tests pass inconsistently and may indicate:",
+                "  - Race conditions or timing issues",
+                "  - State pollution between tests",
+                "  - Order-dependent test execution",
+                "",
+                "Tip: Use condition-based waiting instead of setTimeout.",
+                "See: /skill:pop-test-driven-development (Condition-Based Waiting section)",
+                "-" * 60,
+                "",
+            ]
+        )
 
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
     # =========================================================================
     # Failure Handling
@@ -524,7 +565,7 @@ class QualityGateHook:
             "=" * 60,
             f"Quality Gate Failed: {gate_name} ({results['total_errors']} errors)",
             "=" * 60,
-            ""
+            "",
         ]
 
         # Show errors (max 5)
@@ -532,27 +573,33 @@ class QualityGateHook:
             if not gate["success"]:
                 for error in gate["errors"][:5]:
                     if "file" in error:
-                        output_lines.append(f"  {error['file']}:{error.get('line', '?')}")
+                        output_lines.append(
+                            f"  {error['file']}:{error.get('line', '?')}"
+                        )
                         output_lines.append(f"    {error['message']}")
                     else:
                         output_lines.append(f"  {error['message']}")
                 if len(gate["errors"]) > 5:
-                    output_lines.append(f"  ... and {len(gate['errors']) - 5} more errors")
+                    output_lines.append(
+                        f"  ... and {len(gate['errors']) - 5} more errors"
+                    )
 
-        output_lines.extend([
-            "",
-            "-" * 60,
-            "Options:",
-            "  1. Fix now      - Address these errors (default)",
-            "  2. Rollback     - Revert to last checkpoint",
-            "  3. Continue     - Proceed despite errors",
-            "  4. Pause        - Stop for manual review",
-            "-" * 60,
-            ""
-        ])
+        output_lines.extend(
+            [
+                "",
+                "-" * 60,
+                "Options:",
+                "  1. Fix now      - Address these errors (default)",
+                "  2. Rollback     - Revert to last checkpoint",
+                "  3. Continue     - Proceed despite errors",
+                "  4. Pause        - Stop for manual review",
+                "-" * 60,
+                "",
+            ]
+        )
 
         # Output to stderr so it's visible
-        print('\n'.join(output_lines), file=sys.stderr)
+        print("\n".join(output_lines), file=sys.stderr)
 
         # Default to "fix" - errors injected into context
         # In future, could read from stdin for interactive selection
@@ -567,13 +614,15 @@ class QualityGateHook:
                 lines.append(f"### {gate['name'].title()} Errors\n")
                 for error in gate["errors"]:
                     if "file" in error:
-                        lines.append(f"- `{error['file']}:{error.get('line', '?')}` - {error['message']}")
+                        lines.append(
+                            f"- `{error['file']}:{error.get('line', '?')}` - {error['message']}"
+                        )
                     else:
                         lines.append(f"- {error['message']}")
                 lines.append("")
 
         lines.append("\n**Please address these errors before continuing.**")
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
     # =========================================================================
     # Rollback Mechanism
@@ -587,10 +636,10 @@ class QualityGateHook:
         try:
             # Capture all uncommitted changes (staged and unstaged)
             result = subprocess.run(
-                ['git', 'diff', 'HEAD'],
+                ["git", "diff", "HEAD"],
                 capture_output=True,
                 text=True,
-                cwd=str(self.cwd)
+                cwd=str(self.cwd),
             )
 
             if result.stdout:
@@ -613,8 +662,8 @@ class QualityGateHook:
 
         try:
             # Discard all uncommitted changes
-            subprocess.run(['git', 'checkout', '.'], cwd=str(self.cwd), check=True)
-            subprocess.run(['git', 'clean', '-fd'], cwd=str(self.cwd), check=True)
+            subprocess.run(["git", "checkout", "."], cwd=str(self.cwd), check=True)
+            subprocess.run(["git", "clean", "-fd"], cwd=str(self.cwd), check=True)
 
             # Reset state
             self.state["file_edit_count"] = 0
@@ -623,7 +672,7 @@ class QualityGateHook:
             self.save_state()
 
             if patch_path:
-                print(f"Rolled back successfully.", file=sys.stderr)
+                print("Rolled back successfully.", file=sys.stderr)
                 print(f"Changes saved to: {patch_path}", file=sys.stderr)
                 print(f"To recover: git apply {patch_path}", file=sys.stderr)
 
@@ -646,12 +695,14 @@ class QualityGateHook:
             except:
                 pass
 
-        manifest["checkpoints"].append({
-            "timestamp": timestamp,
-            "path": patch_path,
-            "trigger": "quality_gate_rollback",
-            "created_at": datetime.now().isoformat()
-        })
+        manifest["checkpoints"].append(
+            {
+                "timestamp": timestamp,
+                "path": patch_path,
+                "trigger": "quality_gate_rollback",
+                "created_at": datetime.now().isoformat(),
+            }
+        )
 
         manifest_path.write_text(json.dumps(manifest, indent=2))
 
@@ -666,7 +717,9 @@ class QualityGateHook:
         remaining = []
         for cp in manifest.get("checkpoints", []):
             try:
-                cp_time = datetime.strptime(cp["timestamp"], "%Y-%m-%d-%H%M%S").timestamp()
+                cp_time = datetime.strptime(
+                    cp["timestamp"], "%Y-%m-%d-%H%M%S"
+                ).timestamp()
                 if cp_time > cutoff:
                     remaining.append(cp)
                 else:
@@ -674,7 +727,10 @@ class QualityGateHook:
                     patch_path = Path(cp["path"])
                     if patch_path.exists():
                         patch_path.unlink()
-                        print(f"Cleaned up old checkpoint: {cp['timestamp']}", file=sys.stderr)
+                        print(
+                            f"Cleaned up old checkpoint: {cp['timestamp']}",
+                            file=sys.stderr,
+                        )
             except:
                 remaining.append(cp)
 
@@ -702,17 +758,17 @@ class QualityGateHook:
         """Run lightweight syntax check only (for Power Mode)."""
         if (self.cwd / "tsconfig.json").exists():
             result = subprocess.run(
-                ['npx', 'tsc', '--noEmit', '--skipLibCheck'],
+                ["npx", "tsc", "--noEmit", "--skipLibCheck"],
                 capture_output=True,
                 text=True,
                 timeout=15,
-                cwd=str(self.cwd)
+                cwd=str(self.cwd),
             )
             if result.returncode != 0:
                 return {
                     "type": "syntax_warning",
                     "output": result.stderr,
-                    "errors": self.parse_errors("typescript", result.stderr)
+                    "errors": self.parse_errors("typescript", result.stderr),
                 }
         return {"type": "ok"}
 
@@ -736,7 +792,10 @@ class QualityGateHook:
         if self.is_power_mode_active():
             lightweight = self.run_lightweight_check()
             if lightweight.get("type") == "syntax_warning":
-                print(f"Syntax warning (Power Mode): {len(lightweight.get('errors', []))} issues", file=sys.stderr)
+                print(
+                    f"Syntax warning (Power Mode): {len(lightweight.get('errors', []))} issues",
+                    file=sys.stderr,
+                )
             return {"continue": True}
 
         # Run full quality gates
@@ -769,7 +828,7 @@ class QualityGateHook:
         elif action == "pause":
             return {
                 "continue": False,
-                "stop_reason": "Quality gate failure - manual review requested"
+                "stop_reason": "Quality gate failure - manual review requested",
             }
         elif action == "continue":
             print("Continuing despite errors (not recommended)", file=sys.stderr)
@@ -778,10 +837,7 @@ class QualityGateHook:
             error_context = self.format_errors_for_context(results)
             # Print errors for visibility
             print(error_context, file=sys.stderr)
-            return {
-                "continue": True,
-                "message": error_context
-            }
+            return {"continue": True, "message": error_context}
 
 
 def main():

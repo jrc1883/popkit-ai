@@ -12,19 +12,14 @@ Output:
 """
 
 import json
-import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 
 def detect_package_manager(project_dir: Path) -> Dict[str, Any]:
     """Detect package manager and available scripts."""
-    result = {
-        "package_manager": None,
-        "scripts": [],
-        "dependencies": []
-    }
+    result = {"package_manager": None, "scripts": [], "dependencies": []}
 
     # Check for npm/yarn/pnpm
     if (project_dir / "package.json").exists():
@@ -65,7 +60,7 @@ def detect_framework(project_dir: Path) -> Dict[str, Any]:
         "test_command": None,
         "lint_command": None,
         "build_command": None,
-        "typecheck_command": None
+        "typecheck_command": None,
     }
 
     pkg_json = project_dir / "package.json"
@@ -124,11 +119,7 @@ def detect_framework(project_dir: Path) -> Dict[str, Any]:
 
 def detect_database(project_dir: Path) -> Dict[str, Any]:
     """Detect database configuration."""
-    result = {
-        "database": None,
-        "orm": None,
-        "connection_file": None
-    }
+    result = {"database": None, "orm": None, "connection_file": None}
 
     # Check for Prisma
     if (project_dir / "prisma" / "schema.prisma").exists():
@@ -204,16 +195,13 @@ def detect_services(project_dir: Path) -> List[Dict[str, Any]]:
         "sendgrid": ["sendgrid", "@sendgrid"],
         "auth0": ["auth0"],
         "firebase": ["firebase", "firebase-admin"],
-        "supabase": ["@supabase/supabase-js", "supabase"]
+        "supabase": ["@supabase/supabase-js", "supabase"],
     }
 
     for service, indicators in service_indicators.items():
         for indicator in indicators:
             if indicator in deps_content:
-                services.append({
-                    "name": service,
-                    "indicator": indicator
-                })
+                services.append({"name": service, "indicator": indicator})
                 break
 
     return services
@@ -224,26 +212,58 @@ def suggest_mcp_tools(analysis: Dict[str, Any]) -> List[Dict[str, Any]]:
     tools = []
 
     # Always include git tools
-    tools.extend([
-        {"name": "git_status", "category": "git", "recommended": True},
-        {"name": "git_diff", "category": "git", "recommended": True},
-        {"name": "git_recent_commits", "category": "git", "recommended": True}
-    ])
+    tools.extend(
+        [
+            {"name": "git_status", "category": "git", "recommended": True},
+            {"name": "git_diff", "category": "git", "recommended": True},
+            {"name": "git_recent_commits", "category": "git", "recommended": True},
+        ]
+    )
 
     # Quality tools based on detected commands
     framework = analysis.get("framework", {})
     if framework.get("test_command"):
-        tools.append({"name": "run_tests", "category": "quality", "command": framework["test_command"], "recommended": True})
+        tools.append(
+            {
+                "name": "run_tests",
+                "category": "quality",
+                "command": framework["test_command"],
+                "recommended": True,
+            }
+        )
     if framework.get("lint_command"):
-        tools.append({"name": "run_lint", "category": "quality", "command": framework["lint_command"], "recommended": True})
+        tools.append(
+            {
+                "name": "run_lint",
+                "category": "quality",
+                "command": framework["lint_command"],
+                "recommended": True,
+            }
+        )
     if framework.get("typecheck_command"):
-        tools.append({"name": "run_typecheck", "category": "quality", "command": framework["typecheck_command"], "recommended": True})
+        tools.append(
+            {
+                "name": "run_typecheck",
+                "category": "quality",
+                "command": framework["typecheck_command"],
+                "recommended": True,
+            }
+        )
     if framework.get("build_command"):
-        tools.append({"name": "run_build", "category": "quality", "command": framework["build_command"], "recommended": False})
+        tools.append(
+            {
+                "name": "run_build",
+                "category": "quality",
+                "command": framework["build_command"],
+                "recommended": False,
+            }
+        )
 
     # Health checks
     if framework.get("dev_server_command"):
-        tools.append({"name": "dev_server_health", "category": "health", "recommended": True})
+        tools.append(
+            {"name": "dev_server_health", "category": "health", "recommended": True}
+        )
 
     # Database tools
     database = analysis.get("database", {})
@@ -253,13 +273,16 @@ def suggest_mcp_tools(analysis: Dict[str, Any]) -> List[Dict[str, Any]]:
     # Service-specific tools
     for service in analysis.get("services", []):
         if service["name"] == "redis":
-            tools.append({"name": "redis_health", "category": "health", "recommended": True})
+            tools.append(
+                {"name": "redis_health", "category": "health", "recommended": True}
+            )
 
     return tools
 
 
 def main():
     import argparse
+
     parser = argparse.ArgumentParser(description="Analyze project for MCP generation")
     parser.add_argument("--dir", default=".", help="Project directory")
     parser.add_argument("--suggest", action="store_true", help="Suggest MCP tools")
@@ -271,17 +294,13 @@ def main():
         "package_manager": detect_package_manager(project_dir),
         "framework": detect_framework(project_dir),
         "database": detect_database(project_dir),
-        "services": detect_services(project_dir)
+        "services": detect_services(project_dir),
     }
 
     if args.suggest:
         analysis["suggested_tools"] = suggest_mcp_tools(analysis)
 
-    report = {
-        "operation": "analyze_project",
-        "directory": str(project_dir),
-        **analysis
-    }
+    report = {"operation": "analyze_project", "directory": str(project_dir), **analysis}
 
     print(json.dumps(report, indent=2))
     return 0

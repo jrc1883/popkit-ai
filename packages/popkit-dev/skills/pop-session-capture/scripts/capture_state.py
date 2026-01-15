@@ -23,21 +23,21 @@ Output:
 """
 
 import json
-import os
 import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 
 def run_command(cmd: str, timeout: int = 30) -> tuple:
     """Run a shell command and return output and success status."""
     try:
-        result = subprocess.run(cmd.split() if isinstance(cmd, str) else cmd,
+        result = subprocess.run(
+            cmd.split() if isinstance(cmd, str) else cmd,
             capture_output=True,
             text=True,
-            timeout=timeout
+            timeout=timeout,
         )
         return result.stdout.strip(), result.returncode == 0
     except subprocess.TimeoutExpired:
@@ -54,7 +54,7 @@ def gather_git_state() -> Dict[str, Any]:
         "uncommittedFiles": 0,
         "stagedFiles": 0,
         "modifiedFiles": [],
-        "untrackedFiles": []
+        "untrackedFiles": [],
     }
 
     # Get current branch
@@ -70,11 +70,11 @@ def gather_git_state() -> Dict[str, Any]:
     # Count uncommitted changes
     status, ok = run_command("git status --porcelain")
     if ok:
-        lines = [l for l in status.split('\n') if l.strip()]
+        lines = [l for l in status.split("\n") if l.strip()]
         state["uncommittedFiles"] = len(lines)
 
         for line in lines:
-            if line.startswith('??'):
+            if line.startswith("??"):
                 state["untrackedFiles"].append(line[3:].strip())
             else:
                 state["modifiedFiles"].append(line[3:].strip())
@@ -82,7 +82,7 @@ def gather_git_state() -> Dict[str, Any]:
     # Count staged files
     staged, ok = run_command("git diff --cached --name-only")
     if ok:
-        staged_files = [f for f in staged.split('\n') if f.strip()]
+        staged_files = [f for f in staged.split("\n") if f.strip()]
         state["stagedFiles"] = len(staged_files)
 
     return state
@@ -106,13 +106,15 @@ def gather_service_state() -> Dict[str, Any]:
         if sys.platform == "win32":
             cmd = f"netstat -an | findstr :{port}"
         else:
-            cmd = f"lsof -i :{port} -t 2>/dev/null || ss -tlnp 2>/dev/null | grep :{port}"
+            cmd = (
+                f"lsof -i :{port} -t 2>/dev/null || ss -tlnp 2>/dev/null | grep :{port}"
+            )
 
         output, ok = run_command(cmd)
         services[name] = {
             "running": bool(output.strip()),
             "port": port,
-            "description": description
+            "description": description,
         }
 
     return services
@@ -120,11 +122,7 @@ def gather_service_state() -> Dict[str, Any]:
 
 def gather_project_checks() -> Dict[str, Any]:
     """Run project checks and gather results."""
-    checks = {
-        "testStatus": "unknown",
-        "buildStatus": "unknown",
-        "lintErrors": -1
-    }
+    checks = {"testStatus": "unknown", "buildStatus": "unknown", "lintErrors": -1}
 
     # Run tests
     test_output, ok = run_command("npm test 2>&1 | tail -5", timeout=60)
@@ -138,21 +136,26 @@ def gather_project_checks() -> Dict[str, Any]:
             checks["testStatus"] = test_output[-100:] if test_output else "no tests"
 
     # Check build
-    build_output, ok = run_command("npm run build --if-present 2>&1 | tail -1", timeout=120)
+    build_output, ok = run_command(
+        "npm run build --if-present 2>&1 | tail -1", timeout=120
+    )
     if ok:
         checks["buildStatus"] = "passing"
     else:
         checks["buildStatus"] = "failing" if build_output else "not configured"
 
     # Run lint
-    lint_output, ok = run_command("npm run lint --if-present 2>&1 | tail -5", timeout=60)
+    lint_output, ok = run_command(
+        "npm run lint --if-present 2>&1 | tail -5", timeout=60
+    )
     if ok:
         checks["lintErrors"] = 0
     else:
         # Try to count errors
         if lint_output:
             import re
-            errors = re.findall(r'(\d+)\s+error', lint_output)
+
+            errors = re.findall(r"(\d+)\s+error", lint_output)
             if errors:
                 checks["lintErrors"] = int(errors[0])
             else:
@@ -166,11 +169,7 @@ def gather_task_state(tasks: Optional[Dict] = None) -> Dict[str, Any]:
     if tasks:
         return tasks
 
-    return {
-        "inProgress": [],
-        "completed": [],
-        "blocked": []
-    }
+    return {"inProgress": [], "completed": [], "blocked": []}
 
 
 def gather_context(context: Optional[Dict] = None) -> Dict[str, Any]:
@@ -178,12 +177,7 @@ def gather_context(context: Optional[Dict] = None) -> Dict[str, Any]:
     if context:
         return context
 
-    return {
-        "focusArea": "",
-        "blocker": None,
-        "nextAction": "",
-        "keyDecisions": []
-    }
+    return {"focusArea": "", "blocker": None, "nextAction": "", "keyDecisions": []}
 
 
 def build_status_json(
@@ -192,7 +186,7 @@ def build_status_json(
     project_checks: Dict,
     task_state: Dict,
     context: Dict,
-    project_name: Optional[str] = None
+    project_name: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Build complete STATUS.json structure."""
     # Try to get project name from package.json
@@ -215,7 +209,7 @@ def build_status_json(
         "tasks": task_state,
         "services": service_state,
         "context": context,
-        "projectData": project_checks
+        "projectData": project_checks,
     }
 
 
@@ -242,11 +236,20 @@ def write_status_json(status: Dict, output_path: Optional[str] = None) -> str:
 
 def main():
     import argparse
+
     parser = argparse.ArgumentParser(description="Capture session state")
-    parser.add_argument("--mode", choices=["gather", "build", "write", "all"],
-                        default="all", help="Operation mode")
-    parser.add_argument("--section", choices=["git", "services", "checks", "all"],
-                        default="all", help="Section to gather")
+    parser.add_argument(
+        "--mode",
+        choices=["gather", "build", "write", "all"],
+        default="all",
+        help="Operation mode",
+    )
+    parser.add_argument(
+        "--section",
+        choices=["git", "services", "checks", "all"],
+        default="all",
+        help="Section to gather",
+    )
     parser.add_argument("--output", "-o", help="Output file path")
     parser.add_argument("--project", help="Project name override")
     parser.add_argument("--context-json", help="Context as JSON string")
@@ -256,7 +259,7 @@ def main():
     result = {
         "operation": "capture_state",
         "mode": args.mode,
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.now().isoformat(),
     }
 
     # Parse optional JSON inputs
@@ -301,7 +304,7 @@ def main():
             project_checks=project_checks,
             task_state=task_state,
             context=context_state,
-            project_name=args.project
+            project_name=args.project,
         )
         result["status"] = status
 
@@ -320,7 +323,7 @@ def main():
                 project_checks=project_checks,
                 task_state=task_state,
                 context=context_state,
-                project_name=args.project
+                project_name=args.project,
             )
         else:
             status = result["status"]

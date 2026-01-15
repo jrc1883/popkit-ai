@@ -1,6 +1,5 @@
 # Example: Auto-Embedding Tools
 
-import sys
 import json
 from datetime import datetime
 from pathlib import Path
@@ -8,6 +7,7 @@ from pathlib import Path
 # No longer needed - install popkit-shared instead
 from voyage_client import VoyageClient
 from embedding_project import auto_embed_item
+
 
 def export_tool_embeddings(tools: list, output_path: str):
     """Export embeddings for semantic search."""
@@ -25,19 +25,16 @@ def export_tool_embeddings(tools: list, output_path: str):
         "model": "voyage-3.5",
         "dimension": len(embeddings[0]) if embeddings else 0,
         "tools": [
-            {
-                "name": t["name"],
-                "description": t["description"],
-                "embedding": emb
-            }
+            {"name": t["name"], "description": t["description"], "embedding": emb}
             for t, emb in zip(tools, embeddings)
-        ]
+        ],
     }
 
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
     Path(output_path).write_text(json.dumps(output, indent=2))
     print(f"✓ Exported {len(tools)} tool embeddings to {output_path}")
     return True
+
 
 # After generating MCP server
 tools = [

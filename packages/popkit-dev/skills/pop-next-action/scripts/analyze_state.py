@@ -19,21 +19,21 @@ Output:
 """
 
 import json
-import os
 import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Tuple
 
 
 def run_command(cmd: str, timeout: int = 30) -> Tuple[str, bool]:
     """Run a shell command and return output and success status."""
     try:
-        result = subprocess.run(cmd.split() if isinstance(cmd, str) else cmd,
+        result = subprocess.run(
+            cmd.split() if isinstance(cmd, str) else cmd,
             capture_output=True,
             text=True,
-            timeout=timeout
+            timeout=timeout,
         )
         return result.stdout.strip(), result.returncode == 0
     except subprocess.TimeoutExpired:
@@ -52,7 +52,7 @@ def analyze_git_state() -> Dict[str, Any]:
         "ahead_count": 0,
         "behind_count": 0,
         "recent_commits": [],
-        "urgency": "LOW"
+        "urgency": "LOW",
     }
 
     # Check if git repo
@@ -69,7 +69,7 @@ def analyze_git_state() -> Dict[str, Any]:
     # Get uncommitted changes
     status, ok = run_command("git status --porcelain")
     if ok and status:
-        files = [l[3:].strip() for l in status.split('\n') if l.strip()]
+        files = [l[3:].strip() for l in status.split("\n") if l.strip()]
         state["uncommitted_count"] = len(files)
         state["uncommitted_files"] = files[:5]  # First 5
 
@@ -77,11 +77,15 @@ def analyze_git_state() -> Dict[str, Any]:
             state["urgency"] = "HIGH"
 
     # Get ahead/behind
-    ahead_behind, ok = run_command("git rev-list --left-right --count @{u}...HEAD 2>/dev/null")
-    if ok and '\t' in ahead_behind:
-        parts = ahead_behind.split('\t')
+    ahead_behind, ok = run_command(
+        "git rev-list --left-right --count @{u}...HEAD 2>/dev/null"
+    )
+    if ok and "\t" in ahead_behind:
+        parts = ahead_behind.split("\t")
         state["behind_count"] = int(parts[0]) if parts[0].isdigit() else 0
-        state["ahead_count"] = int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 0
+        state["ahead_count"] = (
+            int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 0
+        )
 
         if state["ahead_count"] > 0:
             state["urgency"] = max(state["urgency"], "MEDIUM")
@@ -89,7 +93,7 @@ def analyze_git_state() -> Dict[str, Any]:
     # Get recent commits
     commits, ok = run_command("git log --oneline -5")
     if ok:
-        state["recent_commits"] = commits.split('\n')[:5]
+        state["recent_commits"] = commits.split("\n")[:5]
 
     return state
 
@@ -101,7 +105,7 @@ def analyze_code_state() -> Dict[str, Any]:
         "typescript_errors": 0,
         "has_lint": False,
         "lint_errors": 0,
-        "urgency": "LOW"
+        "urgency": "LOW",
     }
 
     # Check for TypeScript
@@ -109,7 +113,9 @@ def analyze_code_state() -> Dict[str, Any]:
         state["has_typescript"] = True
 
         # Run typecheck
-        output, ok = run_command("npx tsc --noEmit 2>&1 | grep -c 'error TS' || echo 0", timeout=60)
+        output, ok = run_command(
+            "npx tsc --noEmit 2>&1 | grep -c 'error TS' || echo 0", timeout=60
+        )
         try:
             state["typescript_errors"] = int(output.strip())
         except ValueError:
@@ -129,12 +135,7 @@ def analyze_code_state() -> Dict[str, Any]:
 
 def analyze_issues() -> Dict[str, Any]:
     """Analyze GitHub issues."""
-    state = {
-        "has_gh": False,
-        "open_count": 0,
-        "issues": [],
-        "urgency": "LOW"
-    }
+    state = {"has_gh": False, "open_count": 0, "issues": [], "urgency": "LOW"}
 
     # Check for gh CLI
     _, has_gh = run_command("gh --version")
@@ -144,7 +145,9 @@ def analyze_issues() -> Dict[str, Any]:
         return state
 
     # Get open issues
-    output, ok = run_command("gh issue list --state open --limit 10 --json number,title,labels")
+    output, ok = run_command(
+        "gh issue list --state open --limit 10 --json number,title,labels"
+    )
     if ok and output:
         try:
             issues = json.loads(output)
@@ -167,11 +170,7 @@ def analyze_issues() -> Dict[str, Any]:
 
 def analyze_research_branches() -> Dict[str, Any]:
     """Analyze research branches from Claude Code Web sessions."""
-    state = {
-        "has_research_branches": False,
-        "branches": [],
-        "urgency": "LOW"
-    }
+    state = {"has_research_branches": False, "branches": [], "urgency": "LOW"}
 
     # Fetch to get all remote branches
     # SECURE: Using list-based arguments instead of shell string
@@ -184,7 +183,7 @@ def analyze_research_branches() -> Dict[str, Any]:
 
     research_patterns = ["research-", "claude/research", "/research-"]
 
-    for line in branches.split('\n'):
+    for line in branches.split("\n"):
         branch = line.strip()
         if not branch or "HEAD" in branch:
             continue
@@ -194,10 +193,7 @@ def analyze_research_branches() -> Dict[str, Any]:
             # Get branch creation time - SECURE: branch is separate argument
             date_output, _ = run_command(["git", "log", "-1", "--format=%ar", branch])
 
-            state["branches"].append({
-                "name": branch,
-                "age": date_output or "unknown"
-            })
+            state["branches"].append({"name": branch, "age": date_output or "unknown"})
 
     if state["branches"]:
         state["has_research_branches"] = True
@@ -208,15 +204,20 @@ def analyze_research_branches() -> Dict[str, Any]:
 
 def main():
     import argparse
+
     parser = argparse.ArgumentParser(description="Analyze project state")
-    parser.add_argument("--section", choices=["git", "code", "issues", "research", "all"],
-                        default="all", help="Section to analyze")
+    parser.add_argument(
+        "--section",
+        choices=["git", "code", "issues", "research", "all"],
+        default="all",
+        help="Section to analyze",
+    )
     args = parser.parse_args()
 
     result = {
         "operation": "analyze_state",
         "section": args.section,
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.now().isoformat(),
     }
 
     if args.section in ["git", "all"]:
