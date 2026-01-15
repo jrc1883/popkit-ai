@@ -595,7 +595,7 @@ if __name__ == "__main__":
         print("Set: export CLOUDFLARE_API_TOKEN=your-token-here")
         sys.exit(1)
 
-    print(f"API Token: {client.api_token[:8]}...{client.api_token[-4:]}")
+    print("API Token: [REDACTED]")
 
     # Verify token
     print("\nVerifying token...")

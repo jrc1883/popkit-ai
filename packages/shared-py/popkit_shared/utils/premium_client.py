@@ -358,7 +358,7 @@ if __name__ == "__main__":
         print("Set: export POPKIT_API_KEY=your-key-here")
         sys.exit(1)
 
-    print(f"API Key: {client.api_key[:8]}...{client.api_key[-4:]}")
+    print("API Key: [REDACTED]")
     print(f"API URL: {client.api_url}")
 
     # Test status check

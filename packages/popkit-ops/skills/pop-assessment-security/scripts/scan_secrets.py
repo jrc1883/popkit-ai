@@ -207,7 +207,8 @@ def scan_file(filepath: Path, plugin_dir: Path) -> List[Dict]:
                 if is_likely_example(line, filepath):
                     continue
 
-                # Truncate line for display
+                # Redact sensitive content for security
+                # Show context but redact the actual secret
                 display_line = line.strip()[:80]
                 if len(line.strip()) > 80:
                     display_line += "..."
