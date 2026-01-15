@@ -12,21 +12,15 @@ Uses AskUserQuestion for consistent UX.
 
 import json
 import sys
-import os
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Optional
 
 # Add utils to path
 utils_dir = Path(__file__).parent / "utils"
 sys.path.insert(0, str(utils_dir))
 
-from feedback_store import get_feedback_store, ContextType, FeedbackRating
-from feedback_triggers import (
-    get_trigger_manager,
-    FeedbackTrigger,
-    TriggerPriority,
-    create_feedback_prompt
-)
+from feedback_store import get_feedback_store
+from feedback_triggers import get_trigger_manager, FeedbackTrigger
 
 
 def process_hook(hook_input: dict) -> dict:
@@ -68,10 +62,10 @@ def process_hook(hook_input: dict) -> dict:
     session = store.get_or_create_session(session_id)
     should_show, reason = manager.should_show_feedback(
         trigger=trigger,
-        tool_calls_since_last=session['tool_calls_since_feedback'],
-        dismissed_count=session['dismissed_count'],
-        never_ask_session=bool(session['never_ask_this_session']),
-        min_tool_calls=int(store.get_preference('min_tool_calls', '10'))
+        tool_calls_since_last=session["tool_calls_since_feedback"],
+        dismissed_count=session["dismissed_count"],
+        never_ask_session=bool(session["never_ask_this_session"]),
+        min_tool_calls=int(store.get_preference("min_tool_calls", "10")),
     )
 
     if not should_show:
@@ -89,8 +83,8 @@ def process_hook(hook_input: dict) -> dict:
             "command_name": trigger.command_name,
             "workflow_phase": trigger.workflow_phase,
             "session_id": session_id,
-            "tool_call_count": tool_calls
-        }
+            "tool_call_count": tool_calls,
+        },
     }
 
     return response
@@ -121,7 +115,7 @@ def evaluate_trigger(hook_input: dict, manager) -> Optional[FeedbackTrigger]:
         return manager.evaluate_agent_completion(
             agent_name=agent_name,
             tool_output=tool_output,
-            error_occurred=error_occurred
+            error_occurred=error_occurred,
         )
 
     # Check SlashCommand tool (command execution)
@@ -129,14 +123,13 @@ def evaluate_trigger(hook_input: dict, manager) -> Optional[FeedbackTrigger]:
         return manager.evaluate_command_execution(
             command_name=command_name,
             success=not error_occurred,
-            output_size=len(tool_output) if tool_output else 0
+            output_size=len(tool_output) if tool_output else 0,
         )
 
     # Check Skill tool (may indicate workflow phase)
     if tool_name == "Skill" and workflow_phase:
         return manager.evaluate_workflow_phase(
-            phase_name=workflow_phase,
-            phase_output=tool_output
+            phase_name=workflow_phase, phase_output=tool_output
         )
 
     return None
@@ -167,17 +160,13 @@ def is_error_output(output: str) -> bool:
         "permission denied",
         "not found",
         "command not found",
-        "syntax error"
+        "syntax error",
     ]
 
     return any(pattern in output_lower for pattern in error_patterns)
 
 
-def record_feedback_response(
-    response: str,
-    context: dict,
-    store=None
-) -> dict:
+def record_feedback_response(response: str, context: dict, store=None) -> dict:
     """
     Record feedback from user response.
 
@@ -201,36 +190,29 @@ def record_feedback_response(
 
     # Handle "Skip" or dismissal
     if rating is None and comment is None:
-        store.record_dismissed(context.get('session_id', 'unknown'))
+        store.record_dismissed(context.get("session_id", "unknown"))
         return {"action": "dismissed"}
 
     # Handle comment-only response (couldn't parse rating)
     if rating is None:
         # Store as a comment without rating
-        return {
-            "action": "comment_only",
-            "comment": comment
-        }
+        return {"action": "comment_only", "comment": comment}
 
     # Record the feedback
     feedback = store.record_feedback(
         rating=rating,
-        context_type=context.get('context_type', 'unknown'),
-        context_id=context.get('context_id'),
-        agent_name=context.get('agent_name'),
-        command_name=context.get('command_name'),
-        workflow_phase=context.get('workflow_phase'),
+        context_type=context.get("context_type", "unknown"),
+        context_id=context.get("context_id"),
+        agent_name=context.get("agent_name"),
+        command_name=context.get("command_name"),
+        workflow_phase=context.get("workflow_phase"),
         user_comment=comment,
-        session_id=context.get('session_id'),
-        tool_call_count=context.get('tool_call_count', 0)
+        session_id=context.get("session_id"),
+        tool_call_count=context.get("tool_call_count", 0),
     )
 
     # Return result
-    result = {
-        "action": "recorded",
-        "feedback_id": feedback.id,
-        "rating": rating
-    }
+    result = {"action": "recorded", "feedback_id": feedback.id, "rating": rating}
 
     # Add warning for low ratings
     if rating <= 1:
@@ -281,7 +263,7 @@ def main():
         if hook_input.get("feedback_response"):
             result = record_feedback_response(
                 response=hook_input["feedback_response"],
-                context=hook_input.get("feedback_context", {})
+                context=hook_input.get("feedback_context", {}),
             )
             print(json.dumps(result))
             return
@@ -291,15 +273,11 @@ def main():
         print(json.dumps(result))
 
     except json.JSONDecodeError as e:
-        print(json.dumps({
-            "action": "continue",
-            "error": f"Invalid JSON input: {str(e)}"
-        }))
+        print(
+            json.dumps({"action": "continue", "error": f"Invalid JSON input: {str(e)}"})
+        )
     except Exception as e:
-        print(json.dumps({
-            "action": "continue",
-            "error": f"Hook error: {str(e)}"
-        }))
+        print(json.dumps({"action": "continue", "error": f"Hook error: {str(e)}"}))
 
 
 if __name__ == "__main__":

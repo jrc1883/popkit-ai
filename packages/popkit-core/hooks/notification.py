@@ -30,7 +30,7 @@ import os
 import subprocess
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from enum import Enum
 
 
@@ -49,7 +49,6 @@ EMOJI_MAP = {
     "error": "❌",
     "success": "✅",
     "warning": "⚠️",
-
     # Actions
     "start": "🚀",
     "handoff": "➜",
@@ -69,8 +68,10 @@ EMOJI_MAP = {
 # MESSAGE CATEGORIZATION
 # =============================================================================
 
+
 class MessageCategory(Enum):
     """Message category for formatting decisions."""
+
     TELEMETRY = "telemetry"
     PROJECT_DATA = "project_data"
     STATUS = "status"
@@ -81,6 +82,7 @@ class MessageCategory(Enum):
 # =============================================================================
 # FORMATTING FUNCTIONS
 # =============================================================================
+
 
 def format_duration(seconds: float) -> str:
     """Convert seconds to human-readable duration."""
@@ -113,8 +115,7 @@ def sanitize_context(data: Dict[str, Any]) -> Dict[str, Any]:
     for key, value in data.items():
         # Check if key matches sensitive pattern
         is_sensitive = any(
-            re.search(pattern, key, re.IGNORECASE)
-            for pattern in sensitive_patterns
+            re.search(pattern, key, re.IGNORECASE) for pattern in sensitive_patterns
         )
 
         if is_sensitive:
@@ -122,7 +123,10 @@ def sanitize_context(data: Dict[str, Any]) -> Dict[str, Any]:
         elif isinstance(value, dict):
             sanitized[key] = sanitize_context(value)
         elif isinstance(value, list) and value and isinstance(value[0], dict):
-            sanitized[key] = [sanitize_context(item) if isinstance(item, dict) else item for item in value]
+            sanitized[key] = [
+                sanitize_context(item) if isinstance(item, dict) else item
+                for item in value
+            ]
         else:
             sanitized[key] = value
 
@@ -135,12 +139,21 @@ def categorize_message(msg: Dict[str, Any]) -> MessageCategory:
 
     # Check if it's a power mode protocol message
     telemetry_types = {
-        "HEARTBEAT", "PROGRESS", "BOUNDARY_ALERT", "DRIFT_ALERT",
-        "SYNC_ACK", "AGENT_DOWN"
+        "HEARTBEAT",
+        "PROGRESS",
+        "BOUNDARY_ALERT",
+        "DRIFT_ALERT",
+        "SYNC_ACK",
+        "AGENT_DOWN",
     }
     project_types = {
-        "TASK", "INSIGHT", "QUERY", "RESPONSE", "OBJECTIVE_UPDATE",
-        "COURSE_CORRECT", "RESULT"
+        "TASK",
+        "INSIGHT",
+        "QUERY",
+        "RESPONSE",
+        "OBJECTIVE_UPDATE",
+        "COURSE_CORRECT",
+        "RESULT",
     }
     status_types = {"HUMAN_REQUIRED", "STREAM_ERROR"}
 
@@ -160,6 +173,7 @@ def categorize_message(msg: Dict[str, Any]) -> MessageCategory:
 # =============================================================================
 # TELEMETRY FORMATTERS
 # =============================================================================
+
 
 def format_heartbeat(msg: Dict[str, Any]) -> str:
     """Format agent heartbeat message."""
@@ -210,6 +224,7 @@ def format_telemetry_message(msg: Dict[str, Any]) -> str:
 # PROJECT DATA FORMATTERS
 # =============================================================================
 
+
 def format_project_data_message(msg: Dict[str, Any]) -> str:
     """Format project data message for inter-agent communication."""
     msg_type = msg.get("type", "")
@@ -249,6 +264,7 @@ def format_project_data_message(msg: Dict[str, Any]) -> str:
 # STATUS FORMATTERS
 # =============================================================================
 
+
 def format_status_message(msg: Dict[str, Any]) -> str:
     """Format status message for user display."""
     payload = msg.get("payload", {})
@@ -264,6 +280,7 @@ def format_status_message(msg: Dict[str, Any]) -> str:
 # =============================================================================
 # DIRECTORY & LOGGING UTILITIES
 # =============================================================================
+
 
 def create_popkit_message_dir():
     """Create .popkit/messages directory for storing message history."""
@@ -295,12 +312,12 @@ def log_notification(data: Dict[str, Any], category: str = "general"):
         safe_timestamp = timestamp.replace(":", "-").replace(".", "-")
         log_file = category_dir / f"{safe_timestamp}.json"
 
-        with open(log_file, 'w') as f:
-            json.dump({
-                "timestamp": timestamp,
-                "category": category,
-                "data": data
-            }, f, indent=2)
+        with open(log_file, "w") as f:
+            json.dump(
+                {"timestamp": timestamp, "category": category, "data": data},
+                f,
+                indent=2,
+            )
     except Exception:
         pass  # Silent failure
 
@@ -309,20 +326,23 @@ def announce_notification(message):
     """Announce notification using TTS if available and requested."""
     try:
         # Windows TTS
-        if os.name == 'nt':
-            subprocess.run([
-                'powershell', '-Command',
-                f'Add-Type -AssemblyName System.Speech; '
-                f'$synth = New-Object System.Speech.Synthesis.SpeechSynthesizer; '
-                f'$synth.Speak("{message}")'
-            ], check=False, capture_output=True, timeout=5)
-        # macOS TTS
-        elif sys.platform == 'darwin':
+        if os.name == "nt":
             subprocess.run(
-                ['say', message],
+                [
+                    "powershell",
+                    "-Command",
+                    f"Add-Type -AssemblyName System.Speech; "
+                    f"$synth = New-Object System.Speech.Synthesis.SpeechSynthesizer; "
+                    f'$synth.Speak("{message}")',
+                ],
                 check=False,
                 capture_output=True,
-                timeout=5
+                timeout=5,
+            )
+        # macOS TTS
+        elif sys.platform == "darwin":
+            subprocess.run(
+                ["say", message], check=False, capture_output=True, timeout=5
             )
     except Exception:
         pass  # Silent failure for TTS
@@ -331,6 +351,7 @@ def announce_notification(message):
 # =============================================================================
 # MAIN MESSAGE FORMATTER
 # =============================================================================
+
 
 def format_message(raw_msg: Dict[str, Any]) -> Dict[str, Any]:
     """Main formatter that routes to category-specific handlers."""
@@ -347,10 +368,14 @@ def format_message(raw_msg: Dict[str, Any]) -> Dict[str, Any]:
         formatted_output = format_status_message(raw_msg)
     elif category == MessageCategory.NOTIFICATION:
         # Legacy notification format
-        formatted_output = raw_msg.get("message", raw_msg.get("notification", "Notification"))
+        formatted_output = raw_msg.get(
+            "message", raw_msg.get("notification", "Notification")
+        )
     else:
         # Fallback
-        formatted_output = str(raw_msg.get("message", raw_msg.get("notification", "Unknown message")))
+        formatted_output = str(
+            raw_msg.get("message", raw_msg.get("notification", "Unknown message"))
+        )
 
     # Sanitize sensitive data
     sanitized_payload = sanitize_context(raw_msg.get("payload", {}))
@@ -363,7 +388,7 @@ def format_message(raw_msg: Dict[str, Any]) -> Dict[str, Any]:
             "message_type": raw_msg.get("type", "NOTIFICATION"),
             "category": category.value,
             "timestamp": datetime.now().isoformat(),
-        }
+        },
     }
 
     # Add agent info if present
@@ -377,6 +402,7 @@ def format_message(raw_msg: Dict[str, Any]) -> Dict[str, Any]:
 # MAIN ENTRY POINT
 # =============================================================================
 
+
 def main():
     """Main entry point for the hook - JSON stdin/stdout protocol"""
     try:
@@ -386,8 +412,15 @@ def main():
 
         # Check if this is a power mode message or legacy notification
         if raw_msg.get("type") in {
-            "HEARTBEAT", "PROGRESS", "INSIGHT", "TASK", "RESULT",
-            "BOUNDARY_ALERT", "DRIFT_ALERT", "HUMAN_REQUIRED", "STREAM_ERROR"
+            "HEARTBEAT",
+            "PROGRESS",
+            "INSIGHT",
+            "TASK",
+            "RESULT",
+            "BOUNDARY_ALERT",
+            "DRIFT_ALERT",
+            "HUMAN_REQUIRED",
+            "STREAM_ERROR",
         }:
             # Power mode protocol message - format it
             formatted = format_message(raw_msg)
@@ -395,12 +428,14 @@ def main():
         else:
             # Legacy notification format or pass-through
             formatted = {
-                "systemMessage": raw_msg.get("message", raw_msg.get("notification", "Notification")),
+                "systemMessage": raw_msg.get(
+                    "message", raw_msg.get("notification", "Notification")
+                ),
                 "metadata": {
                     "source": "notification-formatter",
                     "timestamp": datetime.now().isoformat(),
-                    "tts_announced": raw_msg.get("notify", raw_msg.get("tts", False))
-                }
+                    "tts_announced": raw_msg.get("notify", raw_msg.get("tts", False)),
+                },
             }
             log_notification(raw_msg, category="notification")
 
@@ -419,8 +454,8 @@ def main():
             "metadata": {
                 "source": "formatter-error",
                 "error": "json_decode_error",
-                "timestamp": datetime.now().isoformat()
-            }
+                "timestamp": datetime.now().isoformat(),
+            },
         }
         sys.stdout.write(json.dumps(error_output, indent=2))
         sys.exit(0)  # Don't block on errors
@@ -431,8 +466,8 @@ def main():
             "metadata": {
                 "source": "formatter-error",
                 "error": type(e).__name__,
-                "timestamp": datetime.now().isoformat()
-            }
+                "timestamp": datetime.now().isoformat(),
+            },
         }
         sys.stdout.write(json.dumps(error_output, indent=2))
         print(f"Error in notification hook: {e}", file=sys.stderr)

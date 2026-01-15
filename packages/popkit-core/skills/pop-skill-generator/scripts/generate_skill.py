@@ -14,7 +14,6 @@ Output:
 import json
 import os
 import sys
-from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -91,15 +90,16 @@ def generate_skill_md(skill_path: Path, config: Dict[str, Any]) -> Path:
         "PHASE_2_NAME": "Execute",
         "PHASE_2_DESCRIPTION": "Perform the main operation",
         "PHASE_3_NAME": "Verify",
-        "PHASE_3_DESCRIPTION": "Verify results and cleanup"
+        "PHASE_3_DESCRIPTION": "Verify results and cleanup",
     }
 
     content = render_template(template, variables)
 
     # Clean up unrendered conditionals
     import re
-    content = re.sub(r'\{\{#\w+\}\}.*?\{\{/\w+\}\}', '', content, flags=re.DOTALL)
-    content = re.sub(r'\{\{\w+\}\}', '', content)
+
+    content = re.sub(r"\{\{#\w+\}\}.*?\{\{/\w+\}\}", "", content, flags=re.DOTALL)
+    content = re.sub(r"\{\{\w+\}\}", "", content)
 
     output_path = skill_path / "SKILL.md"
     output_path.write_text(content)
@@ -121,7 +121,7 @@ def generate_workflow(skill_path: Path, config: Dict[str, Any]) -> Optional[Path
         "PHASE_2_NAME": "Execute",
         "PHASE_2_DESCRIPTION": "Perform the main operation",
         "PHASE_3_NAME": "Verify",
-        "PHASE_3_DESCRIPTION": "Verify results and cleanup"
+        "PHASE_3_DESCRIPTION": "Verify results and cleanup",
     }
 
     content = render_template(template, variables)
@@ -138,10 +138,7 @@ def generate_main_script(skill_path: Path, config: Dict[str, Any]) -> Optional[P
 
     template = TEMPLATES_DIR / "scripts" / "main.py.template"
 
-    variables = {
-        "SKILL_NAME": config["name"],
-        "DESCRIPTION": config["description"]
-    }
+    variables = {"SKILL_NAME": config["name"], "DESCRIPTION": config["description"]}
 
     content = render_template(template, variables)
 
@@ -164,10 +161,7 @@ def generate_checklist(skill_path: Path, config: Dict[str, Any]) -> Optional[Pat
 
     template = TEMPLATES_DIR / "checklists" / "checklist.json.template"
 
-    variables = {
-        "SKILL_NAME": config["name"],
-        "DESCRIPTION": config["description"]
-    }
+    variables = {"SKILL_NAME": config["name"], "DESCRIPTION": config["description"]}
 
     content = render_template(template, variables)
 
@@ -182,10 +176,7 @@ def generate_skill(config: Dict[str, Any]) -> Dict[str, Any]:
     skill_path = SKILLS_DIR / skill_name
 
     if skill_path.exists():
-        return {
-            "success": False,
-            "error": f"Skill already exists: {skill_name}"
-        }
+        return {"success": False, "error": f"Skill already exists: {skill_name}"}
 
     created_files = []
 
@@ -194,7 +185,7 @@ def generate_skill(config: Dict[str, Any]) -> Dict[str, Any]:
         "has_workflow": config.get("has_workflow", True),
         "has_scripts": config.get("has_scripts", True),
         "has_checklists": config.get("has_checklists", True),
-        "has_templates": config.get("has_templates", False)
+        "has_templates": config.get("has_templates", False),
     }
 
     directories = create_directory_structure(skill_path, options)
@@ -223,33 +214,58 @@ def generate_skill(config: Dict[str, Any]) -> Dict[str, Any]:
         "skill_name": skill_name,
         "skill_path": str(skill_path),
         "directories_created": directories,
-        "files_created": created_files
+        "files_created": created_files,
     }
 
 
 def main():
     import argparse
+
     parser = argparse.ArgumentParser(description="Generate a new PopKit skill")
     parser.add_argument("name", help="Skill name (e.g., pop-deploy-kubernetes)")
     parser.add_argument("--description", "-d", required=True, help="Skill description")
-    parser.add_argument("--category", "-c", default="utility",
-                        choices=["dev-workflow", "deployment", "quality", "setup",
-                                 "analysis", "documentation", "integration", "utility"],
-                        help="Skill category")
-    parser.add_argument("--no-workflow", action="store_true", help="Skip workflow generation")
-    parser.add_argument("--no-scripts", action="store_true", help="Skip script generation")
-    parser.add_argument("--no-checklists", action="store_true", help="Skip checklist generation")
-    parser.add_argument("--with-templates", action="store_true", help="Include templates directory")
+    parser.add_argument(
+        "--category",
+        "-c",
+        default="utility",
+        choices=[
+            "dev-workflow",
+            "deployment",
+            "quality",
+            "setup",
+            "analysis",
+            "documentation",
+            "integration",
+            "utility",
+        ],
+        help="Skill category",
+    )
+    parser.add_argument(
+        "--no-workflow", action="store_true", help="Skip workflow generation"
+    )
+    parser.add_argument(
+        "--no-scripts", action="store_true", help="Skip script generation"
+    )
+    parser.add_argument(
+        "--no-checklists", action="store_true", help="Skip checklist generation"
+    )
+    parser.add_argument(
+        "--with-templates", action="store_true", help="Include templates directory"
+    )
     parser.add_argument("--keywords", nargs="+", help="Trigger keywords")
-    parser.add_argument("--dry-run", action="store_true", help="Show what would be created")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Show what would be created"
+    )
     args = parser.parse_args()
 
     # Validate skill name
     if not args.name.startswith("pop-"):
-        print(json.dumps({
-            "success": False,
-            "error": "Skill name must start with 'pop-'"
-        }, indent=2))
+        print(
+            json.dumps(
+                {"success": False, "error": "Skill name must start with 'pop-'"},
+                indent=2,
+            )
+        )
         return 1
 
     config = {
@@ -260,33 +276,39 @@ def main():
         "has_workflow": not args.no_workflow,
         "has_scripts": not args.no_scripts,
         "has_checklists": not args.no_checklists,
-        "has_templates": args.with_templates
+        "has_templates": args.with_templates,
     }
 
     if args.dry_run:
         skill_path = SKILLS_DIR / config["name"]
-        print(json.dumps({
-            "operation": "generate_skill",
-            "dry_run": True,
-            "config": config,
-            "would_create": {
-                "directory": str(skill_path),
-                "files": [
-                    "SKILL.md",
-                    f"workflows/{config['name']}-workflow.json" if config["has_workflow"] else None,
-                    "scripts/main.py" if config["has_scripts"] else None,
-                    "checklists/checklist.json" if config["has_checklists"] else None
-                ]
-            }
-        }, indent=2))
+        print(
+            json.dumps(
+                {
+                    "operation": "generate_skill",
+                    "dry_run": True,
+                    "config": config,
+                    "would_create": {
+                        "directory": str(skill_path),
+                        "files": [
+                            "SKILL.md",
+                            f"workflows/{config['name']}-workflow.json"
+                            if config["has_workflow"]
+                            else None,
+                            "scripts/main.py" if config["has_scripts"] else None,
+                            "checklists/checklist.json"
+                            if config["has_checklists"]
+                            else None,
+                        ],
+                    },
+                },
+                indent=2,
+            )
+        )
         return 0
 
     result = generate_skill(config)
 
-    print(json.dumps({
-        "operation": "generate_skill",
-        **result
-    }, indent=2))
+    print(json.dumps({"operation": "generate_skill", **result}, indent=2))
 
     return 0 if result["success"] else 1
 

@@ -13,7 +13,6 @@ Issue #191: Simplified architecture - removed local Docker Redis option.
 """
 
 import os
-import sys
 import json
 import subprocess
 import re
@@ -24,9 +23,10 @@ from enum import Enum
 
 class PowerMode(Enum):
     """Available Power Mode implementations."""
-    NATIVE = "native"      # Claude Code native async (2.0.64+)
-    UPSTASH = "upstash"    # Upstash cloud Redis (Pro tier, no Docker)
-    FILE = "file"          # File-based coordination (free tier fallback)
+
+    NATIVE = "native"  # Claude Code native async (2.0.64+)
+    UPSTASH = "upstash"  # Upstash cloud Redis (Pro tier, no Docker)
+    FILE = "file"  # File-based coordination (free tier fallback)
     DISABLED = "disabled"  # Power Mode not available
 
 
@@ -108,7 +108,10 @@ class ModeSelector:
         if self._version_compare(version, self.MIN_NATIVE_VERSION) >= 0:
             return True, f"Claude Code {version} supports native async"
 
-        return False, f"Claude Code {version} < {self.MIN_NATIVE_VERSION} (native async requires 2.0.64+)"
+        return (
+            False,
+            f"Claude Code {version} < {self.MIN_NATIVE_VERSION} (native async requires 2.0.64+)",
+        )
 
     def _check_upstash_available(self) -> Tuple[bool, str]:
         """
@@ -125,6 +128,7 @@ class ModeSelector:
             # Try to verify connection
             try:
                 from .upstash_adapter import UpstashRedisClient
+
                 client = UpstashRedisClient(url=upstash_url, token=upstash_token)
                 if client.ping():
                     return True, f"Upstash cloud Redis: {upstash_url[:40]}..."
@@ -132,7 +136,10 @@ class ModeSelector:
             except Exception as e:
                 return False, f"Upstash configured but connection failed: {e}"
 
-        return False, "Upstash not configured (set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN)"
+        return (
+            False,
+            "Upstash not configured (set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN)",
+        )
 
     def _get_claude_code_version(self) -> Optional[str]:
         """
@@ -148,14 +155,11 @@ class ModeSelector:
         # Try to parse from claude --version
         try:
             result = subprocess.run(
-                ["claude", "--version"],
-                capture_output=True,
-                text=True,
-                timeout=5
+                ["claude", "--version"], capture_output=True, text=True, timeout=5
             )
             if result.returncode == 0:
                 # Parse version from output like "Claude Code v2.0.64"
-                match = re.search(r'v?(\d+\.\d+\.\d+)', result.stdout)
+                match = re.search(r"v?(\d+\.\d+\.\d+)", result.stdout)
                 if match:
                     return match.group(1)
         except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
@@ -172,8 +176,9 @@ class ModeSelector:
              0 if v1 == v2
              1 if v1 > v2
         """
+
         def normalize(v):
-            return [int(x) for x in re.sub(r'[^0-9.]', '', v).split('.')]
+            return [int(x) for x in re.sub(r"[^0-9.]", "", v).split(".")]
 
         parts1 = normalize(v1)
         parts2 = normalize(v2)
@@ -199,10 +204,7 @@ class ModeSelector:
             tier: "free", "premium", or "pro"
         """
         tier_config = self.config.get("tier_limits", {})
-        return tier_config.get(tier, {
-            "mode": "file",
-            "max_agents": 2
-        })
+        return tier_config.get(tier, {"mode": "file", "max_agents": 2})
 
     def format_status(self) -> str:
         """Format mode selection status for display.
@@ -211,31 +213,32 @@ class ModeSelector:
         """
         mode, reason = self.select_mode()
 
-        status_lines = [
-            f"Power Mode: {mode.value.upper()}",
-            f"Reason: {reason}",
-            ""
-        ]
+        status_lines = [f"Power Mode: {mode.value.upper()}", f"Reason: {reason}", ""]
 
         # Add mode-specific info
         if mode == PowerMode.NATIVE:
             native_config = self.config.get("native", {})
-            status_lines.extend([
-                f"Max Agents: {native_config.get('max_parallel_agents', 5)}",
-                "Setup: Zero config required"
-            ])
+            status_lines.extend(
+                [
+                    f"Max Agents: {native_config.get('max_parallel_agents', 5)}",
+                    "Setup: Zero config required",
+                ]
+            )
         elif mode == PowerMode.UPSTASH:
             upstash_url = os.environ.get("UPSTASH_REDIS_REST_URL", "")
-            status_lines.extend([
-                f"Upstash: {upstash_url[:40]}..." if upstash_url else "Upstash: configured",
-                "Setup: Set env vars (Pro tier)",
-                "Max Agents: 6+ (parallel)"
-            ])
+            status_lines.extend(
+                [
+                    f"Upstash: {upstash_url[:40]}..."
+                    if upstash_url
+                    else "Upstash: configured",
+                    "Setup: Set env vars (Pro tier)",
+                    "Max Agents: 6+ (parallel)",
+                ]
+            )
         elif mode == PowerMode.FILE:
-            status_lines.extend([
-                "Max Agents: 2-3 (sequential)",
-                "Setup: None required (free tier)"
-            ])
+            status_lines.extend(
+                ["Max Agents: 2-3 (sequential)", "Setup: None required (free tier)"]
+            )
 
         return "\n".join(status_lines)
 
@@ -243,6 +246,7 @@ class ModeSelector:
 # =============================================================================
 # HELPER FUNCTIONS
 # =============================================================================
+
 
 def auto_select_mode() -> PowerMode:
     """Convenience function to auto-select mode."""
@@ -276,8 +280,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Power Mode Selector")
     parser.add_argument("--select", action="store_true", help="Auto-select best mode")
     parser.add_argument("--status", action="store_true", help="Show full status")
-    parser.add_argument("--check", type=str, choices=["native", "upstash", "file"], help="Check specific mode")
-    parser.add_argument("--tier", type=str, default="free", help="User tier (free, premium, pro)")
+    parser.add_argument(
+        "--check",
+        type=str,
+        choices=["native", "upstash", "file"],
+        help="Check specific mode",
+    )
+    parser.add_argument(
+        "--tier", type=str, default="free", help="User tier (free, premium, pro)"
+    )
 
     args = parser.parse_args()
 

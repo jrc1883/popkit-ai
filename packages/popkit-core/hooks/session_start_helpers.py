@@ -29,7 +29,7 @@ def detect_agent_type_session(data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     Returns:
         dict: Agent type optimization info, or None if no agent_type specified
     """
-    agent_type = data.get('agent_type')
+    agent_type = data.get("agent_type")
 
     if not agent_type:
         return None  # No --agent flag used, normal session
@@ -42,57 +42,57 @@ def detect_agent_type_session(data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         # This helps optimize context loading and Power Mode configuration
         agent_category_map = {
             # Tier 1 agents (always active)
-            'code-reviewer': 'tier-1',
-            'refactoring-expert': 'tier-1',
-            'accessibility-guardian': 'tier-1',
-            'api-designer': 'tier-1',
-            'documentation-maintainer': 'tier-1',
-            'migration-specialist': 'tier-1',
-            'bug-whisperer': 'tier-1',
-            'performance-optimizer': 'tier-1',
-            'security-auditor': 'tier-1',
-            'test-writer-fixer': 'tier-1',
+            "code-reviewer": "tier-1",
+            "refactoring-expert": "tier-1",
+            "accessibility-guardian": "tier-1",
+            "api-designer": "tier-1",
+            "documentation-maintainer": "tier-1",
+            "migration-specialist": "tier-1",
+            "bug-whisperer": "tier-1",
+            "performance-optimizer": "tier-1",
+            "security-auditor": "tier-1",
+            "test-writer-fixer": "tier-1",
             # Tier 2 agents (on-demand)
-            'bundle-analyzer': 'tier-2',
-            'dead-code-eliminator': 'tier-2',
-            'feature-prioritizer': 'tier-2',
-            'meta-agent': 'tier-2',
-            'power-coordinator': 'tier-2',
-            'rapid-prototyper': 'tier-2',
-            'deployment-validator': 'tier-2',
-            'rollback-specialist': 'tier-2',
-            'researcher': 'tier-2',
-            'merge-conflict-resolver': 'tier-2',
-            'prd-parser': 'tier-2',
+            "bundle-analyzer": "tier-2",
+            "dead-code-eliminator": "tier-2",
+            "feature-prioritizer": "tier-2",
+            "meta-agent": "tier-2",
+            "power-coordinator": "tier-2",
+            "rapid-prototyper": "tier-2",
+            "deployment-validator": "tier-2",
+            "rollback-specialist": "tier-2",
+            "researcher": "tier-2",
+            "merge-conflict-resolver": "tier-2",
+            "prd-parser": "tier-2",
             # Feature workflow agents
-            'code-explorer': 'feature-workflow',
-            'code-architect': 'feature-workflow',
+            "code-explorer": "feature-workflow",
+            "code-architect": "feature-workflow",
         }
 
-        category = agent_category_map.get(agent_type, 'unknown')
+        category = agent_category_map.get(agent_type, "unknown")
 
         # Determine optimization strategy
         optimization = {
-            'agent_type': agent_type,
-            'agent_category': category,
-            'skip_embedding_filter': True,  # Agent already selected by user
-            'optimizations_applied': []
+            "agent_type": agent_type,
+            "agent_category": category,
+            "skip_embedding_filter": True,  # Agent already selected by user
+            "optimizations_applied": [],
         }
 
         # Category-specific optimizations
-        if category == 'tier-1':
-            optimization['optimizations_applied'].append('standard_context_loading')
-            print(f"  Category: Tier 1 (always active)", file=sys.stderr)
-        elif category == 'tier-2':
-            optimization['optimizations_applied'].append('on_demand_context_loading')
-            print(f"  Category: Tier 2 (on-demand specialist)", file=sys.stderr)
-        elif category == 'feature-workflow':
-            optimization['optimizations_applied'].append('feature_workflow_context')
-            print(f"  Category: Feature workflow agent", file=sys.stderr)
+        if category == "tier-1":
+            optimization["optimizations_applied"].append("standard_context_loading")
+            print("  Category: Tier 1 (always active)", file=sys.stderr)
+        elif category == "tier-2":
+            optimization["optimizations_applied"].append("on_demand_context_loading")
+            print("  Category: Tier 2 (on-demand specialist)", file=sys.stderr)
+        elif category == "feature-workflow":
+            optimization["optimizations_applied"].append("feature_workflow_context")
+            print("  Category: Feature workflow agent", file=sys.stderr)
         else:
             # Unknown agent type - might be custom or from another plugin
-            optimization['optimizations_applied'].append('generic_optimization')
-            print(f"  Category: External/custom agent", file=sys.stderr)
+            optimization["optimizations_applied"].append("generic_optimization")
+            print("  Category: External/custom agent", file=sys.stderr)
 
         return optimization
 

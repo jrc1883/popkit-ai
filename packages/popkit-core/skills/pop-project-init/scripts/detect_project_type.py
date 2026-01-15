@@ -14,7 +14,7 @@ Output:
 import json
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 
 def detect_existing_project(project_dir: Path) -> Dict[str, Any]:
@@ -70,21 +70,25 @@ def detect_existing_project(project_dir: Path) -> Dict[str, Any]:
     category = None
     if any(f in frameworks for f in ["nextjs", "react", "vue"]):
         category = "web-frontend"
-    elif any(f in frameworks for f in ["express", "fastify", "fastapi", "django", "flask"]):
+    elif any(
+        f in frameworks for f in ["express", "fastify", "fastapi", "django", "flask"]
+    ):
         category = "web-backend"
     elif "cli-python" in frameworks or "typescript" in frameworks:
         category = "cli-or-library"
 
     return {
-        "has_existing_project": any([
-            indicators["has_package_json"],
-            indicators["has_pyproject"],
-            indicators["has_cargo"],
-            indicators["has_go_mod"]
-        ]),
+        "has_existing_project": any(
+            [
+                indicators["has_package_json"],
+                indicators["has_pyproject"],
+                indicators["has_cargo"],
+                indicators["has_go_mod"],
+            ]
+        ),
         "indicators": indicators,
         "frameworks": frameworks,
-        "category": category
+        "category": category,
     }
 
 
@@ -94,29 +98,45 @@ def suggest_project_type(detection: Dict[str, Any]) -> Dict[str, Any]:
 
     if detection["has_existing_project"]:
         if "nextjs" in detection["frameworks"]:
-            suggestions.append({
-                "type": "nextjs",
-                "confidence": "high",
-                "reason": "Next.js dependency detected"
-            })
+            suggestions.append(
+                {
+                    "type": "nextjs",
+                    "confidence": "high",
+                    "reason": "Next.js dependency detected",
+                }
+            )
         elif "fastapi" in detection["frameworks"]:
-            suggestions.append({
-                "type": "fastapi",
-                "confidence": "high",
-                "reason": "FastAPI dependency detected"
-            })
+            suggestions.append(
+                {
+                    "type": "fastapi",
+                    "confidence": "high",
+                    "reason": "FastAPI dependency detected",
+                }
+            )
     else:
         # No existing project, suggest based on common patterns
         suggestions = [
-            {"type": "nextjs", "confidence": "suggested", "reason": "Most popular full-stack framework"},
-            {"type": "fastapi", "confidence": "suggested", "reason": "Modern Python API framework"},
+            {
+                "type": "nextjs",
+                "confidence": "suggested",
+                "reason": "Most popular full-stack framework",
+            },
+            {
+                "type": "fastapi",
+                "confidence": "suggested",
+                "reason": "Modern Python API framework",
+            },
             {"type": "cli", "confidence": "suggested", "reason": "Command-line tool"},
-            {"type": "library", "confidence": "suggested", "reason": "Reusable package"}
+            {
+                "type": "library",
+                "confidence": "suggested",
+                "reason": "Reusable package",
+            },
         ]
 
     return {
         "suggestions": suggestions,
-        "recommended": suggestions[0] if suggestions else None
+        "recommended": suggestions[0] if suggestions else None,
     }
 
 
@@ -137,8 +157,8 @@ def get_template_info(project_type: str) -> Dict[str, Any]:
                 "src/app/page.tsx",
                 ".eslintrc.json",
                 ".gitignore",
-                "README.md"
-            ]
+                "README.md",
+            ],
         },
         "fastapi": {
             "name": "FastAPI Service",
@@ -154,8 +174,8 @@ def get_template_info(project_type: str) -> Dict[str, Any]:
                 "alembic.ini",
                 ".env.example",
                 ".gitignore",
-                "README.md"
-            ]
+                "README.md",
+            ],
         },
         "cli": {
             "name": "CLI Tool",
@@ -167,8 +187,8 @@ def get_template_info(project_type: str) -> Dict[str, Any]:
                 "src/cli.py or src/cli.ts",
                 "src/commands/",
                 ".gitignore",
-                "README.md"
-            ]
+                "README.md",
+            ],
         },
         "library": {
             "name": "Library/Package",
@@ -181,8 +201,8 @@ def get_template_info(project_type: str) -> Dict[str, Any]:
                 "tests/",
                 "tsconfig.json",
                 ".gitignore",
-                "README.md"
-            ]
+                "README.md",
+            ],
         },
         "plugin": {
             "name": "Claude Code Plugin",
@@ -194,9 +214,9 @@ def get_template_info(project_type: str) -> Dict[str, Any]:
                 "skills/",
                 "commands/",
                 "agents/",
-                "README.md"
-            ]
-        }
+                "README.md",
+            ],
+        },
     }
 
     return templates.get(project_type, {})
@@ -204,6 +224,7 @@ def get_template_info(project_type: str) -> Dict[str, Any]:
 
 def main():
     import argparse
+
     parser = argparse.ArgumentParser(description="Detect project type")
     parser.add_argument("--dir", default=".", help="Project directory")
     parser.add_argument("--type", help="Get info about specific type")
@@ -214,11 +235,12 @@ def main():
     if args.type:
         # Just get template info
         info = get_template_info(args.type)
-        print(json.dumps({
-            "operation": "template_info",
-            "type": args.type,
-            "info": info
-        }, indent=2))
+        print(
+            json.dumps(
+                {"operation": "template_info", "type": args.type, "info": info},
+                indent=2,
+            )
+        )
         return 0
 
     # Detect existing project
@@ -230,7 +252,7 @@ def main():
         "directory": str(project_dir),
         "detection": detection,
         "suggestions": suggestions["suggestions"],
-        "recommended": suggestions["recommended"]
+        "recommended": suggestions["recommended"],
     }
 
     print(json.dumps(report, indent=2))

@@ -15,7 +15,7 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Dict, List
 
 
 # Secret detection patterns with CWE mappings
@@ -26,7 +26,7 @@ SECRET_PATTERNS = {
         "severity": "critical",
         "cwe": "CWE-798",
         "deduction": 25,
-        "description": "Hardcoded API key detected"
+        "description": "Hardcoded API key detected",
     },
     "SD-002": {
         "name": "AWS Access Key",
@@ -34,7 +34,7 @@ SECRET_PATTERNS = {
         "severity": "critical",
         "cwe": "CWE-798",
         "deduction": 25,
-        "description": "AWS access key ID detected"
+        "description": "AWS access key ID detected",
     },
     "SD-003": {
         "name": "AWS Secret Key",
@@ -42,7 +42,7 @@ SECRET_PATTERNS = {
         "severity": "critical",
         "cwe": "CWE-798",
         "deduction": 25,
-        "description": "AWS secret access key detected"
+        "description": "AWS secret access key detected",
     },
     "SD-004": {
         "name": "Password Assignment",
@@ -50,7 +50,7 @@ SECRET_PATTERNS = {
         "severity": "high",
         "cwe": "CWE-259",
         "deduction": 20,
-        "description": "Hardcoded password detected"
+        "description": "Hardcoded password detected",
     },
     "SD-005": {
         "name": "Private Key",
@@ -58,7 +58,7 @@ SECRET_PATTERNS = {
         "severity": "critical",
         "cwe": "CWE-321",
         "deduction": 25,
-        "description": "Private key detected in code"
+        "description": "Private key detected in code",
     },
     "SD-006": {
         "name": "JWT Token",
@@ -66,7 +66,7 @@ SECRET_PATTERNS = {
         "severity": "high",
         "cwe": "CWE-798",
         "deduction": 20,
-        "description": "JWT token detected in code"
+        "description": "JWT token detected in code",
     },
     "SD-007": {
         "name": "GitHub Token",
@@ -74,7 +74,7 @@ SECRET_PATTERNS = {
         "severity": "critical",
         "cwe": "CWE-798",
         "deduction": 25,
-        "description": "GitHub token detected"
+        "description": "GitHub token detected",
     },
     "SD-008": {
         "name": "Database Connection String",
@@ -82,7 +82,7 @@ SECRET_PATTERNS = {
         "severity": "critical",
         "cwe": "CWE-798",
         "deduction": 25,
-        "description": "Database credentials in connection string"
+        "description": "Database credentials in connection string",
     },
     "SD-009": {
         "name": "Bearer Token",
@@ -90,7 +90,7 @@ SECRET_PATTERNS = {
         "severity": "high",
         "cwe": "CWE-798",
         "deduction": 20,
-        "description": "Bearer token detected"
+        "description": "Bearer token detected",
     },
     "SD-010": {
         "name": "Generic Secret",
@@ -98,8 +98,8 @@ SECRET_PATTERNS = {
         "severity": "high",
         "cwe": "CWE-798",
         "deduction": 15,
-        "description": "Generic secret pattern detected"
-    }
+        "description": "Generic secret pattern detected",
+    },
 }
 
 # File patterns to scan
@@ -112,7 +112,7 @@ SCAN_PATTERNS = [
     "**/*.yaml",
     "**/*.md",
     "**/*.env*",
-    "**/*.config.*"
+    "**/*.config.*",
 ]
 
 # Files to exclude
@@ -124,7 +124,7 @@ EXCLUDE_PATTERNS = [
     "**/__pycache__/**",
     "**/test-data/**",
     "**/*.test.*",
-    "**/*.spec.*"
+    "**/*.spec.*",
 ]
 
 
@@ -137,7 +137,9 @@ def find_plugin_root(start_path: Path = None) -> Path:
     for _ in range(5):
         if (current / ".claude-plugin" / "plugin.json").exists():
             return current
-        if (current / "packages" / "plugin" / ".claude-plugin" / "plugin.json").exists():
+        if (
+            current / "packages" / "plugin" / ".claude-plugin" / "plugin.json"
+        ).exists():
             return current / "packages" / "plugin"
         current = current.parent
 
@@ -169,7 +171,7 @@ def is_likely_example(line: str, filepath: Path) -> bool:
         r"placeholder",
         r"dummy",
         r"test",
-        r"sample"
+        r"sample",
     ]
 
     line_lower = line.lower()
@@ -178,7 +180,7 @@ def is_likely_example(line: str, filepath: Path) -> bool:
             return True
 
     # Check if in a documentation file
-    if filepath.suffix in ['.md', '.rst', '.txt']:
+    if filepath.suffix in [".md", ".rst", ".txt"]:
         return True
 
     return False
@@ -189,8 +191,8 @@ def scan_file(filepath: Path, plugin_dir: Path) -> List[Dict]:
     findings = []
 
     try:
-        content = filepath.read_text(encoding='utf-8', errors='ignore')
-        lines = content.split('\n')
+        content = filepath.read_text(encoding="utf-8", errors="ignore")
+        lines = content.split("\n")
     except Exception:
         return findings
 
@@ -210,17 +212,19 @@ def scan_file(filepath: Path, plugin_dir: Path) -> List[Dict]:
                 if len(line.strip()) > 80:
                     display_line += "..."
 
-                findings.append({
-                    "id": check_id,
-                    "name": check["name"],
-                    "file": rel_path,
-                    "line": line_num,
-                    "content": display_line,
-                    "severity": check["severity"],
-                    "cwe": check["cwe"],
-                    "description": check["description"],
-                    "deduction": check["deduction"]
-                })
+                findings.append(
+                    {
+                        "id": check_id,
+                        "name": check["name"],
+                        "file": rel_path,
+                        "line": line_num,
+                        "content": display_line,
+                        "severity": check["severity"],
+                        "cwe": check["cwe"],
+                        "description": check["description"],
+                        "deduction": check["deduction"],
+                    }
+                )
 
     return findings
 
@@ -239,7 +243,7 @@ def main():
             "score": 0,
             "max_score": 100,
             "error": "Plugin directory not found",
-            "findings": []
+            "findings": [],
         }
         print(json.dumps(result, indent=2))
         return 1
@@ -278,10 +282,10 @@ def main():
             "critical": by_severity.get("critical", 0),
             "high": by_severity.get("high", 0),
             "medium": by_severity.get("medium", 0),
-            "total_deduction": total_deduction
+            "total_deduction": total_deduction,
         },
         "patterns_checked": list(SECRET_PATTERNS.keys()),
-        "findings": all_findings
+        "findings": all_findings,
     }
 
     print(json.dumps(result, indent=2))
