@@ -1,7 +1,7 @@
 # Workflow Validation
 #
 # Validates GitHub Actions workflows to prevent configuration errors:
-# - Checks for underscore parameters (should be hyphens)
+# - Checks for hyphenated parameters (should be underscores)
 # - Validates workflow syntax with actionlint
 # - Prevents merging broken workflows
 #
@@ -36,29 +36,29 @@ jobs:
         run: |
           echo "Checking .github/workflows/greetings.yml for correct parameter naming..."
 
-          # Check for incorrect underscore parameters (ignore comments)
-          if grep -v '^\s*#' .github/workflows/greetings.yml | grep -E 'repo_token:|issue_message:|pr_message:' 2>/dev/null; then
-            echo "❌ ERROR: greetings.yml uses underscores instead of hyphens"
+          # Check for incorrect hyphenated parameters (ignore comments)
+          if grep -v '^\s*#' .github/workflows/greetings.yml | grep -E 'repo-token:|issue-message:|pr-message:' 2>/dev/null; then
+            echo "❌ ERROR: greetings.yml uses hyphens instead of underscores"
             echo ""
-            echo "Found incorrect parameters (underscores):"
-            grep -v '^\s*#' .github/workflows/greetings.yml | grep -n -E 'repo_token:|issue_message:|pr_message:' || true
+            echo "Found incorrect parameters (hyphens):"
+            grep -v '^\s*#' .github/workflows/greetings.yml | grep -n -E 'repo-token:|issue-message:|pr-message:' || true
             echo ""
             echo "Correct format:"
-            echo "  repo-token: \${{ secrets.GITHUB_TOKEN }}"
-            echo "  issue-message: |"
-            echo "  pr-message: |"
+            echo "  repo_token: \${{ secrets.GITHUB_TOKEN }}"
+            echo "  issue_message: |"
+            echo "  pr_message: |"
             echo ""
             echo "See CLAUDE.md 'GitHub Actions Standards' section for details"
             exit 1
           fi
 
-          # Verify correct hyphenated parameters exist
-          if ! grep -q 'repo-token:' .github/workflows/greetings.yml; then
-            echo "❌ ERROR: greetings.yml missing repo-token parameter"
+          # Verify correct underscored parameters exist
+          if ! grep -q 'repo_token:' .github/workflows/greetings.yml; then
+            echo "❌ ERROR: greetings.yml missing repo_token parameter"
             exit 1
           fi
 
-          echo "✅ greetings.yml uses correct hyphenated parameters"
+          echo "✅ greetings.yml uses correct underscored parameters"
 
       - name: Check all workflows for common issues
         id: check-all
@@ -72,8 +72,8 @@ jobs:
             if [ -f "$file" ]; then
               # Check actions/first-interaction specifically (ignore comments)
               if grep -q 'uses: actions/first-interaction' "$file"; then
-                if grep -v '^\s*#' "$file" | grep -E 'repo_token:|issue_message:|pr_message:' >/dev/null 2>&1; then
-                  echo "⚠️  $file: uses actions/first-interaction with underscored parameters"
+                if grep -v '^\s*#' "$file" | grep -E 'repo-token:|issue-message:|pr-message:' >/dev/null 2>&1; then
+                  echo "⚠️  $file: uses actions/first-interaction with hyphenated parameters"
                   files_with_issues+=("$file")
                 fi
               fi
@@ -85,7 +85,7 @@ jobs:
             echo "❌ Found workflows with parameter naming issues:"
             printf '%s\n' "${files_with_issues[@]}"
             echo ""
-            echo "GitHub Actions require hyphenated parameter names (kebab-case)."
+            echo "GitHub Actions require underscored parameter names (snake_case) for actions/first-interaction."
             echo "See CLAUDE.md 'GitHub Actions Standards' section for details."
             exit 1
           fi
@@ -103,6 +103,6 @@ jobs:
           echo "✅ All workflow validations passed!"
           echo ""
           echo "Validated:"
-          echo "  - Parameter naming (hyphens not underscores)"
+          echo "  - Parameter naming (underscores not hyphens)"
           echo "  - Workflow syntax (actionlint)"
           echo "  - Common configuration issues"
