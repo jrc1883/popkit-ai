@@ -1,0 +1,33 @@
+feat: integrate git fetch prune into morning/nightly routines (PR #153)
+
+Changes:
+- Move test_git_prune.py to packages/shared-py/popkit_shared/tests/test_git_utils.py
+  - Reorganized as proper unittest suite
+  - Added integration tests
+  - Fixed import paths to work with package structure
+
+- Integrate git_fetch_prune() into morning routine:
+  - Auto-runs git fetch --prune during morning checks
+  - Counts stale local branches (remote deleted)
+  - Adds stale_branches to git state
+
+- Integrate git_fetch_prune() into nightly routine:
+  - Auto-runs git fetch --prune during nightly checks
+  - Counts stale local branches
+  - Adds stale_branches to git state
+
+- Add stale branches to Ready to Code Score:
+  - Deducts 1 point per stale branch (max 5 points)
+  - Updates Branches Synced status to ⚠️ if stale branches exist
+  - Includes count in reason text
+
+- Add stale branches to Sleep Score:
+  - Deducts 2 points per stale branch (max 10 points)
+  - Updates Branches Cleaned status based on stale + merged
+  - Includes count in reason text
+
+This completes the automation described in PR #153 description:
+"Users no longer need to manually run git fetch --prune. The routines
+now detect stale branches and penalize the health scores appropriately."
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
