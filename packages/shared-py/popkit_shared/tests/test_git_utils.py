@@ -7,12 +7,12 @@ import unittest
 from pathlib import Path
 
 # Fix Windows console encoding for Unicode characters
-if sys.platform == 'win32':
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
-    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+if sys.platform == "win32":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
 
 # Add popkit-dev hooks to path
-hooks_path = Path(__file__).parents[3] / 'popkit-dev' / 'hooks'
+hooks_path = Path(__file__).parents[3] / "popkit-dev" / "hooks"
 sys.path.insert(0, str(hooks_path))
 
 from git_utils import (  # noqa: E402
@@ -40,10 +40,10 @@ class TestGitUtils(unittest.TestCase):
         self.assertTrue(success, f"git fetch --prune should succeed: {message}")
 
         # Message should indicate success
-        self.assertIn('✓', message, "Success message should contain checkmark")
+        self.assertIn("✓", message, "Success message should contain checkmark")
 
         # Should mention 'origin' remote
-        self.assertIn('origin', message.lower(), "Message should reference origin remote")
+        self.assertIn("origin", message.lower(), "Message should reference origin remote")
 
     def test_find_stale_local_branches(self):
         """Test finding stale local branches."""
@@ -60,42 +60,47 @@ class TestGitUtils(unittest.TestCase):
             self.assertIsInstance(branch_name, str)
             self.assertIsInstance(tracking_info, str)
             # Tracking info should indicate "gone"
-            self.assertIn('gone', tracking_info.lower())
+            self.assertIn("gone", tracking_info.lower())
 
     def test_format_stale_branches_report(self):
         """Test report formatting for stale branches."""
         # Test with no stale branches
         report = format_stale_branches_report([])
-        self.assertIn('No stale local branches', report)
-        self.assertIn('✓', report)
+        self.assertIn("No stale local branches", report)
+        self.assertIn("✓", report)
 
         # Test with sample stale branches
         sample_branches = [
-            ('feat/old-feature', '  feat/old-feature abc1234 [origin/feat/old-feature: gone] commit message'),
-            ('fix/bug-123', '  fix/bug-123 def5678 [origin/fix/bug-123: gone] fix bug'),
+            (
+                "feat/old-feature",
+                "  feat/old-feature abc1234 [origin/feat/old-feature: gone] commit message",
+            ),
+            ("fix/bug-123", "  fix/bug-123 def5678 [origin/fix/bug-123: gone] fix bug"),
         ]
         report = format_stale_branches_report(sample_branches)
 
         # Should show count
-        self.assertIn('2', report)
-        self.assertIn('stale', report.lower())
+        self.assertIn("2", report)
+        self.assertIn("stale", report.lower())
 
         # Should list branch names
-        self.assertIn('feat/old-feature', report)
-        self.assertIn('fix/bug-123', report)
+        self.assertIn("feat/old-feature", report)
+        self.assertIn("fix/bug-123", report)
 
         # Should include suggestion
-        self.assertIn('git branch -d', report)
+        self.assertIn("git branch -d", report)
 
         # Test with many branches (should truncate display)
-        many_branches = [(f'branch-{i}', f'  branch-{i} hash [origin/branch-{i}: gone] msg') for i in range(10)]
+        many_branches = [
+            (f"branch-{i}", f"  branch-{i} hash [origin/branch-{i}: gone] msg") for i in range(10)
+        ]
         report = format_stale_branches_report(many_branches, max_display=5)
 
         # Should show count
-        self.assertIn('10', report)
+        self.assertIn("10", report)
 
         # Should indicate more branches
-        self.assertIn('more', report.lower())
+        self.assertIn("more", report.lower())
 
     def test_count_stale_branches(self):
         """Test counting stale branches."""
@@ -168,7 +173,7 @@ def print_test_report():
 
 if __name__ == "__main__":
     # Check if running as a manual test or unittest
-    if len(sys.argv) > 1 and sys.argv[1] == '--report':
+    if len(sys.argv) > 1 and sys.argv[1] == "--report":
         print_test_report()
     else:
         # Run as unittest
