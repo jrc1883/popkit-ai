@@ -56,8 +56,8 @@ def analyze_git_state() -> Dict[str, Any]:
         "urgency": "LOW",
     }
 
-    # Check if git repo
-    _, is_repo = run_command("git rev-parse --git-dir 2>/dev/null")
+    # Check if git repo (capture_output=True already suppresses stderr)
+    _, is_repo = run_command("git rev-parse --git-dir")
     if not is_repo:
         state["is_repo"] = False
         return state
@@ -77,10 +77,8 @@ def analyze_git_state() -> Dict[str, Any]:
         if len(files) > 0:
             state["urgency"] = "HIGH"
 
-    # Get ahead/behind
-    ahead_behind, ok = run_command(
-        "git rev-list --left-right --count @{u}...HEAD 2>/dev/null"
-    )
+    # Get ahead/behind (capture_output=True already suppresses stderr)
+    ahead_behind, ok = run_command("git rev-list --left-right --count @{u}...HEAD")
     if ok and "\t" in ahead_behind:
         parts = ahead_behind.split("\t")
         state["behind_count"] = int(parts[0]) if parts[0].isdigit() else 0

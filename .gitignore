@@ -78,3 +78,14 @@ STATUS.json
 
 # Claude Code temporary files
 tmpclaude-*-cwd
+
+# Development/testing scripts (should be in scripts/ or tests/)
+cleanup-*.ps1
+cleanup-*.sh
+fix-*.py
+fix-*.sh
+test-*.py
+create-*.sh
+*_body.md
+commit_message.txt
+issue-audit-report.md
