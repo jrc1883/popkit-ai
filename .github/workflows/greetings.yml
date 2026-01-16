@@ -24,8 +24,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Greet first-time issue author
-        if: github.event_name == 'issues'
+      - name: Greet first-time contributors
         uses: actions/first-interaction@v3
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -43,12 +42,6 @@ jobs:
             - 🐛 [Issue templates](https://github.com/jrc1883/popkit-claude/issues/new/choose) - Report bugs or request features
 
             Thanks for contributing to PopKit! 🎉
-
-      - name: Greet first-time PR author
-        if: github.event_name == 'pull_request_target'
-        uses: actions/first-interaction@v3
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
           pr_message: |
             👋 Welcome to PopKit, @${{ github.actor }}! Thanks for opening your first pull request.
 
