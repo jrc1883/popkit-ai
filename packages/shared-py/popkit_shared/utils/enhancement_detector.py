@@ -152,6 +152,7 @@ def has_api_key(api_key: Optional[str] = None) -> bool:
         return cached
 
     # Validate with API
+    # Security: Catch all exceptions to prevent API key leakage in logs
     try:
         url = f"{POPKIT_API_URL}/v1/health"
         request = urllib.request.Request(
@@ -164,6 +165,8 @@ def has_api_key(api_key: Optional[str] = None) -> bool:
             return is_valid
 
     except Exception:
+        # Security: Don't log exception details (could contain API key)
+        _cache_api_key_status(key, False)
         return False
 
 
@@ -332,6 +335,7 @@ def track_enhancement_usage(
     if not key:
         return False
 
+    # Security: Catch all exceptions to prevent API key leakage in logs
     try:
         url = f"{POPKIT_API_URL}/v1/usage/track"
         data = json.dumps(
@@ -355,6 +359,7 @@ def track_enhancement_usage(
             return response.status == 200
 
     except Exception:
+        # Security: Don't log exception details (could contain API key)
         return False  # Don't fail if tracking fails
 
 
@@ -372,6 +377,7 @@ def get_usage_summary(api_key: Optional[str] = None) -> Dict[str, Any]:
     if not key:
         return {"error": "No API key configured"}
 
+    # Security: Catch all exceptions to prevent API key leakage in logs
     try:
         url = f"{POPKIT_API_URL}/v1/usage/summary"
         request = urllib.request.Request(
@@ -381,8 +387,9 @@ def get_usage_summary(api_key: Optional[str] = None) -> Dict[str, Any]:
         with urllib.request.urlopen(request, timeout=5) as response:
             return json.loads(response.read().decode())
 
-    except Exception as e:
-        return {"error": str(e)}
+    except Exception:
+        # Security: Don't log exception details (could contain API key)
+        return {"error": "Failed to fetch usage summary"}
 
 
 # =============================================================================

@@ -207,19 +207,15 @@ def scan_file(filepath: Path, plugin_dir: Path) -> List[Dict]:
                 if is_likely_example(line, filepath):
                     continue
 
-                # Redact sensitive content for security
-                # Show context but redact the actual secret
-                display_line = line.strip()[:80]
-                if len(line.strip()) > 80:
-                    display_line += "..."
-
+                # Security: Never log the actual line content (could contain secrets)
+                # Only report the location and pattern type
                 findings.append(
                     {
                         "id": check_id,
                         "name": check["name"],
                         "file": rel_path,
                         "line": line_num,
-                        "content": display_line,
+                        "content": "[REDACTED - Secret detected]",
                         "severity": check["severity"],
                         "cwe": check["cwe"],
                         "description": check["description"],
