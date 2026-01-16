@@ -70,6 +70,11 @@ jobs:
 
           for file in .github/workflows/*.yml .github/workflows/*.yaml; do
             if [ -f "$file" ]; then
+              # Skip workflow-lint.yml (this file) to avoid self-validation issues
+              if [ "$file" = ".github/workflows/workflow-lint.yml" ]; then
+                continue
+              fi
+
               # Check actions/first-interaction specifically (ignore comments)
               if grep -q 'uses: actions/first-interaction' "$file"; then
                 if grep -v '^\s*#' "$file" | grep -E 'repo-token:|issue-message:|pr-message:' >/dev/null 2>&1; then
