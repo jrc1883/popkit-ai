@@ -42,7 +42,7 @@ jobs:
         run: |
           echo "Validating JSON syntax..."
 
-          find . -name "*.json" -not -path "*/node_modules/*" | while read file; do
+          find . -name "*.json" -not -path "*/node_modules/*" | while read -r file; do
             echo "Checking $file..."
             if ! python3 -m json.tool "$file" > /dev/null 2>&1; then
               echo "❌ Invalid JSON: $file"
