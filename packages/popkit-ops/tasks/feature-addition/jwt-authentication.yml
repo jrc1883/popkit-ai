@@ -1,0 +1,71 @@
+id: jwt-authentication
+category: feature-addition
+description: Add JWT-based user authentication to Express API
+codebase: demo-app-express
+initial_state: main
+difficulty: medium
+
+# Task prompt that will be given to Claude Code
+user_prompt: |
+  Implement JWT authentication for our Express API with the following requirements:
+
+  1. Create POST /auth/login endpoint that:
+     - Accepts username and password in request body
+     - Validates credentials against users database
+     - Returns JWT token on success with 1-hour expiry
+     - Returns 401 on invalid credentials
+
+  2. Create authentication middleware that:
+     - Validates JWT tokens from Authorization header (Bearer format)
+     - Attaches user info to req.user for authenticated requests
+     - Returns 401 for missing/invalid tokens
+
+  3. Protect existing routes:
+     - Apply auth middleware to /api/users/* routes
+     - Apply auth middleware to /api/posts/* routes
+     - Leave /api/health and /auth/* routes public
+
+  4. Error handling:
+     - Return proper HTTP status codes (401, 403, 500)
+     - Include helpful error messages in JSON responses
+     - Log authentication failures for security monitoring
+
+  5. Testing:
+     - Add unit tests for login endpoint
+     - Add integration tests for protected routes
+     - Test token expiry and refresh scenarios
+
+  Please use the jsonwebtoken library for JWT generation and verification.
+  Store tokens in HTTP-only cookies for security best practice.
+
+# Expected file changes (for verification)
+expected_files:
+  - "src/routes/auth.js"
+  - "src/middleware/authenticate.js"
+  - "src/routes/users.js"
+  - "src/routes/posts.js"
+  - "tests/auth.test.js"
+
+# Verification commands to run after task completion
+verification:
+  - npm test
+  - npm run lint
+  - npx tsc --noEmit
+
+# Expected outcomes (for validation)
+expected_outcomes:
+  - "POST /auth/login endpoint exists"
+  - "Authentication middleware validates JWT tokens"
+  - "Protected routes return 401 without valid token"
+  - "All tests pass"
+  - "No linting errors"
+  - "TypeScript compilation successful"
+
+# Estimated completion time (for benchmarking)
+estimated_duration_minutes: 8
+
+# Dependencies that may need to be installed
+dependencies:
+  - jsonwebtoken
+  - bcrypt
+  - express-validator

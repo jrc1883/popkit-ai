@@ -1,0 +1,93 @@
+id: race-condition-fix
+category: bug-fixing
+description: Fix race condition in concurrent file processing
+codebase: demo-app-node
+initial_state: main
+difficulty: hard
+
+# Bug report that will be given to Claude Code
+user_prompt: |
+  We have a critical race condition bug in our file processing system. Here's the issue:
+
+  **Bug Description:**
+  Multiple workers are processing files concurrently, but they're all reading and writing
+  to the same status.json file without proper synchronization. This causes:
+  - Lost updates when multiple workers write simultaneously
+  - Inconsistent status tracking
+  - Occasional file corruption (invalid JSON)
+  - Failed CI tests due to timing issues
+
+  **Reproduction Steps:**
+  1. Run `npm run process-batch` with 10+ files
+  2. Multiple workers start processing simultaneously
+  3. Workers update status.json concurrently
+  4. Result: status.json becomes corrupted or loses updates
+
+  **Current Implementation:**
+  - File: `src/workers/fileProcessor.js`
+  - Workers call `updateStatus()` which directly reads/writes status.json
+  - No locking mechanism
+  - No queue or serialization
+
+  **Requirements:**
+  Fix the race condition by implementing proper synchronization:
+
+  1. Add file locking mechanism:
+     - Use proper-lockfile or similar library
+     - Acquire lock before reading status.json
+     - Release lock after writing
+     - Handle lock timeouts gracefully
+
+  2. Add retry logic:
+     - Retry lock acquisition up to 3 times with exponential backoff
+     - Log lock contentions for monitoring
+     - Fail gracefully if lock can't be acquired
+
+  3. Add atomic operations:
+     - Read-modify-write must be atomic
+     - Use temporary file + rename for atomic writes
+     - Validate JSON before writing
+
+  4. Add tests:
+     - Unit test for lock acquisition/release
+     - Integration test with concurrent workers (10 workers)
+     - Stress test with 100+ concurrent operations
+     - Verify no data loss or corruption
+
+  5. Add monitoring:
+     - Log lock wait times
+     - Alert on frequent lock timeouts
+     - Track status update success rate
+
+  The fix should not change the external API - only internal implementation.
+
+# Expected file changes (for verification)
+expected_files:
+  - "src/workers/fileProcessor.js"
+  - "src/utils/statusLock.js"
+  - "tests/fileProcessor.test.js"
+  - "tests/concurrency.test.js"
+
+# Verification commands to run after task completion
+verification:
+  - npm test
+  - npm run test:concurrent
+  - npm run lint
+  - npx tsc --noEmit
+
+# Expected outcomes (for validation)
+expected_outcomes:
+  - "Lock mechanism implemented"
+  - "Atomic read-modify-write operations"
+  - "Concurrent test passes with 10 workers"
+  - "No JSON corruption in stress tests"
+  - "All tests pass"
+  - "No linting errors"
+
+# Estimated completion time (for benchmarking)
+estimated_duration_minutes: 12
+
+# Dependencies that may need to be installed
+dependencies:
+  - proper-lockfile
+  - fs-extra

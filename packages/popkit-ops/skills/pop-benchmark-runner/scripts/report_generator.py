@@ -1,0 +1,566 @@
+#!/usr/bin/env python3
+"""
+Benchmark Report Generator
+
+Generates markdown and HTML reports from benchmark analysis results.
+Produces human-readable summaries with data visualizations.
+
+Part of Issue #82: PopKit Benchmark Suite
+"""
+
+import json
+from datetime import datetime
+from pathlib import Path
+
+
+class ReportGenerator:
+    """Generate markdown and HTML reports from benchmark analysis results."""
+
+    def __init__(self, analysis_results: dict, task_def: dict):
+        """
+        Initialize report generator.
+
+        Args:
+            analysis_results: Analysis results from BenchmarkAnalyzer (dict with metrics, summary)
+            task_def: Task definition from YAML (dict with name, description, etc.)
+        """
+        self.results = analysis_results
+        self.task_def = task_def
+        self.task_name = task_def.get("name", "Unknown Task")
+        self.description = task_def.get("description", "No description provided")
+
+    def generate_markdown(self) -> str:
+        """
+        Generate markdown report.
+
+        Returns:
+            Markdown report string
+        """
+        summary = self.results.get("summary", {})
+        metrics = self.results.get("metrics", {})
+
+        # Header
+        md = f"# Benchmark Results: {self.task_name}\n\n"
+        md += f"**Task**: {self.description}\n\n"
+        md += f"**Trials**: {summary.get('trials_per_config', 'N/A')} per configuration\n\n"
+        md += f"**Duration**: {summary.get('total_duration', 'N/A')}\n\n"
+        md += f"**Date**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+
+        # Metrics table
+        md += "## Metric Improvements (With PopKit vs Baseline)\n\n"
+        md += "| Metric | Baseline | With PopKit | Improvement | p-value | Effect Size |\n"
+        md += "|--------|----------|-------------|-------------|---------|-------------|\n"
+
+        for metric_name, metric_data in metrics.items():
+            baseline = self._format_metric(
+                metric_data.get("baseline_mean", 0), metric_name
+            )
+            with_popkit = self._format_metric(
+                metric_data.get("popkit_mean", 0), metric_name
+            )
+            improvement = metric_data.get("improvement_pct", 0)
+            improvement_str = f"{improvement:+.1f}%"
+            p_value = metric_data.get("p_value", 1.0)
+            p_value_str = f"{p_value:.4f}" if p_value >= 0.0001 else "< 0.0001"
+            effect_size = metric_data.get("effect_size", 0)
+            effect_interpretation = self._interpret_effect_size(effect_size)
+            effect_str = f"{effect_size:.2f} ({effect_interpretation})"
+
+            md += f"| {metric_name} | {baseline} | {with_popkit} | {improvement_str} | {p_value_str} | {effect_str} |\n"
+
+        # Statistical significance summary
+        md += "\n## Statistical Significance\n\n"
+        significant_count = sum(
+            1 for m in metrics.values() if m.get("p_value", 1.0) < 0.05
+        )
+        total_count = len(metrics)
+        md += f"- **Metrics with significant improvement**: {significant_count}/{total_count} (p < 0.05)\n"
+
+        large_effect_count = sum(
+            1 for m in metrics.values() if abs(m.get("effect_size", 0)) > 0.8
+        )
+        md += f"- **Metrics with large effect size**: {large_effect_count}/{total_count} (|d| > 0.8)\n"
+
+        overall_effect = summary.get("overall_effect_size", 0)
+        overall_interpretation = self._interpret_effect_size(overall_effect)
+        md += f"- **Overall effect size**: {overall_effect:.2f} ({overall_interpretation})\n\n"
+
+        # Interpretation
+        md += "## Interpretation\n\n"
+        if significant_count == total_count and overall_effect > 0.8:
+            md += (
+                "PopKit demonstrates **statistically significant improvements** across all measured metrics "
+                "with a large overall effect size. This indicates robust and meaningful performance gains.\n\n"
+            )
+        elif significant_count > total_count / 2:
+            md += (
+                "PopKit shows **statistically significant improvements** in most metrics, "
+                "indicating measurable performance benefits.\n\n"
+            )
+        else:
+            md += (
+                "Results show mixed performance. Further investigation may be needed to "
+                "understand the variability in outcomes.\n\n"
+            )
+
+        # Key findings
+        md += "### Key Findings\n\n"
+        best_metric = max(
+            metrics.items(),
+            key=lambda x: abs(x[1].get("improvement_pct", 0)),
+            default=(None, {}),
+        )
+        if best_metric[0]:
+            md += f"- **Best improvement**: {best_metric[0]} ({best_metric[1].get('improvement_pct', 0):+.1f}%)\n"
+
+        most_significant = min(
+            metrics.items(), key=lambda x: x[1].get("p_value", 1.0), default=(None, {})
+        )
+        if most_significant[0]:
+            md += f"- **Most statistically significant**: {most_significant[0]} (p = {most_significant[1].get('p_value', 1.0):.4f})\n"
+
+        md += "\n---\n\n"
+        md += "*Report generated by PopKit Benchmark Suite*\n"
+
+        return md
+
+    def generate_html(self) -> str:
+        """
+        Generate HTML dashboard with interactive charts.
+
+        Returns:
+            HTML report string
+        """
+        summary = self.results.get("summary", {})
+        metrics = self.results.get("metrics", {})
+
+        # Prepare chart data
+        metric_names = list(metrics.keys())
+        baseline_values = [m.get("baseline_mean", 0) for m in metrics.values()]
+        popkit_values = [m.get("popkit_mean", 0) for m in metrics.values()]
+        improvements = [m.get("improvement_pct", 0) for m in metrics.values()]
+
+        # Color code improvements
+        improvement_colors = [
+            "#10b981" if imp > 0 else "#ef4444" for imp in improvements
+        ]
+
+        html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Benchmark: {self.task_name}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f9fafb;
+            color: #111827;
+            line-height: 1.6;
+        }}
+        .container {{
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }}
+        h1 {{
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #1f2937;
+        }}
+        .task-info {{
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }}
+        .task-info p {{
+            margin: 0.5rem 0;
+            color: #6b7280;
+        }}
+        .metrics-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }}
+        .chart-container {{
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }}
+        .chart-container h2 {{
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }}
+        .results-table {{
+            width: 100%;
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }}
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+        }}
+        th, td {{
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }}
+        th {{
+            background: #f3f4f6;
+            font-weight: 600;
+            color: #374151;
+        }}
+        tr:hover {{
+            background: #f9fafb;
+        }}
+        .improvement-positive {{
+            color: #10b981;
+            font-weight: 600;
+        }}
+        .improvement-negative {{
+            color: #ef4444;
+            font-weight: 600;
+        }}
+        .significance {{
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }}
+        .significance h2 {{
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }}
+        .significance ul {{
+            list-style: none;
+            padding: 0;
+        }}
+        .significance li {{
+            padding: 0.5rem 0;
+            color: #4b5563;
+        }}
+        .footer {{
+            text-align: center;
+            color: #9ca3af;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e5e7eb;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{self.task_name}</h1>
+
+        <div class="task-info">
+            <p><strong>Task:</strong> {self.description}</p>
+            <p><strong>Trials:</strong> {summary.get("trials_per_config", "N/A")} per configuration</p>
+            <p><strong>Duration:</strong> {summary.get("total_duration", "N/A")}</p>
+            <p><strong>Date:</strong> {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="chart-container">
+                <h2>Metric Comparison</h2>
+                <canvas id="metricsChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h2>Improvement Percentage</h2>
+                <canvas id="improvementChart"></canvas>
+            </div>
+        </div>
+
+        <div class="results-table">
+            <h2>Detailed Results</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Baseline</th>
+                        <th>With PopKit</th>
+                        <th>Improvement</th>
+                        <th>p-value</th>
+                        <th>Effect Size</th>
+                    </tr>
+                </thead>
+                <tbody>
+"""
+
+        # Table rows
+        for metric_name, metric_data in metrics.items():
+            baseline = self._format_metric(
+                metric_data.get("baseline_mean", 0), metric_name
+            )
+            with_popkit = self._format_metric(
+                metric_data.get("popkit_mean", 0), metric_name
+            )
+            improvement = metric_data.get("improvement_pct", 0)
+            improvement_class = (
+                "improvement-positive" if improvement > 0 else "improvement-negative"
+            )
+            improvement_str = f"{improvement:+.1f}%"
+            p_value = metric_data.get("p_value", 1.0)
+            p_value_str = f"{p_value:.4f}" if p_value >= 0.0001 else "< 0.0001"
+            effect_size = metric_data.get("effect_size", 0)
+            effect_interpretation = self._interpret_effect_size(effect_size)
+            effect_str = f"{effect_size:.2f} ({effect_interpretation})"
+
+            html += f"""                    <tr>
+                        <td>{metric_name}</td>
+                        <td>{baseline}</td>
+                        <td>{with_popkit}</td>
+                        <td class="{improvement_class}">{improvement_str}</td>
+                        <td>{p_value_str}</td>
+                        <td>{effect_str}</td>
+                    </tr>
+"""
+
+        html += """                </tbody>
+            </table>
+        </div>
+
+        <div class="significance">
+            <h2>Statistical Significance</h2>
+            <ul>
+"""
+
+        significant_count = sum(
+            1 for m in metrics.values() if m.get("p_value", 1.0) < 0.05
+        )
+        total_count = len(metrics)
+        large_effect_count = sum(
+            1 for m in metrics.values() if abs(m.get("effect_size", 0)) > 0.8
+        )
+        overall_effect = summary.get("overall_effect_size", 0)
+        overall_interpretation = self._interpret_effect_size(overall_effect)
+
+        html += f"""                <li><strong>Metrics with significant improvement:</strong> {significant_count}/{total_count} (p < 0.05)</li>
+                <li><strong>Metrics with large effect size:</strong> {large_effect_count}/{total_count} (|d| > 0.8)</li>
+                <li><strong>Overall effect size:</strong> {overall_effect:.2f} ({overall_interpretation})</li>
+"""
+
+        html += """            </ul>
+        </div>
+
+        <div class="footer">
+            <p>Report generated by PopKit Benchmark Suite</p>
+        </div>
+    </div>
+
+    <script>
+"""
+
+        # Chart.js configuration
+        html += f"""        // Metrics comparison chart
+        const metricsCtx = document.getElementById('metricsChart').getContext('2d');
+        new Chart(metricsCtx, {{
+            type: 'bar',
+            data: {{
+                labels: {json.dumps(metric_names)},
+                datasets: [
+                    {{
+                        label: 'Baseline',
+                        data: {json.dumps(baseline_values)},
+                        backgroundColor: '#9ca3af',
+                        borderColor: '#6b7280',
+                        borderWidth: 1
+                    }},
+                    {{
+                        label: 'With PopKit',
+                        data: {json.dumps(popkit_values)},
+                        backgroundColor: '#3b82f6',
+                        borderColor: '#2563eb',
+                        borderWidth: 1
+                    }}
+                ]
+            }},
+            options: {{
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {{
+                    y: {{
+                        beginAtZero: true
+                    }}
+                }},
+                plugins: {{
+                    legend: {{
+                        display: true,
+                        position: 'top'
+                    }}
+                }}
+            }}
+        }});
+
+        // Improvement chart
+        const improvementCtx = document.getElementById('improvementChart').getContext('2d');
+        new Chart(improvementCtx, {{
+            type: 'bar',
+            data: {{
+                labels: {json.dumps(metric_names)},
+                datasets: [
+                    {{
+                        label: 'Improvement %',
+                        data: {json.dumps(improvements)},
+                        backgroundColor: {json.dumps(improvement_colors)},
+                        borderWidth: 1
+                    }}
+                ]
+            }},
+            options: {{
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {{
+                    y: {{
+                        beginAtZero: true
+                    }}
+                }},
+                plugins: {{
+                    legend: {{
+                        display: false
+                    }}
+                }}
+            }}
+        }});
+    </script>
+</body>
+</html>
+"""
+
+        return html
+
+    def _format_metric(self, value: float, metric_type: str) -> str:
+        """
+        Format metric with appropriate units.
+
+        Args:
+            value: Metric value
+            metric_type: Type of metric (for unit selection)
+
+        Returns:
+            Formatted metric string
+        """
+        metric_lower = metric_type.lower()
+
+        if "token" in metric_lower or "context" in metric_lower:
+            return f"{value:,.0f} tokens"
+        elif "time" in metric_lower or "duration" in metric_lower:
+            if value < 60:
+                return f"{value:.1f}s"
+            elif value < 3600:
+                return f"{value / 60:.1f}m"
+            else:
+                return f"{value / 3600:.1f}h"
+        elif "cost" in metric_lower:
+            return f"${value:.4f}"
+        elif "%" in metric_lower or "rate" in metric_lower:
+            return f"{value:.1f}%"
+        else:
+            return f"{value:.2f}"
+
+    def _interpret_effect_size(self, effect_size: float) -> str:
+        """
+        Interpret Cohen's d effect size.
+
+        Args:
+            effect_size: Cohen's d value
+
+        Returns:
+            Human-readable interpretation
+        """
+        abs_effect = abs(effect_size)
+        if abs_effect < 0.2:
+            return "negligible"
+        elif abs_effect < 0.5:
+            return "small"
+        elif abs_effect < 0.8:
+            return "medium"
+        else:
+            return "large"
+
+
+def main():
+    """Test report generator with sample data."""
+    # Sample analysis results
+    sample_results = {
+        "metrics": {
+            "Context Usage": {
+                "baseline_mean": 12450,
+                "popkit_mean": 8720,
+                "improvement_pct": -30.0,
+                "p_value": 0.003,
+                "effect_size": 1.2,
+            },
+            "Task Time": {
+                "baseline_mean": 180,
+                "popkit_mean": 120,
+                "improvement_pct": -33.3,
+                "p_value": 0.001,
+                "effect_size": 1.5,
+            },
+            "API Cost": {
+                "baseline_mean": 0.0245,
+                "popkit_mean": 0.0172,
+                "improvement_pct": -29.8,
+                "p_value": 0.004,
+                "effect_size": 1.1,
+            },
+        },
+        "summary": {
+            "trials_per_config": 10,
+            "total_duration": "2h 15m",
+            "overall_effect_size": 1.35,
+        },
+    }
+
+    sample_task = {
+        "name": "Feature Implementation",
+        "description": "Implement a new REST API endpoint with tests",
+    }
+
+    generator = ReportGenerator(sample_results, sample_task)
+
+    # Generate reports
+    markdown = generator.generate_markdown()
+    html = generator.generate_html()
+
+    print("=== Markdown Report ===")
+    print(markdown)
+    print("\n=== HTML Report Generated ===")
+    print(f"HTML length: {len(html)} characters")
+
+    # Save to files
+    output_dir = Path(__file__).parent.parent / "test_output"
+    output_dir.mkdir(exist_ok=True)
+
+    md_path = output_dir / "test_report.md"
+    html_path = output_dir / "test_report.html"
+
+    md_path.write_text(markdown, encoding="utf-8")
+    html_path.write_text(html, encoding="utf-8")
+
+    print("\nSaved reports:")
+    print(f"  Markdown: {md_path}")
+    print(f"  HTML: {html_path}")
+
+
+if __name__ == "__main__":
+    main()
