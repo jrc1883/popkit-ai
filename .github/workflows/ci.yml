@@ -59,14 +59,14 @@ jobs:
             fi
 
             # Validate JSON syntax
-            cat "$PLUGIN_JSON" | python -m json.tool > /dev/null || exit 1
+            python -m json.tool < "$PLUGIN_JSON" > /dev/null || exit 1
 
             # Check required fields
             python3 .github/scripts/validate_plugin.py "$PLUGIN_JSON" "$PLUGIN"
 
             # Validate marketplace.json if it exists
             if [ -f "$MARKETPLACE_JSON" ]; then
-              cat "$MARKETPLACE_JSON" | python -m json.tool > /dev/null || exit 1
+              python -m json.tool < "$MARKETPLACE_JSON" > /dev/null || exit 1
               echo "✓ marketplace.json valid"
             fi
           done
@@ -86,7 +86,7 @@ jobs:
           fi
 
           # Validate JSON syntax
-          cat "$MARKETPLACE_JSON" | python -m json.tool > /dev/null
+          python -m json.tool < "$MARKETPLACE_JSON" > /dev/null
 
           # Check all plugins are listed
           python3 .github/scripts/validate_marketplace.py
@@ -154,7 +154,7 @@ jobs:
 
               # Check for hooks.json
               if [ -f "$HOOKS_DIR/hooks.json" ]; then
-                cat "$HOOKS_DIR/hooks.json" | python -m json.tool > /dev/null && echo "  ✓ hooks.json valid"
+                python -m json.tool < "$HOOKS_DIR/hooks.json" > /dev/null && echo "  ✓ hooks.json valid"
               fi
 
               # Check Python syntax
@@ -198,10 +198,6 @@ jobs:
             echo "Hooks validation failed"
             exit 1
           fi
-          # Cloud validation is optional - doesn't block CI
-          if [ "${{ needs.cloud-validate.result }}" != "success" ]; then
-            echo "⚠️ Cloud validation failed (non-blocking)"
-          fi
 
           echo "All CI checks passed!"
 
@@ -214,4 +210,3 @@ jobs:
           echo "| Plugin Validation | ${{ needs.plugin-validate.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Agents Validation | ${{ needs.agents-validate.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Hooks Validation | ${{ needs.hooks-validate.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Cloud Validation | ${{ needs.cloud-validate.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY

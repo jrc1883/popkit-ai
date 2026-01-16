@@ -60,15 +60,15 @@ jobs:
 
       - name: Configure Git
         run: |
-          git config user.email "claude-code@anthropic.com"
-          git config user.name "PopKit Release Bot"
+          git config user.email 'claude-code@anthropic.com'
+          git config user.name 'PopKit Release Bot'
 
       - name: Add public repo remote
         env:
           GITHUB_TOKEN: ${{ secrets.PLUGIN_PUBLIC_REPO_TOKEN }}
         run: |
           git remote add plugin-public \
-            https://x-access-token:${GITHUB_TOKEN}@github.com/jrc1883/popkit-claude.git
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/jrc1883/popkit-claude.git"
           echo "Remote added: plugin-public"
 
       - name: Prepare filtered plugin content
@@ -77,29 +77,31 @@ jobs:
           echo "Preparing filtered plugin content..."
 
           # Run the prepare script to filter content
-          bash .github/scripts/prepare-public-plugin.sh ./public-plugin-staging
+          bash .github/scripts/prepare-public-plugin.sh './public-plugin-staging'
 
           # Create a new branch with just the filtered content
-          cd public-plugin-staging
+          cd 'public-plugin-staging'
           git init
           git add .
           git commit -m "Filtered plugin content for v${{ inputs.version || 'dev' }}"
 
           COMMIT_SHA=$(git rev-parse HEAD)
-          echo "sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
-          echo "Prepared content: $COMMIT_SHA"
+          echo "sha=${COMMIT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "Prepared content: ${COMMIT_SHA}"
 
       - name: Preview changes (dry run)
         if: ${{ inputs.dry_run == true }}
         run: |
-          echo "=== DRY RUN - No changes will be pushed ==="
-          echo ""
-          echo "Source: packages/plugin/ (filtered)"
-          echo "Target: jrc1883/popkit-claude (${{ inputs.target_branch || 'main' }})"
-          echo "Prepared SHA: ${{ steps.prepare.outputs.sha }}"
-          echo ""
-          echo "Files in filtered content:"
-          ls -la public-plugin-staging/
+          {
+            echo "=== DRY RUN - No changes will be pushed ==="
+            echo ""
+            echo "Source: packages/plugin/ (filtered)"
+            echo "Target: jrc1883/popkit-claude (${{ inputs.target_branch || 'main' }})"
+            echo "Prepared SHA: ${{ steps.prepare.outputs.sha }}"
+            echo ""
+            echo "Files in filtered content:"
+          }
+          ls -la 'public-plugin-staging/'
 
       - name: Push to public repository
         if: ${{ inputs.dry_run != true }}
@@ -107,11 +109,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PLUGIN_PUBLIC_REPO_TOKEN }}
         run: |
           TARGET_BRANCH="${{ inputs.target_branch || 'main' }}"
-          echo "Pushing to jrc1883/popkit-claude ($TARGET_BRANCH)..."
+          echo "Pushing to jrc1883/popkit-claude (${TARGET_BRANCH})..."
 
-          cd public-plugin-staging
-          git remote add origin https://x-access-token:${GITHUB_TOKEN}@github.com/jrc1883/popkit-claude.git
-          git push origin HEAD:$TARGET_BRANCH --force
+          cd 'public-plugin-staging'
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/jrc1883/popkit-claude.git"
+          git push origin "HEAD:${TARGET_BRANCH}" --force
 
           echo "Push complete!"
 
@@ -121,13 +123,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PLUGIN_PUBLIC_REPO_TOKEN }}
         run: |
           VERSION="${{ inputs.version }}"
-          echo "Creating tag: $VERSION"
+          echo "Creating tag: ${VERSION}"
 
-          cd public-plugin-staging
-          git tag "$VERSION"
-          git push origin "$VERSION"
+          cd 'public-plugin-staging'
+          git tag "${VERSION}"
+          git push origin "${VERSION}"
 
-          echo "Tag $VERSION pushed to public repo"
+          echo "Tag ${VERSION} pushed to public repo"
 
       - name: Create GitHub Release
         if: ${{ inputs.dry_run != true && inputs.version != '' }}
@@ -137,9 +139,9 @@ jobs:
           VERSION="${{ inputs.version }}"
 
           # Create release in public repo
-          gh release create "$VERSION" \
-            --repo jrc1883/popkit-claude \
-            --title "PopKit Claude $VERSION" \
+          gh release create "${VERSION}" \
+            --repo 'jrc1883/popkit-claude' \
+            --title "PopKit Claude ${VERSION}" \
             --notes "## What's Changed
 
           See CHANGELOG.md for details.
@@ -156,21 +158,25 @@ jobs:
 
       - name: Summary
         run: |
-          echo "## Publish Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Source | \`packages/plugin/\` (filtered) |" >> $GITHUB_STEP_SUMMARY
-          echo "| Target | \`jrc1883/popkit-claude\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| Branch | \`${{ inputs.target_branch || 'main' }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| Version | ${{ inputs.version || 'none' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Dry Run | ${{ inputs.dry_run }} |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## Publish Summary"
+            echo ""
+            echo "| Property | Value |"
+            echo "|----------|-------|"
+            echo "| Source | \`packages/plugin/\` (filtered) |"
+            echo "| Target | \`jrc1883/popkit-claude\` |"
+            echo "| Branch | \`${{ inputs.target_branch || 'main' }}\` |"
+            echo "| Version | ${{ inputs.version || 'none' }} |"
+            echo "| Dry Run | ${{ inputs.dry_run }} |"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
 
           if [ "${{ inputs.dry_run }}" != "true" ]; then
-            echo "### Installation" >> $GITHUB_STEP_SUMMARY
-            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-            echo "/plugin marketplace add jrc1883/popkit-claude" >> $GITHUB_STEP_SUMMARY
-            echo "/plugin install popkit@popkit-claude" >> $GITHUB_STEP_SUMMARY
-            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            {
+              echo "### Installation"
+              echo "\`\`\`"
+              echo "/plugin marketplace add jrc1883/popkit-claude"
+              echo "/plugin install popkit@popkit-claude"
+              echo "\`\`\`"
+            } >> "$GITHUB_STEP_SUMMARY"
           fi
