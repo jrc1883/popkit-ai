@@ -100,6 +100,51 @@ def calculate_action_scores(state: Dict[str, Any]) -> List[Dict[str, Any]]:
             }
         )
 
+    # Continue work on feature branches
+    branches = state.get("branches", {})
+    if branches.get("has_feature_branches") and branches.get("branches"):
+        # Sort by commits ahead (most work = highest priority)
+        sorted_branches = sorted(
+            branches["branches"], key=lambda b: b.get("commits_ahead", 0), reverse=True
+        )
+        top_branch = sorted_branches[0]
+
+        score = 75  # High priority - work already started
+        if top_branch.get("commits_ahead", 0) > 5:
+            score += 10  # Bonus for significant work
+
+        branch_name = top_branch.get("name", "")
+        issue_num = top_branch.get("issue_number")
+        commits_ahead = top_branch.get("commits_ahead", 0)
+        last_commit = top_branch.get("last_commit", "")
+
+        why_msg = f"Branch '{branch_name}' has {commits_ahead} commits"
+        if issue_num:
+            why_msg += f" (linked to issue #{issue_num})"
+
+        actions.append(
+            {
+                "id": "continue_feature_branch",
+                "name": f"Continue Work on {branch_name}",
+                "command": f"git checkout {branch_name}",
+                "score": score,
+                "why": why_msg,
+                "what": f"Resume work on feature branch. Last commit: {last_commit[:60]}",
+                "benefit": "Complete started work before starting something new",
+                "branch": branch_name,
+                "issue_number": issue_num,
+                "all_branches": [
+                    {
+                        "name": b.get("name"),
+                        "commits": b.get("commits_ahead", 0),
+                        "issue": b.get("issue_number"),
+                        "age": b.get("age"),
+                    }
+                    for b in sorted_branches
+                ],
+            }
+        )
+
     # Commit uncommitted work
     if git.get("uncommitted_count", 0) > 0:
         score = BASE_PRIORITIES["commit_work"] + MULTIPLIERS["uncommitted_changes"]

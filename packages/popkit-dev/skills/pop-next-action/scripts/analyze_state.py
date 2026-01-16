@@ -11,6 +11,7 @@ Sections:
     git      - Git repository status
     code     - Code quality (TypeScript, lint)
     issues   - GitHub issues
+    branches - Feature/fix branches with work in progress
     research - Research branches
     all      - All sections
 
@@ -168,6 +169,69 @@ def analyze_issues() -> Dict[str, Any]:
     return state
 
 
+def analyze_feature_branches() -> Dict[str, Any]:
+    """Analyze feature/fix branches with work in progress."""
+    import re
+
+    state = {"has_feature_branches": False, "branches": [], "urgency": "LOW"}
+
+    # Get all local branches
+    branches, ok = run_command(["git", "branch"])
+    if not ok:
+        return state
+
+    # Patterns for feature/fix branches
+    branch_patterns = [r"^feat/", r"^fix/", r"^feature/"]
+    issue_pattern = r"(?:issue-|#)?(\d+)"
+
+    for line in branches.split("\n"):
+        branch = line.strip().lstrip("* ").strip()
+        if not branch or branch == "main" or branch == "master":
+            continue
+
+        # Check if it's a feature/fix branch
+        is_feature_branch = any(
+            re.search(pattern, branch) for pattern in branch_patterns
+        )
+        if not is_feature_branch:
+            continue
+
+        # Extract issue number if present
+        issue_match = re.search(issue_pattern, branch)
+        issue_number = int(issue_match.group(1)) if issue_match else None
+
+        # Get last commit date and message
+        date_output, _ = run_command(["git", "log", "-1", "--format=%ar", branch])
+        msg_output, _ = run_command(["git", "log", "-1", "--format=%s", branch])
+
+        # Count commits ahead of main
+        ahead_output, _ = run_command(["git", "rev-list", "--count", f"main..{branch}"])
+        commits_ahead = (
+            int(ahead_output.strip()) if ahead_output.strip().isdigit() else 0
+        )
+
+        branch_info = {
+            "name": branch,
+            "age": date_output or "unknown",
+            "last_commit": msg_output or "",
+            "commits_ahead": commits_ahead,
+            "issue_number": issue_number,
+        }
+
+        state["branches"].append(branch_info)
+
+    if state["branches"]:
+        state["has_feature_branches"] = True
+        # Higher urgency if branches have work
+        if any(b["commits_ahead"] > 0 for b in state["branches"]):
+            state["urgency"] = "MEDIUM"
+
+    # Sort by most recent activity
+    state["branches"].sort(key=lambda x: x.get("age", ""), reverse=False)
+
+    return state
+
+
 def analyze_research_branches() -> Dict[str, Any]:
     """Analyze research branches from Claude Code Web sessions."""
     state = {"has_research_branches": False, "branches": [], "urgency": "LOW"}
@@ -208,7 +272,7 @@ def main():
     parser = argparse.ArgumentParser(description="Analyze project state")
     parser.add_argument(
         "--section",
-        choices=["git", "code", "issues", "research", "all"],
+        choices=["git", "code", "issues", "branches", "research", "all"],
         default="all",
         help="Section to analyze",
     )
@@ -229,12 +293,15 @@ def main():
     if args.section in ["issues", "all"]:
         result["issues"] = analyze_issues()
 
+    if args.section in ["branches", "all"]:
+        result["branches"] = analyze_feature_branches()
+
     if args.section in ["research", "all"]:
         result["research"] = analyze_research_branches()
 
     # Calculate overall urgency
     urgencies = []
-    for section in ["git", "code", "issues", "research"]:
+    for section in ["git", "code", "issues", "branches", "research"]:
         if section in result:
             urgencies.append(result[section].get("urgency", "LOW"))
 
