@@ -203,10 +203,12 @@ jobs:
 
       - name: Summary
         run: |
-          echo "## CI Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Plugin Validation | ${{ needs.plugin-validate.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Agents Validation | ${{ needs.agents-validate.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Hooks Validation | ${{ needs.hooks-validate.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## CI Summary"
+            echo ""
+            echo "| Check | Status |"
+            echo "|-------|--------|"
+            echo "| Plugin Validation | ${{ needs.plugin-validate.result == 'success' && '✅' || '❌' }} |"
+            echo "| Agents Validation | ${{ needs.agents-validate.result == 'success' && '✅' || '❌' }} |"
+            echo "| Hooks Validation | ${{ needs.hooks-validate.result == 'success' && '✅' || '❌' }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
