@@ -1,0 +1,21 @@
+{
+  "responses": {
+    "JWT library": "jsonwebtoken (most popular)",
+    "Token storage": "HTTP-only cookies (security best practice)",
+    "Token expiry": "1 hour (3600 seconds)",
+    "Hashing library": "bcrypt for password hashing",
+    "Middleware approach": "Express middleware function",
+    "Error handling": "Standard HTTP status codes (401, 403, 500)",
+    "Testing framework": "Jest with supertest",
+    "Route protection": "Apply middleware to /api/users/* and /api/posts/*"
+  },
+  "standardAutoApprove": [
+    "install.*dependencies",
+    "npm.*install",
+    "run.*tests",
+    "commit.*changes",
+    "format.*code",
+    "lint.*fix"
+  ],
+  "explicitDeclines": []
+}

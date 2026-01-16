@@ -1,0 +1,217 @@
+id: extract-shared-utilities
+category: refactoring
+description: Extract duplicated code into shared utility functions and modules
+codebase: demo-app-fullstack
+initial_state: main
+difficulty: medium
+
+user_prompt: |
+  Identify and extract duplicated code patterns into shared utility functions and modules
+  to improve code maintainability, reduce duplication, and establish consistent patterns.
+
+  **Current Issues:**
+  The codebase has significant code duplication across components, services, and controllers.
+  The same validation, formatting, and data transformation logic appears in multiple places,
+  leading to inconsistencies and maintenance burden.
+
+  **Identified Duplication Patterns:**
+
+  1. **Date Formatting** (appears in 8+ files)
+     ```javascript
+     // Duplicated in UserProfile, OrderList, ReportGenerator, etc.
+     const formattedDate = new Date(timestamp).toLocaleDateString('en-US', {
+       year: 'numeric', month: 'long', day: 'numeric'
+     });
+     ```
+     Extract to: `src/utils/dateUtils.js`
+     - formatDate(date, format = 'long')
+     - formatDateTime(date)
+     - formatRelativeTime(date)
+     - isValidDate(date)
+     - parseDate(dateString)
+
+  2. **Email Validation** (appears in 6+ files)
+     ```javascript
+     // Duplicated in RegisterForm, ProfileForm, InviteModal, etc.
+     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+     const isValid = emailRegex.test(email);
+     ```
+     Extract to: `src/utils/validators.js`
+     - isValidEmail(email)
+     - isValidPassword(password, requirements)
+     - isValidPhone(phone, country)
+     - isValidURL(url)
+     - isValidUsername(username)
+
+  3. **API Error Handling** (appears in 12+ files)
+     ```javascript
+     // Duplicated in every API service
+     .catch(error => {
+       if (error.response?.status === 401) {
+         // Redirect to login
+       } else if (error.response?.status === 403) {
+         // Show permission error
+       } else if (error.response?.data?.message) {
+         // Show API error message
+       } else {
+         // Show generic error
+       }
+     })
+     ```
+     Extract to: `src/utils/apiHelpers.js`
+     - handleApiError(error, context)
+     - buildApiUrl(endpoint, params)
+     - setAuthHeaders(config)
+     - retryFailedRequest(config, maxRetries = 3)
+
+  4. **Currency Formatting** (appears in 5+ files)
+     ```javascript
+     // Duplicated in PricingCard, OrderSummary, InvoiceGenerator
+     const formatted = new Intl.NumberFormat('en-US', {
+       style: 'currency',
+       currency: 'USD'
+     }).format(amount);
+     ```
+     Extract to: `src/utils/formatters.js`
+     - formatCurrency(amount, currency = 'USD')
+     - formatNumber(number, decimals = 2)
+     - formatPercentage(value, decimals = 1)
+     - formatFileSize(bytes)
+
+  5. **Local Storage Helpers** (appears in 7+ files)
+     ```javascript
+     // Duplicated in AuthService, SettingsService, CacheService
+     try {
+       const data = JSON.parse(localStorage.getItem(key));
+       return data;
+     } catch {
+       return defaultValue;
+     }
+     ```
+     Extract to: `src/utils/storage.js`
+     - getItem(key, defaultValue)
+     - setItem(key, value)
+     - removeItem(key)
+     - clear()
+     - getAllKeys()
+
+  6. **Array/Object Utilities** (appears in 10+ files)
+     ```javascript
+     // Duplicated throughout: sorting, grouping, deduplication
+     const unique = [...new Set(array)];
+     const grouped = array.reduce((acc, item) => { ... }, {});
+     const sorted = array.sort((a, b) => a.name.localeCompare(b.name));
+     ```
+     Extract to: `src/utils/arrayUtils.js`
+     - unique(array, key)
+     - groupBy(array, key)
+     - sortBy(array, key, order = 'asc')
+     - chunk(array, size)
+     - flatten(array)
+     - pluck(array, key)
+
+  **Refactoring Requirements:**
+
+  1. **Create utility modules:**
+     - Create 6 new utility files with proper organization
+     - Export individual functions (not default exports)
+     - Add comprehensive JSDoc comments
+     - Include TypeScript types if using TypeScript
+
+  2. **Replace duplicated code:**
+     - Find all instances of duplicated patterns (use grep/search)
+     - Replace with utility function calls
+     - Update imports in all affected files
+     - Ensure behavior remains exactly the same
+
+  3. **Add unit tests:**
+     - Test all utility functions thoroughly
+     - Test edge cases and error conditions
+     - Aim for 100% coverage on utility modules
+     - Use property-based testing where appropriate
+
+  4. **Update documentation:**
+     - Create UTILITIES.md documenting all utility functions
+     - Include usage examples for each function
+     - Document parameters, return types, and edge cases
+
+  5. **Ensure backwards compatibility:**
+     - Maintain existing function behavior exactly
+     - Don't change any external APIs
+     - Only refactor internal implementation
+
+  Expected improvements:
+  - 30-40% reduction in code duplication
+  - Consistent behavior across similar operations
+  - Single source of truth for common operations
+  - Easier to maintain and update shared logic
+  - Better test coverage for common operations
+
+expected_files:
+  - "src/utils/dateUtils.js"
+  - "src/utils/validators.js"
+  - "src/utils/apiHelpers.js"
+  - "src/utils/formatters.js"
+  - "src/utils/storage.js"
+  - "src/utils/arrayUtils.js"
+  - "tests/utils/dateUtils.test.js"
+  - "tests/utils/validators.test.js"
+  - "tests/utils/apiHelpers.test.js"
+  - "tests/utils/formatters.test.js"
+  - "tests/utils/storage.test.js"
+  - "tests/utils/arrayUtils.test.js"
+  - "docs/UTILITIES.md"
+
+verification:
+  - npm test
+  - npm run test:coverage
+  - npm run lint
+  - npx tsc --noEmit
+  - npm run test:integration
+
+expected_outcomes:
+  - "6 new utility modules created with comprehensive functions"
+  - "All duplicated code replaced with utility function calls"
+  - "100% test coverage on utility modules"
+  - "All existing tests still pass (no breaking changes)"
+  - "UTILITIES.md documentation created"
+  - "Code duplication reduced by 30-40%"
+  - "Consistent behavior across similar operations"
+
+estimated_duration_minutes: 22
+
+dependencies:
+  - "@testing-library/react"
+  - "jest"
+
+environment:
+  NODE_ENV: test
+
+codebase_constraints:
+  allowed_directories:
+    - src/
+    - tests/
+    - docs/
+  forbidden_patterns:
+    - "eval\\("
+    - "new Function\\("
+
+success_criteria:
+  testing:
+    min_utility_coverage: 100
+    min_overall_coverage: 80
+  code_quality:
+    max_duplication_percentage: 5
+  maintainability:
+    max_function_lines: 30
+    max_cyclomatic_complexity: 8
+
+tags:
+  - refactoring
+  - code-duplication
+  - utilities
+  - maintainability
+  - dry-principle
+
+author: PopKit Team
+version: 1.0.0

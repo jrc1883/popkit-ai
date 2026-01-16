@@ -1,0 +1,23 @@
+{
+  "responses": {
+    "Fix priority order": "Start with Dashboard (highest impact), then NotificationManager, DataTable, AnalyticsService",
+    "Testing approach": "Combination: Unit tests for cleanup, integration tests for full flow, Chrome DevTools for profiling",
+    "Leak detection library": "Use React DevTools Profiler + manual heap snapshots (no third-party needed)",
+    "Refactor vs patch": "Minimal refactoring - focus on adding proper cleanup functions",
+    "Singleton implementation": "Use module-level instance with lazy initialization",
+    "Cache strategy": "LRU cache with size limit (use Map with size tracking)",
+    "Documentation format": "Markdown guide with screenshots and code examples",
+    "Test framework": "React Testing Library + Jest (already in project)"
+  },
+  "standardAutoApprove": [
+    "install.*dependencies",
+    "npm.*install",
+    "run.*tests",
+    "run.*test:memory",
+    "commit.*changes",
+    "format.*code",
+    "lint.*fix",
+    "npm.*audit.*fix"
+  ],
+  "explicitDeclines": []
+}

@@ -1,0 +1,141 @@
+id: memory-leak-fix
+category: bug-fixing
+description: Fix memory leaks in event listeners and component cleanup
+codebase: demo-app-react
+initial_state: main
+difficulty: hard
+
+user_prompt: |
+  We have critical memory leaks in our React application causing performance degradation over time.
+
+  **Bug Description:**
+  Users report that after navigating between pages multiple times, the application becomes
+  sluggish and eventually crashes. Memory profiling shows that event listeners, WebSocket
+  connections, and timer callbacks are not being cleaned up properly.
+
+  **Affected Components:**
+
+  1. **Dashboard Component** (`src/pages/Dashboard.tsx`)
+     - Window resize event listeners accumulate on every render
+     - Not removed when component unmounts
+     - Each listener holds reference to component state
+
+  2. **NotificationManager** (`src/services/NotificationManager.ts`)
+     - WebSocket connection never closes
+     - Message handlers accumulate with each reconnection
+     - Polling timer continues after component unmount
+
+  3. **DataTable Component** (`src/components/DataTable.tsx`)
+     - IntersectionObserver for infinite scroll not disconnected
+     - Scroll event listeners on window not removed
+     - Cached row data accumulates without bound
+
+  4. **AnalyticsService** (`src/services/AnalyticsService.ts`)
+     - setInterval for metrics collection never cleared
+     - Event queue grows indefinitely
+     - Multiple instances created without singleton pattern
+
+  **Requirements:**
+
+  1. **Dashboard Component Fixes:**
+     - Move resize listener to useEffect with proper cleanup
+     - Use useCallback for event handler to prevent recreating
+     - Ensure cleanup function removes all event listeners
+
+  2. **NotificationManager Fixes:**
+     - Implement proper WebSocket cleanup on disconnect
+     - Clear all message handlers before reconnecting
+     - Add cleanup method that stops polling and closes connection
+     - Call cleanup in component useEffect return function
+
+  3. **DataTable Component Fixes:**
+     - Disconnect IntersectionObserver in cleanup
+     - Remove scroll listeners in useEffect cleanup
+     - Implement LRU cache with size limit for row data (max 1000 items)
+     - Clear cache on component unmount
+
+  4. **AnalyticsService Fixes:**
+     - Convert to singleton pattern
+     - Clear interval when service stops
+     - Implement event queue with max size (1000 events)
+     - Add destroy() method for complete cleanup
+
+  5. **Add Memory Leak Tests:**
+     - Test that event listeners are removed after unmount
+     - Test that timers are cleared after unmount
+     - Test that WebSocket closes properly
+     - Use React Testing Library and jest to verify cleanup
+
+  6. **Add Memory Profiling:**
+     - Document how to profile memory leaks in Chrome DevTools
+     - Add npm script for running with --expose-gc flag
+     - Create before/after heap snapshots showing improvement
+
+  Expected behavior after fix:
+  - No accumulation of event listeners over time
+  - Memory usage stabilizes after initial page load
+  - No zombie timers or intervals running after unmount
+  - All external connections properly closed
+  - Heap snapshots show proper garbage collection
+
+expected_files:
+  - "src/pages/Dashboard.tsx"
+  - "src/services/NotificationManager.ts"
+  - "src/components/DataTable.tsx"
+  - "src/services/AnalyticsService.ts"
+  - "tests/memory-leaks.test.tsx"
+  - "docs/MEMORY_PROFILING.md"
+
+verification:
+  - npm test
+  - npm run test:memory
+  - npm run lint
+  - npx tsc --noEmit
+
+expected_outcomes:
+  - "All event listeners properly cleaned up on unmount"
+  - "WebSocket connections close when component unmounts"
+  - "All timers and intervals cleared on cleanup"
+  - "Memory usage remains stable during navigation"
+  - "No warnings in React DevTools about memory leaks"
+  - "Heap snapshots show proper garbage collection"
+  - "All tests pass including memory leak detection tests"
+
+estimated_duration_minutes: 18
+
+dependencies:
+  - "@testing-library/react"
+  - "@testing-library/react-hooks"
+
+environment:
+  NODE_ENV: test
+  NODE_OPTIONS: --expose-gc
+
+codebase_constraints:
+  allowed_directories:
+    - src/
+    - tests/
+    - docs/
+  forbidden_patterns:
+    - "console.log"
+    - "debugger"
+
+success_criteria:
+  performance:
+    max_event_listeners: 50
+    max_timers: 10
+  testing:
+    min_coverage: 85
+  memory:
+    no_retained_detached_nodes: true
+    max_heap_growth_mb: 10
+
+tags:
+  - memory-leaks
+  - performance
+  - cleanup
+  - event-listeners
+  - websocket
+
+author: PopKit Team
+version: 1.0.0

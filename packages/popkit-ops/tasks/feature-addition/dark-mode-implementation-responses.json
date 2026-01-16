@@ -1,0 +1,22 @@
+{
+  "responses": {
+    "Styling approach": "CSS custom properties (CSS variables)",
+    "Toggle placement": "App header (top-right corner)",
+    "Icon library": "Use existing icon library or inline SVG",
+    "State management": "React Context API (ThemeContext)",
+    "Transition duration": "200ms for smooth theme transitions",
+    "System preference detection": "Yes, respect prefers-color-scheme media query",
+    "Persistence method": "localStorage (key: 'theme-preference')",
+    "Accessibility approach": "ARIA labels, focus indicators, keyboard navigation"
+  },
+  "standardAutoApprove": [
+    "install.*dependencies",
+    "npm.*install",
+    "run.*tests",
+    "commit.*changes",
+    "format.*code",
+    "lint.*fix",
+    "npm.*audit.*fix"
+  ],
+  "explicitDeclines": []
+}

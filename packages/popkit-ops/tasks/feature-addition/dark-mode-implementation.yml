@@ -1,0 +1,88 @@
+id: dark-mode-implementation
+category: feature-addition
+description: Add dark mode toggle with theme persistence across the application
+codebase: demo-app-react
+initial_state: main
+difficulty: medium
+
+user_prompt: |
+  Implement a comprehensive dark mode feature for our React application with the following requirements:
+
+  1. Create a ThemeContext that:
+     - Provides theme state (light/dark) to all components
+     - Persists theme preference to localStorage
+     - Initializes from localStorage or system preference (prefers-color-scheme)
+     - Exposes toggleTheme() function for switching modes
+
+  2. Create a ThemeToggle component that:
+     - Displays a sun/moon icon button in the app header
+     - Calls toggleTheme() on click
+     - Shows current theme state visually
+     - Has accessible aria-label ("Toggle dark mode")
+
+  3. Implement CSS custom properties (CSS variables) for theming:
+     - Define color variables for both light and dark themes
+     - Include: background colors, text colors, border colors, shadow colors
+     - Apply theme colors throughout existing components
+     - Ensure proper contrast ratios (WCAG AA compliance)
+
+  4. Update existing components to use theme-aware styles:
+     - Replace hardcoded colors with CSS custom properties
+     - Ensure all interactive elements (buttons, inputs, links) are themed
+     - Maintain visual consistency across themes
+
+  5. Handle edge cases:
+     - Smooth transitions between themes (CSS transitions on color properties)
+     - Prevent flash of unstyled content (FOUC) on page load
+     - Respect system preference if no saved preference exists
+
+  6. Add comprehensive tests:
+     - ThemeContext provider functionality
+     - Theme persistence to/from localStorage
+     - ThemeToggle component rendering and interaction
+     - System preference detection
+
+  Expected behavior:
+  - Clicking toggle switches between light and dark mode immediately
+  - Theme preference persists across browser sessions
+  - All pages and components respect the selected theme
+  - No layout shifts or flashes during theme transitions
+
+expected_files:
+  - "src/contexts/ThemeContext.tsx"
+  - "src/components/ThemeToggle.tsx"
+  - "src/styles/themes.css"
+  - "tests/ThemeContext.test.tsx"
+  - "tests/ThemeToggle.test.tsx"
+
+verification:
+  - npm test
+  - npm run lint
+  - npx tsc --noEmit
+  - npm run test:a11y
+
+expected_outcomes:
+  - "ThemeContext provides theme state to entire app"
+  - "ThemeToggle component renders in header with icon"
+  - "Theme preference persists in localStorage"
+  - "CSS variables applied throughout application"
+  - "All tests pass including accessibility checks"
+  - "No console errors or warnings"
+  - "Smooth transitions between light and dark modes"
+
+estimated_duration_minutes: 15
+
+dependencies: []
+
+environment:
+  NODE_ENV: test
+
+tags:
+  - theming
+  - dark-mode
+  - accessibility
+  - ui
+  - context-api
+
+author: PopKit Team
+version: 1.0.0

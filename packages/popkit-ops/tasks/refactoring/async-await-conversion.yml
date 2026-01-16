@@ -1,0 +1,144 @@
+id: async-await-conversion
+category: refactoring
+description: Convert callback-based asynchronous code to async/await patterns
+codebase: demo-app-node
+initial_state: main
+difficulty: medium
+
+user_prompt: |
+  Refactor our legacy Node.js codebase from callback-based patterns to modern async/await syntax
+  for improved readability, maintainability, and error handling.
+
+  **Current State:**
+  The codebase uses callback patterns (callback hell) throughout, making code difficult to read,
+  debug, and maintain. Error handling is inconsistent and testing is challenging.
+
+  **Modules to Refactor:**
+
+  1. **UserService** (`src/services/UserService.js`)
+     - `createUser(data, callback)` → `async createUser(data)`
+     - `getUserById(id, callback)` → `async getUserById(id)`
+     - `updateUser(id, data, callback)` → `async updateUser(id, data)`
+     - `deleteUser(id, callback)` → `async deleteUser(id)`
+     - Nested callbacks for database + cache operations
+
+  2. **AuthController** (`src/controllers/AuthController.js`)
+     - `login(req, res, next)` with nested callbacks
+     - Password hashing with bcrypt.hash callback
+     - JWT signing with jwt.sign callback
+     - Database lookups with nested error handling
+
+  3. **EmailService** (`src/services/EmailService.js`)
+     - `sendEmail(to, subject, body, callback)`
+     - `sendVerificationEmail(user, callback)`
+     - `sendPasswordResetEmail(user, callback)`
+     - SMTP connection with multiple callback layers
+
+  4. **FileUploadHandler** (`src/handlers/FileUploadHandler.js`)
+     - `uploadFile(file, callback)` with multer callbacks
+     - S3 upload with nested callbacks
+     - Database record creation after upload
+     - Cleanup on error with callback chains
+
+  5. **DataMigrationScript** (`scripts/migrate-data.js`)
+     - Sequential database operations with callbacks
+     - 5+ levels of nesting (callback pyramid)
+     - Error handling duplicated in each level
+
+  **Refactoring Requirements:**
+
+  1. **Convert all callback-based functions to async/await:**
+     - Replace callback parameters with Promise returns
+     - Use try/catch blocks for error handling
+     - Maintain backwards compatibility where needed
+
+  2. **Promisify callback-based libraries:**
+     - Use util.promisify for Node.js built-ins (fs, crypto)
+     - Wrap third-party callback APIs with Promise wrappers
+     - Create promisified versions of custom utilities
+
+  3. **Update error handling:**
+     - Use try/catch blocks instead of callback error parameters
+     - Throw proper Error objects with meaningful messages
+     - Add error context (operation name, parameters)
+
+  4. **Update tests:**
+     - Convert test assertions from callback-based to async/await
+     - Use async/await in beforeEach/afterEach hooks
+     - Update mocks to return Promises instead of calling callbacks
+
+  5. **Maintain API compatibility:**
+     - Keep existing function signatures for public APIs
+     - Add async versions alongside callback versions (with deprecation notices)
+     - Update all internal callers to use new async versions
+
+  6. **Code quality improvements:**
+     - Eliminate callback hell (pyramid of doom)
+     - Use Promise.all() for parallel operations
+     - Use Promise.allSettled() for non-critical parallel operations
+     - Add JSDoc comments documenting async behavior
+
+  Expected improvements:
+  - Reduced nesting levels (max 2 levels vs current 5+)
+  - Consistent error handling throughout
+  - More readable and maintainable code
+  - Easier to test and debug
+  - Better stack traces in errors
+
+expected_files:
+  - "src/services/UserService.js"
+  - "src/controllers/AuthController.js"
+  - "src/services/EmailService.js"
+  - "src/handlers/FileUploadHandler.js"
+  - "scripts/migrate-data.js"
+  - "tests/services/UserService.test.js"
+  - "tests/controllers/AuthController.test.js"
+
+verification:
+  - npm test
+  - npm run lint
+  - npm run test:integration
+  - node scripts/migrate-data.js --dry-run
+
+expected_outcomes:
+  - "All callback-based functions converted to async/await"
+  - "No callback hell patterns remaining (max 2 nesting levels)"
+  - "Consistent try/catch error handling throughout"
+  - "All tests updated and passing"
+  - "No breaking changes to public APIs"
+  - "JSDoc comments added for all async functions"
+  - "Code coverage maintained or improved"
+
+estimated_duration_minutes: 20
+
+dependencies: []
+
+environment:
+  NODE_ENV: test
+
+codebase_constraints:
+  max_nested_callbacks: 2
+  allowed_directories:
+    - src/
+    - tests/
+    - scripts/
+  forbidden_patterns:
+    - "callback\\(\\w+, function"  # Nested callbacks
+
+success_criteria:
+  code_quality:
+    max_nesting_depth: 2
+    min_test_coverage: 80
+  maintainability:
+    max_function_lines: 50
+    max_cyclomatic_complexity: 10
+
+tags:
+  - refactoring
+  - async-await
+  - promises
+  - code-quality
+  - maintainability
+
+author: PopKit Team
+version: 1.0.0
