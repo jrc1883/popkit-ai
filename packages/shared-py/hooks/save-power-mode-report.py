@@ -13,8 +13,8 @@ agents used, and results achieved.
 """
 
 import json
-import sys
 import os
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -67,11 +67,7 @@ def aggregate_insights(insights):
             by_phase[phase] = []
         by_phase[phase].append(insight)
 
-    return {
-        "byAgent": by_agent,
-        "byPhase": by_phase,
-        "total": len(insights)
-    }
+    return {"byAgent": by_agent, "byPhase": by_phase, "total": len(insights)}
 
 
 def generate_report(cwd, state, insights):
@@ -89,15 +85,11 @@ def generate_report(cwd, state, insights):
         "phases": list(aggregated["byPhase"].keys()),
         "insights": {
             "total": aggregated["total"],
-            "byAgent": {
-                agent: len(items) for agent, items in aggregated["byAgent"].items()
-            },
-            "byPhase": {
-                phase: len(items) for phase, items in aggregated["byPhase"].items()
-            }
+            "byAgent": {agent: len(items) for agent, items in aggregated["byAgent"].items()},
+            "byPhase": {phase: len(items) for phase, items in aggregated["byPhase"].items()},
         },
         "status": state.get("status", "completed") if state else "completed",
-        "duration": state.get("duration", "unknown") if state else "unknown"
+        "duration": state.get("duration", "unknown") if state else "unknown",
     }
 
     # Add top insights (most recent 10)
@@ -158,10 +150,7 @@ def handle_stop_hook(data):
     report_path, error = save_report(cwd, report)
 
     if error:
-        return {
-            "decision": "allow",
-            "message": f"Failed to save power mode report: {error}"
-        }
+        return {"decision": "allow", "message": f"Failed to save power mode report: {error}"}
 
     # Build summary message
     agents_count = len(report["agents"])
@@ -172,10 +161,7 @@ def handle_stop_hook(data):
     message += f"- Insights: {insights_count}\n"
     message += f"- Phases: {len(report['phases'])}"
 
-    return {
-        "decision": "allow",
-        "message": message
-    }
+    return {"decision": "allow", "message": message}
 
 
 if __name__ == "__main__":
@@ -192,9 +178,6 @@ if __name__ == "__main__":
 
     except Exception as e:
         # On error, allow the operation
-        error_result = {
-            "decision": "allow",
-            "message": f"Hook error (report not saved): {str(e)}"
-        }
+        error_result = {"decision": "allow", "message": f"Hook error (report not saved): {str(e)}"}
         print(json.dumps(error_result))
         sys.exit(0)

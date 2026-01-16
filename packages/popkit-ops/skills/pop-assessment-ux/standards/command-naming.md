@@ -9,6 +9,7 @@ Standards for naming commands, subcommands, and flags.
 Commands should clearly describe their function.
 
 **Guidelines:**
+
 - Use full words over abbreviations
 - Verb-first naming pattern
 - Self-documenting names
@@ -36,12 +37,14 @@ Start commands with action verbs.
 | `check` | Validate or verify |
 
 **Pattern:**
+
 ```
 /namespace:verb-noun
 /namespace:verb-noun-modifier
 ```
 
 **Examples:**
+
 ```
 /popkit:create-project
 /popkit:run-tests --coverage
@@ -53,6 +56,7 @@ Start commands with action verbs.
 Spell out words unless universally understood.
 
 **Acceptable Abbreviations:**
+
 - `init` (initialize)
 - `config` (configuration)
 - `auth` (authentication)
@@ -60,6 +64,7 @@ Spell out words unless universally understood.
 - `npm` (package manager)
 
 **Avoid:**
+
 - `cfg` → `config`
 - `mgr` → `manager`
 - `impl` → `implementation`
@@ -70,6 +75,7 @@ Spell out words unless universally understood.
 Use hyphens as word separators.
 
 **Standard:**
+
 ```
 command-name-here  ✓
 commandNameHere    ✗
@@ -96,11 +102,13 @@ Use the same verb for similar operations across commands.
 Use consistent namespace prefix.
 
 **Format:**
+
 ```
 /namespace:command
 ```
 
 **PopKit Standard:**
+
 ```
 /popkit:project
 /popkit:git
@@ -138,6 +146,7 @@ Use standard subcommands consistently.
 ### Flag Naming
 
 **Long flags:** Full descriptive names
+
 ```
 --verbose
 --output-format
@@ -145,6 +154,7 @@ Use standard subcommands consistently.
 ```
 
 **Short flags:** Single meaningful letter
+
 ```
 -v (verbose)
 -o (output)
@@ -153,21 +163,21 @@ Use standard subcommands consistently.
 
 ### Common Flags
 
-| Flag | Short | Purpose |
-|------|-------|---------|
-| `--help` | `-h` | Show help |
-| `--verbose` | `-v` | Detailed output |
-| `--quiet` | `-q` | Minimal output |
-| `--dry-run` | `-n` | Preview mode |
-| `--force` | `-f` | Skip confirmations |
-| `--output` | `-o` | Output destination |
-| `--format` | | Output format |
+| Flag        | Short | Purpose            |
+| ----------- | ----- | ------------------ |
+| `--help`    | `-h`  | Show help          |
+| `--verbose` | `-v`  | Detailed output    |
+| `--quiet`   | `-q`  | Minimal output     |
+| `--dry-run` | `-n`  | Preview mode       |
+| `--force`   | `-f`  | Skip confirmations |
+| `--output`  | `-o`  | Output destination |
+| `--format`  |       | Output format      |
 
 ## Quality Metrics
 
-| Metric | Target |
-|--------|--------|
-| Verb-first pattern | 100% |
-| Descriptive names | 100% |
-| Length compliance | >90% |
-| Consistent separators | 100% |
+| Metric                | Target |
+| --------------------- | ------ |
+| Verb-first pattern    | 100%   |
+| Descriptive names     | 100%   |
+| Length compliance     | >90%   |
+| Consistent separators | 100%   |

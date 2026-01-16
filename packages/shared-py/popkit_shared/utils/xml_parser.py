@@ -6,10 +6,9 @@ Provides robust ElementTree-based parsing for PopKit's XML context structures.
 Replaces fragile regex-based parsing with proper XML parsing.
 """
 
-import xml.etree.ElementTree as ET
-import re
-from typing import Dict, Any, Optional, List
 import logging
+import xml.etree.ElementTree as ET
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -42,28 +41,30 @@ def parse_problem_context(xml_string: str) -> Optional[Dict[str, Any]]:
         root = ET.fromstring(xml_string)
 
         # Verify root element
-        if root.tag != 'problem-context':
+        if root.tag != "problem-context":
             logger.warning(f"Expected root element 'problem-context', got '{root.tag}'")
             return None
 
         result = {}
 
         # Extract required fields
-        category = root.find('category')
-        result['category'] = category.text if category is not None and category.text else None
+        category = root.find("category")
+        result["category"] = category.text if category is not None and category.text else None
 
-        description = root.find('description')
-        result['description'] = description.text if description is not None and description.text else None
+        description = root.find("description")
+        result["description"] = (
+            description.text if description is not None and description.text else None
+        )
 
-        severity = root.find('severity')
-        result['severity'] = severity.text if severity is not None and severity.text else None
+        severity = root.find("severity")
+        result["severity"] = severity.text if severity is not None and severity.text else None
 
         # Extract optional workflow
-        workflow = root.find('workflow')
+        workflow = root.find("workflow")
         if workflow is not None:
-            result['workflow'] = _parse_workflow(workflow)
+            result["workflow"] = _parse_workflow(workflow)
         else:
-            result['workflow'] = None
+            result["workflow"] = None
 
         return result
 
@@ -103,44 +104,44 @@ def parse_project_context(xml_string: str) -> Optional[Dict[str, Any]]:
         root = ET.fromstring(xml_string)
 
         # Verify root element
-        if root.tag != 'project':
+        if root.tag != "project":
             logger.warning(f"Expected root element 'project', got '{root.tag}'")
             return None
 
         result = {}
 
         # Extract name
-        name = root.find('name')
-        result['name'] = name.text if name is not None and name.text else 'unknown'
+        name = root.find("name")
+        result["name"] = name.text if name is not None and name.text else "unknown"
 
         # Extract stack
-        stack = root.find('stack')
+        stack = root.find("stack")
         if stack is not None:
             technologies = []
-            for tech in stack.findall('technology'):
+            for tech in stack.findall("technology"):
                 if tech.text:
                     technologies.append(tech.text)
-            result['stack'] = technologies
+            result["stack"] = technologies
         else:
-            result['stack'] = []
+            result["stack"] = []
 
         # Extract infrastructure
-        infrastructure = root.find('infrastructure')
+        infrastructure = root.find("infrastructure")
         if infrastructure is not None:
             infra_dict = {}
             for child in infrastructure:
                 if child.text:
                     # Convert string boolean to bool
-                    if child.text.lower() in ('true', 'false'):
-                        infra_dict[child.tag] = child.text.lower() == 'true'
+                    if child.text.lower() in ("true", "false"):
+                        infra_dict[child.tag] = child.text.lower() == "true"
                     else:
                         infra_dict[child.tag] = child.text
-            result['infrastructure'] = infra_dict
+            result["infrastructure"] = infra_dict
         else:
-            result['infrastructure'] = {}
+            result["infrastructure"] = {}
 
         # Extract current work
-        current_work = root.find('current-work')
+        current_work = root.find("current-work")
         if current_work is not None:
             work_dict = {}
             for child in current_work:
@@ -153,9 +154,9 @@ def parse_project_context(xml_string: str) -> Optional[Dict[str, Any]]:
                             work_dict[child.tag] = [work_dict[child.tag], child.text]
                     else:
                         work_dict[child.tag] = child.text
-            result['current_work'] = work_dict
+            result["current_work"] = work_dict
         else:
-            result['current_work'] = {}
+            result["current_work"] = {}
 
         return result
 
@@ -198,60 +199,60 @@ def parse_findings(xml_string: str) -> Optional[Dict[str, Any]]:
         root = ET.fromstring(xml_string)
 
         # Verify root element
-        if root.tag != 'findings':
+        if root.tag != "findings":
             logger.warning(f"Expected root element 'findings', got '{root.tag}'")
             return None
 
         result = {}
 
         # Extract tool
-        tool = root.find('tool')
-        result['tool'] = tool.text if tool is not None and tool.text else 'unknown'
+        tool = root.find("tool")
+        result["tool"] = tool.text if tool is not None and tool.text else "unknown"
 
         # Extract status
-        status = root.find('status')
-        result['status'] = status.text if status is not None and status.text else 'unknown'
+        status = root.find("status")
+        result["status"] = status.text if status is not None and status.text else "unknown"
 
         # Extract quality score
-        quality_score = root.find('quality_score')
+        quality_score = root.find("quality_score")
         if quality_score is not None and quality_score.text:
             try:
-                result['quality_score'] = float(quality_score.text)
+                result["quality_score"] = float(quality_score.text)
             except ValueError:
-                result['quality_score'] = 0.0
+                result["quality_score"] = 0.0
         else:
-            result['quality_score'] = 0.0
+            result["quality_score"] = 0.0
 
         # Extract issues
-        issues_elem = root.find('issues')
+        issues_elem = root.find("issues")
         issues = []
         if issues_elem is not None:
-            for issue in issues_elem.findall('issue'):
+            for issue in issues_elem.findall("issue"):
                 if issue.text:
                     issues.append(issue.text)
-        result['issues'] = issues
+        result["issues"] = issues
 
         # Extract suggestions
-        suggestions_elem = root.find('suggestions')
+        suggestions_elem = root.find("suggestions")
         suggestions = []
         if suggestions_elem is not None:
-            for suggestion in suggestions_elem.findall('suggestion'):
+            for suggestion in suggestions_elem.findall("suggestion"):
                 if suggestion.text:
                     suggestions.append(suggestion.text)
-        result['suggestions'] = suggestions
+        result["suggestions"] = suggestions
 
         # Extract follow-up agents
-        agents_elem = root.find('followup_agents')
+        agents_elem = root.find("followup_agents")
         agents = []
         if agents_elem is not None:
-            for agent in agents_elem.findall('agent'):
+            for agent in agents_elem.findall("agent"):
                 if agent.text:
                     agents.append(agent.text)
-        result['followup_agents'] = agents
+        result["followup_agents"] = agents
 
         # Extract error message
-        error_message = root.find('error_message')
-        result['error_message'] = error_message.text if error_message is not None else None
+        error_message = root.find("error_message")
+        result["error_message"] = error_message.text if error_message is not None else None
 
         return result
 
@@ -263,8 +264,7 @@ def parse_findings(xml_string: str) -> Optional[Dict[str, Any]]:
         return None
 
 
-def extract_xml_from_conversation(messages: List[str],
-                                  search_last_n: int = 5) -> Optional[str]:
+def extract_xml_from_conversation(messages: List[str], search_last_n: int = 5) -> Optional[str]:
     """
     Extracts XML content from HTML comment markers in conversation history.
 
@@ -313,49 +313,42 @@ def _parse_workflow(workflow_elem: ET.Element) -> Dict[str, Any]:
     Returns:
         Dictionary with workflow structure
     """
-    workflow = {
-        'steps': []
-    }
+    workflow = {"steps": []}
 
-    for step in workflow_elem.findall('step'):
-        step_data = {
-            'id': step.get('id'),
-            'action': None,
-            'agent': None,
-            'dependencies': []
-        }
+    for step in workflow_elem.findall("step"):
+        step_data = {"id": step.get("id"), "action": None, "agent": None, "dependencies": []}
 
         # Extract action
-        action = step.find('action')
+        action = step.find("action")
         if action is not None and action.text:
-            step_data['action'] = action.text
+            step_data["action"] = action.text
 
         # Extract agent
-        agent = step.find('agent')
+        agent = step.find("agent")
         if agent is not None and agent.text:
-            step_data['agent'] = agent.text
+            step_data["agent"] = agent.text
 
         # Extract dependencies
-        deps = step.find('dependencies')
+        deps = step.find("dependencies")
         if deps is not None:
-            for dep in deps.findall('dependency'):
+            for dep in deps.findall("dependency"):
                 if dep.text:
-                    step_data['dependencies'].append(dep.text)
+                    step_data["dependencies"].append(dep.text)
 
-        workflow['steps'].append(step_data)
+        workflow["steps"].append(step_data)
 
     # Handle conditional branches (simplified parsing)
-    conditionals = workflow_elem.findall('conditional')
+    conditionals = workflow_elem.findall("conditional")
     if conditionals:
-        workflow['conditionals'] = len(conditionals)
+        workflow["conditionals"] = len(conditionals)
 
     return workflow
 
 
 # Public API
 __all__ = [
-    'parse_problem_context',
-    'parse_project_context',
-    'parse_findings',
-    'extract_xml_from_conversation',
+    "parse_problem_context",
+    "parse_project_context",
+    "parse_findings",
+    "extract_xml_from_conversation",
 ]

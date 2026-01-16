@@ -10,19 +10,20 @@ priority scores. Inspired by Long Horizon Coding Agent Demo.
 """
 
 import json
-import subprocess
 import sqlite3
-from datetime import datetime, timedelta
-from dataclasses import dataclass, asdict
-from typing import Dict, List, Optional, Any
-from pathlib import Path
-from contextlib import contextmanager
+import subprocess
 from collections import Counter
+from contextlib import contextmanager
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Optional
 
 
 @dataclass
 class VoteResult:
     """Result of fetching votes for an issue"""
+
     issue_number: int
     score: int
     breakdown: Dict[str, int]
@@ -36,14 +37,14 @@ class VoteResult:
 
 # Default reaction weights
 DEFAULT_WEIGHTS = {
-    '+1': 1,        # 👍 - Community interest
-    'heart': 2,     # ❤️ - Strong support
-    'rocket': 3,    # 🚀 - Approved/prioritized
-    '-1': -1,       # 👎 - Deprioritize
-    'hooray': 1,    # 🎉 - Celebration (counts as +1)
-    'confused': -1, # 😕 - Issues/concerns
-    'eyes': 0,      # 👀 - Watching (neutral)
-    'laugh': 0,     # 😄 - Humor (neutral)
+    "+1": 1,  # 👍 - Community interest
+    "heart": 2,  # ❤️ - Strong support
+    "rocket": 3,  # 🚀 - Approved/prioritized
+    "-1": -1,  # 👎 - Deprioritize
+    "hooray": 1,  # 🎉 - Celebration (counts as +1)
+    "confused": -1,  # 😕 - Issues/concerns
+    "eyes": 0,  # 👀 - Watching (neutral)
+    "laugh": 0,  # 😄 - Humor (neutral)
 }
 
 
@@ -51,7 +52,7 @@ class VoteCache:
     """SQLite-based cache for vote data to avoid API rate limits"""
 
     CACHE_TTL_HOURS = 1  # How long to cache votes
-    DEFAULT_DB_PATH = Path.home() / '.claude' / 'config' / 'vote_cache.db'
+    DEFAULT_DB_PATH = Path.home() / ".claude" / "config" / "vote_cache.db"
 
     def __init__(self, db_path: Optional[Path] = None):
         self.db_path = db_path or self.DEFAULT_DB_PATH
@@ -91,41 +92,55 @@ class VoteCache:
     def get(self, repo: str, issue_number: int) -> Optional[VoteResult]:
         """Get cached vote result if not expired"""
         with self._get_connection() as conn:
-            row = conn.execute("""
+            row = conn.execute(
+                """
                 SELECT * FROM vote_cache
                 WHERE repo = ? AND issue_number = ?
                 AND fetched_at > datetime('now', '-' || ? || ' hours')
-            """, (repo, issue_number, self.CACHE_TTL_HOURS)).fetchone()
+            """,
+                (repo, issue_number, self.CACHE_TTL_HOURS),
+            ).fetchone()
 
             if row:
                 return VoteResult(
-                    issue_number=row['issue_number'],
-                    score=row['score'],
-                    breakdown=json.loads(row['breakdown']),
-                    total_reactions=row['total_reactions'],
-                    fetched_at=row['fetched_at'],
-                    cached=True
+                    issue_number=row["issue_number"],
+                    score=row["score"],
+                    breakdown=json.loads(row["breakdown"]),
+                    total_reactions=row["total_reactions"],
+                    fetched_at=row["fetched_at"],
+                    cached=True,
                 )
             return None
 
     def set(self, repo: str, result: VoteResult) -> None:
         """Cache a vote result"""
         with self._get_connection() as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT OR REPLACE INTO vote_cache
                 (repo, issue_number, score, breakdown, total_reactions, fetched_at)
                 VALUES (?, ?, ?, ?, ?, ?)
-            """, (repo, result.issue_number, result.score,
-                  json.dumps(result.breakdown), result.total_reactions,
-                  result.fetched_at))
+            """,
+                (
+                    repo,
+                    result.issue_number,
+                    result.score,
+                    json.dumps(result.breakdown),
+                    result.total_reactions,
+                    result.fetched_at,
+                ),
+            )
 
     def clear_expired(self) -> int:
         """Clear expired cache entries"""
         with self._get_connection() as conn:
-            cursor = conn.execute("""
+            cursor = conn.execute(
+                """
                 DELETE FROM vote_cache
                 WHERE fetched_at < datetime('now', '-' || ? || ' hours')
-            """, (self.CACHE_TTL_HOURS * 2,))
+            """,
+                (self.CACHE_TTL_HOURS * 2,),
+            )
             return cursor.rowcount
 
     def clear_all(self) -> int:
@@ -142,11 +157,7 @@ class VoteFetcher:
     Uses gh CLI for API calls and SQLite for caching.
     """
 
-    def __init__(
-        self,
-        weights: Optional[Dict[str, int]] = None,
-        cache: Optional[VoteCache] = None
-    ):
+    def __init__(self, weights: Optional[Dict[str, int]] = None, cache: Optional[VoteCache] = None):
         """
         Initialize the vote fetcher.
 
@@ -161,10 +172,10 @@ class VoteFetcher:
         """Get the current repository in owner/repo format"""
         try:
             result = subprocess.run(
-                ['gh', 'repo', 'view', '--json', 'nameWithOwner', '-q', '.nameWithOwner'],
+                ["gh", "repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner"],
                 capture_output=True,
                 text=True,
-                timeout=10
+                timeout=10,
             )
             if result.returncode == 0:
                 return result.stdout.strip()
@@ -189,16 +200,21 @@ class VoteFetcher:
 
         try:
             result = subprocess.run(
-                ['gh', 'api', f'/repos/{repo}/issues/{issue_number}/reactions',
-                 '--header', 'Accept: application/vnd.github+json'],
+                [
+                    "gh",
+                    "api",
+                    f"/repos/{repo}/issues/{issue_number}/reactions",
+                    "--header",
+                    "Accept: application/vnd.github+json",
+                ],
                 capture_output=True,
                 text=True,
-                timeout=30
+                timeout=30,
             )
 
             if result.returncode != 0:
                 # Handle case where issue has no reactions (404 or empty)
-                if 'Not Found' in result.stderr or result.returncode == 1:
+                if "Not Found" in result.stderr or result.returncode == 1:
                     return []
                 raise RuntimeError(f"GitHub API error: {result.stderr}")
 
@@ -222,21 +238,15 @@ class VoteFetcher:
         breakdown = Counter()
 
         for reaction in reactions:
-            content = reaction.get('content', '')
+            content = reaction.get("content", "")
             breakdown[content] += 1
 
-        score = sum(
-            self.weights.get(content, 0) * count
-            for content, count in breakdown.items()
-        )
+        score = sum(self.weights.get(content, 0) * count for content, count in breakdown.items())
 
         return score, dict(breakdown), len(reactions)
 
     def get_issue_votes(
-        self,
-        issue_number: int,
-        repo: Optional[str] = None,
-        use_cache: bool = True
+        self, issue_number: int, repo: Optional[str] = None, use_cache: bool = True
     ) -> VoteResult:
         """
         Get vote score for a specific issue.
@@ -269,7 +279,7 @@ class VoteFetcher:
             breakdown=breakdown,
             total_reactions=total,
             fetched_at=datetime.now().isoformat(),
-            cached=False
+            cached=False,
         )
 
         # Cache the result
@@ -278,10 +288,7 @@ class VoteFetcher:
         return result
 
     def get_bulk_votes(
-        self,
-        issue_numbers: List[int],
-        repo: Optional[str] = None,
-        use_cache: bool = True
+        self, issue_numbers: List[int], repo: Optional[str] = None, use_cache: bool = True
     ) -> Dict[int, VoteResult]:
         """
         Get votes for multiple issues.
@@ -298,7 +305,7 @@ class VoteFetcher:
         for num in issue_numbers:
             try:
                 results[num] = self.get_issue_votes(num, repo, use_cache)
-            except Exception as e:
+            except Exception:
                 # Log error but continue with other issues
                 results[num] = VoteResult(
                     issue_number=num,
@@ -306,7 +313,7 @@ class VoteFetcher:
                     breakdown={},
                     total_reactions=0,
                     fetched_at=datetime.now().isoformat(),
-                    cached=False
+                    cached=False,
                 )
         return results
 
@@ -325,13 +332,13 @@ class VoteFetcher:
 
         if compact:
             parts = []
-            if breakdown.get('+1', 0):
+            if breakdown.get("+1", 0):
                 parts.append(f"👍{breakdown['+1']}")
-            if breakdown.get('heart', 0):
+            if breakdown.get("heart", 0):
                 parts.append(f"❤️{breakdown['heart']}")
-            if breakdown.get('rocket', 0):
+            if breakdown.get("rocket", 0):
                 parts.append(f"🚀{breakdown['rocket']}")
-            if breakdown.get('-1', 0):
+            if breakdown.get("-1", 0):
                 parts.append(f"👎{breakdown['-1']}")
 
             return f"{' '.join(parts)}  Score: {result.score}" if parts else "No votes"
@@ -340,9 +347,19 @@ class VoteFetcher:
         lines = [f"Vote Score: {result.score}"]
         if breakdown:
             lines.append("Breakdown:")
-            emoji_map = {'+1': '👍', 'heart': '❤️', 'rocket': '🚀', '-1': '👎',
-                        'hooray': '🎉', 'confused': '😕', 'eyes': '👀', 'laugh': '😄'}
-            for content, count in sorted(breakdown.items(), key=lambda x: -self.weights.get(x[0], 0)):
+            emoji_map = {
+                "+1": "👍",
+                "heart": "❤️",
+                "rocket": "🚀",
+                "-1": "👎",
+                "hooray": "🎉",
+                "confused": "😕",
+                "eyes": "👀",
+                "laugh": "😄",
+            }
+            for content, count in sorted(
+                breakdown.items(), key=lambda x: -self.weights.get(x[0], 0)
+            ):
                 emoji = emoji_map.get(content, content)
                 weight = self.weights.get(content, 0)
                 contribution = weight * count
@@ -353,7 +370,7 @@ class VoteFetcher:
         if result.cached:
             lines.append(f"(cached at {result.fetched_at})")
 
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
 
 # Singleton instance
@@ -380,7 +397,7 @@ if __name__ == "__main__":
         # Test fetching votes for an issue
         try:
             result = fetcher.get_issue_votes(88)  # Epic #88
-            print(f"\nIssue #88 votes:")
+            print("\nIssue #88 votes:")
             print(fetcher.format_vote_display(result))
 
             # Test compact format

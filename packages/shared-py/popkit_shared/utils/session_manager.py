@@ -15,14 +15,15 @@ Architecture:
 import json
 import os
 import time
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Any, Optional
-import uuid
+from typing import Any, Dict, Optional
 
 # File locking (Unix-only)
 try:
     import fcntl
+
     HAS_FCNTL = True
 except ImportError:
     HAS_FCNTL = False
@@ -32,7 +33,7 @@ class SessionManager:
     """Manages shared session state across hook invocations."""
 
     def __init__(self):
-        self.sessions_dir = Path.home() / '.claude' / 'popkit' / 'sessions'
+        self.sessions_dir = Path.home() / ".claude" / "popkit" / "sessions"
         self.sessions_dir.mkdir(parents=True, exist_ok=True)
 
         # Session timeout: 5 minutes of inactivity
@@ -40,7 +41,7 @@ class SessionManager:
 
     def get_or_create_session(self) -> Dict[str, Any]:
         """Get current active session or create a new one."""
-        session_id = os.getenv('POPKIT_RECORD_ID')
+        session_id = os.getenv("POPKIT_RECORD_ID")
         if session_id:
             # User specified a session ID
             return self._load_or_create_session(session_id)
@@ -52,9 +53,7 @@ class SessionManager:
         """Get the currently active session or create new one."""
         # Look for recent session file
         session_files = sorted(
-            self.sessions_dir.glob('session-*.json'),
-            key=lambda p: p.stat().st_mtime,
-            reverse=True
+            self.sessions_dir.glob("session-*.json"), key=lambda p: p.stat().st_mtime, reverse=True
         )
 
         for session_file in session_files:
@@ -67,7 +66,7 @@ class SessionManager:
 
     def _load_or_create_session(self, session_id: str) -> Dict[str, Any]:
         """Load existing session by ID or create if doesn't exist."""
-        session_file = self.sessions_dir / f'session-{session_id}.json'
+        session_file = self.sessions_dir / f"session-{session_id}.json"
 
         if session_file.exists():
             session = self._load_session(session_file)
@@ -79,10 +78,11 @@ class SessionManager:
     def _load_session(self, session_file: Path) -> Optional[Dict[str, Any]]:
         """Load session from file with lock."""
         try:
-            with open(session_file, 'r') as f:
+            with open(session_file, "r") as f:
                 # Acquire shared lock for reading (Unix only)
                 if HAS_FCNTL:
                     import fcntl
+
                     fcntl.flock(f.fileno(), fcntl.LOCK_SH)
                 try:
                     session = json.load(f)
@@ -90,13 +90,14 @@ class SessionManager:
                 finally:
                     if HAS_FCNTL:
                         import fcntl
+
                         fcntl.flock(f.fileno(), fcntl.LOCK_UN)
         except (json.JSONDecodeError, FileNotFoundError):
             return None
 
     def _is_session_active(self, session: Dict[str, Any]) -> bool:
         """Check if session is still active (not timed out)."""
-        last_activity = session.get('last_activity_timestamp')
+        last_activity = session.get("last_activity_timestamp")
         if not last_activity:
             return False
 
@@ -113,22 +114,22 @@ class SessionManager:
         if session_id is None:
             session_id = str(uuid.uuid4())[:8]
 
-        timestamp = datetime.now().strftime('%Y-%m-%d-%H%M%S')
-        command_name = os.getenv('POPKIT_COMMAND', 'session')
+        timestamp = datetime.now().strftime("%Y-%m-%d-%H%M%S")
+        command_name = os.getenv("POPKIT_COMMAND", "session")
 
         session = {
-            'session_id': session_id,
-            'created_at': datetime.now(timezone.utc).isoformat(),
-            'last_activity_timestamp': datetime.now(timezone.utc).isoformat(),
-            'command': command_name,
-            'working_directory': os.getcwd(),
-            'recording_file': f"{timestamp}-{command_name}-{session_id}.json",
-            'event_count': 0,
-            'environment': {
-                'POPKIT_RECORD': os.getenv('POPKIT_RECORD'),
-                'POPKIT_RECORD_ID': os.getenv('POPKIT_RECORD_ID'),
-                'TEST_MODE': os.getenv('TEST_MODE'),
-            }
+            "session_id": session_id,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "last_activity_timestamp": datetime.now(timezone.utc).isoformat(),
+            "command": command_name,
+            "working_directory": os.getcwd(),
+            "recording_file": f"{timestamp}-{command_name}-{session_id}.json",
+            "event_count": 0,
+            "environment": {
+                "POPKIT_RECORD": os.getenv("POPKIT_RECORD"),
+                "POPKIT_RECORD_ID": os.getenv("POPKIT_RECORD_ID"),
+                "TEST_MODE": os.getenv("TEST_MODE"),
+            },
         }
 
         self._save_session(session)
@@ -136,33 +137,35 @@ class SessionManager:
 
     def _save_session(self, session: Dict[str, Any]) -> None:
         """Save session to file with lock."""
-        session_id = session['session_id']
-        session_file = self.sessions_dir / f'session-{session_id}.json'
+        session_id = session["session_id"]
+        session_file = self.sessions_dir / f"session-{session_id}.json"
 
-        with open(session_file, 'w') as f:
+        with open(session_file, "w") as f:
             # Acquire exclusive lock for writing (Unix only)
             if HAS_FCNTL:
                 import fcntl
+
                 fcntl.flock(f.fileno(), fcntl.LOCK_EX)
             try:
                 json.dump(session, f, indent=2)
             finally:
                 if HAS_FCNTL:
                     import fcntl
+
                     fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 
     def update_session_activity(self, session_id: str) -> None:
         """Update session's last activity timestamp."""
         session = self._load_or_create_session(session_id)
-        session['last_activity_timestamp'] = datetime.now(timezone.utc).isoformat()
-        session['event_count'] = session.get('event_count', 0) + 1
+        session["last_activity_timestamp"] = datetime.now(timezone.utc).isoformat()
+        session["event_count"] = session.get("event_count", 0) + 1
         self._save_session(session)
 
     def end_session(self, session_id: str) -> None:
         """Mark session as ended."""
         session = self._load_or_create_session(session_id)
-        session['ended_at'] = datetime.now(timezone.utc).isoformat()
-        session['status'] = 'completed'
+        session["ended_at"] = datetime.now(timezone.utc).isoformat()
+        session["status"] = "completed"
         self._save_session(session)
 
     def cleanup_old_sessions(self, max_age_hours: int = 24) -> int:
@@ -170,7 +173,7 @@ class SessionManager:
         cutoff_time = time.time() - (max_age_hours * 3600)
         removed = 0
 
-        for session_file in self.sessions_dir.glob('session-*.json'):
+        for session_file in self.sessions_dir.glob("session-*.json"):
             if session_file.stat().st_mtime < cutoff_time:
                 try:
                     session_file.unlink()

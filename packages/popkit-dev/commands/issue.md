@@ -15,15 +15,15 @@ Manage GitHub issues with AI-optimized formatting and PopKit workflow guidance.
 
 ## Subcommands
 
-| Subcommand | Description |
-|------------|-------------|
-| `list` | List repository issues (default) |
-| `view` | View issue details |
-| `create` | Create new issue with template |
-| `close` | Close an issue |
-| `comment` | Add comment to issue |
-| `edit` | Update issue metadata |
-| `link` | Link issue to PR |
+| Subcommand | Description                      |
+| ---------- | -------------------------------- |
+| `list`     | List repository issues (default) |
+| `view`     | View issue details               |
+| `create`   | Create new issue with template   |
+| `close`    | Close an issue                   |
+| `comment`  | Add comment to issue             |
+| `edit`     | Update issue metadata            |
+| `link`     | Link issue to PR                 |
 
 > **Note:** To start working on an issue, use `/popkit-dev:dev work #N` instead.
 
@@ -47,19 +47,20 @@ List repository issues with Power Mode recommendations.
 
 ### Flags
 
-| Flag | Short | Description |
-|------|-------|-------------|
-| `--power` | `-p` | Show only issues recommending Power Mode |
-| `--votes` | `-v` | Sort by community vote score |
-| `--label` | `-l` | Filter by label |
-| `--state` | | `open` (default), `closed`, `all` |
-| `--assignee` | | Filter by assignee |
-| `--milestone` | | Filter by milestone |
-| `--limit` | `-n` | Limit results (default: 20) |
+| Flag          | Short | Description                              |
+| ------------- | ----- | ---------------------------------------- |
+| `--power`     | `-p`  | Show only issues recommending Power Mode |
+| `--votes`     | `-v`  | Sort by community vote score             |
+| `--label`     | `-l`  | Filter by label                          |
+| `--state`     |       | `open` (default), `closed`, `all`        |
+| `--assignee`  |       | Filter by assignee                       |
+| `--milestone` |       | Filter by milestone                      |
+| `--limit`     | `-n`  | Limit results (default: 20)              |
 
 ### Output Format
 
 **Standard Format:**
+
 ```
 Open Issues with Power Mode Recommendations:
 
@@ -79,6 +80,7 @@ Hint: Use /popkit-dev:dev work #11 to start working
 ```
 
 **With --votes flag:**
+
 ```
 Open Issues (sorted by community votes):
 
@@ -126,6 +128,7 @@ print(format_issues_table(data))
 ```
 
 **Steps performed:**
+
 1. Fetch issues via `gh issue list --json number,title,body,labels,createdAt,author`
 2. Parse PopKit Guidance from each issue body
 3. Extract complexity, phases, Power Mode recommendation
@@ -178,12 +181,12 @@ Create new issue with template selection.
 
 ### Available Templates
 
-| Template | Use For | Labels |
-|----------|---------|--------|
-| `feature` | New features, enhancements | enhancement |
-| `bug` | Bug reports, fixes | bug |
+| Template       | Use For                             | Labels             |
+| -------------- | ----------------------------------- | ------------------ |
+| `feature`      | New features, enhancements          | enhancement        |
+| `bug`          | Bug reports, fixes                  | bug                |
 | `architecture` | Major changes, epics, multi-PR work | architecture, epic |
-| `research` | Spikes, investigations, learning | research |
+| `research`     | Spikes, investigations, learning    | research           |
 
 ### Template Selection Flow
 
@@ -205,11 +208,13 @@ All templates include a **PopKit Guidance** section that directs workflow:
 ## PopKit Guidance
 
 ### Workflow
+
 - [ ] **Brainstorm First** - Use `pop-brainstorming` skill
 - [ ] **Plan Required** - Use `/popkit:plan write`
 - [ ] **Direct Implementation** - Proceed directly
 
 ### Development Phases
+
 - [ ] Discovery
 - [ ] Architecture
 - [ ] Implementation
@@ -218,21 +223,25 @@ All templates include a **PopKit Guidance** section that directs workflow:
 - [ ] Review
 
 ### Suggested Agents
+
 - Primary: `[agent-name]`
 - Supporting: `[agent-name]`
 
 ### Quality Gates
+
 - [ ] TypeScript check
 - [ ] Build verification
 - [ ] Lint pass
 - [ ] Test pass
 
 ### Power Mode
+
 - [ ] Recommended - Parallel agents beneficial
 - [ ] Optional - Can benefit from coordination
 - [ ] Not Needed - Sequential work is fine
 
 ### Estimated Complexity
+
 - [ ] Small (1-2 files)
 - [ ] Medium (3-5 files)
 - [ ] Large (6+ files)
@@ -242,6 +251,7 @@ All templates include a **PopKit Guidance** section that directs workflow:
 **Why PopKit Guidance Matters:**
 
 This section is parsed by PopKit to:
+
 1. Determine if brainstorming should be triggered first
 2. Auto-activate Power Mode for complex issues
 3. Schedule quality gates between phases
@@ -264,11 +274,11 @@ Close an issue with optional comment or reason.
 
 ### Flags
 
-| Flag | Description |
-|------|-------------|
-| `--comment` | Add closing comment |
-| `--reason` | `completed` (default) or `not_planned` |
-| `--superseded-by` | Reference replacement issue |
+| Flag              | Description                            |
+| ----------------- | -------------------------------------- |
+| `--comment`       | Add closing comment                    |
+| `--reason`        | `completed` (default) or `not_planned` |
+| `--superseded-by` | Reference replacement issue            |
 
 ### Process
 
@@ -279,6 +289,7 @@ Close an issue with optional comment or reason.
 5. **Prompt Next Action**: Use AskUserQuestion for workflow continuation
 
 **Execute this command:**
+
 ```bash
 gh issue close <number> [--comment "..."] [--reason completed|not_planned]
 ```
@@ -304,6 +315,7 @@ Use AskUserQuestion tool with:
 ```
 
 **Based on selection:**
+
 - "Work on next issue" → Fetch open issues, present top 3-5 as options via another AskUserQuestion
 - "View remaining issues" → Execute `/popkit-dev:issue list`
 - "End session" → Invoke `pop-session-capture` skill
@@ -322,9 +334,9 @@ Add comment to issue.
 
 ### Flags
 
-| Flag | Description |
-|------|-------------|
-| `--file` | Read comment body from file |
+| Flag             | Description                       |
+| ---------------- | --------------------------------- |
+| `--file`         | Read comment body from file       |
 | `--phase-update` | Format as phase transition update |
 
 ### Process
@@ -335,6 +347,7 @@ Add comment to issue.
 4. **Confirm**: Report success
 
 **Execute this command:**
+
 ```bash
 gh issue comment <number> --body "<comment>"
 # OR with file:
@@ -357,13 +370,13 @@ Update issue metadata.
 
 ### Flags
 
-| Flag | Description |
-|------|-------------|
-| `--title` | Update issue title |
-| `--label` | Add/remove label (`add:name` or `remove:name`) |
-| `--assignee` | Set assignee |
-| `--milestone` | Set milestone |
-| `--body` | Update issue body |
+| Flag          | Description                                    |
+| ------------- | ---------------------------------------------- |
+| `--title`     | Update issue title                             |
+| `--label`     | Add/remove label (`add:name` or `remove:name`) |
+| `--assignee`  | Set assignee                                   |
+| `--milestone` | Set milestone                                  |
+| `--body`      | Update issue body                              |
 
 ### Process
 
@@ -373,6 +386,7 @@ Update issue metadata.
 4. **Confirm**: Report changes made
 
 **Execute this command:**
+
 ```bash
 gh issue edit <number> [--title "..."] [--add-label <name>] [--remove-label <name>] [--assignee <user>] [--milestone <name>]
 ```
@@ -390,10 +404,10 @@ Link issue to PR by adding a comment with the reference.
 
 ### Flags
 
-| Flag | Description |
-|------|-------------|
-| `--pr` | PR number to link (adds reference comment) |
-| `--closes-pr` | PR that closes this issue |
+| Flag          | Description                                |
+| ------------- | ------------------------------------------ |
+| `--pr`        | PR number to link (adds reference comment) |
+| `--closes-pr` | PR that closes this issue                  |
 
 ### Process
 
@@ -403,6 +417,7 @@ Link issue to PR by adding a comment with the reference.
 4. **Confirm**: Report link created
 
 **Execute this command:**
+
 ```bash
 gh issue comment <issue> --body "Related: #<pr>"
 # OR for closing reference:
@@ -417,16 +432,16 @@ Note: GitHub automatically links issues and PRs when referenced in commits/PR de
 
 Based on issue content and labels:
 
-| Indicator | Primary Agent | Supporting |
-|-----------|---------------|------------|
-| `[Bug]` label or "bug" in title | bug-whisperer | test-writer-fixer |
-| `[Feature]` label | code-architect | test-writer-fixer |
-| `[Architecture]` label | code-architect | migration-specialist, refactoring-expert |
-| `[Research]` label | researcher | code-explorer |
-| Security keywords | security-auditor | code-reviewer |
-| Performance keywords | performance-optimizer | bundle-analyzer |
-| API keywords | api-designer | documentation-maintainer |
-| Database keywords | query-optimizer | migration-specialist |
+| Indicator                       | Primary Agent         | Supporting                               |
+| ------------------------------- | --------------------- | ---------------------------------------- |
+| `[Bug]` label or "bug" in title | bug-whisperer         | test-writer-fixer                        |
+| `[Feature]` label               | code-architect        | test-writer-fixer                        |
+| `[Architecture]` label          | code-architect        | migration-specialist, refactoring-expert |
+| `[Research]` label              | researcher            | code-explorer                            |
+| Security keywords               | security-auditor      | code-reviewer                            |
+| Performance keywords            | performance-optimizer | bundle-analyzer                          |
+| API keywords                    | api-designer          | documentation-maintainer                 |
+| Database keywords               | query-optimizer       | migration-specialist                     |
 
 ---
 
@@ -434,14 +449,14 @@ Based on issue content and labels:
 
 When an issue lacks PopKit Guidance, infer from:
 
-| Indicator | Inferred Complexity | Power Mode |
-|-----------|---------------------|------------|
-| Label: `epic` | epic | RECOMMENDED |
-| Label: `architecture` | large | RECOMMENDED |
-| Label: `bug` | small-medium | optional |
-| Label: `feature` | medium | optional |
-| Label: `docs` | small | not_needed |
-| No labels | unknown | (unknown) |
+| Indicator             | Inferred Complexity | Power Mode  |
+| --------------------- | ------------------- | ----------- |
+| Label: `epic`         | epic                | RECOMMENDED |
+| Label: `architecture` | large               | RECOMMENDED |
+| Label: `bug`          | small-medium        | optional    |
+| Label: `feature`      | medium              | optional    |
+| Label: `docs`         | small               | not_needed  |
+| No labels             | unknown             | (unknown)   |
 
 ---
 
@@ -489,24 +504,24 @@ gh issue comment 45 --body "..."
 
 ## Architecture Integration
 
-| Component | Integration |
-|-----------|-------------|
-| Issue Listing | `hooks/utils/issue_list.py` |
-| Issue Fetching | `gh issue view/list` via GitHub CLI |
-| PopKit Guidance Parser | `hooks/utils/github_issues.py` |
-| Vote Fetching | `hooks/utils/vote_fetcher.py` |
-| Priority Scoring | `hooks/utils/priority_scorer.py` |
-| Flag Parsing | `hooks/utils/flag_parser.py` |
-| Issue Templates | `.github/ISSUE_TEMPLATE/*.md` |
-| Phase Tracking | `STATUS.json` integration |
-| Power Mode | `power-mode/coordinator.py` |
-| Status Line | `power-mode/statusline.py` |
-| State | `.claude/popkit/power-mode-state.json` |
+| Component              | Integration                            |
+| ---------------------- | -------------------------------------- |
+| Issue Listing          | `hooks/utils/issue_list.py`            |
+| Issue Fetching         | `gh issue view/list` via GitHub CLI    |
+| PopKit Guidance Parser | `hooks/utils/github_issues.py`         |
+| Vote Fetching          | `hooks/utils/vote_fetcher.py`          |
+| Priority Scoring       | `hooks/utils/priority_scorer.py`       |
+| Flag Parsing           | `hooks/utils/flag_parser.py`           |
+| Issue Templates        | `.github/ISSUE_TEMPLATE/*.md`          |
+| Phase Tracking         | `STATUS.json` integration              |
+| Power Mode             | `power-mode/coordinator.py`            |
+| Status Line            | `power-mode/statusline.py`             |
+| State                  | `.claude/popkit/power-mode-state.json` |
 
 ## Related Commands
 
-| Command | Purpose |
-|---------|---------|
-| `/popkit-dev:dev work #N` | Start working on an issue |
-| `/popkit-core:power status` | Check Power Mode status |
-| `/popkit-dev:git pr` | Create pull request |
+| Command                     | Purpose                   |
+| --------------------------- | ------------------------- |
+| `/popkit-dev:dev work #N`   | Start working on an issue |
+| `/popkit-core:power status` | Check Power Mode status   |
+| `/popkit-dev:git pr`        | Create pull request       |

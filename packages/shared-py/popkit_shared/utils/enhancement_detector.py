@@ -8,22 +8,18 @@ All features work without API key - this only detects enhancement opportunities.
 Replaces the old tier-based premium_checker.py (Epic #580, Issue #581)
 """
 
-import os
 import json
-import urllib.request
+import os
 import urllib.error
-from typing import Optional, Dict, Any, List
+import urllib.request
 from dataclasses import dataclass
-
+from typing import Any, Dict, List, Optional
 
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
 
-POPKIT_API_URL = os.environ.get(
-    "POPKIT_API_URL",
-    "https://api.thehouseofdeals.com"
-)
+POPKIT_API_URL = os.environ.get("POPKIT_API_URL", "https://api.thehouseofdeals.com")
 
 # Cache API key validation for 5 minutes to reduce API calls
 API_KEY_CACHE_TTL = 300
@@ -33,9 +29,11 @@ API_KEY_CACHE_TTL = 300
 # TYPES
 # =============================================================================
 
+
 @dataclass
 class EnhancementInfo:
     """Information about an enhancement opportunity."""
+
     name: str
     description: str
     current_mode: str
@@ -46,6 +44,7 @@ class EnhancementInfo:
 @dataclass
 class EnhancementResult:
     """Result of an enhancement check."""
+
     has_api_key: bool
     enhancement_name: str
     current_mode: str
@@ -65,43 +64,39 @@ ENHANCEMENTS: Dict[str, EnhancementInfo] = {
         description="Smarter agent selection via embeddings",
         current_mode="Keyword-based matching",
         enhanced_mode="Embedding-based similarity search",
-        benefit="More accurate agent selection for complex queries"
+        benefit="More accurate agent selection for complex queries",
     ),
-
     # Pattern Learning Enhancement
     "pattern-learning": EnhancementInfo(
         name="Community Pattern Learning",
         description="Shared knowledge across projects",
         current_mode="Local pattern storage",
         enhanced_mode="Cloud-backed shared knowledge",
-        benefit="Learn from community patterns and discoveries"
+        benefit="Learn from community patterns and discoveries",
     ),
-
     # Knowledge Base Enhancement
     "knowledge-base": EnhancementInfo(
         name="Cloud Knowledge Base",
         description="Semantic search across projects",
         current_mode="File-based knowledge storage",
         enhanced_mode="Vector DB with semantic search",
-        benefit="Cross-project insights and faster discovery"
+        benefit="Cross-project insights and faster discovery",
     ),
-
     # Project Embeddings Enhancement
     "project-embeddings": EnhancementInfo(
         name="Project Embeddings",
         description="Semantic understanding of codebase",
         current_mode="Text-based search",
         enhanced_mode="Embedding-based semantic search",
-        benefit="Find relevant code by meaning, not just keywords"
+        benefit="Find relevant code by meaning, not just keywords",
     ),
-
     # Power Mode Enhancement
     "power-mode": EnhancementInfo(
         name="Power Mode Coordination",
         description="Multi-agent orchestration",
         current_mode="File-based coordination (2-3 agents)",
         enhanced_mode="Cloud coordination (10+ agents)",
-        benefit="Parallel agent execution with shared state"
+        benefit="Parallel agent execution with shared state",
     ),
 }
 
@@ -127,12 +122,14 @@ def _get_cached_api_key_status(api_key: str) -> Optional[bool]:
 def _cache_api_key_status(api_key: str, is_valid: bool) -> None:
     """Cache API key validation result."""
     import time
+
     _api_key_cache[api_key] = (is_valid, time.time())
 
 
 # =============================================================================
 # CORE FUNCTIONS
 # =============================================================================
+
 
 def has_api_key(api_key: Optional[str] = None) -> bool:
     """
@@ -155,14 +152,11 @@ def has_api_key(api_key: Optional[str] = None) -> bool:
         return cached
 
     # Validate with API
+    # Security: Catch all exceptions to prevent API key leakage in logs
     try:
         url = f"{POPKIT_API_URL}/v1/health"
         request = urllib.request.Request(
-            url,
-            headers={
-                "Authorization": f"Bearer {key}",
-                "Content-Type": "application/json"
-            }
+            url, headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
         )
 
         with urllib.request.urlopen(request, timeout=5) as response:
@@ -171,6 +165,8 @@ def has_api_key(api_key: Optional[str] = None) -> bool:
             return is_valid
 
     except Exception:
+        # Security: Don't log exception details (could contain API key)
+        _cache_api_key_status(key, False)
         return False
 
 
@@ -187,10 +183,7 @@ def get_enhancement_info(enhancement_name: str) -> Optional[EnhancementInfo]:
     return ENHANCEMENTS.get(enhancement_name)
 
 
-def check_enhancement(
-    enhancement_name: str,
-    api_key: Optional[str] = None
-) -> EnhancementResult:
+def check_enhancement(enhancement_name: str, api_key: Optional[str] = None) -> EnhancementResult:
     """
     Check if an enhancement is available.
 
@@ -213,7 +206,7 @@ def check_enhancement(
             enhancement_name=enhancement_name,
             current_mode="Standard mode",
             enhanced_mode="Enhanced mode",
-            message=None
+            message=None,
         )
 
     return EnhancementResult(
@@ -221,7 +214,7 @@ def check_enhancement(
         enhancement_name=enhancement.name,
         current_mode=enhancement.current_mode,
         enhanced_mode=enhancement.enhanced_mode,
-        message=None if has_key else _get_enhancement_message(enhancement)
+        message=None if has_key else _get_enhancement_message(enhancement),
     )
 
 
@@ -265,18 +258,15 @@ def get_enhancement_prompt_options(enhancement_name: str) -> Dict[str, Any]:
         "options": [
             {
                 "label": "Get free API key",
-                "description": f"Enable {enhancement.name} (free for now)"
+                "description": f"Enable {enhancement.name} (free for now)",
             },
             {
                 "label": "Continue without enhancements",
-                "description": f"Keep using {enhancement.current_mode} (fully functional)"
+                "description": f"Keep using {enhancement.current_mode} (fully functional)",
             },
-            {
-                "label": "Learn more",
-                "description": "Show details about enhancements"
-            }
+            {"label": "Learn more", "description": "Show details about enhancements"},
         ],
-        "multiSelect": False
+        "multiSelect": False,
     }
 
 
@@ -294,9 +284,11 @@ def list_enhancements() -> List[EnhancementInfo]:
 # USAGE TRACKING (Optional - for analytics)
 # =============================================================================
 
+
 @dataclass
 class UsageEvent:
     """A tracked usage event for analytics."""
+
     enhancement: str
     has_api_key: bool
     timestamp: str
@@ -307,14 +299,13 @@ class UsageEvent:
 def _get_project_id() -> str:
     """Generate a privacy-respecting project identifier (hash of path)."""
     import hashlib
+
     cwd = os.getcwd()
     return hashlib.sha256(cwd.encode()).hexdigest()[:16]
 
 
 def track_enhancement_usage(
-    enhancement_name: str,
-    success: bool = True,
-    api_key: Optional[str] = None
+    enhancement_name: str, success: bool = True, api_key: Optional[str] = None
 ) -> bool:
     """
     Track usage of an enhancement (for analytics only).
@@ -337,37 +328,38 @@ def track_enhancement_usage(
         has_api_key=has_key,
         timestamp=datetime.utcnow().isoformat() + "Z",
         project_id=_get_project_id(),
-        success=success
+        success=success,
     )
 
     # Only track if API key is configured
     if not key:
         return False
 
+    # Security: Catch all exceptions to prevent API key leakage in logs
     try:
         url = f"{POPKIT_API_URL}/v1/usage/track"
-        data = json.dumps({
-            "enhancement": event.enhancement,
-            "has_api_key": event.has_api_key,
-            "timestamp": event.timestamp,
-            "project_id": event.project_id,
-            "success": event.success
-        }).encode()
+        data = json.dumps(
+            {
+                "enhancement": event.enhancement,
+                "has_api_key": event.has_api_key,
+                "timestamp": event.timestamp,
+                "project_id": event.project_id,
+                "success": event.success,
+            }
+        ).encode()
 
         request = urllib.request.Request(
             url,
             data=data,
-            headers={
-                "Authorization": f"Bearer {key}",
-                "Content-Type": "application/json"
-            },
-            method="POST"
+            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+            method="POST",
         )
 
         with urllib.request.urlopen(request, timeout=5) as response:
             return response.status == 200
 
     except Exception:
+        # Security: Don't log exception details (could contain API key)
         return False  # Don't fail if tracking fails
 
 
@@ -385,21 +377,19 @@ def get_usage_summary(api_key: Optional[str] = None) -> Dict[str, Any]:
     if not key:
         return {"error": "No API key configured"}
 
+    # Security: Catch all exceptions to prevent API key leakage in logs
     try:
         url = f"{POPKIT_API_URL}/v1/usage/summary"
         request = urllib.request.Request(
-            url,
-            headers={
-                "Authorization": f"Bearer {key}",
-                "Content-Type": "application/json"
-            }
+            url, headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
         )
 
         with urllib.request.urlopen(request, timeout=5) as response:
             return json.loads(response.read().decode())
 
-    except Exception as e:
-        return {"error": str(e)}
+    except Exception:
+        # Security: Don't log exception details (could contain API key)
+        return {"error": "Failed to fetch usage summary"}
 
 
 # =============================================================================

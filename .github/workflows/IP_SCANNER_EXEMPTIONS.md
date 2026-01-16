@@ -14,18 +14,19 @@ The IP Leak Scanner prevents accidentally leaking proprietary code, credentials,
 
 Files in these paths are **automatically exempt** from scanning:
 
-| Path Pattern | Purpose | Examples |
-|-------------|---------|----------|
-| `/docs/` | Documentation files | `docs/security/auth-guide.md` |
-| `/examples/` | Code examples | `examples/auth-example.py` |
-| `/standards/` | Standards and patterns | `standards/secret-patterns.md` |
-| `/templates/` | Template files | `templates/config.template.js` |
-| `/test`, `*.test.*`, `test_*` | Test files | `test_auth.py`, `auth.test.ts` |
-| `*.sample.*`, `*.example.*`, `*.template.*` | Sample/example files | `config.sample.json` |
-| `/fixtures/` | Test fixtures | `fixtures/mock-data.json` |
-| `README.md`, `CHANGELOG.md` | Project documentation | Any README or CHANGELOG |
+| Path Pattern                                | Purpose                | Examples                       |
+| ------------------------------------------- | ---------------------- | ------------------------------ |
+| `/docs/`                                    | Documentation files    | `docs/security/auth-guide.md`  |
+| `/examples/`                                | Code examples          | `examples/auth-example.py`     |
+| `/standards/`                               | Standards and patterns | `standards/secret-patterns.md` |
+| `/templates/`                               | Template files         | `templates/config.template.js` |
+| `/test`, `*.test.*`, `test_*`               | Test files             | `test_auth.py`, `auth.test.ts` |
+| `*.sample.*`, `*.example.*`, `*.template.*` | Sample/example files   | `config.sample.json`           |
+| `/fixtures/`                                | Test fixtures          | `fixtures/mock-data.json`      |
+| `README.md`, `CHANGELOG.md`                 | Project documentation  | Any README or CHANGELOG        |
 
 **Implementation**:
+
 ```python
 EXEMPT_PATHS = [
     r"/docs/",
@@ -49,17 +50,17 @@ EXEMPT_PATHS = [
 
 Lines with these markers in the **previous 3 lines** are exempt:
 
-| Marker | Purpose | Example |
-|--------|---------|---------|
-| `# Example:` | Python example code | See below |
-| `# BAD -` | Anti-pattern example | See below |
-| `# GOOD -` | Best practice example | See below |
-| `# For documentation` | Documentation-only code | See below |
-| `# Sample:` | Sample code | See below |
-| `# Template:` | Template code | See below |
-| `// Example:` | JavaScript/TypeScript example | See below |
+| Marker                  | Purpose                         | Example   |
+| ----------------------- | ------------------------------- | --------- |
+| `# Example:`            | Python example code             | See below |
+| `# BAD -`               | Anti-pattern example            | See below |
+| `# GOOD -`              | Best practice example           | See below |
+| `# For documentation`   | Documentation-only code         | See below |
+| `# Sample:`             | Sample code                     | See below |
+| `# Template:`           | Template code                   | See below |
+| `// Example:`           | JavaScript/TypeScript example   | See below |
 | `// BAD -`, `// GOOD -` | JS anti-patterns/best practices | See below |
-| ` ``` ` | Markdown code block | See below |
+| ` ``` `                 | Markdown code block             | See below |
 
 **Example Usage**:
 
@@ -78,7 +79,8 @@ actual_key = "sk_live_real_key_here"  # ❌ Will be flagged!
 ```
 
 **Markdown Code Blocks**:
-```markdown
+
+````markdown
 # Authentication Guide
 
 ## Setup
@@ -87,11 +89,13 @@ actual_key = "sk_live_real_key_here"  # ❌ Will be flagged!
 # BAD - Don't do this
 api_key = "sk_test_1234567890abcdef1234567890"  # ✅ Exempt (inside code block)
 ```
+````
 
 ```javascript
 const token = "Bearer abc123..."  # ✅ Exempt (inside code block)
 ```
-```
+
+````
 
 ### 3. Legacy File Exemptions
 
@@ -103,7 +107,7 @@ ALLOWED = {
     "CLAUDE.md": ["cloud_code", "cloud_billing"],  # Only specific patterns
     "audit.md": ["cloud_code", "cloud_billing"],
 }
-```
+````
 
 ## How Exemptions Work
 
@@ -130,12 +134,12 @@ ALLOWED = {
 
 The scanner tracks markdown code blocks across the entire file:
 
-```python
+````python
 in_code_block = False
 for i in range(0, line_idx):
     if re.match(r'^\s*```', lines[i]):
         in_code_block = not in_code_block
-```
+````
 
 ## Testing Exemptions
 
@@ -173,6 +177,7 @@ EXEMPT_PATHS = [
 ```
 
 Patterns use Python regex. Common patterns:
+
 - `/path/` - Match directory anywhere
 - `\.ext$` - Match file extension
 - `filename\.md$` - Match specific filename
@@ -205,11 +210,13 @@ ALLOWED = {
 After making changes, verify exemptions work:
 
 1. **Run test suite**:
+
    ```bash
    python .github/workflows/test-ip-scanner.py
    ```
 
 2. **Test on real repository**:
+
    ```bash
    python ip_scanner.py
    ```
@@ -241,6 +248,7 @@ api_key = "real-api-key-here"
 **Problem**: Documentation file still flagged
 
 **Solution**: Check that path matches an EXEMPT_PATHS pattern:
+
 ```bash
 python -c "import re; path='your/file/path'; print(any(re.search(p, path) for p in [r'/docs/', r'/examples/']))"
 ```
@@ -250,6 +258,7 @@ python -c "import re; path='your/file/path'; print(any(re.search(p, path) for p 
 **Problem**: Actual secret not detected
 
 **Solution**:
+
 1. Verify pattern exists in PATTERNS dict
 2. Check file isn't in EXEMPT_PATHS
 3. Ensure no exemption marker in previous 3 lines
@@ -259,6 +268,7 @@ python -c "import re; path='your/file/path'; print(any(re.search(p, path) for p 
 **Problem**: Line with marker still flagged
 
 **Solution**:
+
 1. Marker must be within 3 lines **before** the match
 2. Marker must match regex exactly (check spaces, colons)
 3. For markdown, ensure inside code block (` ``` `)

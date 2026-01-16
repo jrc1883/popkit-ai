@@ -26,7 +26,6 @@ Usage:
 """
 
 import json
-import os
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -37,12 +36,13 @@ from typing import Any, Dict, List, Optional, Tuple
 try:
     from .workflow_engine import WorkflowDefinition, WorkflowStep
 except ImportError:
-    from workflow_engine import WorkflowDefinition, WorkflowStep
+    from workflow_engine import WorkflowDefinition
 
 
 # =============================================================================
 # YAML Parser (Minimal - no external dependency)
 # =============================================================================
+
 
 def _parse_yaml_frontmatter(content: str) -> Tuple[Dict[str, Any], str]:
     """Parse YAML frontmatter from a markdown file.
@@ -57,16 +57,16 @@ def _parse_yaml_frontmatter(content: str) -> Tuple[Dict[str, Any], str]:
         Tuple of (frontmatter_dict, body_content)
     """
     # Check for frontmatter
-    if not content.startswith('---'):
+    if not content.startswith("---"):
         return {}, content
 
     # Find the closing ---
-    end_match = re.search(r'\n---\s*\n', content[3:])
+    end_match = re.search(r"\n---\s*\n", content[3:])
     if not end_match:
         return {}, content
 
-    frontmatter_str = content[3:end_match.start() + 3]
-    body = content[end_match.end() + 3:]
+    frontmatter_str = content[3 : end_match.start() + 3]
+    body = content[end_match.end() + 3 :]
 
     # Parse YAML (minimal subset)
     return _parse_yaml_dict(frontmatter_str), body
@@ -83,14 +83,14 @@ def _parse_yaml_dict(yaml_str: str, indent: int = 0) -> Dict[str, Any]:
     - Multiline strings with > or |
     """
     result = {}
-    lines = yaml_str.split('\n')
+    lines = yaml_str.split("\n")
     i = 0
 
     while i < len(lines):
         line = lines[i]
 
         # Skip empty lines and comments
-        if not line.strip() or line.strip().startswith('#'):
+        if not line.strip() or line.strip().startswith("#"):
             i += 1
             continue
 
@@ -109,17 +109,19 @@ def _parse_yaml_dict(yaml_str: str, indent: int = 0) -> Dict[str, Any]:
         stripped = line.strip()
 
         # Parse key: value
-        if ':' in stripped:
-            key_match = re.match(r'^([a-zA-Z_][a-zA-Z0-9_-]*)\s*:\s*(.*)', stripped)
+        if ":" in stripped:
+            key_match = re.match(r"^([a-zA-Z_][a-zA-Z0-9_-]*)\s*:\s*(.*)", stripped)
             if key_match:
                 key = key_match.group(1)
                 value_str = key_match.group(2).strip()
 
-                if value_str == '':
+                if value_str == "":
                     # Could be a nested dict or array
                     # Look ahead to see what follows
                     j = i + 1
-                    while j < len(lines) and (not lines[j].strip() or lines[j].strip().startswith('#')):
+                    while j < len(lines) and (
+                        not lines[j].strip() or lines[j].strip().startswith("#")
+                    ):
                         j += 1
 
                     if j < len(lines):
@@ -127,20 +129,22 @@ def _parse_yaml_dict(yaml_str: str, indent: int = 0) -> Dict[str, Any]:
                         next_indent = len(next_line) - len(next_line.lstrip())
 
                         if next_indent > indent:
-                            if next_line.strip().startswith('-'):
+                            if next_line.strip().startswith("-"):
                                 # Parse array
-                                value, consumed = _parse_yaml_array('\n'.join(lines[j:]), next_indent)
+                                value, consumed = _parse_yaml_array(
+                                    "\n".join(lines[j:]), next_indent
+                                )
                                 result[key] = value
                                 i = j + consumed
                                 continue
                             else:
                                 # Parse nested dict
-                                nested_str = '\n'.join(lines[j:])
+                                nested_str = "\n".join(lines[j:])
                                 value = _parse_yaml_dict(nested_str, next_indent)
                                 # Count consumed lines
                                 consumed = 0
                                 for k in range(j, len(lines)):
-                                    if lines[k].strip() and not lines[k].strip().startswith('#'):
+                                    if lines[k].strip() and not lines[k].strip().startswith("#"):
                                         k_indent = len(lines[k]) - len(lines[k].lstrip())
                                         if k_indent < next_indent:
                                             break
@@ -153,34 +157,34 @@ def _parse_yaml_dict(yaml_str: str, indent: int = 0) -> Dict[str, Any]:
                     result[key] = value_str[1:-1]
                 elif value_str.startswith("'") and value_str.endswith("'"):
                     result[key] = value_str[1:-1]
-                elif value_str.lower() == 'true':
+                elif value_str.lower() == "true":
                     result[key] = True
-                elif value_str.lower() == 'false':
+                elif value_str.lower() == "false":
                     result[key] = False
-                elif value_str.lower() == 'null' or value_str.lower() == '~':
+                elif value_str.lower() == "null" or value_str.lower() == "~":
                     result[key] = None
-                elif re.match(r'^-?\d+$', value_str):
+                elif re.match(r"^-?\d+$", value_str):
                     result[key] = int(value_str)
-                elif re.match(r'^-?\d+\.\d+$', value_str):
+                elif re.match(r"^-?\d+\.\d+$", value_str):
                     result[key] = float(value_str)
-                elif value_str.startswith('[') and value_str.endswith(']'):
+                elif value_str.startswith("[") and value_str.endswith("]"):
                     # Inline array
                     result[key] = _parse_inline_array(value_str)
-                elif value_str.startswith('{') and value_str.endswith('}'):
+                elif value_str.startswith("{") and value_str.endswith("}"):
                     # Inline dict
                     result[key] = _parse_inline_dict(value_str)
-                elif value_str in ('>', '|'):
+                elif value_str in (">", "|"):
                     # Multiline string - collect following indented lines
                     multiline = []
                     j = i + 1
                     while j < len(lines):
                         next_line = lines[j]
-                        if next_line.strip() and not next_line.startswith(' ' * (indent + 2)):
+                        if next_line.strip() and not next_line.startswith(" " * (indent + 2)):
                             break
                         if next_line.strip():
                             multiline.append(next_line.strip())
                         j += 1
-                    result[key] = ' '.join(multiline) if value_str == '>' else '\n'.join(multiline)
+                    result[key] = " ".join(multiline) if value_str == ">" else "\n".join(multiline)
                     i = j
                     continue
                 else:
@@ -194,14 +198,14 @@ def _parse_yaml_dict(yaml_str: str, indent: int = 0) -> Dict[str, Any]:
 def _parse_yaml_array(yaml_str: str, indent: int) -> Tuple[List[Any], int]:
     """Parse a YAML array starting at the given indentation."""
     result = []
-    lines = yaml_str.split('\n')
+    lines = yaml_str.split("\n")
     i = 0
 
     while i < len(lines):
         line = lines[i]
 
         # Skip empty lines and comments
-        if not line.strip() or line.strip().startswith('#'):
+        if not line.strip() or line.strip().startswith("#"):
             i += 1
             continue
 
@@ -218,13 +222,13 @@ def _parse_yaml_array(yaml_str: str, indent: int) -> Tuple[List[Any], int]:
 
         stripped = line.strip()
 
-        if stripped.startswith('- '):
+        if stripped.startswith("- "):
             item_str = stripped[2:].strip()
 
-            if ':' in item_str:
+            if ":" in item_str:
                 # Object item - check if more lines follow
                 item_dict = {}
-                key_match = re.match(r'^([a-zA-Z_][a-zA-Z0-9_-]*)\s*:\s*(.*)', item_str)
+                key_match = re.match(r"^([a-zA-Z_][a-zA-Z0-9_-]*)\s*:\s*(.*)", item_str)
                 if key_match:
                     key = key_match.group(1)
                     value = key_match.group(2).strip()
@@ -238,14 +242,16 @@ def _parse_yaml_array(yaml_str: str, indent: int) -> Tuple[List[Any], int]:
                 item_indent = indent + 2
                 while j < len(lines):
                     next_line = lines[j]
-                    if not next_line.strip() or next_line.strip().startswith('#'):
+                    if not next_line.strip() or next_line.strip().startswith("#"):
                         j += 1
                         continue
                     next_indent = len(next_line) - len(next_line.lstrip())
                     if next_indent < item_indent:
                         break
                     if next_indent == item_indent:
-                        key_match = re.match(r'^([a-zA-Z_][a-zA-Z0-9_-]*)\s*:\s*(.*)', next_line.strip())
+                        key_match = re.match(
+                            r"^([a-zA-Z_][a-zA-Z0-9_-]*)\s*:\s*(.*)", next_line.strip()
+                        )
                         if key_match:
                             nested_key = key_match.group(1)
                             nested_value = key_match.group(2).strip()
@@ -254,24 +260,34 @@ def _parse_yaml_array(yaml_str: str, indent: int) -> Tuple[List[Any], int]:
                             else:
                                 # Check for nested array or dict
                                 k = j + 1
-                                while k < len(lines) and (not lines[k].strip() or lines[k].strip().startswith('#')):
+                                while k < len(lines) and (
+                                    not lines[k].strip() or lines[k].strip().startswith("#")
+                                ):
                                     k += 1
                                 if k < len(lines):
                                     look_ahead = lines[k]
                                     look_indent = len(look_ahead) - len(look_ahead.lstrip())
-                                    if look_indent > item_indent and look_ahead.strip().startswith('-'):
+                                    if look_indent > item_indent and look_ahead.strip().startswith(
+                                        "-"
+                                    ):
                                         # Nested array
-                                        nested_arr, consumed = _parse_yaml_array('\n'.join(lines[k:]), look_indent)
+                                        nested_arr, consumed = _parse_yaml_array(
+                                            "\n".join(lines[k:]), look_indent
+                                        )
                                         item_dict[nested_key] = nested_arr
                                         j = k + consumed - 1
                                     elif look_indent > item_indent:
                                         # Nested dict (like next_map)
-                                        nested_dict = _parse_yaml_dict('\n'.join(lines[k:]), look_indent)
+                                        nested_dict = _parse_yaml_dict(
+                                            "\n".join(lines[k:]), look_indent
+                                        )
                                         item_dict[nested_key] = nested_dict
                                         # Skip consumed lines
                                         consumed = 0
                                         for m in range(k, len(lines)):
-                                            if lines[m].strip() and not lines[m].strip().startswith('#'):
+                                            if lines[m].strip() and not lines[m].strip().startswith(
+                                                "#"
+                                            ):
                                                 m_indent = len(lines[m]) - len(lines[m].lstrip())
                                                 if m_indent < look_indent:
                                                     break
@@ -289,17 +305,19 @@ def _parse_yaml_array(yaml_str: str, indent: int) -> Tuple[List[Any], int]:
             else:
                 # Simple item
                 result.append(_parse_yaml_value(item_str))
-        elif stripped.startswith('-'):
+        elif stripped.startswith("-"):
             # Just a dash with value on next line or nested structure
             # Check if there's content after the dash
             after_dash = stripped[1:].strip()
             if after_dash:
-                if ':' in after_dash:
+                if ":" in after_dash:
                     # Parse as dict
                     item_dict = {}
-                    key_match = re.match(r'^([a-zA-Z_][a-zA-Z0-9_-]*)\s*:\s*(.*)', after_dash)
+                    key_match = re.match(r"^([a-zA-Z_][a-zA-Z0-9_-]*)\s*:\s*(.*)", after_dash)
                     if key_match:
-                        item_dict[key_match.group(1)] = _parse_yaml_value(key_match.group(2).strip())
+                        item_dict[key_match.group(1)] = _parse_yaml_value(
+                            key_match.group(2).strip()
+                        )
                     result.append(item_dict)
                 else:
                     result.append(_parse_yaml_value(after_dash))
@@ -319,17 +337,17 @@ def _parse_yaml_value(value_str: str) -> Any:
         return value_str[1:-1]
     if value_str.startswith("'") and value_str.endswith("'"):
         return value_str[1:-1]
-    if value_str.lower() == 'true':
+    if value_str.lower() == "true":
         return True
-    if value_str.lower() == 'false':
+    if value_str.lower() == "false":
         return False
-    if value_str.lower() == 'null' or value_str == '~':
+    if value_str.lower() == "null" or value_str == "~":
         return None
-    if re.match(r'^-?\d+$', value_str):
+    if re.match(r"^-?\d+$", value_str):
         return int(value_str)
-    if re.match(r'^-?\d+\.\d+$', value_str):
+    if re.match(r"^-?\d+\.\d+$", value_str):
         return float(value_str)
-    if value_str.startswith('[') and value_str.endswith(']'):
+    if value_str.startswith("[") and value_str.endswith("]"):
         return _parse_inline_array(value_str)
     return value_str
 
@@ -342,7 +360,7 @@ def _parse_inline_array(value_str: str) -> List[Any]:
 
     # Simple split - doesn't handle nested structures
     items = []
-    for item in inner.split(','):
+    for item in inner.split(","):
         items.append(_parse_yaml_value(item.strip()))
     return items
 
@@ -354,9 +372,9 @@ def _parse_inline_dict(value_str: str) -> Dict[str, Any]:
         return {}
 
     result = {}
-    for pair in inner.split(','):
-        if ':' in pair:
-            key, value = pair.split(':', 1)
+    for pair in inner.split(","):
+        if ":" in pair:
+            key, value = pair.split(":", 1)
             result[key.strip()] = _parse_yaml_value(value.strip())
     return result
 
@@ -365,9 +383,11 @@ def _parse_inline_dict(value_str: str) -> Dict[str, Any]:
 # Workflow Validation
 # =============================================================================
 
+
 @dataclass
 class ValidationResult:
     """Result of workflow validation."""
+
     valid: bool
     errors: List[str] = field(default_factory=list)
     warnings: List[str] = field(default_factory=list)
@@ -473,7 +493,9 @@ def validate_workflow_definition(workflow_data: Dict[str, Any]) -> ValidationRes
         next_map = step.get("next_map") or {}
         for key, target_id in next_map.items():
             if target_id not in step_ids:
-                result.add_error(f"Step '{step_id}' next_map[{key}] references unknown step: {target_id}")
+                result.add_error(
+                    f"Step '{step_id}' next_map[{key}] references unknown step: {target_id}"
+                )
 
         # Check option next references
         options = step.get("options") or []
@@ -481,7 +503,9 @@ def validate_workflow_definition(workflow_data: Dict[str, Any]) -> ValidationRes
             if opt:
                 opt_next = opt.get("next")
                 if opt_next and opt_next not in step_ids:
-                    result.add_error(f"Step '{step_id}' option next references unknown step: {opt_next}")
+                    result.add_error(
+                        f"Step '{step_id}' option next references unknown step: {opt_next}"
+                    )
 
     # Check for terminal step
     has_terminal = any(s.get("type") == "terminal" for s in steps)
@@ -494,6 +518,7 @@ def validate_workflow_definition(workflow_data: Dict[str, Any]) -> ValidationRes
 # =============================================================================
 # Skill File Parser
 # =============================================================================
+
 
 def parse_skill_workflow(skill_path: Path) -> Optional[Dict[str, Any]]:
     """Parse workflow definition from a skill file.
@@ -508,7 +533,7 @@ def parse_skill_workflow(skill_path: Path) -> Optional[Dict[str, Any]]:
         return None
 
     try:
-        content = skill_path.read_text(encoding='utf-8')
+        content = skill_path.read_text(encoding="utf-8")
     except Exception:
         return None
 
@@ -539,7 +564,7 @@ def parse_skill_file(skill_path: Path) -> Dict[str, Any]:
         return {}
 
     try:
-        content = skill_path.read_text(encoding='utf-8')
+        content = skill_path.read_text(encoding="utf-8")
     except Exception:
         return {}
 
@@ -551,9 +576,11 @@ def parse_skill_file(skill_path: Path) -> Dict[str, Any]:
 # Workflow Registry
 # =============================================================================
 
+
 @dataclass
 class WorkflowRegistryEntry:
     """Entry in the workflow registry."""
+
     skill_name: str
     skill_path: str
     workflow_id: str
@@ -570,7 +597,7 @@ class WorkflowRegistryEntry:
             "workflow_name": self.workflow_name,
             "description": self.description,
             "version": self.version,
-            "step_count": self.step_count
+            "step_count": self.step_count,
         }
 
 
@@ -581,7 +608,7 @@ class WorkflowRegistry:
     Provides lookup by skill name or workflow ID.
     """
 
-    _instance: Optional['WorkflowRegistry'] = None
+    _instance: Optional["WorkflowRegistry"] = None
     _cache_file = ".claude/popkit/workflows/registry.json"
 
     def __init__(self):
@@ -591,7 +618,7 @@ class WorkflowRegistry:
         self.last_scan: Optional[str] = None
 
     @classmethod
-    def load(cls, force_scan: bool = False) -> 'WorkflowRegistry':
+    def load(cls, force_scan: bool = False) -> "WorkflowRegistry":
         """Load or create the workflow registry.
 
         Args:
@@ -653,7 +680,7 @@ class WorkflowRegistry:
 
     def _load_cache(self, cache_path: Path) -> None:
         """Load registry from cache file."""
-        with open(cache_path, 'r', encoding='utf-8') as f:
+        with open(cache_path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
         self.last_scan = data.get("last_scan")
@@ -666,7 +693,7 @@ class WorkflowRegistry:
                 workflow_name=entry_data["workflow_name"],
                 description=entry_data.get("description", ""),
                 version=entry_data.get("version", 1),
-                step_count=entry_data.get("step_count", 0)
+                step_count=entry_data.get("step_count", 0),
             )
             self.entries[entry.workflow_id] = entry
             self.by_skill[entry.skill_name] = entry.workflow_id
@@ -678,11 +705,11 @@ class WorkflowRegistry:
         data = {
             "last_scan": self.last_scan,
             "entries": [e.to_dict() for e in self.entries.values()],
-            "definitions": self._definitions
+            "definitions": self._definitions,
         }
 
         cache_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(cache_path, 'w', encoding='utf-8') as f:
+        with open(cache_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
 
     def _scan_skills(self) -> None:
@@ -722,7 +749,7 @@ class WorkflowRegistry:
                 workflow_name=workflow.get("name", workflow_id),
                 description=workflow.get("description", ""),
                 version=workflow.get("version", 1),
-                step_count=len(workflow.get("steps", []))
+                step_count=len(workflow.get("steps", [])),
             )
 
             self.entries[workflow_id] = entry
@@ -778,6 +805,7 @@ class WorkflowRegistry:
 # =============================================================================
 # Convenience Functions
 # =============================================================================
+
 
 def get_workflow_for_skill(skill_name: str) -> Optional[WorkflowDefinition]:
     """Get the workflow definition for a skill.
@@ -859,7 +887,9 @@ Body content here.
 """
 
     frontmatter, body = _parse_yaml_frontmatter(test_yaml)
-    assert frontmatter.get("name") == "test-skill", f"Expected 'test-skill', got {frontmatter.get('name')}"
+    assert frontmatter.get("name") == "test-skill", (
+        f"Expected 'test-skill', got {frontmatter.get('name')}"
+    )
     assert "workflow" in frontmatter, "Expected 'workflow' in frontmatter"
     assert frontmatter["workflow"]["id"] == "test-workflow"
     print("   Frontmatter parsed correctly")
@@ -878,8 +908,8 @@ Body content here.
         "id": "invalid",
         "steps": [
             {"id": "step1", "type": "skill"},  # Missing skill field
-            {"id": "step1", "type": "skill", "skill": "test"}  # Duplicate ID
-        ]
+            {"id": "step1", "type": "skill", "skill": "test"},  # Duplicate ID
+        ],
     }
     validation = validate_workflow_definition(invalid_workflow)
     assert not validation.valid, "Expected invalid workflow"

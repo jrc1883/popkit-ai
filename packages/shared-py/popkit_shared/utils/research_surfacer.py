@@ -9,12 +9,10 @@ Part of PopKit Issue #143 (Auto-surface Relevant Research).
 """
 
 import os
-import json
 import re
-from typing import List, Dict, Any, Optional, Tuple
-from pathlib import Path
 from dataclasses import dataclass
-
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 # =============================================================================
 # CONFIGURATION
@@ -29,14 +27,38 @@ MAX_SURFACE_COUNT = 3
 # Keywords that strongly indicate research relevance
 RESEARCH_TRIGGER_KEYWORDS = {
     # Architecture decisions
-    "architecture", "design", "pattern", "approach", "strategy",
-    "evaluate", "compare", "choose", "select", "decide",
+    "architecture",
+    "design",
+    "pattern",
+    "approach",
+    "strategy",
+    "evaluate",
+    "compare",
+    "choose",
+    "select",
+    "decide",
     # Technical topics
-    "implement", "integrate", "migrate", "upgrade", "refactor",
-    "database", "cache", "auth", "api", "frontend", "backend",
+    "implement",
+    "integrate",
+    "migrate",
+    "upgrade",
+    "refactor",
+    "database",
+    "cache",
+    "auth",
+    "api",
+    "frontend",
+    "backend",
     # Exploration
-    "research", "investigate", "explore", "analyze", "understand",
-    "spike", "poc", "prototype", "experiment",
+    "research",
+    "investigate",
+    "explore",
+    "analyze",
+    "understand",
+    "spike",
+    "poc",
+    "prototype",
+    "experiment",
 }
 
 # File paths that indicate high relevance
@@ -55,9 +77,11 @@ RELEVANT_FILE_PATTERNS = [
 # DATA CLASSES
 # =============================================================================
 
+
 @dataclass
 class SurfacedResearch:
     """A research entry surfaced as relevant."""
+
     id: str
     type: str
     title: str
@@ -69,6 +93,7 @@ class SurfacedResearch:
 @dataclass
 class SurfaceResult:
     """Result of research surfacing check."""
+
     should_surface: bool
     entries: List[SurfacedResearch]
     message: str
@@ -77,6 +102,7 @@ class SurfaceResult:
 # =============================================================================
 # RESEARCH SURFACER
 # =============================================================================
+
 
 class ResearchSurfacer:
     """
@@ -115,6 +141,7 @@ class ResearchSurfacer:
         if self._research_manager is None:
             try:
                 from .research_index import ResearchIndexManager
+
                 self._research_manager = ResearchIndexManager(str(self.project_root))
             except ImportError:
                 return None
@@ -155,10 +182,7 @@ class ResearchSurfacer:
         return contexts
 
     def _should_check_research(
-        self,
-        message: str,
-        tool_name: Optional[str] = None,
-        files: Optional[List[str]] = None
+        self, message: str, tool_name: Optional[str] = None, files: Optional[List[str]] = None
     ) -> Tuple[bool, str]:
         """
         Determine if we should check for relevant research.
@@ -204,11 +228,7 @@ class ResearchSurfacer:
     # RESEARCH LOOKUP
     # =========================================================================
 
-    def _search_local(
-        self,
-        query: str,
-        limit: int = MAX_SURFACE_COUNT
-    ) -> List[SurfacedResearch]:
+    def _search_local(self, query: str, limit: int = MAX_SURFACE_COUNT) -> List[SurfacedResearch]:
         """Search local research index."""
         manager = self._get_research_manager()
         if not manager:
@@ -217,9 +237,7 @@ class ResearchSurfacer:
         try:
             # Try semantic search first
             results = manager.search_semantic(
-                query,
-                limit=limit,
-                min_similarity=MIN_SIMILARITY_THRESHOLD
+                query, limit=limit, min_similarity=MIN_SIMILARITY_THRESHOLD
             )
 
             # Fall back to keyword search if no results
@@ -229,25 +247,23 @@ class ResearchSurfacer:
             surfaced = []
             for result in results:
                 if result.similarity >= MIN_SIMILARITY_THRESHOLD:
-                    surfaced.append(SurfacedResearch(
-                        id=result.entry.id,
-                        type=result.entry.type,
-                        title=result.entry.title,
-                        tags=result.entry.tags,
-                        similarity=result.similarity,
-                        reason=result.match_type,
-                    ))
+                    surfaced.append(
+                        SurfacedResearch(
+                            id=result.entry.id,
+                            type=result.entry.type,
+                            title=result.entry.title,
+                            tags=result.entry.tags,
+                            similarity=result.similarity,
+                            reason=result.match_type,
+                        )
+                    )
 
             return surfaced
 
         except Exception:
             return []
 
-    def _search_cloud(
-        self,
-        query: str,
-        limit: int = MAX_SURFACE_COUNT
-    ) -> List[SurfacedResearch]:
+    def _search_cloud(self, query: str, limit: int = MAX_SURFACE_COUNT) -> List[SurfacedResearch]:
         """Search cloud research index (for Pro/Team users)."""
         api_key = os.environ.get("POPKIT_API_KEY")
         if not api_key:
@@ -269,14 +285,16 @@ class ResearchSurfacer:
 
                 for result in data.get("results", []):
                     entry = result.get("entry", {})
-                    surfaced.append(SurfacedResearch(
-                        id=entry.get("id", ""),
-                        type=entry.get("type", ""),
-                        title=entry.get("title", ""),
-                        tags=entry.get("tags", []),
-                        similarity=result.get("score", 0),
-                        reason="cloud",
-                    ))
+                    surfaced.append(
+                        SurfacedResearch(
+                            id=entry.get("id", ""),
+                            type=entry.get("type", ""),
+                            title=entry.get("title", ""),
+                            tags=entry.get("tags", []),
+                            similarity=result.get("score", 0),
+                            reason="cloud",
+                        )
+                    )
 
                 return surfaced
 
@@ -294,7 +312,7 @@ class ResearchSurfacer:
         message: str,
         tool_name: Optional[str] = None,
         tool_input: Optional[Dict[str, Any]] = None,
-        files: Optional[List[str]] = None
+        files: Optional[List[str]] = None,
     ) -> SurfaceResult:
         """
         Check if relevant research should be surfaced.
@@ -312,11 +330,7 @@ class ResearchSurfacer:
         should_check, reason = self._should_check_research(message, tool_name, files)
 
         if not should_check:
-            return SurfaceResult(
-                should_surface=False,
-                entries=[],
-                message=""
-            )
+            return SurfaceResult(should_surface=False, entries=[], message="")
 
         # Build search query from context
         query_parts = [message[:500]]  # Limit message length
@@ -353,20 +367,12 @@ class ResearchSurfacer:
         top_results = combined[:MAX_SURFACE_COUNT]
 
         if not top_results:
-            return SurfaceResult(
-                should_surface=False,
-                entries=[],
-                message=""
-            )
+            return SurfaceResult(should_surface=False, entries=[], message="")
 
         # Format notification message
         message = self._format_notification(top_results)
 
-        return SurfaceResult(
-            should_surface=True,
-            entries=top_results,
-            message=message
-        )
+        return SurfaceResult(should_surface=True, entries=top_results, message=message)
 
     def _format_notification(self, entries: List[SurfacedResearch]) -> str:
         """Format notification message for surfaced research."""
@@ -396,6 +402,7 @@ class ResearchSurfacer:
 # HELPER FUNCTIONS
 # =============================================================================
 
+
 def get_surfacer(project_root: Optional[str] = None) -> ResearchSurfacer:
     """
     Get a research surfacer instance.
@@ -413,7 +420,7 @@ def check_research_relevance(
     message: str,
     tool_name: Optional[str] = None,
     tool_input: Optional[Dict[str, Any]] = None,
-    files: Optional[List[str]] = None
+    files: Optional[List[str]] = None,
 ) -> Optional[str]:
     """
     Quick check for relevant research.
@@ -441,8 +448,6 @@ def check_research_relevance(
 # =============================================================================
 
 if __name__ == "__main__":
-    import sys
-
     print("Research Surfacer Test")
     print("=" * 40)
 

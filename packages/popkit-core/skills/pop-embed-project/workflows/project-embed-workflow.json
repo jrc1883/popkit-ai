@@ -155,13 +155,8 @@
     }
   ],
   "triggers": {
-    "automatic": [
-      "After manual skill/agent/command creation"
-    ],
-    "manual": [
-      "/popkit:project embed",
-      "Invoke pop-embed-project skill"
-    ]
+    "automatic": ["After manual skill/agent/command creation"],
+    "manual": ["/popkit:project embed", "Invoke pop-embed-project skill"]
   },
   "free_tier_fallback": {
     "search_skills": "ls .claude/skills/*/SKILL.md 2>/dev/null",

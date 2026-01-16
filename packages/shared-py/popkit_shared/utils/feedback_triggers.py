@@ -11,12 +11,13 @@ feedback fatigue. Integrates with AskUserQuestion for consistent UX.
 
 import json
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Any, Tuple
 from enum import Enum
+from typing import Any, Dict, Optional, Tuple
 
 
 class TriggerType(Enum):
     """Types of feedback triggers"""
+
     AGENT_COMPLETION = "agent_completion"
     WORKFLOW_PHASE = "workflow_phase"
     COMMAND_EXECUTION = "command_execution"
@@ -26,15 +27,17 @@ class TriggerType(Enum):
 
 class TriggerPriority(Enum):
     """Priority levels for feedback triggers"""
-    HIGH = 3      # Always ask (e.g., after error recovery)
-    MEDIUM = 2    # Ask if threshold met (e.g., agent completion)
-    LOW = 1       # Ask only if long time since last (e.g., command)
-    SKIP = 0      # Don't ask
+
+    HIGH = 3  # Always ask (e.g., after error recovery)
+    MEDIUM = 2  # Ask if threshold met (e.g., agent completion)
+    LOW = 1  # Ask only if long time since last (e.g., command)
+    SKIP = 0  # Don't ask
 
 
 @dataclass
 class FeedbackTrigger:
     """Represents a feedback trigger opportunity"""
+
     trigger_type: TriggerType
     priority: TriggerPriority
     context_type: str
@@ -51,29 +54,19 @@ class FeedbackTrigger:
         Returns a dict that can be used with Claude's AskUserQuestion tool.
         """
         return {
-            "questions": [{
-                "question": self.question_text,
-                "header": "Feedback",
-                "options": [
-                    {
-                        "label": "0 - Not at all",
-                        "description": "Wrong or harmful response"
-                    },
-                    {
-                        "label": "1 - Slightly",
-                        "description": "Mostly unhelpful"
-                    },
-                    {
-                        "label": "2 - Moderately",
-                        "description": "Somewhat useful"
-                    },
-                    {
-                        "label": "3 - Very",
-                        "description": "Exactly what I needed"
-                    }
-                ],
-                "multiSelect": False
-            }]
+            "questions": [
+                {
+                    "question": self.question_text,
+                    "header": "Feedback",
+                    "options": [
+                        {"label": "0 - Not at all", "description": "Wrong or harmful response"},
+                        {"label": "1 - Slightly", "description": "Mostly unhelpful"},
+                        {"label": "2 - Moderately", "description": "Somewhat useful"},
+                        {"label": "3 - Very", "description": "Exactly what I needed"},
+                    ],
+                    "multiSelect": False,
+                }
+            ]
         }
 
 
@@ -97,7 +90,7 @@ class FeedbackTriggerManager:
         "test-writer-fixer",
         "api-designer",
         "performance-optimizer",
-        "power-coordinator"
+        "power-coordinator",
     }
 
     # Significant commands that warrant feedback
@@ -107,27 +100,18 @@ class FeedbackTriggerManager:
         "/popkit:git commit",
         "/popkit:debug",
         "/popkit:routine morning",
-        "/popkit:routine nightly"
+        "/popkit:routine nightly",
     }
 
     # Workflow phases that warrant feedback
-    SIGNIFICANT_PHASES = {
-        "brainstorming",
-        "architecture",
-        "implementation",
-        "review",
-        "summary"
-    }
+    SIGNIFICANT_PHASES = {"brainstorming", "architecture", "implementation", "review", "summary"}
 
     def __init__(self):
         """Initialize the trigger manager"""
         pass
 
     def evaluate_agent_completion(
-        self,
-        agent_name: str,
-        tool_output: Optional[str] = None,
-        error_occurred: bool = False
+        self, agent_name: str, tool_output: Optional[str] = None, error_occurred: bool = False
     ) -> Optional[FeedbackTrigger]:
         """
         Evaluate whether to trigger feedback after agent completion.
@@ -150,7 +134,7 @@ class FeedbackTriggerManager:
                 agent_name=agent_name,
                 command_name=None,
                 workflow_phase=None,
-                question_text=f"Did the {agent_name} help resolve the error?"
+                question_text=f"Did the {agent_name} help resolve the error?",
             )
 
         # Only ask for significant agents
@@ -165,14 +149,11 @@ class FeedbackTriggerManager:
             agent_name=agent_name,
             command_name=None,
             workflow_phase=None,
-            question_text=f"How helpful was the {agent_name}?"
+            question_text=f"How helpful was the {agent_name}?",
         )
 
     def evaluate_command_execution(
-        self,
-        command_name: str,
-        success: bool = True,
-        output_size: int = 0
+        self, command_name: str, success: bool = True, output_size: int = 0
     ) -> Optional[FeedbackTrigger]:
         """
         Evaluate whether to trigger feedback after command execution.
@@ -186,12 +167,10 @@ class FeedbackTriggerManager:
             FeedbackTrigger if feedback should be requested, None otherwise
         """
         # Normalize command name
-        normalized = command_name.split()[0] if ' ' in command_name else command_name
+        normalized = command_name.split()[0] if " " in command_name else command_name
 
         # Check if significant command
-        is_significant = any(
-            normalized.startswith(sig) for sig in self.SIGNIFICANT_COMMANDS
-        )
+        is_significant = any(normalized.startswith(sig) for sig in self.SIGNIFICANT_COMMANDS)
 
         if not is_significant:
             return None
@@ -207,14 +186,16 @@ class FeedbackTriggerManager:
             agent_name=None,
             command_name=command_name,
             workflow_phase=None,
-            question_text=f"Was {normalized} useful?" if success else f"Did {normalized} work as expected?"
+            question_text=f"Was {normalized} useful?"
+            if success
+            else f"Did {normalized} work as expected?",
         )
 
     def evaluate_workflow_phase(
         self,
         phase_name: str,
         workflow_name: Optional[str] = None,
-        phase_output: Optional[str] = None
+        phase_output: Optional[str] = None,
     ) -> Optional[FeedbackTrigger]:
         """
         Evaluate whether to trigger feedback after a workflow phase.
@@ -239,14 +220,11 @@ class FeedbackTriggerManager:
             agent_name=None,
             command_name=None,
             workflow_phase=phase_name,
-            question_text=f"Did the {phase_name} phase help?"
+            question_text=f"Did the {phase_name} phase help?",
         )
 
     def evaluate_session_end(
-        self,
-        session_duration_minutes: int,
-        tool_call_count: int,
-        feedback_count: int
+        self, session_duration_minutes: int, tool_call_count: int, feedback_count: int
     ) -> Optional[FeedbackTrigger]:
         """
         Evaluate whether to request session-end feedback.
@@ -275,7 +253,7 @@ class FeedbackTriggerManager:
             agent_name=None,
             command_name=None,
             workflow_phase=None,
-            question_text="Overall, how helpful was this session?"
+            question_text="Overall, how helpful was this session?",
         )
 
     def should_show_feedback(
@@ -284,7 +262,7 @@ class FeedbackTriggerManager:
         tool_calls_since_last: int,
         dismissed_count: int,
         never_ask_session: bool = False,
-        min_tool_calls: int = 10
+        min_tool_calls: int = 10,
     ) -> Tuple[bool, str]:
         """
         Final decision on whether to show feedback prompt.
@@ -313,7 +291,10 @@ class FeedbackTriggerManager:
 
         # Check tool call threshold for medium/low priority
         if tool_calls_since_last < min_tool_calls:
-            return False, f"Only {tool_calls_since_last} tool calls since last feedback (min: {min_tool_calls})"
+            return (
+                False,
+                f"Only {tool_calls_since_last} tool calls since last feedback (min: {min_tool_calls})",
+            )
 
         return True, "Threshold met"
 
@@ -360,10 +341,7 @@ class FeedbackTriggerManager:
         return None, response  # Return as comment if can't parse
 
 
-def create_feedback_prompt(
-    question: str,
-    include_comment_option: bool = False
-) -> Dict[str, Any]:
+def create_feedback_prompt(question: str, include_comment_option: bool = False) -> Dict[str, Any]:
     """
     Create a standard feedback prompt for AskUserQuestion.
 
@@ -378,22 +356,16 @@ def create_feedback_prompt(
         {"label": "0 - Not at all", "description": "Wrong or harmful response"},
         {"label": "1 - Slightly", "description": "Mostly unhelpful"},
         {"label": "2 - Moderately", "description": "Somewhat useful"},
-        {"label": "3 - Very", "description": "Exactly what I needed"}
+        {"label": "3 - Very", "description": "Exactly what I needed"},
     ]
 
     if include_comment_option:
-        options.append({
-            "label": "Skip",
-            "description": "Don't provide feedback right now"
-        })
+        options.append({"label": "Skip", "description": "Don't provide feedback right now"})
 
     return {
-        "questions": [{
-            "question": question,
-            "header": "Feedback",
-            "options": options,
-            "multiSelect": False
-        }]
+        "questions": [
+            {"question": question, "header": "Feedback", "options": options, "multiSelect": False}
+        ]
     }
 
 
@@ -405,16 +377,18 @@ def create_never_ask_prompt() -> Dict[str, Any]:
         Dict formatted for AskUserQuestion tool
     """
     return {
-        "questions": [{
-            "question": "Would you like to pause feedback prompts?",
-            "header": "Feedback",
-            "options": [
-                {"label": "Keep asking", "description": "Continue showing feedback prompts"},
-                {"label": "Pause for now", "description": "Don't ask again this session"},
-                {"label": "Disable", "description": "Turn off feedback collection"}
-            ],
-            "multiSelect": False
-        }]
+        "questions": [
+            {
+                "question": "Would you like to pause feedback prompts?",
+                "header": "Feedback",
+                "options": [
+                    {"label": "Keep asking", "description": "Continue showing feedback prompts"},
+                    {"label": "Pause for now", "description": "Don't ask again this session"},
+                    {"label": "Disable", "description": "Turn off feedback collection"},
+                ],
+                "multiSelect": False,
+            }
+        ]
     }
 
 
@@ -449,9 +423,7 @@ if __name__ == "__main__":
     trigger = manager.evaluate_agent_completion("code-reviewer")
     if trigger:
         should_show, reason = manager.should_show_feedback(
-            trigger,
-            tool_calls_since_last=15,
-            dismissed_count=0
+            trigger, tool_calls_since_last=15, dismissed_count=0
         )
         print(f"\nShould show: {should_show} - {reason}")
 
@@ -460,7 +432,7 @@ if __name__ == "__main__":
         "0 - Not at all",
         "3 - Very",
         "Other: The response was partially helpful but missed some context",
-        "very helpful"
+        "very helpful",
     ]
 
     print("\nResponse parsing:")

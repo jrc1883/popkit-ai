@@ -75,8 +75,8 @@
         "session_id": "test-session-789",
         "save_chat": true,
         "transcript": [
-          {"role": "user", "content": "Hello"},
-          {"role": "assistant", "content": "Hi there"}
+          { "role": "user", "content": "Hello" },
+          { "role": "assistant", "content": "Hi there" }
         ]
       },
       "assertions": [
@@ -136,9 +136,7 @@
         "event": "Stop",
         "session_id": "test-session-append",
         "duration": 900,
-        "existing_log": [
-          {"session_id": "prev-session", "timestamp": "2025-01-01T12:00:00"}
-        ]
+        "existing_log": [{ "session_id": "prev-session", "timestamp": "2025-01-01T12:00:00" }]
       },
       "assertions": [
         {
@@ -215,11 +213,7 @@
       ]
     }
   ],
-  "dependencies": [
-    "hooks/stop.py",
-    "logs/stop.json",
-    "logs/chat.json"
-  ],
+  "dependencies": ["hooks/stop.py", "logs/stop.json", "logs/chat.json"],
   "notes": [
     "This hook is critical for session cleanup and preventing data loss",
     "Creates logs directory if it doesn't exist",

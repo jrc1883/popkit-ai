@@ -13,59 +13,79 @@ import requests
 import sqlite3
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Optional, Any
+
+# Import error code system (Issue #104)
+try:
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent / "shared-py"))
+    from popkit_shared.utils.error_codes import ErrorRegistry, ErrorResponse
+
+    HAS_ERROR_CODES = True
+except ImportError:
+    HAS_ERROR_CODES = False
 
 # Import project activity tracking
 try:
     from popkit_shared.utils.project_client import ProjectClient, ProjectActivity
+
     HAS_PROJECT_CLIENT = True
 except ImportError:
     HAS_PROJECT_CLIENT = False
 
 # Import skill state tracker for AskUserQuestion enforcement (Issue #159)
-sys.path.insert(0, str(Path(__file__).parent / "utils"))
 try:
-    from skill_state import get_tracker, SkillStateTracker
+    from popkit_shared.utils.skill_state import get_tracker
+
     SKILL_STATE_AVAILABLE = True
 except ImportError:
     SKILL_STATE_AVAILABLE = False
 
 # Import workflow response router (Issue #206)
 try:
-    from response_router import (
+    from popkit_shared.utils.response_router import (
         route_user_response,
         should_route_response,
         format_hook_output,
         get_workflow_status,
-        get_pending_decision
+        get_pending_decision,
     )
+
     WORKFLOW_ROUTER_AVAILABLE = True
 except ImportError:
     WORKFLOW_ROUTER_AVAILABLE = False
 
 # Import test telemetry for sandbox testing (Issue #226)
 try:
-    from test_telemetry import (
-        is_test_mode, get_test_session_id,
-        create_trace, create_decision, create_event
+    from popkit_shared.utils.test_telemetry import (
+        is_test_mode,
+        get_test_session_id,
+        create_trace,
+        create_decision,
+        create_event,
     )
-    from local_telemetry import (
+    from popkit_shared.utils.local_telemetry import (
         get_local_storage,
-        log_trace_if_test_mode, log_decision_if_test_mode, log_event_if_test_mode
+        log_trace_if_test_mode,
+        log_decision_if_test_mode,
+        log_event_if_test_mode,
     )
+
     TEST_TELEMETRY_AVAILABLE = True
 except ImportError:
     TEST_TELEMETRY_AVAILABLE = False
+
     # Define stubs when not available
-    def is_test_mode(): return False
-    def get_test_session_id(): return None
+    def is_test_mode():
+        return False
+
+    def get_test_session_id():
+        return None
+
 
 # Import routine measurement for context tracking
 try:
-    from routine_measurement import (
-        RoutineMeasurementTracker,
-        check_measure_flag
-    )
+    from routine_measurement import RoutineMeasurementTracker, check_measure_flag
+
     ROUTINE_MEASUREMENT_AVAILABLE = True
 except ImportError:
     ROUTINE_MEASUREMENT_AVAILABLE = False
@@ -73,43 +93,50 @@ except ImportError:
 # Import XML generation utilities (Phase 1: XML Integration #517)
 try:
     from xml_generator import generate_findings_xml as xml_gen_findings
+
     HAS_XML_GENERATOR = True
 except ImportError:
     HAS_XML_GENERATOR = False
 
 # Import session recorder for --record flag support
 try:
-    from popkit_shared.utils.session_recorder import record_tool_call, is_recording_enabled, get_recorder
+    from popkit_shared.utils.session_recorder import (
+        record_tool_call,
+        is_recording_enabled,
+        get_recorder,
+    )
+
     HAS_SESSION_RECORDER = True
 except ImportError:
     HAS_SESSION_RECORDER = False
 
+
 class PostToolUseHook:
     def __init__(self):
-        self.claude_dir = Path.home() / '.claude'
-        self.config_dir = self.claude_dir / 'config'
+        self.claude_dir = Path.home() / ".claude"
+        self.config_dir = self.claude_dir / "config"
         self.session_id = self.get_session_id()
         self.observability_endpoint = "http://localhost:8001/events"
         self.orchestrator_endpoint = "http://localhost:8005/followup"
-        
+
         # Load configuration
         self.followup_rules = self.load_followup_rules()
         self.quality_metrics = self.load_quality_metrics()
         self.agent_communication_patterns = self.load_communication_patterns()
-        
+
         # Initialize databases
         self.context_db = self.init_context_db()
         self.metrics_db = self.init_metrics_db()
 
         # Test telemetry state (Issue #226)
         self._trace_sequence = self._get_trace_sequence()
-        
+
     def get_session_id(self) -> str:
         """Get current session ID from environment or context"""
-        session_id = os.environ.get('CLAUDE_SESSION_ID')
+        session_id = os.environ.get("CLAUDE_SESSION_ID")
         if not session_id:
             try:
-                db_path = self.config_dir / 'context-memory.db'
+                db_path = self.config_dir / "context-memory.db"
                 if db_path.exists():
                     conn = sqlite3.connect(str(db_path))
                     cursor = conn.execute(
@@ -122,82 +149,126 @@ class PostToolUseHook:
             except Exception:
                 pass
         return session_id or "unknown"
-    
+
     def load_followup_rules(self) -> Dict[str, List[str]]:
         """Load rules for automatic follow-up actions after tool use"""
         return {
             "file_modifications": {
                 "Write": ["suggest_code_review", "check_for_tests", "validate_syntax"],
                 "Edit": ["suggest_code_review", "run_linter", "check_imports"],
-                "MultiEdit": ["comprehensive_review", "run_tests", "check_consistency"]
+                "MultiEdit": ["comprehensive_review", "run_tests", "check_consistency"],
             },
             "code_analysis": {
                 "Grep": ["analyze_patterns", "suggest_refactoring"],
-                "Glob": ["assess_project_structure", "identify_duplicates"]
+                "Glob": ["assess_project_structure", "identify_duplicates"],
             },
             "external_operations": {
                 "Bash": ["validate_output", "check_side_effects", "log_system_changes"],
-                "WebFetch": ["cache_results", "validate_data", "check_rate_limits"]
+                "WebFetch": ["cache_results", "validate_data", "check_rate_limits"],
             },
             "data_operations": {
                 "Read": ["analyze_content", "suggest_optimizations"],
-                "LS": ["assess_organization", "identify_patterns"]
-            }
+                "LS": ["assess_organization", "identify_patterns"],
+            },
         }
-    
+
     def load_quality_metrics(self) -> Dict[str, Dict[str, Any]]:
         """Load quality assessment metrics for different tool results"""
         return {
             "code_quality": {
-                "metrics": ["syntax_valid", "linting_clean", "test_coverage", "security_scan"],
-                "thresholds": {"syntax_valid": 1.0, "linting_clean": 0.9, "test_coverage": 0.8}
+                "metrics": [
+                    "syntax_valid",
+                    "linting_clean",
+                    "test_coverage",
+                    "security_scan",
+                ],
+                "thresholds": {
+                    "syntax_valid": 1.0,
+                    "linting_clean": 0.9,
+                    "test_coverage": 0.8,
+                },
             },
             "performance": {
-                "metrics": ["execution_time", "memory_usage", "file_size", "complexity"],
-                "thresholds": {"execution_time": 5.0, "file_size": 1000000, "complexity": 10}
+                "metrics": [
+                    "execution_time",
+                    "memory_usage",
+                    "file_size",
+                    "complexity",
+                ],
+                "thresholds": {
+                    "execution_time": 5.0,
+                    "file_size": 1000000,
+                    "complexity": 10,
+                },
             },
             "security": {
-                "metrics": ["secret_exposure", "vulnerability_scan", "permission_check"],
-                "thresholds": {"secret_exposure": 0, "vulnerability_scan": 0}
-            }
+                "metrics": [
+                    "secret_exposure",
+                    "vulnerability_scan",
+                    "permission_check",
+                ],
+                "thresholds": {"secret_exposure": 0, "vulnerability_scan": 0},
+            },
         }
-    
+
     def load_communication_patterns(self) -> Dict[str, Dict[str, Any]]:
         """Load agent communication and handoff patterns"""
         return {
             "sequential_handoffs": {
-                "code_modification": ["code-reviewer", "security-auditor", "test-writer-fixer"],
-                "ui_changes": ["ui-designer", "accessibility-guardian", "user-experience-optimizer"],
-                "deployment": ["devops-automator", "security-tester", "environment-manager"]
+                "code_modification": [
+                    "code-reviewer",
+                    "security-auditor",
+                    "test-writer-fixer",
+                ],
+                "ui_changes": [
+                    "ui-designer",
+                    "accessibility-guardian",
+                    "user-experience-optimizer",
+                ],
+                "deployment": [
+                    "devops-automator",
+                    "security-tester",
+                    "environment-manager",
+                ],
             },
             "parallel_analysis": {
-                "performance_issues": ["performance-optimizer", "load-tester", "performance-profiler"],
-                "quality_assessment": ["code-reviewer", "quality-assurance-coordinator"],
-                "security_review": ["security-auditor", "security-tester"]
+                "performance_issues": [
+                    "performance-optimizer",
+                    "load-tester",
+                    "performance-profiler",
+                ],
+                "quality_assessment": [
+                    "code-reviewer",
+                    "quality-assurance-coordinator",
+                ],
+                "security_review": ["security-auditor", "security-tester"],
             },
             "conditional_triggers": {
                 "error_detected": ["bug-whisperer", "incident-responder"],
                 "new_dependencies": ["dependency-detective", "security-auditor"],
-                "large_changes": ["stakeholder-communicator", "documentation-maintainer"]
-            }
+                "large_changes": [
+                    "stakeholder-communicator",
+                    "documentation-maintainer",
+                ],
+            },
         }
-    
+
     def init_context_db(self) -> Optional[sqlite3.Connection]:
         """Initialize context database connection"""
         try:
-            db_path = self.config_dir / 'context-memory.db'
+            db_path = self.config_dir / "context-memory.db"
             if db_path.exists():
                 return sqlite3.connect(str(db_path))
         except Exception:
             pass
         return None
-    
+
     def init_metrics_db(self) -> sqlite3.Connection:
         """Initialize metrics database"""
-        db_path = self.config_dir / 'metrics.db'
+        db_path = self.config_dir / "metrics.db"
         conn = sqlite3.connect(str(db_path))
-        
-        conn.execute('''
+
+        conn.execute("""
             CREATE TABLE IF NOT EXISTS tool_metrics (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 session_id TEXT NOT NULL,
@@ -212,9 +283,9 @@ class PostToolUseHook:
                 followup_actions TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
-        ''')
-        
-        conn.execute('''
+        """)
+
+        conn.execute("""
             CREATE TABLE IF NOT EXISTS agent_performance (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 session_id TEXT NOT NULL,
@@ -226,12 +297,14 @@ class PostToolUseHook:
                 collaboration_score REAL,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
-        ''')
-        
+        """)
+
         conn.commit()
         return conn
-    
-    def analyze_tool_result(self, tool_name: str, tool_args: Dict[str, Any], tool_result: Any) -> Dict[str, Any]:
+
+    def analyze_tool_result(
+        self, tool_name: str, tool_args: Dict[str, Any], tool_result: Any
+    ) -> Dict[str, Any]:
         """Analyze tool execution results for quality and next steps"""
         analysis = {
             "success": True,
@@ -239,15 +312,15 @@ class PostToolUseHook:
             "issues": [],
             "suggestions": [],
             "metrics": {},
-            "followup_needed": []
+            "followup_needed": [],
         }
-        
+
         # Basic success detection
         if isinstance(tool_result, dict) and tool_result.get("error"):
             analysis["success"] = False
             analysis["issues"].append(f"Tool execution failed: {tool_result['error']}")
             analysis["followup_needed"].append("error_investigation")
-        
+
         # Tool-specific analysis
         if tool_name == "Write" and analysis["success"]:
             analysis.update(self.analyze_write_result(tool_args, tool_result))
@@ -257,87 +330,113 @@ class PostToolUseHook:
             analysis.update(self.analyze_bash_result(tool_args, tool_result))
         elif tool_name == "Read" and analysis["success"]:
             analysis.update(self.analyze_read_result(tool_args, tool_result))
-        
+
         return analysis
-    
-    def analyze_write_result(self, tool_args: Dict[str, Any], tool_result: Any) -> Dict[str, Any]:
+
+    def analyze_write_result(
+        self, tool_args: Dict[str, Any], tool_result: Any
+    ) -> Dict[str, Any]:
         """Analyze Write tool results"""
         analysis = {"quality_score": 0.7, "followup_needed": []}
-        
+
         file_path = tool_args.get("file_path", "")
         content = tool_args.get("content", "")
-        
+
         # File type specific analysis
-        if file_path.endswith(('.ts', '.tsx', '.js', '.jsx')):
+        if file_path.endswith((".ts", ".tsx", ".js", ".jsx")):
             analysis["suggestions"].append("Consider running code review and linting")
             analysis["followup_needed"].extend(["code_review", "linting"])
             analysis["quality_score"] = 0.8
-        elif file_path.endswith(('.py', '.rb', '.go')):
-            analysis["suggestions"].append("Consider running syntax validation and tests")
+        elif file_path.endswith((".py", ".rb", ".go")):
+            analysis["suggestions"].append(
+                "Consider running syntax validation and tests"
+            )
             analysis["followup_needed"].extend(["syntax_check", "test_execution"])
-        elif file_path.endswith(('.md', '.txt', '.rst')):
-            analysis["suggestions"].append("Consider spell check and documentation review")
+        elif file_path.endswith((".md", ".txt", ".rst")):
+            analysis["suggestions"].append(
+                "Consider spell check and documentation review"
+            )
             analysis["followup_needed"].append("documentation_review")
-        
+
         # Content analysis
         if len(content) > 10000:
-            analysis["suggestions"].append("Large file created - consider breaking into smaller modules")
+            analysis["suggestions"].append(
+                "Large file created - consider breaking into smaller modules"
+            )
             analysis["followup_needed"].append("refactoring_assessment")
-        
+
         # Security patterns
-        if re.search(r'(password|secret|key|token)\s*=\s*["\'][^"\']+["\']', content, re.IGNORECASE):
+        if re.search(
+            r'(password|secret|key|token)\s*=\s*["\'][^"\']+["\']',
+            content,
+            re.IGNORECASE,
+        ):
             analysis["issues"].append("Potential secret exposed in code")
             analysis["followup_needed"].append("security_review")
             analysis["quality_score"] = max(0.3, analysis["quality_score"] - 0.4)
-        
+
         return analysis
-    
-    def analyze_edit_result(self, tool_args: Dict[str, Any], tool_result: Any) -> Dict[str, Any]:
+
+    def analyze_edit_result(
+        self, tool_args: Dict[str, Any], tool_result: Any
+    ) -> Dict[str, Any]:
         """Analyze Edit/MultiEdit tool results"""
         analysis = {"quality_score": 0.8, "followup_needed": ["code_review"]}
-        
+
         file_path = tool_args.get("file_path", "")
-        
+
         # Multi-edit specific analysis
         if "edits" in tool_args:
             edit_count = len(tool_args["edits"])
             if edit_count > 5:
-                analysis["suggestions"].append(f"Large refactoring with {edit_count} changes - comprehensive review recommended")
-                analysis["followup_needed"].extend(["comprehensive_review", "test_execution"])
-            
+                analysis["suggestions"].append(
+                    f"Large refactoring with {edit_count} changes - comprehensive review recommended"
+                )
+                analysis["followup_needed"].extend(
+                    ["comprehensive_review", "test_execution"]
+                )
+
             # Check for potential conflicts
-            edit_locations = [edit.get("old_string", "")[:50] for edit in tool_args["edits"]]
+            edit_locations = [
+                edit.get("old_string", "")[:50] for edit in tool_args["edits"]
+            ]
             if len(set(edit_locations)) != len(edit_locations):
                 analysis["issues"].append("Potential overlapping edits detected")
                 analysis["quality_score"] -= 0.2
-        
+
         # File-specific recommendations
-        if file_path.endswith('.test.ts') or file_path.endswith('.spec.ts'):
+        if file_path.endswith(".test.ts") or file_path.endswith(".spec.ts"):
             analysis["followup_needed"].append("test_execution")
-        elif file_path.endswith(('.ts', '.tsx')):
+        elif file_path.endswith((".ts", ".tsx")):
             analysis["followup_needed"].extend(["type_checking", "linting"])
-        
+
         return analysis
-    
-    def analyze_bash_result(self, tool_args: Dict[str, Any], tool_result: Any) -> Dict[str, Any]:
+
+    def analyze_bash_result(
+        self, tool_args: Dict[str, Any], tool_result: Any
+    ) -> Dict[str, Any]:
         """Analyze Bash tool results"""
         analysis = {"quality_score": 0.6, "followup_needed": []}
-        
+
         command = tool_args.get("command", "")
-        
+
         # Command category analysis
         if any(cmd in command for cmd in ["npm install", "yarn add", "pip install"]):
             analysis["followup_needed"].extend(["dependency_audit", "security_scan"])
-            analysis["suggestions"].append("New dependencies installed - security audit recommended")
+            analysis["suggestions"].append(
+                "New dependencies installed - security audit recommended"
+            )
         elif any(cmd in command for cmd in ["git commit", "git push"]):
             analysis["followup_needed"].append("deployment_readiness")
             analysis["quality_score"] = 0.8
         elif any(cmd in command for cmd in ["docker build", "docker run"]):
-            analysis["followup_needed"].extend(["container_security", "resource_monitoring"])
+            analysis["followup_needed"].extend(
+                ["container_security", "resource_monitoring"]
+            )
         elif "test" in command:
             analysis["followup_needed"].append("test_results_analysis")
             analysis["quality_score"] = 0.9
-        
+
         # Output analysis
         if isinstance(tool_result, str):
             if "error" in tool_result.lower() or "failed" in tool_result.lower():
@@ -347,32 +446,43 @@ class PostToolUseHook:
             elif "warning" in tool_result.lower():
                 analysis["suggestions"].append("Command completed with warnings")
                 analysis["quality_score"] = 0.7
-        
-        return analysis
-    
-    def analyze_read_result(self, tool_args: Dict[str, Any], tool_result: Any) -> Dict[str, Any]:
-        """Analyze Read tool results"""
-        analysis = {"quality_score": 0.9, "followup_needed": []}
-        
-        file_path = tool_args.get("file_path", "")
-        
-        # Large file analysis
-        if isinstance(tool_result, str) and len(tool_result) > 50000:
-            analysis["suggestions"].append("Large file read - consider chunked processing")
-            analysis["followup_needed"].append("optimization_review")
-        
-        # File type specific analysis
-        if file_path.endswith('.log'):
-            analysis["followup_needed"].append("log_analysis")
-        elif file_path.endswith(('.json', '.yaml', '.yml')):
-            analysis["followup_needed"].append("config_validation")
-        elif file_path.endswith('.sql'):
-            analysis["followup_needed"].extend(["query_optimization", "security_review"])
-        
+
         return analysis
 
-    def generate_findings_xml(self, tool_name: str, analysis: Dict[str, Any],
-                              followup_agents: List[str], tool_result: Any = None) -> Optional[str]:
+    def analyze_read_result(
+        self, tool_args: Dict[str, Any], tool_result: Any
+    ) -> Dict[str, Any]:
+        """Analyze Read tool results"""
+        analysis = {"quality_score": 0.9, "followup_needed": []}
+
+        file_path = tool_args.get("file_path", "")
+
+        # Large file analysis
+        if isinstance(tool_result, str) and len(tool_result) > 50000:
+            analysis["suggestions"].append(
+                "Large file read - consider chunked processing"
+            )
+            analysis["followup_needed"].append("optimization_review")
+
+        # File type specific analysis
+        if file_path.endswith(".log"):
+            analysis["followup_needed"].append("log_analysis")
+        elif file_path.endswith((".json", ".yaml", ".yml")):
+            analysis["followup_needed"].append("config_validation")
+        elif file_path.endswith(".sql"):
+            analysis["followup_needed"].extend(
+                ["query_optimization", "security_review"]
+            )
+
+        return analysis
+
+    def generate_findings_xml(
+        self,
+        tool_name: str,
+        analysis: Dict[str, Any],
+        followup_agents: List[str],
+        tool_result: Any = None,
+    ) -> Optional[str]:
         """
         Generate XML structured findings for tool results (Phase 1: XML Integration #517).
 
@@ -416,7 +526,7 @@ class PostToolUseHook:
                 "quality_score": analysis.get("quality_score", 0.0),
                 "issues": analysis.get("issues", []),
                 "suggestions": analysis.get("suggestions", []),
-                "followup_agents": followup_agents
+                "followup_agents": followup_agents,
             }
 
             # Add error details if present
@@ -425,7 +535,11 @@ class PostToolUseHook:
                     findings["error_message"] = str(tool_result["error"])
                 elif isinstance(tool_result, str) and "error" in tool_result.lower():
                     # Extract error message from output
-                    error_lines = [line for line in tool_result.split('\n') if 'error' in line.lower()]
+                    error_lines = [
+                        line
+                        for line in tool_result.split("\n")
+                        if "error" in line.lower()
+                    ]
                     if error_lines:
                         findings["error_message"] = error_lines[0][:200]
 
@@ -437,10 +551,12 @@ class PostToolUseHook:
             print(f"Warning: XML findings generation failed: {e}", file=sys.stderr)
             return None
 
-    def determine_followup_agents(self, tool_name: str, analysis: Dict[str, Any], project_context: Dict[str, Any]) -> List[str]:
+    def determine_followup_agents(
+        self, tool_name: str, analysis: Dict[str, Any], project_context: Dict[str, Any]
+    ) -> List[str]:
         """Determine which agents should be activated for follow-up"""
         followup_agents = []
-        
+
         # Rule-based agent selection
         for followup_type in analysis.get("followup_needed", []):
             if followup_type == "code_review":
@@ -455,63 +571,82 @@ class PostToolUseHook:
                 followup_agents.append("documentation-maintainer")
             elif followup_type == "error_investigation":
                 followup_agents.append("bug-whisperer")
-        
+
         # Context-based agent selection
         if analysis.get("quality_score", 1.0) < 0.5:
             followup_agents.append("quality-assurance-coordinator")
-        
+
         if len(analysis.get("issues", [])) > 2:
             followup_agents.append("incident-responder")
-        
+
         # Project-specific agent selection
         if project_context.get("has_package_json"):
             if "dependency" in str(analysis.get("followup_needed", [])):
                 followup_agents.append("dependency-detective")
-        
+
         return list(set(followup_agents))  # Remove duplicates
-    
-    def calculate_quality_metrics(self, tool_name: str, analysis: Dict[str, Any], execution_time: float) -> Dict[str, float]:
+
+    def calculate_quality_metrics(
+        self, tool_name: str, analysis: Dict[str, Any], execution_time: float
+    ) -> Dict[str, float]:
         """Calculate quality metrics for tool execution"""
         metrics = {
             "success_rate": 1.0 if analysis["success"] else 0.0,
             "quality_score": analysis.get("quality_score", 0.5),
             "error_count": len(analysis.get("issues", [])),
             "execution_time": execution_time,
-            "followup_complexity": len(analysis.get("followup_needed", [])) / 10.0
+            "followup_complexity": len(analysis.get("followup_needed", [])) / 10.0,
         }
-        
+
         # Tool-specific metrics
         if tool_name == "Bash":
             metrics["safety_score"] = 1.0 - (metrics["error_count"] * 0.2)
         elif tool_name in ["Write", "Edit", "MultiEdit"]:
-            metrics["code_impact_score"] = min(1.0, len(analysis.get("suggestions", [])) / 5.0)
-        
+            metrics["code_impact_score"] = min(
+                1.0, len(analysis.get("suggestions", [])) / 5.0
+            )
+
         return metrics
-    
-    def store_metrics(self, tool_name: str, metrics: Dict[str, float], agent_involvement: List[str], followup_actions: List[str]):
+
+    def store_metrics(
+        self,
+        tool_name: str,
+        metrics: Dict[str, float],
+        agent_involvement: List[str],
+        followup_actions: List[str],
+    ):
         """Store tool execution metrics in database"""
         try:
-            self.metrics_db.execute('''
+            self.metrics_db.execute(
+                """
                 INSERT INTO tool_metrics 
                 (session_id, timestamp, tool_name, execution_time, success_rate, 
                  error_count, quality_score, agent_involvement, followup_actions)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (
-                self.session_id,
-                datetime.now().isoformat(),
-                tool_name,
-                metrics.get("execution_time", 0.0),
-                metrics.get("success_rate", 0.0),
-                int(metrics.get("error_count", 0)),
-                metrics.get("quality_score", 0.0),
-                json.dumps(agent_involvement),
-                json.dumps(followup_actions)
-            ))
+            """,
+                (
+                    self.session_id,
+                    datetime.now().isoformat(),
+                    tool_name,
+                    metrics.get("execution_time", 0.0),
+                    metrics.get("success_rate", 0.0),
+                    int(metrics.get("error_count", 0)),
+                    metrics.get("quality_score", 0.0),
+                    json.dumps(agent_involvement),
+                    json.dumps(followup_actions),
+                ),
+            )
             self.metrics_db.commit()
         except Exception as e:
             print(f"Warning: Could not store metrics: {e}", file=sys.stderr)
-    
-    def log_post_tool_event(self, tool_name: str, tool_args: Dict[str, Any], tool_result: Any, analysis: Dict[str, Any]):
+
+    def log_post_tool_event(
+        self,
+        tool_name: str,
+        tool_args: Dict[str, Any],
+        tool_result: Any,
+        analysis: Dict[str, Any],
+    ):
         """Log post-tool-use event to observability system"""
         try:
             event_data = {
@@ -522,48 +657,52 @@ class PostToolUseHook:
                 "toolName": tool_name,
                 "toolArgs": tool_args,
                 "toolResult": str(tool_result)[:1000],  # Limit size
-                "metadata": {
-                    "analysis": analysis,
-                    "working_directory": os.getcwd()
-                }
+                "metadata": {"analysis": analysis, "working_directory": os.getcwd()},
             }
-            
+
             response = requests.post(
-                self.observability_endpoint,
-                json=event_data,
-                timeout=2
+                self.observability_endpoint, json=event_data, timeout=2
             )
-            
+
             if response.status_code != 200:
-                print(f"Warning: Observability logging failed: {response.status_code}", file=sys.stderr)
-            
+                print(
+                    f"Warning: Observability logging failed: {response.status_code}",
+                    file=sys.stderr,
+                )
+
             # Also send to OPTIMUS Command Center
             try:
                 optimus_data = {
-                    "agentName": os.environ.get('CLAUDE_AGENT_NAME', 'claude'),
+                    "agentName": os.environ.get("CLAUDE_AGENT_NAME", "claude"),
                     "activity": f"tool_use:{tool_name}",
                     "metadata": {
                         "toolName": tool_name,
                         "success": analysis.get("success", True),
-                        "executionTime": analysis.get("metrics", {}).get("execution_time", 0),
+                        "executionTime": analysis.get("metrics", {}).get(
+                            "execution_time", 0
+                        ),
                         "qualityScore": analysis.get("quality_score", 0),
                         "sessionId": self.session_id,
-                        "timestamp": datetime.now().isoformat()
-                    }
+                        "timestamp": datetime.now().isoformat(),
+                    },
                 }
-                
+
                 requests.post(
                     "http://localhost:3051/api/agent/activity",
                     json=optimus_data,
-                    timeout=1
+                    timeout=1,
                 )
             except:
                 pass  # Fail silently for OPTIMUS integration
-                
+
         except Exception as e:
-            print(f"Warning: Could not log to observability system: {e}", file=sys.stderr)
-    
-    def request_followup_orchestration(self, tool_name: str, analysis: Dict[str, Any], followup_agents: List[str]) -> Optional[Dict]:
+            print(
+                f"Warning: Could not log to observability system: {e}", file=sys.stderr
+            )
+
+    def request_followup_orchestration(
+        self, tool_name: str, analysis: Dict[str, Any], followup_agents: List[str]
+    ) -> Optional[Dict]:
         """Request follow-up orchestration from orchestrator service"""
         try:
             orchestration_data = {
@@ -571,25 +710,29 @@ class PostToolUseHook:
                 "completed_tool": tool_name,
                 "analysis": analysis,
                 "suggested_agents": followup_agents,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
-            
+
             response = requests.post(
-                self.orchestrator_endpoint,
-                json=orchestration_data,
-                timeout=3
+                self.orchestrator_endpoint, json=orchestration_data, timeout=3
             )
-            
+
             if response.status_code == 200:
                 return response.json()
             else:
-                print(f"Warning: Followup orchestration failed: {response.status_code}", file=sys.stderr)
-                
+                print(
+                    f"Warning: Followup orchestration failed: {response.status_code}",
+                    file=sys.stderr,
+                )
+
         except Exception as e:
-            print(f"Warning: Could not connect to orchestrator for followup: {e}", file=sys.stderr)
-        
+            print(
+                f"Warning: Could not connect to orchestrator for followup: {e}",
+                file=sys.stderr,
+            )
+
         return None
-    
+
     def get_project_context(self) -> Dict[str, Any]:
         """Get current project context"""
         cwd = os.getcwd()
@@ -597,13 +740,22 @@ class PostToolUseHook:
             "working_directory": cwd,
             "project_name": Path(cwd).name,
             "has_package_json": os.path.exists(os.path.join(cwd, "package.json")),
-            "has_tests": any(os.path.exists(os.path.join(cwd, d)) for d in ["test", "tests", "__tests__"]),
+            "has_tests": any(
+                os.path.exists(os.path.join(cwd, d))
+                for d in ["test", "tests", "__tests__"]
+            ),
             "has_claude_md": os.path.exists(os.path.join(cwd, "CLAUDE.md")),
-            "git_repository": os.path.exists(os.path.join(cwd, ".git"))
+            "git_repository": os.path.exists(os.path.join(cwd, ".git")),
         }
         return context
-    
-    def process_tool_completion(self, tool_name: str, tool_args: Dict[str, Any], tool_result: Any, execution_time: float = 0.0) -> Dict[str, Any]:
+
+    def process_tool_completion(
+        self,
+        tool_name: str,
+        tool_args: Dict[str, Any],
+        tool_result: Any,
+        execution_time: float = 0.0,
+    ) -> Dict[str, Any]:
         """Main processing function for completed tool execution"""
         result = {
             "tool_name": tool_name,
@@ -612,42 +764,52 @@ class PostToolUseHook:
             "followup_agents": [],
             "recommendations": [],
             "metrics": {},
-            "orchestration_result": None
+            "orchestration_result": None,
         }
-        
+
         # Analyze tool result
         analysis = self.analyze_tool_result(tool_name, tool_args, tool_result)
         result["analysis"] = analysis
-        
+
         # Get project context
         project_context = self.get_project_context()
-        
+
         # Determine follow-up agents
-        followup_agents = self.determine_followup_agents(tool_name, analysis, project_context)
+        followup_agents = self.determine_followup_agents(
+            tool_name, analysis, project_context
+        )
         result["followup_agents"] = followup_agents
-        
+
         # Calculate metrics
         metrics = self.calculate_quality_metrics(tool_name, analysis, execution_time)
         result["metrics"] = metrics
-        
+
         # Generate recommendations
         result["recommendations"] = analysis.get("suggestions", [])
         if followup_agents:
-            result["recommendations"].append(f"Consider activating: {', '.join(followup_agents)}")
-        
+            result["recommendations"].append(
+                f"Consider activating: {', '.join(followup_agents)}"
+            )
+
         # Store metrics
-        self.store_metrics(tool_name, metrics, followup_agents, analysis.get("followup_needed", []))
-        
+        self.store_metrics(
+            tool_name, metrics, followup_agents, analysis.get("followup_needed", [])
+        )
+
         # Log event
         self.log_post_tool_event(tool_name, tool_args, tool_result, analysis)
-        
+
         # Request follow-up orchestration
         if followup_agents:
-            orchestration_result = self.request_followup_orchestration(tool_name, analysis, followup_agents)
+            orchestration_result = self.request_followup_orchestration(
+                tool_name, analysis, followup_agents
+            )
             result["orchestration_result"] = orchestration_result
 
         # Generate XML findings for next agent (Phase 1: XML Integration #517)
-        findings_xml = self.generate_findings_xml(tool_name, analysis, followup_agents, tool_result)
+        findings_xml = self.generate_findings_xml(
+            tool_name, analysis, followup_agents, tool_result
+        )
         result["findings_xml"] = findings_xml
 
         # Track activity in PopKit Cloud (non-blocking)
@@ -655,7 +817,9 @@ class PostToolUseHook:
 
         return result
 
-    def check_pending_skill_decisions(self, tool_name: str, tool_result: str = "") -> Dict[str, Any]:
+    def check_pending_skill_decisions(
+        self, tool_name: str, tool_result: str = ""
+    ) -> Dict[str, Any]:
         """Check for pending completion decisions from active skill (Issue #159, #183).
 
         This implements the enforcement side of AskUserQuestion requirements.
@@ -697,7 +861,7 @@ class PostToolUseHook:
                 "has_error": tracker.has_error(),
                 "error_message": tracker.state.last_error if tracker.state else None,
                 "skill_name": tracker.get_active_skill(),
-                "decision": first_required
+                "decision": first_required,
             }
 
         # Check for error recovery decisions
@@ -709,9 +873,11 @@ class PostToolUseHook:
                     "is_required": True,
                     "is_error_recovery": True,
                     "has_error": True,
-                    "error_message": tracker.state.last_error if tracker.state else None,
+                    "error_message": tracker.state.last_error
+                    if tracker.state
+                    else None,
                     "skill_name": tracker.get_active_skill(),
-                    "decision": recovery[0]
+                    "decision": recovery[0],
                 }
 
         # Standard pending decisions
@@ -724,7 +890,7 @@ class PostToolUseHook:
             "has_pending": True,
             "is_required": False,
             "skill_name": tracker.get_active_skill(),
-            "decision": first_pending
+            "decision": first_pending,
         }
 
     def _detect_error_in_output(self, tool_result: str) -> Optional[str]:
@@ -774,16 +940,15 @@ class PostToolUseHook:
             # Extract agent name from follow-up agents (if any)
             agent_name = followup_agents[0] if followup_agents else None
 
-            activity = ProjectActivity(
-                tool_name=tool_name,
-                agent_name=agent_name
-            )
+            activity = ProjectActivity(tool_name=tool_name, agent_name=agent_name)
 
             client.record_activity(activity)
         except Exception:
             pass  # Silent failure - never block tool execution
 
-    def route_workflow_response(self, tool_name: str, tool_output: Dict[str, Any]) -> Dict[str, Any]:
+    def route_workflow_response(
+        self, tool_name: str, tool_output: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Route AskUserQuestion responses to active workflows (Issue #206).
 
         When a user responds to an AskUserQuestion and there's an active workflow
@@ -817,13 +982,13 @@ class PostToolUseHook:
                     "skill": result.skill,
                     "agent": result.agent,
                     "message": result.message,
-                    "context": result.context
+                    "context": result.context,
                 }
             else:
                 return {
                     "routed": False,
                     "reason": result.message or result.error,
-                    "workflow_id": result.workflow_id
+                    "workflow_id": result.workflow_id,
                 }
 
         except Exception as e:
@@ -858,7 +1023,7 @@ class PostToolUseHook:
         tool_output: str,
         execution_time_ms: int,
         success: bool,
-        error: Optional[str] = None
+        error: Optional[str] = None,
     ) -> bool:
         """Capture tool trace telemetry when in test mode (Issue #226).
 
@@ -887,7 +1052,7 @@ class PostToolUseHook:
                 tool_output=str(tool_output),
                 duration_ms=execution_time_ms,
                 success=success,
-                error=error
+                error=error,
             )
 
             return log_trace_if_test_mode(trace)
@@ -901,7 +1066,7 @@ class PostToolUseHook:
         header: str,
         options: List[Dict[str, str]],
         selected: str,
-        context: str = ""
+        context: str = "",
     ) -> bool:
         """Capture AskUserQuestion decision point when in test mode (Issue #226).
 
@@ -924,7 +1089,7 @@ class PostToolUseHook:
                 header=header,
                 options=options,
                 selected=selected,
-                context=context
+                context=context,
             )
 
             return log_decision_if_test_mode(decision)
@@ -950,7 +1115,7 @@ def check_stop_reason(input_data: Dict[str, Any]) -> Dict[str, Any]:
         "truncated": False,
         "warning": None,
         "suggestion": None,
-        "stop_reason": None
+        "stop_reason": None,
     }
 
     stop_reason = input_data.get("stop_reason")
@@ -962,7 +1127,9 @@ def check_stop_reason(input_data: Dict[str, Any]) -> Dict[str, Any]:
     if stop_reason == "max_tokens":
         result["truncated"] = True
         result["warning"] = "Response was truncated (max_tokens reached)"
-        result["suggestion"] = "Output may be incomplete. Consider: retry with shorter context, or continue from last point."
+        result["suggestion"] = (
+            "Output may be incomplete. Consider: retry with shorter context, or continue from last point."
+        )
     elif stop_reason == "stop_sequence":
         result["warning"] = "Custom stop sequence was hit"
     # end_turn and tool_use are normal, no warnings needed
@@ -988,15 +1155,14 @@ def update_agent_expertise(tool_name: str, tool_input: dict, tool_output: str):
     """
     try:
         # Import here to avoid circular dependencies
-        sys.path.insert(0, str(Path(__file__).parent / "utils"))
-        from expertise_manager import ExpertiseManager, PatternExample
+        from popkit_shared.utils.expertise_manager import ExpertiseManager
 
         # Determine which agent is active
         # NOTE: POPKIT_ACTIVE_AGENT must be set by agent routing system
         # LIMITATION: This environment variable is not currently set anywhere,
         # so agent-specific tracking won't work until the routing system is updated.
         # See Issue #672 for tracking this limitation.
-        agent_id = os.environ.get('POPKIT_ACTIVE_AGENT')
+        agent_id = os.environ.get("POPKIT_ACTIVE_AGENT")
         if not agent_id:
             return  # No active agent identified
 
@@ -1004,72 +1170,89 @@ def update_agent_expertise(tool_name: str, tool_input: dict, tool_output: str):
 
         # Pattern detection logic for pilot agents
         # code-reviewer: Detects code quality patterns
-        if agent_id == 'code-reviewer':
+        if agent_id == "code-reviewer":
             # Look for common review comments in tool output
-            output_lower = tool_output.lower() if isinstance(tool_output, str) else str(tool_output).lower()
+            output_lower = (
+                tool_output.lower()
+                if isinstance(tool_output, str)
+                else str(tool_output).lower()
+            )
 
-            if 'missing error handling' in output_lower or 'unhandled error' in output_lower:
+            if (
+                "missing error handling" in output_lower
+                or "unhandled error" in output_lower
+            ):
                 manager.record_pattern_occurrence(
-                    category='error-handling',
-                    pattern='wrap async functions in try/catch',
-                    trigger='unhandled promise rejection',
-                    file_path=tool_input.get('file_path'),
+                    category="error-handling",
+                    pattern="wrap async functions in try/catch",
+                    trigger="unhandled promise rejection",
+                    file_path=tool_input.get("file_path"),
                 )
 
-            if 'console.log' in output_lower:
+            if "console.log" in output_lower:
                 manager.record_pattern_occurrence(
-                    category='code-style',
-                    pattern='remove console.log from production',
-                    trigger='console.log detected in code',
-                    file_path=tool_input.get('file_path'),
+                    category="code-style",
+                    pattern="remove console.log from production",
+                    trigger="console.log detected in code",
+                    file_path=tool_input.get("file_path"),
                 )
 
-            if 'null' in output_lower and 'check' in output_lower:
+            if "null" in output_lower and "check" in output_lower:
                 manager.record_pattern_occurrence(
-                    category='error-handling',
-                    pattern='add null checks with optional chaining',
-                    trigger='missing null checks',
-                    file_path=tool_input.get('file_path'),
+                    category="error-handling",
+                    pattern="add null checks with optional chaining",
+                    trigger="missing null checks",
+                    file_path=tool_input.get("file_path"),
                 )
 
         # security-auditor: Detects security patterns
-        elif agent_id == 'security-auditor':
-            output_lower = tool_output.lower() if isinstance(tool_output, str) else str(tool_output).lower()
+        elif agent_id == "security-auditor":
+            output_lower = (
+                tool_output.lower()
+                if isinstance(tool_output, str)
+                else str(tool_output).lower()
+            )
 
-            if 'password' in output_lower and ('log' in output_lower or 'print' in output_lower):
+            if "password" in output_lower and (
+                "log" in output_lower or "print" in output_lower
+            ):
                 manager.record_issue(
-                    pattern='logging sensitive data',
-                    severity='high',
-                    solution='remove password/token from log statements',
-                    file_path=tool_input.get('file_path'),
+                    pattern="logging sensitive data",
+                    severity="high",
+                    solution="remove password/token from log statements",
+                    file_path=tool_input.get("file_path"),
                 )
 
-            if 'sql' in output_lower and 'injection' in output_lower:
+            if "sql" in output_lower and "injection" in output_lower:
                 manager.record_issue(
-                    pattern='SQL injection vulnerability',
-                    severity='critical',
-                    solution='use parameterized queries',
-                    file_path=tool_input.get('file_path'),
+                    pattern="SQL injection vulnerability",
+                    severity="critical",
+                    solution="use parameterized queries",
+                    file_path=tool_input.get("file_path"),
                 )
 
         # bug-whisperer: Detects debugging patterns
-        elif agent_id == 'bug-whisperer':
-            output_lower = tool_output.lower() if isinstance(tool_output, str) else str(tool_output).lower()
+        elif agent_id == "bug-whisperer":
+            output_lower = (
+                tool_output.lower()
+                if isinstance(tool_output, str)
+                else str(tool_output).lower()
+            )
 
-            if 'race condition' in output_lower:
+            if "race condition" in output_lower:
                 manager.record_pattern_occurrence(
-                    category='concurrency',
-                    pattern='use locks or async/await for shared state',
-                    trigger='race condition detected',
-                    file_path=tool_input.get('file_path'),
+                    category="concurrency",
+                    pattern="use locks or async/await for shared state",
+                    trigger="race condition detected",
+                    file_path=tool_input.get("file_path"),
                 )
 
-            if 'memory leak' in output_lower:
+            if "memory leak" in output_lower:
                 manager.record_pattern_occurrence(
-                    category='performance',
-                    pattern='check for unsubscribed listeners or unclosed resources',
-                    trigger='memory leak detected',
-                    file_path=tool_input.get('file_path'),
+                    category="performance",
+                    pattern="check for unsubscribed listeners or unclosed resources",
+                    trigger="memory leak detected",
+                    file_path=tool_input.get("file_path"),
                 )
 
     except Exception:
@@ -1113,14 +1296,20 @@ def main():
 
             # Record completion event (pairs with tool_call_start from pre-tool-use)
             recorder = get_recorder()
-            recorder.record_event({
-                "type": "tool_call_complete",
-                "timestamp": datetime.now().isoformat(),
-                "tool_name": tool_name,
-                "result": str(tool_result)[:1000] if tool_result else None,  # Truncate large results
-                "error": error,
-                "duration_ms": int(execution_time * 1000) if execution_time else None
-            })
+            recorder.record_event(
+                {
+                    "type": "tool_call_complete",
+                    "timestamp": datetime.now().isoformat(),
+                    "tool_name": tool_name,
+                    "result": str(tool_result)[:1000]
+                    if tool_result
+                    else None,  # Truncate large results
+                    "error": error,
+                    "duration_ms": int(execution_time * 1000)
+                    if execution_time
+                    else None,
+                }
+            )
 
         if not tool_name:
             response = {"error": "No tool_name provided in input"}
@@ -1128,7 +1317,9 @@ def main():
             sys.exit(1)
 
         hook = PostToolUseHook()
-        result = hook.process_tool_completion(tool_name, tool_args, tool_result, execution_time)
+        result = hook.process_tool_completion(
+            tool_name, tool_args, tool_result, execution_time
+        )
 
         # Update agent expertise (Issue #201, Phase 2, non-blocking)
         update_agent_expertise(tool_name, tool_args, str(tool_result))
@@ -1146,7 +1337,7 @@ def main():
                 tool_output=str(tool_result)[:10000],  # Truncate for storage
                 execution_time_ms=int(execution_time * 1000),
                 success=success,
-                error=error_msg
+                error=error_msg,
             )
 
             # Capture decision points from AskUserQuestion
@@ -1164,7 +1355,7 @@ def main():
                     header=header,
                     options=options,
                     selected=selected,
-                    context=f"Tool execution at sequence {hook._trace_sequence}"
+                    context=f"Tool execution at sequence {hook._trace_sequence}",
                 )
 
         # Check for pending skill decisions (Issue #159, #183)
@@ -1190,7 +1381,7 @@ def main():
             "metrics": result.get("metrics", {}),
             "stop_info": result.get("stop_info", {}),
             "workflow_routing": result.get("workflow_routing", {}),
-            "findings_xml": result.get("findings_xml")
+            "findings_xml": result.get("findings_xml"),
         }
 
         # Add truncation warning to recommendations if applicable
@@ -1207,12 +1398,18 @@ def main():
                 print(f"💡 {recommendation}", file=sys.stderr)
 
         if result["followup_agents"]:
-            print(f"🔄 Suggested follow-up agents: {', '.join(result['followup_agents'])}", file=sys.stderr)
+            print(
+                f"🔄 Suggested follow-up agents: {', '.join(result['followup_agents'])}",
+                file=sys.stderr,
+            )
 
         # Quality score
         quality_score = result["metrics"].get("quality_score", 0.0)
         if quality_score < 0.5:
-            print(f"⚡ Quality Score: {quality_score:.1f} - Consider review", file=sys.stderr)
+            print(
+                f"⚡ Quality Score: {quality_score:.1f} - Consider review",
+                file=sys.stderr,
+            )
         elif quality_score > 0.8:
             print(f"✨ Quality Score: {quality_score:.1f} - Excellent", file=sys.stderr)
 
@@ -1224,50 +1421,69 @@ def main():
             has_error = pending_decision.get("has_error", False)
             error_message = pending_decision.get("error_message")
 
-            print(f"", file=sys.stderr)
+            print("", file=sys.stderr)
 
             # Issue #183: Show error context if present
             if has_error and error_message:
-                print(f"⚠️  Error detected during skill execution:", file=sys.stderr)
+                print("⚠️  Error detected during skill execution:", file=sys.stderr)
                 print(f"   {error_message}", file=sys.stderr)
-                print(f"", file=sys.stderr)
+                print("", file=sys.stderr)
 
             # Issue #183: More prominent header for required decisions
             if is_required:
                 print(f"🚨 REQUIRED User Decision ({skill_name})", file=sys.stderr)
-                print(f"   This decision MUST be presented before continuing.", file=sys.stderr)
+                print(
+                    "   This decision MUST be presented before continuing.",
+                    file=sys.stderr,
+                )
             else:
                 print(f"🤔 User Decision Required ({skill_name})", file=sys.stderr)
 
-            print(f"   {decision.get('question', 'No question specified')}", file=sys.stderr)
+            print(
+                f"   {decision.get('question', 'No question specified')}",
+                file=sys.stderr,
+            )
             if decision.get("options"):
-                print(f"   Options:", file=sys.stderr)
+                print("   Options:", file=sys.stderr)
                 for opt in decision["options"]:
-                    print(f"     • {opt.get('label')}: {opt.get('description', '')}", file=sys.stderr)
-            print(f"   💡 Use AskUserQuestion tool to get user input", file=sys.stderr)
-            print(f"", file=sys.stderr)
+                    print(
+                        f"     • {opt.get('label')}: {opt.get('description', '')}",
+                        file=sys.stderr,
+                    )
+            print("   💡 Use AskUserQuestion tool to get user input", file=sys.stderr)
+            print("", file=sys.stderr)
 
         # Output workflow routing guidance if applicable (Issue #206)
         if workflow_result.get("routed"):
-            print(f"", file=sys.stderr)
-            print(f"🔀 Workflow Advanced: {workflow_result.get('workflow_id')}", file=sys.stderr)
-            print(f"   → Next step: {workflow_result.get('next_step')}", file=sys.stderr)
+            print("", file=sys.stderr)
+            print(
+                f"🔀 Workflow Advanced: {workflow_result.get('workflow_id')}",
+                file=sys.stderr,
+            )
+            print(
+                f"   → Next step: {workflow_result.get('next_step')}", file=sys.stderr
+            )
 
             if workflow_result.get("skill"):
-                print(f"   💡 Invoke skill: {workflow_result.get('skill')}", file=sys.stderr)
+                print(
+                    f"   💡 Invoke skill: {workflow_result.get('skill')}",
+                    file=sys.stderr,
+                )
             elif workflow_result.get("agent"):
-                print(f"   💡 Use agent: {workflow_result.get('agent')}", file=sys.stderr)
+                print(
+                    f"   💡 Use agent: {workflow_result.get('agent')}", file=sys.stderr
+                )
 
             if workflow_result.get("message"):
                 print(f"   {workflow_result.get('message')}", file=sys.stderr)
-            print(f"", file=sys.stderr)
+            print("", file=sys.stderr)
 
         # Output XML findings for next agent (Phase 1: XML Integration #517)
         if result.get("findings_xml"):
-            print(f"", file=sys.stderr)
-            print(f"<!-- Tool Findings (XML) -->", file=sys.stderr)
+            print("", file=sys.stderr)
+            print("<!-- Tool Findings (XML) -->", file=sys.stderr)
             print(result["findings_xml"], file=sys.stderr)
-            print(f"<!-- End Tool Findings -->", file=sys.stderr)
+            print("<!-- End Tool Findings -->", file=sys.stderr)
 
         print(f"✅ Tool {tool_name} analysis complete", file=sys.stderr)
 
@@ -1275,13 +1491,30 @@ def main():
         print(json.dumps(response))
 
     except json.JSONDecodeError as e:
-        response = {"error": f"Invalid JSON input: {e}", "status": "error"}
+        # Use standardized error response if available (Issue #104)
+        if HAS_ERROR_CODES:
+            response = ErrorResponse.create(
+                ErrorRegistry.E001_JSON_PARSE,
+                context={
+                    "parse_error": str(e),
+                    "line": getattr(e, "lineno", None),
+                    "column": getattr(e, "colno", None),
+                },
+                hook_name="post-tool-use",
+            )
+            response["status"] = "error"  # Add hook-specific field
+        else:
+            # Fallback to legacy format
+            response = {"error": f"Invalid JSON input: {e}", "status": "error"}
         print(json.dumps(response))
         sys.exit(1)
     except Exception as e:
+        # Generic exception - graceful degradation (non-blocking)
+        # Post-tool-use hook never blocks, even on errors
         response = {"error": str(e), "status": "error"}
         print(json.dumps(response))
         sys.exit(0)  # Don't block on errors
+
 
 if __name__ == "__main__":
     main()

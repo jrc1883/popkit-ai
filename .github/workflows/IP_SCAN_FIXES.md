@@ -9,26 +9,31 @@ IP scan was failing with 34 false positives, blocking CI/CD pipeline.
 All 34 "leaks" were **false positives**:
 
 ### 1. GitHub Configuration Files (15 findings)
+
 - `.gitattributes`, `.github/CODEOWNERS`, `.github/labeler.yml`, `.github/release-drafter.yml`
-- **Not leaks**: These files *reference* path names for configuration purposes
+- **Not leaks**: These files _reference_ path names for configuration purposes
 - **Example**: `.gitattributes` marks `packages/cloud/` for `export-ignore` (correct behavior)
 
 ### 2. The Scanner Itself (4 findings)
+
 - `.github/workflows/ip-scan.yml` - The scanner workflow
 - `.github/workflows/IP_SCANNER_EXEMPTIONS.md` - Scanner documentation
 - `.github/workflows/verify-exemptions.py` - Verification script
 - **Not leaks**: The scanner must reference patterns it's looking for!
 
 ### 3. IP Protection Module (12 findings)
+
 - `packages/shared-py/popkit_shared/utils/ip_protection.py`
 - **Not a leak**: This IS the protection mechanism - it must know what to protect!
 
 ### 4. Template Files (2 findings)
+
 - `packages/cloud/.dev.vars.template`
 - `packages/cloud/.env.defaults`
 - **Not leaks**: Templates are meant to be public (no actual secrets)
 
 ### 5. Documentation (1 finding)
+
 - `packages/popkit-ops/commands/audit.md`
 - `packages/popkit-core/commands/project.md`
 - **Not leaks**: Documentation mentioning features
@@ -38,6 +43,7 @@ All 34 "leaks" were **false positives**:
 ### 1. Enhanced Path Exemptions
 
 Added comprehensive exemptions for:
+
 - All `.github/` files (configuration, not code)
 - `.gitattributes` and `.gitignore` (Git configuration)
 - Template files (`.template`, `.defaults`, `.example`)
@@ -70,6 +76,7 @@ ALLOWED = {
 ## Testing
 
 Scanner now correctly identifies:
+
 - ✅ Configuration files as exempt (not leaks)
 - ✅ Template files as exempt (no secrets)
 - ✅ Documentation as exempt (references only)

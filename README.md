@@ -82,25 +82,25 @@ PopKit transforms Claude Code into a complete development workflow system with i
 
 ![PopKit Quick Start](packages/popkit-core/assets/images/quick-start.gif)
 
-*Watch how PopKit gets you up and running in seconds with `/plugin install` and intelligent project setup.*
+_Watch how PopKit gets you up and running in seconds with `/plugin install` and intelligent project setup._
 
 ### Morning Routine Workflow
 
 ![Morning Routine](packages/popkit-core/assets/images/morning-routine.gif)
 
-*See the `/popkit-dev:routine morning` command in action - automated health checks, dependency updates, and your personalized "Ready to Code" score.*
+_See the `/popkit-dev:routine morning` command in action - automated health checks, dependency updates, and your personalized "Ready to Code" score._
 
 ### Feature Development Workflow
 
 ![Feature Workflow](packages/popkit-core/assets/images/feature-workflow.gif)
 
-*Complete feature development cycle: brainstorm → plan → implement → review → PR creation, all orchestrated by `/popkit-dev:dev`.*
+_Complete feature development cycle: brainstorm → plan → implement → review → PR creation, all orchestrated by `/popkit-dev:dev`._
 
 ### Power Mode Multi-Agent Orchestration
 
 ![Power Mode](packages/popkit-core/assets/images/power-mode.gif)
 
-*Experience Power Mode's intelligent agent orchestration handling complex tasks with multiple specialized agents working in parallel.*
+_Experience Power Mode's intelligent agent orchestration handling complex tasks with multiple specialized agents working in parallel._
 
 ---
 
@@ -108,12 +108,12 @@ PopKit transforms Claude Code into a complete development workflow system with i
 
 PopKit is split into 5 focused workflow plugins:
 
-| Plugin | Purpose | Commands | When to Use |
-|--------|---------|----------|-------------|
-| **[popkit-core](packages/popkit-core/)** | Foundation & Power Mode | 11 | Project setup, plugin management, orchestration |
-| **[popkit-dev](packages/popkit-dev/)** | Development workflows | 7 | Daily dev, git, GitHub, routines |
-| **[popkit-ops](packages/popkit-ops/)** | Operations & quality | 5 | Testing, debugging, security, deployment |
-| **[popkit-research](packages/popkit-research/)** | Knowledge management | 2 | Research capture, knowledge base |
+| Plugin                                           | Purpose                 | Commands | When to Use                                     |
+| ------------------------------------------------ | ----------------------- | -------- | ----------------------------------------------- |
+| **[popkit-core](packages/popkit-core/)**         | Foundation & Power Mode | 11       | Project setup, plugin management, orchestration |
+| **[popkit-dev](packages/popkit-dev/)**           | Development workflows   | 7        | Daily dev, git, GitHub, routines                |
+| **[popkit-ops](packages/popkit-ops/)**           | Operations & quality    | 5        | Testing, debugging, security, deployment        |
+| **[popkit-research](packages/popkit-research/)** | Knowledge management    | 2        | Research capture, knowledge base                |
 
 **Foundation**: `popkit-shared` (v1.0.0) - 70 shared Python utility modules
 
@@ -122,6 +122,7 @@ PopKit is split into 5 focused workflow plugins:
 ## ⚡ Quick Start
 
 **Step 1: Add the PopKit marketplace (one-time setup)**
+
 ```bash
 /plugin marketplace add jrc1883/popkit-claude
 ```
@@ -139,6 +140,7 @@ PopKit is split into 5 focused workflow plugins:
 ```
 
 **Or install selectively:**
+
 - `popkit-core` - Foundation (account, stats, Power Mode) - 11 commands
 - `popkit-dev` - Development workflows (git, GitHub, routines) - 7 commands
 - `popkit-ops` - Operations & quality (testing, security, deploy) - 5 commands
@@ -238,6 +240,7 @@ popkit/
 ## 📚 Documentation
 
 ### Plugin Documentation
+
 - [popkit-dev README](packages/popkit-dev/README.md)
 - [popkit-github README](packages/popkit-github/README.md)
 - [popkit-quality README](packages/popkit-quality/README.md)
@@ -247,6 +250,7 @@ popkit/
 - [popkit-meta Migration Guide](packages/popkit-meta/MIGRATION.md)
 
 ### Architecture
+
 - [Plugin Modularization Design](docs/plans/2025-12-20-plugin-modularization-design.md)
 - [Testing & Validation Plan](docs/plans/2025-12-21-phase5-testing-validation-plan.md)
 - [CLAUDE.md](CLAUDE.md) - Full development guide
@@ -260,6 +264,7 @@ popkit/
 **Progress**: 75% Complete
 
 **Recent Milestones**:
+
 - ✅ All 6 plugins extracted and tested (Phases 1-4)
 - ✅ 96.3% test pass rate (155/161 tests)
 - ✅ Zero functionality regression
@@ -283,6 +288,7 @@ PopKit is in active development. We welcome contributions!
 5. **Open a Pull Request**
 
 ### Development Resources
+
 - [GitHub Issues](https://github.com/jrc1883/popkit-claude/issues)
 - [CLAUDE.md](CLAUDE.md) - Development guide
 - [Contributing Guidelines](CONTRIBUTING.md)
@@ -309,7 +315,7 @@ Thanks to all the amazing people who have contributed to PopKit!
 </table>
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
-*Want to see your name here? Check out our [contributing guidelines](#-contributing)!*
+_Want to see your name here? Check out our [contributing guidelines](#-contributing)!_
 
 ---
 

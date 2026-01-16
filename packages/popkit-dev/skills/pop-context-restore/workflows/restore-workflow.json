@@ -76,23 +76,18 @@
           "type": "interactive",
           "prompt": "How would you like to proceed?",
           "options": [
-            {"label": "Proceed with next action", "value": "proceed"},
-            {"label": "Review specific file first", "value": "review"},
-            {"label": "Run full test suite", "value": "test"},
-            {"label": "See detailed task breakdown", "value": "tasks"}
+            { "label": "Proceed with next action", "value": "proceed" },
+            { "label": "Review specific file first", "value": "review" },
+            { "label": "Run full test suite", "value": "test" },
+            { "label": "See detailed task breakdown", "value": "tasks" }
           ]
         }
       ]
     }
   ],
   "triggers": {
-    "automatic": [
-      "After session-resume for Fresh Start sessions"
-    ],
-    "manual": [
-      "Manual deep restore request",
-      "Invoke pop-context-restore skill"
-    ]
+    "automatic": ["After session-resume for Fresh Start sessions"],
+    "manual": ["Manual deep restore request", "Invoke pop-context-restore skill"]
   },
   "context_sources": [
     {

@@ -10,6 +10,7 @@ Compute vector embeddings for project-local items to enable semantic discovery a
 ## Enhancement Available
 
 This skill works in two modes:
+
 - **Without API key**: Keyword-based file search (fully functional)
 - **With API key**: Semantic embeddings for intelligent discovery (enhanced)
 
@@ -17,7 +18,7 @@ This skill works in two modes:
 
 All users can search projects using built-in file search:
 
-```markdown
+````markdown
 ## Keyword Search Mode
 
 Project search works great with built-in tools!
@@ -25,21 +26,26 @@ Project search works great with built-in tools!
 ### Available Search Methods
 
 **Find skills:**
+
 ```bash
 ls .claude/skills/*/SKILL.md 2>/dev/null
 ```
+````
 
 **Find agents:**
+
 ```bash
 ls .claude/agents/*/AGENT.md 2>/dev/null
 ```
 
 **Find commands:**
+
 ```bash
 ls .claude/commands/*.md 2>/dev/null
 ```
 
 **Search by keyword:**
+
 ```bash
 grep -r "keyword" .claude/
 ```
@@ -47,13 +53,15 @@ grep -r "keyword" .claude/
 ### What Semantic Embeddings Add
 
 With an API key, you get semantic intelligence:
+
 - ✨ **Semantic search** - Find by meaning, not just keywords
 - 🔍 **Smart routing** - Auto-select best agent for task
 - ⚡ **Cross-project discovery** - Find patterns across codebases
 - 📊 **Relevance ranking** - Results sorted by semantic similarity
 
 Get a free API key: `/popkit:cloud signup`
-```
+
+````
 
 ### Enhancement Detection
 
@@ -70,7 +78,7 @@ if not result.has_api_key:
     print("Use file search: `grep -r 'keyword' .claude/`")
     print("\nFor semantic enhancements: `/popkit:cloud signup` (free)")
     return
-```
+````
 
 ## When to Use
 
@@ -84,6 +92,7 @@ if not result.has_api_key:
 ### Step 1: Parse Arguments
 
 Check for flags in the user's command:
+
 - `--status`: Show status only, don't embed
 - `--force` or `-f`: Re-embed all items even if unchanged
 - `--type <type>`: Filter to specific type (skill, agent, command)
@@ -160,17 +169,18 @@ elif result["status"] == "error":
 ### Step 3: Handle Rate Limiting
 
 The embedding module automatically handles rate limiting:
+
 - Batches up to 50 items per API call
 - Waits 21 seconds between batches (Voyage 3 RPM limit)
 - Displays progress during wait
 
 ## Project Locations Scanned
 
-| Location | Source Type |
-|----------|-------------|
-| `.claude/skills/*/SKILL.md` | project-skill |
-| `.claude/agents/*/AGENT.md` | project-agent |
-| `.claude/commands/*.md` | project-command |
+| Location                       | Source Type     |
+| ------------------------------ | --------------- |
+| `.claude/skills/*/SKILL.md`    | project-skill   |
+| `.claude/agents/*/AGENT.md`    | project-agent   |
+| `.claude/commands/*.md`        | project-command |
 | `.generated/skills/*/SKILL.md` | generated-skill |
 | `.generated/agents/*/AGENT.md` | generated-agent |
 
@@ -232,6 +242,7 @@ By Type:
 ## Integration
 
 This skill integrates with:
+
 - `hooks/utils/embedding_project.py` - Core embedding logic
 - `hooks/utils/embedding_store.py` - Database storage
 - `hooks/utils/voyage_client.py` - Voyage API client

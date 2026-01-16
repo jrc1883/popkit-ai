@@ -10,6 +10,6 @@ These abstractions allow PopKit to work with multiple storage backends
 without changing the core logic.
 """
 
-from .redis_interface import BaseRedisClient, BasePubSub
+from .redis_interface import BasePubSub, BaseRedisClient
 
 __all__ = ["BaseRedisClient", "BasePubSub"]

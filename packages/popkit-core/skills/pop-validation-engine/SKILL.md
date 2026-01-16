@@ -17,13 +17,13 @@ Comprehensive plugin integrity validation with safe automatic fixes for common i
 
 ## Arguments
 
-| Argument | Description |
-|----------|-------------|
-| (none) | Run validation checks only (default) |
-| `apply` | Apply safe auto-fixes |
-| `--component=<name>` | Validate specific component only |
-| `--json` | Output results as JSON |
-| `--verbose` | Show detailed validation output |
+| Argument             | Description                          |
+| -------------------- | ------------------------------------ |
+| (none)               | Run validation checks only (default) |
+| `apply`              | Apply safe auto-fixes                |
+| `--component=<name>` | Validate specific component only     |
+| `--json`             | Output results as JSON               |
+| `--verbose`          | Show detailed validation output      |
 
 ## Process
 
@@ -418,6 +418,7 @@ Invoked by `/popkit:plugin sync [apply] [--component=<name>]`
 ### Dependencies
 
 **Required utilities**:
+
 - `popkit_shared.utils.plugin_validator`
 - `popkit_shared.utils.skill_validator`
 - `popkit_shared.utils.agent_router_test`

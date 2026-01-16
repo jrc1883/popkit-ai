@@ -65,7 +65,15 @@
           "file": "hooks/hooks.json",
           "type": "json_array_values",
           "path": "hooks[*].event",
-          "allowed_values": ["PreToolUse", "PostToolUse", "SessionStart", "Stop", "SubagentStop", "Notification", "UserPromptSubmit"],
+          "allowed_values": [
+            "PreToolUse",
+            "PostToolUse",
+            "SessionStart",
+            "Stop",
+            "SubagentStop",
+            "Notification",
+            "UserPromptSubmit"
+          ],
           "severity": "critical",
           "deduction": 20
         },

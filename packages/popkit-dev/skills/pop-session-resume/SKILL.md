@@ -17,11 +17,11 @@ Restore context from STATUS.json when starting a new Claude Code session.
 
 Based on time since last update:
 
-| Time Gap | Session Type | Behavior |
-|----------|--------------|----------|
-| < 30 min | Continuation | Quick restore, assume full context |
-| 30 min - 4 hours | Resume | Restore context, brief refresh |
-| > 4 hours | Fresh Start | Full context load, verify state |
+| Time Gap         | Session Type | Behavior                           |
+| ---------------- | ------------ | ---------------------------------- |
+| < 30 min         | Continuation | Quick restore, assume full context |
+| 30 min - 4 hours | Resume       | Restore context, brief refresh     |
+| > 4 hours        | Fresh Start  | Full context load, verify state    |
 
 ## Resume Process
 
@@ -51,6 +51,7 @@ return "Fresh Start";
 ### Step 3: Display Session Summary
 
 **Continuation (< 30 min):**
+
 ```
 ⚡ Continuation Session
 Last: 15 minutes ago
@@ -64,6 +65,7 @@ Ready to continue.
 ```
 
 **Resume (30 min - 4 hours):**
+
 ```
 🔄 Resume Session
 Last: 2 hours ago
@@ -83,6 +85,7 @@ Shall I continue with the next action?
 ```
 
 **Fresh Start (> 4 hours):**
+
 ```
 🌅 Fresh Start Session
 Last activity: Yesterday at 2:30 PM
@@ -158,9 +161,11 @@ What would you like to do?
 ## Integration
 
 **Pairs with:**
+
 - **session-capture** - Creates STATUS.json that this reads
 - **context-restore** - More detailed context loading
 
 **Hook integration:**
+
 - Triggered by session-start hook
 - Runs automatically when Claude Code starts

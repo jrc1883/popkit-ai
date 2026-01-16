@@ -141,11 +141,7 @@
         "Essential info first",
         "Clean formatting"
       ],
-      "checks": [
-        "Default output is concise",
-        "No unnecessary verbosity",
-        "Clear visual hierarchy"
-      ],
+      "checks": ["Default output is concise", "No unnecessary verbosity", "Clear visual hierarchy"],
       "weight": 10
     },
     {
@@ -177,11 +173,7 @@
         "Quick start guides",
         "Searchable documentation"
       ],
-      "checks": [
-        "Every command has --help",
-        "Examples provided",
-        "Quick start available"
-      ],
+      "checks": ["Every command has --help", "Examples provided", "Quick start available"],
       "weight": 10
     }
   ],

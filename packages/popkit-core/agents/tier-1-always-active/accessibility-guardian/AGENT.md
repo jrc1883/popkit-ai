@@ -44,6 +44,7 @@ Ensures web applications meet WCAG 2.1 AA/AAA compliance standards, identifies a
 - **Efficiency**: Components audited, issues by severity, compliance percentage
 
 Example:
+
 ```
 ♿ accessibility-guardian T:18 P:50% | Keyboard Nav: 3 issues found
 ```
@@ -117,6 +118,7 @@ Participates in Power Mode check-ins every 5 tool calls.
 - **Tags**: [a11y, wcag, aria, keyboard, contrast, screen-reader]
 
 Example:
+
 ```
 ↑ "Missing form labels in LoginForm component" [a11y, wcag, form]
 ↑ "Color contrast 3.2:1 fails AA (needs 4.5:1)" [a11y, contrast]
@@ -125,6 +127,7 @@ Example:
 ### PULL (Incoming)
 
 Accept insights with tags:
+
 - `[ui]` - From ui-designer about component structure
 - `[test]` - From test-writer about a11y test coverage
 - `[component]` - From code-reviewer about component changes
@@ -144,24 +147,24 @@ Accept insights with tags:
 
 ### Upstream (Receives from)
 
-| Agent | What It Provides |
-|-------|------------------|
-| ui-designer | Component designs to audit |
-| code-reviewer | Code changes affecting UI |
+| Agent         | What It Provides           |
+| ------------- | -------------------------- |
+| ui-designer   | Component designs to audit |
+| code-reviewer | Code changes affecting UI  |
 
 ### Downstream (Passes to)
 
-| Agent | What It Receives |
-|-------|------------------|
-| test-writer-fixer | A11y test requirements |
+| Agent                    | What It Receives         |
+| ------------------------ | ------------------------ |
+| test-writer-fixer        | A11y test requirements   |
 | documentation-maintainer | Accessibility guidelines |
 
 ### Parallel (Works alongside)
 
-| Agent | Collaboration Pattern |
-|-------|----------------------|
-| code-reviewer | Flags a11y issues in reviews |
-| ui-designer | Collaborates on accessible patterns |
+| Agent         | Collaboration Pattern               |
+| ------------- | ----------------------------------- |
+| code-reviewer | Flags a11y issues in reviews        |
+| ui-designer   | Collaborates on accessible patterns |
 
 ## Output Format
 
@@ -169,32 +172,39 @@ Accept insights with tags:
 ## Accessibility Audit Results
 
 ### Summary
+
 - **Components Audited**: [N]
 - **Compliance Level**: [A/AA/AAA partial]
 - **Issues Found**: Critical: [N], Major: [N], Minor: [N]
 
 ### Critical Issues (Must Fix)
+
 - [ ] [Issue]: [Description] (WCAG [criterion])
   - Location: `path/to/file.tsx:line`
   - Fix: [Specific remediation]
 
 ### Major Issues (Should Fix)
+
 - [ ] [Issue]: [Description] (WCAG [criterion])
 
 ### Minor Issues (Consider)
+
 - [ ] [Issue]: [Description]
 
 ### Passed Checks
+
 - [x] Primary key uniqueness
 - [x] Focus indicators visible
 - [x] Heading hierarchy correct
 
 ### Recommendations
+
 1. [Immediate action]
 2. [Short-term improvement]
 3. [Long-term enhancement]
 
 ### Testing Configuration
+
 [axe/jest-axe setup for automated testing]
 ```
 
@@ -213,13 +223,13 @@ Completion is achieved when:
 
 Report these metrics on completion:
 
-| Metric | Description |
-|--------|-------------|
-| Components audited | Number of UI elements checked |
-| Issues found | By severity level |
-| WCAG criteria checked | Coverage of guidelines |
-| Compliance estimate | Percentage meeting AA |
-| Test coverage | A11y tests recommended |
+| Metric                | Description                   |
+| --------------------- | ----------------------------- |
+| Components audited    | Number of UI elements checked |
+| Issues found          | By severity level             |
+| WCAG criteria checked | Coverage of guidelines        |
+| Compliance estimate   | Percentage meeting AA         |
+| Test coverage         | A11y tests recommended        |
 
 ## Completion Signal
 
@@ -247,17 +257,17 @@ Top priorities:
 
 ## Reference: WCAG Quick Reference
 
-| Level | Meaning |
-|-------|---------|
-| A | Minimum accessibility |
-| AA | Standard compliance (recommended) |
-| AAA | Enhanced accessibility |
+| Level | Meaning                           |
+| ----- | --------------------------------- |
+| A     | Minimum accessibility             |
+| AA    | Standard compliance (recommended) |
+| AAA   | Enhanced accessibility            |
 
 ## Reference: Common Issues
 
-| Issue | WCAG | Fix |
-|-------|------|-----|
-| Missing alt text | 1.1.1 | Add descriptive alt |
-| Low contrast | 1.4.3 | 4.5:1 for text, 3:1 for large |
-| No focus indicator | 2.4.7 | Visible focus styles |
-| Missing labels | 3.3.2 | Associate labels with inputs |
+| Issue              | WCAG  | Fix                           |
+| ------------------ | ----- | ----------------------------- |
+| Missing alt text   | 1.1.1 | Add descriptive alt           |
+| Low contrast       | 1.4.3 | 4.5:1 for text, 3:1 for large |
+| No focus indicator | 2.4.7 | Visible focus styles          |
+| Missing labels     | 3.3.2 | Associate labels with inputs  |

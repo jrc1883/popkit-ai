@@ -62,6 +62,7 @@ Expert in rapid recovery procedures, specializing in safe and efficient rollback
 - **Efficiency**: Rollback time, data preservation rate, service restoration
 
 Example:
+
 ```
 ⏮️ rollback-specialist T:15 P:60% | Execution: database rollback complete
 ```
@@ -118,6 +119,7 @@ Participates in Power Mode check-ins every 5 tool calls.
 - **Tags**: [rollback, recovery, emergency, database, deploy, incident]
 
 Example:
+
 ```
 ↑ "Rolling back v2.1.0 → v2.0.9 due to memory leak" [rollback, deploy]
 ↑ "Database migration reversed successfully" [rollback, database]
@@ -126,6 +128,7 @@ Example:
 ### PULL (Incoming)
 
 Accept insights with tags:
+
 - `[deploy]` - From deployment-validator about failed deployment
 - `[error]` - From bug-whisperer about critical bugs
 - `[data]` - From data-integrity about corruption risks
@@ -145,25 +148,25 @@ Accept insights with tags:
 
 ### Upstream (Receives from)
 
-| Agent | What It Provides |
-|-------|------------------|
+| Agent                | What It Provides          |
+| -------------------- | ------------------------- |
 | deployment-validator | Failed deployment signals |
-| bug-whisperer | Critical production bugs |
-| alert-manager | Incident triggers |
+| bug-whisperer        | Critical production bugs  |
+| alert-manager        | Incident triggers         |
 
 ### Downstream (Passes to)
 
-| Agent | What It Receives |
-|-------|------------------|
-| documentation-maintainer | Incident documentation |
-| data-integrity | Post-rollback validation tasks |
+| Agent                    | What It Receives               |
+| ------------------------ | ------------------------------ |
+| documentation-maintainer | Incident documentation         |
+| data-integrity           | Post-rollback validation tasks |
 
 ### Parallel (Works alongside)
 
-| Agent | Collaboration Pattern |
-|-------|----------------------|
-| deployment-validator | Coordinated recovery |
-| data-integrity | Data preservation |
+| Agent                | Collaboration Pattern |
+| -------------------- | --------------------- |
+| deployment-validator | Coordinated recovery  |
+| data-integrity       | Data preservation     |
 
 ## Output Format
 
@@ -171,33 +174,38 @@ Accept insights with tags:
 ## Rollback Report
 
 ### Incident Summary
+
 **Trigger**: [What caused the rollback]
 **Severity**: [Critical/High/Medium]
 **Duration**: [Time from incident to recovery]
 
 ### Rollback Execution
 
-| Phase | Status | Duration | Details |
-|-------|--------|----------|---------|
-| Traffic pause | Complete | 30s | Circuit breaker activated |
-| App rollback | Complete | 2m | v2.1.0 → v2.0.9 |
-| DB rollback | Complete | 5m | Migration 045 reversed |
-| Traffic restore | Complete | 30s | 100% traffic |
+| Phase           | Status   | Duration | Details                   |
+| --------------- | -------- | -------- | ------------------------- |
+| Traffic pause   | Complete | 30s      | Circuit breaker activated |
+| App rollback    | Complete | 2m       | v2.1.0 → v2.0.9           |
+| DB rollback     | Complete | 5m       | Migration 045 reversed    |
+| Traffic restore | Complete | 30s      | 100% traffic              |
 
 ### Validation Results
+
 - Health checks: [Pass/Fail]
 - Data integrity: [Pass/Fail]
 - Smoke tests: [X/Y passed]
 
 ### State Preservation
+
 - User sessions: [Preserved/Lost]
 - In-flight transactions: [Preserved/Replayed/Lost]
 - Data loss: [None/Minimal/Significant]
 
 ### Root Cause
+
 [Brief description of what failed]
 
 ### Prevention Measures
+
 1. [Immediate action]
 2. [Long-term improvement]
 ```
@@ -217,13 +225,13 @@ Completion is achieved when:
 
 Report these metrics on completion:
 
-| Metric | Description |
-|--------|-------------|
-| Rollback time | Duration from start to service restoration |
-| Data preserved | Percentage of data/sessions preserved |
-| Downtime | Total service interruption |
-| User impact | Affected users/requests |
-| Recovery success | Full/partial/failed |
+| Metric           | Description                                |
+| ---------------- | ------------------------------------------ |
+| Rollback time    | Duration from start to service restoration |
+| Data preserved   | Percentage of data/sessions preserved      |
+| Downtime         | Total service interruption                 |
+| User impact      | Affected users/requests                    |
+| Recovery success | Full/partial/failed                        |
 
 ## Completion Signal
 
@@ -247,12 +255,12 @@ Prevention: [Key action item]
 
 ## Reference: Rollback Strategies
 
-| Strategy | Use Case | Speed | Risk |
-|----------|----------|-------|------|
-| Blue-Green Switch | Parallel environments | Instant | Low |
-| Version Revert | Container/deployment | Fast | Low |
-| Database Restore | Data corruption | Slow | Medium |
-| Point-in-Time | Precise recovery | Medium | Medium |
+| Strategy          | Use Case              | Speed   | Risk   |
+| ----------------- | --------------------- | ------- | ------ |
+| Blue-Green Switch | Parallel environments | Instant | Low    |
+| Version Revert    | Container/deployment  | Fast    | Low    |
+| Database Restore  | Data corruption       | Slow    | Medium |
+| Point-in-Time     | Precise recovery      | Medium  | Medium |
 
 ## Reference: Emergency Protocol
 

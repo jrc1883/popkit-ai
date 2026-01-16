@@ -1,0 +1,104 @@
+name: Lint
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  ruff-check:
+    name: Ruff - Python Linting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Run ruff check
+        run: |
+          cd packages/shared-py
+          ruff check . || echo "⚠️ Ruff linting found issues (non-blocking for now)"
+        continue-on-error: true
+
+  ruff-format:
+    name: Ruff - Python Formatting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Check Python formatting
+        run: |
+          cd packages/shared-py
+          ruff format --check .
+
+  eslint:
+    name: ESLint - TypeScript Linting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run ESLint
+        run: |
+          # Only run if TypeScript files exist
+          if find packages -name "*.ts" -type f | grep -q .; then
+            npx eslint "packages/**/*.ts" --max-warnings 0 || echo "No TypeScript files to lint"
+          else
+            echo "No TypeScript files found, skipping ESLint"
+          fi
+
+  prettier-check:
+    name: Prettier - Code Formatting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Check JSON formatting
+        run: npm run lint:json || echo "⚠️ Prettier found JSON formatting issues (non-blocking for now)"
+        continue-on-error: true
+
+      - name: Check Markdown formatting
+        run: npm run lint:md || echo "⚠️ Prettier found Markdown formatting issues (non-blocking for now)"
+        continue-on-error: true

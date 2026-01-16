@@ -117,19 +117,13 @@
       ]
     }
   ],
-  "dependencies": [
-    "hooks/chain-validator.py"
-  ],
-  "removed_dependencies": [
-    "hooks/agent-orchestrator.py (removed in Issue #117)"
-  ],
+  "dependencies": ["hooks/chain-validator.py"],
+  "removed_dependencies": ["hooks/agent-orchestrator.py (removed in Issue #117)"],
   "notes": [
     "This test verifies Task tool works after removing agent-orchestrator.py",
     "agent-orchestrator.py was dead code with legacy OPTIMUS/Contains Studio references",
     "Task tool orchestration now handled by Power Mode and SessionStart hook",
     "chain-validator.py is the only PreToolUse hook for Task tool"
   ],
-  "related_issues": [
-    "#117"
-  ]
+  "related_issues": ["#117"]
 }

@@ -8,20 +8,21 @@ Critical for user data protection and regulatory compliance.
 
 import sys
 import tempfile
-import pytest
 from pathlib import Path
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from popkit_shared.utils.privacy import (
     AnonymizationLevel,
+    PrivacyManager,
     PrivacySettings,
-    detect_sensitive_data,
-    anonymize_content,
     abstract_code_identifiers,
     abstract_error_message,
+    anonymize_content,
+    detect_sensitive_data,
     generate_content_hash,
-    PrivacyManager
 )
 
 
@@ -51,9 +52,7 @@ class TestPrivacySettings:
     def test_to_dict(self):
         """Test converting settings to dictionary"""
         settings = PrivacySettings(
-            sharing_enabled=False,
-            consent_given=True,
-            consent_timestamp="2024-01-01T00:00:00"
+            sharing_enabled=False, consent_given=True, consent_timestamp="2024-01-01T00:00:00"
         )
         result = settings.to_dict()
 
@@ -68,7 +67,7 @@ class TestPrivacySettings:
             "sharing_enabled": False,
             "anonymization_level": "strict",
             "consent_given": True,
-            "auto_delete_days": 30
+            "auto_delete_days": 30,
         }
         settings = PrivacySettings.from_dict(data)
 

@@ -51,6 +51,7 @@ Created comprehensive unit tests for 6 critical PopKit skill scripts across 3 pl
   - String instead of numbers
 
 **Critical Features Tested**:
+
 - Multi-dimensional scoring algorithm
 - Partial credit logic (services, dependencies, branches)
 - Threshold-based grading system
@@ -96,6 +97,7 @@ Created comprehensive unit tests for 6 critical PopKit skill scripts across 3 pl
   - String type mismatches
 
 **Critical Features Tested**:
+
 - Weighted scoring for shutdown quality
 - Partial credit (issues: 10pts, logs: 5pts)
 - Date-based issue freshness checks
@@ -141,6 +143,7 @@ Created comprehensive unit tests for 6 critical PopKit skill scripts across 3 pl
   - README.md detection
 
 **Critical Features Tested**:
+
 - Multi-language project detection
 - Framework identification from dependencies
 - Category classification (frontend, backend, CLI)
@@ -167,8 +170,8 @@ Created comprehensive unit tests for 6 critical PopKit skill scripts across 3 pl
 
 - **File Exclusion Logic** (8 tests)
   - node_modules, .git, dist, build directories
-  - __pycache__ directories
-  - Test files (*.test.*, *.spec.*)
+  - **pycache** directories
+  - Test files (_.test._, _.spec._)
   - Source file inclusion
   - Config file inclusion
 
@@ -206,6 +209,7 @@ Created comprehensive unit tests for 6 critical PopKit skill scripts across 3 pl
   - Very long lines
 
 **Critical Features Tested**:
+
 - 10 secret detection patterns with CWE mappings
 - Exclusion filtering for build artifacts
 - Placeholder/example filtering to reduce false positives
@@ -267,6 +271,7 @@ Created comprehensive unit tests for 6 critical PopKit skill scripts across 3 pl
   - Extreme values
 
 **Critical Features Tested**:
+
 - Multi-category weighted risk calculation
 - Inverse score transformation (compliance → risk)
 - OWASP Top 10 mapping
@@ -299,7 +304,7 @@ Created comprehensive unit tests for 6 critical PopKit skill scripts across 3 pl
   - Subset similarity
 
 - **Statement Extraction** (6 tests)
-  - Bullet points (-, *)
+  - Bullet points (-, \*)
   - Sentence extraction
   - Header filtering
   - Short sentence filtering (<20 chars)
@@ -336,6 +341,7 @@ Created comprehensive unit tests for 6 critical PopKit skill scripts across 3 pl
   - Similarity bounds [0, 1]
 
 **Critical Features Tested**:
+
 - NLP-based duplicate detection using Jaccard similarity
 - Contradiction pattern matching with 8 pattern pairs
 - Topic overlap filtering to reduce false positives
@@ -347,11 +353,13 @@ Created comprehensive unit tests for 6 critical PopKit skill scripts across 3 pl
 ## Test Infrastructure
 
 ### Shared Fixtures (from conftest.py)
+
 - `temp_dir`: Temporary directory for file operations
 - `temp_project_dir`: Project with `.claude/popkit` structure
 - Platform detection mocks (Linux, Windows, macOS)
 
 ### Test Organization
+
 ```
 tests/skills/
 ├── __init__.py
@@ -369,12 +377,14 @@ tests/skills/
 ## Test Execution
 
 ### Run All Skill Script Tests
+
 ```bash
 cd packages/shared-py
 pytest tests/skills/ -v
 ```
 
 ### Run Specific Script Tests
+
 ```bash
 pytest tests/skills/test_ready_to_code_score.py -v
 pytest tests/skills/test_sleep_score.py -v
@@ -385,6 +395,7 @@ pytest tests/skills/test_detect_conflicts.py -v
 ```
 
 ### Run with Coverage
+
 ```bash
 pytest tests/skills/ --cov=popkit_shared --cov-report=html
 ```
@@ -394,6 +405,7 @@ pytest tests/skills/ --cov=popkit_shared --cov-report=html
 ## Test Results
 
 ### Overall Statistics
+
 - **Total Tests**: 236
 - **Passed**: 236 (100%)
 - **Failed**: 0
@@ -402,21 +414,22 @@ pytest tests/skills/ --cov=popkit_shared --cov-report=html
 
 ### Test Breakdown by Script
 
-| Skill Script | Plugin | Tests | Pass | Coverage Target |
-|--------------|--------|-------|------|----------------|
-| `ready_to_code_score.py` | popkit-dev | 54 | 54 | 85%+ ✅ |
-| `sleep_score.py` | popkit-dev | 46 | 46 | 85%+ ✅ |
-| `detect_project_type.py` | popkit-core | 42 | 42 | 80%+ ✅ |
-| `scan_secrets.py` | popkit-ops | 48 | 48 | 80%+ ✅ |
-| `calculate_risk.py` | popkit-ops | 32 | 32 | 75%+ ✅ |
-| `detect_conflicts.py` | popkit-research | 46 | 46 | 75%+ ✅ |
-| **Total** | **4 plugins** | **236** | **236** | **100% Pass Rate** ✅ |
+| Skill Script             | Plugin          | Tests   | Pass    | Coverage Target       |
+| ------------------------ | --------------- | ------- | ------- | --------------------- |
+| `ready_to_code_score.py` | popkit-dev      | 54      | 54      | 85%+ ✅               |
+| `sleep_score.py`         | popkit-dev      | 46      | 46      | 85%+ ✅               |
+| `detect_project_type.py` | popkit-core     | 42      | 42      | 80%+ ✅               |
+| `scan_secrets.py`        | popkit-ops      | 48      | 48      | 80%+ ✅               |
+| `calculate_risk.py`      | popkit-ops      | 32      | 32      | 75%+ ✅               |
+| `detect_conflicts.py`    | popkit-research | 46      | 46      | 75%+ ✅               |
+| **Total**                | **4 plugins**   | **236** | **236** | **100% Pass Rate** ✅ |
 
 ---
 
 ## Test Quality Features
 
 ### Comprehensive Coverage
+
 - ✅ Success cases (happy path)
 - ✅ Failure cases (error conditions)
 - ✅ Edge cases (empty, None, invalid input)
@@ -427,6 +440,7 @@ pytest tests/skills/ --cov=popkit_shared --cov-report=html
 - ✅ Unicode/international character support
 
 ### Best Practices Applied
+
 - **Arrange-Act-Assert pattern** for test clarity
 - **Descriptive test names** that explain intent
 - **Isolated tests** with no dependencies between tests
@@ -437,6 +451,7 @@ pytest tests/skills/ --cov=popkit_shared --cov-report=html
 - **Error handling** with try-except blocks for tolerant tests
 
 ### Testing Principles
+
 - **Unit testing**: Each function tested independently
 - **Black-box testing**: Testing public interfaces
 - **Boundary testing**: Testing edge values (0, max, negative)
@@ -448,16 +463,19 @@ pytest tests/skills/ --cov=popkit_shared --cov-report=html
 ## Coverage Improvements
 
 ### Before This Work
+
 - **Skill Script Tests**: 0 test files
 - **Test Coverage**: ~5% (2/38 skill scripts had any tests)
 
 ### After This Work
+
 - **Skill Script Tests**: 6 comprehensive test files
 - **Test Coverage**: ~21% (8/38 skill scripts tested)
 - **Critical Scripts**: 100% of highest-priority scripts tested
 - **Test Quality**: Production-grade with edge case coverage
 
 ### Scripts Tested (Priority Order)
+
 1. ✅ **ready_to_code_score.py** - Morning routine scoring (54 tests)
 2. ✅ **sleep_score.py** - Nightly routine scoring (46 tests)
 3. ✅ **detect_project_type.py** - Project initialization (42 tests)
@@ -502,15 +520,18 @@ These tests provide critical coverage for:
 ## Remaining Work
 
 ### Additional Skill Scripts to Test (Priority)
+
 The following scripts were identified but not in this scope:
 
 **High Priority** (Complex Business Logic):
+
 - [ ] `morning_report_generator.py` - Report formatting and aggregation
 - [ ] `report_generator.py` (nightly) - Nightly report formatting
 - [ ] `analyze_state.py` - State analysis for next actions
 - [ ] `recommend_action.py` - Action recommendation logic
 
 **Medium Priority** (Moderate Complexity):
+
 - [ ] `capture_state.py` - Session state capture
 - [ ] `restore_state.py` - Session state restoration
 - [ ] `validate_plan.py` - Plan validation logic
@@ -518,11 +539,13 @@ The following scripts were identified but not in this scope:
 - [ ] `analyze_project.py` (MCP) - Project analysis for MCP
 
 **Lower Priority** (Workflow Orchestration):
+
 - [ ] `morning_workflow.py` - Workflow orchestration (mainly calls other scripts)
 - [ ] `nightly_workflow.py` - Workflow orchestration (mainly calls other scripts)
 - [ ] `scan_injection.py` - SQL/command injection scanning
 
 ### Potential Enhancements
+
 - Add mutation testing for critical security paths
 - Performance benchmarks for large datasets
 - Integration tests combining multiple scripts
@@ -549,7 +572,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: "3.11"
       - name: Install dependencies
         run: |
           cd packages/shared-py
@@ -570,6 +593,7 @@ jobs:
 ## Documentation
 
 All test files include:
+
 - **Module-level docstrings** explaining test scope
 - **Class-level docstrings** for test groups
 - **Function-level docstrings** for each test
@@ -578,6 +602,7 @@ All test files include:
 - **Consistent naming** following pytest conventions
 
 Example:
+
 ```python
 class TestCalculateReadyToCodeScore:
     """Test score calculation logic"""
@@ -616,6 +641,7 @@ This test coverage provides:
 Successfully created **236 comprehensive tests** for **6 critical skill scripts** across **4 PopKit plugins**, achieving **100% pass rate**.
 
 These tests cover:
+
 - ✅ Morning/nightly routine scoring algorithms
 - ✅ Project type detection and initialization
 - ✅ Security secret scanning with 10 patterns

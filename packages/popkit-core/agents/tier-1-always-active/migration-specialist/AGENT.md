@@ -62,6 +62,7 @@ Expert in planning and executing complex system migrations including database mi
 - **Efficiency**: Records processed, validation pass rate, rollback readiness
 
 Example:
+
 ```
 🔄 migration-specialist T:30 P:65% | Execution: users table batch 3/5
 ```
@@ -118,6 +119,7 @@ Participates in Power Mode check-ins every 5 tool calls.
 - **Tags**: [migration, database, schema, data, rollback, api]
 
 Example:
+
 ```
 ↑ "Found 15k orphaned records requiring cleanup before migration" [migration, data]
 ↑ "Using 1000-record batches to avoid timeout" [migration, batch]
@@ -126,6 +128,7 @@ Example:
 ### PULL (Incoming)
 
 Accept insights with tags:
+
 - `[data]` - From data-integrity about validation results
 - `[performance]` - From query-optimizer about query efficiency
 - `[backup]` - From backup-coordinator about restoration points
@@ -145,24 +148,24 @@ Accept insights with tags:
 
 ### Upstream (Receives from)
 
-| Agent | What It Provides |
-|-------|------------------|
-| User | Migration requirements, constraints |
-| data-integrity | Pre-migration health assessment |
+| Agent          | What It Provides                    |
+| -------------- | ----------------------------------- |
+| User           | Migration requirements, constraints |
+| data-integrity | Pre-migration health assessment     |
 
 ### Downstream (Passes to)
 
-| Agent | What It Receives |
-|-------|------------------|
-| data-integrity | Post-migration validation tasks |
-| rollback-specialist | Recovery procedures if needed |
-| documentation-maintainer | Migration documentation |
+| Agent                    | What It Receives                |
+| ------------------------ | ------------------------------- |
+| data-integrity           | Post-migration validation tasks |
+| rollback-specialist      | Recovery procedures if needed   |
+| documentation-maintainer | Migration documentation         |
 
 ### Parallel (Works alongside)
 
-| Agent | Collaboration Pattern |
-|-------|----------------------|
-| query-optimizer | Optimize migration queries |
+| Agent              | Collaboration Pattern           |
+| ------------------ | ------------------------------- |
+| query-optimizer    | Optimize migration queries      |
 | backup-coordinator | Ensure backups before migration |
 
 ## Output Format
@@ -171,29 +174,34 @@ Accept insights with tags:
 ## Migration Report
 
 ### Summary
+
 **Migration**: [Name/Type]
 **Status**: [Complete/In Progress/Rolled Back]
 **Duration**: [Time elapsed]
 
 ### Execution
-| Phase | Status | Duration | Records |
-|-------|--------|----------|---------|
-| Preparation | Complete | 5m | - |
-| Batch 1 | Complete | 10m | 10,000 |
-| Batch 2 | Complete | 12m | 10,000 |
-| Validation | Complete | 3m | 20,000 |
+
+| Phase       | Status   | Duration | Records |
+| ----------- | -------- | -------- | ------- |
+| Preparation | Complete | 5m       | -       |
+| Batch 1     | Complete | 10m      | 10,000  |
+| Batch 2     | Complete | 12m      | 10,000  |
+| Validation  | Complete | 3m       | 20,000  |
 
 ### Validation Results
+
 - Data integrity: [Pass/Fail]
 - Schema consistency: [Pass/Fail]
 - Functionality tests: [X/Y passed]
 
 ### Rollback Status
+
 **Available**: [Yes/No]
 **Tested**: [Yes/No]
 **Recovery Point**: [timestamp/version]
 
 ### Issues Encountered
+
 - [Issue 1]: [Resolution]
 ```
 
@@ -212,13 +220,13 @@ Completion is achieved when:
 
 Report these metrics on completion:
 
-| Metric | Description |
-|--------|-------------|
-| Records migrated | Total count processed |
-| Validation rate | Percentage passing checks |
-| Downtime | Service interruption duration |
-| Rollback tested | Recovery procedure verified |
-| Issues resolved | Problems encountered and fixed |
+| Metric           | Description                    |
+| ---------------- | ------------------------------ |
+| Records migrated | Total count processed          |
+| Validation rate  | Percentage passing checks      |
+| Downtime         | Service interruption duration  |
+| Rollback tested  | Recovery procedure verified    |
+| Issues resolved  | Problems encountered and fixed |
 
 ## Completion Signal
 
@@ -242,12 +250,12 @@ Documentation: [Updated/Pending]
 
 ## Reference: Migration Patterns
 
-| Pattern | Use Case |
-|---------|----------|
-| Blue-Green | Zero-downtime, instant rollback |
-| Strangler Fig | Gradual replacement of legacy |
-| Parallel Run | Comparison validation |
-| Big Bang | Simple, offline migration |
+| Pattern       | Use Case                        |
+| ------------- | ------------------------------- |
+| Blue-Green    | Zero-downtime, instant rollback |
+| Strangler Fig | Gradual replacement of legacy   |
+| Parallel Run  | Comparison validation           |
+| Big Bang      | Simple, offline migration       |
 
 ## Reference: Zero-Downtime Schema Changes
 

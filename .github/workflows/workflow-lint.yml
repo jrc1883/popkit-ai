@@ -1,0 +1,113 @@
+# Workflow Validation
+#
+# Validates GitHub Actions workflows to prevent configuration errors:
+# - Checks for hyphenated parameters (should be underscores)
+# - Validates workflow syntax with actionlint
+# - Prevents merging broken workflows
+#
+# Part of Issue #162 (GitHub Actions workflow validation)
+
+name: Workflow Validation
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/**'
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  validate:
+    name: Validate Workflows
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check greetings.yml parameter naming
+        id: check-greetings
+        run: |
+          echo "Checking .github/workflows/greetings.yml for correct parameter naming..."
+
+          # Check for incorrect hyphenated parameters (ignore comments)
+          if grep -v '^\s*#' .github/workflows/greetings.yml | grep -E 'repo-token:|issue-message:|pr-message:' 2>/dev/null; then
+            echo "❌ ERROR: greetings.yml uses hyphens instead of underscores"
+            echo ""
+            echo "Found incorrect parameters (hyphens):"
+            grep -v '^\s*#' .github/workflows/greetings.yml | grep -n -E 'repo-token:|issue-message:|pr-message:' || true
+            echo ""
+            echo "Correct format:"
+            echo "  repo_token: \${{ secrets.GITHUB_TOKEN }}"
+            echo "  issue_message: |"
+            echo "  pr_message: |"
+            echo ""
+            echo "See CLAUDE.md 'GitHub Actions Standards' section for details"
+            exit 1
+          fi
+
+          # Verify correct underscored parameters exist
+          if ! grep -q 'repo_token:' .github/workflows/greetings.yml; then
+            echo "❌ ERROR: greetings.yml missing repo_token parameter"
+            exit 1
+          fi
+
+          echo "✅ greetings.yml uses correct underscored parameters"
+
+      - name: Check all workflows for common issues
+        id: check-all
+        run: |
+          echo "Checking all workflows for common configuration issues..."
+
+          # Check for any workflow using underscore params with common actions
+          files_with_issues=()
+
+          for file in .github/workflows/*.yml .github/workflows/*.yaml; do
+            if [ -f "$file" ]; then
+              # Skip workflow-lint.yml (this file) to avoid self-validation issues
+              if [ "$file" = ".github/workflows/workflow-lint.yml" ]; then
+                continue
+              fi
+
+              # Check actions/first-interaction specifically (ignore comments)
+              if grep -q 'uses: actions/first-interaction' "$file"; then
+                if grep -v '^\s*#' "$file" | grep -E 'repo-token:|issue-message:|pr-message:' >/dev/null 2>&1; then
+                  echo "⚠️  $file: uses actions/first-interaction with hyphenated parameters"
+                  files_with_issues+=("$file")
+                fi
+              fi
+            fi
+          done
+
+          if [ ${#files_with_issues[@]} -gt 0 ]; then
+            echo ""
+            echo "❌ Found workflows with parameter naming issues:"
+            printf '%s\n' "${files_with_issues[@]}"
+            echo ""
+            echo "GitHub Actions require underscored parameter names (snake_case) for actions/first-interaction."
+            echo "See CLAUDE.md 'GitHub Actions Standards' section for details."
+            exit 1
+          fi
+
+          echo "✅ All workflows pass parameter naming check"
+
+      - name: Validate workflow syntax with actionlint
+        uses: docker://rhysd/actionlint:latest
+        with:
+          args: -color -verbose
+
+      - name: Summary
+        if: success()
+        run: |
+          echo "✅ All workflow validations passed!"
+          echo ""
+          echo "Validated:"
+          echo "  - Parameter naming (underscores not hyphens)"
+          echo "  - Workflow syntax (actionlint)"
+          echo "  - Common configuration issues"

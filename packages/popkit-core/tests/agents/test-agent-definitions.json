@@ -8,12 +8,7 @@
     {
       "case_id": "agent-files-exist",
       "name": "Agent markdown files exist in all plugins",
-      "plugins": [
-        "popkit-core",
-        "popkit-dev",
-        "popkit-ops",
-        "popkit-research"
-      ],
+      "plugins": ["popkit-core", "popkit-dev", "popkit-ops", "popkit-research"],
       "assertions": [
         {
           "type": "agents_directory_exists",
@@ -88,10 +83,7 @@
       ]
     }
   ],
-  "dependencies": [
-    "popkit_shared.utils.agent_validator",
-    "popkit_shared.utils.frontmatter_parser"
-  ],
+  "dependencies": ["popkit_shared.utils.agent_validator", "popkit_shared.utils.frontmatter_parser"],
   "notes": [
     "Agent routing is semantic based on descriptions, not keyword configs",
     "Each plugin manages its own agents independently",

@@ -54,6 +54,7 @@ User: "Parse this PRD: docs/feature-spec.md"
 ```
 
 The agent will:
+
 1. Read and parse the PRD file
 2. Extract all features (H2-H4 headers)
 3. Analyze complexity automatically (via complexity_scoring.py)
@@ -157,12 +158,14 @@ for tech in result.technologies:
 ```
 
 **Research triggers:**
+
 - New versions: Next.js 15, React 19, Vue 4
 - Recent frameworks: Remix, Astro, Qwik, Solid
 - Modern tools: Bun, Deno, Elysia, Hono
 - New ORMs: Drizzle, Kysely
 
 **Skip research:**
+
 - Established frameworks: React 18 and below
 - Common tools: Express, PostgreSQL, Redis
 - Well-known libraries with stable APIs
@@ -183,19 +186,23 @@ Brief overview...
 Feature description and requirements.
 
 **Acceptance Criteria:**
+
 - AC: User can do X
 - AC: System must do Y
 
 **Dependencies:**
+
 - Requires: Feature Z
 - Depends on: Service A
 
 **Technical Requirements:**
+
 - Use Technology X
 - Implement pattern Y
 ```
 
 **Key patterns:**
+
 - H1: Document title (skipped as feature)
 - H2: Major sections (Features, Technical Stack, etc.)
 - H3-H4: Individual features and sub-features
@@ -233,11 +240,13 @@ User: "Parse .workspace/test-prd-user-auth.md"
 ## Value Proposition
 
 **Time Savings:**
+
 - Manual PRD breakdown: 2-4 hours
 - Automated parsing: 2-5 minutes
 - **95%+ time reduction**
 
 **Quality Improvements:**
+
 - Consistent task breakdown across PRDs
 - No missed acceptance criteria
 - Complexity-informed estimates from the start
@@ -245,6 +254,7 @@ User: "Parse .workspace/test-prd-user-auth.md"
 - Risk factors identified early
 
 **Integration Benefits:**
+
 - Seamless handoff to `/popkit:dev` workflows
 - Complexity already analyzed (no re-analysis needed)
 - Technologies already researched
@@ -261,6 +271,7 @@ Given this PRD:
 ## Features
 
 ### Shopping Cart
+
 Persistent cart with quantity management.
 
 - AC: User can add items to cart
@@ -269,6 +280,7 @@ Persistent cart with quantity management.
 - Requires: Product catalog system
 
 ### Payment Processing
+
 Secure payment with Stripe integration.
 
 - AC: User can enter payment details
@@ -300,6 +312,7 @@ Estimated: 7-11 days total
 ## Roadmap
 
 **Current (v1.0.0):**
+
 - ✓ Markdown PRD parsing
 - ✓ Complexity analysis integration
 - ✓ Technology detection and research
@@ -307,6 +320,7 @@ Estimated: 7-11 days total
 - ✓ GitHub issue creation
 
 **Future enhancements:**
+
 - Support for YAML frontmatter in PRDs
 - Extract user personas and journeys
 - Generate API specifications from PRDs

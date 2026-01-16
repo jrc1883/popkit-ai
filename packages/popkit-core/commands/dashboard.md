@@ -19,13 +19,13 @@ Unified view for managing multiple PopKit-enabled projects. Shows health scores,
 
 ## Subcommands
 
-| Subcommand | Description |
-|------------|-------------|
-| (default) | Display the multi-project dashboard |
-| `add <path>` | Register a project in the global registry |
-| `remove <name>` | Remove a project from the registry |
+| Subcommand       | Description                                 |
+| ---------------- | ------------------------------------------- |
+| (default)        | Display the multi-project dashboard         |
+| `add <path>`     | Register a project in the global registry   |
+| `remove <name>`  | Remove a project from the registry          |
 | `refresh [name]` | Recalculate health scores (all or specific) |
-| `discover` | Auto-discover projects in common locations |
+| `discover`       | Auto-discover projects in common locations  |
 
 ---
 
@@ -36,6 +36,7 @@ Display the full dashboard with all registered projects.
 ### Instructions
 
 1. **Load the project registry:**
+
    ```python
    from project_registry import list_projects, format_dashboard
 
@@ -53,6 +54,7 @@ Display the full dashboard with all registered projects.
    | popkit | 92 | 5 | 2 min ago |
 
 4. **Highlight projects needing attention:**
+
    ```python
    from project_registry import get_unhealthy_projects
 
@@ -91,6 +93,7 @@ Register a new project in the global registry.
 ### Instructions
 
 1. **Validate the path:**
+
    ```python
    from project_registry import detect_project_info
 
@@ -101,6 +104,7 @@ Register a new project in the global registry.
    ```
 
 2. **Add to registry:**
+
    ```python
    from project_registry import add_project
 
@@ -109,6 +113,7 @@ Register a new project in the global registry.
    ```
 
 3. **Calculate initial health score:**
+
    ```python
    from health_calculator import calculate_quick_health
    from project_registry import update_health_score
@@ -127,8 +132,8 @@ Register a new project in the global registry.
 
 ### Flags
 
-| Flag | Description |
-|------|-------------|
+| Flag            | Description                   |
+| --------------- | ----------------------------- |
 | `--tags <tags>` | Comma-separated tags to apply |
 
 ---
@@ -144,6 +149,7 @@ Remove a project from the registry (does not delete files).
 ### Instructions
 
 1. **Confirm removal:**
+
    ```
    Use AskUserQuestion tool with:
    - question: "Remove 'project-name' from dashboard? (Files will not be deleted)"
@@ -157,6 +163,7 @@ Remove a project from the registry (does not delete files).
    ```
 
 2. **Remove from registry:**
+
    ```python
    from project_registry import remove_project
 
@@ -168,7 +175,7 @@ Remove a project from the registry (does not delete files).
 
 ## Refresh Health Scores
 
-Recalculate health scores for all or specific projects.
+Recalculate health scores and refresh GitHub issue counts for all or specific projects.
 
 ```
 /popkit-core:dashboard refresh           # Refresh all projects
@@ -183,6 +190,7 @@ Recalculate health scores for all or specific projects.
    - Otherwise, refresh all registered projects
 
 2. **Calculate health scores:**
+
    ```python
    from project_registry import list_projects, update_health_score
    from health_calculator import calculate_health_score, calculate_quick_health
@@ -198,21 +206,45 @@ Recalculate health scores for all or specific projects.
        print(f"{project['name']}: {score}/100")
    ```
 
-3. **Show results summary:**
+3. **Refresh GitHub issue counts:**
+
+   ```python
+   from project_registry import load_registry, refresh_project_issue_counts, save_registry
+
+   registry = load_registry()
+   updated_count = refresh_project_issue_counts(registry)
+   save_registry(registry)
+
+   print(f"Updated issue counts for {updated_count} projects")
    ```
-   Health Refresh Complete
-   -----------------------
-   popkit:           92 (+2)
-   popkit-cloud:     78 (-3)
-   reseller-central: 88 (=)
+
+4. **Show results summary:**
+
    ```
+   Dashboard Refresh Complete
+   --------------------------
+   Health Scores:
+     popkit:           92 (+2)
+     popkit-cloud:     78 (-3)
+     reseller-central: 88 (=)
+
+   Issue Counts:
+     Updated 3 projects (~5 seconds)
+   ```
+
+**Performance Notes:**
+
+- Health score refresh: instant (quick mode) to 2-5s per project (full mode)
+- Issue count refresh: ~0.5s per project with GitHub integration
+- Total time for 10 projects: ~5-10 seconds
+- Failed fetches are handled gracefully (shows `'--'` in dashboard)
 
 ### Flags
 
-| Flag | Description |
-|------|-------------|
-| `--quick` | Quick refresh (git + activity only, faster) |
-| `--full` | Full refresh including build and tests (slower) |
+| Flag      | Description                                     |
+| --------- | ----------------------------------------------- |
+| `--quick` | Quick refresh (git + activity only, faster)     |
+| `--full`  | Full refresh including build and tests (slower) |
 
 ---
 
@@ -228,6 +260,7 @@ Auto-discover projects in common development directories.
 ### Instructions
 
 1. **Search for projects:**
+
    ```python
    from project_registry import discover_projects
 
@@ -236,6 +269,7 @@ Auto-discover projects in common development directories.
    ```
 
 2. **Show discovered projects:**
+
    ```
    Discovered 5 projects:
      popkit           /Users/dev/projects/popkit
@@ -244,6 +278,7 @@ Auto-discover projects in common development directories.
    ```
 
 3. **Prompt for registration:**
+
    ```
    Use AskUserQuestion tool with:
    - question: "Add discovered projects to dashboard?"
@@ -259,6 +294,7 @@ Auto-discover projects in common development directories.
    ```
 
 4. **Register selected projects:**
+
    ```python
    from project_registry import add_project
 
@@ -272,13 +308,13 @@ Auto-discover projects in common development directories.
 
 Health scores are calculated from 5 components (20 points each):
 
-| Component | Max | Criteria |
-|-----------|-----|----------|
-| **Git Status** | 20 | Clean tree (+20), uncommitted (-5/10 files) |
-| **Build Status** | 20 | Passed (+20), warnings (-2 each), failed (0) |
-| **Test Coverage** | 20 | >80% (+20), 60-80% (+15), <60% (+10) |
-| **Issue Health** | 20 | No stale (+20), -2 per stale (>30 days) |
-| **Activity** | 20 | Today (+20), week (+15), month (+10) |
+| Component         | Max | Criteria                                     |
+| ----------------- | --- | -------------------------------------------- |
+| **Git Status**    | 20  | Clean tree (+20), uncommitted (-5/10 files)  |
+| **Build Status**  | 20  | Passed (+20), warnings (-2 each), failed (0) |
+| **Test Coverage** | 20  | >80% (+20), 60-80% (+15), <60% (+10)         |
+| **Issue Health**  | 20  | No stale (+20), -2 per stale (>30 days)      |
+| **Activity**      | 20  | Today (+20), week (+15), month (+10)         |
 
 ---
 

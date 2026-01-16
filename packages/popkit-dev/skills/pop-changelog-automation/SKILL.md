@@ -59,19 +59,19 @@ PopKit follows conventional commit format:
 
 ### Commit Types
 
-| Type | Description | Version Bump |
-|------|-------------|--------------|
-| `feat` | New feature | MINOR (1.0.0 → 1.1.0) |
-| `fix` | Bug fix | PATCH (1.0.0 → 1.0.1) |
-| `perf` | Performance improvement | PATCH |
-| `refactor` | Code refactoring | PATCH |
-| `docs` | Documentation only | PATCH |
-| `test` | Test additions/updates | PATCH |
-| `chore` | Maintenance tasks | PATCH |
-| `ci` | CI/CD changes | PATCH |
-| `build` | Build system changes | PATCH |
-| `style` | Formatting, no code change | PATCH |
-| `BREAKING CHANGE` | Breaking change | MAJOR (1.0.0 → 2.0.0) |
+| Type              | Description                | Version Bump          |
+| ----------------- | -------------------------- | --------------------- |
+| `feat`            | New feature                | MINOR (1.0.0 → 1.1.0) |
+| `fix`             | Bug fix                    | PATCH (1.0.0 → 1.0.1) |
+| `perf`            | Performance improvement    | PATCH                 |
+| `refactor`        | Code refactoring           | PATCH                 |
+| `docs`            | Documentation only         | PATCH                 |
+| `test`            | Test additions/updates     | PATCH                 |
+| `chore`           | Maintenance tasks          | PATCH                 |
+| `ci`              | CI/CD changes              | PATCH                 |
+| `build`           | Build system changes       | PATCH                 |
+| `style`           | Formatting, no code change | PATCH                 |
+| `BREAKING CHANGE` | Breaking change            | MAJOR (1.0.0 → 2.0.0) |
 
 ## Version Bump Rules
 
@@ -206,14 +206,17 @@ python packages/shared-py/popkit_shared/utils/changelog_generator.py --json
 ## 🎉 What's New
 
 ### Changelog Automation
+
 Enhanced changelog generation with semantic versioning, auto-categorization, and intelligent version bump detection. Simply commit using conventional format and get professional changelogs automatically.
 (#27)
 
 ### Git Workflow Integration
+
 Automatic changelog updates on PR creation and merge. No more manual changelog maintenance - PopKit handles it all for you.
 (#28)
 
 ### Release Notes Generation
+
 Auto-generate GitHub release notes from commits with proper formatting, breaking change warnings, and migration guides.
 (#29)
 
@@ -222,6 +225,7 @@ Auto-generate GitHub release notes from commits with proper formatting, breaking
 ### Change authentication endpoint from /auth to /api/auth
 
 **Migration:**
+
 - Update all API calls to use new endpoint
 - See migration guide: docs/migrations/v1.1.0.md
 
@@ -297,6 +301,7 @@ See migration guide: docs/migrations/v1.1.0.md
 ```
 
 The changelog generator will:
+
 - Detect "BREAKING CHANGE" in footer
 - Categorize as MAJOR version bump
 - Extract migration notes from footer
@@ -323,11 +328,13 @@ The changelog generator validates:
 ## Value Delivery
 
 **Time Saved:**
+
 - Manual changelog: 30-45 minutes per release
 - Automated changelog: 30 seconds
 - **Savings: 98%+ time reduction**
 
 **Quality Improved:**
+
 - Consistent changelog format
 - No missed commits
 - Proper semantic versioning
@@ -341,12 +348,14 @@ The changelog generator validates:
 The changelog automation is implemented in:
 
 **Python utility:** `packages/shared-py/popkit_shared/utils/changelog_generator.py`
+
 - Main `ChangelogGenerator` class
 - Git commit parsing
 - Semantic version bump detection
 - CHANGELOG.md and release notes generation
 
 **Skill:** `packages/popkit-dev/skills/pop-changelog-automation/SKILL.md`
+
 - Usage documentation
 - Integration patterns
 - Examples and best practices
@@ -354,6 +363,7 @@ The changelog automation is implemented in:
 ### Dependencies
 
 No external dependencies required. Uses only Python standard library:
+
 - `subprocess` - Git command execution
 - `re` - Conventional commit parsing
 - `json` - JSON output format

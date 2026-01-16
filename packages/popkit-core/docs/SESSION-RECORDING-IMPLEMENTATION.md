@@ -7,17 +7,21 @@ Successfully implemented unified session recording that captures ALL tool calls 
 ## What Changed
 
 ### Before (Per-Tool Recording)
+
 ```
 2025-12-23-110730-test-abc.json  ← Tool call #1
 2025-12-23-110735-test-def.json  ← Tool call #2
 2025-12-23-110744-test-ghi.json  ← Tool call #3
 ```
+
 ❌ Each tool call created a separate file
 
 ### After (Session-Based Recording)
+
 ```
 2025-12-23-110730-test-abc123.json  ← ALL tool calls in ONE file
 ```
+
 ✅ All tool calls in a session go to the same unified file
 
 ## Architecture
@@ -86,12 +90,14 @@ Save to file with ALL events
 ### Multi-Tool Test (5 Tool Calls)
 
 **Command:**
+
 ```bash
 export POPKIT_RECORD=true POPKIT_COMMAND="multi-tool-test"
 # Simulate 5 tool calls
 ```
 
 **Result:**
+
 ```
 Session ID: 81ec1fc3
 Recording file: 2025-12-23-111839-multi-tool-test-81ec1fc3.json
@@ -116,24 +122,24 @@ Fresh instance: Loaded 6 events from same file ✓
 
 ## Tool Usage Breakdown
 
-| Tool  | Calls | Duration | Avg     |
-|-------|-------|----------|---------|
-| Tool1 | 1     | 100ms    | 100ms   |
-| Tool2 | 1     | 150ms    | 150ms   |
-| Tool3 | 1     | 200ms    | 200ms   |
-| Tool4 | 1     | 250ms    | 250ms   |
-| Tool5 | 1     | 300ms    | 300ms   |
+| Tool  | Calls | Duration | Avg   |
+| ----- | ----- | -------- | ----- |
+| Tool1 | 1     | 100ms    | 100ms |
+| Tool2 | 1     | 150ms    | 150ms |
+| Tool3 | 1     | 200ms    | 200ms |
+| Tool4 | 1     | 250ms    | 250ms |
+| Tool5 | 1     | 300ms    | 300ms |
 
 ## Event Timeline
 
-| # | Type         | Details      | Duration |
-|---|--------------|--------------|----------|
-| 0 | Session Start| -            | -        |
-| 1 | Tool Call    | Tool1 [OK]   | 100ms    |
-| 2 | Tool Call    | Tool2 [OK]   | 150ms    |
-| 3 | Tool Call    | Tool3 [OK]   | 200ms    |
-| 4 | Tool Call    | Tool4 [OK]   | 250ms    |
-| 5 | Tool Call    | Tool5 [OK]   | 300ms    |
+| #   | Type          | Details    | Duration |
+| --- | ------------- | ---------- | -------- |
+| 0   | Session Start | -          | -        |
+| 1   | Tool Call     | Tool1 [OK] | 100ms    |
+| 2   | Tool Call     | Tool2 [OK] | 150ms    |
+| 3   | Tool Call     | Tool3 [OK] | 200ms    |
+| 4   | Tool Call     | Tool4 [OK] | 250ms    |
+| 5   | Tool Call     | Tool5 [OK] | 300ms    |
 ```
 
 ## Usage
@@ -193,12 +199,12 @@ Sessions: `~/.claude/popkit/sessions/session-<id>.json`
 
 ## Files Modified
 
-| File | Changes |
-|------|---------|
-| `session_manager.py` | **NEW** - Session lifecycle management |
-| `session_recorder.py` | **UPDATED** - Session integration, event loading |
-| `post-tool-use.py` | **UPDATED** - Import and use session recorder |
-| `recording_analyzer.py` | No changes needed - works with new format |
+| File                    | Changes                                          |
+| ----------------------- | ------------------------------------------------ |
+| `session_manager.py`    | **NEW** - Session lifecycle management           |
+| `session_recorder.py`   | **UPDATED** - Session integration, event loading |
+| `post-tool-use.py`      | **UPDATED** - Import and use session recorder    |
+| `recording_analyzer.py` | No changes needed - works with new format        |
 
 ## Testing Commands
 

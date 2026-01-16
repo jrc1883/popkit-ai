@@ -123,11 +123,7 @@
     }
   ],
   "file_patterns": {
-    "include": [
-      "**/*.py",
-      "**/*.js",
-      "**/*.ts"
-    ],
+    "include": ["**/*.py", "**/*.js", "**/*.ts"],
     "exclude": [
       "**/node_modules/**",
       "**/.git/**",
@@ -140,32 +136,11 @@
     ]
   },
   "mitigation_patterns": {
-    "command_injection": [
-      "shlex.quote",
-      "shlex.split",
-      "subprocess.run([",
-      "shell=False"
-    ],
-    "code_injection": [
-      "ast.literal_eval",
-      "SandboxedEnvironment"
-    ],
-    "path_traversal": [
-      ".resolve()",
-      "secure_filename",
-      "os.path.basename"
-    ],
-    "sql_injection": [
-      "parameterized",
-      "prepared_statement",
-      ".filter(",
-      ".filter_by("
-    ],
-    "deserialization": [
-      "yaml.safe_load",
-      "json.loads",
-      "Loader=yaml.SafeLoader"
-    ]
+    "command_injection": ["shlex.quote", "shlex.split", "subprocess.run([", "shell=False"],
+    "code_injection": ["ast.literal_eval", "SandboxedEnvironment"],
+    "path_traversal": [".resolve()", "secure_filename", "os.path.basename"],
+    "sql_injection": ["parameterized", "prepared_statement", ".filter(", ".filter_by("],
+    "deserialization": ["yaml.safe_load", "json.loads", "Loader=yaml.SafeLoader"]
   },
   "scoring": {
     "starting_score": 100,

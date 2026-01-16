@@ -15,10 +15,51 @@ packages = [{include = "popkit_shared"}]
 python = "^3.8"
 pyyaml = "^6.0"
 filelock = "^3.13.0"
-lxml = {version = "^5.0", optional = true}
+lxml = {version = "^6.0", optional = true}
 
 [tool.poetry.extras]
 xml-validation = ["lxml"]
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.0"
+pytest = "^8.3"
+ruff = "^0.14.11"
+
+[tool.ruff]
+# Target Python 3.8+ (current minimum)
+target-version = "py38"
+
+# Line length
+line-length = 100
+
+# Exclude generated and vendored files
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "build",
+    "dist",
+    "*.egg-info",
+]
+
+[tool.ruff.lint]
+# Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default
+# Add isort (`I`) for import sorting
+select = ["E", "F", "I"]
+
+# Ignore specific rules
+ignore = [
+    "E501",  # Line too long (handled by formatter)
+]
+
+[tool.ruff.lint.isort]
+# Use single line imports
+force-single-line = false
+# Known first party
+known-first-party = ["popkit_shared"]
+
+[tool.ruff.format]
+# Use double quotes for strings
+quote-style = "double"
+
+# Indent with 4 spaces
+indent-style = "space"

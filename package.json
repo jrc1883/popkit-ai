@@ -15,7 +15,17 @@
     "plugin:test": "echo 'Run /popkit:plugin test in Claude Code'",
     "docs:dev": "npm run dev --workspace=packages/docs",
     "docs:build": "npm run build --workspace=packages/docs",
-    "docs:preview": "npm run preview --workspace=packages/docs"
+    "docs:preview": "npm run preview --workspace=packages/docs",
+    "lint:py": "cd packages/shared-py && ruff check .",
+    "lint:ts": "eslint packages/**/*.ts --max-warnings 0",
+    "lint:json": "prettier --check \"**/*.json\" --ignore-path .prettierignore",
+    "lint:md": "prettier --check \"**/*.md\" --ignore-path .prettierignore",
+    "lint": "npm run lint:py && npm run lint:ts",
+    "format:py": "cd packages/shared-py && ruff format .",
+    "format:ts": "prettier --write \"packages/**/*.ts\"",
+    "format:json": "prettier --write \"**/*.json\" --ignore-path .prettierignore",
+    "format:md": "prettier --write \"**/*.md\" --ignore-path .prettierignore",
+    "format": "npm run format:py && npm run format:ts && npm run format:json && npm run format:md"
   },
   "repository": {
     "type": "git",
@@ -34,5 +44,11 @@
   "bugs": {
     "url": "https://github.com/jrc1883/popkit-claude/issues"
   },
-  "homepage": "https://github.com/jrc1883/popkit-claude#readme"
+  "homepage": "https://github.com/jrc1883/popkit-claude#readme",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.53.0",
+    "@typescript-eslint/parser": "^8.53.0",
+    "eslint": "^9.39.2",
+    "prettier": "^3.2.0"
+  }
 }

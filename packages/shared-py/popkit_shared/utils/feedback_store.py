@@ -9,37 +9,40 @@ Provides persistent storage for user feedback ratings, aggregations,
 and session tracking to avoid feedback fatigue.
 """
 
-import sqlite3
 import json
+import sqlite3
 import uuid
-from datetime import datetime
-from dataclasses import dataclass, asdict
-from typing import Dict, List, Optional, Any
-from pathlib import Path
 from contextlib import contextmanager
+from dataclasses import asdict, dataclass
+from datetime import datetime
 from enum import IntEnum
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 
 class FeedbackRating(IntEnum):
     """0-3 rating scale matching Claude Code's feedback system"""
-    HARMFUL = 0      # Harmful/Wrong - Flag for review
+
+    HARMFUL = 0  # Harmful/Wrong - Flag for review
     NOT_HELPFUL = 1  # Not helpful - Record and suggest alternatives
-    HELPFUL = 2      # Somewhat helpful - Positive signal
-    VERY_HELPFUL = 3 # Very helpful - Strong positive, reinforce
+    HELPFUL = 2  # Somewhat helpful - Positive signal
+    VERY_HELPFUL = 3  # Very helpful - Strong positive, reinforce
 
 
 class ContextType:
     """Types of contexts that can receive feedback"""
-    AGENT = "agent"           # After agent completion
-    WORKFLOW = "workflow"     # After workflow phase
-    COMMAND = "command"       # After command execution
-    SESSION = "session"       # Overall session rating
+
+    AGENT = "agent"  # After agent completion
+    WORKFLOW = "workflow"  # After workflow phase
+    COMMAND = "command"  # After command execution
+    SESSION = "session"  # Overall session rating
     ERROR_RECOVERY = "error"  # After error fix suggestion
 
 
 @dataclass
 class FeedbackEntry:
     """Represents a single feedback entry"""
+
     id: str
     rating: int
     context_type: str
@@ -60,6 +63,7 @@ class FeedbackEntry:
 @dataclass
 class FeedbackAggregate:
     """Aggregated feedback for a context"""
+
     context_type: str
     context_id: str
     avg_rating: float
@@ -72,7 +76,7 @@ class FeedbackStore:
     """SQLite-based storage for user feedback"""
 
     DB_VERSION = 1
-    DEFAULT_DB_PATH = Path.home() / '.claude' / 'config' / 'feedback.db'
+    DEFAULT_DB_PATH = Path.home() / ".claude" / "config" / "feedback.db"
 
     # Feedback frequency settings
     MIN_TOOL_CALLS_BETWEEN_FEEDBACK = 10
@@ -205,7 +209,7 @@ class FeedbackStore:
         workflow_phase: Optional[str] = None,
         user_comment: Optional[str] = None,
         session_id: Optional[str] = None,
-        tool_call_count: int = 0
+        tool_call_count: int = 0,
     ) -> FeedbackEntry:
         """
         Record a feedback entry.
@@ -230,14 +234,26 @@ class FeedbackStore:
         feedback_id = self._generate_id()
 
         with self._get_connection() as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT INTO feedback
                 (id, rating, context_type, context_id, agent_name, command_name,
                  workflow_phase, user_comment, session_id, tool_call_count)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (feedback_id, rating, context_type, context_id, agent_name,
-                  command_name, workflow_phase, user_comment, session_id,
-                  tool_call_count))
+            """,
+                (
+                    feedback_id,
+                    rating,
+                    context_type,
+                    context_id,
+                    agent_name,
+                    command_name,
+                    workflow_phase,
+                    user_comment,
+                    session_id,
+                    tool_call_count,
+                ),
+            )
 
             # Update aggregates
             self._update_aggregate(conn, context_type, context_id or context_type, rating)
@@ -251,50 +267,69 @@ class FeedbackStore:
     def _update_aggregate(self, conn, context_type: str, context_id: str, new_rating: int):
         """Update the aggregate statistics for a context"""
         # Get current aggregate
-        row = conn.execute("""
+        row = conn.execute(
+            """
             SELECT * FROM feedback_aggregates
             WHERE context_type = ? AND context_id = ?
-        """, (context_type, context_id)).fetchone()
+        """,
+            (context_type, context_id),
+        ).fetchone()
 
         if row:
             # Update existing aggregate
-            new_count = row['total_count'] + 1
-            new_avg = ((row['avg_rating'] * row['total_count']) + new_rating) / new_count
+            new_count = row["total_count"] + 1
+            new_avg = ((row["avg_rating"] * row["total_count"]) + new_rating) / new_count
 
             rating_cols = {
-                0: 'rating_0_count',
-                1: 'rating_1_count',
-                2: 'rating_2_count',
-                3: 'rating_3_count'
+                0: "rating_0_count",
+                1: "rating_1_count",
+                2: "rating_2_count",
+                3: "rating_3_count",
             }
 
-            conn.execute(f"""
+            conn.execute(
+                f"""
                 UPDATE feedback_aggregates
                 SET avg_rating = ?,
                     total_count = ?,
                     {rating_cols[new_rating]} = {rating_cols[new_rating]} + 1,
                     updated_at = CURRENT_TIMESTAMP
                 WHERE context_type = ? AND context_id = ?
-            """, (new_avg, new_count, context_type, context_id))
+            """,
+                (new_avg, new_count, context_type, context_id),
+            )
         else:
             # Create new aggregate
             rating_counts = [0, 0, 0, 0]
             rating_counts[new_rating] = 1
 
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT INTO feedback_aggregates
                 (context_type, context_id, avg_rating, total_count,
                  rating_0_count, rating_1_count, rating_2_count, rating_3_count, updated_at)
                 VALUES (?, ?, ?, 1, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-            """, (context_type, context_id, float(new_rating),
-                  rating_counts[0], rating_counts[1], rating_counts[2], rating_counts[3]))
+            """,
+                (
+                    context_type,
+                    context_id,
+                    float(new_rating),
+                    rating_counts[0],
+                    rating_counts[1],
+                    rating_counts[2],
+                    rating_counts[3],
+                ),
+            )
 
     def get_feedback(self, feedback_id: str) -> Optional[FeedbackEntry]:
         """Get a feedback entry by ID"""
         with self._get_connection() as conn:
-            row = conn.execute("""
+            row = conn.execute(
+                """
                 SELECT * FROM feedback WHERE id = ?
-            """, (feedback_id,)).fetchone()
+            """,
+                (feedback_id,),
+            ).fetchone()
 
             if row:
                 return self._row_to_feedback(row)
@@ -303,17 +338,17 @@ class FeedbackStore:
     def _row_to_feedback(self, row: sqlite3.Row) -> FeedbackEntry:
         """Convert a database row to a FeedbackEntry"""
         return FeedbackEntry(
-            id=row['id'],
-            rating=row['rating'],
-            context_type=row['context_type'],
-            context_id=row['context_id'],
-            agent_name=row['agent_name'],
-            command_name=row['command_name'],
-            workflow_phase=row['workflow_phase'],
-            user_comment=row['user_comment'],
-            session_id=row['session_id'],
-            tool_call_count=row['tool_call_count'],
-            created_at=row['created_at']
+            id=row["id"],
+            rating=row["rating"],
+            context_type=row["context_type"],
+            context_id=row["context_id"],
+            agent_name=row["agent_name"],
+            command_name=row["command_name"],
+            workflow_phase=row["workflow_phase"],
+            user_comment=row["user_comment"],
+            session_id=row["session_id"],
+            tool_call_count=row["tool_call_count"],
+            created_at=row["created_at"],
         )
 
     def list_feedback(
@@ -323,7 +358,7 @@ class FeedbackStore:
         agent_name: Optional[str] = None,
         min_rating: Optional[int] = None,
         max_rating: Optional[int] = None,
-        session_id: Optional[str] = None
+        session_id: Optional[str] = None,
     ) -> List[FeedbackEntry]:
         """List feedback entries with optional filters"""
         query = "SELECT * FROM feedback"
@@ -363,49 +398,57 @@ class FeedbackStore:
     def get_aggregate(self, context_type: str, context_id: str) -> Optional[FeedbackAggregate]:
         """Get aggregated feedback for a context"""
         with self._get_connection() as conn:
-            row = conn.execute("""
+            row = conn.execute(
+                """
                 SELECT * FROM feedback_aggregates
                 WHERE context_type = ? AND context_id = ?
-            """, (context_type, context_id)).fetchone()
+            """,
+                (context_type, context_id),
+            ).fetchone()
 
             if row:
                 return FeedbackAggregate(
-                    context_type=row['context_type'],
-                    context_id=row['context_id'],
-                    avg_rating=row['avg_rating'],
-                    total_count=row['total_count'],
+                    context_type=row["context_type"],
+                    context_id=row["context_id"],
+                    avg_rating=row["avg_rating"],
+                    total_count=row["total_count"],
                     rating_distribution={
-                        0: row['rating_0_count'],
-                        1: row['rating_1_count'],
-                        2: row['rating_2_count'],
-                        3: row['rating_3_count']
+                        0: row["rating_0_count"],
+                        1: row["rating_1_count"],
+                        2: row["rating_2_count"],
+                        3: row["rating_3_count"],
                     },
-                    updated_at=row['updated_at']
+                    updated_at=row["updated_at"],
                 )
             return None
 
-    def get_low_rated_items(self, max_avg_rating: float = 1.5, min_count: int = 3) -> List[FeedbackAggregate]:
+    def get_low_rated_items(
+        self, max_avg_rating: float = 1.5, min_count: int = 3
+    ) -> List[FeedbackAggregate]:
         """Get items with low average ratings (for review)"""
         with self._get_connection() as conn:
-            rows = conn.execute("""
+            rows = conn.execute(
+                """
                 SELECT * FROM feedback_aggregates
                 WHERE avg_rating <= ? AND total_count >= ?
                 ORDER BY avg_rating ASC
-            """, (max_avg_rating, min_count)).fetchall()
+            """,
+                (max_avg_rating, min_count),
+            ).fetchall()
 
             return [
                 FeedbackAggregate(
-                    context_type=row['context_type'],
-                    context_id=row['context_id'],
-                    avg_rating=row['avg_rating'],
-                    total_count=row['total_count'],
+                    context_type=row["context_type"],
+                    context_id=row["context_id"],
+                    avg_rating=row["avg_rating"],
+                    total_count=row["total_count"],
                     rating_distribution={
-                        0: row['rating_0_count'],
-                        1: row['rating_1_count'],
-                        2: row['rating_2_count'],
-                        3: row['rating_3_count']
+                        0: row["rating_0_count"],
+                        1: row["rating_1_count"],
+                        2: row["rating_2_count"],
+                        3: row["rating_3_count"],
                     },
-                    updated_at=row['updated_at']
+                    updated_at=row["updated_at"],
                 )
                 for row in rows
             ]
@@ -417,80 +460,104 @@ class FeedbackStore:
     def get_or_create_session(self, session_id: str) -> Dict[str, Any]:
         """Get or create session state for feedback tracking"""
         with self._get_connection() as conn:
-            row = conn.execute("""
+            row = conn.execute(
+                """
                 SELECT * FROM session_state WHERE session_id = ?
-            """, (session_id,)).fetchone()
+            """,
+                (session_id,),
+            ).fetchone()
 
             if row:
                 return dict(row)
 
             # Create new session
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT INTO session_state (session_id)
                 VALUES (?)
-            """, (session_id,))
+            """,
+                (session_id,),
+            )
 
             return {
-                'session_id': session_id,
-                'tool_calls_since_feedback': 0,
-                'feedback_count': 0,
-                'dismissed_count': 0,
-                'never_ask_this_session': 0,
-                'last_feedback_at': None
+                "session_id": session_id,
+                "tool_calls_since_feedback": 0,
+                "feedback_count": 0,
+                "dismissed_count": 0,
+                "never_ask_this_session": 0,
+                "last_feedback_at": None,
             }
 
     def increment_tool_calls(self, session_id: str) -> int:
         """Increment tool call counter for a session, return new count"""
         with self._get_connection() as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT INTO session_state (session_id, tool_calls_since_feedback)
                 VALUES (?, 1)
                 ON CONFLICT(session_id) DO UPDATE SET
                 tool_calls_since_feedback = tool_calls_since_feedback + 1
-            """, (session_id,))
+            """,
+                (session_id,),
+            )
 
-            row = conn.execute("""
+            row = conn.execute(
+                """
                 SELECT tool_calls_since_feedback FROM session_state
                 WHERE session_id = ?
-            """, (session_id,)).fetchone()
+            """,
+                (session_id,),
+            ).fetchone()
 
-            return row['tool_calls_since_feedback'] if row else 1
+            return row["tool_calls_since_feedback"] if row else 1
 
     def _update_session_after_feedback(self, conn, session_id: str):
         """Update session state after feedback is recorded"""
-        conn.execute("""
+        conn.execute(
+            """
             UPDATE session_state
             SET tool_calls_since_feedback = 0,
                 feedback_count = feedback_count + 1,
                 dismissed_count = 0,
                 last_feedback_at = CURRENT_TIMESTAMP
             WHERE session_id = ?
-        """, (session_id,))
+        """,
+            (session_id,),
+        )
 
     def record_dismissed(self, session_id: str) -> int:
         """Record that user dismissed a feedback prompt, return dismiss count"""
         with self._get_connection() as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 UPDATE session_state
                 SET dismissed_count = dismissed_count + 1
                 WHERE session_id = ?
-            """, (session_id,))
+            """,
+                (session_id,),
+            )
 
-            row = conn.execute("""
+            row = conn.execute(
+                """
                 SELECT dismissed_count FROM session_state
                 WHERE session_id = ?
-            """, (session_id,)).fetchone()
+            """,
+                (session_id,),
+            ).fetchone()
 
-            return row['dismissed_count'] if row else 0
+            return row["dismissed_count"] if row else 0
 
     def set_never_ask_session(self, session_id: str):
         """Mark session as "never ask again" """
         with self._get_connection() as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 UPDATE session_state
                 SET never_ask_this_session = 1
                 WHERE session_id = ?
-            """, (session_id,))
+            """,
+                (session_id,),
+            )
 
     def should_ask_feedback(self, session_id: str) -> bool:
         """
@@ -504,16 +571,18 @@ class FeedbackStore:
         session = self.get_or_create_session(session_id)
 
         # Check "never ask" flag
-        if session['never_ask_this_session']:
+        if session["never_ask_this_session"]:
             return False
 
         # Check dismissed count
-        if session['dismissed_count'] >= self.MAX_DISMISSED_BEFORE_PAUSE:
+        if session["dismissed_count"] >= self.MAX_DISMISSED_BEFORE_PAUSE:
             return False
 
         # Check tool call threshold
-        min_calls = int(self.get_preference('min_tool_calls', str(self.MIN_TOOL_CALLS_BETWEEN_FEEDBACK)))
-        if session['tool_calls_since_feedback'] < min_calls:
+        min_calls = int(
+            self.get_preference("min_tool_calls", str(self.MIN_TOOL_CALLS_BETWEEN_FEEDBACK))
+        )
+        if session["tool_calls_since_feedback"] < min_calls:
             return False
 
         return True
@@ -525,26 +594,32 @@ class FeedbackStore:
     def get_preference(self, key: str, default: str = "") -> str:
         """Get a preference value"""
         with self._get_connection() as conn:
-            row = conn.execute("""
+            row = conn.execute(
+                """
                 SELECT value FROM feedback_preferences WHERE key = ?
-            """, (key,)).fetchone()
-            return row['value'] if row else default
+            """,
+                (key,),
+            ).fetchone()
+            return row["value"] if row else default
 
     def set_preference(self, key: str, value: str) -> None:
         """Set a preference value"""
         with self._get_connection() as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT OR REPLACE INTO feedback_preferences (key, value, updated_at)
                 VALUES (?, ?, CURRENT_TIMESTAMP)
-            """, (key, value))
+            """,
+                (key, value),
+            )
 
     def is_feedback_enabled(self) -> bool:
         """Check if feedback collection is enabled"""
-        return self.get_preference('feedback_enabled', 'true') == 'true'
+        return self.get_preference("feedback_enabled", "true") == "true"
 
     def set_feedback_enabled(self, enabled: bool) -> None:
         """Enable or disable feedback collection"""
-        self.set_preference('feedback_enabled', 'true' if enabled else 'false')
+        self.set_preference("feedback_enabled", "true" if enabled else "false")
 
     # =========================================================================
     # STATISTICS
@@ -555,17 +630,19 @@ class FeedbackStore:
         with self._get_connection() as conn:
             total = conn.execute("SELECT COUNT(*) FROM feedback").fetchone()[0]
 
-            avg_rating = conn.execute(
-                "SELECT AVG(rating) FROM feedback"
-            ).fetchone()[0] or 0.0
+            avg_rating = conn.execute("SELECT AVG(rating) FROM feedback").fetchone()[0] or 0.0
 
-            by_context = dict(conn.execute("""
+            by_context = dict(
+                conn.execute("""
                 SELECT context_type, COUNT(*) FROM feedback GROUP BY context_type
-            """).fetchall())
+            """).fetchall()
+            )
 
-            by_rating = dict(conn.execute("""
+            by_rating = dict(
+                conn.execute("""
                 SELECT rating, COUNT(*) FROM feedback GROUP BY rating
-            """).fetchall())
+            """).fetchall()
+            )
 
             recent_count = conn.execute("""
                 SELECT COUNT(*) FROM feedback
@@ -581,7 +658,7 @@ class FeedbackStore:
                 "by_rating": by_rating,
                 "recent_7_days": recent_count,
                 "low_rated_items": low_rated,
-                "feedback_enabled": self.is_feedback_enabled()
+                "feedback_enabled": self.is_feedback_enabled(),
             }
 
     def get_agent_stats(self) -> List[Dict[str, Any]]:
@@ -602,11 +679,11 @@ class FeedbackStore:
 
             return [
                 {
-                    "agent": row['agent_name'],
-                    "count": row['count'],
-                    "avg_rating": round(row['avg_rating'], 2),
-                    "low_count": row['low_count'],
-                    "high_count": row['high_count']
+                    "agent": row["agent_name"],
+                    "count": row["count"],
+                    "avg_rating": round(row["avg_rating"], 2),
+                    "low_count": row["low_count"],
+                    "high_count": row["high_count"],
                 }
                 for row in rows
             ]
@@ -622,10 +699,10 @@ class FeedbackStore:
             "version": self.DB_VERSION,
             "exported_at": datetime.now().isoformat(),
             "feedback": [f.to_dict() for f in feedback_list],
-            "stats": self.get_stats()
+            "stats": self.get_stats(),
         }
 
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(data, f, indent=2)
 
         return len(feedback_list)
@@ -644,7 +721,7 @@ class FeedbackStore:
             return {
                 "feedback_deleted": feedback_count,
                 "aggregates_deleted": aggregate_count,
-                "sessions_deleted": session_count
+                "sessions_deleted": session_count,
             }
 
 
@@ -662,8 +739,8 @@ def get_feedback_store() -> FeedbackStore:
 
 if __name__ == "__main__":
     # Test the feedback store
-    import tempfile
     import shutil
+    import tempfile
 
     temp_dir = tempfile.mkdtemp()
     db_path = Path(temp_dir) / "test_feedback.db"
@@ -677,7 +754,7 @@ if __name__ == "__main__":
             context_type=ContextType.AGENT,
             agent_name="code-reviewer",
             session_id="test-session-001",
-            user_comment="Great suggestions!"
+            user_comment="Great suggestions!",
         )
         print(f"Recorded feedback: {feedback.id}")
 
@@ -686,14 +763,14 @@ if __name__ == "__main__":
             rating=FeedbackRating.HELPFUL,
             context_type=ContextType.COMMAND,
             command_name="/popkit:git commit",
-            session_id="test-session-001"
+            session_id="test-session-001",
         )
 
         store.record_feedback(
             rating=FeedbackRating.NOT_HELPFUL,
             context_type=ContextType.AGENT,
             agent_name="code-reviewer",
-            session_id="test-session-001"
+            session_id="test-session-001",
         )
 
         # Test listing

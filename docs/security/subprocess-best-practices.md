@@ -168,14 +168,14 @@ def count_log_files():
 
 Instead of calling shell commands, consider Python alternatives:
 
-| Shell Command | Python Alternative |
-|---------------|-------------------|
-| `ls *.py` | `Path().glob('*.py')` |
-| `wc -l file.txt` | `len(Path('file.txt').read_text().splitlines())` |
-| `which command` | `shutil.which('command')` |
-| `grep pattern file` | `re.findall(pattern, text)` |
-| `cat file1 file2` | `Path('file1').read_text() + Path('file2').read_text()` |
-| `ps aux \| grep node` | `psutil.process_iter(['name', 'cmdline'])` |
+| Shell Command         | Python Alternative                                      |
+| --------------------- | ------------------------------------------------------- |
+| `ls *.py`             | `Path().glob('*.py')`                                   |
+| `wc -l file.txt`      | `len(Path('file.txt').read_text().splitlines())`        |
+| `which command`       | `shutil.which('command')`                               |
+| `grep pattern file`   | `re.findall(pattern, text)`                             |
+| `cat file1 file2`     | `Path('file1').read_text() + Path('file2').read_text()` |
+| `ps aux \| grep node` | `psutil.process_iter(['name', 'cmdline'])`              |
 
 ## Code Review Checklist
 

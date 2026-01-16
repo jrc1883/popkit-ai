@@ -9,13 +9,13 @@ Deploy to any target: Docker, npm/PyPI, Vercel/Netlify, or GitHub Releases.
 
 ## Subcommands
 
-| Subcommand | Description |
-|------------|-------------|
+| Subcommand     | Description                                      |
+| -------------- | ------------------------------------------------ |
 | init (default) | Analyze project and configure deployment targets |
-| setup | Generate CI/CD pipeline and target configuration |
-| validate | Run pre-deployment checks |
-| execute | Deploy to target(s) |
-| rollback | Undo a deployment |
+| setup          | Generate CI/CD pipeline and target configuration |
+| validate       | Run pre-deployment checks                        |
+| execute        | Deploy to target(s)                              |
+| rollback       | Undo a deployment                                |
 
 ---
 
@@ -35,14 +35,14 @@ Analyze project state, identify deployment targets, configure `.claude/popkit/de
 
 Generate CI/CD and target configuration. Invokes **devops-automator** agent.
 
-| Target | Files Generated |
-|--------|-----------------|
-| Docker | Dockerfile, docker-compose.yml, .dockerignore, CI workflow |
-| Vercel | vercel.json, preview deployment workflow |
-| Netlify | netlify.toml, deployment workflow |
-| npm | Validates package.json, npm-publish.yml |
-| PyPI | Validates pyproject.toml, pypi-publish.yml |
-| GitHub Releases | release.yml, asset configuration |
+| Target          | Files Generated                                            |
+| --------------- | ---------------------------------------------------------- |
+| Docker          | Dockerfile, docker-compose.yml, .dockerignore, CI workflow |
+| Vercel          | vercel.json, preview deployment workflow                   |
+| Netlify         | netlify.toml, deployment workflow                          |
+| npm             | Validates package.json, npm-publish.yml                    |
+| PyPI            | Validates pyproject.toml, pypi-publish.yml                 |
+| GitHub Releases | release.yml, asset configuration                           |
 
 **Templates:** minimal (basic), standard (+ CI), production (+ caching, security).
 
@@ -69,6 +69,7 @@ Deploy to configured target(s).
 **Process:** Pre-flight validation → Confirm (AskUserQuestion) → Execute per target → Post-deploy validation → Record history.
 
 **Execution by target:**
+
 - Docker: Build and push image
 - Vercel: Trigger deployment via CLI/CI
 - npm: Publish to registry
@@ -86,6 +87,7 @@ Undo deployment and restore previous version. Invokes **rollback-specialist** ag
 **Process:** Load history → Present options (AskUserQuestion) → Execute rollback → Verify.
 
 **Rollback by target:**
+
 - Docker: Re-tag previous image
 - Vercel: Revert to previous deployment
 - npm: Deprecate current, unpublish if within 24h
@@ -96,16 +98,16 @@ Undo deployment and restore previous version. Invokes **rollback-specialist** ag
 
 ## Premium Features
 
-| Feature | Free | Pro | Team |
-|---------|------|-----|------|
-| init, validate | ✅ | ✅ | ✅ |
-| setup (basic) | ✅ | ✅ | ✅ |
-| setup (custom) | ❌ | ✅ | ✅ |
-| execute (local) | ✅ | ✅ | ✅ |
-| execute (cloud) | ❌ | ✅ | ✅ |
-| rollback | ❌ | ✅ | ✅ |
-| Multi-target deploy | ❌ | ✅ | ✅ |
-| Deploy history (cloud) | ❌ | 7-day | 90-day |
+| Feature                | Free | Pro   | Team   |
+| ---------------------- | ---- | ----- | ------ |
+| init, validate         | ✅   | ✅    | ✅     |
+| setup (basic)          | ✅   | ✅    | ✅     |
+| setup (custom)         | ❌   | ✅    | ✅     |
+| execute (local)        | ✅   | ✅    | ✅     |
+| execute (cloud)        | ❌   | ✅    | ✅     |
+| rollback               | ❌   | ✅    | ✅     |
+| Multi-target deploy    | ❌   | ✅    | ✅     |
+| Deploy history (cloud) | ❌   | 7-day | 90-day |
 
 ---
 
@@ -129,13 +131,13 @@ Undo deployment and restore previous version. Invokes **rollback-specialist** ag
 
 ## Architecture
 
-| Component | Integration |
-|-----------|-------------|
-| Deploy Init Skill | packages/popkit-ops/skills/pop-deploy-init/ |
-| Deploy Config | .claude/popkit/deploy.json |
-| DevOps Agent | packages/popkit-ops/agents/tier-2-on-demand/devops-automator/ |
-| Validator Agent | packages/popkit-ops/agents/tier-2-on-demand/deployment-validator/ |
-| Rollback Agent | packages/popkit-ops/agents/tier-2-on-demand/rollback-specialist/ |
+| Component         | Integration                                                       |
+| ----------------- | ----------------------------------------------------------------- |
+| Deploy Init Skill | packages/popkit-ops/skills/pop-deploy-init/                       |
+| Deploy Config     | .claude/popkit/deploy.json                                        |
+| DevOps Agent      | packages/popkit-ops/agents/tier-2-on-demand/devops-automator/     |
+| Validator Agent   | packages/popkit-ops/agents/tier-2-on-demand/deployment-validator/ |
+| Rollback Agent    | packages/popkit-ops/agents/tier-2-on-demand/rollback-specialist/  |
 
 **Related:** /popkit-dev:git pr, /popkit-dev:git release, /popkit-dev:routine morning
 

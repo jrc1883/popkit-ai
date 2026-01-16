@@ -4,13 +4,7 @@ Test script for XML findings generation (Issue #517)
 Tests generate_findings_xml() function and post-tool-use hook integration
 """
 
-import sys
-from pathlib import Path
-
-# Add utils to path
-sys.path.insert(0, str(Path(__file__).parent / "utils"))
-
-from xml_generator import generate_findings_xml
+from popkit_shared.utils.xml_generator import generate_findings_xml
 
 
 def test_successful_tool_use():
@@ -23,7 +17,7 @@ def test_successful_tool_use():
         "quality_score": 0.8,
         "issues": ["Potential secret exposed in code"],
         "suggestions": ["Consider running code review and linting"],
-        "followup_agents": ["code-reviewer", "security-auditor"]
+        "followup_agents": ["code-reviewer", "security-auditor"],
     }
 
     xml = generate_findings_xml(findings)
@@ -32,9 +26,15 @@ def test_successful_tool_use():
     # Verify
     assert "<tool>Write</tool>" in xml, "Tool name should be present"
     assert "<status>success</status>" in xml, "Status should be success"
-    assert "<quality_score>0.80</quality_score>" in xml, "Quality score should be formatted"
-    assert "<issue>Potential secret exposed in code</issue>" in xml, "Issues should be present"
-    assert "<suggestion>Consider running code review and linting</suggestion>" in xml, "Suggestions should be present"
+    assert "<quality_score>0.80</quality_score>" in xml, (
+        "Quality score should be formatted"
+    )
+    assert "<issue>Potential secret exposed in code</issue>" in xml, (
+        "Issues should be present"
+    )
+    assert "<suggestion>Consider running code review and linting</suggestion>" in xml, (
+        "Suggestions should be present"
+    )
     assert "<agent>code-reviewer</agent>" in xml, "Follow-up agents should be present"
     assert "<agent>security-auditor</agent>" in xml, "Multiple agents should be present"
     assert "<error_message>" not in xml, "No error message for successful execution"
@@ -53,7 +53,7 @@ def test_failed_tool_use():
         "issues": ["Command execution failed: permission denied"],
         "suggestions": ["Check file permissions", "Use sudo if necessary"],
         "followup_agents": ["bug-whisperer"],
-        "error_message": "bash: ./script.sh: Permission denied"
+        "error_message": "bash: ./script.sh: Permission denied",
     }
 
     xml = generate_findings_xml(findings)
@@ -63,8 +63,12 @@ def test_failed_tool_use():
     assert "<tool>Bash</tool>" in xml, "Tool name should be present"
     assert "<status>error</status>" in xml, "Status should be error"
     assert "<quality_score>0.30</quality_score>" in xml, "Low quality score for errors"
-    assert "<issue>Command execution failed: permission denied</issue>" in xml, "Error issues present"
-    assert "<error_message>bash: ./script.sh: Permission denied</error_message>" in xml, "Error message should be present"
+    assert "<issue>Command execution failed: permission denied</issue>" in xml, (
+        "Error issues present"
+    )
+    assert (
+        "<error_message>bash: ./script.sh: Permission denied</error_message>" in xml
+    ), "Error message should be present"
     assert "<agent>bug-whisperer</agent>" in xml, "Debug agent recommended"
 
     print("[PASS] Test 2 PASSED")
@@ -80,7 +84,7 @@ def test_no_issues_or_suggestions():
         "quality_score": 0.9,
         "issues": [],
         "suggestions": [],
-        "followup_agents": []
+        "followup_agents": [],
     }
 
     xml = generate_findings_xml(findings)
@@ -108,7 +112,7 @@ def test_special_characters_escaping():
         "issues": ["Code contains <div> & other HTML"],
         "suggestions": ["Use proper & escaping"],
         "followup_agents": ["code-reviewer"],
-        "error_message": "Warning: <tag> not escaped"
+        "error_message": "Warning: <tag> not escaped",
     }
 
     xml = generate_findings_xml(findings)
@@ -133,7 +137,7 @@ def test_xml_structure_validity():
         "quality_score": 0.85,
         "issues": ["Large refactoring with 10 changes"],
         "suggestions": ["Comprehensive review recommended", "Run all tests"],
-        "followup_agents": ["code-reviewer", "test-writer-fixer"]
+        "followup_agents": ["code-reviewer", "test-writer-fixer"],
     }
 
     xml = generate_findings_xml(findings)

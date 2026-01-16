@@ -16,12 +16,12 @@ Capture and index research insights during development for later semantic retrie
 
 ## Entry Types
 
-| Type | Use For | Examples |
-|------|---------|----------|
-| `decision` | Architectural/design choices | "Use Redis for sessions", "Chose Hono over Express" |
-| `finding` | Discoveries during development | "Stripe webhook timing issue", "Race condition in auth" |
-| `learning` | Knowledge gained | "Astro hydration quirks", "CORS preflight gotchas" |
-| `spike` | Investigation results | "Evaluated 3 auth providers", "Benchmarked DB options" |
+| Type       | Use For                        | Examples                                                |
+| ---------- | ------------------------------ | ------------------------------------------------------- |
+| `decision` | Architectural/design choices   | "Use Redis for sessions", "Chose Hono over Express"     |
+| `finding`  | Discoveries during development | "Stripe webhook timing issue", "Race condition in auth" |
+| `learning` | Knowledge gained               | "Astro hydration quirks", "CORS preflight gotchas"      |
+| `spike`    | Investigation results          | "Evaluated 3 auth providers", "Benchmarked DB options"  |
 
 ## Capture Flow
 
@@ -65,6 +65,7 @@ Why this conclusion? What factors influenced the decision?
 What else was evaluated? Why were they rejected?
 
 **References:** (optional)
+
 - Issue/PR numbers
 - Documentation links
 - Related entries
@@ -272,6 +273,7 @@ def surface_related_research(issue_keywords):
 ```
 
 Display to user:
+
 ```
 Found related research:
 - [decision] Use Redis for session storage (r001)
@@ -346,9 +348,9 @@ def check_decision_conflicts(changed_files, changes_summary):
   "context": "Need transactional email for auth and billing",
   "rationale": "Resend: best DX, fair pricing, good deliverability",
   "alternatives": [
-    {"name": "SendGrid", "reason": "Complex API, overkill for our needs"},
-    {"name": "AWS SES", "reason": "Requires more setup, region restrictions"},
-    {"name": "Postmark", "reason": "Great but more expensive"}
+    { "name": "SendGrid", "reason": "Complex API, overkill for our needs" },
+    { "name": "AWS SES", "reason": "Requires more setup, region restrictions" },
+    { "name": "Postmark", "reason": "Great but more expensive" }
   ],
   "tags": ["email", "infrastructure", "comparison"],
   "project": "popkit-cloud"
@@ -358,6 +360,7 @@ def check_decision_conflicts(changed_files, changes_summary):
 ## When to Capture
 
 **DO capture:**
+
 - Architectural decisions with trade-offs
 - Non-obvious findings that took time to discover
 - Investigation results (spikes)
@@ -365,6 +368,7 @@ def check_decision_conflicts(changed_files, changes_summary):
 - Decisions that could be questioned later
 
 **DON'T capture:**
+
 - Trivial fixes or obvious patterns
 - Temporary workarounds (use TODO comments instead)
 - Things already documented elsewhere
@@ -391,9 +395,9 @@ Use /popkit:research search "..." to find later
 
 ## Related Skills
 
-| Skill | Relationship |
-|-------|--------------|
-| `pop-session-capture` | Prompts for research at session end |
-| `pop-brainstorming` | May generate decisions worth capturing |
-| `pop-writing-plans` | Plans may reference research entries |
-| `pop-code-review` | Checks against documented decisions |
+| Skill                 | Relationship                           |
+| --------------------- | -------------------------------------- |
+| `pop-session-capture` | Prompts for research at session end    |
+| `pop-brainstorming`   | May generate decisions worth capturing |
+| `pop-writing-plans`   | Plans may reference research entries   |
+| `pop-code-review`     | Checks against documented decisions    |

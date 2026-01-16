@@ -38,6 +38,7 @@ for conflict in conflicts:
 ```
 
 **Complexity Factors:**
+
 - Lines affected
 - File importance (core > config > tests > docs)
 - Architectural impact
@@ -84,17 +85,20 @@ Rationale: Different clients may need different authentication methods
 ### Safety Features
 
 **Automatic Checkpoints:**
+
 ```bash
 git stash push -m "pre-resolution-checkpoint-{timestamp}"
 ```
 
 **Incremental Validation:**
+
 - Type checking after each resolution
 - Linting verification
 - Test execution for affected files
 - Automatic rollback on validation failure
 
 **Rollback Capability:**
+
 ```bash
 # If something goes wrong
 git stash pop
@@ -233,18 +237,21 @@ merge-conflict-resolver/
 ### Integration Points
 
 **Conflict Analyzer (`conflict_analyzer.py`):**
+
 - Detect conflicts using `git diff --diff-filter=U`
 - Parse conflict markers
 - Extract context and scope
 - Assess file importance
 
 **Complexity Scorer (`complexity_scoring.py`):**
+
 - Analyze complexity (1-10 scale)
 - Identify risk factors
 - Recommend subtasks
 - Suggest appropriate agents
 
 **Code Architect (agent):**
+
 - Consulted for complexity >= 7
 - Provides architectural guidance
 - Recommends resolution approaches
@@ -254,14 +261,14 @@ merge-conflict-resolver/
 
 Based on real-world testing:
 
-| Metric | Value |
-|--------|-------|
-| Time per conflict | 2-5 minutes |
-| Time saved vs manual | 90%+ |
-| Validation success rate | 95%+ |
-| Architect accuracy | 88% (complexity 7+) |
-| Rollback rate | <5% |
-| Test pass rate | 98%+ |
+| Metric                  | Value               |
+| ----------------------- | ------------------- |
+| Time per conflict       | 2-5 minutes         |
+| Time saved vs manual    | 90%+                |
+| Validation success rate | 95%+                |
+| Architect accuracy      | 88% (complexity 7+) |
+| Rollback rate           | <5%                 |
+| Test pass rate          | 98%+                |
 
 ## Examples
 
@@ -284,6 +291,7 @@ python tests/test_merge_conflict_resolver.py
 ```
 
 **Test Coverage:**
+
 - Conflict parsing
 - Complexity analysis
 - Prioritization logic
@@ -294,16 +302,16 @@ python tests/test_merge_conflict_resolver.py
 
 ## Comparison with Auto Claude
 
-| Feature | PopKit | Auto Claude |
-|---------|--------|-------------|
-| Complexity analysis | ✅ 1-10 scoring | ❌ Basic |
-| Prioritization | ✅ Complexity-first | ❌ Linear |
-| Architect consultation | ✅ Automatic for complex | ❌ None |
-| Multiple strategies | ✅ 4 options per conflict | ⚠️ Limited |
-| Validation | ✅ Type/lint/tests | ⚠️ Basic |
-| Rollback | ✅ Checkpoint-based | ⚠️ Manual |
-| Human approval | ✅ Interactive | ⚠️ Auto-apply |
-| Confidence scoring | ✅ Per-strategy | ❌ None |
+| Feature                | PopKit                    | Auto Claude   |
+| ---------------------- | ------------------------- | ------------- |
+| Complexity analysis    | ✅ 1-10 scoring           | ❌ Basic      |
+| Prioritization         | ✅ Complexity-first       | ❌ Linear     |
+| Architect consultation | ✅ Automatic for complex  | ❌ None       |
+| Multiple strategies    | ✅ 4 options per conflict | ⚠️ Limited    |
+| Validation             | ✅ Type/lint/tests        | ⚠️ Basic      |
+| Rollback               | ✅ Checkpoint-based       | ⚠️ Manual     |
+| Human approval         | ✅ Interactive            | ⚠️ Auto-apply |
+| Confidence scoring     | ✅ Per-strategy           | ❌ None       |
 
 ## Related Commands
 
@@ -318,12 +326,14 @@ python tests/test_merge_conflict_resolver.py
 ### When to Use
 
 **Good scenarios:**
+
 - Multiple conflicts with varying complexity
 - Complex conflicts needing architectural review
 - Time-sensitive merges
 - Conflicts in unfamiliar code
 
 **Consider manual resolution:**
+
 - Single trivial conflict (faster manually)
 - Business logic requiring domain expertise
 - Very sensitive security code (review carefully)

@@ -9,17 +9,22 @@ be generated instead of bash-based health checks.
 Part of the popkit plugin system.
 """
 
-import os
 import json
+import os
 import re
-from typing import Dict, List, Any, Tuple
 from pathlib import Path
-
+from typing import Any, Dict, List, Tuple
 
 # Health-related tool patterns
 HEALTH_PATTERNS = [
-    r"morning", r"nightly", r"health", r"check_",
-    r"_status", r"routine", r"ping", r"verify"
+    r"morning",
+    r"nightly",
+    r"health",
+    r"check_",
+    r"_status",
+    r"routine",
+    r"ping",
+    r"verify",
 ]
 
 
@@ -168,10 +173,7 @@ def classify_health_tools(tools: List[str]) -> Tuple[List[str], List[str]]:
     other_tools = []
 
     for tool in tools:
-        is_health = any(
-            re.search(pattern, tool, re.IGNORECASE)
-            for pattern in HEALTH_PATTERNS
-        )
+        is_health = any(re.search(pattern, tool, re.IGNORECASE) for pattern in HEALTH_PATTERNS)
         if is_health:
             health_tools.append(tool)
         else:
@@ -205,15 +207,11 @@ def detect_mcp_infrastructure(project_dir: str) -> Dict[str, Any]:
         "tools": [],
         "health_tools": [],
         "other_tools": [],
-        "recommendation": "bash"
+        "recommendation": "bash",
     }
 
     # Determine if MCP is present
-    has_mcp = (
-        result["sdk"]["found"] or
-        result["config"]["found"] or
-        result["directories"]["found"]
-    )
+    has_mcp = result["sdk"]["found"] or result["config"]["found"] or result["directories"]["found"]
     result["has_mcp"] = has_mcp
 
     # If MCP found, try to discover tools from source

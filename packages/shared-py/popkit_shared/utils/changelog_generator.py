@@ -25,11 +25,10 @@ import json
 import re
 import subprocess
 import sys
+from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from collections import defaultdict
-
+from typing import Any, Dict, List, Optional
 
 # Conventional commit type to display name mapping with emojis
 COMMIT_TYPES = {
@@ -44,17 +43,30 @@ COMMIT_TYPES = {
     "build": "📦 Build System",
     "ci": "👷 CI/CD",
     "chore": "🔧 Chores",
-    "revert": "⏪ Reverts"
+    "revert": "⏪ Reverts",
 }
 
 # Priority order for changelog sections
-TYPE_PRIORITY = ["breaking", "feat", "fix", "perf", "refactor", "docs", "test", "ci", "build", "chore", "style", "revert"]
+TYPE_PRIORITY = [
+    "breaking",
+    "feat",
+    "fix",
+    "perf",
+    "refactor",
+    "docs",
+    "test",
+    "ci",
+    "build",
+    "chore",
+    "style",
+    "revert",
+]
 
 # Semantic versioning bump rules
 VERSION_BUMP_RULES = {
     "major": ["breaking"],  # BREAKING CHANGE
-    "minor": ["feat"],       # New features
-    "patch": ["fix", "perf", "refactor", "docs", "test", "build", "ci", "chore", "style", "revert"]
+    "minor": ["feat"],  # New features
+    "patch": ["fix", "perf", "refactor", "docs", "test", "build", "ci", "chore", "style", "revert"],
 }
 
 
@@ -72,7 +84,7 @@ class ChangelogGenerator:
                 capture_output=True,
                 text=True,
                 cwd=self.project_root,
-                encoding="utf-8"
+                encoding="utf-8",
             )
             return result.stdout.strip()
         except Exception:
@@ -95,10 +107,7 @@ class ChangelogGenerator:
             range_spec = "HEAD"
 
         # Format: hash|subject|body
-        log_output = self.run_git([
-            "log", range_spec,
-            "--pretty=format:%H|%s|%b|||COMMIT_END|||"
-        ])
+        log_output = self.run_git(["log", range_spec, "--pretty=format:%H|%s|%b|||COMMIT_END|||"])
 
         if not log_output:
             return []
@@ -131,7 +140,7 @@ class ChangelogGenerator:
 
         # Pattern: type(scope): description
         # or: type: description
-        pattern = r'^(\w+)(?:\(([^)]+)\))?:\s*(.+)$'
+        pattern = r"^(\w+)(?:\(([^)]+)\))?:\s*(.+)$"
         match = re.match(pattern, subject)
 
         if not match:
@@ -142,7 +151,7 @@ class ChangelogGenerator:
                 "description": subject,
                 "body": body,
                 "issues": self.extract_issues(subject + " " + body),
-                "breaking": is_breaking
+                "breaking": is_breaking,
             }
 
         commit_type = match.group(1).lower()
@@ -159,13 +168,13 @@ class ChangelogGenerator:
             "description": description,
             "body": body,
             "issues": self.extract_issues(subject + " " + body),
-            "breaking": is_breaking
+            "breaking": is_breaking,
         }
 
     def extract_issues(self, text: str) -> List[int]:
         """Extract issue/PR numbers from text."""
         # Match #N patterns
-        pattern = r'#(\d+)'
+        pattern = r"#(\d+)"
         matches = re.findall(pattern, text)
         return sorted(set(int(m) for m in matches))
 
@@ -213,10 +222,10 @@ class ChangelogGenerator:
             New version string (without 'v' prefix)
         """
         # Remove 'v' prefix if present
-        version = current_version.lstrip('v')
+        version = current_version.lstrip("v")
 
         # Parse version
-        match = re.match(r'^(\d+)\.(\d+)\.(\d+)', version)
+        match = re.match(r"^(\d+)\.(\d+)\.(\d+)", version)
         if not match:
             return "1.0.0"
 
@@ -230,11 +239,7 @@ class ChangelogGenerator:
             return f"{major}.{minor}.{patch + 1}"
 
     def generate_markdown(
-        self,
-        version: str,
-        title: str = None,
-        since_ref: str = None,
-        for_changelog: bool = True
+        self, version: str, title: str = None, since_ref: str = None, for_changelog: bool = True
     ) -> str:
         """
         Generate CHANGELOG.md entry.
@@ -318,10 +323,7 @@ class ChangelogGenerator:
         return "\n".join(lines)
 
     def generate_github_release_notes(
-        self,
-        version: str,
-        title: str = None,
-        since_ref: str = None
+        self, version: str, title: str = None, since_ref: str = None
     ) -> str:
         """
         Generate GitHub release notes.
@@ -361,7 +363,9 @@ class ChangelogGenerator:
         lines.append("")
 
         if breaking_count > 0:
-            lines.append(f"⚠️ **This release contains {breaking_count} breaking change(s)** - please review the Breaking Changes section below.")
+            lines.append(
+                f"⚠️ **This release contains {breaking_count} breaking change(s)** - please review the Breaking Changes section below."
+            )
             lines.append("")
 
         # Highlights (features)
@@ -425,7 +429,9 @@ class ChangelogGenerator:
         # Links
         lines.append("## 🔗 Links")
         lines.append("")
-        lines.append(f"- **Full Changelog:** [CHANGELOG.md](CHANGELOG.md#{version.replace('.', '')}---{datetime.now().strftime('%Y-%m-%d')})")
+        lines.append(
+            f"- **Full Changelog:** [CHANGELOG.md](CHANGELOG.md#{version.replace('.', '')}---{datetime.now().strftime('%Y-%m-%d')})"
+        )
         if all_issues:
             sorted_issues = sorted(all_issues)
             issue_list = ", ".join(f"#{i}" for i in sorted_issues)
@@ -505,7 +511,7 @@ _No unreleased changes yet._
                 return False
 
             # Find where to insert (after [Unreleased] section and ---)
-            pattern = r'(## \[Unreleased\].*?---\s*\n+)'
+            pattern = r"(## \[Unreleased\].*?---\s*\n+)"
             match = re.search(pattern, content, re.DOTALL)
 
             if match:
@@ -547,7 +553,7 @@ _No unreleased changes yet._
 
         # Find where to insert (after "## Version History" header and note)
         # Look for the first ### entry
-        pattern = r'(## Version History\s+\*\*Note:\*\*[^\n]+\n+)'
+        pattern = r"(## Version History\s+\*\*Note:\*\*[^\n]+\n+)"
         match = re.search(pattern, content)
 
         if match:
@@ -557,7 +563,12 @@ _No unreleased changes yet._
 
             # Update the "(Current)" marker on old versions
             # Remove (Current) from previous version
-            updated = re.sub(r'### v[\d.]+ \(Current\)', lambda m: m.group(0).replace(" (Current)", ""), updated, count=1)
+            updated = re.sub(
+                r"### v[\d.]+ \(Current\)",
+                lambda m: m.group(0).replace(" (Current)", ""),
+                updated,
+                count=1,
+            )
 
             try:
                 claude_md.write_text(updated, encoding="utf-8")
@@ -567,7 +578,9 @@ _No unreleased changes yet._
 
         return False
 
-    def save_release_notes(self, version: str, title: str = None, since_ref: str = None, output_file: str = None) -> bool:
+    def save_release_notes(
+        self, version: str, title: str = None, since_ref: str = None, output_file: str = None
+    ) -> bool:
         """Save GitHub release notes to a file."""
         if output_file is None:
             output_file = f"release-notes-{version}.md"
@@ -598,16 +611,19 @@ _No unreleased changes yet._
         current_tag = since_ref or self.get_latest_tag() or "v0.0.0"
         suggested_version = self.bump_version(current_tag, bump_type)
 
-        return json.dumps({
-            "version": version or suggested_version,
-            "since_ref": since_ref,
-            "commits": commits,
-            "grouped": grouped,
-            "issues_closed": sorted(all_issues),
-            "commit_count": len(commits),
-            "version_bump": bump_type,
-            "suggested_version": suggested_version
-        }, indent=2)
+        return json.dumps(
+            {
+                "version": version or suggested_version,
+                "since_ref": since_ref,
+                "commits": commits,
+                "grouped": grouped,
+                "issues_closed": sorted(all_issues),
+                "commit_count": len(commits),
+                "version_bump": bump_type,
+                "suggested_version": suggested_version,
+            },
+            indent=2,
+        )
 
 
 def main():
@@ -616,17 +632,31 @@ def main():
     import io
 
     # Handle Windows encoding
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
-    parser = argparse.ArgumentParser(description="Enhanced changelog generator with semantic versioning")
-    parser.add_argument("--version", "-v", help="Version number (e.g., 1.1.0). If not provided, auto-determined from commits")
+    parser = argparse.ArgumentParser(
+        description="Enhanced changelog generator with semantic versioning"
+    )
+    parser.add_argument(
+        "--version",
+        "-v",
+        help="Version number (e.g., 1.1.0). If not provided, auto-determined from commits",
+    )
     parser.add_argument("--title", "-t", help="Release title")
     parser.add_argument("--since", "-s", help="Generate since this tag/ref")
-    parser.add_argument("--json", action="store_true", help="Output as JSON with version bump analysis")
-    parser.add_argument("--preview", "-p", action="store_true", help="Preview without updating files")
+    parser.add_argument(
+        "--json", action="store_true", help="Output as JSON with version bump analysis"
+    )
+    parser.add_argument(
+        "--preview", "-p", action="store_true", help="Preview without updating files"
+    )
     parser.add_argument("--update", "-u", action="store_true", help="Update CHANGELOG.md")
-    parser.add_argument("--release", "-r", action="store_true", help="Generate GitHub release notes")
-    parser.add_argument("--auto", "-a", action="store_true", help="Auto-determine version bump from commits")
+    parser.add_argument(
+        "--release", "-r", action="store_true", help="Generate GitHub release notes"
+    )
+    parser.add_argument(
+        "--auto", "-a", action="store_true", help="Auto-determine version bump from commits"
+    )
     args = parser.parse_args()
 
     generator = ChangelogGenerator()

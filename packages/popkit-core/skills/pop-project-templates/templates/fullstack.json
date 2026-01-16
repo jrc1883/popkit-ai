@@ -17,7 +17,12 @@
           "value": "nextjs",
           "label": "Next.js (React)",
           "description": "Most popular React framework, Vercel deployment, App Router",
-          "pros": ["Largest ecosystem", "Vercel deployment", "Server Components", "API routes built-in"],
+          "pros": [
+            "Largest ecosystem",
+            "Vercel deployment",
+            "Server Components",
+            "API routes built-in"
+          ],
           "cons": ["Vercel lock-in concerns", "App Router learning curve", "Can be complex"],
           "when": "Default choice, React team, need SSR/SSG, Vercel deployment",
           "hosting": ["Vercel", "Netlify", "AWS Amplify", "Self-hosted"],
@@ -30,7 +35,12 @@
           "value": "remix",
           "label": "Remix (React)",
           "description": "Full-stack React framework, web standards focused",
-          "pros": ["Web standards", "Progressive enhancement", "Nested routing", "Error boundaries"],
+          "pros": [
+            "Web standards",
+            "Progressive enhancement",
+            "Nested routing",
+            "Error boundaries"
+          ],
           "cons": ["Smaller ecosystem", "Different mental model", "Less SSG support"],
           "when": "Progressive enhancement, web standards, complex forms/data",
           "hosting": ["Fly.io", "Vercel", "Cloudflare", "Any Node host"],
@@ -56,7 +66,12 @@
           "value": "sveltekit",
           "label": "SvelteKit (Svelte)",
           "description": "Svelte full-stack framework, excellent performance",
-          "pros": ["Best performance", "Small bundles", "Simple reactivity", "Adapters for any host"],
+          "pros": [
+            "Best performance",
+            "Small bundles",
+            "Simple reactivity",
+            "Adapters for any host"
+          ],
           "cons": ["Smaller ecosystem", "Less mature", "Fewer UI libraries"],
           "when": "Performance priority, prefer Svelte syntax, lighter framework",
           "hosting": ["Vercel", "Netlify", "Cloudflare", "Node adapter"],
@@ -69,7 +84,12 @@
           "value": "astro",
           "label": "Astro (Multi-framework)",
           "description": "Content-focused, ships zero JS by default, islands architecture",
-          "pros": ["Zero JS by default", "Use any UI framework", "Content collections", "Fast builds"],
+          "pros": [
+            "Zero JS by default",
+            "Use any UI framework",
+            "Content collections",
+            "Fast builds"
+          ],
           "cons": ["Less suited for SPAs", "Islands can be complex", "Newer patterns"],
           "when": "Content-heavy sites, marketing sites, want minimal JS",
           "hosting": ["Vercel", "Netlify", "Cloudflare", "Static hosting"],
@@ -88,11 +108,7 @@
         }
       ],
       "default": "nextjs",
-      "research_sources": [
-        "State of JS 2023 Survey",
-        "npm download trends",
-        "GitHub star trends"
-      ]
+      "research_sources": ["State of JS 2023 Survey", "npm download trends", "GitHub star trends"]
     },
     {
       "id": "database",
@@ -104,7 +120,13 @@
           "value": "supabase",
           "label": "Supabase (PostgreSQL)",
           "description": "Open-source Firebase alternative, PostgreSQL + Auth + Storage + Realtime",
-          "pros": ["All-in-one BaaS", "PostgreSQL", "Auth included", "Row Level Security", "Self-hostable"],
+          "pros": [
+            "All-in-one BaaS",
+            "PostgreSQL",
+            "Auth included",
+            "Row Level Security",
+            "Self-hostable"
+          ],
           "cons": ["Vendor coupling", "Pricing at scale", "Some limitations vs raw Postgres"],
           "when": "Rapid development, want integrated auth/storage, like Firebase DX",
           "includes": ["PostgreSQL", "Auth", "Storage", "Realtime", "Edge Functions"],
@@ -114,7 +136,12 @@
           "value": "planetscale",
           "label": "PlanetScale (MySQL)",
           "description": "Serverless MySQL with branching, horizontal scaling",
-          "pros": ["Database branching", "Horizontal scaling", "No connection limits", "Vitess under hood"],
+          "pros": [
+            "Database branching",
+            "Horizontal scaling",
+            "No connection limits",
+            "Vitess under hood"
+          ],
           "cons": ["No foreign keys (by design)", "MySQL not Postgres", "Pricing changes"],
           "when": "Need scaling, like branching workflow, MySQL preference",
           "includes": ["MySQL", "Branching", "Insights"],
@@ -263,29 +290,10 @@
     "supporting": ["code-reviewer", "test-writer-fixer", "accessibility-guardian"]
   },
 
-  "quality_gates": [
-    "typescript",
-    "lint",
-    "test",
-    "build",
-    "lighthouse"
-  ],
+  "quality_gates": ["typescript", "lint", "test", "build", "lighthouse"],
 
   "scaffolding": {
-    "directories": [
-      "src",
-      "src/app",
-      "src/components",
-      "src/lib",
-      "public",
-      "tests"
-    ],
-    "files": [
-      "package.json",
-      "tsconfig.json",
-      ".env.example",
-      ".gitignore",
-      "README.md"
-    ]
+    "directories": ["src", "src/app", "src/components", "src/lib", "public", "tests"],
+    "files": ["package.json", "tsconfig.json", ".env.example", ".gitignore", "README.md"]
   }
 }

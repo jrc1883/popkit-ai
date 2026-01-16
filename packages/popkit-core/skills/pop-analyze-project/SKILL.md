@@ -174,11 +174,11 @@ Perform deep analysis of a codebase to understand its architecture, patterns, de
 
 ## Arguments
 
-| Flag | Description |
-|------|-------------|
-| `--json` | Output structured JSON instead of markdown, save to `.claude/analysis.json` |
-| `--quick` | Quick summary only (5-10 lines) |
-| `--focus <area>` | Focus analysis: `arch`, `deps`, `quality`, `patterns` |
+| Flag             | Description                                                                 |
+| ---------------- | --------------------------------------------------------------------------- |
+| `--json`         | Output structured JSON instead of markdown, save to `.claude/analysis.json` |
+| `--quick`        | Quick summary only (5-10 lines)                                             |
+| `--focus <area>` | Focus analysis: `arch`, `deps`, `quality`, `patterns`                       |
 
 ## JSON Output Mode
 
@@ -241,21 +241,21 @@ print(json.dumps(output, indent=2))
 
 Based on detected patterns, recommend:
 
-| Pattern | Recommended Skill | Priority |
-|---------|-------------------|----------|
-| nextjs + vercel-config | `project:deploy` | high |
-| prisma OR drizzle | `project:db-migrate` | high |
-| supabase | `project:supabase-sync` | medium |
-| docker-compose | `project:docker-dev` | medium |
-| feature-flags | `project:feature-toggle` | low |
+| Pattern                | Recommended Skill        | Priority |
+| ---------------------- | ------------------------ | -------- |
+| nextjs + vercel-config | `project:deploy`         | high     |
+| prisma OR drizzle      | `project:db-migrate`     | high     |
+| supabase               | `project:supabase-sync`  | medium   |
+| docker-compose         | `project:docker-dev`     | medium   |
+| feature-flags          | `project:feature-toggle` | low      |
 
-| Pattern | Recommended Agent |
-|---------|-------------------|
-| Large codebase (>100 files) | `performance-optimizer` |
-| React/Vue components | `accessibility-guardian` |
-| API routes | `api-designer` |
-| Security-sensitive | `security-auditor` |
-| Low test coverage | `test-writer-fixer` |
+| Pattern                     | Recommended Agent        |
+| --------------------------- | ------------------------ |
+| Large codebase (>100 files) | `performance-optimizer`  |
+| React/Vue components        | `accessibility-guardian` |
+| API routes                  | `api-designer`           |
+| Security-sensitive          | `security-auditor`       |
+| Low test coverage           | `test-writer-fixer`      |
 
 ## Analysis Areas
 
@@ -276,11 +276,13 @@ find . -name "node_modules" -prune -o -type f -print | \
 ### 2. Technology Stack
 
 **Detect package managers:**
+
 ```bash
 ls package.json yarn.lock pnpm-lock.yaml Cargo.toml pyproject.toml go.mod 2>/dev/null
 ```
 
 **Detect frameworks:**
+
 - Next.js: `next.config.*`, `app/` or `pages/`
 - React: `react` in dependencies
 - Vue: `vue.config.*`
@@ -289,6 +291,7 @@ ls package.json yarn.lock pnpm-lock.yaml Cargo.toml pyproject.toml go.mod 2>/dev
 - Rust: `Cargo.toml`
 
 **Detect databases:**
+
 - Supabase: `@supabase/supabase-js`
 - Prisma: `prisma/schema.prisma`
 - MongoDB: `mongoose`
@@ -297,16 +300,19 @@ ls package.json yarn.lock pnpm-lock.yaml Cargo.toml pyproject.toml go.mod 2>/dev
 ### 3. Architecture Patterns
 
 **Frontend:**
+
 - Component structure (atomic design, feature-based, etc.)
 - State management (Redux, Zustand, Context)
 - Routing patterns
 
 **Backend:**
+
 - API design (REST, GraphQL, tRPC)
 - Service layer organization
 - Database access patterns
 
 **Common:**
+
 - Error handling patterns
 - Logging approach
 - Configuration management
@@ -370,6 +376,7 @@ ls vercel.json netlify.toml fly.toml 2>/dev/null
 # [Project Name] Analysis Report
 
 ## Summary
+
 - **Type**: [Web App / API / CLI / Library]
 - **Stack**: [Primary technologies]
 - **Size**: [Files, Lines of code]
@@ -378,16 +385,19 @@ ls vercel.json netlify.toml fly.toml 2>/dev/null
 ## Technology Stack
 
 ### Frontend
+
 - Framework: [Next.js 14 / React / Vue / etc.]
 - Styling: [Tailwind / styled-components / etc.]
 - State: [Redux / Zustand / Context]
 
 ### Backend
+
 - Runtime: [Node.js / Python / Rust / Go]
 - Framework: [Express / FastAPI / Actix]
 - Database: [PostgreSQL / MongoDB / etc.]
 
 ### DevOps
+
 - CI/CD: [GitHub Actions / GitLab CI / etc.]
 - Deployment: [Vercel / AWS / etc.]
 - Container: [Docker / etc.]
@@ -395,51 +405,61 @@ ls vercel.json netlify.toml fly.toml 2>/dev/null
 ## Architecture
 
 ### Directory Structure
+
 \`\`\`
 [Tree output of main directories]
 \`\`\`
 
 ### Key Patterns
+
 - [Pattern 1]: [Where used]
 - [Pattern 2]: [Where used]
 
 ### Entry Points
+
 - Main: `[path]`
 - API: `[path]`
 - Tests: `[path]`
 
 ## Code Quality
 
-| Metric | Value | Status |
-|--------|-------|--------|
-| Linting | [Configured/Missing] | [OK/Warning] |
-| TypeScript Strict | [Yes/No] | [OK/Warning] |
-| Test Coverage | [X%] | [OK/Warning] |
-| TODO Comments | [N] | [OK/Warning] |
+| Metric            | Value                | Status       |
+| ----------------- | -------------------- | ------------ |
+| Linting           | [Configured/Missing] | [OK/Warning] |
+| TypeScript Strict | [Yes/No]             | [OK/Warning] |
+| Test Coverage     | [X%]                 | [OK/Warning] |
+| TODO Comments     | [N]                  | [OK/Warning] |
 
 ## Dependencies
 
 ### Production ([N] packages)
+
 Top 5:
+
 - [package]: [version]
 
 ### Security
+
 - Vulnerabilities: [Low: X, Medium: Y, High: Z]
 
 ## Recommendations
 
 ### Critical
+
 1. [Issue requiring immediate attention]
 
 ### High Priority
+
 1. [Important improvement]
 
 ### Nice to Have
+
 1. [Enhancement suggestion]
 
 ## Agent Opportunities
 
 Based on analysis, these agents would be valuable:
+
 - [agent-name]: [why]
 - [agent-name]: [why]
 
@@ -453,10 +473,12 @@ Based on analysis, these agents would be valuable:
 ## Integration
 
 **Called by:**
+
 - Manual `/analyze-project` command
 - After `/init-project`
 
 **Informs:**
+
 - **/generate-mcp** - What tools to create
 - **/generate-skills** - What patterns to capture
 - **/setup-precommit** - What checks to configure

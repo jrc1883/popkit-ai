@@ -15,7 +15,7 @@ import json
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Dict, List, Set
+from typing import Any, Dict
 
 
 def find_project_root(start_path: Path = None) -> Path:
@@ -60,7 +60,9 @@ def analyze_directory_structure(project_dir: Path) -> Dict[str, Any]:
 
             # Check for hidden directories
             if item.name.startswith(".") and item.name not in [".git", ".github"]:
-                structure["hidden_directories"].append(str(item.relative_to(project_dir)))
+                structure["hidden_directories"].append(
+                    str(item.relative_to(project_dir))
+                )
 
             # Track depth
             depth = len(item.relative_to(project_dir).parts)
@@ -68,7 +70,9 @@ def analyze_directory_structure(project_dir: Path) -> Dict[str, Any]:
 
             # Check for empty directories
             if not any(item.iterdir()):
-                structure["empty_directories"].append(str(item.relative_to(project_dir)))
+                structure["empty_directories"].append(
+                    str(item.relative_to(project_dir))
+                )
 
         elif item.is_file():
             structure["total_files"] += 1
@@ -87,21 +91,16 @@ def analyze_directory_structure(project_dir: Path) -> Dict[str, Any]:
     # Find directories with many files (potential organization issues)
     for dir_path, count in file_count_by_dir.items():
         if count > 20:  # Threshold for "large" directory
-            structure["large_directories"].append({
-                "path": dir_path,
-                "file_count": count
-            })
+            structure["large_directories"].append(
+                {"path": dir_path, "file_count": count}
+            )
 
     return structure
 
 
 def detect_architecture_patterns(project_dir: Path) -> Dict[str, Any]:
     """Detect common architecture patterns in the project."""
-    patterns = {
-        "detected": [],
-        "confidence_scores": {},
-        "recommendations": []
-    }
+    patterns = {"detected": [], "confidence_scores": {}, "recommendations": []}
 
     # Check for common patterns
     pattern_indicators = {
@@ -160,15 +159,19 @@ def detect_architecture_patterns(project_dir: Path) -> Dict[str, Any]:
 
     # Generate recommendations based on detected patterns
     if not patterns["detected"]:
-        patterns["recommendations"].append({
-            "priority": "medium",
-            "message": "No clear architecture pattern detected. Consider adopting a consistent structure."
-        })
+        patterns["recommendations"].append(
+            {
+                "priority": "medium",
+                "message": "No clear architecture pattern detected. Consider adopting a consistent structure.",
+            }
+        )
     elif len(patterns["detected"]) > 2:
-        patterns["recommendations"].append({
-            "priority": "low",
-            "message": "Multiple architecture patterns detected. Ensure intentional design."
-        })
+        patterns["recommendations"].append(
+            {
+                "priority": "low",
+                "message": "Multiple architecture patterns detected. Ensure intentional design.",
+            }
+        )
 
     return patterns
 
@@ -178,7 +181,7 @@ def analyze_module_boundaries(project_dir: Path) -> Dict[str, Any]:
     boundaries = {
         "modules": [],
         "potential_violations": [],
-        "cross_cutting_concerns": []
+        "cross_cutting_concerns": [],
     }
 
     # Common module boundary indicators
@@ -191,11 +194,13 @@ def analyze_module_boundaries(project_dir: Path) -> Dict[str, Any]:
             rel_path = str(module_dir.relative_to(project_dir))
 
             if rel_path != ".":
-                boundaries["modules"].append({
-                    "path": rel_path,
-                    "marker": marker,
-                    "files": len(list(module_dir.glob("*")))
-                })
+                boundaries["modules"].append(
+                    {
+                        "path": rel_path,
+                        "marker": marker,
+                        "files": len(list(module_dir.glob("*"))),
+                    }
+                )
 
     # Check for potential boundary violations (imports across boundaries)
     # This is a simplified check - just looking for patterns
@@ -209,11 +214,13 @@ def analyze_module_boundaries(project_dir: Path) -> Dict[str, Any]:
             content = py_file.read_text(encoding="utf-8", errors="ignore")
             for pattern in suspicious_patterns:
                 if pattern in content:
-                    boundaries["potential_violations"].append({
-                        "file": str(py_file.relative_to(project_dir)),
-                        "issue": f"Deep relative import ({pattern})",
-                        "severity": "warning"
-                    })
+                    boundaries["potential_violations"].append(
+                        {
+                            "file": str(py_file.relative_to(project_dir)),
+                            "issue": f"Deep relative import ({pattern})",
+                            "severity": "warning",
+                        }
+                    )
                     break
         except:
             pass
@@ -223,11 +230,13 @@ def analyze_module_boundaries(project_dir: Path) -> Dict[str, Any]:
             content = ts_file.read_text(encoding="utf-8", errors="ignore")
             for pattern in suspicious_patterns:
                 if pattern in content:
-                    boundaries["potential_violations"].append({
-                        "file": str(ts_file.relative_to(project_dir)),
-                        "issue": f"Deep relative import ({pattern})",
-                        "severity": "warning"
-                    })
+                    boundaries["potential_violations"].append(
+                        {
+                            "file": str(ts_file.relative_to(project_dir)),
+                            "issue": f"Deep relative import ({pattern})",
+                            "severity": "warning",
+                        }
+                    )
                     break
         except:
             pass
@@ -245,9 +254,7 @@ def analyze_module_boundaries(project_dir: Path) -> Dict[str, Any]:
 
 
 def calculate_structure_score(
-    structure: Dict[str, Any],
-    patterns: Dict[str, Any],
-    boundaries: Dict[str, Any]
+    structure: Dict[str, Any], patterns: Dict[str, Any], boundaries: Dict[str, Any]
 ) -> Dict[str, Any]:
     """Calculate overall structure quality score."""
     score = 100
@@ -257,53 +264,51 @@ def calculate_structure_score(
     if structure["depth"] > 8:
         deduct = min(15, (structure["depth"] - 8) * 3)
         score -= deduct
-        deductions.append({
-            "reason": f"Deep directory nesting ({structure['depth']} levels)",
-            "points": deduct
-        })
+        deductions.append(
+            {
+                "reason": f"Deep directory nesting ({structure['depth']} levels)",
+                "points": deduct,
+            }
+        )
 
     # Deduct for large directories
     if structure["large_directories"]:
         deduct = min(15, len(structure["large_directories"]) * 5)
         score -= deduct
-        deductions.append({
-            "reason": f"{len(structure['large_directories'])} directories with >20 files",
-            "points": deduct
-        })
+        deductions.append(
+            {
+                "reason": f"{len(structure['large_directories'])} directories with >20 files",
+                "points": deduct,
+            }
+        )
 
     # Deduct for no clear architecture
     if not patterns["detected"]:
         score -= 10
-        deductions.append({
-            "reason": "No clear architecture pattern",
-            "points": 10
-        })
+        deductions.append({"reason": "No clear architecture pattern", "points": 10})
 
     # Deduct for boundary violations
     violation_count = len(boundaries["potential_violations"])
     if violation_count > 0:
         deduct = min(20, violation_count * 2)
         score -= deduct
-        deductions.append({
-            "reason": f"{violation_count} potential module boundary violations",
-            "points": deduct
-        })
+        deductions.append(
+            {
+                "reason": f"{violation_count} potential module boundary violations",
+                "points": deduct,
+            }
+        )
 
     # Deduct for empty directories
     empty_count = len(structure["empty_directories"])
     if empty_count > 3:
         deduct = min(5, empty_count - 3)
         score -= deduct
-        deductions.append({
-            "reason": f"{empty_count} empty directories",
-            "points": deduct
-        })
+        deductions.append(
+            {"reason": f"{empty_count} empty directories", "points": deduct}
+        )
 
-    return {
-        "score": max(0, score),
-        "grade": get_grade(score),
-        "deductions": deductions
-    }
+    return {"score": max(0, score), "grade": get_grade(score), "deductions": deductions}
 
 
 def get_grade(score: int) -> str:
@@ -345,7 +350,7 @@ def main():
         "patterns": patterns,
         "module_boundaries": boundaries,
         "scoring": scoring,
-        "recommendations": patterns.get("recommendations", [])
+        "recommendations": patterns.get("recommendations", []),
     }
 
     print(json.dumps(report, indent=2))

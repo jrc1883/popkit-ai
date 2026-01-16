@@ -24,16 +24,14 @@ Usage:
     reasoning = result["reasoning"]  # str
 """
 
-import json
-import re
-from dataclasses import dataclass, field, asdict
-from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
+from dataclasses import asdict, dataclass
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
 
 class ComplexityLevel(Enum):
     """Complexity level classifications"""
+
     TRIVIAL = (1, 2, "Single file, minimal changes")
     SIMPLE = (3, 4, "Few files, straightforward logic")
     MODERATE = (5, 6, "Multiple files, some complexity")
@@ -49,14 +47,15 @@ class ComplexityLevel(Enum):
 @dataclass
 class ComplexityFactors:
     """Individual complexity factor scores"""
-    files_affected: float = 0.0          # 0-100
-    loc_estimate: float = 0.0            # 0-100
-    dependencies: float = 0.0            # 0-100
-    architecture_change: float = 0.0     # 0-100
-    breaking_changes: float = 0.0        # 0-100
-    testing_complexity: float = 0.0      # 0-100
-    security_impact: float = 0.0         # 0-100
-    integration_points: float = 0.0      # 0-100
+
+    files_affected: float = 0.0  # 0-100
+    loc_estimate: float = 0.0  # 0-100
+    dependencies: float = 0.0  # 0-100
+    architecture_change: float = 0.0  # 0-100
+    breaking_changes: float = 0.0  # 0-100
+    testing_complexity: float = 0.0  # 0-100
+    security_impact: float = 0.0  # 0-100
+    integration_points: float = 0.0  # 0-100
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -65,15 +64,16 @@ class ComplexityFactors:
 @dataclass
 class ComplexityAnalysis:
     """Complete complexity analysis result"""
-    complexity_score: int                # 1-10 final score
-    complexity_level: str                # TRIVIAL, SIMPLE, etc.
-    recommended_subtasks: int            # Suggested subtask count
-    phase_distribution: Dict[str, int]   # Phase breakdown
-    risk_factors: List[str]              # Risk categories
-    reasoning: str                       # Human-readable explanation
-    factors: ComplexityFactors           # Detailed factor breakdown
-    estimated_tokens: Dict[str, int]     # Token usage estimates
-    suggested_agents: List[str]          # Recommended agents
+
+    complexity_score: int  # 1-10 final score
+    complexity_level: str  # TRIVIAL, SIMPLE, etc.
+    recommended_subtasks: int  # Suggested subtask count
+    phase_distribution: Dict[str, int]  # Phase breakdown
+    risk_factors: List[str]  # Risk categories
+    reasoning: str  # Human-readable explanation
+    factors: ComplexityFactors  # Detailed factor breakdown
+    estimated_tokens: Dict[str, int]  # Token usage estimates
+    suggested_agents: List[str]  # Recommended agents
 
     def to_dict(self) -> dict:
         return {
@@ -85,7 +85,7 @@ class ComplexityAnalysis:
             "reasoning": self.reasoning,
             "factors": self.factors.to_dict(),
             "estimated_tokens": self.estimated_tokens,
-            "suggested_agents": self.suggested_agents
+            "suggested_agents": self.suggested_agents,
         }
 
 
@@ -107,7 +107,7 @@ class ComplexityAnalyzer:
         "breaking_changes": 0.10,
         "testing_complexity": 0.10,
         "security_impact": 0.15,  # Increased from 0.05
-        "integration_points": 0.05
+        "integration_points": 0.05,
     }
 
     # Keywords for detecting complexity factors
@@ -131,7 +131,7 @@ class ComplexityAnalyzer:
         7: (5, 7),
         8: (6, 9),
         9: (8, 12),
-        10: (10, 15)
+        10: (10, 15),
     }
 
     # Agent recommendations by complexity
@@ -139,7 +139,7 @@ class ComplexityAnalyzer:
         (1, 3): ["rapid-prototyper", "code-explorer"],
         (4, 6): ["refactoring-expert", "code-explorer", "test-writer"],
         (7, 8): ["code-architect", "refactoring-expert", "security-auditor"],
-        (9, 10): ["code-architect", "system-designer", "tech-lead", "security-auditor"]
+        (9, 10): ["code-architect", "system-designer", "tech-lead", "security-auditor"],
     }
 
     def __init__(self, weights: Optional[Dict[str, float]] = None):
@@ -152,9 +152,7 @@ class ComplexityAnalyzer:
         self.weights = weights or self.DEFAULT_WEIGHTS.copy()
 
     def analyze(
-        self,
-        task_description: str,
-        metadata: Optional[Dict[str, Any]] = None
+        self, task_description: str, metadata: Optional[Dict[str, Any]] = None
     ) -> ComplexityAnalysis:
         """
         Analyze task complexity and provide recommendations.
@@ -188,11 +186,7 @@ class ComplexityAnalyzer:
         suggested_agents = self._suggest_agents(complexity_score)
 
         # Generate reasoning
-        reasoning = self._generate_reasoning(
-            complexity_score,
-            factors,
-            task_description
-        )
+        reasoning = self._generate_reasoning(complexity_score, factors, task_description)
 
         return ComplexityAnalysis(
             complexity_score=complexity_score,
@@ -203,14 +197,10 @@ class ComplexityAnalyzer:
             reasoning=reasoning,
             factors=factors,
             estimated_tokens=estimated_tokens,
-            suggested_agents=suggested_agents
+            suggested_agents=suggested_agents,
         )
 
-    def _extract_factors(
-        self,
-        description: str,
-        metadata: Dict[str, Any]
-    ) -> ComplexityFactors:
+    def _extract_factors(self, description: str, metadata: Dict[str, Any]) -> ComplexityFactors:
         """Extract complexity factors from description and metadata."""
         desc_lower = description.lower()
 
@@ -239,7 +229,9 @@ class ComplexityAnalyzer:
         security_score = self._score_keywords(desc_lower, self.HIGH_COMPLEXITY_KEYWORDS["security"])
 
         # Integration points (keyword-based)
-        integration_score = self._score_keywords(desc_lower, self.HIGH_COMPLEXITY_KEYWORDS["integration"])
+        integration_score = self._score_keywords(
+            desc_lower, self.HIGH_COMPLEXITY_KEYWORDS["integration"]
+        )
 
         return ComplexityFactors(
             files_affected=files_score,
@@ -249,7 +241,7 @@ class ComplexityAnalyzer:
             breaking_changes=breaking_score,
             testing_complexity=testing_score,
             security_impact=security_score,
-            integration_points=integration_score
+            integration_points=integration_score,
         )
 
     def _estimate_files(self, description: str) -> int:
@@ -261,7 +253,10 @@ class ComplexityAnalyzer:
             return 20
         elif any(word in desc_lower for word in ["refactor", "redesign", "restructure"]):
             return 12
-        elif any(word in desc_lower for word in ["module", "component", "service", "authentication", "auth"]):
+        elif any(
+            word in desc_lower
+            for word in ["module", "component", "service", "authentication", "auth"]
+        ):
             return 8
         elif any(word in desc_lower for word in ["feature", "add", "implement", "page", "form"]):
             return 5
@@ -301,8 +296,14 @@ class ComplexityAnalyzer:
         count = 1  # Base count
 
         # Count integration keywords
-        count += sum(1 for keyword in self.HIGH_COMPLEXITY_KEYWORDS["integration"]
-                     if keyword in desc_lower) * 2
+        count += (
+            sum(
+                1
+                for keyword in self.HIGH_COMPLEXITY_KEYWORDS["integration"]
+                if keyword in desc_lower
+            )
+            * 2
+        )
 
         # Add database dependencies
         if any(word in desc_lower for word in self.HIGH_COMPLEXITY_KEYWORDS["database"]):
@@ -397,25 +398,13 @@ class ComplexityAnalyzer:
         """Recommend phase distribution based on complexity."""
         if complexity <= 2:
             # Trivial: minimal phases
-            return {
-                "implementation": 1,
-                "testing": 1
-            }
+            return {"implementation": 1, "testing": 1}
         elif complexity <= 4:
             # Simple: basic phases
-            return {
-                "planning": 1,
-                "implementation": 2,
-                "testing": 1
-            }
+            return {"planning": 1, "implementation": 2, "testing": 1}
         elif complexity <= 6:
             # Moderate: standard phases
-            return {
-                "planning": 1,
-                "implementation": 3,
-                "testing": 2,
-                "review": 1
-            }
+            return {"planning": 1, "implementation": 3, "testing": 2, "review": 1}
         elif complexity <= 8:
             # Complex: extended phases
             return {
@@ -424,7 +413,7 @@ class ComplexityAnalyzer:
                 "implementation": 4,
                 "testing": 2,
                 "review": 1,
-                "integration": 1
+                "integration": 1,
             }
         else:
             # Very complex: full phases
@@ -436,14 +425,10 @@ class ComplexityAnalyzer:
                 "testing": 3,
                 "review": 2,
                 "integration": 2,
-                "documentation": 1
+                "documentation": 1,
             }
 
-    def _identify_risks(
-        self,
-        description: str,
-        factors: ComplexityFactors
-    ) -> List[str]:
+    def _identify_risks(self, description: str, factors: ComplexityFactors) -> List[str]:
         """Identify risk factors."""
         risks = []
         desc_lower = description.lower()
@@ -467,25 +452,16 @@ class ComplexityAnalyzer:
         """Estimate token usage based on complexity."""
         # Base token estimates for different task types
         if complexity <= 2:
-            return {
-                "planning": 2000,
-                "implementation": 5000,
-                "total": 7000
-            }
+            return {"planning": 2000, "implementation": 5000, "total": 7000}
         elif complexity <= 4:
-            return {
-                "planning": 4000,
-                "implementation": 10000,
-                "testing": 3000,
-                "total": 17000
-            }
+            return {"planning": 4000, "implementation": 10000, "testing": 3000, "total": 17000}
         elif complexity <= 6:
             return {
                 "planning": 8000,
                 "implementation": 20000,
                 "testing": 6000,
                 "review": 4000,
-                "total": 38000
+                "total": 38000,
             }
         elif complexity <= 8:
             return {
@@ -494,7 +470,7 @@ class ComplexityAnalyzer:
                 "implementation": 35000,
                 "testing": 10000,
                 "review": 6000,
-                "total": 68000
+                "total": 68000,
             }
         else:
             return {
@@ -504,7 +480,7 @@ class ComplexityAnalyzer:
                 "implementation": 60000,
                 "testing": 20000,
                 "review": 10000,
-                "total": 135000
+                "total": 135000,
             }
 
     def _suggest_agents(self, complexity: int) -> List[str]:
@@ -514,22 +490,13 @@ class ComplexityAnalyzer:
                 return agents.copy()
         return ["code-explorer"]  # Default
 
-    def _generate_reasoning(
-        self,
-        score: int,
-        factors: ComplexityFactors,
-        description: str
-    ) -> str:
+    def _generate_reasoning(self, score: int, factors: ComplexityFactors, description: str) -> str:
         """Generate human-readable reasoning for the score."""
         level = self._classify_level(score)
 
         # Find top 3 contributing factors
         factor_dict = factors.to_dict()
-        sorted_factors = sorted(
-            factor_dict.items(),
-            key=lambda x: x[1],
-            reverse=True
-        )[:3]
+        sorted_factors = sorted(factor_dict.items(), key=lambda x: x[1], reverse=True)[:3]
 
         factor_names = {
             "files_affected": "multiple files affected",
@@ -539,36 +506,22 @@ class ComplexityAnalyzer:
             "breaking_changes": "breaking changes involved",
             "testing_complexity": "complex testing requirements",
             "security_impact": "security considerations",
-            "integration_points": "integration complexity"
+            "integration_points": "integration complexity",
         }
 
-        top_factors = [
-            factor_names.get(name, name)
-            for name, value in sorted_factors
-            if value > 20
-        ]
+        top_factors = [factor_names.get(name, name) for name, value in sorted_factors if value > 20]
 
-        reasoning_parts = [
-            f"Complexity Score: {score}/10 ({level.description})"
-        ]
+        reasoning_parts = [f"Complexity Score: {score}/10 ({level.description})"]
 
         if top_factors:
-            reasoning_parts.append(
-                f"Primary factors: {', '.join(top_factors)}"
-            )
+            reasoning_parts.append(f"Primary factors: {', '.join(top_factors)}")
 
         if score <= 3:
-            reasoning_parts.append(
-                "This is a straightforward task that can be completed quickly."
-            )
+            reasoning_parts.append("This is a straightforward task that can be completed quickly.")
         elif score <= 6:
-            reasoning_parts.append(
-                "This requires moderate planning and careful implementation."
-            )
+            reasoning_parts.append("This requires moderate planning and careful implementation.")
         elif score <= 8:
-            reasoning_parts.append(
-                "This is a complex task requiring architectural consideration."
-            )
+            reasoning_parts.append("This is a complex task requiring architectural consideration.")
         else:
             reasoning_parts.append(
                 "This is a very complex task requiring thorough planning, "
@@ -594,8 +547,7 @@ def get_complexity_analyzer() -> ComplexityAnalyzer:
 
 
 def analyze_complexity(
-    task_description: str,
-    metadata: Optional[Dict[str, Any]] = None
+    task_description: str, metadata: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
     """
     Analyze task complexity (convenience function).

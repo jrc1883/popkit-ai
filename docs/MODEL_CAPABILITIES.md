@@ -6,6 +6,7 @@
 ## Overview
 
 This document analyzes 6 major AI coding tools to identify:
+
 1. Common capabilities (features PopKit can leverage across all tools)
 2. Unique capabilities (tool-specific features)
 3. Integration opportunities (how PopKit can add value)
@@ -15,14 +16,14 @@ This document analyzes 6 major AI coding tools to identify:
 
 ## Tools Analyzed
 
-| Tool | Company | Type | MCP Support |
-|------|---------|------|-------------|
-| [Claude Code](https://claude.ai/code) | Anthropic | CLI + Plugins | Native |
-| [Cursor](https://cursor.com) | Cursor Inc | Fork of VS Code | Native |
-| [Continue.dev](https://continue.dev) | Continue | VS Code/JetBrains Extension | Full Support |
-| [Windsurf](https://windsurf.com) | Codeium | Standalone IDE | Unknown |
-| [GitHub Copilot](https://github.com/features/copilot) | GitHub/Microsoft | Extension (multi-IDE) | Partial |
-| [Gemini Code Assist](https://codeassist.google) | Google | Extension (multi-IDE) | Unknown |
+| Tool                                                  | Company          | Type                        | MCP Support  |
+| ----------------------------------------------------- | ---------------- | --------------------------- | ------------ |
+| [Claude Code](https://claude.ai/code)                 | Anthropic        | CLI + Plugins               | Native       |
+| [Cursor](https://cursor.com)                          | Cursor Inc       | Fork of VS Code             | Native       |
+| [Continue.dev](https://continue.dev)                  | Continue         | VS Code/JetBrains Extension | Full Support |
+| [Windsurf](https://windsurf.com)                      | Codeium          | Standalone IDE              | Unknown      |
+| [GitHub Copilot](https://github.com/features/copilot) | GitHub/Microsoft | Extension (multi-IDE)       | Partial      |
+| [Gemini Code Assist](https://codeassist.google)       | Google           | Extension (multi-IDE)       | Unknown      |
 
 ---
 
@@ -30,46 +31,46 @@ This document analyzes 6 major AI coding tools to identify:
 
 ### Core Coding Features
 
-| Feature | Claude Code | Cursor | Continue | Windsurf | Copilot | Gemini |
-|---------|-------------|--------|----------|----------|---------|--------|
-| Code Completion | Via tools | Native | Native | Native (Supercomplete) | Native | Native |
-| Chat Interface | Yes | Yes | Yes | Yes (Cascade) | Yes | Yes |
-| Multi-file Editing | Yes | Yes | Yes | Yes | Yes (Agent) | Yes (Agent) |
-| Codebase Understanding | Deep | Deep | Deep | Deep (RAG) | Deep | Deep |
-| Terminal Integration | Full | Full | Partial | Yes | Full | Partial |
-| Web Search | Yes | Yes | Limited | Yes | Yes | Yes |
-| Image Understanding | Yes | Yes | Limited | Yes | Yes | Yes |
+| Feature                | Claude Code | Cursor | Continue | Windsurf               | Copilot     | Gemini      |
+| ---------------------- | ----------- | ------ | -------- | ---------------------- | ----------- | ----------- |
+| Code Completion        | Via tools   | Native | Native   | Native (Supercomplete) | Native      | Native      |
+| Chat Interface         | Yes         | Yes    | Yes      | Yes (Cascade)          | Yes         | Yes         |
+| Multi-file Editing     | Yes         | Yes    | Yes      | Yes                    | Yes (Agent) | Yes (Agent) |
+| Codebase Understanding | Deep        | Deep   | Deep     | Deep (RAG)             | Deep        | Deep        |
+| Terminal Integration   | Full        | Full   | Partial  | Yes                    | Full        | Partial     |
+| Web Search             | Yes         | Yes    | Limited  | Yes                    | Yes         | Yes         |
+| Image Understanding    | Yes         | Yes    | Limited  | Yes                    | Yes         | Yes         |
 
 ### Agent Capabilities
 
-| Feature | Claude Code | Cursor | Continue | Windsurf | Copilot | Gemini |
-|---------|-------------|--------|----------|----------|---------|--------|
-| Agent Mode | Via Task tool | Yes (8 parallel) | Yes | Cascade Flow | Yes | Yes |
-| Background Tasks | Yes | Yes (worktrees) | Limited | Unknown | Yes (Actions) | Unknown |
-| Plan Mode | Yes | Yes | Unknown | Via Cascade | Yes | Yes |
-| Self-Correction | Yes | Yes | Yes | Yes | Yes | Yes |
-| Tool Calling | Native | Native | Via MCP | Unknown | Native | Native |
+| Feature          | Claude Code   | Cursor           | Continue | Windsurf     | Copilot       | Gemini  |
+| ---------------- | ------------- | ---------------- | -------- | ------------ | ------------- | ------- |
+| Agent Mode       | Via Task tool | Yes (8 parallel) | Yes      | Cascade Flow | Yes           | Yes     |
+| Background Tasks | Yes           | Yes (worktrees)  | Limited  | Unknown      | Yes (Actions) | Unknown |
+| Plan Mode        | Yes           | Yes              | Unknown  | Via Cascade  | Yes           | Yes     |
+| Self-Correction  | Yes           | Yes              | Yes      | Yes          | Yes           | Yes     |
+| Tool Calling     | Native        | Native           | Via MCP  | Unknown      | Native        | Native  |
 
 ### MCP Integration
 
-| Feature | Claude Code | Cursor | Continue | Windsurf | Copilot | Gemini |
-|---------|-------------|--------|----------|----------|---------|--------|
-| MCP Client | Yes | Yes | Full | Unknown | Partial | Unknown |
-| MCP Server Hosting | Via plugins | Via config | Via config | Unknown | Unknown | Unknown |
-| Resources Support | Yes | Yes | Yes | Unknown | Unknown | Unknown |
-| Tools Support | Yes | Yes | Yes | Unknown | Unknown | Unknown |
-| Prompts Support | Yes | Yes | Yes | Unknown | Unknown | Unknown |
-| Sampling Support | Yes | Yes | Yes | Unknown | Unknown | Unknown |
+| Feature            | Claude Code | Cursor     | Continue   | Windsurf | Copilot | Gemini  |
+| ------------------ | ----------- | ---------- | ---------- | -------- | ------- | ------- |
+| MCP Client         | Yes         | Yes        | Full       | Unknown  | Partial | Unknown |
+| MCP Server Hosting | Via plugins | Via config | Via config | Unknown  | Unknown | Unknown |
+| Resources Support  | Yes         | Yes        | Yes        | Unknown  | Unknown | Unknown |
+| Tools Support      | Yes         | Yes        | Yes        | Unknown  | Unknown | Unknown |
+| Prompts Support    | Yes         | Yes        | Yes        | Unknown  | Unknown | Unknown |
+| Sampling Support   | Yes         | Yes        | Yes        | Unknown  | Unknown | Unknown |
 
 ### Extensibility
 
-| Feature | Claude Code | Cursor | Continue | Windsurf | Copilot | Gemini |
-|---------|-------------|--------|----------|----------|---------|--------|
-| Plugin System | Yes (rich) | Rules/MCP | MCP + Config | Extensions | Extensions | Custom Commands |
-| Custom Commands | Yes (skills) | Rules | Yes | Unknown | .copilot-instructions.md | Rules |
-| Hooks System | Yes (Python) | Limited | Unknown | Unknown | Unknown | Unknown |
-| Output Styles | Yes | No | No | No | No | No |
-| Agents | Yes (30+) | No | No | No | No | No |
+| Feature         | Claude Code  | Cursor    | Continue     | Windsurf   | Copilot                  | Gemini          |
+| --------------- | ------------ | --------- | ------------ | ---------- | ------------------------ | --------------- |
+| Plugin System   | Yes (rich)   | Rules/MCP | MCP + Config | Extensions | Extensions               | Custom Commands |
+| Custom Commands | Yes (skills) | Rules     | Yes          | Unknown    | .copilot-instructions.md | Rules           |
+| Hooks System    | Yes (Python) | Limited   | Unknown      | Unknown    | Unknown                  | Unknown         |
+| Output Styles   | Yes          | No        | No           | No         | No                       | No              |
+| Agents          | Yes (30+)    | No        | No           | No         | No                       | No              |
 
 ---
 
@@ -78,6 +79,7 @@ This document analyzes 6 major AI coding tools to identify:
 ### Claude Code
 
 **Strengths:**
+
 - Rich plugin ecosystem (commands, skills, agents, hooks)
 - Native MCP support as both client and server host
 - Extended thinking with token budgets
@@ -85,6 +87,7 @@ This document analyzes 6 major AI coding tools to identify:
 - PDF/image processing
 
 **Unique Features:**
+
 - Hooks system for automation (pre/post tool use)
 - Output styles for consistent formatting
 - Agent routing based on context
@@ -97,6 +100,7 @@ This document analyzes 6 major AI coding tools to identify:
 ### Cursor
 
 **Strengths:**
+
 - VS Code fork with deep AI integration
 - 8 parallel agents using git worktrees
 - AI Code Reviews built-in
@@ -104,11 +108,13 @@ This document analyzes 6 major AI coding tools to identify:
 - Instant Grep for all models
 
 **Unique Features:**
+
 - Bugbot for source control integration
 - Preconfigured MCP handlers
 - Interpolated variables in MCP config
 
 **PopKit Integration Opportunity:**
+
 - MCP server exposing PopKit tools
 - Pattern sharing across Cursor projects
 - Workflow tracking via MCP
@@ -118,17 +124,20 @@ This document analyzes 6 major AI coding tools to identify:
 ### Continue.dev
 
 **Strengths:**
+
 - First full MCP support for all features
 - Open source and model-agnostic
 - Docker + Continue Hub integration
 - Works in VS Code and JetBrains
 
 **Unique Features:**
+
 - Can import MCP configs from Claude Desktop, Cursor, Cline
 - Hub for discovering MCP servers
 - First-class remote server support
 
 **PopKit Integration Opportunity:**
+
 - MCP server in Continue Hub
 - Seamless config import from Claude Code
 - Cross-IDE workflow continuity
@@ -138,6 +147,7 @@ This document analyzes 6 major AI coding tools to identify:
 ### Windsurf (Codeium)
 
 **Strengths:**
+
 - Purpose-built AI IDE (not a fork)
 - Cascade agent for deep codebase understanding
 - Supercomplete predicts entire functions
@@ -145,12 +155,14 @@ This document analyzes 6 major AI coding tools to identify:
 - Free for individuals
 
 **Unique Features:**
+
 - RAG-based semantic indexing
 - Image-to-code conversion
 - In-editor live previews
 - Write Mode vs Chat Mode
 
 **PopKit Integration Opportunity:**
+
 - If MCP supported: Full integration via Universal MCP Server
 - If not: Custom Codeium extension or API integration
 
@@ -161,6 +173,7 @@ This document analyzes 6 major AI coding tools to identify:
 ### GitHub Copilot
 
 **Strengths:**
+
 - Largest user base
 - Enterprise-ready with GitHub integration
 - GPT-5-Codex and GPT-5.1-Codex-Max models
@@ -168,12 +181,14 @@ This document analyzes 6 major AI coding tools to identify:
 - Available in VS Code, JetBrains, Eclipse, Xcode
 
 **Unique Features:**
+
 - Assign issues directly to Copilot
 - Ephemeral dev environments via Actions
 - Context-isolated sub-agents
 - Agent-specific instructions (.instructions.md)
 
 **PopKit Integration Opportunity:**
+
 - MCP adoption by OpenAI in 2025 enables integration
 - Workflow tracking could complement Copilot agent
 - Pattern sharing across Copilot users
@@ -183,6 +198,7 @@ This document analyzes 6 major AI coding tools to identify:
 ### Gemini Code Assist
 
 **Strengths:**
+
 - Free tier with generous limits (6,000 code + 240 chat/day)
 - Gemini 2.5 Pro/Flash models
 - Agent Mode for multi-file tasks
@@ -190,12 +206,14 @@ This document analyzes 6 major AI coding tools to identify:
 - Next Edit Predictions
 
 **Unique Features:**
+
 - Thinking insights (shows reasoning process)
 - Source citations in responses
 - Clickable filenames in chat
 - Rules for project conventions
 
 **PopKit Integration Opportunity:**
+
 - If MCP supported: Full integration
 - If not: Potential for Google-specific adapter
 
@@ -207,14 +225,14 @@ This document analyzes 6 major AI coding tools to identify:
 
 Features PopKit can provide across ALL tools:
 
-| Capability | PopKit Implementation |
-|------------|----------------------|
-| **Workflow Tracking** | Start/checkpoint/complete workflows |
-| **Pattern Database** | Cross-project pattern search and submission |
-| **Memory/Learning** | Recall learnings from previous sessions |
-| **Coordination** | Power Mode lite for multi-agent work |
-| **Quality Gates** | TypeScript/lint/test validation |
-| **Session State** | Save/restore development context |
+| Capability            | PopKit Implementation                       |
+| --------------------- | ------------------------------------------- |
+| **Workflow Tracking** | Start/checkpoint/complete workflows         |
+| **Pattern Database**  | Cross-project pattern search and submission |
+| **Memory/Learning**   | Recall learnings from previous sessions     |
+| **Coordination**      | Power Mode lite for multi-agent work        |
+| **Quality Gates**     | TypeScript/lint/test validation             |
+| **Session State**     | Save/restore development context            |
 
 ---
 
@@ -251,14 +269,14 @@ popkit_health_status(): HealthReport
 
 ### Platform-Specific Adaptations
 
-| Platform | Adaptation |
-|----------|------------|
-| Claude Code | Native plugin (current) |
-| Cursor | MCP config in .cursor/mcp.json |
-| Continue | MCP config + Hub listing |
-| Windsurf | TBD - research MCP support |
-| Copilot | MCP config (OpenAI adopted MCP in 2025) |
-| Gemini | TBD - research MCP support |
+| Platform    | Adaptation                              |
+| ----------- | --------------------------------------- |
+| Claude Code | Native plugin (current)                 |
+| Cursor      | MCP config in .cursor/mcp.json          |
+| Continue    | MCP config + Hub listing                |
+| Windsurf    | TBD - research MCP support              |
+| Copilot     | MCP config (OpenAI adopted MCP in 2025) |
+| Gemini      | TBD - research MCP support              |
 
 ---
 
@@ -286,4 +304,4 @@ popkit_health_status(): HealthReport
 
 ---
 
-*This document is part of PopKit's Multi-Model Foundation epic (#111)*
+_This document is part of PopKit's Multi-Model Foundation epic (#111)_

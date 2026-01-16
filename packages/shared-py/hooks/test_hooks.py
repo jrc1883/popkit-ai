@@ -27,14 +27,18 @@ def test_hook(hook_path, test_data):
             input=json.dumps(test_data),
             capture_output=True,
             text=True,
-            timeout=5
+            timeout=5,
         )
 
         # Parse output
         try:
             output = json.loads(result.stdout)
         except json.JSONDecodeError as e:
-            return False, None, f"Invalid JSON output: {e}\nStdout: {result.stdout}\nStderr: {result.stderr}"
+            return (
+                False,
+                None,
+                f"Invalid JSON output: {e}\nStdout: {result.stdout}\nStderr: {result.stderr}",
+            )
 
         # Validate required fields
         if "decision" not in output:
@@ -61,62 +65,62 @@ def main():
             {
                 "name": "Allow normal Bash command",
                 "input": {"tool": "Bash", "input": {"command": "ls -la"}},
-                "expect_decision": "allow"
+                "expect_decision": "allow",
             },
             {
                 "name": "Deny dangerous rm command",
                 "input": {"tool": "Bash", "input": {"command": "rm -rf /"}},
-                "expect_decision": "deny"
+                "expect_decision": "deny",
             },
             {
                 "name": "Ask for protected file access",
                 "input": {"tool": "Read", "input": {"file_path": ".env"}},
-                "expect_decision": "ask"
-            }
+                "expect_decision": "ask",
+            },
         ],
         "auto-run-tests.py": [
             {
                 "name": "Allow non-file-modification tool",
                 "input": {"tool": "Read", "input": {"file_path": "test.py"}},
-                "expect_decision": "allow"
+                "expect_decision": "allow",
             },
             {
                 "name": "Process Write tool (should allow)",
                 "input": {"tool": "Write", "input": {"file_path": "test.py"}},
-                "expect_decision": "allow"
-            }
+                "expect_decision": "allow",
+            },
         ],
         "auto-save-state.py": [
             {
                 "name": "Save session state",
                 "input": {"skill": "session-capture", "context": {}},
-                "expect_decision": "allow"
+                "expect_decision": "allow",
             }
         ],
         "save-power-mode-report.py": [
             {
                 "name": "Save power mode report",
                 "input": {"skill": "power-mode", "context": {}},
-                "expect_decision": "allow"
+                "expect_decision": "allow",
             }
         ],
         "smart-bash-middleware.py": [
             {
                 "name": "Allow normal command",
                 "input": {"tool": "Bash", "input": {"command": "ls -la"}},
-                "expect_decision": "allow"
+                "expect_decision": "allow",
             },
             {
                 "name": "Deny critical dangerous command",
                 "input": {"tool": "Bash", "input": {"command": "rm -rf /"}},
-                "expect_decision": "deny"
+                "expect_decision": "deny",
             },
             {
                 "name": "Ask for git push --force",
                 "input": {"tool": "Bash", "input": {"command": "git push --force origin main"}},
-                "expect_decision": "ask"
-            }
-        ]
+                "expect_decision": "ask",
+            },
+        ],
     }
 
     # Run tests
@@ -144,11 +148,7 @@ def main():
             if not success:
                 print(f"  ❌ {case['name']}")
                 print(f"     Error: {error}")
-                failed_tests.append({
-                    "hook": hook_name,
-                    "test": case["name"],
-                    "error": error
-                })
+                failed_tests.append({"hook": hook_name, "test": case["name"], "error": error})
             else:
                 # Check if decision matches expectation (if specified)
                 if "expect_decision" in case:
@@ -156,7 +156,9 @@ def main():
                         print(f"  ✅ {case['name']} - decision: {output['decision']}")
                         passed_tests += 1
                     else:
-                        print(f"  ⚠️  {case['name']} - expected '{case['expect_decision']}', got '{output['decision']}'")
+                        print(
+                            f"  ⚠️  {case['name']} - expected '{case['expect_decision']}', got '{output['decision']}'"
+                        )
                         passed_tests += 1  # Still valid JSON protocol
                 else:
                     print(f"  ✅ {case['name']} - decision: {output['decision']}")
@@ -164,7 +166,7 @@ def main():
 
     # Summary
     print("\n" + "=" * 70)
-    print(f"\nTest Summary:")
+    print("\nTest Summary:")
     print(f"  Total: {total_tests}")
     print(f"  Passed: {passed_tests}")
     print(f"  Failed: {total_tests - passed_tests}")

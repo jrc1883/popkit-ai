@@ -11,16 +11,15 @@ Detects and parses monorepo workspace configurations:
 Part of the popkit plugin system.
 """
 
-import os
-import json
 import glob
-from typing import Dict, List, Any, Optional, Tuple
-from pathlib import Path
-
+import json
+import os
+from typing import Any, Dict, List, Optional
 
 # =============================================================================
 # Workspace Detection
 # =============================================================================
+
 
 def find_workspace_root(start_path: str) -> Optional[str]:
     """Walk up directory tree to find workspace root.
@@ -35,9 +34,11 @@ def find_workspace_root(start_path: str) -> Optional[str]:
 
     while True:
         # Check for workspace markers
-        if (os.path.isfile(os.path.join(current, "pnpm-workspace.yaml")) or
-            os.path.isfile(os.path.join(current, "lerna.json")) or
-            os.path.isfile(os.path.join(current, ".claude", "workspace.json"))):
+        if (
+            os.path.isfile(os.path.join(current, "pnpm-workspace.yaml"))
+            or os.path.isfile(os.path.join(current, "lerna.json"))
+            or os.path.isfile(os.path.join(current, ".claude", "workspace.json"))
+        ):
             return current
 
         # Check for package.json with workspaces field
@@ -98,6 +99,7 @@ def detect_workspace_type(workspace_root: str) -> Optional[str]:
 # =============================================================================
 # Workspace Config Parsers
 # =============================================================================
+
 
 def parse_pnpm_workspace(workspace_root: str) -> List[str]:
     """Parse pnpm-workspace.yaml to get workspace patterns.
@@ -226,6 +228,7 @@ def parse_popkit_workspace(workspace_root: str) -> Dict[str, Any]:
 # Project Discovery
 # =============================================================================
 
+
 def resolve_workspace_patterns(workspace_root: str, patterns: List[str]) -> List[str]:
     """Resolve glob patterns to actual directory paths.
 
@@ -283,12 +286,14 @@ def get_workspace_projects(workspace_root: Optional[str] = None) -> List[Dict[st
         for app in config.get("apps", []):
             app_path = os.path.join(workspace_root, app.get("path", ""))
             if os.path.isdir(app_path):
-                projects.append({
-                    "name": app.get("name", os.path.basename(app_path)),
-                    "path": app_path,
-                    "type": app.get("tier", "unknown"),
-                    "description": app.get("description", "")
-                })
+                projects.append(
+                    {
+                        "name": app.get("name", os.path.basename(app_path)),
+                        "path": app_path,
+                        "type": app.get("tier", "unknown"),
+                        "description": app.get("description", ""),
+                    }
+                )
         return projects
 
     # Get patterns for other workspace types
@@ -322,17 +327,16 @@ def get_workspace_projects(workspace_root: Optional[str] = None) -> List[Dict[st
             except (json.JSONDecodeError, IOError):
                 pass
 
-        projects.append({
-            "name": name,
-            "path": project_dir,
-            "type": workspace_type,
-            "description": description
-        })
+        projects.append(
+            {"name": name, "path": project_dir, "type": workspace_type, "description": description}
+        )
 
     return projects
 
 
-def find_project_by_name(name: str, workspace_root: Optional[str] = None) -> Optional[Dict[str, Any]]:
+def find_project_by_name(
+    name: str, workspace_root: Optional[str] = None
+) -> Optional[Dict[str, Any]]:
     """Find a project by name in the workspace.
 
     Args:
@@ -359,6 +363,7 @@ def find_project_by_name(name: str, workspace_root: Optional[str] = None) -> Opt
 # Project Context Loading
 # =============================================================================
 
+
 def load_project_context(project_path: str) -> Dict[str, Optional[str]]:
     """Load context files from a project.
 
@@ -368,12 +373,7 @@ def load_project_context(project_path: str) -> Dict[str, Optional[str]]:
     Returns:
         Dict with file contents: claude_md, package_json, readme, status
     """
-    context = {
-        "claude_md": None,
-        "package_json": None,
-        "readme": None,
-        "status": None
-    }
+    context = {"claude_md": None, "package_json": None, "readme": None, "status": None}
 
     # Load CLAUDE.md
     claude_md_path = os.path.join(project_path, "CLAUDE.md")
@@ -414,7 +414,9 @@ def load_project_context(project_path: str) -> Dict[str, Optional[str]]:
     return context
 
 
-def format_project_context(project_name: str, project_path: str, context: Dict[str, Optional[str]]) -> str:
+def format_project_context(
+    project_name: str, project_path: str, context: Dict[str, Optional[str]]
+) -> str:
     """Format project context for display.
 
     Args:
@@ -486,7 +488,8 @@ if __name__ == "__main__":
     # Fix Windows console encoding for Unicode output
     if sys.platform == "win32":
         import codecs
-        sys.stdout = codecs.getwriter("utf-8")(sys.stdout.buffer, 'strict')
+
+        sys.stdout = codecs.getwriter("utf-8")(sys.stdout.buffer, "strict")
 
     if len(sys.argv) < 2:
         print("Usage: workspace_config.py <command> [args]")
@@ -516,7 +519,7 @@ if __name__ == "__main__":
             print(f"Found {len(projects)} projects:")
             for p in projects:
                 print(f"  - {p['name']}: {p['path']}")
-                if p.get('description'):
+                if p.get("description"):
                     print(f"    {p['description']}")
         else:
             print("No projects found or not in a workspace")
@@ -533,7 +536,7 @@ if __name__ == "__main__":
         if project:
             print(f"Found project: {project['name']}")
             print(f"Path: {project['path']}")
-            if project.get('description'):
+            if project.get("description"):
                 print(f"Description: {project['description']}")
         else:
             print(f"Project '{name}' not found")
@@ -552,8 +555,8 @@ if __name__ == "__main__":
             print(f"Project '{name}' not found")
             sys.exit(1)
 
-        context = load_project_context(project['path'])
-        output = format_project_context(project['name'], project['path'], context)
+        context = load_project_context(project["path"])
+        output = format_project_context(project["name"], project["path"], context)
         print(output)
 
     else:

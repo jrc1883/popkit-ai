@@ -9,7 +9,7 @@ Used by: user-prompt-submit.py hook
 """
 
 import re
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 # Import compute_hash from context_state
 try:
@@ -18,7 +18,9 @@ except ImportError:
     from context_state import compute_hash
 
 
-def compute_context_delta(previous: Dict[str, Any], current: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+def compute_context_delta(
+    previous: Dict[str, Any], current: Dict[str, Any]
+) -> Dict[str, Dict[str, Any]]:
     """
     Compute what changed between previous and current context.
 
@@ -56,16 +58,10 @@ def compute_context_delta(previous: Dict[str, Any], current: Dict[str, Any]) -> 
     for key in current:
         if key not in previous:
             # New field
-            delta[key] = {
-                "type": "added",
-                "value": current[key]
-            }
+            delta[key] = {"type": "added", "value": current[key]}
         elif compute_hash(current[key]) != compute_hash(previous.get(key, {})):
             # Changed field (hash differs)
-            delta[key] = {
-                "type": "changed",
-                "value": current[key]
-            }
+            delta[key] = {"type": "changed", "value": current[key]}
         # Unchanged fields are omitted from delta
 
     # Check for removed fields
@@ -79,7 +75,9 @@ def compute_context_delta(previous: Dict[str, Any], current: Dict[str, Any]) -> 
     return delta
 
 
-def extract_new_context(message: str, existing_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+def extract_new_context(
+    message: str, existing_context: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
     """
     Extract new context information from user message.
 
@@ -133,7 +131,7 @@ def extract_new_context(message: str, existing_context: Optional[Dict[str, Any]]
                 new_context["infrastructure"][infra_name] = {"discovered": True}
 
     # Extract issue references (#123)
-    issue_refs = re.findall(r'#(\d+)', message)
+    issue_refs = re.findall(r"#(\d+)", message)
     if issue_refs:
         # Convert to list of strings
         issues = [f"#{num}" for num in issue_refs]
@@ -146,7 +144,7 @@ def extract_new_context(message: str, existing_context: Optional[Dict[str, Any]]
             new_context["issues"] = new_issues
 
     # Extract branch mentions (feat/branch-name, fix/branch-name, etc.)
-    branch_pattern = r'(?:branch|on|in)\s+([a-z-]+/[a-z0-9-]+)'
+    branch_pattern = r"(?:branch|on|in)\s+([a-z-]+/[a-z0-9-]+)"
     branch_match = re.search(branch_pattern, message_lower)
 
     if branch_match:
@@ -225,7 +223,7 @@ def should_send_full_context(message_number: int, last_full_context_message: int
 
 # Public API
 __all__ = [
-    'compute_context_delta',
-    'extract_new_context',
-    'should_send_full_context',
+    "compute_context_delta",
+    "extract_new_context",
+    "should_send_full_context",
 ]

@@ -110,10 +110,7 @@
       "User asks 'what should I do'",
       "User mentions 'stuck'"
     ],
-    "manual": [
-      "/popkit:next",
-      "Invoke pop-next-action skill"
-    ]
+    "manual": ["/popkit:next", "Invoke pop-next-action skill"]
   },
   "output": {
     "format": "next_action_report",

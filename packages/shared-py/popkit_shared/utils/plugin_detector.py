@@ -9,12 +9,11 @@ commands, skills, hooks, and agent routing for potential conflicts.
 Part of the popkit plugin system.
 """
 
-import os
 import json
+import os
 import re
-from typing import Dict, List, Any, Tuple, Optional
 from pathlib import Path
-
+from typing import Any, Dict, List, Optional, Tuple
 
 # Conflict severity levels
 SEVERITY_HIGH = "high"
@@ -73,7 +72,7 @@ def scan_installed_plugins(plugins_dir: Optional[str] = None) -> List[Dict[str, 
                 "commands": [],
                 "skills": [],
                 "hooks": [],
-                "agents": []
+                "agents": [],
             }
 
             # Scan for components
@@ -118,13 +117,9 @@ def scan_plugin_commands(plugin_path: str) -> List[Dict[str, str]]:
             if content.startswith("---"):
                 match = re.search(r"description:\s*(.+?)(?:\n|$)", content)
                 if match:
-                    description = match.group(1).strip().strip('"\'')
+                    description = match.group(1).strip().strip("\"'")
 
-            commands.append({
-                "name": name,
-                "file": str(cmd_file),
-                "description": description
-            })
+            commands.append({"name": name, "file": str(cmd_file), "description": description})
 
         except IOError:
             continue
@@ -163,11 +158,7 @@ def scan_plugin_skills(plugin_path: str) -> List[Dict[str, str]]:
                 if match:
                     description = match.group(1).strip()[:100]  # Truncate
 
-            skills.append({
-                "name": name,
-                "file": str(skill_file),
-                "description": description
-            })
+            skills.append({"name": name, "file": str(skill_file), "description": description})
 
         except IOError:
             continue
@@ -196,12 +187,14 @@ def scan_plugin_hooks(plugin_path: str) -> List[Dict[str, Any]]:
             config = json.load(f)
 
         for hook in config.get("hooks", []):
-            hooks.append({
-                "name": hook.get("matcher", "unknown"),
-                "event": hook.get("event", "unknown"),
-                "tools": hook.get("tools", []),
-                "file": hooks_json
-            })
+            hooks.append(
+                {
+                    "name": hook.get("matcher", "unknown"),
+                    "event": hook.get("event", "unknown"),
+                    "tools": hook.get("tools", []),
+                    "file": hooks_json,
+                }
+            )
 
     except (json.JSONDecodeError, IOError):
         pass
@@ -231,12 +224,14 @@ def scan_plugin_agents(plugin_path: str) -> List[Dict[str, Any]]:
 
         routing = config.get("routing", {})
         for agent_name, agent_config in routing.items():
-            agents.append({
-                "name": agent_name,
-                "keywords": agent_config.get("keywords", []),
-                "file_patterns": agent_config.get("file_patterns", []),
-                "error_patterns": agent_config.get("error_patterns", [])
-            })
+            agents.append(
+                {
+                    "name": agent_name,
+                    "keywords": agent_config.get("keywords", []),
+                    "file_patterns": agent_config.get("file_patterns", []),
+                    "error_patterns": agent_config.get("error_patterns", []),
+                }
+            )
 
     except (json.JSONDecodeError, IOError):
         pass
@@ -265,13 +260,15 @@ def detect_command_conflicts(plugins: List[Dict[str, Any]]) -> List[Dict[str, An
 
     for cmd_name, plugin_names in command_map.items():
         if len(plugin_names) > 1:
-            conflicts.append({
-                "type": "command_collision",
-                "severity": SEVERITY_HIGH,
-                "name": cmd_name,
-                "plugins": plugin_names,
-                "message": f"Command '{cmd_name}' defined in multiple plugins: {', '.join(plugin_names)}"
-            })
+            conflicts.append(
+                {
+                    "type": "command_collision",
+                    "severity": SEVERITY_HIGH,
+                    "name": cmd_name,
+                    "plugins": plugin_names,
+                    "message": f"Command '{cmd_name}' defined in multiple plugins: {', '.join(plugin_names)}",
+                }
+            )
 
     return conflicts
 
@@ -297,13 +294,15 @@ def detect_skill_conflicts(plugins: List[Dict[str, Any]]) -> List[Dict[str, Any]
 
     for skill_name, plugin_names in skill_map.items():
         if len(plugin_names) > 1:
-            conflicts.append({
-                "type": "skill_collision",
-                "severity": SEVERITY_MEDIUM,
-                "name": skill_name,
-                "plugins": plugin_names,
-                "message": f"Skill '{skill_name}' defined in multiple plugins: {', '.join(plugin_names)}"
-            })
+            conflicts.append(
+                {
+                    "type": "skill_collision",
+                    "severity": SEVERITY_MEDIUM,
+                    "name": skill_name,
+                    "plugins": plugin_names,
+                    "message": f"Skill '{skill_name}' defined in multiple plugins: {', '.join(plugin_names)}",
+                }
+            )
 
     return conflicts
 
@@ -336,7 +335,7 @@ def detect_hook_conflicts(plugins: List[Dict[str, Any]]) -> List[Dict[str, Any]]
 
         # Check each pair
         for i, (plugin1, hook1) in enumerate(hook_list):
-            for plugin2, hook2 in hook_list[i + 1:]:
+            for plugin2, hook2 in hook_list[i + 1 :]:
                 if plugin1 == plugin2:
                     continue
 
@@ -345,15 +344,17 @@ def detect_hook_conflicts(plugins: List[Dict[str, Any]]) -> List[Dict[str, Any]]
                 overlap = tools1 & tools2
 
                 if overlap:
-                    conflicts.append({
-                        "type": "hook_collision",
-                        "severity": SEVERITY_MEDIUM,
-                        "event": event,
-                        "plugins": [plugin1, plugin2],
-                        "overlapping_tools": list(overlap),
-                        "message": f"Hooks for '{event}' in {plugin1} and {plugin2} "
-                                   f"overlap on tools: {', '.join(overlap)}"
-                    })
+                    conflicts.append(
+                        {
+                            "type": "hook_collision",
+                            "severity": SEVERITY_MEDIUM,
+                            "event": event,
+                            "plugins": [plugin1, plugin2],
+                            "overlapping_tools": list(overlap),
+                            "message": f"Hooks for '{event}' in {plugin1} and {plugin2} "
+                            f"overlap on tools: {', '.join(overlap)}",
+                        }
+                    )
 
     return conflicts
 
@@ -385,14 +386,16 @@ def detect_routing_conflicts(plugins: List[Dict[str, Any]]) -> List[Dict[str, An
         # Filter to different plugins
         unique_plugins = set(r[0] for r in routes)
         if len(unique_plugins) > 1:
-            conflicts.append({
-                "type": "routing_overlap",
-                "severity": SEVERITY_LOW,
-                "keyword": keyword,
-                "routes": routes,
-                "message": f"Keyword '{keyword}' routes to agents in different plugins: "
-                           f"{', '.join(f'{p}:{a}' for p, a in routes)}"
-            })
+            conflicts.append(
+                {
+                    "type": "routing_overlap",
+                    "severity": SEVERITY_LOW,
+                    "keyword": keyword,
+                    "routes": routes,
+                    "message": f"Keyword '{keyword}' routes to agents in different plugins: "
+                    f"{', '.join(f'{p}:{a}' for p, a in routes)}",
+                }
+            )
 
     return conflicts
 
@@ -414,11 +417,7 @@ def detect_all_conflicts(plugins: List[Dict[str, Any]]) -> Dict[str, Any]:
     all_conflicts.extend(detect_routing_conflicts(plugins))
 
     # Count by severity
-    severity_counts = {
-        SEVERITY_HIGH: 0,
-        SEVERITY_MEDIUM: 0,
-        SEVERITY_LOW: 0
-    }
+    severity_counts = {SEVERITY_HIGH: 0, SEVERITY_MEDIUM: 0, SEVERITY_LOW: 0}
 
     for conflict in all_conflicts:
         severity = conflict.get("severity", SEVERITY_LOW)
@@ -429,7 +428,7 @@ def detect_all_conflicts(plugins: List[Dict[str, Any]]) -> Dict[str, Any]:
         "total": len(all_conflicts),
         "high": severity_counts[SEVERITY_HIGH],
         "medium": severity_counts[SEVERITY_MEDIUM],
-        "low": severity_counts[SEVERITY_LOW]
+        "low": severity_counts[SEVERITY_LOW],
     }
 
 

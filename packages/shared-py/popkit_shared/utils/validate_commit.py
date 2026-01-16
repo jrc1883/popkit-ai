@@ -16,20 +16,19 @@ Usage:
 import re
 import sys
 
-
 # Valid conventional commit types
 VALID_TYPES = {
-    "feat",      # New feature
-    "fix",       # Bug fix
-    "docs",      # Documentation only
-    "style",     # Formatting, no code change
+    "feat",  # New feature
+    "fix",  # Bug fix
+    "docs",  # Documentation only
+    "style",  # Formatting, no code change
     "refactor",  # Code refactoring
-    "perf",      # Performance improvement
-    "test",      # Test additions/updates
-    "build",     # Build system changes
-    "ci",        # CI/CD changes
-    "chore",     # Maintenance tasks
-    "revert"     # Revert previous commit
+    "perf",  # Performance improvement
+    "test",  # Test additions/updates
+    "build",  # Build system changes
+    "ci",  # CI/CD changes
+    "chore",  # Maintenance tasks
+    "revert",  # Revert previous commit
 }
 
 
@@ -53,9 +52,9 @@ def validate_commit_message(message: str, strict: bool = False) -> tuple[bool, s
     # Pattern: type(scope): description
     # Scope is optional unless strict=True
     if strict:
-        pattern = r'^(\w+)\(([^)]+)\):\s+(.{1,72})$'
+        pattern = r"^(\w+)\(([^)]+)\):\s+(.{1,72})$"
     else:
-        pattern = r'^(\w+)(?:\(([^)]*)\))?:\s+(.{1,72})$'
+        pattern = r"^(\w+)(?:\(([^)]*)\))?:\s+(.{1,72})$"
 
     match = re.match(pattern, subject)
 
@@ -107,13 +106,17 @@ def main():
 
     # Handle Windows encoding for emoji output
     if sys.platform == "win32":
-        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
-        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
     parser = argparse.ArgumentParser(description="Validate conventional commit messages")
-    parser.add_argument("message", nargs="?", help="Commit message to validate (or read from stdin)")
+    parser.add_argument(
+        "message", nargs="?", help="Commit message to validate (or read from stdin)"
+    )
     parser.add_argument("--strict", "-s", action="store_true", help="Enforce strict validation")
-    parser.add_argument("--quiet", "-q", action="store_true", help="Suppress output (exit code only)")
+    parser.add_argument(
+        "--quiet", "-q", action="store_true", help="Suppress output (exit code only)"
+    )
     args = parser.parse_args()
 
     # Get message from args or stdin

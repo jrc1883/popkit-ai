@@ -12,22 +12,14 @@ Calculates health scores for projects based on:
 Part of the popkit plugin system.
 """
 
+import json
 import os
 import subprocess
-import json
-from typing import Dict, Any, Optional, Tuple, List
-from datetime import datetime, timezone, timedelta
-from pathlib import Path
-
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict, List, Optional, Tuple
 
 # Score weights (total = 100)
-WEIGHTS = {
-    "git": 20,
-    "build": 20,
-    "tests": 20,
-    "issues": 20,
-    "activity": 20
-}
+WEIGHTS = {"git": 20, "build": 20, "tests": 20, "issues": 20, "activity": 20}
 
 
 def run_command(cmd: List[str], cwd: str, timeout: int = 30) -> Tuple[int, str, str]:
@@ -42,13 +34,7 @@ def run_command(cmd: List[str], cwd: str, timeout: int = 30) -> Tuple[int, str, 
         Tuple of (exit_code, stdout, stderr)
     """
     try:
-        result = subprocess.run(
-            cmd,
-            cwd=cwd,
-            capture_output=True,
-            text=True,
-            timeout=timeout
-        )
+        result = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, timeout=timeout)
         return result.returncode, result.stdout, result.stderr
     except subprocess.TimeoutExpired:
         return -1, "", "Command timed out"
@@ -59,6 +45,7 @@ def run_command(cmd: List[str], cwd: str, timeout: int = 30) -> Tuple[int, str, 
 # =============================================================================
 # Individual Score Calculators
 # =============================================================================
+
 
 def calculate_git_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
     """Calculate git status score.
@@ -94,10 +81,7 @@ def calculate_git_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
         details["uncommitted_penalty"] = penalty
 
     # Check for unpushed commits
-    code, stdout, _ = run_command(
-        ["git", "rev-list", "--count", "@{u}..HEAD"],
-        project_path
-    )
+    code, stdout, _ = run_command(["git", "rev-list", "--count", "@{u}..HEAD"], project_path)
 
     if code == 0:
         try:
@@ -146,9 +130,7 @@ def calculate_build_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
         # Check if there's a tsconfig
         if os.path.isfile(os.path.join(project_path, "tsconfig.json")):
             code, stdout, stderr = run_command(
-                ["npx", "tsc", "--noEmit"],
-                project_path,
-                timeout=120
+                ["npx", "tsc", "--noEmit"], project_path, timeout=120
             )
 
             if code == 0:
@@ -182,17 +164,13 @@ def calculate_build_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
     if has_pyproject:
         # Try running type check with mypy if installed
         code, stdout, stderr = run_command(
-            ["python", "-m", "mypy", "--version"],
-            project_path,
-            timeout=10
+            ["python", "-m", "mypy", "--version"], project_path, timeout=10
         )
 
         if code == 0:
             # mypy is installed, run it
             code, stdout, stderr = run_command(
-                ["python", "-m", "mypy", "."],
-                project_path,
-                timeout=120
+                ["python", "-m", "mypy", "."], project_path, timeout=120
             )
 
             if code == 0:
@@ -209,11 +187,7 @@ def calculate_build_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
 
     # For Rust projects
     if has_cargo:
-        code, stdout, stderr = run_command(
-            ["cargo", "check"],
-            project_path,
-            timeout=300
-        )
+        code, stdout, stderr = run_command(["cargo", "check"], project_path, timeout=300)
 
         if code == 0:
             details["status"] = "passed"
@@ -244,10 +218,7 @@ def calculate_test_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
     details = {}
 
     # Check for test directories
-    test_dirs = [
-        "tests", "test", "__tests__", "spec",
-        "src/tests", "src/__tests__"
-    ]
+    test_dirs = ["tests", "test", "__tests__", "spec", "src/tests", "src/__tests__"]
 
     has_tests = False
     for test_dir in test_dirs:
@@ -332,16 +303,14 @@ def calculate_issue_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
         return WEIGHTS["issues"], {"status": "no_git", "message": "Not a git repository"}
 
     # Try to get repo from remote
-    code, stdout, _ = run_command(
-        ["git", "config", "--get", "remote.origin.url"],
-        project_path
-    )
+    code, stdout, _ = run_command(["git", "config", "--get", "remote.origin.url"], project_path)
 
     if code != 0 or not stdout.strip():
         return WEIGHTS["issues"], {"status": "no_remote", "message": "No remote configured"}
 
     import re
-    match = re.search(r'github\.com[:/]([^/]+/[^/\.]+)', stdout.strip())
+
+    match = re.search(r"github\.com[:/]([^/]+/[^/\.]+)", stdout.strip())
     if not match:
         return WEIGHTS["issues"], {"status": "not_github", "message": "Not a GitHub repository"}
 
@@ -350,9 +319,21 @@ def calculate_issue_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
 
     # Use gh CLI to get open issues
     code, stdout, stderr = run_command(
-        ["gh", "issue", "list", "--repo", repo, "--state", "open", "--json", "number,createdAt", "--limit", "100"],
+        [
+            "gh",
+            "issue",
+            "list",
+            "--repo",
+            repo,
+            "--state",
+            "open",
+            "--json",
+            "number,createdAt",
+            "--limit",
+            "100",
+        ],
         project_path,
-        timeout=30
+        timeout=30,
     )
 
     if code != 0:
@@ -386,7 +367,9 @@ def calculate_issue_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
         return WEIGHTS["issues"], details
 
 
-def calculate_activity_score(project_path: str, last_active: Optional[str] = None) -> Tuple[int, Dict[str, Any]]:
+def calculate_activity_score(
+    project_path: str, last_active: Optional[str] = None
+) -> Tuple[int, Dict[str, Any]]:
     """Calculate activity score.
 
     Score breakdown:
@@ -406,10 +389,7 @@ def calculate_activity_score(project_path: str, last_active: Optional[str] = Non
     now = datetime.now(timezone.utc)
 
     # Try to get from git log
-    code, stdout, _ = run_command(
-        ["git", "log", "-1", "--format=%cI"],
-        project_path
-    )
+    code, stdout, _ = run_command(["git", "log", "-1", "--format=%cI"], project_path)
 
     if code == 0 and stdout.strip():
         try:
@@ -463,10 +443,9 @@ def calculate_activity_score(project_path: str, last_active: Optional[str] = Non
 # Main Health Calculator
 # =============================================================================
 
+
 def calculate_health_score(
-    project_path: str,
-    last_active: Optional[str] = None,
-    skip_slow: bool = False
+    project_path: str, last_active: Optional[str] = None, skip_slow: bool = False
 ) -> Dict[str, Any]:
     """Calculate overall health score for a project.
 
@@ -481,11 +460,7 @@ def calculate_health_score(
     project_path = os.path.abspath(project_path)
 
     if not os.path.isdir(project_path):
-        return {
-            "score": 0,
-            "error": "Project directory not found",
-            "path": project_path
-        }
+        return {"score": 0, "error": "Project directory not found", "path": project_path}
 
     # Calculate individual scores
     git_score, git_details = calculate_git_score(project_path)
@@ -512,9 +487,13 @@ def calculate_health_score(
             "build": {"score": build_score, "max": WEIGHTS["build"], "details": build_details},
             "tests": {"score": test_score, "max": WEIGHTS["tests"], "details": test_details},
             "issues": {"score": issue_score, "max": WEIGHTS["issues"], "details": issue_details},
-            "activity": {"score": activity_score, "max": WEIGHTS["activity"], "details": activity_details}
+            "activity": {
+                "score": activity_score,
+                "max": WEIGHTS["activity"],
+                "details": activity_details,
+            },
         },
-        "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+        "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
     }
 
 

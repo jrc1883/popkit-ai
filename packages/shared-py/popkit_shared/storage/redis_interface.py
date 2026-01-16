@@ -28,10 +28,10 @@ Original Source:
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 
-
 # =============================================================================
 # ABSTRACT BASE CLIENT
 # =============================================================================
+
 
 class BaseRedisClient(ABC):
     """
@@ -286,7 +286,7 @@ class BaseRedisClient(ABC):
         pass
 
     @abstractmethod
-    def pubsub(self) -> 'BasePubSub':
+    def pubsub(self) -> "BasePubSub":
         """
         Get pub/sub interface.
 
@@ -298,11 +298,7 @@ class BaseRedisClient(ABC):
     # Stream operations (Redis Streams - native in Redis 5.0+)
     @abstractmethod
     def xadd(
-        self,
-        name: str,
-        fields: Dict[str, str],
-        id: str = "*",
-        maxlen: Optional[int] = None
+        self, name: str, fields: Dict[str, str], id: str = "*", maxlen: Optional[int] = None
     ) -> str:
         """
         Add entry to stream.
@@ -320,10 +316,7 @@ class BaseRedisClient(ABC):
 
     @abstractmethod
     def xread(
-        self,
-        streams: Dict[str, str],
-        count: Optional[int] = None,
-        block: Optional[int] = None
+        self, streams: Dict[str, str], count: Optional[int] = None, block: Optional[int] = None
     ) -> List:
         """
         Read from streams.
@@ -340,11 +333,7 @@ class BaseRedisClient(ABC):
 
     @abstractmethod
     def xrange(
-        self,
-        name: str,
-        min: str = "-",
-        max: str = "+",
-        count: Optional[int] = None
+        self, name: str, min: str = "-", max: str = "+", count: Optional[int] = None
     ) -> List:
         """
         Get stream range.
@@ -364,6 +353,7 @@ class BaseRedisClient(ABC):
 # =============================================================================
 # ABSTRACT PUB/SUB INTERFACE
 # =============================================================================
+
 
 class BasePubSub(ABC):
     """

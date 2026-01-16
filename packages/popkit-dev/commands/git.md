@@ -9,17 +9,18 @@ Git operations with smart commits, PRs, code review, CI/CD, releases, publishing
 
 ## Subcommands
 
-| Subcommand | Description |
-|------------|-------------|
-| commit | Smart commit with auto-generated message (default) |
-| push | Push current branch to remote |
-| pr | Pull request management (create, list, view, merge) |
-| review | Code review with confidence-based filtering |
-| ci | GitHub Actions workflow runs (list, view, rerun, watch) |
-| release | GitHub releases (create, list, view, changelog) |
-| publish | Publish plugin to public repo (monorepo → open source) |
-| prune | Remove stale local branches after PR merge |
-| finish | Complete development with 4-option flow |
+| Subcommand | Description                                             |
+| ---------- | ------------------------------------------------------- |
+| commit     | Smart commit with auto-generated message (default)      |
+| push       | Push current branch to remote                           |
+| pr         | Pull request management (create, list, view, merge)     |
+| review     | Code review with confidence-based filtering             |
+| ci         | GitHub Actions workflow runs (list, view, rerun, watch) |
+| release    | GitHub releases (create, list, view, changelog)         |
+| publish    | Publish plugin to public repo (monorepo → open source)  |
+| prune      | Remove stale local branches after PR merge              |
+| finish     | Complete development with 4-option flow                 |
+| analyze-strategy | Analyze repository branching strategy              |
 
 ---
 
@@ -37,9 +38,45 @@ Invokes **git commit** with: Status check → Analyze changes → Generate messa
 
 ## push
 
-Push current branch to remote with safety checks.
+Push current branch to remote with branch protection safety checks.
 
-Warns before pushing to main/master, uses `--force-with-lease`, confirms if branch has no upstream.
+**Branch Protection (Issue #141, #142):**
+
+Before pushing, MUST check current branch:
+
+```bash
+current_branch=$(git branch --show-current 2>/dev/null)
+```
+
+**Protected Branches:** `main`, `master`, `develop`, `production`
+
+**If on protected branch:**
+
+1. ❌ BLOCK the push operation (do not just warn)
+2. Explain why: "Cannot push directly to protected branch '[branch]' due to branch protection policy"
+3. Recommend feature branch workflow:
+
+   ```bash
+   # Create feature branch from current state
+   git checkout -b feat/descriptive-name
+   git push -u origin feat/descriptive-name
+
+   # Create pull request
+   gh pr create --title "..." --body "..."
+
+   # Clean up local protected branch
+   git checkout [protected-branch]
+   git reset --hard origin/[protected-branch]
+   ```
+
+4. Reference: See CLAUDE.md "Git Workflow Principles" section
+
+**If on feature branch:**
+
+- Proceed with push
+- Use `--force-with-lease` if --force requested
+- Confirm if branch has no upstream
+- Set upstream with -u flag if needed
 
 **Options:** --force-with-lease, -u
 
@@ -49,16 +86,16 @@ Warns before pushing to main/master, uses `--force-with-lease`, confirms if bran
 
 Pull request management via `gh` CLI.
 
-| Subcommand | Description |
-|------------|-------------|
-| create (default) | Create PR from current branch |
-| list | List open/all/draft PRs |
-| view | View PR details, comments, files, checks |
-| merge | Merge with squash/rebase options |
-| checkout | Check out PR locally |
-| diff | View PR diff |
-| ready | Mark draft as ready |
-| update | Update PR branch with base |
+| Subcommand       | Description                              |
+| ---------------- | ---------------------------------------- |
+| create (default) | Create PR from current branch            |
+| list             | List open/all/draft PRs                  |
+| view             | View PR details, comments, files, checks |
+| merge            | Merge with squash/rebase options         |
+| checkout         | Check out PR locally                     |
+| diff             | View PR diff                             |
+| ready            | Mark draft as ready                      |
+| update           | Update PR branch with base               |
 
 **Process (create):** Verify clean state → Create/switch branch → Stage → Commit → Push → Create PR with template.
 
@@ -82,15 +119,15 @@ Invokes **code-reviewer** agent: Gather changes → Analyze (Simplicity/Bugs/Con
 
 Monitor and manage GitHub Actions workflows via `gh run` CLI.
 
-| Subcommand | Description |
-|------------|-------------|
-| list (default) | Recent workflow runs |
-| view | View run details, logs |
-| rerun | Rerun all/failed jobs |
-| watch | Watch running workflow |
-| cancel | Cancel running workflow |
-| download | Download artifacts |
-| logs | View logs |
+| Subcommand     | Description             |
+| -------------- | ----------------------- |
+| list (default) | Recent workflow runs    |
+| view           | View run details, logs  |
+| rerun          | Rerun all/failed jobs   |
+| watch          | Watch running workflow  |
+| cancel         | Cancel running workflow |
+| download       | Download artifacts      |
+| logs           | View logs               |
 
 **Status icons:** [ok] success, [x] failure, [...] in_progress, [ ] queued, [~] cancelled, [!] skipped
 
@@ -102,14 +139,14 @@ Monitor and manage GitHub Actions workflows via `gh run` CLI.
 
 Create and manage GitHub releases with auto-generated changelogs via `gh release` CLI.
 
-| Subcommand | Description |
-|------------|-------------|
-| list (default) | All releases |
-| create | Create release with auto-changelog |
-| view | View release details |
-| edit | Edit release notes/status |
-| delete | Delete release/tag |
-| changelog | Preview changelog |
+| Subcommand     | Description                        |
+| -------------- | ---------------------------------- |
+| list (default) | All releases                       |
+| create         | Create release with auto-changelog |
+| view           | View release details               |
+| edit           | Edit release notes/status          |
+| delete         | Delete release/tag                 |
+| changelog      | Preview changelog                  |
 
 **Process (create):** Parse commits → Generate changelog → Update CLAUDE.md (if --update-docs) → Create tag → Create GitHub release.
 
@@ -156,6 +193,7 @@ Guide completion of development work with structured options.
 Invokes **pop-finish-branch**: Verify tests → Present 4 options (merge locally, create PR, keep as-is, discard).
 
 **Options:**
+
 1. Merge back to main locally
 2. Push and create Pull Request
 3. Keep branch as-is
@@ -163,32 +201,91 @@ Invokes **pop-finish-branch**: Verify tests → Present 4 options (merge locally
 
 ---
 
+## analyze-strategy
+
+Analyze repository branching strategy and provide recommendations.
+
+**Phase 1 Implementation (Issue #151):**
+
+Detects current branching strategy by analyzing:
+- Branch naming patterns (feat/*, fix/*, release/*, hotfix/*)
+- Long-lived vs ephemeral branches
+- Merge patterns (direct to main, via develop, etc.)
+- GitHub branch protection rules
+- Average branch lifetime
+
+**Supported Strategies:**
+- **Trunk-based Development**: Direct merges to main, short-lived feature branches
+- **GitHub Flow**: Feature branches + main, continuous deployment
+- **Git Flow**: Multiple long-lived branches (main, develop, release/*, hotfix/*)
+- **GitLab Flow**: Environment-based branches (main, staging, production)
+- **Custom/Unknown**: Non-standard patterns
+
+**Output:**
+```
+# Git Branch Strategy Analysis
+
+**Detected Strategy**: Trunk-based Development
+**Confidence**: 80%
+
+## Evidence
+- main as primary branch
+- 32 feature branches
+- short-lived branches (avg 3 days)
+
+## Branch Statistics
+- Total branches: 35
+- Feature branches: 32
+- Bugfix branches: 3
+- Average branch lifetime: 3 days
+
+## Recommendations
+✅ Good for: Small teams (2-5 developers), rapid iteration
+✅ Benefits: Fast merges, simple workflow, continuous integration
+💡 Consider Git Flow if: Need release coordination or multiple version support
+```
+
+**Technical Implementation:**
+- Uses `popkit_shared.utils.git_strategy.GitStrategyDetector`
+- Analyzes all local and remote branches
+- Queries GitHub API for protection rules (via `gh` CLI)
+- Calculates confidence scores based on pattern matching
+
+**Options:** --json (output JSON format), --verbose (detailed branch info)
+
+**Related Commands:**
+- Phase 2: `/popkit-dev:git recommend-strategy` (interactive questionnaire)
+- Phase 3: `/popkit-dev:git migrate-to <strategy>` (automated migration)
+- Phase 4: Hooks for branch naming validation
+
+---
+
 ## Git Safety Protocol
 
-| Rule | Action |
-|------|--------|
-| Config | NEVER update git config |
-| Destructive | NEVER run without explicit request |
-| Hooks | NEVER skip (--no-verify) unless requested |
-| Force push | NEVER to main/master |
-| Amend | AVOID unless requested, check authorship first |
-| Preview | ALWAYS before bulk operations |
+| Rule        | Action                                         |
+| ----------- | ---------------------------------------------- |
+| Config      | NEVER update git config                        |
+| Destructive | NEVER run without explicit request             |
+| Hooks       | NEVER skip (--no-verify) unless requested      |
+| Force push  | NEVER to main/master                           |
+| Amend       | AVOID unless requested, check authorship first |
+| Preview     | ALWAYS before bulk operations                  |
 
 ---
 
 ## Architecture
 
-| Component | Integration |
-|-----------|-------------|
-| Commit | Conventional commits, attribution |
-| PR Templates | output-styles/pr-description.md |
-| Code Review | skills/pop-code-review/, agent code-reviewer |
-| Finish Flow | skills/pop-finish-branch/ |
-| GitHub CLI | gh pr/run/release commands |
-| Changelog | hooks/utils/changelog_generator.py |
-| Version | package.json, Cargo.toml, git tags |
-| Publishing | git subtree split, IP scanner |
-| IP Scanner | hooks/utils/ip_protection.py |
+| Component    | Integration                                  |
+| ------------ | -------------------------------------------- |
+| Commit       | Conventional commits, attribution            |
+| PR Templates | output-styles/pr-description.md              |
+| Code Review  | skills/pop-code-review/, agent code-reviewer |
+| Finish Flow  | skills/pop-finish-branch/                    |
+| GitHub CLI   | gh pr/run/release commands                   |
+| Changelog    | hooks/utils/changelog_generator.py           |
+| Version      | package.json, Cargo.toml, git tags           |
+| Publishing   | git subtree split, IP scanner                |
+| IP Scanner   | hooks/utils/ip_protection.py                 |
 
 **Related:** /popkit-dev:worktree, /popkit-dev:dev execute, /popkit:morning
 

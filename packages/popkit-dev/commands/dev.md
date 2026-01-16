@@ -1,5 +1,5 @@
 ---
-description: "work #N | brainstorm | plan | execute | prd | suite | \"description\" [--mode quick|full] [-T, --power]"
+description: 'work #N | brainstorm | plan | execute | prd | suite | "description" [--mode quick|full] [-T, --power]'
 argument-hint: "[subcommand|description] [flags]"
 ---
 
@@ -22,35 +22,35 @@ Unified entry point for development workflows.
 
 ## Subcommands
 
-| Subcommand | Description | Use Case |
-|------------|-------------|----------|
-| `work #N` | Issue-driven dev | GitHub issue |
+| Subcommand   | Description          | Use Case             |
+| ------------ | -------------------- | -------------------- |
+| `work #N`    | Issue-driven dev     | GitHub issue         |
 | `brainstorm` | Socratic questioning | Unclear requirements |
-| `plan` | Implementation plan | Planning |
-| `execute` | Execute plan | Implementation |
-| `prd` | Generate PRD | Requirements |
-| `suite` | Full doc suite | Complete docs |
+| `plan`       | Implementation plan  | Planning             |
+| `execute`    | Execute plan         | Implementation       |
+| `prd`        | Generate PRD         | Requirements         |
+| `suite`      | Full doc suite       | Complete docs        |
 
 ## Modes
 
-| Mode | When | Process |
-|------|------|---------|
-| `quick` | Simple, clear | 5 steps: Understand → Find → Fix → Verify → Commit |
-| `full` | Complex | 7 phases: Discovery → Exploration → Questions → Architecture → Impl → Review → Summary |
+| Mode    | When          | Process                                                                                |
+| ------- | ------------- | -------------------------------------------------------------------------------------- |
+| `quick` | Simple, clear | 5 steps: Understand → Find → Fix → Verify → Commit                                     |
+| `full`  | Complex       | 7 phases: Discovery → Exploration → Questions → Architecture → Impl → Review → Summary |
 
 **Override:** `--mode quick|full`
 
 ## Flags
 
-| Flag | Short | Description |
-|------|-------|-------------|
-| `--mode` | | `quick` or `full` |
-| `--thinking` | `-T` | Extended thinking |
-| `--think-budget N` | | Token budget (10000) |
-| `--from FILE` | | From design/plan |
-| `--issue N` | | Reference issue |
-| `--power` | `-p` | Power Mode |
-| `--solo` | `-s` | Sequential |
+| Flag               | Short | Description          |
+| ------------------ | ----- | -------------------- |
+| `--mode`           |       | `quick` or `full`    |
+| `--thinking`       | `-T`  | Extended thinking    |
+| `--think-budget N` |       | Token budget (10000) |
+| `--from FILE`      |       | From design/plan     |
+| `--issue N`        |       | Reference issue      |
+| `--power`          | `-p`  | Power Mode           |
+| `--solo`           | `-s`  | Sequential           |
 
 ---
 
@@ -67,15 +67,15 @@ Details: `commands/examples/dev/routing-examples.md`
 
 7-phase workflow.
 
-| Phase | Goal | Agent/Skill |
-|-------|------|-------------|
-| 1. Discovery | What to build | pop-brainstorming |
-| 2. Exploration | Understand code | code-explorer |
-| 3. Questions | Clarify | pop-project-templates |
-| 4. Architecture | Design | code-architect |
-| 5. Implementation | Build | pop-writing-plans, pop-executing-plans |
-| 6. Review | Quality | code-reviewer |
-| 7. Summary | Complete | pop-finish-branch |
+| Phase             | Goal            | Agent/Skill                            |
+| ----------------- | --------------- | -------------------------------------- |
+| 1. Discovery      | What to build   | pop-brainstorming                      |
+| 2. Exploration    | Understand code | code-explorer                          |
+| 3. Questions      | Clarify         | pop-project-templates                  |
+| 4. Architecture   | Design          | code-architect                         |
+| 5. Implementation | Build           | pop-writing-plans, pop-executing-plans |
+| 6. Review         | Quality         | code-reviewer                          |
+| 7. Summary        | Complete        | pop-finish-branch                      |
 
 Details: `commands/examples/dev/full-mode-walkthrough.md`
 
@@ -142,13 +142,13 @@ Details: `commands/examples/dev/execute-batch-flow.md`
 
 ### Quality Checks
 
-| Task Type | Checks |
-|-----------|--------|
-| Animations/Physics | Energy, collision |
-| UI Components | A11y, responsive |
-| API Endpoints | Validation, security |
-| Data Processing | Edge cases, perf |
-| Bug Fixes | Regression, root cause |
+| Task Type          | Checks                 |
+| ------------------ | ---------------------- |
+| Animations/Physics | Energy, collision      |
+| UI Components      | A11y, responsive       |
+| API Endpoints      | Validation, security   |
+| Data Processing    | Edge cases, perf       |
+| Bug Fixes          | Regression, root cause |
 
 Details: `commands/examples/dev/quick-mode-examples.md`
 
@@ -164,13 +164,13 @@ Generate PRD with Summary, Problem, Goals, Requirements (P0/P1/P2), Stories, Tec
 
 Generate complete docs:
 
-| Document | Location | Purpose |
-|----------|----------|---------|
-| `problem_statement.md` | `docs/discovery/` | Problem |
-| `PRD.md` | `docs/prd/` | Requirements |
-| `user_stories.md` | `docs/prd/` | Stories |
-| `ARCHITECTURE.md` | `docs/architecture/` | Design |
-| `TECHNICAL_SPEC.md` | `docs/architecture/` | Tech details |
+| Document               | Location             | Purpose      |
+| ---------------------- | -------------------- | ------------ |
+| `problem_statement.md` | `docs/discovery/`    | Problem      |
+| `PRD.md`               | `docs/prd/`          | Requirements |
+| `user_stories.md`      | `docs/prd/`          | Stories      |
+| `ARCHITECTURE.md`      | `docs/architecture/` | Design       |
+| `TECHNICAL_SPEC.md`    | `docs/architecture/` | Tech details |
 
 ---
 
@@ -192,11 +192,11 @@ Use Skill tool (pop-brainstorming|pop-writing-plans|pop-executing-plans)
 
 ## Migration
 
-| Old | New |
-|-----|-----|
-| `/popkit:design` | `/popkit-dev:dev brainstorm` |
-| `/popkit:plan` | `/popkit-dev:dev plan` |
-| `/popkit:feature-dev` | `/popkit-dev:dev full` |
+| Old                   | New                          |
+| --------------------- | ---------------------------- |
+| `/popkit:design`      | `/popkit-dev:dev brainstorm` |
+| `/popkit:plan`        | `/popkit-dev:dev plan`       |
+| `/popkit:feature-dev` | `/popkit-dev:dev full`       |
 
 ---
 

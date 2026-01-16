@@ -12,11 +12,11 @@ session-capture skill completes, ensuring state is persisted.
 """
 
 import json
-import sys
 import os
+import subprocess
+import sys
 from datetime import datetime
 from pathlib import Path
-import subprocess
 
 
 def get_git_state(cwd):
@@ -24,26 +24,17 @@ def get_git_state(cwd):
     try:
         # Get current branch
         branch = subprocess.check_output(
-            ["git", "branch", "--show-current"],
-            cwd=cwd,
-            text=True,
-            stderr=subprocess.DEVNULL
+            ["git", "branch", "--show-current"], cwd=cwd, text=True, stderr=subprocess.DEVNULL
         ).strip()
 
         # Get last commit
         last_commit = subprocess.check_output(
-            ["git", "log", "-1", "--format=%h - %s"],
-            cwd=cwd,
-            text=True,
-            stderr=subprocess.DEVNULL
+            ["git", "log", "-1", "--format=%h - %s"], cwd=cwd, text=True, stderr=subprocess.DEVNULL
         ).strip()
 
         # Count uncommitted files
         status_output = subprocess.check_output(
-            ["git", "status", "--porcelain"],
-            cwd=cwd,
-            text=True,
-            stderr=subprocess.DEVNULL
+            ["git", "status", "--porcelain"], cwd=cwd, text=True, stderr=subprocess.DEVNULL
         )
         uncommitted_files = len(status_output.strip().split("\n")) if status_output.strip() else 0
 
@@ -52,7 +43,7 @@ def get_git_state(cwd):
             ["git", "diff", "--cached", "--name-only"],
             cwd=cwd,
             text=True,
-            stderr=subprocess.DEVNULL
+            stderr=subprocess.DEVNULL,
         )
         staged_files = len(staged_output.strip().split("\n")) if staged_output.strip() else 0
 
@@ -60,7 +51,7 @@ def get_git_state(cwd):
             "branch": branch,
             "lastCommit": last_commit,
             "uncommittedFiles": uncommitted_files,
-            "stagedFiles": staged_files
+            "stagedFiles": staged_files,
         }
 
     except Exception as e:
@@ -69,7 +60,7 @@ def get_git_state(cwd):
             "lastCommit": "unknown",
             "uncommittedFiles": 0,
             "stagedFiles": 0,
-            "error": str(e)
+            "error": str(e),
         }
 
 
@@ -155,34 +146,24 @@ def handle_stop_hook(data):
         "project": project_name,
         "sessionType": "Captured",
         "git": git_state,
-        "tasks": {
-            "inProgress": [],
-            "completed": [],
-            "blocked": []
-        },
+        "tasks": {"inProgress": [], "completed": [], "blocked": []},
         "services": {},
         "context": {
             "focusArea": "Session captured via auto-save hook",
             "blocker": None,
             "nextAction": "Resume session",
-            "keyDecisions": []
+            "keyDecisions": [],
         },
-        "projectData": {}
+        "projectData": {},
     }
 
     # Save STATUS.json
     status_path, error = save_status_json(cwd, status_data)
 
     if error:
-        return {
-            "decision": "allow",
-            "message": f"Failed to save STATUS.json: {error}"
-        }
+        return {"decision": "allow", "message": f"Failed to save STATUS.json: {error}"}
 
-    return {
-        "decision": "allow",
-        "message": f"Session state auto-saved to {status_path}"
-    }
+    return {"decision": "allow", "message": f"Session state auto-saved to {status_path}"}
 
 
 if __name__ == "__main__":
@@ -199,9 +180,6 @@ if __name__ == "__main__":
 
     except Exception as e:
         # On error, allow the operation
-        error_result = {
-            "decision": "allow",
-            "message": f"Hook error (state not saved): {str(e)}"
-        }
+        error_result = {"decision": "allow", "message": f"Hook error (state not saved): {str(e)}"}
         print(json.dumps(error_result))
         sys.exit(0)

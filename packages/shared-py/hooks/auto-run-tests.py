@@ -12,23 +12,27 @@ regressions early and provide immediate feedback on test status.
 """
 
 import json
-import sys
 import os
 import subprocess
+import sys
 from pathlib import Path
-
 
 # File extensions that should trigger test runs
 TEST_TRIGGER_EXTENSIONS = [
-    ".py", ".js", ".ts", ".jsx", ".tsx",
-    ".java", ".go", ".rs", ".rb", ".php"
+    ".py",
+    ".js",
+    ".ts",
+    ".jsx",
+    ".tsx",
+    ".java",
+    ".go",
+    ".rs",
+    ".rb",
+    ".php",
 ]
 
 # Test file patterns
-TEST_FILE_PATTERNS = [
-    "test_", "_test.", ".test.", ".spec.",
-    "tests/", "test/", "__tests__/"
-]
+TEST_FILE_PATTERNS = ["test_", "_test.", ".test.", ".spec.", "tests/", "test/", "__tests__/"]
 
 
 def is_test_file(file_path):
@@ -117,20 +121,14 @@ def run_tests(command, cwd, timeout=60):
     start_time = time.time()
 
     try:
-        result = subprocess.run(
-            command,
-            cwd=cwd,
-            capture_output=True,
-            text=True,
-            timeout=timeout
-        )
+        result = subprocess.run(command, cwd=cwd, capture_output=True, text=True, timeout=timeout)
 
         duration = time.time() - start_time
 
         return {
             "passed": result.returncode == 0,
             "output": result.stdout + result.stderr,
-            "duration": duration
+            "duration": duration,
         }
 
     except subprocess.TimeoutExpired:
@@ -138,16 +136,12 @@ def run_tests(command, cwd, timeout=60):
         return {
             "passed": False,
             "output": f"Tests timed out after {timeout} seconds",
-            "duration": duration
+            "duration": duration,
         }
 
     except Exception as e:
         duration = time.time() - start_time
-        return {
-            "passed": False,
-            "output": f"Test execution error: {str(e)}",
-            "duration": duration
-        }
+        return {"passed": False, "output": f"Test execution error: {str(e)}", "duration": duration}
 
 
 def handle_post_tool_use(data):
@@ -201,12 +195,11 @@ def handle_post_tool_use(data):
     else:
         # Extract key failure info (first 500 chars)
         output_preview = test_result["output"][:500]
-        message = f"✗ Auto-test failed ({test_type}, {test_result['duration']:.1f}s)\n{output_preview}"
+        message = (
+            f"✗ Auto-test failed ({test_type}, {test_result['duration']:.1f}s)\n{output_preview}"
+        )
 
-    return {
-        "decision": "allow",
-        "message": message
-    }
+    return {"decision": "allow", "message": message}
 
 
 if __name__ == "__main__":
@@ -223,9 +216,6 @@ if __name__ == "__main__":
 
     except Exception as e:
         # On error, allow the operation
-        error_result = {
-            "decision": "allow",
-            "message": f"Hook error (tests not run): {str(e)}"
-        }
+        error_result = {"decision": "allow", "message": f"Hook error (tests not run): {str(e)}"}
         print(json.dumps(error_result))
         sys.exit(0)

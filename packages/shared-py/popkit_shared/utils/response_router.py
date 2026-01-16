@@ -24,28 +24,26 @@ Usage:
 """
 
 import json
-import sys
 from dataclasses import dataclass
 from datetime import datetime
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 # Import workflow engine
 try:
     from .workflow_engine import (
         FileWorkflowEngine,
-        WorkflowStep,
-        WorkflowStatus,
         StepType,
+        WorkflowStatus,
+        WorkflowStep,
         get_active_workflow,
         has_active_workflow,
     )
 except ImportError:
     from workflow_engine import (
         FileWorkflowEngine,
-        WorkflowStep,
-        WorkflowStatus,
         StepType,
+        WorkflowStatus,
+        WorkflowStep,
         get_active_workflow,
         has_active_workflow,
     )
@@ -55,19 +53,21 @@ except ImportError:
 # Response Router Result
 # =============================================================================
 
+
 @dataclass
 class RouteResult:
     """Result of routing a user response."""
-    routed: bool                          # Whether response was routed to workflow
-    workflow_id: Optional[str] = None     # Active workflow ID
-    current_step: Optional[str] = None    # Current step ID
-    next_step: Optional[str] = None       # Next step to execute
-    step_type: Optional[str] = None       # Type of next step
-    skill: Optional[str] = None           # Skill to invoke (if step_type=skill)
-    agent: Optional[str] = None           # Agent to use (if step_type=agent)
+
+    routed: bool  # Whether response was routed to workflow
+    workflow_id: Optional[str] = None  # Active workflow ID
+    current_step: Optional[str] = None  # Current step ID
+    next_step: Optional[str] = None  # Next step to execute
+    step_type: Optional[str] = None  # Type of next step
+    skill: Optional[str] = None  # Skill to invoke (if step_type=skill)
+    agent: Optional[str] = None  # Agent to use (if step_type=agent)
     context: Optional[Dict[str, Any]] = None  # Context for next step
-    message: Optional[str] = None         # Guidance message for Claude
-    error: Optional[str] = None           # Error message if routing failed
+    message: Optional[str] = None  # Guidance message for Claude
+    error: Optional[str] = None  # Error message if routing failed
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON output."""
@@ -97,9 +97,9 @@ class RouteResult:
 # Response Routing
 # =============================================================================
 
+
 def route_user_response(
-    tool_output: Dict[str, Any],
-    question_header: Optional[str] = None
+    tool_output: Dict[str, Any], question_header: Optional[str] = None
 ) -> RouteResult:
     """Route an AskUserQuestion response to the active workflow.
 
@@ -117,27 +117,20 @@ def route_user_response(
     # Check for active workflow
     workflow = get_active_workflow()
     if not workflow:
-        return RouteResult(
-            routed=False,
-            message="No active workflow"
-        )
+        return RouteResult(routed=False, message="No active workflow")
 
     # Check workflow is waiting for a decision
     state = workflow.get_state()
     if not state or state.status != WorkflowStatus.WAITING.value:
         return RouteResult(
-            routed=False,
-            workflow_id=workflow.workflow_id,
-            message="Workflow not waiting for input"
+            routed=False, workflow_id=workflow.workflow_id, message="Workflow not waiting for input"
         )
 
     # Get current step
     current_step = workflow.get_current_step()
     if not current_step:
         return RouteResult(
-            routed=False,
-            workflow_id=workflow.workflow_id,
-            error="Workflow has no current step"
+            routed=False, workflow_id=workflow.workflow_id, error="Workflow has no current step"
         )
 
     # Verify current step is a user_decision
@@ -146,7 +139,7 @@ def route_user_response(
             routed=False,
             workflow_id=workflow.workflow_id,
             current_step=current_step.id,
-            message=f"Current step is {current_step.step_type}, not user_decision"
+            message=f"Current step is {current_step.step_type}, not user_decision",
         )
 
     # Extract answers from tool output
@@ -156,38 +149,39 @@ def route_user_response(
             routed=False,
             workflow_id=workflow.workflow_id,
             current_step=current_step.id,
-            error="No answers in tool output"
+            error="No answers in tool output",
         )
 
     # Find matching answer
-    selected_answer, option_id = _match_answer(
-        answers,
-        current_step,
-        question_header
-    )
+    selected_answer, option_id = _match_answer(answers, current_step, question_header)
 
     if not selected_answer:
         return RouteResult(
             routed=False,
             workflow_id=workflow.workflow_id,
             current_step=current_step.id,
-            error=f"No matching answer found for step '{current_step.id}'"
+            error=f"No matching answer found for step '{current_step.id}'",
         )
 
     # Notify workflow of the decision event
     event_id = f"decision-{current_step.id}"
-    workflow.notify_event(event_id, {
-        "answer": selected_answer,
-        "option_id": option_id,
-        "timestamp": datetime.now().isoformat()
-    })
+    workflow.notify_event(
+        event_id,
+        {
+            "answer": selected_answer,
+            "option_id": option_id,
+            "timestamp": datetime.now().isoformat(),
+        },
+    )
 
     # Advance the workflow
-    next_step = workflow.advance_step({
-        "answer": selected_answer,
-        "option_id": option_id,
-        "decided_at": datetime.now().isoformat()
-    })
+    next_step = workflow.advance_step(
+        {
+            "answer": selected_answer,
+            "option_id": option_id,
+            "decided_at": datetime.now().isoformat(),
+        }
+    )
 
     # Build result
     if next_step:
@@ -198,7 +192,7 @@ def route_user_response(
             next_step=next_step.id,
             step_type=next_step.step_type,
             context=workflow.get_context(),
-            message=_build_guidance_message(next_step, workflow)
+            message=_build_guidance_message(next_step, workflow),
         )
 
         # Add skill/agent info if applicable
@@ -216,14 +210,12 @@ def route_user_response(
             current_step=current_step.id,
             step_type="complete",
             context=workflow.get_context(),
-            message=f"Workflow '{workflow.workflow_id}' completed successfully"
+            message=f"Workflow '{workflow.workflow_id}' completed successfully",
         )
 
 
 def _match_answer(
-    answers: Dict[str, Any],
-    step: WorkflowStep,
-    required_header: Optional[str]
+    answers: Dict[str, Any], step: WorkflowStep, required_header: Optional[str]
 ) -> Tuple[Optional[str], Optional[str]]:
     """Match an answer from AskUserQuestion to workflow options.
 
@@ -315,6 +307,7 @@ def _build_guidance_message(step: WorkflowStep, workflow: FileWorkflowEngine) ->
 # Workflow State Queries
 # =============================================================================
 
+
 def get_workflow_status() -> Optional[Dict[str, Any]]:
     """Get the current workflow status for display.
 
@@ -352,13 +345,14 @@ def get_pending_decision() -> Optional[Dict[str, Any]]:
         "question": current_step.question,
         "header": current_step.header,
         "options": current_step.options,
-        "context": workflow.get_context()
+        "context": workflow.get_context(),
     }
 
 
 # =============================================================================
 # Hook Integration Helpers
 # =============================================================================
+
 
 def should_route_response(tool_name: str) -> bool:
     """Check if a tool output should be routed.
@@ -402,13 +396,13 @@ def format_hook_output(result: RouteResult) -> Dict[str, Any]:
             output["next_action"] = {
                 "type": "skill",
                 "skill": result.skill,
-                "description": result.message
+                "description": result.message,
             }
         elif result.agent:
             output["next_action"] = {
                 "type": "agent",
                 "agent": result.agent,
-                "description": result.message
+                "description": result.message,
             }
 
     elif result.error:
@@ -442,7 +436,7 @@ if __name__ == "__main__":
                 "description": "Start step",
                 "type": "skill",
                 "skill": "pop-test",
-                "next": "decision"
+                "next": "decision",
             },
             {
                 "id": "decision",
@@ -452,33 +446,26 @@ if __name__ == "__main__":
                 "header": "Approach",
                 "options": [
                     {"id": "simple", "label": "Simple", "next": "simple_step"},
-                    {"id": "complex", "label": "Complex", "next": "complex_step"}
+                    {"id": "complex", "label": "Complex", "next": "complex_step"},
                 ],
-                "next_map": {
-                    "simple": "simple_step",
-                    "complex": "complex_step"
-                }
+                "next_map": {"simple": "simple_step", "complex": "complex_step"},
             },
             {
                 "id": "simple_step",
                 "description": "Simple implementation",
                 "type": "skill",
                 "skill": "pop-simple",
-                "next": "end"
+                "next": "end",
             },
             {
                 "id": "complex_step",
                 "description": "Complex implementation",
                 "type": "skill",
                 "skill": "pop-complex",
-                "next": "end"
+                "next": "end",
             },
-            {
-                "id": "end",
-                "description": "End",
-                "type": "terminal"
-            }
-        ]
+            {"id": "end", "description": "End", "type": "terminal"},
+        ],
     }
 
     # Test 1: No active workflow
@@ -491,9 +478,7 @@ if __name__ == "__main__":
     print("\n2. Creating test workflow")
     workflow_id = f"test-router-{uuid.uuid4().hex[:8]}"
     workflow = FileWorkflowEngine.create_workflow(
-        workflow_id=workflow_id,
-        workflow_def=test_workflow_def,
-        initial_context={"test": True}
+        workflow_id=workflow_id, workflow_def=test_workflow_def, initial_context={"test": True}
     )
     print(f"   Workflow created: {workflow_id}")
 
@@ -507,9 +492,7 @@ if __name__ == "__main__":
 
     # Test 3: Route response with matching answer
     print("\n4. Testing response routing")
-    result = route_user_response({
-        "answers": {"Approach": "Simple"}
-    })
+    result = route_user_response({"answers": {"Approach": "Simple"}})
     print(f"   Result: routed={result.routed}")
     print(f"   Next step: {result.next_step}")
     print(f"   Step type: {result.step_type}")

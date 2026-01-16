@@ -2,11 +2,11 @@
 
 ## Performance Summary
 
-| Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| **Tokens** | 3,435 | 1,588 | -1,847 (-53.8%) |
-| **Target** | <2,000 | <2,000 | ACHIEVED |
-| **Headroom** | -1,435 (over) | +412 (under) | 1,847 tokens |
+| Metric       | Before        | After        | Improvement     |
+| ------------ | ------------- | ------------ | --------------- |
+| **Tokens**   | 3,435         | 1,588        | -1,847 (-53.8%) |
+| **Target**   | <2,000        | <2,000       | ACHIEVED        |
+| **Headroom** | -1,435 (over) | +412 (under) | 1,847 tokens    |
 
 ## Structural Changes
 
@@ -65,8 +65,10 @@ pop-mcp-generator/
 ### 1. Tables Replace Prose (~350 tokens saved)
 
 **Before:**
+
 ```markdown
 This skill works in two modes:
+
 - **Without API key**: Basic project analysis with recommendations (fully functional)
 - **With API key**: Custom MCP server generation with semantic intelligence (enhanced)
 
@@ -77,16 +79,18 @@ All users get valuable project insights:
 ```
 
 **After:**
+
 ```markdown
-| Mode | Availability | Capabilities |
-|------|--------------|--------------|
-| **Basic** | Always (no API key) | Project analysis, tech stack detection, recommendations |
-| **Enhanced** | With API key | Custom MCP generation, semantic search, embeddings |
+| Mode         | Availability        | Capabilities                                            |
+| ------------ | ------------------- | ------------------------------------------------------- |
+| **Basic**    | Always (no API key) | Project analysis, tech stack detection, recommendations |
+| **Enhanced** | With API key        | Custom MCP generation, semantic search, embeddings      |
 ```
 
 ### 2. Examples Extracted (~1,200 tokens saved)
 
 **Before (in main SKILL.md):**
+
 ```python
 import sys
 import json
@@ -97,6 +101,7 @@ from pathlib import Path
 ```
 
 **After (in examples/auto-embedding.py):**
+
 ```markdown
 See `examples/auto-embedding.py` for detailed implementation
 ```
@@ -107,6 +112,7 @@ See `examples/auto-embedding.py` for detailed implementation
 All 7 detailed generation steps inline (400+ tokens)
 
 **After:**
+
 ```markdown
 ## Generation Workflow
 
@@ -129,22 +135,25 @@ All 7 detailed generation steps inline (400+ tokens)
 Verbose prose describing tool selection by framework
 
 **After:**
+
 ```markdown
-| Framework | Generated Tools |
-|-----------|-----------------|
-| `nextjs` | `check_dev_server`, `check_build`, `run_typecheck` |
-| `prisma` | `check_database`, `run_migrations`, `prisma_studio` |
+| Framework | Generated Tools                                     |
+| --------- | --------------------------------------------------- |
+| `nextjs`  | `check_dev_server`, `check_build`, `run_typecheck`  |
+| `prisma`  | `check_database`, `run_migrations`, `prisma_studio` |
 ```
 
 ## Readability Improvements
 
 ### Before: Information Overload
+
 - 536 lines of markdown
 - Multiple code blocks inline
 - Redundant sections (2x post-generation)
 - Mixed abstraction levels
 
 ### After: Focused Documentation
+
 - 211 lines of markdown
 - Code references to examples/
 - Single concise post-generation section
@@ -161,11 +170,13 @@ Verbose prose describing tool selection by framework
 ## Navigation Pattern
 
 **Main SKILL.md:**
+
 - Quick reference (tables, lists)
 - High-level workflow (6 steps)
 - Key concepts (semantic descriptions)
 
 **examples/ directory:**
+
 - Full code implementations
 - Detailed Python/TypeScript samples
 - Complete output examples

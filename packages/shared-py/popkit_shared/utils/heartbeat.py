@@ -10,14 +10,12 @@ Detects stuck sessions, tracks progress, and enables recovery.
 Based on patterns from Anthropic's Long Horizon Coding Agent Demo.
 """
 
-import os
 import json
 import time
-from typing import Optional, Dict, Any, List
-from dataclasses import dataclass, field, asdict
-from datetime import datetime, timedelta
+from dataclasses import asdict, dataclass, field
+from datetime import datetime
 from pathlib import Path
-
+from typing import Any, Dict, List, Optional
 
 # =============================================================================
 # CONFIGURATION
@@ -33,9 +31,11 @@ MAX_SAME_FILE_EDITS = 5  # Same file edited 5+ times = potentially stuck
 # DATA CLASSES
 # =============================================================================
 
+
 @dataclass
 class HeartbeatData:
     """Single heartbeat record."""
+
     timestamp: str
     session_id: str
     tool_name: Optional[str] = None
@@ -47,6 +47,7 @@ class HeartbeatData:
 @dataclass
 class SessionHealth:
     """Health indicators for a session."""
+
     session_id: str
     status: str  # active, stuck, idle, completed
     last_heartbeat: str
@@ -75,6 +76,7 @@ class SessionHealth:
 @dataclass
 class StuckDetectionResult:
     """Result of stuck detection analysis."""
+
     is_stuck: bool
     confidence: float  # 0.0 to 1.0
     indicators: List[str]
@@ -84,6 +86,7 @@ class StuckDetectionResult:
 # =============================================================================
 # HEARTBEAT MONITOR
 # =============================================================================
+
 
 class HeartbeatMonitor:
     """
@@ -110,6 +113,7 @@ class HeartbeatMonitor:
     def _generate_session_id(self) -> str:
         """Generate unique session ID."""
         import hashlib
+
         timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
         random_part = hashlib.md5(str(time.time()).encode()).hexdigest()[:6]
         return f"session-{timestamp}-{random_part}"
@@ -118,7 +122,7 @@ class HeartbeatMonitor:
         self,
         tool_name: Optional[str] = None,
         tool_input: Optional[Dict[str, Any]] = None,
-        progress: Optional[str] = None
+        progress: Optional[str] = None,
     ) -> HeartbeatData:
         """
         Record a heartbeat.
@@ -145,7 +149,7 @@ class HeartbeatMonitor:
             tool_name=tool_name,
             tool_input={"file": tool_input.get("file_path")} if tool_input else None,
             status="active",
-            progress=progress
+            progress=progress,
         )
 
         self.heartbeats.append(heartbeat)
@@ -197,7 +201,7 @@ class HeartbeatMonitor:
             duration_seconds=duration,
             tool_calls=self.tool_calls,
             files_touched=list(self.files_touched.keys()),
-            stuck_indicators=stuck_indicators
+            stuck_indicators=stuck_indicators,
         )
 
     def detect_stuck(self) -> StuckDetectionResult:
@@ -236,7 +240,9 @@ class HeartbeatMonitor:
 
         # Check for repeated failures (look at last 10 heartbeats)
         recent = self.heartbeats[-10:] if len(self.heartbeats) >= 10 else self.heartbeats
-        bash_failures = sum(1 for h in recent if h.tool_name == "Bash" and "error" in str(h.progress or "").lower())
+        bash_failures = sum(
+            1 for h in recent if h.tool_name == "Bash" and "error" in str(h.progress or "").lower()
+        )
         if bash_failures >= 3:
             indicators.append(f"{bash_failures} Bash failures in recent calls")
             confidence += 0.3
@@ -245,13 +251,16 @@ class HeartbeatMonitor:
         # Check for circular edits (A -> B -> A -> B pattern)
         if len(self.heartbeats) >= 6:
             recent_files = [
-                h.tool_input.get("file") for h in self.heartbeats[-6:]
+                h.tool_input.get("file")
+                for h in self.heartbeats[-6:]
                 if h.tool_input and h.tool_input.get("file")
             ]
             if len(recent_files) >= 4:
                 # Check for A-B-A-B pattern
-                if recent_files[0] == recent_files[2] == recent_files[4] or \
-                   recent_files[1] == recent_files[3] == recent_files[5]:
+                if (
+                    recent_files[0] == recent_files[2] == recent_files[4]
+                    or recent_files[1] == recent_files[3] == recent_files[5]
+                ):
                     indicators.append("Circular edit pattern detected")
                     confidence += 0.3
                     recommendations.append("Breaking circular pattern - try different approach")
@@ -262,7 +271,7 @@ class HeartbeatMonitor:
             is_stuck=is_stuck,
             confidence=min(confidence, 1.0),
             indicators=indicators,
-            recommendations=recommendations
+            recommendations=recommendations,
         )
 
     def format_status_line(self) -> str:
@@ -275,17 +284,14 @@ class HeartbeatMonitor:
         health = self.get_health()
 
         # Status indicator
-        status_emoji = {
-            "active": "🟢",
-            "stuck": "🔴",
-            "idle": "🟡",
-            "completed": "✅"
-        }.get(health.status, "⚪")
+        status_emoji = {"active": "🟢", "stuck": "🔴", "idle": "🟡", "completed": "✅"}.get(
+            health.status, "⚪"
+        )
 
         parts = [
             f"[POP] {health.duration_formatted}",
             f"{status_emoji} {health.tool_calls} calls",
-            f"{len(health.files_touched)} files"
+            f"{len(health.files_touched)} files",
         ]
 
         if health.stuck_indicators:
@@ -307,7 +313,7 @@ class HeartbeatMonitor:
             "files_touched": self.files_touched,
             "heartbeat_count": len(self.heartbeats),
             "health": asdict(self.get_health()),
-            "saved_at": datetime.now().isoformat()
+            "saved_at": datetime.now().isoformat(),
         }
 
         state_file = self.session_dir / "session_state.json"
@@ -381,11 +387,13 @@ class HeartbeatMonitor:
                 if not include_completed and latest.get("status") == "completed":
                     continue
 
-                sessions.append({
-                    "session_id": session_dir.name,
-                    "last_heartbeat": latest.get("timestamp"),
-                    "status": latest.get("status", "unknown")
-                })
+                sessions.append(
+                    {
+                        "session_id": session_dir.name,
+                        "last_heartbeat": latest.get("timestamp"),
+                        "status": latest.get("status", "unknown"),
+                    }
+                )
 
         # Sort by recency
         sessions.sort(key=lambda s: s["last_heartbeat"], reverse=True)

@@ -11,7 +11,7 @@ These utilities create properly-formatted message objects for:
 Part of the popkit plugin stateless hook architecture.
 """
 
-from typing import Dict, List, Any, Union
+from typing import Any, Dict, List, Union
 
 # Type aliases for clarity
 Content = Union[str, List[Dict[str, Any]]]
@@ -22,6 +22,7 @@ ContentBlock = Dict[str, Any]
 # =============================================================================
 # Basic Message Builders
 # =============================================================================
+
 
 def build_user_message(content: Content) -> Message:
     """Create a user role message.
@@ -62,6 +63,7 @@ def build_assistant_message(content: Content) -> Message:
 # Tool Message Builders
 # =============================================================================
 
+
 def build_tool_use_message(tool_use_id: str, name: str, input: Dict[str, Any]) -> Message:
     """Create an assistant message containing a tool use block.
 
@@ -90,20 +92,11 @@ def build_tool_use_message(tool_use_id: str, name: str, input: Dict[str, Any]) -
     """
     return {
         "role": "assistant",
-        "content": [{
-            "type": "tool_use",
-            "id": tool_use_id,
-            "name": name,
-            "input": input
-        }]
+        "content": [{"type": "tool_use", "id": tool_use_id, "name": name, "input": input}],
     }
 
 
-def build_tool_result_message(
-    tool_use_id: str,
-    content: str,
-    is_error: bool = False
-) -> Message:
+def build_tool_result_message(tool_use_id: str, content: str, is_error: bool = False) -> Message:
     """Create a user message containing a tool result block.
 
     This represents the result of tool execution. The message has role
@@ -142,7 +135,7 @@ def build_tool_result_message(
     result_block: ContentBlock = {
         "type": "tool_result",
         "tool_use_id": tool_use_id,
-        "content": content
+        "content": content,
     }
 
     if is_error:
@@ -154,6 +147,7 @@ def build_tool_result_message(
 # =============================================================================
 # Conversation Composition
 # =============================================================================
+
 
 def compose_conversation(messages: List[Message]) -> List[Message]:
     """Compose a list of messages into a valid conversation.
@@ -188,6 +182,7 @@ def compose_conversation(messages: List[Message]) -> List[Message]:
 # Advanced Composition Functions
 # =============================================================================
 
+
 def merge_tool_uses(tool_uses: List[Dict[str, Any]]) -> Message:
     """Merge multiple tool uses into a single assistant message.
 
@@ -215,12 +210,14 @@ def merge_tool_uses(tool_uses: List[Dict[str, Any]]) -> Message:
     """
     content = []
     for tool in tool_uses:
-        content.append({
-            "type": "tool_use",
-            "id": tool["id"],
-            "name": tool["name"],
-            "input": tool.get("input", {})
-        })
+        content.append(
+            {
+                "type": "tool_use",
+                "id": tool["id"],
+                "name": tool["name"],
+                "input": tool.get("input", {}),
+            }
+        )
     return {"role": "assistant", "content": content}
 
 
@@ -254,7 +251,7 @@ def merge_tool_results(results: List[Dict[str, Any]]) -> Message:
         block: ContentBlock = {
             "type": "tool_result",
             "tool_use_id": result["tool_use_id"],
-            "content": result.get("content", "")
+            "content": result.get("content", ""),
         }
         if result.get("is_error"):
             block["is_error"] = True
@@ -286,11 +283,9 @@ def extract_tool_use(message: Message) -> List[Dict[str, Any]]:
     tool_uses = []
     for block in content:
         if isinstance(block, dict) and block.get("type") == "tool_use":
-            tool_uses.append({
-                "id": block.get("id"),
-                "name": block.get("name"),
-                "input": block.get("input", {})
-            })
+            tool_uses.append(
+                {"id": block.get("id"), "name": block.get("name"), "input": block.get("input", {})}
+            )
     return tool_uses
 
 
@@ -339,6 +334,7 @@ def rebuild_from_history(history: Dict[str, Any]) -> List[Message]:
 # Content Block Builders
 # =============================================================================
 
+
 def build_text_block(text: str) -> ContentBlock:
     """Create a text content block.
 
@@ -355,11 +351,7 @@ def build_text_block(text: str) -> ContentBlock:
     return {"type": "text", "text": text}
 
 
-def build_tool_use_block(
-    tool_use_id: str,
-    name: str,
-    input: Dict[str, Any]
-) -> ContentBlock:
+def build_tool_use_block(tool_use_id: str, name: str, input: Dict[str, Any]) -> ContentBlock:
     """Create a tool_use content block.
 
     Args:
@@ -370,19 +362,10 @@ def build_tool_use_block(
     Returns:
         Content block dict with type "tool_use"
     """
-    return {
-        "type": "tool_use",
-        "id": tool_use_id,
-        "name": name,
-        "input": input
-    }
+    return {"type": "tool_use", "id": tool_use_id, "name": name, "input": input}
 
 
-def build_tool_result_block(
-    tool_use_id: str,
-    content: str,
-    is_error: bool = False
-) -> ContentBlock:
+def build_tool_result_block(tool_use_id: str, content: str, is_error: bool = False) -> ContentBlock:
     """Create a tool_result content block.
 
     Args:
@@ -393,11 +376,7 @@ def build_tool_result_block(
     Returns:
         Content block dict with type "tool_result"
     """
-    block: ContentBlock = {
-        "type": "tool_result",
-        "tool_use_id": tool_use_id,
-        "content": content
-    }
+    block: ContentBlock = {"type": "tool_result", "tool_use_id": tool_use_id, "content": content}
 
     if is_error:
         block["is_error"] = True

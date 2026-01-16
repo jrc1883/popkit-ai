@@ -8,59 +8,59 @@ before they are shared with the PopKit Cloud community database.
 Part of the popkit plugin system.
 """
 
+import hashlib
 import os
 import re
-import hashlib
-from typing import Dict, Any, List, Optional, Set
-from pathlib import Path
-
+from typing import Any, Dict, List, Optional, Set
 
 # Patterns to redact
 SENSITIVE_PATTERNS = [
     # API keys and tokens
-    (r'(?i)(api[_-]?key|apikey|token|secret|password|auth|bearer)\s*[=:]\s*["\']?[\w\-\.]+["\']?', '[REDACTED_CREDENTIAL]'),
-    (r'(?i)sk[-_][a-zA-Z0-9]{32,}', '[REDACTED_API_KEY]'),
-    (r'(?i)pk[-_][a-zA-Z0-9]{32,}', '[REDACTED_API_KEY]'),
-
+    (
+        r'(?i)(api[_-]?key|apikey|token|secret|password|auth|bearer)\s*[=:]\s*["\']?[\w\-\.]+["\']?',
+        "[REDACTED_CREDENTIAL]",
+    ),
+    (r"(?i)sk[-_][a-zA-Z0-9]{32,}", "[REDACTED_API_KEY]"),
+    (r"(?i)pk[-_][a-zA-Z0-9]{32,}", "[REDACTED_API_KEY]"),
     # Database connection strings
-    (r'(?i)(postgres|mysql|mongodb|redis)://[^\s"\']+', '[REDACTED_DB_URL]'),
-
+    (r'(?i)(postgres|mysql|mongodb|redis)://[^\s"\']+', "[REDACTED_DB_URL]"),
     # Email addresses
-    (r'[\w\.-]+@[\w\.-]+\.\w+', '[REDACTED_EMAIL]'),
-
+    (r"[\w\.-]+@[\w\.-]+\.\w+", "[REDACTED_EMAIL]"),
     # IP addresses
-    (r'\b(?:\d{1,3}\.){3}\d{1,3}\b', '[REDACTED_IP]'),
-
+    (r"\b(?:\d{1,3}\.){3}\d{1,3}\b", "[REDACTED_IP]"),
     # AWS/GCP/Azure credentials
-    (r'(?i)AKIA[0-9A-Z]{16}', '[REDACTED_AWS_KEY]'),
-    (r'(?i)(?:aws|gcp|azure)[_-]?(?:access|secret|key)[_-]?\w*\s*[=:]\s*["\']?[\w\-\.\/]+["\']?', '[REDACTED_CLOUD_CRED]'),
-
+    (r"(?i)AKIA[0-9A-Z]{16}", "[REDACTED_AWS_KEY]"),
+    (
+        r'(?i)(?:aws|gcp|azure)[_-]?(?:access|secret|key)[_-]?\w*\s*[=:]\s*["\']?[\w\-\.\/]+["\']?',
+        "[REDACTED_CLOUD_CRED]",
+    ),
     # Private keys
-    (r'-----BEGIN (?:RSA |DSA |EC )?PRIVATE KEY-----[\s\S]*?-----END (?:RSA |DSA |EC )?PRIVATE KEY-----', '[REDACTED_PRIVATE_KEY]'),
-
+    (
+        r"-----BEGIN (?:RSA |DSA |EC )?PRIVATE KEY-----[\s\S]*?-----END (?:RSA |DSA |EC )?PRIVATE KEY-----",
+        "[REDACTED_PRIVATE_KEY]",
+    ),
     # JWT tokens
-    (r'eyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*', '[REDACTED_JWT]'),
+    (r"eyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*", "[REDACTED_JWT]"),
 ]
 
 # Path patterns to generalize
 PATH_PATTERNS = [
     # Windows user paths
-    (r'C:\\Users\\[^\\]+', 'C:\\Users\\[USER]'),
-    (r'/Users/[^/]+', '/Users/[USER]'),
-    (r'/home/[^/]+', '/home/[USER]'),
-
+    (r"C:\\Users\\[^\\]+", "C:\\Users\\[USER]"),
+    (r"/Users/[^/]+", "/Users/[USER]"),
+    (r"/home/[^/]+", "/home/[USER]"),
     # Common project path patterns
-    (r'(?i)/(?:projects?|dev|code|workspace|repos?)/[^/\s"\']+', '/[PROJECT_DIR]'),
+    (r'(?i)/(?:projects?|dev|code|workspace|repos?)/[^/\s"\']+', "/[PROJECT_DIR]"),
 ]
 
 # Project-specific names to replace
 PROJECT_IDENTIFIERS = [
-    'project_name',
-    'app_name',
-    'package_name',
-    'repo_name',
-    'company_name',
-    'org_name',
+    "project_name",
+    "app_name",
+    "package_name",
+    "repo_name",
+    "company_name",
+    "org_name",
 ]
 
 
@@ -109,10 +109,10 @@ def generalize_paths(text: str, project_root: Optional[str] = None) -> str:
     # Replace project root if provided
     if project_root:
         # Normalize path separators
-        normalized = project_root.replace('\\', '/')
-        result = result.replace(project_root, '[PROJECT_ROOT]')
-        result = result.replace(normalized, '[PROJECT_ROOT]')
-        result = result.replace(project_root.replace('/', '\\'), '[PROJECT_ROOT]')
+        normalized = project_root.replace("\\", "/")
+        result = result.replace(project_root, "[PROJECT_ROOT]")
+        result = result.replace(normalized, "[PROJECT_ROOT]")
+        result = result.replace(project_root.replace("/", "\\"), "[PROJECT_ROOT]")
 
     # Apply general path patterns
     for pattern, replacement in PATH_PATTERNS:
@@ -137,15 +137,10 @@ def anonymize_project_names(text: str, project_names: Set[str]) -> str:
         if len(name) > 2:  # Only replace meaningful names
             # Create a consistent hash for this project name
             hash_id = generate_hash(name)
-            placeholder = f'[PROJECT_{hash_id}]'
+            placeholder = f"[PROJECT_{hash_id}]"
 
             # Replace case-insensitively
-            result = re.sub(
-                rf'\b{re.escape(name)}\b',
-                placeholder,
-                result,
-                flags=re.IGNORECASE
-            )
+            result = re.sub(rf"\b{re.escape(name)}\b", placeholder, result, flags=re.IGNORECASE)
 
     return result
 
@@ -162,38 +157,38 @@ def extract_project_context(project_root: str) -> Dict[str, Any]:
     import json
 
     context = {
-        'project_names': set(),
-        'custom_paths': set(),
+        "project_names": set(),
+        "custom_paths": set(),
     }
 
     # Get project name from package.json
-    package_json = os.path.join(project_root, 'package.json')
+    package_json = os.path.join(project_root, "package.json")
     if os.path.isfile(package_json):
         try:
-            with open(package_json, 'r', encoding='utf-8') as f:
+            with open(package_json, "r", encoding="utf-8") as f:
                 pkg = json.load(f)
-                if 'name' in pkg:
-                    context['project_names'].add(pkg['name'])
-                if 'author' in pkg:
-                    if isinstance(pkg['author'], str):
-                        context['project_names'].add(pkg['author'].split('<')[0].strip())
+                if "name" in pkg:
+                    context["project_names"].add(pkg["name"])
+                if "author" in pkg:
+                    if isinstance(pkg["author"], str):
+                        context["project_names"].add(pkg["author"].split("<")[0].strip())
         except (json.JSONDecodeError, IOError):
             pass
 
     # Get project name from pyproject.toml
-    pyproject = os.path.join(project_root, 'pyproject.toml')
+    pyproject = os.path.join(project_root, "pyproject.toml")
     if os.path.isfile(pyproject):
         try:
-            with open(pyproject, 'r', encoding='utf-8') as f:
+            with open(pyproject, "r", encoding="utf-8") as f:
                 content = f.read()
                 match = re.search(r'name\s*=\s*["\']([^"\']+)["\']', content)
                 if match:
-                    context['project_names'].add(match.group(1))
+                    context["project_names"].add(match.group(1))
         except IOError:
             pass
 
     # Add directory name
-    context['project_names'].add(os.path.basename(project_root))
+    context["project_names"].add(os.path.basename(project_root))
 
     return context
 
@@ -201,7 +196,7 @@ def extract_project_context(project_root: str) -> Dict[str, Any]:
 def anonymize_pattern(
     pattern: Dict[str, Any],
     project_root: Optional[str] = None,
-    extra_names: Optional[Set[str]] = None
+    extra_names: Optional[Set[str]] = None,
 ) -> Dict[str, Any]:
     """Fully anonymize a pattern for sharing.
 
@@ -219,10 +214,10 @@ def anonymize_pattern(
     project_names = extra_names or set()
     if project_root:
         context = extract_project_context(project_root)
-        project_names.update(context['project_names'])
+        project_names.update(context["project_names"])
 
     # Process each string field
-    string_fields = ['content', 'description', 'solution', 'error_message', 'command']
+    string_fields = ["content", "description", "solution", "error_message", "command"]
 
     for field in string_fields:
         if field in result and isinstance(result[field], str):
@@ -241,8 +236,13 @@ def anonymize_pattern(
 
     # Remove potentially identifying metadata
     fields_to_remove = [
-        'user_id', 'email', 'author', 'project_path',
-        'machine_id', 'hostname', 'username'
+        "user_id",
+        "email",
+        "author",
+        "project_path",
+        "machine_id",
+        "hostname",
+        "username",
     ]
 
     for field in fields_to_remove:
@@ -250,10 +250,13 @@ def anonymize_pattern(
             del result[field]
 
     # Add anonymization metadata
-    result['_anonymized'] = True
-    result['_anonymized_at'] = __import__('datetime').datetime.now(
-        __import__('datetime').timezone.utc
-    ).isoformat().replace('+00:00', 'Z')
+    result["_anonymized"] = True
+    result["_anonymized_at"] = (
+        __import__("datetime")
+        .datetime.now(__import__("datetime").timezone.utc)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
 
     return result
 
@@ -267,33 +270,27 @@ def validate_anonymization(pattern: Dict[str, Any]) -> Dict[str, List[str]]:
     Returns:
         Dict with 'warnings' and 'errors' lists
     """
-    issues = {
-        'warnings': [],
-        'errors': []
-    }
+    issues = {"warnings": [], "errors": []}
 
     # Check for remaining sensitive patterns
-    string_content = ' '.join(
-        str(v) for v in pattern.values()
-        if isinstance(v, str)
-    )
+    string_content = " ".join(str(v) for v in pattern.values() if isinstance(v, str))
 
     # Check for emails
-    if re.search(r'[\w\.-]+@[\w\.-]+\.\w+', string_content):
-        issues['errors'].append('Email address found in pattern')
+    if re.search(r"[\w\.-]+@[\w\.-]+\.\w+", string_content):
+        issues["errors"].append("Email address found in pattern")
 
     # Check for API keys
-    if re.search(r'(?i)(sk[-_]|pk[-_])[a-zA-Z0-9]{20,}', string_content):
-        issues['errors'].append('API key pattern found')
+    if re.search(r"(?i)(sk[-_]|pk[-_])[a-zA-Z0-9]{20,}", string_content):
+        issues["errors"].append("API key pattern found")
 
     # Check for absolute paths
-    if re.search(r'(?:C:\\Users\\[^\\]+|/Users/[^/]+|/home/[^/]+)', string_content):
-        if '[USER]' not in string_content:
-            issues['warnings'].append('User-specific path may remain')
+    if re.search(r"(?:C:\\Users\\[^\\]+|/Users/[^/]+|/home/[^/]+)", string_content):
+        if "[USER]" not in string_content:
+            issues["warnings"].append("User-specific path may remain")
 
     # Check for IP addresses
-    if re.search(r'\b(?:\d{1,3}\.){3}\d{1,3}\b', string_content):
-        issues['warnings'].append('IP address found - may be intentional')
+    if re.search(r"\b(?:\d{1,3}\.){3}\d{1,3}\b", string_content):
+        issues["warnings"].append("IP address found - may be intentional")
 
     return issues
 
@@ -303,7 +300,7 @@ def create_shareable_pattern(
     content: str,
     solution: str,
     project_root: Optional[str] = None,
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Create a new shareable pattern with proper anonymization.
 
@@ -321,16 +318,16 @@ def create_shareable_pattern(
     import uuid
 
     pattern = {
-        'id': str(uuid.uuid4()),
-        'type': pattern_type,
-        'content': content,
-        'solution': solution,
-        'created_at': datetime.datetime.now(
-            datetime.timezone.utc
-        ).isoformat().replace('+00:00', 'Z'),
-        'share_level': 'community',  # Default to community
-        'quality_score': None,  # To be set by cloud
-        'votes': 0,
+        "id": str(uuid.uuid4()),
+        "type": pattern_type,
+        "content": content,
+        "solution": solution,
+        "created_at": datetime.datetime.now(datetime.timezone.utc)
+        .isoformat()
+        .replace("+00:00", "Z"),
+        "share_level": "community",  # Default to community
+        "quality_score": None,  # To be set by cloud
+        "votes": 0,
     }
 
     # Add metadata if provided
@@ -344,8 +341,7 @@ def create_shareable_pattern(
 
 
 def prepare_batch_for_sharing(
-    patterns: List[Dict[str, Any]],
-    project_root: Optional[str] = None
+    patterns: List[Dict[str, Any]], project_root: Optional[str] = None
 ) -> List[Dict[str, Any]]:
     """Prepare a batch of patterns for sharing.
 
@@ -364,7 +360,7 @@ def prepare_batch_for_sharing(
         # Validate anonymization
         issues = validate_anonymization(anonymized)
 
-        if not issues['errors']:
+        if not issues["errors"]:
             result.append(anonymized)
         # Skip patterns with errors
 
@@ -376,8 +372,8 @@ def prepare_batch_for_sharing(
 # =============================================================================
 
 if __name__ == "__main__":
-    import sys
     import json
+    import sys
 
     if len(sys.argv) < 2:
         print("Usage: pattern_anonymizer.py <command> [args]")
@@ -389,11 +385,11 @@ if __name__ == "__main__":
     if command == "test":
         # Test with sample data
         test_pattern = {
-            'type': 'command',
-            'content': 'User tried: npm install in C:\\Users\\John\\projects\\my-secret-app',
-            'solution': 'Use: npm ci for clean installs',
-            'email': 'john@example.com',
-            'api_key': 'sk-12345678901234567890123456789012'
+            "type": "command",
+            "content": "User tried: npm install in C:\\Users\\John\\projects\\my-secret-app",
+            "solution": "Use: npm ci for clean installs",
+            "email": "john@example.com",
+            "api_key": "sk-12345678901234567890123456789012",
         }
 
         print("Original:")

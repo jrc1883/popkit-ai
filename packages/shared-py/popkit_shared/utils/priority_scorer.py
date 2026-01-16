@@ -12,26 +12,28 @@ Calculates combined priority scores for GitHub issues using:
 - Epic association (child issues of epics)
 """
 
-import subprocess
 import json
-from datetime import datetime, timedelta
+import subprocess
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Any, Tuple
+from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
 
 class LabelPriority(Enum):
     """Priority levels from labels"""
-    CRITICAL = 100    # critical, blocker, P0
-    HIGH = 75         # high-priority, P1, important
-    MEDIUM = 50       # enhancement, P2 (default)
-    LOW = 25          # low-priority, P3, nice-to-have
+
+    CRITICAL = 100  # critical, blocker, P0
+    HIGH = 75  # high-priority, P1, important
+    MEDIUM = 50  # enhancement, P2 (default)
+    LOW = 25  # low-priority, P3, nice-to-have
     NONE = 0
 
 
 @dataclass
 class ScoredIssue:
     """An issue with calculated priority score"""
+
     number: int
     title: str
     labels: List[str]
@@ -57,18 +59,18 @@ class ScoredIssue:
 
     def to_dict(self) -> dict:
         return {
-            'number': self.number,
-            'title': self.title,
-            'labels': self.labels,
-            'state': self.state,
-            'priority_score': round(self.priority_score, 2),
-            'components': {
-                'votes': self.vote_score,
-                'staleness': round(self.staleness_score, 2),
-                'labels': round(self.label_score, 2),
-                'epic': round(self.epic_score, 2)
+            "number": self.number,
+            "title": self.title,
+            "labels": self.labels,
+            "state": self.state,
+            "priority_score": round(self.priority_score, 2),
+            "components": {
+                "votes": self.vote_score,
+                "staleness": round(self.staleness_score, 2),
+                "labels": round(self.label_score, 2),
+                "epic": round(self.epic_score, 2),
             },
-            'vote_breakdown': self.vote_breakdown
+            "vote_breakdown": self.vote_breakdown,
         }
 
 
@@ -82,47 +84,40 @@ class PriorityScorer:
 
     # Default weights (should sum to ~1.0 for normalization)
     DEFAULT_WEIGHTS = {
-        'votes': 0.35,      # Community interest
-        'staleness': 0.20,  # How long waiting
-        'labels': 0.30,     # Explicit priority
-        'epic': 0.15        # Part of epic
+        "votes": 0.35,  # Community interest
+        "staleness": 0.20,  # How long waiting
+        "labels": 0.30,  # Explicit priority
+        "epic": 0.15,  # Part of epic
     }
 
     # Label priority mappings
     LABEL_PRIORITIES = {
         # Critical (100)
-        'critical': LabelPriority.CRITICAL,
-        'blocker': LabelPriority.CRITICAL,
-        'p0': LabelPriority.CRITICAL,
-        'urgent': LabelPriority.CRITICAL,
-
+        "critical": LabelPriority.CRITICAL,
+        "blocker": LabelPriority.CRITICAL,
+        "p0": LabelPriority.CRITICAL,
+        "urgent": LabelPriority.CRITICAL,
         # High (75)
-        'high-priority': LabelPriority.HIGH,
-        'high': LabelPriority.HIGH,
-        'p1': LabelPriority.HIGH,
-        'important': LabelPriority.HIGH,
-
+        "high-priority": LabelPriority.HIGH,
+        "high": LabelPriority.HIGH,
+        "p1": LabelPriority.HIGH,
+        "important": LabelPriority.HIGH,
         # Medium (50) - default for enhancement
-        'enhancement': LabelPriority.MEDIUM,
-        'feature': LabelPriority.MEDIUM,
-        'p2': LabelPriority.MEDIUM,
-
+        "enhancement": LabelPriority.MEDIUM,
+        "feature": LabelPriority.MEDIUM,
+        "p2": LabelPriority.MEDIUM,
         # Low (25)
-        'low-priority': LabelPriority.LOW,
-        'low': LabelPriority.LOW,
-        'p3': LabelPriority.LOW,
-        'nice-to-have': LabelPriority.LOW,
-        'wontfix': LabelPriority.NONE,
+        "low-priority": LabelPriority.LOW,
+        "low": LabelPriority.LOW,
+        "p3": LabelPriority.LOW,
+        "nice-to-have": LabelPriority.LOW,
+        "wontfix": LabelPriority.NONE,
     }
 
     # Epic labels
-    EPIC_LABELS = {'epic', 'meta', 'umbrella', 'parent'}
+    EPIC_LABELS = {"epic", "meta", "umbrella", "parent"}
 
-    def __init__(
-        self,
-        weights: Optional[Dict[str, float]] = None,
-        vote_fetcher=None
-    ):
+    def __init__(self, weights: Optional[Dict[str, float]] = None, vote_fetcher=None):
         """
         Initialize the priority scorer.
 
@@ -138,6 +133,7 @@ class PriorityScorer:
         """Lazy-load vote fetcher"""
         if self._vote_fetcher is None:
             from vote_fetcher import get_vote_fetcher
+
             self._vote_fetcher = get_vote_fetcher()
         return self._vote_fetcher
 
@@ -155,8 +151,8 @@ class PriorityScorer:
         now = datetime.now()
 
         try:
-            created = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
-            updated = datetime.fromisoformat(updated_at.replace('Z', '+00:00'))
+            created = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+            updated = datetime.fromisoformat(updated_at.replace("Z", "+00:00"))
         except (ValueError, AttributeError):
             return 50.0  # Default middle score
 
@@ -214,7 +210,7 @@ class PriorityScorer:
 
         # If no priority label found, default to medium for enhancements
         if max_priority == LabelPriority.NONE:
-            if any('bug' in l.lower() for l in labels):
+            if any("bug" in l.lower() for l in labels):
                 return LabelPriority.HIGH.value  # Bugs are high priority
             return LabelPriority.MEDIUM.value
 
@@ -243,10 +239,7 @@ class PriorityScorer:
         return 0.0
 
     def score_issue(
-        self,
-        issue: Dict[str, Any],
-        vote_result=None,
-        parent_epic: Optional[int] = None
+        self, issue: Dict[str, Any], vote_result=None, parent_epic: Optional[int] = None
     ) -> ScoredIssue:
         """
         Calculate complete priority score for an issue.
@@ -259,13 +252,12 @@ class PriorityScorer:
         Returns:
             ScoredIssue with all scores calculated
         """
-        number = issue.get('number', 0)
-        title = issue.get('title', '')
-        labels = [l.get('name', l) if isinstance(l, dict) else l
-                  for l in issue.get('labels', [])]
-        state = issue.get('state', 'open')
-        created_at = issue.get('createdAt', issue.get('created_at', ''))
-        updated_at = issue.get('updatedAt', issue.get('updated_at', created_at))
+        number = issue.get("number", 0)
+        title = issue.get("title", "")
+        labels = [l.get("name", l) if isinstance(l, dict) else l for l in issue.get("labels", [])]
+        state = issue.get("state", "open")
+        created_at = issue.get("createdAt", issue.get("created_at", ""))
+        updated_at = issue.get("updatedAt", issue.get("updated_at", created_at))
 
         # Get vote score
         if vote_result:
@@ -290,10 +282,10 @@ class PriorityScorer:
 
         # Calculate weighted final score
         priority_score = (
-            self.weights['votes'] * normalized_vote +
-            self.weights['staleness'] * staleness_score +
-            self.weights['labels'] * label_score +
-            self.weights['epic'] * epic_score
+            self.weights["votes"] * normalized_vote
+            + self.weights["staleness"] * staleness_score
+            + self.weights["labels"] * label_score
+            + self.weights["epic"] * epic_score
         )
 
         return ScoredIssue(
@@ -308,14 +300,14 @@ class PriorityScorer:
             label_score=label_score,
             epic_score=epic_score,
             priority_score=priority_score,
-            vote_breakdown=vote_breakdown
+            vote_breakdown=vote_breakdown,
         )
 
     def rank_issues(
         self,
         issues: List[Dict[str, Any]],
         vote_results: Optional[Dict[int, Any]] = None,
-        epic_map: Optional[Dict[int, int]] = None
+        epic_map: Optional[Dict[int, int]] = None,
     ) -> List[ScoredIssue]:
         """
         Rank a list of issues by priority score.
@@ -333,7 +325,7 @@ class PriorityScorer:
 
         scored = []
         for issue in issues:
-            number = issue.get('number', 0)
+            number = issue.get("number", 0)
             vote_result = vote_results.get(number)
             parent_epic = epic_map.get(number)
 
@@ -344,10 +336,7 @@ class PriorityScorer:
         return sorted(scored, key=lambda x: -x.priority_score)
 
     def format_ranked_list(
-        self,
-        scored_issues: List[ScoredIssue],
-        show_components: bool = False,
-        max_items: int = 10
+        self, scored_issues: List[ScoredIssue], show_components: bool = False, max_items: int = 10
     ) -> str:
         """
         Format ranked issues for display.
@@ -365,16 +354,16 @@ class PriorityScorer:
         for i, issue in enumerate(scored_issues[:max_items], 1):
             # Vote display
             vote_parts = []
-            if issue.vote_breakdown.get('+1', 0):
+            if issue.vote_breakdown.get("+1", 0):
                 vote_parts.append(f"👍{issue.vote_breakdown['+1']}")
-            if issue.vote_breakdown.get('heart', 0):
+            if issue.vote_breakdown.get("heart", 0):
                 vote_parts.append(f"❤️{issue.vote_breakdown['heart']}")
-            if issue.vote_breakdown.get('rocket', 0):
+            if issue.vote_breakdown.get("rocket", 0):
                 vote_parts.append(f"🚀{issue.vote_breakdown['rocket']}")
-            vote_str = ' '.join(vote_parts) if vote_parts else ''
+            vote_str = " ".join(vote_parts) if vote_parts else ""
 
             # Main line
-            title_truncated = issue.title[:40] + ('...' if len(issue.title) > 40 else '')
+            title_truncated = issue.title[:40] + ("..." if len(issue.title) > 40 else "")
             line = f"#{issue.number} {title_truncated}"
             if vote_str:
                 line += f"  {vote_str}"
@@ -384,10 +373,12 @@ class PriorityScorer:
 
             # Component breakdown
             if show_components:
-                lines.append(f"   Votes: {issue.vote_score} | Staleness: {issue.staleness_score:.0f} | "
-                           f"Labels: {issue.label_score:.0f} | Epic: {issue.epic_score:.0f}")
+                lines.append(
+                    f"   Votes: {issue.vote_score} | Staleness: {issue.staleness_score:.0f} | "
+                    f"Labels: {issue.label_score:.0f} | Epic: {issue.epic_score:.0f}"
+                )
 
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
 
 # Singleton instance
@@ -406,11 +397,20 @@ def fetch_open_issues(limit: int = 20) -> List[Dict]:
     """Fetch open issues from current repository using gh CLI"""
     try:
         result = subprocess.run(
-            ['gh', 'issue', 'list', '--limit', str(limit), '--state', 'open',
-             '--json', 'number,title,labels,state,createdAt,updatedAt'],
+            [
+                "gh",
+                "issue",
+                "list",
+                "--limit",
+                str(limit),
+                "--state",
+                "open",
+                "--json",
+                "number,title,labels,state,createdAt,updatedAt",
+            ],
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=30,
         )
         if result.returncode == 0:
             return json.loads(result.stdout)

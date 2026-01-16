@@ -58,28 +58,28 @@ Analyzes task and feature complexity using multiple factors to provide 1-10 scor
 
 ## Complexity Scoring (1-10)
 
-| Score | Level | Description | Example |
-|-------|-------|-------------|---------|
-| 1-2 | Trivial | Single file, minimal changes | Fix typo, update constant |
-| 3-4 | Simple | Few files, straightforward logic | Add button, update styling |
-| 5-6 | Moderate | Multiple files, some complexity | Add form validation, API endpoint |
-| 7-8 | Complex | Architecture changes, high impact | Refactor module, add auth system |
-| 9-10 | Very Complex | System-wide changes, high risk | Migrate architecture, redesign core |
+| Score | Level        | Description                       | Example                             |
+| ----- | ------------ | --------------------------------- | ----------------------------------- |
+| 1-2   | Trivial      | Single file, minimal changes      | Fix typo, update constant           |
+| 3-4   | Simple       | Few files, straightforward logic  | Add button, update styling          |
+| 5-6   | Moderate     | Multiple files, some complexity   | Add form validation, API endpoint   |
+| 7-8   | Complex      | Architecture changes, high impact | Refactor module, add auth system    |
+| 9-10  | Very Complex | System-wide changes, high risk    | Migrate architecture, redesign core |
 
 ## Complexity Factors
 
 The analyzer evaluates 8 factors with configurable weights:
 
-| Factor | Weight | Description |
-|--------|--------|-------------|
-| Files Affected | 15% | Number of files that need changes |
-| LOC Estimate | 15% | Estimated lines of code |
-| Dependencies | 15% | External/internal dependencies |
-| Architecture Change | 20% | Impact on system architecture |
-| Breaking Changes | 15% | Compatibility impact |
-| Testing Complexity | 10% | Testing requirements |
-| Security Impact | 5% | Security considerations |
-| Integration Points | 5% | External integrations |
+| Factor              | Weight | Description                       |
+| ------------------- | ------ | --------------------------------- |
+| Files Affected      | 15%    | Number of files that need changes |
+| LOC Estimate        | 15%    | Estimated lines of code           |
+| Dependencies        | 15%    | External/internal dependencies    |
+| Architecture Change | 20%    | Impact on system architecture     |
+| Breaking Changes    | 15%    | Compatibility impact              |
+| Testing Complexity  | 10%    | Testing requirements              |
+| Security Impact     | 5%     | Security considerations           |
+| Integration Points  | 5%     | External integrations             |
 
 ## Usage Patterns
 
@@ -171,10 +171,7 @@ The analyzer produces structured JSON output:
     "review": 1,
     "integration": 1
   },
-  "risk_factors": [
-    "architecture_impact",
-    "security_critical"
-  ],
+  "risk_factors": ["architecture_impact", "security_critical"],
   "reasoning": "Complexity Score: 7/10 (Architecture changes, high impact). Primary factors: architecture changes required, external dependencies, security considerations. This is a complex task requiring architectural consideration.",
   "factors": {
     "files_affected": 60.0,
@@ -194,11 +191,7 @@ The analyzer produces structured JSON output:
     "review": 6000,
     "total": 68000
   },
-  "suggested_agents": [
-    "code-architect",
-    "refactoring-expert",
-    "security-auditor"
-  ]
+  "suggested_agents": ["code-architect", "refactoring-expert", "security-auditor"]
 }
 ```
 
@@ -274,34 +267,38 @@ conflicts.sort(key=lambda c: c.priority, reverse=True)
 
 Based on complexity score, the analyzer suggests subtask counts:
 
-| Complexity | Subtasks | Strategy |
-|------------|----------|----------|
-| 1-2 | 1 | Single task |
-| 3-4 | 2-3 | Simple breakdown |
-| 5-6 | 3-5 | Moderate breakdown |
-| 7-8 | 5-7 | Detailed breakdown |
-| 9-10 | 8-12 | Extensive breakdown |
+| Complexity | Subtasks | Strategy            |
+| ---------- | -------- | ------------------- |
+| 1-2        | 1        | Single task         |
+| 3-4        | 2-3      | Simple breakdown    |
+| 5-6        | 3-5      | Moderate breakdown  |
+| 7-8        | 5-7      | Detailed breakdown  |
+| 9-10       | 8-12     | Extensive breakdown |
 
 ## Phase Distribution
 
 The analyzer recommends phase distribution for task planning:
 
 **Trivial (1-2):**
+
 - Implementation: 1
 - Testing: 1
 
 **Simple (3-4):**
+
 - Planning: 1
 - Implementation: 2
 - Testing: 1
 
 **Moderate (5-6):**
+
 - Planning: 1
 - Implementation: 3
 - Testing: 2
 - Review: 1
 
 **Complex (7-8):**
+
 - Discovery: 1
 - Planning: 2
 - Implementation: 4
@@ -310,6 +307,7 @@ The analyzer recommends phase distribution for task planning:
 - Integration: 1
 
 **Very Complex (9-10):**
+
 - Discovery: 2
 - Architecture: 2
 - Planning: 3
@@ -323,37 +321,37 @@ The analyzer recommends phase distribution for task planning:
 
 The analyzer identifies potential risks:
 
-| Risk Factor | Trigger | Impact |
-|-------------|---------|--------|
-| breaking_changes | Breaking change keywords | Compatibility issues |
-| security_critical | Auth/security keywords | Security review needed |
-| architecture_impact | Architecture keywords | Design review required |
-| integration_complexity | Integration keywords | External coordination |
-| performance_sensitive | Performance keywords | Performance testing |
-| data_migration | Migration keywords | Data safety concerns |
+| Risk Factor            | Trigger                  | Impact                 |
+| ---------------------- | ------------------------ | ---------------------- |
+| breaking_changes       | Breaking change keywords | Compatibility issues   |
+| security_critical      | Auth/security keywords   | Security review needed |
+| architecture_impact    | Architecture keywords    | Design review required |
+| integration_complexity | Integration keywords     | External coordination  |
+| performance_sensitive  | Performance keywords     | Performance testing    |
+| data_migration         | Migration keywords       | Data safety concerns   |
 
 ## Token Estimation
 
 The analyzer estimates token usage for planning:
 
 | Complexity | Total Tokens | Planning | Implementation | Testing |
-|------------|--------------|----------|----------------|---------|
-| 1-2 | 7,000 | 2,000 | 5,000 | - |
-| 3-4 | 17,000 | 4,000 | 10,000 | 3,000 |
-| 5-6 | 38,000 | 8,000 | 20,000 | 6,000 |
-| 7-8 | 68,000 | 12,000 | 35,000 | 10,000 |
-| 9-10 | 135,000 | 20,000 | 60,000 | 20,000 |
+| ---------- | ------------ | -------- | -------------- | ------- |
+| 1-2        | 7,000        | 2,000    | 5,000          | -       |
+| 3-4        | 17,000       | 4,000    | 10,000         | 3,000   |
+| 5-6        | 38,000       | 8,000    | 20,000         | 6,000   |
+| 7-8        | 68,000       | 12,000   | 35,000         | 10,000  |
+| 9-10       | 135,000      | 20,000   | 60,000         | 20,000  |
 
 ## Agent Recommendations
 
 Based on complexity, appropriate agents are suggested:
 
-| Complexity | Suggested Agents |
-|------------|------------------|
-| 1-3 | rapid-prototyper, code-explorer |
-| 4-6 | refactoring-expert, code-explorer, test-writer |
-| 7-8 | code-architect, refactoring-expert, security-auditor |
-| 9-10 | code-architect, system-designer, tech-lead, security-auditor |
+| Complexity | Suggested Agents                                             |
+| ---------- | ------------------------------------------------------------ |
+| 1-3        | rapid-prototyper, code-explorer                              |
+| 4-6        | refactoring-expert, code-explorer, test-writer               |
+| 7-8        | code-architect, refactoring-expert, security-auditor         |
+| 9-10       | code-architect, system-designer, tech-lead, security-auditor |
 
 ## Keyword Detection
 

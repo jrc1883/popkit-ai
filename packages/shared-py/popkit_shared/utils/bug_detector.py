@@ -9,10 +9,9 @@ context, and matches against known solutions from collective learning.
 """
 
 import re
-from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field
 from pathlib import Path
-
+from typing import Any, Dict, List, Optional
 
 # =============================================================================
 # DETECTION PATTERNS
@@ -55,9 +54,9 @@ ERROR_PATTERNS = [
 
 # Behavioral patterns (stuck signals)
 STUCK_BEHAVIOR = {
-    "same_file_edits": 3,      # Same file edited N+ times
-    "same_command_runs": 3,    # Same command run N+ times
-    "no_progress_tools": 10,   # N tool calls with no progress
+    "same_file_edits": 3,  # Same file edited N+ times
+    "same_command_runs": 3,  # Same command run N+ times
+    "no_progress_tools": 10,  # N tool calls with no progress
 }
 
 
@@ -65,22 +64,25 @@ STUCK_BEHAVIOR = {
 # DATA CLASSES
 # =============================================================================
 
+
 @dataclass
 class DetectedBug:
     """Represents a detected bug."""
-    detection_type: str           # "error" or "stuck"
-    error_type: Optional[str]     # Specific error type
+
+    detection_type: str  # "error" or "stuck"
+    error_type: Optional[str]  # Specific error type
     error_message: Optional[str]  # Error message
     stuck_pattern: Optional[str]  # Stuck pattern description
-    confidence: float             # 0.0 to 1.0
-    context: Dict[str, Any]       # Additional context
-    tool_name: Optional[str]      # Tool that triggered detection
+    confidence: float  # 0.0 to 1.0
+    context: Dict[str, Any]  # Additional context
+    tool_name: Optional[str]  # Tool that triggered detection
     suggestions: List[str] = field(default_factory=list)
 
 
 @dataclass
 class DetectionResult:
     """Result of bug detection."""
+
     detected: bool
     bugs: List[DetectedBug]
     matched_patterns: List[Dict[str, Any]]  # From collective
@@ -90,6 +92,7 @@ class DetectionResult:
 # =============================================================================
 # BUG DETECTOR
 # =============================================================================
+
 
 class BugDetector:
     """
@@ -115,7 +118,7 @@ class BugDetector:
         tool_name: str,
         tool_input: Dict[str, Any],
         tool_output: str,
-        history: Optional[List[Dict[str, Any]]] = None
+        history: Optional[List[Dict[str, Any]]] = None,
     ) -> DetectionResult:
         """
         Detect bugs from tool call.
@@ -135,11 +138,13 @@ class BugDetector:
         # Update history
         if history is not None:
             self.history = history
-        self.history.append({
-            "tool_name": tool_name,
-            "tool_input": tool_input,
-            "tool_output": tool_output[:500] if tool_output else ""
-        })
+        self.history.append(
+            {
+                "tool_name": tool_name,
+                "tool_input": tool_input,
+                "tool_output": tool_output[:500] if tool_output else "",
+            }
+        )
 
         # 1. Check for error patterns in output
         error_bugs = self._detect_errors(tool_name, tool_output)
@@ -161,17 +166,10 @@ class BugDetector:
             bug.suggestions = self._generate_suggestions(bug)
 
         return DetectionResult(
-            detected=len(bugs) > 0,
-            bugs=bugs,
-            matched_patterns=matched_patterns,
-            action=action
+            detected=len(bugs) > 0, bugs=bugs, matched_patterns=matched_patterns, action=action
         )
 
-    def _detect_errors(
-        self,
-        tool_name: str,
-        tool_output: str
-    ) -> List[DetectedBug]:
+    def _detect_errors(self, tool_name: str, tool_output: str) -> List[DetectedBug]:
         """Detect errors in tool output."""
         bugs = []
 
@@ -192,23 +190,23 @@ class BugDetector:
                 # Determine confidence based on error type
                 confidence = self._calculate_error_confidence(error_type, tool_name)
 
-                bugs.append(DetectedBug(
-                    detection_type="error",
-                    error_type=error_type,
-                    error_message=error_line,
-                    stuck_pattern=None,
-                    confidence=confidence,
-                    context={"match": match.group()},
-                    tool_name=tool_name
-                ))
+                bugs.append(
+                    DetectedBug(
+                        detection_type="error",
+                        error_type=error_type,
+                        error_message=error_line,
+                        stuck_pattern=None,
+                        confidence=confidence,
+                        context={"match": match.group()},
+                        tool_name=tool_name,
+                    )
+                )
                 break  # Only detect one error per output
 
         return bugs
 
     def _detect_stuck_behavior(
-        self,
-        tool_name: str,
-        tool_input: Dict[str, Any]
+        self, tool_name: str, tool_input: Dict[str, Any]
     ) -> List[DetectedBug]:
         """Detect stuck behavioral patterns."""
         bugs = []
@@ -222,39 +220,45 @@ class BugDetector:
         if tool_name == "Edit":
             file_path = tool_input.get("file_path", "")
             edit_count = sum(
-                1 for h in recent
-                if h.get("tool_name") == "Edit" and
-                h.get("tool_input", {}).get("file_path") == file_path
+                1
+                for h in recent
+                if h.get("tool_name") == "Edit"
+                and h.get("tool_input", {}).get("file_path") == file_path
             )
             if edit_count >= STUCK_BEHAVIOR["same_file_edits"]:
-                bugs.append(DetectedBug(
-                    detection_type="stuck",
-                    error_type=None,
-                    error_message=None,
-                    stuck_pattern=f"Same file edited {edit_count} times: {Path(file_path).name}",
-                    confidence=min(0.5 + (edit_count - 3) * 0.1, 0.9),
-                    context={"file_path": file_path, "edit_count": edit_count},
-                    tool_name=tool_name
-                ))
+                bugs.append(
+                    DetectedBug(
+                        detection_type="stuck",
+                        error_type=None,
+                        error_message=None,
+                        stuck_pattern=f"Same file edited {edit_count} times: {Path(file_path).name}",
+                        confidence=min(0.5 + (edit_count - 3) * 0.1, 0.9),
+                        context={"file_path": file_path, "edit_count": edit_count},
+                        tool_name=tool_name,
+                    )
+                )
 
         # Same command run multiple times
         if tool_name == "Bash":
             command = tool_input.get("command", "")[:50]
             command_count = sum(
-                1 for h in recent
-                if h.get("tool_name") == "Bash" and
-                h.get("tool_input", {}).get("command", "")[:50] == command
+                1
+                for h in recent
+                if h.get("tool_name") == "Bash"
+                and h.get("tool_input", {}).get("command", "")[:50] == command
             )
             if command_count >= STUCK_BEHAVIOR["same_command_runs"]:
-                bugs.append(DetectedBug(
-                    detection_type="stuck",
-                    error_type=None,
-                    error_message=None,
-                    stuck_pattern=f"Same command run {command_count} times: {command}",
-                    confidence=min(0.4 + (command_count - 3) * 0.1, 0.8),
-                    context={"command": command, "count": command_count},
-                    tool_name=tool_name
-                ))
+                bugs.append(
+                    DetectedBug(
+                        detection_type="stuck",
+                        error_type=None,
+                        error_message=None,
+                        stuck_pattern=f"Same command run {command_count} times: {command}",
+                        confidence=min(0.4 + (command_count - 3) * 0.1, 0.8),
+                        context={"command": command, "count": command_count},
+                        tool_name=tool_name,
+                    )
+                )
 
         return bugs
 
@@ -299,11 +303,7 @@ class BugDetector:
             query = " ".join(query_parts[:2])
 
             # Search patterns
-            patterns = self.pattern_client.search_patterns(
-                query=query,
-                limit=3,
-                threshold=0.6
-            )
+            patterns = self.pattern_client.search_patterns(query=query, per_page=3, min_score=0.6)
 
             return [
                 {
@@ -311,7 +311,7 @@ class BugDetector:
                     "trigger": p.trigger,
                     "solution": p.solution,
                     "similarity": p.similarity,
-                    "quality_score": p.quality_score
+                    "quality_score": p.quality_score,
                 }
                 for p in patterns
             ]
@@ -320,9 +320,7 @@ class BugDetector:
             return []
 
     def _determine_action(
-        self,
-        bugs: List[DetectedBug],
-        matched_patterns: List[Dict[str, Any]]
+        self, bugs: List[DetectedBug], matched_patterns: List[Dict[str, Any]]
     ) -> str:
         """Determine recommended action based on detection."""
         if not bugs:
@@ -354,45 +352,59 @@ class BugDetector:
             error_type = bug.error_type or "Error"
 
             if error_type == "TypeError":
-                suggestions.extend([
-                    "Check for null/undefined values before accessing properties",
-                    "Verify the data type matches expected type",
-                ])
+                suggestions.extend(
+                    [
+                        "Check for null/undefined values before accessing properties",
+                        "Verify the data type matches expected type",
+                    ]
+                )
             elif error_type == "SyntaxError":
-                suggestions.extend([
-                    "Review recent code changes for syntax issues",
-                    "Check for missing brackets, quotes, or semicolons",
-                ])
+                suggestions.extend(
+                    [
+                        "Review recent code changes for syntax issues",
+                        "Check for missing brackets, quotes, or semicolons",
+                    ]
+                )
             elif error_type in ["ReferenceError", "NameError"]:
-                suggestions.extend([
-                    "Check if the variable/function is defined before use",
-                    "Verify import statements are correct",
-                ])
+                suggestions.extend(
+                    [
+                        "Check if the variable/function is defined before use",
+                        "Verify import statements are correct",
+                    ]
+                )
             elif error_type in ["ConnectionRefused", "Timeout"]:
-                suggestions.extend([
-                    "Check if the service is running",
-                    "Verify network connectivity and firewall rules",
-                ])
+                suggestions.extend(
+                    [
+                        "Check if the service is running",
+                        "Verify network connectivity and firewall rules",
+                    ]
+                )
             elif error_type == "FileNotFound":
-                suggestions.extend([
-                    "Verify the file path is correct",
-                    "Check if the file exists",
-                ])
+                suggestions.extend(
+                    [
+                        "Verify the file path is correct",
+                        "Check if the file exists",
+                    ]
+                )
             else:
                 suggestions.append("Review the error message for specific details")
 
         elif bug.detection_type == "stuck":
             if "Same file edited" in (bug.stuck_pattern or ""):
-                suggestions.extend([
-                    "Consider stepping back and reviewing the approach",
-                    "Check if there's a simpler solution",
-                    "The same file being edited multiple times may indicate confusion",
-                ])
+                suggestions.extend(
+                    [
+                        "Consider stepping back and reviewing the approach",
+                        "Check if there's a simpler solution",
+                        "The same file being edited multiple times may indicate confusion",
+                    ]
+                )
             elif "Same command run" in (bug.stuck_pattern or ""):
-                suggestions.extend([
-                    "Check if the command is producing the expected output",
-                    "Consider a different approach if the command keeps failing",
-                ])
+                suggestions.extend(
+                    [
+                        "Check if the command is producing the expected output",
+                        "Consider a different approach if the command keeps failing",
+                    ]
+                )
 
         return suggestions
 
@@ -401,15 +413,13 @@ class BugDetector:
 # FORMAT FUNCTIONS
 # =============================================================================
 
+
 def format_detection_result(result: DetectionResult) -> str:
     """Format detection result for display."""
     if not result.detected:
         return ""
 
-    lines = [
-        "Bug Detection Alert",
-        "=" * 40
-    ]
+    lines = ["Bug Detection Alert", "=" * 40]
 
     for bug in result.bugs:
         if bug.detection_type == "error":
@@ -440,6 +450,7 @@ def format_detection_result(result: DetectionResult) -> str:
 # CLI
 # =============================================================================
 
+
 def main():
     """CLI for testing bug detector."""
     print("Bug Detector Test")
@@ -452,7 +463,7 @@ def main():
     result = detector.detect(
         tool_name="Bash",
         tool_input={"command": "npm run build"},
-        tool_output="TypeError: Cannot read property 'token' of undefined\n  at handleAuth (auth.ts:45)"
+        tool_output="TypeError: Cannot read property 'token' of undefined\n  at handleAuth (auth.ts:45)",
     )
     print(f"  Detected: {result.detected}")
     if result.bugs:
@@ -466,7 +477,7 @@ def main():
         result = detector.detect(
             tool_name="Edit",
             tool_input={"file_path": "/src/auth/oauth.ts"},
-            tool_output="File edited"
+            tool_output="File edited",
         )
 
     print(f"  Detected: {result.detected}")

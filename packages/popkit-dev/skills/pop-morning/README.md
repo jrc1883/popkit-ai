@@ -19,14 +19,14 @@ python morning_workflow.py
 
 The morning routine calculates a comprehensive readiness score:
 
-| Dimension | Points | What It Checks |
-|-----------|--------|----------------|
-| Session Restored | 20 | Previous session context loaded from STATUS.json |
-| Services Healthy | 20 | All required dev services running |
-| Dependencies Updated | 15 | Package dependencies up to date |
-| Branches Synced | 15 | Local branch synced with remote |
-| PRs Reviewed | 15 | No PRs waiting for review |
-| Issues Triaged | 15 | All issues assigned/prioritized |
+| Dimension            | Points | What It Checks                                   |
+| -------------------- | ------ | ------------------------------------------------ |
+| Session Restored     | 20     | Previous session context loaded from STATUS.json |
+| Services Healthy     | 20     | All required dev services running                |
+| Dependencies Updated | 15     | Package dependencies up to date                  |
+| Branches Synced      | 15     | Local branch synced with remote                  |
+| PRs Reviewed         | 15     | No PRs waiting for review                        |
+| Issues Triaged       | 15     | All issues assigned/prioritized                  |
 
 **Total**: 100 points
 
@@ -43,14 +43,14 @@ The morning routine calculates a comprehensive readiness score:
 
 ## Score Breakdown
 
-| Check | Points | Status |
-|-------|--------|--------|
-| Session Restored | 20/20 | ✅ Previous session context restored |
-| Services Healthy | 10/20 | ⚠️ Missing: redis |
-| Dependencies Updated | 15/15 | ✅ All dependencies up to date |
-| Branches Synced | 10/15 | ⚠️ 3 commits behind remote |
-| PRs Reviewed | 15/15 | ✅ No PRs pending review |
-| Issues Triaged | 10/15 | ⚠️ 2 issues need triage |
+| Check                | Points | Status                               |
+| -------------------- | ------ | ------------------------------------ |
+| Session Restored     | 20/20  | ✅ Previous session context restored |
+| Services Healthy     | 10/20  | ⚠️ Missing: redis                    |
+| Dependencies Updated | 15/15  | ✅ All dependencies up to date       |
+| Branches Synced      | 10/15  | ⚠️ 3 commits behind remote           |
+| PRs Reviewed         | 15/15  | ✅ No PRs pending review             |
+| Issues Triaged       | 10/15  | ⚠️ 2 issues need triage              |
 
 ## 🔧 Dev Services Status
 
@@ -58,15 +58,18 @@ The morning routine calculates a comprehensive readiness score:
 **Running**: 1 services
 
 **Not Running:**
+
 - redis
 
 ## 📋 Recommendations
 
 **Before Starting Work:**
+
 - Start dev services: redis
 - Sync with remote: git pull (behind by 3 commits)
 
 **Today's Focus:**
+
 - Triage 2 open issues
 - Review overnight commits and CI results
 - Continue: Fix critical build blockers
@@ -94,6 +97,7 @@ python morning_workflow.py
 ```
 
 Shows complete morning report with:
+
 - Ready to Code Score breakdown
 - Service status details
 - Dependency update list
@@ -110,6 +114,7 @@ python morning_workflow.py --quick
 ```
 
 Shows one-line summary:
+
 - Ready to Code Score
 - Key issues (services down, commits behind, etc.)
 
@@ -120,6 +125,7 @@ python morning_workflow.py --measure
 ```
 
 Tracks and saves:
+
 - Tool call count
 - Execution duration
 - Token usage
@@ -134,6 +140,7 @@ python morning_workflow.py --optimized
 ```
 
 Uses caching for:
+
 - GitHub PR/issue data (15 min TTL)
 - Service status (5 min TTL)
 - Dependency checks (5 min TTL)
@@ -178,6 +185,7 @@ python -m unittest tests.test_ready_to_code_score.TestReadyToCodeScore.test_perf
 ```
 
 **Test Coverage**: 8 tests covering:
+
 - Perfect score scenario (100/100)
 - Worst score scenario (10/100)
 - Partial credit scenarios
@@ -239,6 +247,7 @@ The skill is invoked automatically via:
 ```
 
 This command:
+
 1. Invokes the `pop-morning` skill
 2. Runs the complete morning workflow
 3. Updates STATUS.json
@@ -257,12 +266,12 @@ Skill(skill="pop-morning")
 
 ### Baseline (Manual) vs. Automated
 
-| Metric | Manual | Automated | Improvement |
-|--------|--------|-----------|-------------|
-| Tool Calls | ~15 | ~5 | **67% reduction** |
-| Duration | ~90 sec | ~15-20 sec | **78-83% faster** |
-| User Actions | Multiple | Zero | **Full automation** |
-| Consistency | Variable | 100% | **Perfect reliability** |
+| Metric       | Manual   | Automated  | Improvement             |
+| ------------ | -------- | ---------- | ----------------------- |
+| Tool Calls   | ~15      | ~5         | **67% reduction**       |
+| Duration     | ~90 sec  | ~15-20 sec | **78-83% faster**       |
+| User Actions | Multiple | Zero       | **Full automation**     |
+| Consistency  | Variable | 100%       | **Perfect reliability** |
 
 ### Execution Breakdown
 
@@ -318,6 +327,7 @@ Total: 15-20 seconds
 ### Before Starting Work
 
 Based on score breakdown:
+
 - Start missing dev services
 - Sync with remote (if behind)
 - Update outdated dependencies (if 10+ outdated)
@@ -326,6 +336,7 @@ Based on score breakdown:
 ### Today's Focus
 
 Always includes:
+
 - Review pending PRs (if any)
 - Triage open issues (if any)
 - Review overnight commits and CI

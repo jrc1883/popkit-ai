@@ -9,22 +9,16 @@ providing cross-platform equivalents for common operations.
 """
 
 import re
-import shlex
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
 from enum import Enum
+from typing import Dict, List, Optional, Tuple
 
-from .platform_detector import (
-    PlatformDetector,
-    OSType,
-    ShellType,
-    PlatformInfo,
-    get_platform_info
-)
+from .platform_detector import PlatformInfo, ShellType, get_platform_info
 
 
 class CommandCategory(Enum):
     """Categories of commands"""
+
     FILE_COPY = "file_copy"
     FILE_MOVE = "file_move"
     FILE_DELETE = "file_delete"
@@ -42,6 +36,7 @@ class CommandCategory(Enum):
 @dataclass
 class CommandTranslation:
     """A translation result for a command"""
+
     original: str
     translated: str
     target_shell: ShellType
@@ -235,39 +230,39 @@ class CommandTranslator:
 
     # Regex patterns to identify commands
     COMMAND_PATTERNS = [
-        (r'^cp\s+-r\s+', CommandCategory.FILE_COPY, "cp -r"),
-        (r'^cp\s+', CommandCategory.FILE_COPY, "cp"),
-        (r'^xcopy\s+', CommandCategory.FILE_COPY, "xcopy"),
-        (r'^copy\s+', CommandCategory.FILE_COPY, "copy"),
-        (r'^Copy-Item\s+', CommandCategory.FILE_COPY, "Copy-Item"),
-        (r'^mv\s+', CommandCategory.FILE_MOVE, "mv"),
-        (r'^move\s+', CommandCategory.FILE_MOVE, "move"),
-        (r'^Move-Item\s+', CommandCategory.FILE_MOVE, "Move-Item"),
-        (r'^rm\s+-rf\s+', CommandCategory.FILE_DELETE, "rm -rf"),
-        (r'^rm\s+-r\s+', CommandCategory.FILE_DELETE, "rm -r"),
-        (r'^rm\s+', CommandCategory.FILE_DELETE, "rm"),
-        (r'^del\s+', CommandCategory.FILE_DELETE, "del"),
-        (r'^rmdir\s+', CommandCategory.DIR_DELETE, "rmdir"),
-        (r'^Remove-Item\s+', CommandCategory.FILE_DELETE, "Remove-Item"),
-        (r'^ls\s+-la\s*', CommandCategory.DIR_LIST, "ls -la"),
-        (r'^ls\s+-l\s*', CommandCategory.DIR_LIST, "ls -l"),
-        (r'^ls\s*', CommandCategory.DIR_LIST, "ls"),
-        (r'^dir\s*', CommandCategory.DIR_LIST, "dir"),
-        (r'^Get-ChildItem\s*', CommandCategory.DIR_LIST, "Get-ChildItem"),
-        (r'^cat\s+', CommandCategory.FILE_READ, "cat"),
-        (r'^type\s+', CommandCategory.FILE_READ, "type"),
-        (r'^Get-Content\s+', CommandCategory.FILE_READ, "Get-Content"),
-        (r'^head\s+', CommandCategory.FILE_READ, "head"),
-        (r'^tail\s+', CommandCategory.FILE_READ, "tail"),
-        (r'^mkdir\s+-p\s+', CommandCategory.DIR_CREATE, "mkdir -p"),
-        (r'^mkdir\s+', CommandCategory.DIR_CREATE, "mkdir"),
-        (r'^New-Item\s+', CommandCategory.DIR_CREATE, "New-Item"),
-        (r'^grep\s+-r\s+', CommandCategory.TEXT_SEARCH, "grep -r"),
-        (r'^grep\s+', CommandCategory.TEXT_SEARCH, "grep"),
-        (r'^findstr\s+', CommandCategory.TEXT_SEARCH, "findstr"),
-        (r'^Select-String\s+', CommandCategory.TEXT_SEARCH, "Select-String"),
-        (r'^find\s+\.\s+-name\s+', CommandCategory.FILE_FIND, "find . -name"),
-        (r'^find\s+', CommandCategory.FILE_FIND, "find"),
+        (r"^cp\s+-r\s+", CommandCategory.FILE_COPY, "cp -r"),
+        (r"^cp\s+", CommandCategory.FILE_COPY, "cp"),
+        (r"^xcopy\s+", CommandCategory.FILE_COPY, "xcopy"),
+        (r"^copy\s+", CommandCategory.FILE_COPY, "copy"),
+        (r"^Copy-Item\s+", CommandCategory.FILE_COPY, "Copy-Item"),
+        (r"^mv\s+", CommandCategory.FILE_MOVE, "mv"),
+        (r"^move\s+", CommandCategory.FILE_MOVE, "move"),
+        (r"^Move-Item\s+", CommandCategory.FILE_MOVE, "Move-Item"),
+        (r"^rm\s+-rf\s+", CommandCategory.FILE_DELETE, "rm -rf"),
+        (r"^rm\s+-r\s+", CommandCategory.FILE_DELETE, "rm -r"),
+        (r"^rm\s+", CommandCategory.FILE_DELETE, "rm"),
+        (r"^del\s+", CommandCategory.FILE_DELETE, "del"),
+        (r"^rmdir\s+", CommandCategory.DIR_DELETE, "rmdir"),
+        (r"^Remove-Item\s+", CommandCategory.FILE_DELETE, "Remove-Item"),
+        (r"^ls\s+-la\s*", CommandCategory.DIR_LIST, "ls -la"),
+        (r"^ls\s+-l\s*", CommandCategory.DIR_LIST, "ls -l"),
+        (r"^ls\s*", CommandCategory.DIR_LIST, "ls"),
+        (r"^dir\s*", CommandCategory.DIR_LIST, "dir"),
+        (r"^Get-ChildItem\s*", CommandCategory.DIR_LIST, "Get-ChildItem"),
+        (r"^cat\s+", CommandCategory.FILE_READ, "cat"),
+        (r"^type\s+", CommandCategory.FILE_READ, "type"),
+        (r"^Get-Content\s+", CommandCategory.FILE_READ, "Get-Content"),
+        (r"^head\s+", CommandCategory.FILE_READ, "head"),
+        (r"^tail\s+", CommandCategory.FILE_READ, "tail"),
+        (r"^mkdir\s+-p\s+", CommandCategory.DIR_CREATE, "mkdir -p"),
+        (r"^mkdir\s+", CommandCategory.DIR_CREATE, "mkdir"),
+        (r"^New-Item\s+", CommandCategory.DIR_CREATE, "New-Item"),
+        (r"^grep\s+-r\s+", CommandCategory.TEXT_SEARCH, "grep -r"),
+        (r"^grep\s+", CommandCategory.TEXT_SEARCH, "grep"),
+        (r"^findstr\s+", CommandCategory.TEXT_SEARCH, "findstr"),
+        (r"^Select-String\s+", CommandCategory.TEXT_SEARCH, "Select-String"),
+        (r"^find\s+\.\s+-name\s+", CommandCategory.FILE_FIND, "find . -name"),
+        (r"^find\s+", CommandCategory.FILE_FIND, "find"),
     ]
 
     @classmethod
@@ -287,7 +282,7 @@ class CommandTranslator:
             match = re.match(pattern, command, re.IGNORECASE)
             if match:
                 # Extract arguments after the matched command
-                args = command[match.end():].strip()
+                args = command[match.end() :].strip()
                 return category, base_cmd, args
 
         return CommandCategory.UNKNOWN, command.split()[0] if command else "", ""
@@ -297,7 +292,7 @@ class CommandTranslator:
         cls,
         command: str,
         target_shell: Optional[ShellType] = None,
-        source_shell: Optional[ShellType] = None
+        source_shell: Optional[ShellType] = None,
     ) -> CommandTranslation:
         """
         Translate a command to the target shell.
@@ -325,7 +320,7 @@ class CommandTranslator:
                 target_shell=target_shell,
                 category=category,
                 confidence=0.0,
-                notes="Unknown command - no translation available"
+                notes="Unknown command - no translation available",
             )
 
         # Look up translation
@@ -341,14 +336,13 @@ class CommandTranslator:
                 target_shell=target_shell,
                 category=category,
                 confidence=1.0 if cls._is_native_for_shell(base_cmd, target_shell) else 0.5,
-                notes="No translation needed" if cls._is_native_for_shell(base_cmd, target_shell)
-                      else "No translation available"
+                notes="No translation needed"
+                if cls._is_native_for_shell(base_cmd, target_shell)
+                else "No translation available",
             )
 
         # Build translated command with arguments
-        translated = cls._build_translated_command(
-            translation_template, args, target_shell
-        )
+        translated = cls._build_translated_command(translation_template, args, target_shell)
 
         return CommandTranslation(
             original=command,
@@ -356,20 +350,43 @@ class CommandTranslator:
             target_shell=target_shell,
             category=category,
             confidence=0.9,
-            requires_quoting=cls._needs_quoting(args, target_shell)
+            requires_quoting=cls._needs_quoting(args, target_shell),
         )
 
     @classmethod
     def _is_native_for_shell(cls, command: str, shell_type: ShellType) -> bool:
         """Check if a command is native to the given shell"""
-        unix_shells = {ShellType.BASH, ShellType.ZSH, ShellType.FISH,
-                      ShellType.SH, ShellType.GIT_BASH, ShellType.WSL}
+        unix_shells = {
+            ShellType.BASH,
+            ShellType.ZSH,
+            ShellType.FISH,
+            ShellType.SH,
+            ShellType.GIT_BASH,
+            ShellType.WSL,
+        }
         windows_shells = {ShellType.CMD, ShellType.POWERSHELL, ShellType.POWERSHELL_CORE}
 
         unix_commands = {"cp", "mv", "rm", "ls", "cat", "grep", "find", "mkdir", "head", "tail"}
-        cmd_commands = {"copy", "move", "del", "dir", "type", "findstr", "mkdir", "xcopy", "robocopy"}
-        ps_commands = {"Copy-Item", "Move-Item", "Remove-Item", "Get-ChildItem",
-                      "Get-Content", "Select-String", "New-Item"}
+        cmd_commands = {
+            "copy",
+            "move",
+            "del",
+            "dir",
+            "type",
+            "findstr",
+            "mkdir",
+            "xcopy",
+            "robocopy",
+        }
+        ps_commands = {
+            "Copy-Item",
+            "Move-Item",
+            "Remove-Item",
+            "Get-ChildItem",
+            "Get-Content",
+            "Select-String",
+            "New-Item",
+        }
 
         base = command.split()[0].lower()
 
@@ -384,12 +401,7 @@ class CommandTranslator:
         return False
 
     @classmethod
-    def _build_translated_command(
-        cls,
-        template: str,
-        args: str,
-        target_shell: ShellType
-    ) -> str:
+    def _build_translated_command(cls, template: str, args: str, target_shell: ShellType) -> str:
         """Build the translated command with arguments"""
         if not args:
             return template
@@ -408,41 +420,38 @@ class CommandTranslator:
             parts = args.split()
             translated_parts = []
             for part in parts:
-                if part.startswith('-') or part.startswith('/'):
+                if part.startswith("-") or part.startswith("/"):
                     # It's a flag, keep as-is
                     translated_parts.append(part)
-                elif '/' in part and not part.startswith('http'):
+                elif "/" in part and not part.startswith("http"):
                     # It's likely a path, convert
-                    translated_parts.append(part.replace('/', '\\'))
+                    translated_parts.append(part.replace("/", "\\"))
                 else:
                     translated_parts.append(part)
-            return ' '.join(translated_parts)
+            return " ".join(translated_parts)
         else:
             # Convert backslashes to forward slashes for Unix
             parts = args.split()
             translated_parts = []
             for part in parts:
-                if '\\' in part:
-                    translated_parts.append(part.replace('\\', '/'))
+                if "\\" in part:
+                    translated_parts.append(part.replace("\\", "/"))
                 else:
                     translated_parts.append(part)
-            return ' '.join(translated_parts)
+            return " ".join(translated_parts)
 
     @classmethod
     def _needs_quoting(cls, args: str, target_shell: ShellType) -> bool:
         """Check if arguments need quoting for the target shell"""
         # Check for spaces in paths
-        if ' ' in args:
+        if " " in args:
             return True
         # Check for special characters
-        special_chars = {'&', '|', '<', '>', '^', '%', '$', '!', '`'}
+        special_chars = {"&", "|", "<", ">", "^", "%", "$", "!", "`"}
         return any(c in args for c in special_chars)
 
     @classmethod
-    def get_all_translations(
-        cls,
-        command: str
-    ) -> Dict[ShellType, CommandTranslation]:
+    def get_all_translations(cls, command: str) -> Dict[ShellType, CommandTranslation]:
         """
         Get translations for all shell types.
 
@@ -460,10 +469,7 @@ class CommandTranslator:
 
     @classmethod
     def suggest_for_error(
-        cls,
-        command: str,
-        error_message: str,
-        platform_info: Optional[PlatformInfo] = None
+        cls, command: str, error_message: str, platform_info: Optional[PlatformInfo] = None
     ) -> Optional[CommandTranslation]:
         """
         Suggest a translation based on an error message.

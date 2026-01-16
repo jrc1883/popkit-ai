@@ -3,12 +3,13 @@ name: Bug Report
 about: Report something that isn't working correctly
 title: "[Bug] "
 labels: bug
-assignees: ''
+assignees: ""
 ---
 
 ## Priority & Phase
 
 <!-- Bugs typically are phase:now unless minor -->
+
 **Priority:** `P0-critical` | `P1-high` | `P2-medium` | `P3-low`
 **Phase:** `phase:now` | `phase:next` | `phase:future`
 **Milestone:** `v1.0.0` | `v2.0.0`
@@ -40,6 +41,7 @@ What actually happened.
 ## Component
 
 Which part of popkit is affected?
+
 - [ ] Skills (`pop:*`)
 - [ ] Agents
 - [ ] Commands (`/popkit:*`)
@@ -60,16 +62,20 @@ Paste any error messages here
 <!-- This section helps Claude Code debug and fix this issue -->
 
 ### Debugging Workflow
+
 - [ ] **Use Systematic Debugging** - Invoke `pop-systematic-debugging` skill
 - [ ] **Root Cause Tracing** - Invoke `pop-root-cause-tracing` skill
 - [ ] **Quick Fix** - Issue is straightforward, proceed directly
 
 ### Suggested Agents
+
 - Primary: `bug-whisperer`
 - Supporting: `test-writer-fixer`
 
 ### Investigation Areas
+
 <!-- Where to look for the root cause -->
+
 - [ ] Hook execution (`hooks/`)
 - [ ] Agent routing (`agents/config.json`)
 - [ ] Skill definition (`skills/`)
@@ -77,13 +83,16 @@ Paste any error messages here
 - [ ] Power Mode coordination (`power-mode/`)
 
 ### Quality Gates
+
 - [ ] Fix doesn't break existing tests
 - [ ] Regression test added
 - [ ] TypeScript check passes
 - [ ] Related functionality verified
 
 ### Rollback Plan
+
 <!-- If fix causes issues -->
+
 - Affected files:
 - Safe rollback: `git checkout <commit> -- <files>`
 

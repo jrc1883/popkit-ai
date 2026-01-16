@@ -9,14 +9,15 @@ Caches git status, test results, and other expensive operations.
 import hashlib
 import json
 import time
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 
 @dataclass
 class CacheEntry:
     """Single cache entry with TTL and hash."""
+
     key: str
     value: Any
     hash: str
@@ -32,7 +33,7 @@ class CacheEntry:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'CacheEntry':
+    def from_dict(cls, data: Dict[str, Any]) -> "CacheEntry":
         """Create from dictionary."""
         return cls(**data)
 
@@ -59,12 +60,9 @@ class RoutineCache:
         """Load cache from disk."""
         if self.cache_file.exists():
             try:
-                with open(self.cache_file, 'r') as f:
+                with open(self.cache_file, "r") as f:
                     data = json.load(f)
-                    self.cache = {
-                        k: CacheEntry.from_dict(v)
-                        for k, v in data.items()
-                    }
+                    self.cache = {k: CacheEntry.from_dict(v) for k, v in data.items()}
             except (json.JSONDecodeError, KeyError):
                 # Corrupted cache, start fresh
                 self.cache = {}
@@ -72,7 +70,7 @@ class RoutineCache:
     def _save(self) -> None:
         """Save cache to disk."""
         data = {k: v.to_dict() for k, v in self.cache.items()}
-        with open(self.cache_file, 'w') as f:
+        with open(self.cache_file, "w") as f:
             json.dump(data, f, indent=2)
 
     def _hash_value(self, value: Any) -> str:
@@ -131,13 +129,7 @@ class RoutineCache:
         """
         value_hash = self._hash_value(value)
 
-        entry = CacheEntry(
-            key=key,
-            value=value,
-            hash=value_hash,
-            timestamp=time.time(),
-            ttl=ttl
-        )
+        entry = CacheEntry(key=key, value=value, hash=value_hash, timestamp=time.time(), ttl=ttl)
 
         self.cache[key] = entry
         self._save()
@@ -172,7 +164,7 @@ class RoutineCache:
             "valid_entries": valid,
             "expired_entries": expired,
             "cache_file": str(self.cache_file),
-            "cache_size_bytes": self.cache_file.stat().st_size if self.cache_file.exists() else 0
+            "cache_size_bytes": self.cache_file.stat().st_size if self.cache_file.exists() else 0,
         }
 
 
@@ -202,10 +194,7 @@ def check_git_status_unchanged(cache: RoutineCache) -> bool:
     try:
         # Get current git status
         result = subprocess.run(
-            ["git", "status", "--porcelain"],
-            capture_output=True,
-            text=True,
-            timeout=5
+            ["git", "status", "--porcelain"], capture_output=True, text=True, timeout=5
         )
         current_status = result.stdout
 
@@ -238,7 +227,6 @@ def check_tests_unchanged(cache: RoutineCache, test_command: str = "pytest") -> 
         True if tests likely unchanged, False if need to re-run
     """
     from pathlib import Path
-    import glob
 
     try:
         # Get modification times of test and source files
@@ -246,10 +234,11 @@ def check_tests_unchanged(cache: RoutineCache, test_command: str = "pytest") -> 
         source_files = list(Path.cwd().rglob("*.py"))
 
         # Exclude test files from source files
-        source_files = [f for f in source_files if not any(
-            f.name.startswith("test_") or f.name.endswith("_test.py")
-            for _ in [f]
-        )]
+        source_files = [
+            f
+            for f in source_files
+            if not any(f.name.startswith("test_") or f.name.endswith("_test.py") for _ in [f])
+        ]
 
         # Get latest modification time
         all_files = test_files + source_files
@@ -302,9 +291,9 @@ def update_test_cache(cache: RoutineCache, test_output: str, passed: bool) -> No
                 "output": test_output,
                 "passed": passed,
                 "latest_mtime": latest_mtime,
-                "timestamp": time.time()
+                "timestamp": time.time(),
             },
-            ttl=3600  # 1 hour
+            ttl=3600,  # 1 hour
         )
     except Exception:
         # Error updating cache, ignore

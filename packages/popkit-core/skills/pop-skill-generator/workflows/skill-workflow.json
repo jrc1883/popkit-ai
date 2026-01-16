@@ -28,14 +28,14 @@
           "prompt": "What category does this skill belong to?",
           "type": "selection",
           "options": [
-            {"label": "Development Workflow", "value": "dev-workflow"},
-            {"label": "Deployment", "value": "deployment"},
-            {"label": "Code Quality", "value": "quality"},
-            {"label": "Project Setup", "value": "setup"},
-            {"label": "Analysis", "value": "analysis"},
-            {"label": "Documentation", "value": "documentation"},
-            {"label": "Integration", "value": "integration"},
-            {"label": "Utility", "value": "utility"}
+            { "label": "Development Workflow", "value": "dev-workflow" },
+            { "label": "Deployment", "value": "deployment" },
+            { "label": "Code Quality", "value": "quality" },
+            { "label": "Project Setup", "value": "setup" },
+            { "label": "Analysis", "value": "analysis" },
+            { "label": "Documentation", "value": "documentation" },
+            { "label": "Integration", "value": "integration" },
+            { "label": "Utility", "value": "utility" }
           ]
         },
         {
@@ -44,10 +44,10 @@
           "prompt": "What triggers should activate this skill?",
           "type": "multiselect",
           "options": [
-            {"label": "Keywords in prompt", "value": "keywords"},
-            {"label": "File patterns", "value": "file_patterns"},
-            {"label": "Project type", "value": "project_type"},
-            {"label": "Manual invocation only", "value": "manual"}
+            { "label": "Keywords in prompt", "value": "keywords" },
+            { "label": "File patterns", "value": "file_patterns" },
+            { "label": "Project type", "value": "project_type" },
+            { "label": "Manual invocation only", "value": "manual" }
           ]
         },
         {

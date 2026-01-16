@@ -8,11 +8,10 @@ PostToolUse hook that captures command failures and learns from them.
 Also provides PreToolUse suggestions for commands that have known corrections.
 """
 
-import os
 import sys
 import json
 import re
-from typing import Dict, List, Optional, Any
+from typing import Dict, Optional, Any
 from pathlib import Path
 
 # Add hooks directory to path for imports
@@ -20,27 +19,9 @@ hooks_dir = Path(__file__).parent
 if str(hooks_dir) not in sys.path:
     sys.path.insert(0, str(hooks_dir))
 
-from popkit_shared.utils.platform_detector import (
-    PlatformDetector,
-    PlatformInfo,
-    OSType,
-    ShellType,
-    get_platform_info
-)
-from popkit_shared.utils.command_translator import (
-    CommandTranslator,
-    CommandTranslation,
-    CommandCategory,
-    translate_command
-)
-from popkit_shared.utils.pattern_learner import (
-    PatternLearner,
-    CommandCorrection,
-    CorrectionSuggestion,
-    get_learner,
-    learn_correction,
-    suggest_correction
-)
+from popkit_shared.utils.platform_detector import OSType, ShellType, get_platform_info
+from popkit_shared.utils.command_translator import CommandTranslator
+from popkit_shared.utils.pattern_learner import get_learner
 
 
 class CommandLearningHook:
@@ -55,31 +36,29 @@ class CommandLearningHook:
     # Error patterns that indicate command failure
     ERROR_PATTERNS = [
         # Command not found
-        (r"'(\w+)' is not recognized as an internal or external command",
-         "command_not_found", "windows"),
+        (
+            r"'(\w+)' is not recognized as an internal or external command",
+            "command_not_found",
+            "windows",
+        ),
         (r"(\w+): command not found", "command_not_found", "unix"),
         (r"bash: (\w+): command not found", "command_not_found", "unix"),
-
         # Path errors
         (r"The system cannot find the path specified", "path_not_found", "windows"),
         (r"No such file or directory", "path_not_found", "unix"),
         (r"cannot stat '(.+)': No such file", "path_not_found", "unix"),
-
         # Permission errors
         (r"Access is denied", "permission_denied", "windows"),
         (r"Permission denied", "permission_denied", "unix"),
-
         # Parameter errors
         (r"Invalid parameter", "invalid_params", "windows"),
         (r"Invalid switch", "invalid_params", "windows"),
         (r"invalid option", "invalid_params", "unix"),
         (r"unrecognized option", "invalid_params", "unix"),
-
         # Copy/directory errors
         (r"cannot copy a directory", "recursive_needed", "unix"),
         (r"omitting directory", "recursive_needed", "unix"),
         (r"xcopy.*Invalid number of parameters", "xcopy_syntax", "windows"),
-
         # Syntax errors
         (r"syntax error", "syntax_error", "any"),
         (r"unexpected token", "syntax_error", "unix"),
@@ -155,7 +134,7 @@ class CommandLearningHook:
             command,
             platform=self.platform_info.os_type.value,
             shell=self.platform_info.shell_type.value,
-            min_confidence=0.7
+            min_confidence=0.7,
         )
 
         if suggestion:
@@ -168,13 +147,12 @@ class CommandLearningHook:
                     f"  Suggested: {suggestion.suggested}\n"
                     f"  Confidence: {suggestion.confidence:.0%}\n"
                     f"  Reason: {suggestion.reason or 'Learned from previous corrections'}"
-                )
+                ),
             }
 
         # Check if command translation is available
         translation = CommandTranslator.translate(
-            command,
-            self.platform_info.shell_type
+            command, self.platform_info.shell_type
         )
 
         if translation.translated != command and translation.confidence > 0.8:
@@ -184,7 +162,7 @@ class CommandLearningHook:
                     f"[PopKit Learning] Command translated for {self.platform_info.shell_type.value}:\n"
                     f"  Original: {command}\n"
                     f"  Translated: {translation.translated}"
-                )
+                ),
             }
 
         return {"continue": True}
@@ -197,8 +175,10 @@ class CommandLearningHook:
             return int(match.group(1))
 
         # Check for explicit error indicators
-        if any(pattern in output.lower() for pattern in
-               ["error", "failed", "not found", "denied", "invalid"]):
+        if any(
+            pattern in output.lower()
+            for pattern in ["error", "failed", "not found", "denied", "invalid"]
+        ):
             return 1
 
         return 0
@@ -210,9 +190,15 @@ class CommandLearningHook:
             if match:
                 # Check if platform hint matches
                 if platform_hint != "any":
-                    if platform_hint == "windows" and self.platform_info.os_type != OSType.WINDOWS:
+                    if (
+                        platform_hint == "windows"
+                        and self.platform_info.os_type != OSType.WINDOWS
+                    ):
                         continue
-                    if platform_hint == "unix" and self.platform_info.os_type == OSType.WINDOWS:
+                    if (
+                        platform_hint == "unix"
+                        and self.platform_info.os_type == OSType.WINDOWS
+                    ):
                         # Could be Git Bash on Windows
                         if self.platform_info.shell_type != ShellType.GIT_BASH:
                             continue
@@ -224,7 +210,7 @@ class CommandLearningHook:
         command: str,
         output: str,
         error_type: str,
-        error_match: Optional[re.Match]
+        error_match: Optional[re.Match],
     ) -> Dict[str, Any]:
         """Handle a command failure"""
         messages = []
@@ -240,7 +226,7 @@ class CommandLearningHook:
                 original_command=command,
                 corrected_command=translation.translated,
                 error_pattern=error_type,
-                source="auto"
+                source="auto",
             )
 
             messages.append(
@@ -252,10 +238,7 @@ class CommandLearningHook:
 
         else:
             # No automatic translation - check for similar learned patterns
-            suggestions = self.learner.find_suggestions(
-                command,
-                min_confidence=0.5
-            )
+            suggestions = self.learner.find_suggestions(command, min_confidence=0.5)
 
             if suggestions:
                 best = suggestions[0]
@@ -274,10 +257,7 @@ class CommandLearningHook:
                     f"  Use '/popkit:learn' to teach a correction."
                 )
 
-        return {
-            "continue": True,
-            "message": "\n".join(messages) if messages else None
-        }
+        return {"continue": True, "message": "\n".join(messages) if messages else None}
 
     def _record_success_if_learned(self, command: str) -> None:
         """Record success if this command was a learned correction"""
@@ -290,7 +270,7 @@ class CommandLearningHook:
                 # We need to find the correction ID and record success
                 corrections = self.learner.get_all_corrections(
                     platform=self.platform_info.os_type.value,
-                    shell=self.platform_info.shell_type.value
+                    shell=self.platform_info.shell_type.value,
                 )
                 for correction in corrections:
                     if correction.corrected_command == command:

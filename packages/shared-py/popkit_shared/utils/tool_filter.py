@@ -6,23 +6,21 @@ Filters available tools based on workflow requirements from agents/config.json.
 Part of Phase 1: Tool Choice Enforcement.
 """
 
-from typing import List, Dict, Any, Optional
 import json
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 
 def load_agent_config() -> Dict[str, Any]:
     """Load agent configuration with tool_choice settings."""
     config_path = Path(__file__).parent.parent.parent / "agents" / "config.json"
 
-    with open(config_path, 'r', encoding='utf-8') as f:
+    with open(config_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
 
 def filter_tools_for_workflow(
-    workflow: str,
-    available_tools: List[str],
-    config: Optional[Dict[str, Any]] = None
+    workflow: str, available_tools: List[str], config: Optional[Dict[str, Any]] = None
 ) -> List[str]:
     """
     Filter tools based on workflow requirements.
@@ -43,17 +41,17 @@ def filter_tools_for_workflow(
         config = load_agent_config()
 
     # Get workflow steps from config
-    workflow_steps = config.get('tool_choice', {}).get('workflow_steps', {})
+    workflow_steps = config.get("tool_choice", {}).get("workflow_steps", {})
 
     # Unknown workflow → return all tools (safe fallback)
     if workflow not in workflow_steps:
         return available_tools
 
     # Get required tools for this workflow
-    required = workflow_steps[workflow].get('required_tools', [])
+    required = workflow_steps[workflow].get("required_tools", [])
 
     # Wildcard means all tools
-    if '*' in required:
+    if "*" in required:
         return available_tools
 
     # Filter to only required tools

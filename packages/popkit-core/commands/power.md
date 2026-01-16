@@ -31,12 +31,14 @@ User Request → Main Agent (Coordinator)
 ```
 
 **Key Benefits:**
+
 - **No external dependencies** (no Docker, no Redis)
 - **True parallelism** (agents run simultaneously)
 - **Cross-platform** (works on Windows/macOS/Linux)
 - **Reliable** (no service dependencies)
 
 **Communication:**
+
 - Shared file: `.claude/popkit/insights.json`
 - Polling: `TaskOutput(block: false)` every 500ms
 - Sync barriers between phases
@@ -47,15 +49,15 @@ User Request → Main Agent (Coordinator)
 
 ## Subcommands
 
-| Subcommand | Description |
-|------------|-------------|
-| status | Check current status (default) |
-| start | Start with objective |
-| stop | Stop gracefully |
-| init | Check mode availability and configuration |
-| metrics | View session metrics |
-| widgets | Manage status line widgets |
-| consensus | Multi-agent decision-making |
+| Subcommand | Description                               |
+| ---------- | ----------------------------------------- |
+| status     | Check current status (default)            |
+| start      | Start with objective                      |
+| stop       | Stop gracefully                           |
+| init       | Check mode availability and configuration |
+| metrics    | View session metrics                      |
+| widgets    | Manage status line widgets                |
+| consensus  | Multi-agent decision-making               |
 
 ---
 
@@ -64,6 +66,7 @@ User Request → Main Agent (Coordinator)
 Check current Power Mode status.
 
 **Active Output:**
+
 - Session ID, issue, started time
 - Mode: Native Async, tier info
 - Phase, progress percentage
@@ -71,6 +74,7 @@ Check current Power Mode status.
 - Insights, sync barriers completed
 
 **Inactive Output:**
+
 - Mode available (Native Async)
 - Tier info (5 or 10 agents)
 - Start commands
@@ -155,6 +159,7 @@ Thresholds: 0-59% sequential, 60-79% suggest, 80-100% auto-enable
 ## Architecture
 
 **Core Components:**
+
 - `native_coordinator.py` - Native Async mode orchestration (primary)
 - `mode_selector.py` - Automatic mode detection and selection
 - `upstash_adapter.py` - Optional Upstash Redis integration

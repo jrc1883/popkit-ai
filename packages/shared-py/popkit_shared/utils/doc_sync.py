@@ -15,7 +15,7 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 
 class DocSyncChecker:
@@ -118,11 +118,7 @@ class DocSyncChecker:
             except IOError:
                 pass
 
-        return {
-            "total": total,
-            "active": total - deprecated,
-            "deprecated": deprecated
-        }
+        return {"total": total, "active": total - deprecated, "deprecated": deprecated}
 
     def get_utils_count(self) -> int:
         """Count utility modules in hooks/utils/."""
@@ -140,13 +136,13 @@ class DocSyncChecker:
         return {
             "version": {
                 "plugin": self.get_plugin_version(),
-                "marketplace": self.get_marketplace_version()
+                "marketplace": self.get_marketplace_version(),
             },
             "agents": agent_counts,
             "hooks": self.get_hook_count(),
             "skills": self.get_skill_count(),
             "commands": command_counts,
-            "utils": self.get_utils_count()
+            "utils": self.get_utils_count(),
         }
 
     def parse_claude_md(self) -> Dict[str, Any]:
@@ -164,14 +160,15 @@ class DocSyncChecker:
 
         # Parse TIER-COUNTS section
         tier_match = re.search(
-            r'<!-- AUTO-GEN:TIER-COUNTS START -->(.*?)<!-- AUTO-GEN:TIER-COUNTS END -->',
-            content, re.DOTALL
+            r"<!-- AUTO-GEN:TIER-COUNTS START -->(.*?)<!-- AUTO-GEN:TIER-COUNTS END -->",
+            content,
+            re.DOTALL,
         )
         if tier_match:
             section = tier_match.group(1)
-            tier1 = re.search(r'(\d+)\s+core agents', section)
-            tier2 = re.search(r'(\d+)\s+specialized agents', section)
-            feature = re.search(r'(\d+)\s+agents for 7-phase', section)
+            tier1 = re.search(r"(\d+)\s+core agents", section)
+            tier2 = re.search(r"(\d+)\s+specialized agents", section)
+            feature = re.search(r"(\d+)\s+agents for 7-phase", section)
 
             documented["tier1"] = int(tier1.group(1)) if tier1 else None
             documented["tier2"] = int(tier2.group(1)) if tier2 else None
@@ -179,17 +176,18 @@ class DocSyncChecker:
 
         # Parse REPO-STRUCTURE section
         repo_match = re.search(
-            r'<!-- AUTO-GEN:REPO-STRUCTURE START -->(.*?)<!-- AUTO-GEN:REPO-STRUCTURE END -->',
-            content, re.DOTALL
+            r"<!-- AUTO-GEN:REPO-STRUCTURE START -->(.*?)<!-- AUTO-GEN:REPO-STRUCTURE END -->",
+            content,
+            re.DOTALL,
         )
         if repo_match:
             section = repo_match.group(1)
 
             # Extract counts from repo structure
-            skills = re.search(r'skills/\s+(\d+)\s+reusable skills', section)
-            commands = re.search(r'commands/\s+(\d+)\s+slash commands', section)
-            hooks = re.search(r'hooks/\s+(\d+)\s+Python hooks', section)
-            utils = re.search(r'utils/\s+(\d+)\s+utility modules', section)
+            skills = re.search(r"skills/\s+(\d+)\s+reusable skills", section)
+            commands = re.search(r"commands/\s+(\d+)\s+slash commands", section)
+            hooks = re.search(r"hooks/\s+(\d+)\s+Python hooks", section)
+            utils = re.search(r"utils/\s+(\d+)\s+utility modules", section)
 
             documented["skills"] = int(skills.group(1)) if skills else None
             documented["commands_total"] = int(commands.group(1)) if commands else None
@@ -197,7 +195,7 @@ class DocSyncChecker:
             documented["utils"] = int(utils.group(1)) if utils else None
 
             # Parse deprecated count
-            deprecated = re.search(r'(\d+)\s+active,\s+(\d+)\s+deprecated', section)
+            deprecated = re.search(r"(\d+)\s+active,\s+(\d+)\s+deprecated", section)
             if deprecated:
                 documented["commands_active"] = int(deprecated.group(1))
                 documented["commands_deprecated"] = int(deprecated.group(2))
@@ -213,78 +211,100 @@ class DocSyncChecker:
         # Version sync
         if source["version"]["plugin"] and source["version"]["marketplace"]:
             if source["version"]["plugin"] != source["version"]["marketplace"]:
-                drift.append({
-                    "type": "version_mismatch",
-                    "field": "version",
-                    "source": f"plugin.json={source['version']['plugin']}",
-                    "documented": f"marketplace.json={source['version']['marketplace']}",
-                    "severity": "high"
-                })
+                drift.append(
+                    {
+                        "type": "version_mismatch",
+                        "field": "version",
+                        "source": f"plugin.json={source['version']['plugin']}",
+                        "documented": f"marketplace.json={source['version']['marketplace']}",
+                        "severity": "high",
+                    }
+                )
 
         # Agent counts
         if documented.get("tier1") is not None and documented["tier1"] != source["agents"]["tier1"]:
-            drift.append({
-                "type": "count_mismatch",
-                "field": "tier1_agents",
-                "source": source["agents"]["tier1"],
-                "documented": documented["tier1"],
-                "severity": "medium"
-            })
+            drift.append(
+                {
+                    "type": "count_mismatch",
+                    "field": "tier1_agents",
+                    "source": source["agents"]["tier1"],
+                    "documented": documented["tier1"],
+                    "severity": "medium",
+                }
+            )
 
         if documented.get("tier2") is not None and documented["tier2"] != source["agents"]["tier2"]:
-            drift.append({
-                "type": "count_mismatch",
-                "field": "tier2_agents",
-                "source": source["agents"]["tier2"],
-                "documented": documented["tier2"],
-                "severity": "medium"
-            })
+            drift.append(
+                {
+                    "type": "count_mismatch",
+                    "field": "tier2_agents",
+                    "source": source["agents"]["tier2"],
+                    "documented": documented["tier2"],
+                    "severity": "medium",
+                }
+            )
 
-        if documented.get("feature") is not None and documented["feature"] != source["agents"]["feature"]:
-            drift.append({
-                "type": "count_mismatch",
-                "field": "feature_agents",
-                "source": source["agents"]["feature"],
-                "documented": documented["feature"],
-                "severity": "medium"
-            })
+        if (
+            documented.get("feature") is not None
+            and documented["feature"] != source["agents"]["feature"]
+        ):
+            drift.append(
+                {
+                    "type": "count_mismatch",
+                    "field": "feature_agents",
+                    "source": source["agents"]["feature"],
+                    "documented": documented["feature"],
+                    "severity": "medium",
+                }
+            )
 
         # Component counts
         if documented.get("hooks") is not None and documented["hooks"] != source["hooks"]:
-            drift.append({
-                "type": "count_mismatch",
-                "field": "hooks",
-                "source": source["hooks"],
-                "documented": documented["hooks"],
-                "severity": "medium"
-            })
+            drift.append(
+                {
+                    "type": "count_mismatch",
+                    "field": "hooks",
+                    "source": source["hooks"],
+                    "documented": documented["hooks"],
+                    "severity": "medium",
+                }
+            )
 
         if documented.get("skills") is not None and documented["skills"] != source["skills"]:
-            drift.append({
-                "type": "count_mismatch",
-                "field": "skills",
-                "source": source["skills"],
-                "documented": documented["skills"],
-                "severity": "medium"
-            })
+            drift.append(
+                {
+                    "type": "count_mismatch",
+                    "field": "skills",
+                    "source": source["skills"],
+                    "documented": documented["skills"],
+                    "severity": "medium",
+                }
+            )
 
-        if documented.get("commands_total") is not None and documented["commands_total"] != source["commands"]["total"]:
-            drift.append({
-                "type": "count_mismatch",
-                "field": "commands",
-                "source": source["commands"]["total"],
-                "documented": documented["commands_total"],
-                "severity": "medium"
-            })
+        if (
+            documented.get("commands_total") is not None
+            and documented["commands_total"] != source["commands"]["total"]
+        ):
+            drift.append(
+                {
+                    "type": "count_mismatch",
+                    "field": "commands",
+                    "source": source["commands"]["total"],
+                    "documented": documented["commands_total"],
+                    "severity": "medium",
+                }
+            )
 
         if documented.get("utils") is not None and documented["utils"] != source["utils"]:
-            drift.append({
-                "type": "count_mismatch",
-                "field": "utils",
-                "source": source["utils"],
-                "documented": documented["utils"],
-                "severity": "low"
-            })
+            drift.append(
+                {
+                    "type": "count_mismatch",
+                    "field": "utils",
+                    "source": source["utils"],
+                    "documented": documented["utils"],
+                    "severity": "low",
+                }
+            )
 
         self.drift_issues = drift
         return drift
@@ -316,7 +336,9 @@ class DocSyncChecker:
         lines.append("Component Counts:")
         lines.append(f"  Skills: {source['skills']}")
         c = source["commands"]
-        lines.append(f"  Commands: {c['total']} ({c['active']} active, {c['deprecated']} deprecated)")
+        lines.append(
+            f"  Commands: {c['total']} ({c['active']} active, {c['deprecated']} deprecated)"
+        )
         lines.append(f"  Hooks: {source['hooks']}")
         lines.append(f"  Utils: {source['utils']}")
         lines.append("")
@@ -336,11 +358,10 @@ class DocSyncChecker:
         source = self.gather_source_counts()
         drift = self.compare_counts()
 
-        return json.dumps({
-            "source_counts": source,
-            "drift_issues": drift,
-            "synchronized": len(drift) == 0
-        }, indent=2)
+        return json.dumps(
+            {"source_counts": source, "drift_issues": drift, "synchronized": len(drift) == 0},
+            indent=2,
+        )
 
 
 def main():
@@ -349,7 +370,7 @@ def main():
     import io
 
     # Handle Windows encoding issues
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
     parser = argparse.ArgumentParser(description="Check documentation synchronization")
     parser.add_argument("--json", action="store_true", help="Output as JSON")

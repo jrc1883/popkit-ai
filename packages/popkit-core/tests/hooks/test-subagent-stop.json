@@ -249,8 +249,8 @@
         "subagent_id": "test-subagent-chat",
         "save_chat": true,
         "transcript": [
-          {"role": "user", "content": "Review this code"},
-          {"role": "assistant", "content": "The code looks good"}
+          { "role": "user", "content": "Review this code" },
+          { "role": "assistant", "content": "The code looks good" }
         ]
       },
       "assertions": [
@@ -306,9 +306,7 @@
         "event": "SubagentStop",
         "subagent_id": "test-subagent-append",
         "task": "code-architect",
-        "existing_log": [
-          {"subagent_id": "prev-subagent", "timestamp": "2025-01-01T12:00:00"}
-        ]
+        "existing_log": [{ "subagent_id": "prev-subagent", "timestamp": "2025-01-01T12:00:00" }]
       },
       "assertions": [
         {

@@ -86,10 +86,7 @@
       "Best practices queries",
       "Documentation lookups"
     ],
-    "manual": [
-      "Invoke pop-knowledge-lookup skill",
-      "Use /popkit:knowledge search"
-    ]
+    "manual": ["Invoke pop-knowledge-lookup skill", "Use /popkit:knowledge search"]
   },
   "search_strategies": {
     "semantic_first": {

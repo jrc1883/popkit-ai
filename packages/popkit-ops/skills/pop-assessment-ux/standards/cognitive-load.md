@@ -9,11 +9,13 @@ Standards for minimizing user cognitive load in CLI interactions.
 Show only what's needed at each step.
 
 **Layers:**
+
 1. **Essential** - Minimum to complete task
 2. **Important** - Helpful but not critical
 3. **Advanced** - Expert options
 
 **Implementation:**
+
 ```
 # Default (essential)
 /popkit:project init my-project
@@ -30,11 +32,13 @@ Show only what's needed at each step.
 Group related items together.
 
 **Guidelines:**
+
 - Max 7±2 items per group
 - Logical groupings by function
 - Clear group labels
 
 **Example:**
+
 ```
 Project Commands:
   init     Initialize new project
@@ -52,12 +56,14 @@ Git Commands:
 Show options rather than requiring memorization.
 
 **Techniques:**
+
 - Tab completion
 - Suggestion prompts
 - Recent commands
 - Contextual help
 
 **Example:**
+
 ```
 # Instead of free text
 Enter framework name: [blank]
@@ -87,12 +93,14 @@ Maintain consistent patterns users can learn once.
 Minimize the number of decisions required.
 
 **Techniques:**
+
 - Smart defaults
 - Preset configurations
 - "Quick" vs "Custom" modes
 - Inferred settings
 
 **Example:**
+
 ```
 Quick setup (Recommended):
   - TypeScript
@@ -107,12 +115,14 @@ Use quick setup? [Y/n]
 Use formatting to guide attention.
 
 **Hierarchy:**
+
 1. **Headers** - Command/section names
 2. **Key information** - Status, results
 3. **Details** - Supporting info
 4. **Metadata** - Timestamps, counts
 
 **Formatting:**
+
 ```
 # Header (bold in terminal)
 PROJECT ANALYSIS COMPLETE
@@ -134,6 +144,7 @@ Analyzed 42 files in 2.3s
 ### Menu Structure
 
 **Max Depth:** 3 levels
+
 ```
 Level 1: /popkit:category
 Level 2: /popkit:category subcommand
@@ -143,6 +154,7 @@ Level 3: /popkit:category subcommand action
 ### Help Organization
 
 **Structure:**
+
 ```
 COMMAND
   Brief description
@@ -162,6 +174,7 @@ EXAMPLES
 ### Output Organization
 
 **Success Output:**
+
 ```
 [Status emoji] Main result
   - Detail 1
@@ -171,6 +184,7 @@ Next: Suggested action
 ```
 
 **Error Output:**
+
 ```
 [Error emoji] What happened
   Context: Where/what
@@ -183,12 +197,12 @@ Help: Link to docs
 
 ### What Demands Attention
 
-| Item | Priority |
-|------|----------|
-| Errors | High - immediate |
-| Warnings | Medium - consider |
-| Success | Low - confirmation |
-| Info | Minimal - background |
+| Item     | Priority             |
+| -------- | -------------------- |
+| Errors   | High - immediate     |
+| Warnings | Medium - consider    |
+| Success  | Low - confirmation   |
+| Info     | Minimal - background |
 
 ### Notification Principles
 
@@ -201,18 +215,18 @@ Help: Link to docs
 
 ### Cognitive Load Indicators
 
-| Indicator | Target |
-|-----------|--------|
-| Options per prompt | ≤4 |
-| Steps per workflow | ≤7 |
-| Commands to memorize | 0 (show options) |
-| Info per screen | Fits without scroll |
+| Indicator            | Target              |
+| -------------------- | ------------------- |
+| Options per prompt   | ≤4                  |
+| Steps per workflow   | ≤7                  |
+| Commands to memorize | 0 (show options)    |
+| Info per screen      | Fits without scroll |
 
 ### Quality Metrics
 
-| Metric | Target |
-|--------|--------|
+| Metric                 | Target       |
+| ---------------------- | ------------ |
 | Progressive disclosure | All commands |
-| Consistent patterns | 100% |
-| Smart defaults | All configs |
-| Clear hierarchy | All output |
+| Consistent patterns    | 100%         |
+| Smart defaults         | All configs  |
+| Clear hierarchy        | All output   |

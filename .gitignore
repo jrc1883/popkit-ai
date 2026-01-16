@@ -75,3 +75,6 @@ STATUS.json
 
 # Environment variables (secrets)
 .env
+
+# Claude Code temporary files
+tmpclaude-*-cwd

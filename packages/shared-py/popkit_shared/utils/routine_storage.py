@@ -8,13 +8,11 @@ Handles creation, retrieval, updates, and deletion of morning/nightly routines.
 Part of the popkit plugin system.
 """
 
-import os
 import json
+import os
 import re
-from typing import Dict, List, Any, Optional, Tuple
-from pathlib import Path
 from datetime import datetime, timezone
-
+from typing import Any, Dict, List, Optional, Tuple
 
 # Constants
 POPKIT_DIR = ".claude/popkit"
@@ -107,6 +105,7 @@ def ensure_directory_structure(project_root: Optional[str] = None) -> str:
 # Prefix Generation
 # =============================================================================
 
+
 def generate_prefix(project_name: str) -> str:
     """Generate a prefix from project name (first letter of each word).
 
@@ -123,7 +122,7 @@ def generate_prefix(project_name: str) -> str:
         "popkit" -> "pop" (collision handling)
     """
     # Clean and split the name
-    words = re.split(r'[\s\-_]+', project_name.strip())
+    words = re.split(r"[\s\-_]+", project_name.strip())
     words = [w for w in words if w]  # Remove empty strings
 
     if not words:
@@ -189,6 +188,7 @@ def get_project_name(project_root: Optional[str] = None) -> str:
 # Config Management
 # =============================================================================
 
+
 def load_config(project_root: Optional[str] = None) -> Dict[str, Any]:
     """Load the popkit config.json for this project.
 
@@ -248,14 +248,8 @@ def initialize_config(project_root: Optional[str] = None) -> Dict[str, Any]:
     config = {
         "project_name": project_name,
         "prefix": prefix,
-        "defaults": {
-            "morning": "pk",
-            "nightly": "pk"
-        },
-        "routines": {
-            "morning": [],
-            "nightly": []
-        }
+        "defaults": {"morning": "pk", "nightly": "pk"},
+        "routines": {"morning": [], "nightly": []},
     }
 
     save_config(config, project_root)
@@ -281,6 +275,7 @@ def get_or_create_config(project_root: Optional[str] = None) -> Dict[str, Any]:
 # Routine Management
 # =============================================================================
 
+
 def get_next_routine_id(config: Dict[str, Any], routine_type: str) -> Optional[str]:
     """Get the next available routine ID for a type.
 
@@ -300,7 +295,7 @@ def get_next_routine_id(config: Dict[str, Any], routine_type: str) -> Optional[s
     # Find highest existing number
     highest = 0
     for routine in existing:
-        match = re.search(r'-(\d+)$', routine.get("id", ""))
+        match = re.search(r"-(\d+)$", routine.get("id", ""))
         if match:
             num = int(match.group(1))
             if num > highest:
@@ -329,7 +324,7 @@ def list_routines(routine_type: str, project_root: Optional[str] = None) -> List
             "description": "Universal routine with flags for variation",
             "is_default": default_id == "pk",
             "created": "(built-in)",
-            "mutable": False
+            "mutable": False,
         }
     ]
 
@@ -342,7 +337,9 @@ def list_routines(routine_type: str, project_root: Optional[str] = None) -> List
     return routines
 
 
-def get_routine(routine_id: str, routine_type: str, project_root: Optional[str] = None) -> Optional[Dict[str, Any]]:
+def get_routine(
+    routine_id: str, routine_type: str, project_root: Optional[str] = None
+) -> Optional[Dict[str, Any]]:
     """Get a specific routine by ID.
 
     Args:
@@ -374,7 +371,9 @@ def get_default_routine(routine_type: str, project_root: Optional[str] = None) -
     return config.get("defaults", {}).get(routine_type, "pk")
 
 
-def set_default_routine(routine_id: str, routine_type: str, project_root: Optional[str] = None) -> bool:
+def set_default_routine(
+    routine_id: str, routine_type: str, project_root: Optional[str] = None
+) -> bool:
     """Set the default routine for a type.
 
     Args:
@@ -403,7 +402,7 @@ def create_routine(
     description: str,
     routine_type: str,
     based_on: str = "pk",
-    project_root: Optional[str] = None
+    project_root: Optional[str] = None,
 ) -> Tuple[Optional[str], Optional[str]]:
     """Create a new custom routine.
 
@@ -429,7 +428,10 @@ def create_routine(
     routine_path = os.path.join(routines_dir, routine_id)
 
     os.makedirs(routine_path, exist_ok=True)
-    os.makedirs(os.path.join(routine_path, "checks" if routine_type == "morning" else "scripts"), exist_ok=True)
+    os.makedirs(
+        os.path.join(routine_path, "checks" if routine_type == "morning" else "scripts"),
+        exist_ok=True,
+    )
 
     # Create routine.md
     now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
@@ -437,8 +439,8 @@ def create_routine(
 id: {routine_id}
 name: {name}
 type: {routine_type}
-project: {config.get('project_name', 'Unknown')}
-prefix: {config.get('prefix', 'proj')}
+project: {config.get("project_name", "Unknown")}
+prefix: {config.get("prefix", "proj")}
 based_on: {based_on}
 created: {now}
 modified: {now}
@@ -484,12 +486,7 @@ Total: 100 points
         "description": description,
         "based_on": based_on,
         "checks": [],
-        "score_weights": {
-            "git_clean": 25,
-            "quality": 25,
-            "services": 25,
-            "custom": 25
-        }
+        "score_weights": {"git_clean": 25, "quality": 25, "services": 25, "custom": 25},
     }
 
     routine_config_path = os.path.join(routine_path, "config.json")
@@ -502,7 +499,7 @@ Total: 100 points
         "name": name,
         "description": description,
         "created": now,
-        "based_on": based_on
+        "based_on": based_on,
     }
 
     if "routines" not in config:
@@ -516,7 +513,9 @@ Total: 100 points
     return routine_id, routine_path
 
 
-def delete_routine(routine_id: str, routine_type: str, project_root: Optional[str] = None) -> Tuple[bool, str]:
+def delete_routine(
+    routine_id: str, routine_type: str, project_root: Optional[str] = None
+) -> Tuple[bool, str]:
     """Delete a custom routine.
 
     Args:
@@ -536,7 +535,7 @@ def delete_routine(routine_id: str, routine_type: str, project_root: Optional[st
     # Check if it's the default
     default_id = config.get("defaults", {}).get(routine_type, "pk")
     if routine_id == default_id:
-        return False, f"Cannot delete default routine. Change default first with 'set' command"
+        return False, "Cannot delete default routine. Change default first with 'set' command"
 
     # Find and remove from config
     routines = config.get("routines", {}).get(routine_type, [])
@@ -556,6 +555,7 @@ def delete_routine(routine_id: str, routine_type: str, project_root: Optional[st
 
     if os.path.exists(routine_path):
         import shutil
+
         shutil.rmtree(routine_path)
 
     # Save updated config
@@ -564,7 +564,9 @@ def delete_routine(routine_id: str, routine_type: str, project_root: Optional[st
     return True, f"Routine '{routine_id}' deleted"
 
 
-def get_routine_path(routine_id: str, routine_type: str, project_root: Optional[str] = None) -> Optional[str]:
+def get_routine_path(
+    routine_id: str, routine_type: str, project_root: Optional[str] = None
+) -> Optional[str]:
     """Get the filesystem path to a routine folder.
 
     Args:
@@ -605,6 +607,7 @@ def get_available_slots(routine_type: str, project_root: Optional[str] = None) -
 # Formatting Utilities
 # =============================================================================
 
+
 def format_routine_list(routines: List[Dict[str, Any]], routine_type: str) -> str:
     """Format a list of routines as a table.
 
@@ -632,7 +635,9 @@ def format_routine_list(routines: List[Dict[str, Any]], routine_type: str) -> st
     return "\n".join(lines)
 
 
-def format_startup_banner(routine: Dict[str, Any], routine_type: str, project_name: str, other_ids: List[str]) -> str:
+def format_startup_banner(
+    routine: Dict[str, Any], routine_type: str, project_name: str, other_ids: List[str]
+) -> str:
     """Format the startup banner shown when running a routine.
 
     Args:
@@ -651,7 +656,11 @@ def format_startup_banner(routine: Dict[str, Any], routine_type: str, project_na
     if len(other_ids) > 3:
         others_str += f" (+{len(other_ids) - 3} more)"
 
-    tip = f"Other routines: {others_str} | Run: /popkit:{routine_type} list" if other_ids else f"Tip: Create a custom routine with /popkit:{routine_type} generate"
+    tip = (
+        f"Other routines: {others_str} | Run: /popkit:{routine_type} list"
+        if other_ids
+        else f"Tip: Create a custom routine with /popkit:{routine_type} generate"
+    )
 
     lines = [
         "+-------------------------------------------------------------+",

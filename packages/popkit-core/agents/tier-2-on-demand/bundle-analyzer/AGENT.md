@@ -58,6 +58,7 @@ Specializes in analyzing, optimizing, and reducing JavaScript bundle sizes for w
 - **Efficiency**: Size reduction percentage, chunks optimized
 
 Example:
+
 ```
 📦 bundle-analyzer T:20 P:60% | Optimization: vendor chunk 450kb → 280kb
 ```
@@ -114,6 +115,7 @@ Participates in Power Mode check-ins every 5 tool calls.
 - **Tags**: [bundle, performance, webpack, vite, size, optimization]
 
 Example:
+
 ```
 ↑ "moment.js (300kb) → date-fns (20kb) saves 280kb" [bundle, optimization]
 ↑ "Route splitting reduces initial load by 60%" [bundle, performance]
@@ -122,6 +124,7 @@ Example:
 ### PULL (Incoming)
 
 Accept insights with tags:
+
 - `[performance]` - From performance-optimizer about load times
 - `[build]` - From devops-automator about CI/CD constraints
 
@@ -140,24 +143,24 @@ Accept insights with tags:
 
 ### Upstream (Receives from)
 
-| Agent | What It Provides |
-|-------|------------------|
-| User | Performance requirements, size budgets |
-| performance-optimizer | Load time analysis |
+| Agent                 | What It Provides                       |
+| --------------------- | -------------------------------------- |
+| User                  | Performance requirements, size budgets |
+| performance-optimizer | Load time analysis                     |
 
 ### Downstream (Passes to)
 
-| Agent | What It Receives |
-|-------|------------------|
-| devops-automator | Build configuration updates |
-| documentation-maintainer | Optimization documentation |
+| Agent                    | What It Receives            |
+| ------------------------ | --------------------------- |
+| devops-automator         | Build configuration updates |
+| documentation-maintainer | Optimization documentation  |
 
 ### Parallel (Works alongside)
 
-| Agent | Collaboration Pattern |
-|-------|----------------------|
+| Agent                 | Collaboration Pattern             |
+| --------------------- | --------------------------------- |
 | performance-optimizer | Frontend performance coordination |
-| dead-code-eliminator | Unused code removal |
+| dead-code-eliminator  | Unused code removal               |
 
 ## Output Format
 
@@ -165,16 +168,17 @@ Accept insights with tags:
 ## Bundle Analysis Report
 
 ### Summary
+
 - **Total Size Before**: [X] MB
 - **Total Size After**: [Y] MB
 - **Reduction**: [Z]%
 
 ### Chunk Analysis
 
-| Chunk | Before | After | Savings |
-|-------|--------|-------|---------|
-| main | 500kb | 200kb | 60% |
-| vendor | 800kb | 400kb | 50% |
+| Chunk  | Before | After | Savings |
+| ------ | ------ | ----- | ------- |
+| main   | 500kb  | 200kb | 60%     |
+| vendor | 800kb  | 400kb | 50%     |
 
 ### Top Optimizations
 
@@ -182,18 +186,21 @@ Accept insights with tags:
 2. **[Optimization]**: [Before] → [After] ([Savings])
 
 ### Code Splitting Implemented
+
 - Route: `/dashboard` - lazy loaded
 - Component: `HeavyChart` - dynamic import
 
 ### Recommendations
+
 1. [Next optimization opportunity]
 2. [Dependency replacement suggestion]
 
 ### Performance Budget Status
-| Budget | Limit | Actual | Status |
-|--------|-------|--------|--------|
-| Main bundle | 150kb | 120kb | ✅ Pass |
-| Vendor | 300kb | 280kb | ✅ Pass |
+
+| Budget      | Limit | Actual | Status  |
+| ----------- | ----- | ------ | ------- |
+| Main bundle | 150kb | 120kb  | ✅ Pass |
+| Vendor      | 300kb | 280kb  | ✅ Pass |
 ```
 
 ## Success Criteria
@@ -211,13 +218,13 @@ Completion is achieved when:
 
 Report these metrics on completion:
 
-| Metric | Description |
-|--------|-------------|
-| Size reduction | Total KB saved |
-| Chunks optimized | Number of chunks improved |
-| LCP improvement | Largest contentful paint delta |
-| Dependencies removed | Bloated packages eliminated |
-| Budget compliance | All limits met |
+| Metric               | Description                    |
+| -------------------- | ------------------------------ |
+| Size reduction       | Total KB saved                 |
+| Chunks optimized     | Number of chunks improved      |
+| LCP improvement      | Largest contentful paint delta |
+| Dependencies removed | Bloated packages eliminated    |
+| Budget compliance    | All limits met                 |
 
 ## Completion Signal
 
@@ -240,16 +247,16 @@ Performance budgets: All passing
 
 ## Reference: Import Optimization
 
-| Bad | Good | Why |
-|-----|------|-----|
-| `import _ from 'lodash'` | `import debounce from 'lodash/debounce'` | Tree shaking |
-| `import { Button } from '@mui/material'` | `import Button from '@mui/material/Button'` | Barrel bypass |
-| `import moment from 'moment'` | `import { format } from 'date-fns'` | Smaller alternative |
+| Bad                                      | Good                                        | Why                 |
+| ---------------------------------------- | ------------------------------------------- | ------------------- |
+| `import _ from 'lodash'`                 | `import debounce from 'lodash/debounce'`    | Tree shaking        |
+| `import { Button } from '@mui/material'` | `import Button from '@mui/material/Button'` | Barrel bypass       |
+| `import moment from 'moment'`            | `import { format } from 'date-fns'`         | Smaller alternative |
 
 ## Reference: Size Targets
 
-| Chunk | Target | Critical |
-|-------|--------|----------|
-| Initial JS | <150kb gzip | <300kb |
-| Vendor | <250kb gzip | <500kb |
-| Total | <500kb gzip | <1MB |
+| Chunk      | Target      | Critical |
+| ---------- | ----------- | -------- |
+| Initial JS | <150kb gzip | <300kb   |
+| Vendor     | <250kb gzip | <500kb   |
+| Total      | <500kb gzip | <1MB     |

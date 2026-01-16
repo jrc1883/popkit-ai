@@ -8,35 +8,38 @@ Provides robust anonymization for collective learning while ensuring
 user privacy. Supports multiple anonymization levels and user controls.
 """
 
+import hashlib
 import json
 import os
 import re
-import hashlib
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
-from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
-from dataclasses import dataclass, field, asdict
 from enum import Enum
-
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 # =============================================================================
 # ANONYMIZATION LEVELS
 # =============================================================================
 
+
 class AnonymizationLevel(Enum):
     """Anonymization levels for pattern sharing."""
-    STRICT = "strict"      # Abstract patterns only, no code
+
+    STRICT = "strict"  # Abstract patterns only, no code
     MODERATE = "moderate"  # Patterns + generic code (default)
-    MINIMAL = "minimal"    # More context preserved (open source)
+    MINIMAL = "minimal"  # More context preserved (open source)
 
 
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
 
+
 @dataclass
 class PrivacySettings:
     """User privacy settings for collective learning."""
+
     # Sharing controls
     sharing_enabled: bool = True
     anonymization_level: str = "moderate"
@@ -61,7 +64,7 @@ class PrivacySettings:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict) -> 'PrivacySettings':
+    def from_dict(cls, data: Dict) -> "PrivacySettings":
         """Create from dictionary."""
         return cls(
             sharing_enabled=data.get("sharing_enabled", True),
@@ -72,7 +75,7 @@ class PrivacySettings:
             excluded_projects=data.get("excluded_projects", []),
             excluded_patterns=data.get("excluded_patterns", []),
             auto_delete_days=data.get("auto_delete_days", 90),
-            data_region=data.get("data_region", "us")
+            data_region=data.get("data_region", "us"),
         )
 
 
@@ -86,41 +89,37 @@ SENSITIVE_PATTERNS = {
     "api_key": [
         r'(?i)(api[_-]?key|apikey)\s*[:=]\s*["\']?([A-Za-z0-9_-]{16,})["\']?',
         r'(?i)(secret|token|password|auth)\s*[:=]\s*["\']?([A-Za-z0-9_-]{8,})["\']?',
-        r'pk_[a-z]+_[A-Za-z0-9]{20,}',  # Stripe-style keys
-        r'sk_[a-z]+_[A-Za-z0-9]{20,}',
-        r'Bearer\s+[A-Za-z0-9_.-]+',
+        r"pk_[a-z]+_[A-Za-z0-9]{20,}",  # Stripe-style keys
+        r"sk_[a-z]+_[A-Za-z0-9]{20,}",
+        r"Bearer\s+[A-Za-z0-9_.-]+",
     ],
-
     # Personal info
     "email": [
-        r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+',
+        r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+",
     ],
     "phone": [
-        r'\+?1?\s*\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}',
+        r"\+?1?\s*\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}",
     ],
-
     # File paths
     "paths": [
-        r'/Users/[^/\s]+/',
-        r'/home/[^/\s]+/',
-        r'C:\\Users\\[^\\]+\\',
-        r'C:/Users/[^/]+/',
+        r"/Users/[^/\s]+/",
+        r"/home/[^/\s]+/",
+        r"C:\\Users\\[^\\]+\\",
+        r"C:/Users/[^/]+/",
     ],
-
     # Network
     "ip_address": [
-        r'\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b',
+        r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b",
     ],
     "url_with_auth": [
-        r'https?://[^:]+:[^@]+@',
+        r"https?://[^:]+:[^@]+@",
     ],
-
     # Identifiers
     "uuid": [
-        r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
+        r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
     ],
     "database_connection": [
-        r'(?i)(mongodb|postgres|mysql|redis)://[^\s]+',
+        r"(?i)(mongodb|postgres|mysql|redis)://[^\s]+",
     ],
 }
 
@@ -141,6 +140,7 @@ REPLACEMENT_TOKENS = {
 # ANONYMIZATION FUNCTIONS
 # =============================================================================
 
+
 def detect_sensitive_data(content: str) -> List[Dict[str, Any]]:
     """
     Detect sensitive data patterns in content.
@@ -152,20 +152,21 @@ def detect_sensitive_data(content: str) -> List[Dict[str, Any]]:
     for category, patterns in SENSITIVE_PATTERNS.items():
         for pattern in patterns:
             for match in re.finditer(pattern, content, re.IGNORECASE):
-                detections.append({
-                    "category": category,
-                    "pattern": pattern,
-                    "match": match.group(),
-                    "start": match.start(),
-                    "end": match.end(),
-                })
+                detections.append(
+                    {
+                        "category": category,
+                        "pattern": pattern,
+                        "match": match.group(),
+                        "start": match.start(),
+                        "end": match.end(),
+                    }
+                )
 
     return detections
 
 
 def anonymize_content(
-    content: str,
-    level: AnonymizationLevel = AnonymizationLevel.MODERATE
+    content: str, level: AnonymizationLevel = AnonymizationLevel.MODERATE
 ) -> Tuple[str, List[str]]:
     """
     Anonymize content based on level.
@@ -222,15 +223,15 @@ def abstract_code_identifiers(content: str) -> str:
 
     # Common patterns to abstract
     abstractions = [
-        (r'(?<=[^a-zA-Z])handle[A-Z][a-zA-Z]*\b', '[HANDLER]'),
-        (r'(?<=[^a-zA-Z])get[A-Z][a-zA-Z]*\b', '[GETTER]'),
-        (r'(?<=[^a-zA-Z])set[A-Z][a-zA-Z]*\b', '[SETTER]'),
-        (r'(?<=[^a-zA-Z])fetch[A-Z][a-zA-Z]*\b', '[FETCHER]'),
-        (r'(?<=[^a-zA-Z])update[A-Z][a-zA-Z]*\b', '[UPDATER]'),
-        (r'(?<=[^a-zA-Z])create[A-Z][a-zA-Z]*\b', '[CREATOR]'),
-        (r'(?<=[^a-zA-Z])delete[A-Z][a-zA-Z]*\b', '[DELETER]'),
-        (r'(?<=[^a-zA-Z])validate[A-Z][a-zA-Z]*\b', '[VALIDATOR]'),
-        (r'(?<=[^a-zA-Z])process[A-Z][a-zA-Z]*\b', '[PROCESSOR]'),
+        (r"(?<=[^a-zA-Z])handle[A-Z][a-zA-Z]*\b", "[HANDLER]"),
+        (r"(?<=[^a-zA-Z])get[A-Z][a-zA-Z]*\b", "[GETTER]"),
+        (r"(?<=[^a-zA-Z])set[A-Z][a-zA-Z]*\b", "[SETTER]"),
+        (r"(?<=[^a-zA-Z])fetch[A-Z][a-zA-Z]*\b", "[FETCHER]"),
+        (r"(?<=[^a-zA-Z])update[A-Z][a-zA-Z]*\b", "[UPDATER]"),
+        (r"(?<=[^a-zA-Z])create[A-Z][a-zA-Z]*\b", "[CREATOR]"),
+        (r"(?<=[^a-zA-Z])delete[A-Z][a-zA-Z]*\b", "[DELETER]"),
+        (r"(?<=[^a-zA-Z])validate[A-Z][a-zA-Z]*\b", "[VALIDATOR]"),
+        (r"(?<=[^a-zA-Z])process[A-Z][a-zA-Z]*\b", "[PROCESSOR]"),
     ]
 
     for pattern, replacement in abstractions:
@@ -246,19 +247,19 @@ def abstract_error_message(error: str) -> str:
     result = error
 
     # Remove line numbers
-    result = re.sub(r':\d+:\d+', '', result)
-    result = re.sub(r'at line \d+', '', result)
-    result = re.sub(r'line \d+', '', result)
+    result = re.sub(r":\d+:\d+", "", result)
+    result = re.sub(r"at line \d+", "", result)
+    result = re.sub(r"line \d+", "", result)
 
     # Remove specific property names
     result = re.sub(r"property '([^']+)'", "property '[PROP]'", result)
     result = re.sub(r'property "([^"]+)"', 'property "[PROP]"', result)
 
     # Remove file paths from stack traces
-    result = re.sub(r'\s+at\s+[^\s]+\.(ts|js|tsx|jsx|py):\d+', '', result)
+    result = re.sub(r"\s+at\s+[^\s]+\.(ts|js|tsx|jsx|py):\d+", "", result)
 
     # Remove function names in stack traces
-    result = re.sub(r'at ([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(', 'at [FUNCTION](', result)
+    result = re.sub(r"at ([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(", "at [FUNCTION](", result)
 
     return result.strip()
 
@@ -278,6 +279,7 @@ def generate_content_hash(content: str) -> str:
 # =============================================================================
 # SETTINGS MANAGEMENT
 # =============================================================================
+
 
 class PrivacyManager:
     """
@@ -314,9 +316,7 @@ class PrivacyManager:
 
         if self._settings:
             self.settings_dir.mkdir(parents=True, exist_ok=True)
-            self.settings_file.write_text(
-                json.dumps(self._settings.to_dict(), indent=2)
-            )
+            self.settings_file.write_text(json.dumps(self._settings.to_dict(), indent=2))
 
     def give_consent(self) -> None:
         """Record user consent for data sharing."""
@@ -399,9 +399,7 @@ class PrivacyManager:
         return False
 
     def anonymize(
-        self,
-        content: str,
-        file_path: Optional[str] = None
+        self, content: str, file_path: Optional[str] = None
     ) -> Tuple[str, Dict[str, Any]]:
         """
         Anonymize content according to settings.
@@ -435,14 +433,15 @@ class PrivacyManager:
 # DATA DELETION (GDPR Right to be Forgotten)
 # =============================================================================
 
+
 def request_data_deletion(api_key: str, base_url: Optional[str] = None) -> Dict[str, Any]:
     """
     Request deletion of all user data from PopKit Cloud.
 
     This is the GDPR "Right to be Forgotten" implementation.
     """
-    import urllib.request
     import urllib.error
+    import urllib.request
 
     base_url = base_url or "https://api.thehouseofdeals.com/v1"
     url = f"{base_url}/privacy/delete-all"
@@ -453,10 +452,7 @@ def request_data_deletion(api_key: str, base_url: Optional[str] = None) -> Dict[
     }
 
     request = urllib.request.Request(
-        url,
-        data=json.dumps({"confirm": True}).encode("utf-8"),
-        headers=headers,
-        method="POST"
+        url, data=json.dumps({"confirm": True}).encode("utf-8"), headers=headers, method="POST"
     )
 
     try:
@@ -475,8 +471,8 @@ def export_user_data(api_key: str, base_url: Optional[str] = None) -> Dict[str, 
 
     This is the GDPR "Right to Data Portability" implementation.
     """
-    import urllib.request
     import urllib.error
+    import urllib.request
 
     base_url = base_url or "https://api.thehouseofdeals.com/v1"
     url = f"{base_url}/privacy/export"
@@ -500,6 +496,7 @@ def export_user_data(api_key: str, base_url: Optional[str] = None) -> Dict[str, 
 # =============================================================================
 # CLI
 # =============================================================================
+
 
 def main():
     """CLI for testing privacy module."""

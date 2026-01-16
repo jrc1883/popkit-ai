@@ -35,17 +35,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Agents Provided
 
 **Tier 2 (On-Demand):**
+
 - researcher - Meta-research specialist for project analysis and pattern discovery
 
 ### Features
 
 **Local Mode (Works Without API Key):**
+
 - File-based research storage
 - Local keyword search
 - Research tagging and organization
 - Knowledge base management
 
 **Enhanced with API Key:**
+
 - Cloud-backed knowledge base
 - Semantic search with embeddings
 - Cross-project pattern learning

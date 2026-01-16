@@ -8,20 +8,19 @@ Run during plugin initialization or on-demand.
 Part of PopKit Issue #19 (Embeddings Enhancement).
 """
 
+import json
 import os
 import sys
-import json
-import re
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import List, Dict, Any, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 # Add utils to path
 sys.path.insert(0, os.path.dirname(__file__))
 
+from .embedding_store import EmbeddingRecord, EmbeddingStore
 from .voyage_client import VoyageClient, is_available
-from .embedding_store import EmbeddingStore, EmbeddingRecord
 
 # =============================================================================
 # CONFIGURATION
@@ -34,6 +33,7 @@ POPKIT_ROOT = Path(__file__).parent.parent.parent
 # =============================================================================
 # EXTRACTION FUNCTIONS
 # =============================================================================
+
 
 def extract_yaml_frontmatter(content: str) -> Dict[str, str]:
     """Extract YAML frontmatter from markdown file."""
@@ -51,7 +51,7 @@ def extract_yaml_frontmatter(content: str) -> Dict[str, str]:
         if ":" in line:
             key, value = line.split(":", 1)
             key = key.strip()
-            value = value.strip().strip('"\'')
+            value = value.strip().strip("\"'")
             result[key] = value
 
     return result
@@ -86,13 +86,15 @@ def extract_skill_descriptions() -> List[Dict[str, Any]]:
             if not description:
                 continue
 
-            skills.append({
-                "id": f"skill:{skill_dir.name}",
-                "name": skill_dir.name,
-                "description": description,
-                "source_type": "skill",
-                "path": str(skill_file)
-            })
+            skills.append(
+                {
+                    "id": f"skill:{skill_dir.name}",
+                    "name": skill_dir.name,
+                    "description": description,
+                    "source_type": "skill",
+                    "path": str(skill_file),
+                }
+            )
         except Exception as e:
             print(f"Warning: Failed to read {skill_file}: {e}")
 
@@ -135,14 +137,16 @@ def extract_agent_descriptions() -> List[Dict[str, Any]]:
                 if not description:
                     continue
 
-                agents.append({
-                    "id": f"agent:{agent_dir.name}",
-                    "name": agent_dir.name,
-                    "description": description,
-                    "source_type": "agent",
-                    "tier": tier,
-                    "path": str(agent_file)
-                })
+                agents.append(
+                    {
+                        "id": f"agent:{agent_dir.name}",
+                        "name": agent_dir.name,
+                        "description": description,
+                        "source_type": "agent",
+                        "tier": tier,
+                        "path": str(agent_file),
+                    }
+                )
             except Exception as e:
                 print(f"Warning: Failed to read {agent_file}: {e}")
 
@@ -172,13 +176,15 @@ def extract_command_descriptions() -> List[Dict[str, Any]]:
                 continue
 
             cmd_name = cmd_file.stem
-            commands.append({
-                "id": f"command:{cmd_name}",
-                "name": cmd_name,
-                "description": description,
-                "source_type": "command",
-                "path": str(cmd_file)
-            })
+            commands.append(
+                {
+                    "id": f"command:{cmd_name}",
+                    "name": cmd_name,
+                    "description": description,
+                    "source_type": "command",
+                    "path": str(cmd_file),
+                }
+            )
         except Exception as e:
             print(f"Warning: Failed to read {cmd_file}: {e}")
 
@@ -189,11 +195,9 @@ def extract_command_descriptions() -> List[Dict[str, Any]]:
 # EMBEDDING COMPUTATION
 # =============================================================================
 
+
 def compute_and_store_embeddings(
-    items: List[Dict[str, Any]],
-    client: VoyageClient,
-    store: EmbeddingStore,
-    batch_size: int = 50
+    items: List[Dict[str, Any]], client: VoyageClient, store: EmbeddingStore, batch_size: int = 50
 ) -> Tuple[int, int]:
     """
     Compute embeddings for items and store them.
@@ -215,7 +219,7 @@ def compute_and_store_embeddings(
 
     # Process in batches
     for i in range(0, len(items), batch_size):
-        batch = items[i:i + batch_size]
+        batch = items[i : i + batch_size]
         descriptions = [item["description"] for item in batch]
 
         try:
@@ -229,16 +233,17 @@ def compute_and_store_embeddings(
                     source_type=item["source_type"],
                     source_id=item["name"],
                     metadata={
-                        k: v for k, v in item.items()
+                        k: v
+                        for k, v in item.items()
                         if k not in ["id", "description", "source_type", "name"]
                     },
-                    created_at=datetime.now().isoformat()
+                    created_at=datetime.now().isoformat(),
                 )
                 store.store(record)
                 success += 1
 
         except Exception as e:
-            print(f"Error embedding batch {i//batch_size + 1}: {e}")
+            print(f"Error embedding batch {i // batch_size + 1}: {e}")
             errors += len(batch)
 
     return success, errors
@@ -248,12 +253,13 @@ def compute_and_store_embeddings(
 # MAIN FUNCTIONS
 # =============================================================================
 
+
 def initialize_embeddings(
     force: bool = False,
     skills: bool = True,
     agents: bool = True,
     commands: bool = True,
-    verbose: bool = True
+    verbose: bool = True,
 ) -> Dict[str, Any]:
     """
     Initialize embeddings for all PopKit components.
@@ -274,7 +280,7 @@ def initialize_embeddings(
         "agents": {"extracted": 0, "embedded": 0, "errors": 0},
         "commands": {"extracted": 0, "embedded": 0, "errors": 0},
         "total": 0,
-        "errors": 0
+        "errors": 0,
     }
 
     # Check API availability
@@ -291,7 +297,9 @@ def initialize_embeddings(
         results["status"] = "already_initialized"
         results["existing_count"] = store.count()
         if verbose:
-            print(f"Already initialized with {store.count()} embeddings. Use --force to re-compute.")
+            print(
+                f"Already initialized with {store.count()} embeddings. Use --force to re-compute."
+            )
         return results
 
     # Clear if forcing
@@ -360,19 +368,17 @@ def initialize_embeddings(
 
     # Calculate totals
     results["total"] = (
-        results["skills"]["embedded"] +
-        results["agents"]["embedded"] +
-        results["commands"]["embedded"]
+        results["skills"]["embedded"]
+        + results["agents"]["embedded"]
+        + results["commands"]["embedded"]
     )
     results["errors"] = (
-        results["skills"]["errors"] +
-        results["agents"]["errors"] +
-        results["commands"]["errors"]
+        results["skills"]["errors"] + results["agents"]["errors"] + results["commands"]["errors"]
     )
 
     if verbose:
-        print(f"\n{'='*50}")
-        print(f"Embedding initialization complete!")
+        print(f"\n{'=' * 50}")
+        print("Embedding initialization complete!")
         print(f"  Skills:   {results['skills']['embedded']}/{results['skills']['extracted']}")
         print(f"  Agents:   {results['agents']['embedded']}/{results['agents']['extracted']}")
         print(f"  Commands: {results['commands']['embedded']}/{results['commands']['extracted']}")
@@ -395,7 +401,7 @@ def get_embedding_status() -> Dict[str, Any]:
     return {
         "available": is_available(),
         "stats": store.stats(),
-        "has_embeddings": store.count() > 0
+        "has_embeddings": store.count() > 0,
     }
 
 
@@ -406,39 +412,15 @@ def get_embedding_status() -> Dict[str, Any]:
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Initialize PopKit embeddings"
-    )
+    parser = argparse.ArgumentParser(description="Initialize PopKit embeddings")
     parser.add_argument(
-        "--force", "-f",
-        action="store_true",
-        help="Force re-computation of all embeddings"
+        "--force", "-f", action="store_true", help="Force re-computation of all embeddings"
     )
-    parser.add_argument(
-        "--status", "-s",
-        action="store_true",
-        help="Show current status only"
-    )
-    parser.add_argument(
-        "--skills-only",
-        action="store_true",
-        help="Only process skills"
-    )
-    parser.add_argument(
-        "--agents-only",
-        action="store_true",
-        help="Only process agents"
-    )
-    parser.add_argument(
-        "--commands-only",
-        action="store_true",
-        help="Only process commands"
-    )
-    parser.add_argument(
-        "--quiet", "-q",
-        action="store_true",
-        help="Quiet mode (JSON output only)"
-    )
+    parser.add_argument("--status", "-s", action="store_true", help="Show current status only")
+    parser.add_argument("--skills-only", action="store_true", help="Only process skills")
+    parser.add_argument("--agents-only", action="store_true", help="Only process agents")
+    parser.add_argument("--commands-only", action="store_true", help="Only process commands")
+    parser.add_argument("--quiet", "-q", action="store_true", help="Quiet mode (JSON output only)")
 
     args = parser.parse_args()
 
@@ -450,27 +432,18 @@ if __name__ == "__main__":
     # Determine what to process
     if args.skills_only:
         result = initialize_embeddings(
-            force=args.force,
-            skills=True, agents=False, commands=False,
-            verbose=not args.quiet
+            force=args.force, skills=True, agents=False, commands=False, verbose=not args.quiet
         )
     elif args.agents_only:
         result = initialize_embeddings(
-            force=args.force,
-            skills=False, agents=True, commands=False,
-            verbose=not args.quiet
+            force=args.force, skills=False, agents=True, commands=False, verbose=not args.quiet
         )
     elif args.commands_only:
         result = initialize_embeddings(
-            force=args.force,
-            skills=False, agents=False, commands=True,
-            verbose=not args.quiet
+            force=args.force, skills=False, agents=False, commands=True, verbose=not args.quiet
         )
     else:
-        result = initialize_embeddings(
-            force=args.force,
-            verbose=not args.quiet
-        )
+        result = initialize_embeddings(force=args.force, verbose=not args.quiet)
 
     if args.quiet:
         print(json.dumps(result, indent=2))

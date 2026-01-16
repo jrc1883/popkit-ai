@@ -8,14 +8,13 @@ and spikes during development. Integrates with embeddings for semantic search.
 Part of PopKit Issue #142 (Research Index with Embeddings).
 """
 
-import os
 import json
+import os
 import re
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
-from typing import List, Dict, Any, Optional, Tuple
-from dataclasses import dataclass, field, asdict
 from pathlib import Path
-
+from typing import Any, Dict, List, Optional, Tuple
 
 # =============================================================================
 # CONFIGURATION
@@ -33,9 +32,11 @@ ENTRY_TYPES = ["decision", "finding", "learning", "spike"]
 # DATA CLASSES
 # =============================================================================
 
+
 @dataclass
 class ResearchEntry:
     """A research entry with full content."""
+
     id: str
     type: str  # decision, finding, learning, spike
     title: str
@@ -56,23 +57,34 @@ class ResearchEntry:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> 'ResearchEntry':
+    def from_dict(cls, d: Dict[str, Any]) -> "ResearchEntry":
         """Create from dictionary."""
         # Handle snake_case vs camelCase
-        if 'createdAt' in d:
-            d['created_at'] = d.pop('createdAt')
-        if 'updatedAt' in d:
-            d['updated_at'] = d.pop('updatedAt')
-        if 'embeddingId' in d:
-            d['embedding_id'] = d.pop('embeddingId')
-        if 'relatedEntries' in d:
-            d['related_entries'] = d.pop('relatedEntries')
+        if "createdAt" in d:
+            d["created_at"] = d.pop("createdAt")
+        if "updatedAt" in d:
+            d["updated_at"] = d.pop("updatedAt")
+        if "embeddingId" in d:
+            d["embedding_id"] = d.pop("embeddingId")
+        if "relatedEntries" in d:
+            d["related_entries"] = d.pop("relatedEntries")
 
         # Filter to known fields
         known_fields = {
-            'id', 'type', 'title', 'content', 'context', 'rationale',
-            'alternatives', 'tags', 'project', 'references',
-            'related_entries', 'created_at', 'updated_at', 'embedding_id'
+            "id",
+            "type",
+            "title",
+            "content",
+            "context",
+            "rationale",
+            "alternatives",
+            "tags",
+            "project",
+            "references",
+            "related_entries",
+            "created_at",
+            "updated_at",
+            "embedding_id",
         }
         filtered = {k: v for k, v in d.items() if k in known_fields}
 
@@ -95,6 +107,7 @@ class ResearchEntry:
 @dataclass
 class IndexEntry:
     """Lightweight index entry (without full content)."""
+
     id: str
     type: str
     title: str
@@ -108,14 +121,14 @@ class IndexEntry:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> 'IndexEntry':
+    def from_dict(cls, d: Dict[str, Any]) -> "IndexEntry":
         """Create from dictionary."""
-        if 'createdAt' in d:
-            d['created_at'] = d.pop('createdAt')
-        if 'embeddingId' in d:
-            d['embedding_id'] = d.pop('embeddingId')
+        if "createdAt" in d:
+            d["created_at"] = d.pop("createdAt")
+        if "embeddingId" in d:
+            d["embedding_id"] = d.pop("embeddingId")
 
-        known_fields = {'id', 'type', 'title', 'tags', 'project', 'created_at', 'embedding_id'}
+        known_fields = {"id", "type", "title", "tags", "project", "created_at", "embedding_id"}
         filtered = {k: v for k, v in d.items() if k in known_fields}
 
         return cls(**filtered)
@@ -124,6 +137,7 @@ class IndexEntry:
 @dataclass
 class ResearchIndex:
     """Master index for research entries."""
+
     version: str = INDEX_VERSION
     last_updated: str = field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
     entries: List[IndexEntry] = field(default_factory=list)
@@ -141,7 +155,7 @@ class ResearchIndex:
         }
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> 'ResearchIndex':
+    def from_dict(cls, d: Dict[str, Any]) -> "ResearchIndex":
         """Create from dictionary."""
         return cls(
             version=d.get("version", INDEX_VERSION),
@@ -155,6 +169,7 @@ class ResearchIndex:
 @dataclass
 class SearchResult:
     """Result from research search."""
+
     entry: ResearchEntry
     similarity: float
     rank: int = 0
@@ -173,6 +188,7 @@ class SearchResult:
 # =============================================================================
 # RESEARCH INDEX MANAGER
 # =============================================================================
+
 
 class ResearchIndexManager:
     """
@@ -211,7 +227,7 @@ class ResearchIndexManager:
         """Load index from disk or create new one."""
         if self.index_path.exists():
             try:
-                with open(self.index_path, 'r', encoding='utf-8') as f:
+                with open(self.index_path, "r", encoding="utf-8") as f:
                     data = json.load(f)
                 return ResearchIndex.from_dict(data)
             except (json.JSONDecodeError, KeyError):
@@ -222,7 +238,7 @@ class ResearchIndexManager:
     def _save_index(self) -> None:
         """Save index to disk."""
         self._index.last_updated = datetime.utcnow().isoformat() + "Z"
-        with open(self.index_path, 'w', encoding='utf-8') as f:
+        with open(self.index_path, "w", encoding="utf-8") as f:
             json.dump(self._index.to_dict(), f, indent=2)
 
     def _generate_id(self) -> str:
@@ -233,7 +249,7 @@ class ResearchIndexManager:
         # Find highest existing ID
         max_num = 0
         for entry in self._index.entries:
-            match = re.match(r'r(\d+)', entry.id)
+            match = re.match(r"r(\d+)", entry.id)
             if match:
                 max_num = max(max_num, int(match.group(1)))
 
@@ -254,9 +270,7 @@ class ResearchIndexManager:
                     self._index.tag_index[tag].append(entry.id)
 
         # Clean empty tags
-        self._index.tag_index = {
-            k: v for k, v in self._index.tag_index.items() if v
-        }
+        self._index.tag_index = {k: v for k, v in self._index.tag_index.items() if v}
 
         # Update project index
         if entry.project:
@@ -271,9 +285,7 @@ class ResearchIndexManager:
                     self._index.project_index[entry.project].append(entry.id)
 
         # Clean empty projects
-        self._index.project_index = {
-            k: v for k, v in self._index.project_index.items() if v
-        }
+        self._index.project_index = {k: v for k, v in self._index.project_index.items() if v}
 
     # =========================================================================
     # CRUD OPERATIONS
@@ -300,7 +312,7 @@ class ResearchIndexManager:
 
         # Save full entry
         entry_path = self.entries_dir / f"{entry.id}.json"
-        with open(entry_path, 'w', encoding='utf-8') as f:
+        with open(entry_path, "w", encoding="utf-8") as f:
             json.dump(entry.to_dict(), f, indent=2)
 
         # Add to index
@@ -335,7 +347,7 @@ class ResearchIndexManager:
         if not entry_path.exists():
             return None
 
-        with open(entry_path, 'r', encoding='utf-8') as f:
+        with open(entry_path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
         return ResearchEntry.from_dict(data)
@@ -363,7 +375,7 @@ class ResearchIndexManager:
         entry.updated_at = datetime.utcnow().isoformat() + "Z"
 
         # Save entry
-        with open(entry_path, 'w', encoding='utf-8') as f:
+        with open(entry_path, "w", encoding="utf-8") as f:
             json.dump(entry.to_dict(), f, indent=2)
 
         # Update index entry
@@ -409,9 +421,7 @@ class ResearchIndexManager:
         entry_path.unlink()
 
         # Remove from index
-        self._index.entries = [
-            e for e in self._index.entries if e.id != entry_id
-        ]
+        self._index.entries = [e for e in self._index.entries if e.id != entry_id]
         self._save_index()
 
         return True
@@ -425,7 +435,7 @@ class ResearchIndexManager:
         entry_type: Optional[str] = None,
         project: Optional[str] = None,
         tag: Optional[str] = None,
-        limit: int = 20
+        limit: int = 20,
     ) -> List[IndexEntry]:
         """
         List research entries with optional filters.
@@ -466,10 +476,7 @@ class ResearchIndexManager:
         Returns:
             Dictionary of tag -> count
         """
-        return {
-            tag: len(ids)
-            for tag, ids in self._index.tag_index.items()
-        }
+        return {tag: len(ids) for tag, ids in self._index.tag_index.items()}
 
     def list_projects(self) -> Dict[str, int]:
         """
@@ -478,10 +485,7 @@ class ResearchIndexManager:
         Returns:
             Dictionary of project -> count
         """
-        return {
-            project: len(ids)
-            for project, ids in self._index.project_index.items()
-        }
+        return {project: len(ids) for project, ids in self._index.project_index.items()}
 
     # =========================================================================
     # SEARCH
@@ -492,7 +496,7 @@ class ResearchIndexManager:
         query: str,
         entry_type: Optional[str] = None,
         project: Optional[str] = None,
-        limit: int = 5
+        limit: int = 5,
     ) -> List[SearchResult]:
         """
         Search entries by keywords (fallback when embeddings unavailable).
@@ -537,11 +541,9 @@ class ResearchIndexManager:
             if matches > 0:
                 # Normalize score to 0-1 range
                 similarity = min(matches / (len(query_words) * 3), 1.0)
-                results.append(SearchResult(
-                    entry=entry,
-                    similarity=similarity,
-                    match_type="keyword"
-                ))
+                results.append(
+                    SearchResult(entry=entry, similarity=similarity, match_type="keyword")
+                )
 
         # Sort by similarity
         results.sort(key=lambda r: r.similarity, reverse=True)
@@ -557,7 +559,7 @@ class ResearchIndexManager:
         tags: List[str],
         entry_type: Optional[str] = None,
         project: Optional[str] = None,
-        limit: int = 5
+        limit: int = 5,
     ) -> List[SearchResult]:
         """
         Search entries by tags.
@@ -596,11 +598,7 @@ class ResearchIndexManager:
             overlap = len(set(tags) & set(entry.tags))
             similarity = overlap / len(tags)
 
-            results.append(SearchResult(
-                entry=entry,
-                similarity=similarity,
-                match_type="tag"
-            ))
+            results.append(SearchResult(entry=entry, similarity=similarity, match_type="tag"))
 
         # Sort by similarity
         results.sort(key=lambda r: r.similarity, reverse=True)
@@ -617,7 +615,7 @@ class ResearchIndexManager:
         entry_type: Optional[str] = None,
         project: Optional[str] = None,
         limit: int = 5,
-        min_similarity: float = 0.6
+        min_similarity: float = 0.6,
     ) -> List[SearchResult]:
         """
         Search entries semantically using embeddings.
@@ -636,8 +634,8 @@ class ResearchIndexManager:
         """
         # Try to import embedding utilities
         try:
-            from .voyage_client import VoyageClient
             from .embedding_store import EmbeddingStore
+            from .voyage_client import VoyageClient
         except ImportError:
             # Fall back to keyword search
             return self.search_keywords(query, entry_type, project, limit)
@@ -658,7 +656,7 @@ class ResearchIndexManager:
                 query_embedding=query_embedding,
                 source_type="research",
                 top_k=limit * 2,  # Get more for filtering
-                min_similarity=min_similarity
+                min_similarity=min_similarity,
             )
 
             results = []
@@ -677,11 +675,9 @@ class ResearchIndexManager:
                 if project and entry.project != project:
                     continue
 
-                results.append(SearchResult(
-                    entry=entry,
-                    similarity=sr.similarity,
-                    match_type="semantic"
-                ))
+                results.append(
+                    SearchResult(entry=entry, similarity=sr.similarity, match_type="semantic")
+                )
 
                 if len(results) >= limit:
                     break
@@ -809,8 +805,8 @@ class ResearchIndexManager:
 
         # Try to import embedding utilities
         try:
+            from .embedding_store import EmbeddingRecord, EmbeddingStore
             from .voyage_client import VoyageClient
-            from .embedding_store import EmbeddingStore, EmbeddingRecord
         except ImportError:
             return None
 
@@ -883,6 +879,7 @@ class ResearchIndexManager:
 # HELPER FUNCTIONS
 # =============================================================================
 
+
 def extract_keywords(text: str) -> List[str]:
     """
     Extract keywords from text for auto-tagging.
@@ -896,18 +893,57 @@ def extract_keywords(text: str) -> List[str]:
     # Common tech keywords to look for
     tech_keywords = {
         # Infrastructure
-        "redis", "postgres", "mysql", "mongodb", "sqlite", "database",
-        "docker", "kubernetes", "aws", "cloudflare", "vercel",
+        "redis",
+        "postgres",
+        "mysql",
+        "mongodb",
+        "sqlite",
+        "database",
+        "docker",
+        "kubernetes",
+        "aws",
+        "cloudflare",
+        "vercel",
         # Frontend
-        "react", "vue", "angular", "svelte", "astro", "next", "nuxt",
-        "css", "tailwind", "typescript", "javascript",
+        "react",
+        "vue",
+        "angular",
+        "svelte",
+        "astro",
+        "next",
+        "nuxt",
+        "css",
+        "tailwind",
+        "typescript",
+        "javascript",
         # Backend
-        "node", "python", "rust", "go", "api", "rest", "graphql",
-        "auth", "authentication", "authorization", "jwt", "oauth",
+        "node",
+        "python",
+        "rust",
+        "go",
+        "api",
+        "rest",
+        "graphql",
+        "auth",
+        "authentication",
+        "authorization",
+        "jwt",
+        "oauth",
         # Concepts
-        "security", "performance", "testing", "ci", "cd", "deployment",
-        "caching", "rate-limiting", "webhooks", "websocket",
-        "embedding", "ai", "ml", "vector",
+        "security",
+        "performance",
+        "testing",
+        "ci",
+        "cd",
+        "deployment",
+        "caching",
+        "rate-limiting",
+        "webhooks",
+        "websocket",
+        "embedding",
+        "ai",
+        "ml",
+        "vector",
     }
 
     # Find matches
@@ -939,13 +975,12 @@ def get_research_manager(project_root: Optional[str] = None) -> ResearchIndexMan
 # =============================================================================
 
 if __name__ == "__main__":
-    import sys
-
     print("Research Index Test")
     print("=" * 40)
 
     # Create manager in temp location
     import tempfile
+
     test_dir = Path(tempfile.mkdtemp())
     manager = ResearchIndexManager(test_dir)
 
@@ -996,5 +1031,6 @@ if __name__ == "__main__":
 
     # Cleanup
     import shutil
+
     shutil.rmtree(test_dir)
     print("\nAll tests passed!")

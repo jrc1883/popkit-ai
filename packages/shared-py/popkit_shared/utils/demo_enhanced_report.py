@@ -5,8 +5,8 @@ Shows what the enhanced HTML report will include after Phase 2-3 integration.
 """
 
 import json
-import sys
 from pathlib import Path
+
 from transcript_parser import TranscriptParser
 
 
@@ -14,8 +14,10 @@ def demo_enhanced_report():
     """Demonstrate enhanced recording report features"""
 
     # Load the recent recording
-    recordings_dir = Path.home() / '.claude' / 'popkit' / 'recordings'
-    recordings = sorted(recordings_dir.glob('*.json'), key=lambda p: p.stat().st_mtime, reverse=True)
+    recordings_dir = Path.home() / ".claude" / "popkit" / "recordings"
+    recordings = sorted(
+        recordings_dir.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True
+    )
 
     if not recordings:
         print("[ERROR] No recordings found")
@@ -31,22 +33,22 @@ def demo_enhanced_report():
         recording = json.load(f)
 
     # Extract timestamps from recording
-    start_time = recording.get('started_at')
-    stop_time = recording.get('stopped_at')
+    start_time = recording.get("started_at")
+    stop_time = recording.get("stopped_at")
 
     # Get transcript path from recording metadata (or fallback to current session)
     transcript_path = None
-    for event in recording.get('events', []):
-        if event.get('type') == 'metadata' and 'transcript_path' in event:
-            transcript_path = Path(event['transcript_path'])
+    for event in recording.get("events", []):
+        if event.get("type") == "metadata" and "transcript_path" in event:
+            transcript_path = Path(event["transcript_path"])
             break
 
     if not transcript_path:
         # Fallback to current session transcript
         # Look for most recent transcript in the projects directory
-        projects_dir = Path.home() / '.claude' / 'projects'
+        projects_dir = Path.home() / ".claude" / "projects"
         if projects_dir.exists():
-            transcripts = list(projects_dir.glob('*/*.jsonl'))
+            transcripts = list(projects_dir.glob("*/*.jsonl"))
             if transcripts:
                 transcript_path = max(transcripts, key=lambda p: p.stat().st_mtime)
 
@@ -54,11 +56,11 @@ def demo_enhanced_report():
             transcript_path = None  # Will be handled below
 
     if not transcript_path.exists():
-        print(f"[WARN] Transcript not found, skipping reasoning analysis")
+        print("[WARN] Transcript not found, skipping reasoning analysis")
         parser = None
     else:
         # Parse transcript with timestamp filtering
-        print(f"[INFO] Parsing transcript with time filter:")
+        print("[INFO] Parsing transcript with time filter:")
         print(f"  Start: {start_time}")
         print(f"  Stop:  {stop_time}")
         print()
@@ -68,8 +70,8 @@ def demo_enhanced_report():
     print("## SESSION OVERVIEW")
     print("-" * 70)
 
-    events = recording.get('events', [])
-    tool_calls = [e for e in events if e.get('type') in ('tool_call_start', 'tool_call_complete')]
+    events = recording.get("events", [])
+    tool_calls = [e for e in events if e.get("type") in ("tool_call_start", "tool_call_complete")]
 
     print(f"Total events: {len(events)}")
     print(f"Tool calls: {len(tool_calls)}")
@@ -84,14 +86,18 @@ def demo_enhanced_report():
         print(f"  Output tokens:       {usage.output_tokens:>12,}")
         print(f"  Cache writes:        {usage.cache_creation_input_tokens:>12,}")
         print(f"  Cache reads:         {usage.cache_read_input_tokens:>12,}")
-        print(f"  ----------------------------------------")
+        print("  ----------------------------------------")
         print(f"  Total tokens:        {usage.total_tokens:>12,}")
         print()
         print(f"ESTIMATED COST: ${cost:.2f}")
 
         # Cache hit rate
         if usage.input_tokens + usage.cache_read_input_tokens > 0:
-            cache_rate = usage.cache_read_input_tokens / (usage.input_tokens + usage.cache_read_input_tokens) * 100
+            cache_rate = (
+                usage.cache_read_input_tokens
+                / (usage.input_tokens + usage.cache_read_input_tokens)
+                * 100
+            )
             print(f"Cache hit rate: {cache_rate:.1f}%")
 
     print()
@@ -102,12 +108,16 @@ def demo_enhanced_report():
     print("-" * 70)
 
     # Show first 5 tool calls with reasoning
-    tool_starts = [e for e in events if e.get('type') == 'tool_call_start'][:5]
+    tool_starts = [e for e in events if e.get("type") == "tool_call_start"][:5]
 
     for i, event in enumerate(tool_starts, 1):
-        tool_name = event.get('tool_name')
-        timestamp = event.get('timestamp', '').split('T')[1][:8] if 'T' in event.get('timestamp', '') else 'N/A'
-        tool_use_id = event.get('tool_use_id')
+        tool_name = event.get("tool_name")
+        timestamp = (
+            event.get("timestamp", "").split("T")[1][:8]
+            if "T" in event.get("timestamp", "")
+            else "N/A"
+        )
+        tool_use_id = event.get("tool_use_id")
 
         print(f"\n{i}. [{timestamp}] {tool_name}")
 
@@ -115,21 +125,21 @@ def demo_enhanced_report():
             # Get reasoning
             reasoning = parser.get_reasoning_before_tool(tool_use_id)
 
-            if reasoning['text']:
-                print(f"\n   CLAUDE'S REASONING:")
+            if reasoning["text"]:
+                print("\n   CLAUDE'S REASONING:")
                 # Show first text block
-                text = reasoning['text'][0]
-                lines = text.split('\n')
+                text = reasoning["text"][0]
+                lines = text.split("\n")
                 for line in lines[:3]:  # First 3 lines
                     print(f"   > {line}")
                 if len(lines) > 3:
-                    print(f"   > ... ({len(lines)-3} more lines)")
+                    print(f"   > ... ({len(lines) - 3} more lines)")
 
-            if reasoning['thinking']:
+            if reasoning["thinking"]:
                 print(f"\n   EXTENDED THINKING: ({len(reasoning['thinking'])} blocks)")
                 # Show preview of first thinking block
-                thinking = reasoning['thinking'][0]
-                preview = thinking[:150].replace('\n', ' ')
+                thinking = reasoning["thinking"][0]
+                preview = thinking[:150].replace("\n", " ")
                 print(f"   > {preview}...")
 
             # Get token usage for this tool

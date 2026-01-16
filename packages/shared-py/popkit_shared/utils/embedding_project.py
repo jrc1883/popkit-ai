@@ -11,15 +11,16 @@ Part of PopKit Issue #46 (Project Embeddings).
 import os
 import sys
 import time
-from pathlib import Path
-from typing import List, Dict, Any, Optional
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 # Add utils to path for local imports
 sys.path.insert(0, os.path.dirname(__file__))
 
-from .embedding_store import EmbeddingStore, EmbeddingRecord
-from .voyage_client import VoyageClient, is_available as voyage_available
+from .embedding_store import EmbeddingRecord, EmbeddingStore
+from .voyage_client import VoyageClient
+from .voyage_client import is_available as voyage_available
 
 # =============================================================================
 # CONFIGURATION
@@ -42,6 +43,7 @@ BATCH_SIZE = 50  # items per API call
 # =============================================================================
 # PROJECT DETECTION
 # =============================================================================
+
 
 def get_project_root(start_path: Optional[str] = None) -> Optional[str]:
     """
@@ -70,6 +72,7 @@ def get_project_root(start_path: Optional[str] = None) -> Optional[str]:
 # YAML FRONTMATTER EXTRACTION
 # =============================================================================
 
+
 def extract_yaml_frontmatter(content: str) -> Dict[str, str]:
     """Extract YAML frontmatter from markdown file."""
     if not content.startswith("---"):
@@ -86,7 +89,7 @@ def extract_yaml_frontmatter(content: str) -> Dict[str, str]:
         if ":" in line:
             key, value = line.split(":", 1)
             key = key.strip()
-            value = value.strip().strip('"\'')
+            value = value.strip().strip("\"'")
             result[key] = value
 
     return result
@@ -95,6 +98,7 @@ def extract_yaml_frontmatter(content: str) -> Dict[str, str]:
 # =============================================================================
 # SCANNING FUNCTIONS
 # =============================================================================
+
 
 def scan_project_items(project_root: Optional[str] = None) -> List[Dict[str, Any]]:
     """
@@ -148,14 +152,16 @@ def scan_project_items(project_root: Optional[str] = None) -> List[Dict[str, Any
 
                     item_id = f"{source_type}:{project_name}:{name}"
 
-                    items.append({
-                        "id": item_id,
-                        "name": name,
-                        "description": description,
-                        "source_type": source_type,
-                        "path": str(file_path),
-                        "project_path": str(root)
-                    })
+                    items.append(
+                        {
+                            "id": item_id,
+                            "name": name,
+                            "description": description,
+                            "source_type": source_type,
+                            "path": str(file_path),
+                            "project_path": str(root),
+                        }
+                    )
 
                 except Exception as e:
                     print(f"Warning: Failed to read {file_path}: {e}")
@@ -167,11 +173,12 @@ def scan_project_items(project_root: Optional[str] = None) -> List[Dict[str, Any
 # EMBEDDING FUNCTIONS
 # =============================================================================
 
+
 def embed_project_items(
     project_root: Optional[str] = None,
     force: bool = False,
     source_types: Optional[List[str]] = None,
-    verbose: bool = True
+    verbose: bool = True,
 ) -> Dict[str, Any]:
     """
     Embed project items incrementally.
@@ -195,13 +202,7 @@ def embed_project_items(
             "by_type": {source_type: count, ...}
         }
     """
-    results = {
-        "status": "success",
-        "embedded": 0,
-        "skipped": 0,
-        "errors": 0,
-        "by_type": {}
-    }
+    results = {"status": "success", "embedded": 0, "skipped": 0, "errors": 0, "by_type": {}}
 
     # Check API availability
     if not voyage_available():
@@ -250,8 +251,9 @@ def embed_project_items(
             source_type = item["source_type"]
             if source_type not in results["by_type"]:
                 results["by_type"][source_type] = {"embedded": 0, "skipped": 0}
-            results["by_type"][source_type]["skipped"] = \
+            results["by_type"][source_type]["skipped"] = (
                 results["by_type"].get(source_type, {}).get("skipped", 0) + 1
+            )
 
     if verbose:
         print(f"Items to embed: {len(items_to_embed)}, skipped: {results['skipped']}")
@@ -261,7 +263,7 @@ def embed_project_items(
 
     # Embed in batches with rate limiting
     for i in range(0, len(items_to_embed), BATCH_SIZE):
-        batch = items_to_embed[i:i + BATCH_SIZE]
+        batch = items_to_embed[i : i + BATCH_SIZE]
 
         # Rate limit between batches
         if i > 0:
@@ -282,7 +284,7 @@ def embed_project_items(
                     source_id=item["name"],
                     metadata={"path": item["path"]},
                     created_at=datetime.now().isoformat(),
-                    project_path=item["project_path"]
+                    project_path=item["project_path"],
                 )
                 store.store(record)
                 results["embedded"] += 1
@@ -290,15 +292,16 @@ def embed_project_items(
                 source_type = item["source_type"]
                 if source_type not in results["by_type"]:
                     results["by_type"][source_type] = {"embedded": 0, "skipped": 0}
-                results["by_type"][source_type]["embedded"] = \
+                results["by_type"][source_type]["embedded"] = (
                     results["by_type"].get(source_type, {}).get("embedded", 0) + 1
+                )
 
         except Exception as e:
             print(f"Error embedding batch: {e}")
             results["errors"] += len(batch)
 
     if verbose:
-        print(f"\nEmbedding complete!")
+        print("\nEmbedding complete!")
         print(f"  Embedded: {results['embedded']}")
         print(f"  Skipped: {results['skipped']}")
         if results["errors"]:
@@ -365,7 +368,7 @@ def auto_embed_item(file_path: str, source_type: str) -> bool:
             source_id=name,
             metadata={"path": str(path)},
             created_at=datetime.now().isoformat(),
-            project_path=project_root
+            project_path=project_root,
         )
         store.store(record)
 
@@ -379,6 +382,7 @@ def auto_embed_item(file_path: str, source_type: str) -> bool:
 # =============================================================================
 # STATUS FUNCTIONS
 # =============================================================================
+
 
 def get_project_embedding_status(project_root: Optional[str] = None) -> Dict[str, Any]:
     """
@@ -414,7 +418,7 @@ def get_project_embedding_status(project_root: Optional[str] = None) -> Dict[str
         "items_stale": 0,
         "items_missing": 0,
         "by_type": {},
-        "api_available": voyage_available()
+        "api_available": voyage_available(),
     }
 
     if not root:
@@ -432,12 +436,7 @@ def get_project_embedding_status(project_root: Optional[str] = None) -> Dict[str
         source_type = item["source_type"]
 
         if source_type not in status["by_type"]:
-            status["by_type"][source_type] = {
-                "found": 0,
-                "embedded": 0,
-                "stale": 0,
-                "missing": 0
-            }
+            status["by_type"][source_type] = {"found": 0, "embedded": 0, "stale": 0, "missing": 0}
 
         status["by_type"][source_type]["found"] += 1
 
@@ -467,39 +466,19 @@ if __name__ == "__main__":
     import argparse
     import json
 
-    parser = argparse.ArgumentParser(
-        description="Manage project-local embeddings"
+    parser = argparse.ArgumentParser(description="Manage project-local embeddings")
+    parser.add_argument("command", choices=["scan", "embed", "status"], help="Command to run")
+    parser.add_argument(
+        "--project", "-p", help="Project root path (auto-detected if not specified)"
     )
     parser.add_argument(
-        "command",
-        choices=["scan", "embed", "status"],
-        help="Command to run"
+        "--force", "-f", action="store_true", help="Force re-embedding of all items"
     )
     parser.add_argument(
-        "--project", "-p",
-        help="Project root path (auto-detected if not specified)"
+        "--type", "-t", action="append", dest="types", help="Filter to specific source types"
     )
-    parser.add_argument(
-        "--force", "-f",
-        action="store_true",
-        help="Force re-embedding of all items"
-    )
-    parser.add_argument(
-        "--type", "-t",
-        action="append",
-        dest="types",
-        help="Filter to specific source types"
-    )
-    parser.add_argument(
-        "--json", "-j",
-        action="store_true",
-        help="Output as JSON"
-    )
-    parser.add_argument(
-        "--quiet", "-q",
-        action="store_true",
-        help="Quiet mode (minimal output)"
-    )
+    parser.add_argument("--json", "-j", action="store_true", help="Output as JSON")
+    parser.add_argument("--quiet", "-q", action="store_true", help="Quiet mode (minimal output)")
 
     args = parser.parse_args()
 
@@ -520,7 +499,7 @@ if __name__ == "__main__":
             project_root=args.project,
             force=args.force,
             source_types=args.types,
-            verbose=not args.quiet
+            verbose=not args.quiet,
         )
 
         if args.json or args.quiet:

@@ -9,6 +9,7 @@ All 69 utility modules have been successfully extracted from the monolithic PopK
 ### Package Structure
 
 **Before:**
+
 ```
 packages/plugin/hooks/utils/
 ├── context_carrier.py
@@ -18,6 +19,7 @@ packages/plugin/hooks/utils/
 ```
 
 **After:**
+
 ```
 packages/shared-py/popkit_shared/utils/
 ├── context_carrier.py
@@ -29,12 +31,14 @@ packages/shared-py/popkit_shared/utils/
 ### Import Path Changes
 
 **Old imports:**
+
 ```python
 from hooks.utils.context_carrier import HookContext
 from utils.skill_context import save_skill_context
 ```
 
 **New imports:**
+
 ```python
 from popkit_shared.utils.context_carrier import HookContext
 from popkit_shared.utils.skill_context import save_skill_context
@@ -111,7 +115,7 @@ The 69 extracted modules are organized into 8 categories:
    - local_telemetry, upstash_telemetry, efficiency_tracker, etc.
 
 8. **Specialized Utilities** (7 modules)
-   - voyage_client, embedding_*, workflow_*, etc.
+   - voyage*client, embedding*\_, workflow\_\_, etc.
 
 ## Next Steps
 

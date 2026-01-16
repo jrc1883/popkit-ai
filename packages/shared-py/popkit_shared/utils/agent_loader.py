@@ -6,14 +6,11 @@ Loads only relevant agents using embedding-based similarity search.
 Part of Phase 2: Embedding-Based Agent Loading.
 """
 
-from typing import List, Dict, Any
-import json
 import sys
-from pathlib import Path
+from typing import Any, Dict, List
 
-from .embedding_store import EmbeddingStore, SearchResult
+from .embedding_store import EmbeddingStore
 from .voyage_client import embed
-from .cloud_agent_search import search_agents as cloud_search
 
 
 class AgentLoader:
@@ -26,11 +23,7 @@ class AgentLoader:
         always_include_tier1: Always include some Tier 1 agents
     """
 
-    def __init__(
-        self,
-        use_embeddings: bool = True,
-        always_include_tier1: bool = True
-    ):
+    def __init__(self, use_embeddings: bool = True, always_include_tier1: bool = True):
         """
         Initialize agent loader.
 
@@ -71,20 +64,20 @@ class AgentLoader:
 
         # Search in SQLite
         results = self.store.search(
-            query_embedding=query_embedding,
-            top_k=top_k,
-            source_type="agent"
+            query_embedding=query_embedding, top_k=top_k, source_type="agent"
         )
 
         # Convert to agent dicts
         agents = []
         for result in results:
-            agents.append({
-                'agent_id': result.record.source_id,
-                'similarity': result.similarity,
-                'tier': result.record.metadata.get('tier', 'unknown'),
-                'description': result.record.content[:100]
-            })
+            agents.append(
+                {
+                    "agent_id": result.record.source_id,
+                    "similarity": result.similarity,
+                    "tier": result.record.metadata.get("tier", "unknown"),
+                    "description": result.record.content[:100],
+                }
+            )
 
         # Ensure some Tier 1 agents always included
         if self.always_include_tier1:
@@ -98,15 +91,15 @@ class AgentLoader:
 
         # Hardcoded keyword mappings
         keyword_map = {
-            'bug': ['bug-whisperer'],
-            'security': ['security-auditor'],
-            'test': ['test-writer-fixer'],
-            'performance': ['performance-optimizer', 'query-optimizer'],
-            'refactor': ['refactoring-expert'],
-            'api': ['api-designer'],
-            'review': ['code-reviewer'],
-            'vulnerability': ['security-auditor'],
-            'authentication': ['security-auditor'],
+            "bug": ["bug-whisperer"],
+            "security": ["security-auditor"],
+            "test": ["test-writer-fixer"],
+            "performance": ["performance-optimizer", "query-optimizer"],
+            "refactor": ["refactoring-expert"],
+            "api": ["api-designer"],
+            "review": ["code-reviewer"],
+            "vulnerability": ["security-auditor"],
+            "authentication": ["security-auditor"],
         }
 
         matched_agents = set()
@@ -115,46 +108,52 @@ class AgentLoader:
                 matched_agents.update(keyword_map[keyword])
 
         # Always include code-reviewer (Tier 1)
-        matched_agents.add('code-reviewer')
+        matched_agents.add("code-reviewer")
 
         # Convert to agent dicts
         agents = [
             {
-                'agent_id': agent_id,
-                'similarity': 0.5,  # Keyword match = medium similarity
-                'tier': 'tier-1-always-active' if agent_id == 'code-reviewer' else 'tier-2-on-demand',
-                'description': ''
+                "agent_id": agent_id,
+                "similarity": 0.5,  # Keyword match = medium similarity
+                "tier": "tier-1-always-active"
+                if agent_id == "code-reviewer"
+                else "tier-2-on-demand",
+                "description": "",
             }
             for agent_id in list(matched_agents)[:top_k]
         ]
 
         return agents
 
-    def _ensure_tier1_agents(self, agents: List[Dict[str, Any]], top_k: int) -> List[Dict[str, Any]]:
+    def _ensure_tier1_agents(
+        self, agents: List[Dict[str, Any]], top_k: int
+    ) -> List[Dict[str, Any]]:
         """Ensure at least 3 Tier 1 agents are included."""
-        tier1_agents = [a for a in agents if a['tier'] == 'tier-1-always-active']
+        tier1_agents = [a for a in agents if a["tier"] == "tier-1-always-active"]
 
         # If we have enough Tier 1, return as-is
         if len(tier1_agents) >= 3:
             return agents
 
         # Add essential Tier 1 agents
-        essential_tier1 = ['code-reviewer', 'bug-whisperer', 'documentation-maintainer']
+        essential_tier1 = ["code-reviewer", "bug-whisperer", "documentation-maintainer"]
 
         for agent_id in essential_tier1:
-            if agent_id not in [a['agent_id'] for a in agents]:
-                agents.append({
-                    'agent_id': agent_id,
-                    'similarity': 0.7,
-                    'tier': 'tier-1-always-active',
-                    'description': ''
-                })
+            if agent_id not in [a["agent_id"] for a in agents]:
+                agents.append(
+                    {
+                        "agent_id": agent_id,
+                        "similarity": 0.7,
+                        "tier": "tier-1-always-active",
+                        "description": "",
+                    }
+                )
 
-            if len([a for a in agents if a['tier'] == 'tier-1-always-active']) >= 3:
+            if len([a for a in agents if a["tier"] == "tier-1-always-active"]) >= 3:
                 break
 
         # Re-sort by similarity
-        agents.sort(key=lambda a: a['similarity'], reverse=True)
+        agents.sort(key=lambda a: a["similarity"], reverse=True)
 
         return agents
 

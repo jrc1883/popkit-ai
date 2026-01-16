@@ -5,11 +5,11 @@
 **Target:** <2,000 tokens
 **Achievement:** 1,909 tokens (PASS)
 
-| Metric | Before | After | Change |
-|--------|--------|-------|--------|
-| Tokens (est.) | 2,318 | 1,909 | -409 (-17.6%) |
-| Words | 1,743 | 1,436 | -307 (-17.6%) |
-| Target met | No | Yes | ✓ |
+| Metric        | Before | After | Change        |
+| ------------- | ------ | ----- | ------------- |
+| Tokens (est.) | 2,318  | 1,909 | -409 (-17.6%) |
+| Words         | 1,743  | 1,436 | -307 (-17.6%) |
+| Target met    | No     | Yes   | ✓             |
 
 ## Optimization Strategies Applied
 
@@ -51,9 +51,11 @@ Used `<details>` tags for optional content:
 ## Files Modified
 
 ### Main File
+
 - `SKILL.md` - Optimized from 2,318 to 1,909 tokens
 
 ### New Files
+
 - `examples/merge-workflow.md` - Detailed option implementations
 - `examples/next-action-example.md` - Next action generation flow
 - `OPTIMIZATION_SUMMARY.md` - This file

@@ -25,6 +25,7 @@ This guide will help you get started with contributing to the PopKit plugin suit
 This project is committed to providing a welcoming and inclusive environment for all contributors. We expect all participants to treat each other with respect and professionalism.
 
 Key principles:
+
 - Be respectful and inclusive
 - Welcome newcomers and help them get started
 - Accept constructive criticism gracefully
@@ -73,6 +74,7 @@ Documentation is crucial for a great developer experience:
 ### Code Contributions
 
 Ready to write code? Great! See the sections below for details on:
+
 - Setting up your development environment
 - Testing your changes
 - Submitting pull requests
@@ -375,6 +377,7 @@ git push origin feat/your-feature-name
 ### 8. Merge
 
 Once approved:
+
 - Maintainers will merge your PR
 - Your contribution will be included in the next release
 - You'll be credited in the changelog
@@ -387,12 +390,12 @@ Once approved:
 
 PopKit uses a modular architecture with 5 focused plugins:
 
-| Plugin | Purpose | Key Components |
-|--------|---------|----------------|
-| **popkit-core** | Foundation & orchestration | Power Mode, project tools, config |
-| **popkit-dev** | Development workflows | Git, GitHub, routines, feature dev |
-| **popkit-ops** | Operations & quality | Testing, debugging, security, deployment |
-| **popkit-research** | Knowledge management | Research capture, knowledge base |
+| Plugin              | Purpose                    | Key Components                           |
+| ------------------- | -------------------------- | ---------------------------------------- |
+| **popkit-core**     | Foundation & orchestration | Power Mode, project tools, config        |
+| **popkit-dev**      | Development workflows      | Git, GitHub, routines, feature dev       |
+| **popkit-ops**      | Operations & quality       | Testing, debugging, security, deployment |
+| **popkit-research** | Knowledge management       | Research capture, knowledge base         |
 
 ### Plugin Structure
 
@@ -537,6 +540,7 @@ All hooks must follow Claude Code portability standards:
 ```
 
 Key requirements:
+
 - Use `${CLAUDE_PLUGIN_ROOT}` for plugin-relative paths
 - Double-quote paths for Windows compatibility
 - Use forward slashes for cross-platform support
@@ -547,6 +551,7 @@ Key requirements:
 Hooks communicate via JSON stdin/stdout:
 
 **Input** (stdin):
+
 ```json
 {
   "event": "session-start",
@@ -557,6 +562,7 @@ Hooks communicate via JSON stdin/stdout:
 ```
 
 **Output** (stdout):
+
 ```json
 {
   "success": true,
@@ -639,6 +645,7 @@ When asking for help:
 ## Recognition
 
 All contributors will be:
+
 - Listed in release notes for their contributions
 - Credited in the changelog
 - Acknowledged in the community
@@ -650,6 +657,7 @@ Thank you for contributing to PopKit and helping make AI-powered development wor
 ## Questions?
 
 If you have any questions about contributing, feel free to:
+
 - Open an issue with the `question` label
 - Reach out to the maintainer: Joseph Cannon <joseph@thehouseofdeals.com>
 

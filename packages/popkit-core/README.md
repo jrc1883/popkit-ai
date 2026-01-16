@@ -17,23 +17,24 @@ PopKit Core provides the foundational meta-features and utilities for the PopKit
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `/popkit-core:plugin` | Plugin testing and management |
-| `/popkit-core:stats` | Efficiency metrics and usage statistics |
-| `/popkit-core:privacy` | Privacy controls and data management |
-| `/popkit-core:account` | Account management (status, keys, billing, logout) |
-| `/popkit-core:dashboard` | Multi-project management dashboard |
-| `/popkit-core:bug` | Bug reporting (report, search, share) |
-| `/popkit-core:power` | Power Mode multi-agent orchestration |
-| `/popkit-core:project` | Project analysis, initialization, and tooling |
-| `/popkit-core:record` | Session recording and playback |
+| Command                  | Description                                        |
+| ------------------------ | -------------------------------------------------- |
+| `/popkit-core:plugin`    | Plugin testing and management                      |
+| `/popkit-core:stats`     | Efficiency metrics and usage statistics            |
+| `/popkit-core:privacy`   | Privacy controls and data management               |
+| `/popkit-core:account`   | Account management (status, keys, billing, logout) |
+| `/popkit-core:dashboard` | Multi-project management dashboard                 |
+| `/popkit-core:bug`       | Bug reporting (report, search, share)              |
+| `/popkit-core:power`     | Power Mode multi-agent orchestration               |
+| `/popkit-core:project`   | Project analysis, initialization, and tooling      |
+| `/popkit-core:record`    | Session recording and playback                     |
 
 ## Skills
 
 PopKit Core provides 14 specialized skills:
 
 ### Project Management (5)
+
 - `pop-analyze-project` - Analyze project structure and patterns
 - `pop-project-init` - Initialize PopKit in a project
 - `pop-project-templates` - Project template generation
@@ -41,12 +42,14 @@ PopKit Core provides 14 specialized skills:
 - `pop-embed-project` - Create project embeddings
 
 ### Documentation & Validation (4)
+
 - `pop-auto-docs` - Automatic documentation generation
 - `pop-doc-sync` - Documentation synchronization
 - `pop-plugin-test` - Plugin integrity testing
 - `pop-validation-engine` - Configuration validation
 
 ### Meta Features (5)
+
 - `pop-bug-reporter` - Bug capture and reporting
 - `pop-dashboard` - Multi-project dashboard
 - `pop-power-mode` - Multi-agent orchestration
@@ -56,12 +59,14 @@ PopKit Core provides 14 specialized skills:
 ## Agents
 
 ### Tier 1 - Always Active (4)
+
 - `api-designer` - API design patterns and best practices
 - `accessibility-guardian` - WCAG compliance and a11y
 - `documentation-maintainer` - Documentation synchronization
 - `migration-specialist` - System migrations and upgrades
 
 ### Tier 2 - On-Demand (5)
+
 - `meta-agent` - Agent generator for custom workflows
 - `power-coordinator` - Multi-agent orchestration
 - `bundle-analyzer` - Bundle size optimization
@@ -75,12 +80,14 @@ PopKit Core uses a sophisticated **two-tier agent routing system** to intelligen
 ### The Tier System
 
 **Tier 1: Always Active (4 agents in Core)**
+
 - `api-designer` - RESTful and GraphQL API design
 - `accessibility-guardian` - WCAG compliance and a11y
 - `documentation-maintainer` - Documentation synchronization
 - `migration-specialist` - System migrations and upgrades
 
 **Tier 2: On-Demand (5 agents in Core)**
+
 - `meta-agent` - Agent generator for custom workflows
 - `power-coordinator` - Multi-agent orchestration
 - `bundle-analyzer` - Bundle size optimization
@@ -92,18 +99,21 @@ PopKit Core uses a sophisticated **two-tier agent routing system** to intelligen
 PopKit routes to agents using **four complementary mechanisms**:
 
 1. **Keyword Matching**: User message contains trigger words
+
    ```
    "Need to optimize bundle size" → bundle-analyzer
    "API design for user service" → api-designer
    ```
 
 2. **File Pattern Matching**: Working with specific file types
+
    ```
    "Review webpack.config.js" → bundle-analyzer
    "Update api/users.ts" → api-designer
    ```
 
 3. **Error Pattern Matching**: Specific error signatures
+
    ```
    "SecurityError in API call" → api-designer + security-auditor
    ```
@@ -118,11 +128,11 @@ PopKit routes to agents using **four complementary mechanisms**:
 
 Agents apply **80+ confidence threshold** to prevent false positives:
 
-| Score | Meaning | Action |
-|-------|---------|--------|
-| 0-25 | Likely false positive | Skip |
-| 50-75 | Moderate confidence | Note only |
-| 80-100 | Certain | Report to user |
+| Score  | Meaning               | Action         |
+| ------ | --------------------- | -------------- |
+| 0-25   | Likely false positive | Skip           |
+| 50-75  | Moderate confidence   | Note only      |
+| 80-100 | Certain               | Report to user |
 
 ### Example: API Design Request
 
@@ -142,6 +152,7 @@ Agents Activated:
 ### Token Optimization
 
 PopKit's routing reduces context usage by **40.5%**:
+
 - Tier 1 baseline: ~15.3k tokens (10 always-active agents across all plugins)
 - Tier 2 activation: ~0.3k tokens per specialist (only when needed)
 - Total savings: 25.7k → 15.3k tokens
@@ -171,6 +182,7 @@ TaskOutput polling → Aggregated Results
 ```
 
 **Key Features:**
+
 - **No external dependencies**: No Docker, no Redis required
 - **True parallelism**: 5 agents (Premium) or 10 agents (Pro)
 - **Cross-platform**: Windows/macOS/Linux
@@ -320,6 +332,43 @@ This plugin is part of the PopKit ecosystem and depends on `popkit-shared`.
 /popkit-core:bug share --issue 123
 ```
 
+## Hooks
+
+PopKit Core provides several lifecycle hooks that enhance workflow quality and automation:
+
+### Pre-Commit Hook
+
+**Automatic Ruff validation** on staged Python files before every commit (Issue #156):
+
+- **Auto-fixes**: Automatically fixes formatting and linting issues
+- **Re-staging**: Auto-fixed files are re-staged transparently
+- **Fail-open**: If Ruff is not installed, commits proceed with a warning
+- **Performance**: Completes in <5s for typical commits
+- **Blocking**: Only blocks on unfixable errors
+
+**Behavior**:
+1. Detects staged Python files (`git diff --cached --name-only`)
+2. Runs `ruff check --fix` on staged files
+3. Runs `ruff format` on staged files
+4. Re-stages files if auto-fixes were applied
+5. Blocks commit only on unfixable errors
+
+**Installation**:
+```bash
+pip install ruff  # Required for pre-commit validation
+```
+
+**Note**: The hook is automatically active once PopKit Core is installed. No additional setup required.
+
+### Other Hooks
+
+- **SessionStart**: Initializes session context, loads agents, checks for updates
+- **PreToolUse**: Validates tool usage and agent coordination
+- **PostToolUse**: Captures metrics, observability, and quality gates
+- **Stop**: Cleanup and session summary
+
+See `hooks/hooks.json` for complete hook configuration.
+
 ## Privacy & Data
 
 PopKit Core respects user privacy:
@@ -330,6 +379,7 @@ PopKit Core respects user privacy:
 - **Right to Deletion**: Complete data deletion on request
 
 Privacy levels:
+
 - **Strict**: No telemetry, no cloud sync
 - **Moderate**: Basic usage stats, opt-in cloud features
 - **Minimal**: All features with maximum data sharing
@@ -341,6 +391,7 @@ Privacy levels:
 - Optional: Voyage AI API key for semantic embeddings
 
 **Minimum Requirements**:
+
 - Claude Code 2.0.67+ (for extended thinking and plan mode)
 - Python 3.8+
 

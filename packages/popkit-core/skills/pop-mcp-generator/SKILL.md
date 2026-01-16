@@ -15,21 +15,21 @@ Generate a custom MCP (Model Context Protocol) server tailored to the specific p
 
 ## Operating Modes
 
-| Mode | Availability | Capabilities |
-|------|--------------|--------------|
-| **Basic** | Always (no API key) | Project analysis, tech stack detection, recommendations |
-| **Enhanced** | With API key | Custom MCP generation, semantic search, embeddings |
+| Mode         | Availability        | Capabilities                                            |
+| ------------ | ------------------- | ------------------------------------------------------- |
+| **Basic**    | Always (no API key) | Project analysis, tech stack detection, recommendations |
+| **Enhanced** | With API key        | Custom MCP generation, semantic search, embeddings      |
 
 Get API key: `/popkit:cloud signup` (free)
 
 ## Arguments
 
-| Flag | Description |
-|------|-------------|
+| Flag              | Description                                    |
+| ----------------- | ---------------------------------------------- |
 | `--from-analysis` | Use `.claude/analysis.json` for tool selection |
-| `--no-embed` | Skip auto-embedding of tools |
-| `--no-semantic` | Don't include semantic search capabilities |
-| `--tools <list>` | Comma-separated list of tools to generate |
+| `--no-embed`      | Skip auto-embedding of tools                   |
+| `--no-semantic`   | Don't include semantic search capabilities     |
+| `--tools <list>`  | Comma-separated list of tools to generate      |
 
 ## Generated Structure
 
@@ -50,15 +50,15 @@ Get API key: `/popkit:cloud signup` (free)
 
 ## Tool Selection Matrix
 
-| Framework | Generated Tools |
-|-----------|-----------------|
-| `nextjs` | `check_dev_server`, `check_build`, `run_typecheck` |
-| `express` | `check_api_server`, `health_endpoints` |
-| `prisma` | `check_database`, `run_migrations`, `prisma_studio` |
-| `supabase` | `check_supabase`, `supabase_status` |
-| `redis` | `check_redis`, `redis_info` |
-| `docker-compose` | `docker_status`, `docker_logs` |
-| **Common** | `git_status`, `git_diff`, `git_recent_commits`, `morning_routine`, `nightly_routine`, `tool_search` |
+| Framework        | Generated Tools                                                                                     |
+| ---------------- | --------------------------------------------------------------------------------------------------- |
+| `nextjs`         | `check_dev_server`, `check_build`, `run_typecheck`                                                  |
+| `express`        | `check_api_server`, `health_endpoints`                                                              |
+| `prisma`         | `check_database`, `run_migrations`, `prisma_studio`                                                 |
+| `supabase`       | `check_supabase`, `supabase_status`                                                                 |
+| `redis`          | `check_redis`, `redis_info`                                                                         |
+| `docker-compose` | `docker_status`, `docker_logs`                                                                      |
+| **Common**       | `git_status`, `git_diff`, `git_recent_commits`, `morning_routine`, `nightly_routine`, `tool_search` |
 
 ### Language-Specific Tools
 
@@ -79,6 +79,7 @@ Get API key: `/popkit:cloud signup` (free)
 <summary>📄 See detailed workflow steps (optional)</summary>
 
 ### Step 1: Project Detection
+
 ```bash
 # Detect tech stack
 ls package.json Cargo.toml pyproject.toml go.mod 2>/dev/null
@@ -89,6 +90,7 @@ grep -l "jest\|mocha\|vitest\|pytest" package.json pyproject.toml 2>/dev/null
 ```
 
 ### Step 2: Tool Implementation
+
 See `examples/tool-implementation.ts` for detailed examples
 
 ### Step 3: Server Registration
@@ -110,6 +112,7 @@ See `examples/tool-implementation.ts` for detailed examples
 ```
 
 **Benefits of wildcard permissions:**
+
 - All current and future tools automatically allowed
 - Less configuration maintenance
 - Clearer intent: "trust this MCP server"
@@ -120,17 +123,18 @@ See `examples/tool-implementation.ts` for detailed examples
 
 Write descriptions optimized for semantic search:
 
-| Guideline | Example |
-|-----------|---------|
-| **State action clearly** | "Check if...", "Run...", "Get..." |
-| **Include target** | "...Next.js development server..." |
-| **Mention use cases** | "...troubleshoot startup issues..." |
-| **List outputs** | "Returns status, URL, response time" |
+| Guideline                | Example                              |
+| ------------------------ | ------------------------------------ |
+| **State action clearly** | "Check if...", "Run...", "Get..."    |
+| **Include target**       | "...Next.js development server..."   |
+| **Mention use cases**    | "...troubleshoot startup issues..."  |
+| **List outputs**         | "Returns status, URL, response time" |
 
 <details>
 <summary>📋 Before/After Examples</summary>
 
 ### Before (Too Brief)
+
 ```typescript
 {
   name: "health:dev-server",
@@ -139,12 +143,14 @@ Write descriptions optimized for semantic search:
 ```
 
 ### After (Semantic-Friendly)
+
 ```typescript
 {
   name: "health:dev-server",
   description: "Check if the Next.js development server is running and responding on port 3000. Use this to verify the dev environment is working, troubleshoot startup issues, or confirm the app is accessible. Returns status, URL, and response time."
 }
 ```
+
 </details>
 
 ## Auto-Embedding Tools
@@ -218,11 +224,11 @@ PopKit-generated MCP servers use wildcard permissions by default:
 
 ### Permission Patterns
 
-| Pattern | Use Case |
-|---------|----------|
-| `mcp__server__*` | Trust all tools (recommended for first-party servers) |
-| `mcp__server__health-*` | Trust tools by namespace prefix |
-| Explicit list | Trust specific tools only (third-party servers) |
+| Pattern                 | Use Case                                              |
+| ----------------------- | ----------------------------------------------------- |
+| `mcp__server__*`        | Trust all tools (recommended for first-party servers) |
+| `mcp__server__health-*` | Trust tools by namespace prefix                       |
+| Explicit list           | Trust specific tools only (third-party servers)       |
 
 ### Custom Permissions
 
@@ -236,10 +242,7 @@ Override permissions after generation:
 {
   "permissions": {
     "allowed": ["mcp__git-tools__*"],
-    "denied": [
-      "mcp__git-tools__force-push",
-      "mcp__git-tools__delete-branch"
-    ]
+    "denied": ["mcp__git-tools__force-push", "mcp__git-tools__delete-branch"]
   }
 }
 ```
@@ -249,10 +252,12 @@ Override permissions after generation:
 ## Integration Requirements
 
 **Optional:**
+
 - Project analysis (via analyze-project skill) for best results
 - Voyage AI API key for auto-embedding (recommended)
 
 **Enables:**
+
 - Project-specific tools in Claude Code
 - Semantic tool search with natural language queries
 - Health monitoring with detailed status

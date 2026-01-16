@@ -14,12 +14,24 @@
           "prompt": "What sources should be captured?",
           "type": "multiselect",
           "options": [
-            {"label": "Web pages", "value": "web", "description": "URLs to fetch and analyze"},
-            {"label": "Documentation", "value": "docs", "description": "Official docs and guides"},
-            {"label": "Code repositories", "value": "repos", "description": "GitHub repos and code samples"},
-            {"label": "API references", "value": "apis", "description": "API documentation"},
-            {"label": "Discussion threads", "value": "discussions", "description": "Forums, issues, Stack Overflow"},
-            {"label": "Manual notes", "value": "manual", "description": "Your own observations"}
+            { "label": "Web pages", "value": "web", "description": "URLs to fetch and analyze" },
+            {
+              "label": "Documentation",
+              "value": "docs",
+              "description": "Official docs and guides"
+            },
+            {
+              "label": "Code repositories",
+              "value": "repos",
+              "description": "GitHub repos and code samples"
+            },
+            { "label": "API references", "value": "apis", "description": "API documentation" },
+            {
+              "label": "Discussion threads",
+              "value": "discussions",
+              "description": "Forums, issues, Stack Overflow"
+            },
+            { "label": "Manual notes", "value": "manual", "description": "Your own observations" }
           ]
         },
         {
@@ -47,10 +59,18 @@
           "prompt": "How should findings be categorized?",
           "type": "selection",
           "options": [
-            {"label": "By topic", "value": "topic", "description": "Group by subject matter"},
-            {"label": "By source", "value": "source", "description": "Group by information source"},
-            {"label": "By relevance", "value": "relevance", "description": "Group by importance level"},
-            {"label": "By date", "value": "date", "description": "Chronological ordering"}
+            { "label": "By topic", "value": "topic", "description": "Group by subject matter" },
+            {
+              "label": "By source",
+              "value": "source",
+              "description": "Group by information source"
+            },
+            {
+              "label": "By relevance",
+              "value": "relevance",
+              "description": "Group by importance level"
+            },
+            { "label": "By date", "value": "date", "description": "Chronological ordering" }
           ]
         },
         {
@@ -85,9 +105,17 @@
           "prompt": "Where should the research be stored?",
           "type": "selection",
           "options": [
-            {"label": "docs/research/", "value": "docs/research/", "description": "Project research directory"},
-            {"label": "docs/decisions/", "value": "docs/decisions/", "description": "Decision records"},
-            {"label": "Custom path", "value": "custom", "description": "Specify custom path"}
+            {
+              "label": "docs/research/",
+              "value": "docs/research/",
+              "description": "Project research directory"
+            },
+            {
+              "label": "docs/decisions/",
+              "value": "docs/decisions/",
+              "description": "Decision records"
+            },
+            { "label": "Custom path", "value": "custom", "description": "Specify custom path" }
           ]
         },
         {
@@ -108,10 +136,7 @@
   ],
   "triggers": {
     "automatic": [],
-    "manual": [
-      "Invoke pop-research-capture skill",
-      "Research a topic"
-    ]
+    "manual": ["Invoke pop-research-capture skill", "Research a topic"]
   },
   "output": {
     "primary": "docs/research/YYYY-MM-DD-<topic>.md",

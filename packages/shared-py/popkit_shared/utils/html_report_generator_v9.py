@@ -9,16 +9,16 @@ Enhanced with:
 - Word wrapping without breaking table layout
 """
 
-import json
-import re
 import ast
-from pathlib import Path
-from typing import Dict, Any, List, Optional, Tuple
+import json
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 # Import transcript parser for reasoning and token analysis
 try:
     from transcript_parser import TranscriptParser
+
     HAS_TRANSCRIPT_PARSER = True
 except ImportError:
     HAS_TRANSCRIPT_PARSER = False
@@ -26,6 +26,7 @@ except ImportError:
 # Import narrative generator for AI-powered session summaries
 try:
     from narrative_generator import generate_narrative
+
     HAS_NARRATIVE_GENERATOR = True
 except ImportError:
     HAS_NARRATIVE_GENERATOR = False
@@ -33,10 +34,10 @@ except ImportError:
 
 def parse_timestamp(ts_str: str) -> datetime:
     """Parse ISO timestamp with optional timezone, return timezone-naive local time."""
-    if not ts_str or ts_str == 'N/A':
+    if not ts_str or ts_str == "N/A":
         return datetime.min
     try:
-        dt = datetime.fromisoformat(ts_str.replace('Z', '+00:00'))
+        dt = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
         if dt.tzinfo:
             return dt.astimezone().replace(tzinfo=None)
         return dt
@@ -50,22 +51,22 @@ def parse_timestamp(ts_str: str) -> datetime:
 def format_duration(duration_ms: Optional[int]) -> str:
     """Format duration safely, handling None values."""
     if duration_ms is None:
-        return 'N/A'
+        return "N/A"
     if duration_ms == 0:
-        return '<1ms'
+        return "<1ms"
     if duration_ms >= 1000:
-        return f'{duration_ms/1000:.1f}s'
-    return f'{duration_ms}ms'
+        return f"{duration_ms / 1000:.1f}s"
+    return f"{duration_ms}ms"
 
 
 def clean_escaped_text(text: str) -> str:
     """Clean up escaped characters to make text readable."""
-    text = text.replace('\\n', '\n')
-    text = text.replace('\\r', '')
-    text = text.replace('\\t', '  ')
+    text = text.replace("\\n", "\n")
+    text = text.replace("\\r", "")
+    text = text.replace("\\t", "  ")
     text = text.replace('\\"', '"')
     text = text.replace("\\'", "'")
-    text = text.replace('\\\\', '\\')
+    text = text.replace("\\\\", "\\")
     return text
 
 
@@ -127,43 +128,47 @@ def format_code_content(text: str) -> str:
 
 def detect_language(text: str) -> str:
     """Detect programming language from content."""
-    if any(kw in text for kw in ['import ', 'from ', 'def ', 'class ', 'if __name__']):
-        return 'python'
-    if any(sh in text for sh in ['#!/bin/', 'cd ', 'mkdir ', 'git ', 'npm ', 'python ']):
-        return 'bash'
-    if any(md in text for md in ['# ', '## ', '**', '```', '- [']):
-        return 'markdown'
-    return 'python'
+    if any(kw in text for kw in ["import ", "from ", "def ", "class ", "if __name__"]):
+        return "python"
+    if any(sh in text for sh in ["#!/bin/", "cd ", "mkdir ", "git ", "npm ", "python "]):
+        return "bash"
+    if any(md in text for md in ["# ", "## ", "**", "```", "- ["]):
+        return "markdown"
+    return "python"
 
 
 def format_params_inline(params: Dict[str, Any]) -> str:
     """Format key parameters for inline display."""
     if not params:
-        return '<em>none</em>'
+        return "<em>none</em>"
 
     key_params = []
-    if 'command' in params:
-        cmd = params['command']
+    if "command" in params:
+        cmd = params["command"]
         cmd_clean = clean_escaped_text(cmd)
-        preview = cmd_clean[:80] + '...' if len(cmd_clean) > 80 else cmd_clean
+        preview = cmd_clean[:80] + "..." if len(cmd_clean) > 80 else cmd_clean
         key_params.append(f"<code>{escape_html(preview)}</code>")
-    if 'file_path' in params:
-        file_path = params['file_path']
-        key_params.append(f'<a href="file:///{file_path}" class="file-link">{Path(file_path).name}</a>')
-    if 'subagent_type' in params:
+    if "file_path" in params:
+        file_path = params["file_path"]
+        key_params.append(
+            f'<a href="file:///{file_path}" class="file-link">{Path(file_path).name}</a>'
+        )
+    if "subagent_type" in params:
         key_params.append(f"agent: <code>{params['subagent_type']}</code>")
-    if 'description' in params:
-        desc = params['description']
+    if "description" in params:
+        desc = params["description"]
         key_params.append(f"{desc[:60]}..." if len(desc) > 60 else desc)
-    if 'pattern' in params:
+    if "pattern" in params:
         key_params.append(f"pattern: <code>{params['pattern']}</code>")
 
     if not key_params:
         first_key = list(params.keys())[0]
         value = str(params[first_key])
-        key_params.append(f"{first_key}: {value[:50]}..." if len(value) > 50 else f"{first_key}: {value}")
+        key_params.append(
+            f"{first_key}: {value[:50]}..." if len(value) > 50 else f"{first_key}: {value}"
+        )
 
-    return '<br>'.join(key_params)
+    return "<br>".join(key_params)
 
 
 def parse_agent_transcripts(claude_dir: Path, subagent_stops: List[Dict]) -> Dict[str, List[Dict]]:
@@ -171,11 +176,11 @@ def parse_agent_transcripts(claude_dir: Path, subagent_stops: List[Dict]) -> Dic
     transcripts = {}
 
     for sa in subagent_stops:
-        agent_id = sa.get('agent_id', 'unknown')
+        agent_id = sa.get("agent_id", "unknown")
 
         transcript_file = None
-        for project_dir in claude_dir.glob('*'):
-            candidate = project_dir / f'agent-{agent_id}.jsonl'
+        for project_dir in claude_dir.glob("*"):
+            candidate = project_dir / f"agent-{agent_id}.jsonl"
             if candidate.exists():
                 transcript_file = candidate
                 break
@@ -185,61 +190,71 @@ def parse_agent_transcripts(claude_dir: Path, subagent_stops: List[Dict]) -> Dic
 
         events = []
         try:
-            with open(transcript_file, 'r', encoding='utf-8') as f:
+            with open(transcript_file, "r", encoding="utf-8") as f:
                 for line in f:
                     if not line.strip():
                         continue
                     try:
                         entry = json.loads(line)
-                        timestamp = entry.get('timestamp', '')
-                        msg = entry.get('message', {})
-                        msg_type = entry.get('type', 'unknown')
+                        timestamp = entry.get("timestamp", "")
+                        msg = entry.get("message", {})
+                        msg_type = entry.get("type", "unknown")
 
-                        if msg_type == 'user':
-                            content = msg.get('content', '')
-                            events.append({
-                                'agent_id': agent_id,
-                                'timestamp': timestamp,
-                                'parsed_timestamp': parse_timestamp(timestamp),
-                                'type': 'subagent_user_message',
-                                'content': content if isinstance(content, str) else str(content)
-                            })
+                        if msg_type == "user":
+                            content = msg.get("content", "")
+                            events.append(
+                                {
+                                    "agent_id": agent_id,
+                                    "timestamp": timestamp,
+                                    "parsed_timestamp": parse_timestamp(timestamp),
+                                    "type": "subagent_user_message",
+                                    "content": content
+                                    if isinstance(content, str)
+                                    else str(content),
+                                }
+                            )
 
-                        elif msg_type == 'assistant':
-                            content = msg.get('content', [])
+                        elif msg_type == "assistant":
+                            content = msg.get("content", [])
                             if not isinstance(content, list):
-                                content = [{'type': 'text', 'text': str(content)}]
+                                content = [{"type": "text", "text": str(content)}]
 
                             for item in content:
-                                if item.get('type') == 'text':
-                                    events.append({
-                                        'agent_id': agent_id,
-                                        'timestamp': timestamp,
-                                        'parsed_timestamp': parse_timestamp(timestamp),
-                                        'type': 'subagent_text',
-                                        'text': item.get('text', '')
-                                    })
-                                elif item.get('type') == 'tool_use':
-                                    events.append({
-                                        'agent_id': agent_id,
-                                        'timestamp': timestamp,
-                                        'parsed_timestamp': parse_timestamp(timestamp),
-                                        'type': 'subagent_tool_call',
-                                        'tool_name': item.get('name'),
-                                        'parameters': item.get('input', {})
-                                    })
+                                if item.get("type") == "text":
+                                    events.append(
+                                        {
+                                            "agent_id": agent_id,
+                                            "timestamp": timestamp,
+                                            "parsed_timestamp": parse_timestamp(timestamp),
+                                            "type": "subagent_text",
+                                            "text": item.get("text", ""),
+                                        }
+                                    )
+                                elif item.get("type") == "tool_use":
+                                    events.append(
+                                        {
+                                            "agent_id": agent_id,
+                                            "timestamp": timestamp,
+                                            "parsed_timestamp": parse_timestamp(timestamp),
+                                            "type": "subagent_tool_call",
+                                            "tool_name": item.get("name"),
+                                            "parameters": item.get("input", {}),
+                                        }
+                                    )
 
-                        elif msg_type == 'user' and isinstance(msg.get('content'), list):
-                            for item in msg.get('content', []):
-                                if item.get('type') == 'tool_result':
-                                    events.append({
-                                        'agent_id': agent_id,
-                                        'timestamp': timestamp,
-                                        'parsed_timestamp': parse_timestamp(timestamp),
-                                        'type': 'subagent_tool_result',
-                                        'tool_use_id': item.get('tool_use_id'),
-                                        'success': not item.get('is_error', False)
-                                    })
+                        elif msg_type == "user" and isinstance(msg.get("content"), list):
+                            for item in msg.get("content", []):
+                                if item.get("type") == "tool_result":
+                                    events.append(
+                                        {
+                                            "agent_id": agent_id,
+                                            "timestamp": timestamp,
+                                            "parsed_timestamp": parse_timestamp(timestamp),
+                                            "type": "subagent_tool_result",
+                                            "tool_use_id": item.get("tool_use_id"),
+                                            "success": not item.get("is_error", False),
+                                        }
+                                    )
 
                     except json.JSONDecodeError:
                         continue
@@ -253,18 +268,20 @@ def parse_agent_transcripts(claude_dir: Path, subagent_stops: List[Dict]) -> Dic
     return transcripts
 
 
-def build_unified_timeline(main_events: List[Dict], transcripts: Dict[str, List[Dict]]) -> List[Dict]:
+def build_unified_timeline(
+    main_events: List[Dict], transcripts: Dict[str, List[Dict]]
+) -> List[Dict]:
     """Merge main session events with sub-agent events."""
     unified = []
 
     for event in main_events:
-        event['source'] = 'main'
+        event["source"] = "main"
         unified.append(event)
 
     for agent_id, events in transcripts.items():
         unified.extend(events)
 
-    unified.sort(key=lambda e: e.get('parsed_timestamp', datetime.min))
+    unified.sort(key=lambda e: e.get("parsed_timestamp", datetime.min))
     return unified
 
 
@@ -273,26 +290,29 @@ def mark_subagent_scopes(events: List[Dict]) -> List[Dict]:
     active_agents = {}
 
     for i, event in enumerate(events):
-        event_type = event.get('type')
+        event_type = event.get("type")
 
-        if event_type == 'tool_call_start':
-            params = event.get('parameters', {})
-            if 'subagent_type' in params:
+        if event_type == "tool_call_start":
+            params = event.get("parameters", {})
+            if "subagent_type" in params:
                 for j in range(i + 1, len(events)):
-                    if events[j].get('type') == 'subagent_stop':
-                        agent_id = events[j].get('agent_id')
+                    if events[j].get("type") == "subagent_stop":
+                        agent_id = events[j].get("agent_id")
                         active_agents[agent_id] = i
                         break
 
-        event['in_subagent'] = False
-        event['subagent_id'] = None
+        event["in_subagent"] = False
+        event["subagent_id"] = None
 
         for agent_id, start_idx in active_agents.items():
             for j in range(start_idx + 1, len(events)):
-                if events[j].get('type') == 'subagent_stop' and events[j].get('agent_id') == agent_id:
+                if (
+                    events[j].get("type") == "subagent_stop"
+                    and events[j].get("agent_id") == agent_id
+                ):
                     if start_idx < i < j:
-                        event['in_subagent'] = True
-                        event['subagent_id'] = agent_id
+                        event["in_subagent"] = True
+                        event["subagent_id"] = agent_id
                     break
 
     return events
@@ -300,15 +320,15 @@ def mark_subagent_scopes(events: List[Dict]) -> List[Dict]:
 
 def get_agent_color(source: str) -> Tuple[str, str]:
     """Get color scheme for agent attribution."""
-    if source == 'main':
-        return '#1e3a5f', '#58a6ff'
+    if source == "main":
+        return "#1e3a5f", "#58a6ff"
 
     colors = [
-        ('#3d1e5f', '#a371f7'),
-        ('#1e5f3d', '#3fb950'),
-        ('#5f3d1e', '#ff9b5e'),
-        ('#5f1e3d', '#ff6b9d'),
-        ('#1e5f5f', '#5ed9ff'),
+        ("#3d1e5f", "#a371f7"),
+        ("#1e5f3d", "#3fb950"),
+        ("#5f3d1e", "#ff9b5e"),
+        ("#5f1e3d", "#ff6b9d"),
+        ("#1e5f5f", "#5ed9ff"),
     ]
 
     hash_val = sum(ord(c) for c in source) % len(colors)
@@ -317,15 +337,18 @@ def get_agent_color(source: str) -> Tuple[str, str]:
 
 def escape_html(text: str) -> str:
     """Escape HTML special characters."""
-    return (text
-            .replace('&', '&amp;')
-            .replace('<', '&lt;')
-            .replace('>', '&gt;')
-            .replace('"', '&quot;')
-            .replace("'", '&#39;'))
+    return (
+        text.replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+        .replace("'", "&#39;")
+    )
 
 
-def parse_transcript_for_reasoning(data: Dict[str, Any], events: List[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
+def parse_transcript_for_reasoning(
+    data: Dict[str, Any], events: List[Dict[str, Any]]
+) -> Dict[str, Dict[str, Any]]:
     """
     Parse transcript file to extract reasoning and token usage per tool call.
 
@@ -337,8 +360,8 @@ def parse_transcript_for_reasoning(data: Dict[str, Any], events: List[Dict[str, 
     # Extract transcript path from metadata events
     transcript_path = None
     for event in events:
-        if event.get('type') == 'metadata' and 'transcript_path' in event:
-            transcript_path = Path(event['transcript_path'])
+        if event.get("type") == "metadata" and "transcript_path" in event:
+            transcript_path = Path(event["transcript_path"])
             break
 
     if not transcript_path:
@@ -350,8 +373,8 @@ def parse_transcript_for_reasoning(data: Dict[str, Any], events: List[Dict[str, 
         return {}
 
     # Get recording timestamps for filtering
-    start_time = data.get('started_at')
-    end_time = data.get('stopped_at')
+    start_time = data.get("started_at")
+    end_time = data.get("stopped_at")
 
     try:
         # Parse transcript with timestamp filtering
@@ -362,7 +385,7 @@ def parse_transcript_for_reasoning(data: Dict[str, Any], events: List[Dict[str, 
         tool_uses = parser.get_all_tool_uses()
 
         for tool_use in tool_uses:
-            tool_use_id = tool_use['tool_use_id']
+            tool_use_id = tool_use["tool_use_id"]
 
             # Get reasoning before this tool
             reasoning = parser.get_reasoning_before_tool(tool_use_id)
@@ -373,11 +396,7 @@ def parse_transcript_for_reasoning(data: Dict[str, Any], events: List[Dict[str, 
             # Calculate cost
             cost = parser.calculate_cost(tokens) if tokens else 0.0
 
-            lookup[tool_use_id] = {
-                'reasoning': reasoning,
-                'tokens': tokens,
-                'cost': cost
-            }
+            lookup[tool_use_id] = {"reasoning": reasoning, "tokens": tokens, "cost": cost}
 
         return lookup
     except Exception as e:
@@ -391,11 +410,11 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
     with open(recording_file) as f:
         data = json.load(f)
 
-    session_id = data.get('session_id', 'unknown')
-    events = data.get('events', [])
+    session_id = data.get("session_id", "unknown")
+    events = data.get("events", [])
 
     for event in events:
-        event['parsed_timestamp'] = parse_timestamp(event.get('timestamp', ''))
+        event["parsed_timestamp"] = parse_timestamp(event.get("timestamp", ""))
 
     # Parse transcript for reasoning and token usage
     reasoning_lookup = parse_transcript_for_reasoning(data, events)
@@ -404,29 +423,41 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
     total_tokens = None
     total_cost = None
     if reasoning_lookup:
-        total_input = sum(v['tokens'].input_tokens for v in reasoning_lookup.values() if v['tokens'])
-        total_output = sum(v['tokens'].output_tokens for v in reasoning_lookup.values() if v['tokens'])
-        total_cache_write = sum(v['tokens'].cache_creation_input_tokens for v in reasoning_lookup.values() if v['tokens'])
-        total_cache_read = sum(v['tokens'].cache_read_input_tokens for v in reasoning_lookup.values() if v['tokens'])
+        total_input = sum(
+            v["tokens"].input_tokens for v in reasoning_lookup.values() if v["tokens"]
+        )
+        total_output = sum(
+            v["tokens"].output_tokens for v in reasoning_lookup.values() if v["tokens"]
+        )
+        total_cache_write = sum(
+            v["tokens"].cache_creation_input_tokens
+            for v in reasoning_lookup.values()
+            if v["tokens"]
+        )
+        total_cache_read = sum(
+            v["tokens"].cache_read_input_tokens for v in reasoning_lookup.values() if v["tokens"]
+        )
         total_tokens = {
-            'input_tokens': total_input,
-            'output_tokens': total_output,
-            'cache_creation_input_tokens': total_cache_write,
-            'cache_read_input_tokens': total_cache_read,
-            'total_tokens': total_input + total_output + total_cache_write + total_cache_read
+            "input_tokens": total_input,
+            "output_tokens": total_output,
+            "cache_creation_input_tokens": total_cache_write,
+            "cache_read_input_tokens": total_cache_read,
+            "total_tokens": total_input + total_output + total_cache_write + total_cache_read,
         }
-        total_cost = sum(v['cost'] for v in reasoning_lookup.values())
+        total_cost = sum(v["cost"] for v in reasoning_lookup.values())
 
     # Generate AI narrative summary
     narrative_html = None
     if HAS_NARRATIVE_GENERATOR and reasoning_lookup:
         try:
-            narrative_html = generate_narrative(recording_file, events, reasoning_lookup, total_tokens)
+            narrative_html = generate_narrative(
+                recording_file, events, reasoning_lookup, total_tokens
+            )
         except Exception as e:
             print(f"Warning: Failed to generate narrative: {e}")
 
-    claude_dir = Path.home() / '.claude' / 'projects'
-    subagent_stops = [e for e in events if e.get('type') == 'subagent_stop']
+    claude_dir = Path.home() / ".claude" / "projects"
+    subagent_stops = [e for e in events if e.get("type") == "subagent_stop"]
     transcripts = parse_agent_transcripts(claude_dir, subagent_stops)
 
     unified_timeline = build_unified_timeline(events, transcripts)
@@ -435,27 +466,35 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
     # Build completion status map
     completion_map = {}  # sequence -> has_completion
     for event in unified_timeline:
-        if event.get('type') == 'tool_call_start':
-            seq = event.get('sequence')
-            tool_name = event.get('tool_name')
+        if event.get("type") == "tool_call_start":
+            seq = event.get("sequence")
+            tool_name = event.get("tool_name")
 
             # Look for matching completion
             has_completion = False
             for complete_event in unified_timeline:
-                if (complete_event.get('type') == 'tool_call_complete' and
-                    complete_event.get('tool_name') == tool_name and
-                    complete_event.get('sequence', -1) > seq):
+                if (
+                    complete_event.get("type") == "tool_call_complete"
+                    and complete_event.get("tool_name") == tool_name
+                    and complete_event.get("sequence", -1) > seq
+                ):
                     has_completion = True
                     break
 
             completion_map[seq] = has_completion
 
-    tool_calls = [e for e in events if e.get('type') in ['tool_call', 'tool_call_start']]
-    total_duration = sum(e.get('duration_ms') or 0 for e in events if e.get('type') == 'tool_call_complete')
-    error_count = sum(1 for e in events if e.get('type') == 'tool_call_complete' and e.get('error'))
-    success_rate = ((len([e for e in events if e.get('type') == 'tool_call_complete']) - error_count) / max(len([e for e in events if e.get('type') == 'tool_call_complete']), 1) * 100)
+    tool_calls = [e for e in events if e.get("type") in ["tool_call", "tool_call_start"]]
+    total_duration = sum(
+        e.get("duration_ms") or 0 for e in events if e.get("type") == "tool_call_complete"
+    )
+    error_count = sum(1 for e in events if e.get("type") == "tool_call_complete" and e.get("error"))
+    success_rate = (
+        (len([e for e in events if e.get("type") == "tool_call_complete"]) - error_count)
+        / max(len([e for e in events if e.get("type") == "tool_call_complete"]), 1)
+        * 100
+    )
 
-    html = f'''<!DOCTYPE html>
+    html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -711,40 +750,43 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
             </div>
             <div class="stat-card">
                 <div class="label">Duration</div>
-                <div class="value">{total_duration/1000:.1f}<span style="font-size: 14px; color: #8b949e;">s</span></div>
+                <div class="value">{total_duration / 1000:.1f}<span style="font-size: 14px; color: #8b949e;">s</span></div>
             </div>
             <div class="stat-card">
                 <div class="label">Success Rate</div>
                 <div class="value">{success_rate:.0f}<span style="font-size: 14px; color: #8b949e;">%</span></div>
-            </div>'''
+            </div>"""
 
     # Add token usage cards if available
     if total_tokens:
-        html += f'''
+        html += f"""
             <div class="stat-card">
                 <div class="label">Total Tokens</div>
-                <div class="value">{total_tokens['total_tokens']:,}</div>
+                <div class="value">{total_tokens["total_tokens"]:,}</div>
             </div>
             <div class="stat-card">
                 <div class="label">Session Cost</div>
                 <div class="value">${total_cost:.2f}</div>
-            </div>'''
+            </div>"""
 
-    html += '''
-        </div>'''
+    html += """
+        </div>"""
 
     # Add detailed token breakdown if available
     if total_tokens:
         cache_hit_rate = 0
-        if total_tokens['input_tokens'] + total_tokens['cache_read_input_tokens'] > 0:
-            cache_hit_rate = (total_tokens['cache_read_input_tokens'] /
-                            (total_tokens['input_tokens'] + total_tokens['cache_read_input_tokens']) * 100)
+        if total_tokens["input_tokens"] + total_tokens["cache_read_input_tokens"] > 0:
+            cache_hit_rate = (
+                total_tokens["cache_read_input_tokens"]
+                / (total_tokens["input_tokens"] + total_tokens["cache_read_input_tokens"])
+                * 100
+            )
 
         # Calculate cost breakdown percentages
-        input_cost = total_tokens['input_tokens'] * 3.00 / 1_000_000
-        output_cost = total_tokens['output_tokens'] * 15.00 / 1_000_000
-        cache_write_cost = total_tokens['cache_creation_input_tokens'] * 3.75 / 1_000_000
-        cache_read_cost = total_tokens['cache_read_input_tokens'] * 0.30 / 1_000_000
+        input_cost = total_tokens["input_tokens"] * 3.00 / 1_000_000
+        output_cost = total_tokens["output_tokens"] * 15.00 / 1_000_000
+        cache_write_cost = total_tokens["cache_creation_input_tokens"] * 3.75 / 1_000_000
+        cache_read_cost = total_tokens["cache_read_input_tokens"] * 0.30 / 1_000_000
 
         # Calculate percentages for visual bar
         if total_cost > 0:
@@ -756,16 +798,16 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
             input_pct = output_pct = cache_write_pct = cache_read_pct = 0
 
         # Calculate token distribution percentages
-        total = total_tokens['total_tokens']
+        total = total_tokens["total_tokens"]
         if total > 0:
-            input_token_pct = (total_tokens['input_tokens'] / total * 100)
-            output_token_pct = (total_tokens['output_tokens'] / total * 100)
-            cache_write_token_pct = (total_tokens['cache_creation_input_tokens'] / total * 100)
-            cache_read_token_pct = (total_tokens['cache_read_input_tokens'] / total * 100)
+            input_token_pct = total_tokens["input_tokens"] / total * 100
+            output_token_pct = total_tokens["output_tokens"] / total * 100
+            cache_write_token_pct = total_tokens["cache_creation_input_tokens"] / total * 100
+            cache_read_token_pct = total_tokens["cache_read_input_tokens"] / total * 100
         else:
             input_token_pct = output_token_pct = cache_write_token_pct = cache_read_token_pct = 0
 
-        html += f'''
+        html += f"""
         <div class="timeline-section">
             <h2>💰 Token Usage & Cost Analysis</h2>
             <div style="background: #161b22; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
@@ -799,22 +841,22 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
                     <div style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%); padding: 15px; border-radius: 6px; border: 1px solid #30363d;">
                         <div style="color: #8b949e; font-size: 12px; margin-bottom: 5px;">Input Tokens</div>
-                        <div style="color: #58a6ff; font-size: 20px; font-weight: 600;">{total_tokens['input_tokens']:,}</div>
+                        <div style="color: #58a6ff; font-size: 20px; font-weight: 600;">{total_tokens["input_tokens"]:,}</div>
                         <div style="color: #8b949e; font-size: 11px; margin-top: 4px;">{input_token_pct:.1f}% of total • ${input_cost:.4f}</div>
                     </div>
                     <div style="background: linear-gradient(135deg, #2d1f1f 0%, #1a1111 100%); padding: 15px; border-radius: 6px; border: 1px solid #30363d;">
                         <div style="color: #8b949e; font-size: 12px; margin-bottom: 5px;">Output Tokens</div>
-                        <div style="color: #f85149; font-size: 20px; font-weight: 600;">{total_tokens['output_tokens']:,}</div>
+                        <div style="color: #f85149; font-size: 20px; font-weight: 600;">{total_tokens["output_tokens"]:,}</div>
                         <div style="color: #8b949e; font-size: 11px; margin-top: 4px;">{output_token_pct:.1f}% of total • ${output_cost:.4f}</div>
                     </div>
                     <div style="background: linear-gradient(135deg, #2d2619 0%, #1a1710 100%); padding: 15px; border-radius: 6px; border: 1px solid #30363d;">
                         <div style="color: #8b949e; font-size: 12px; margin-bottom: 5px;">Cache Writes</div>
-                        <div style="color: #d29922; font-size: 20px; font-weight: 600;">{total_tokens['cache_creation_input_tokens']:,}</div>
+                        <div style="color: #d29922; font-size: 20px; font-weight: 600;">{total_tokens["cache_creation_input_tokens"]:,}</div>
                         <div style="color: #8b949e; font-size: 11px; margin-top: 4px;">{cache_write_token_pct:.1f}% of total • ${cache_write_cost:.4f}</div>
                     </div>
                     <div style="background: linear-gradient(135deg, #1f2d1f 0%, #11210 100%); padding: 15px; border-radius: 6px; border: 1px solid #30363d;">
                         <div style="color: #8b949e; font-size: 12px; margin-bottom: 5px;">Cache Reads</div>
-                        <div style="color: #3fb950; font-size: 20px; font-weight: 600;">{total_tokens['cache_read_input_tokens']:,}</div>
+                        <div style="color: #3fb950; font-size: 20px; font-weight: 600;">{total_tokens["cache_read_input_tokens"]:,}</div>
                         <div style="color: #8b949e; font-size: 11px; margin-top: 4px;">{cache_read_token_pct:.1f}% of total • ${cache_read_cost:.4f}</div>
                     </div>
                 </div>
@@ -838,16 +880,16 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                             <div style="color: #8b949e; font-size: 11px;">Claude Sonnet 4.5</div>
                         </div>
                         <div style="color: #8b949e; font-size: 11px; margin-top: 6px;">
-                            {total_tokens['total_tokens']:,} tokens processed
+                            {total_tokens["total_tokens"]:,} tokens processed
                         </div>
                     </div>
                 </div>
             </div>
-        </div>'''
+        </div>"""
 
     # Add AI-generated narrative section
     if narrative_html:
-        html += f'''
+        html += f"""
         <div class="timeline-section">
             <h2>📖 Session Narrative</h2>
             <div style="background: #161b22; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
@@ -860,9 +902,9 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                     </div>
                 </div>
             </div>
-        </div>'''
+        </div>"""
 
-    html += f'''
+    html += f"""
         <div class="timeline-section">
             <h2>🌐 Unified Timeline ({len(unified_timeline)} events)</h2>
             <div class="timeline-scroll">
@@ -878,43 +920,45 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                         </tr>
                     </thead>
                     <tbody>
-'''
+"""
 
     # Generate timeline rows
     for i, event in enumerate(unified_timeline, 1):
-        timestamp = event.get('timestamp', 'N/A')
-        source = event.get('source', event.get('agent_id', 'unknown'))
-        event_type = event.get('type', 'unknown')
-        in_subagent = event.get('in_subagent', False)
+        timestamp = event.get("timestamp", "N/A")
+        source = event.get("source", event.get("agent_id", "unknown"))
+        event_type = event.get("type", "unknown")
+        in_subagent = event.get("in_subagent", False)
 
         try:
             dt = parse_timestamp(timestamp)
-            time_str = dt.strftime('%H:%M:%S') if dt != datetime.min else 'N/A'
+            time_str = dt.strftime("%H:%M:%S") if dt != datetime.min else "N/A"
         except:
-            time_str = 'N/A'
+            time_str = "N/A"
 
         bg_color, border_color = get_agent_color(source)
-        agent_label = 'MAIN' if source == 'main' else source[:7]
+        agent_label = "MAIN" if source == "main" else source[:7]
         agent_badge = f'<span class="agent-badge" style="background: {bg_color}; color: {border_color}; border: 1px solid {border_color};">{agent_label}</span>'
 
-        row_class = 'in-subagent' if in_subagent else ''
+        row_class = "in-subagent" if in_subagent else ""
 
-        desc_html = ''
+        desc_html = ""
         status_html = '<span class="status-ok">✓ OK</span>'
-        badge_html = ''
+        badge_html = ""
 
-        if event_type == 'session_start':
+        if event_type == "session_start":
             badge_html = '<span class="event-badge event-session">Session Start</span>'
-            desc_html = 'Recording session initiated'
+            desc_html = "Recording session initiated"
 
-        elif event_type == 'tool_call_start':
-            tool_name = event.get('tool_name', 'Unknown')
-            params = event.get('parameters', {})
-            tool_use_id = event.get('tool_use_id')
+        elif event_type == "tool_call_start":
+            tool_name = event.get("tool_name", "Unknown")
+            params = event.get("parameters", {})
+            tool_use_id = event.get("tool_use_id")
 
-            is_subagent_launch = 'subagent_type' in params
+            is_subagent_launch = "subagent_type" in params
             if is_subagent_launch:
-                badge_html = '<span class="event-badge event-subagent-launch">Sub-Agent Launch</span>'
+                badge_html = (
+                    '<span class="event-badge event-subagent-launch">Sub-Agent Launch</span>'
+                )
                 desc_html = f'<span class="tool-name">Task</span> → {params.get("subagent_type", "unknown")}<br><small style="color: #8b949e;">{params.get("description", "")}</small>'
             else:
                 badge_html = '<span class="event-badge event-tool">Tool Start</span>'
@@ -923,9 +967,9 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                 # Add reasoning and token info if available
                 if tool_use_id and tool_use_id in reasoning_lookup:
                     reasoning_data = reasoning_lookup[tool_use_id]
-                    reasoning = reasoning_data['reasoning']
-                    tokens = reasoning_data['tokens']
-                    cost = reasoning_data['cost']
+                    reasoning = reasoning_data["reasoning"]
+                    tokens = reasoning_data["tokens"]
+                    cost = reasoning_data["cost"]
 
                     # Add expandable reasoning section
                     reasoning_id = f"reasoning_{i}"
@@ -938,20 +982,20 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                         <div id="{reasoning_id}" style="display: none; margin-top: 10px; background: #161b22; padding: 12px; border-radius: 6px; border: 1px solid #30363d;">'''
 
                     # Add text blocks
-                    if reasoning['text']:
+                    if reasoning["text"]:
                         desc_html += '<div style="margin-bottom: 10px;"><strong style="color: #8b949e;">Reasoning:</strong></div>'
-                        for text_block in reasoning['text'][:2]:  # Show first 2 text blocks
+                        for text_block in reasoning["text"][:2]:  # Show first 2 text blocks
                             desc_html += f'<div style="color: #c9d1d9; margin-bottom: 8px; line-height: 1.5;">{escape_html(text_block[:300])}</div>'
 
                     # Add thinking preview
-                    if reasoning['thinking']:
+                    if reasoning["thinking"]:
                         desc_html += '<div style="margin-top: 10px;"><strong style="color: #8b949e;">Extended Thinking:</strong></div>'
-                        thinking_preview = reasoning['thinking'][0][:200]
+                        thinking_preview = reasoning["thinking"][0][:200]
                         desc_html += f'<div style="color: #8b949e; font-style: italic; margin-top: 4px;">{escape_html(thinking_preview)}...</div>'
 
                     # Add token usage
                     if tokens:
-                        desc_html += f'''<div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #30363d;">
+                        desc_html += f"""<div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #30363d;">
                             <div style="color: #8b949e; font-size: 11px; margin-bottom: 6px;">Token Usage:</div>
                             <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                                 <div><span style="color: #58a6ff;">Input:</span> {tokens.input_tokens:,}</div>
@@ -959,52 +1003,60 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                                 <div><span style="color: #58a6ff;">Total:</span> {tokens.total_tokens:,}</div>
                                 <div><span style="color: #3fb950;">Cost:</span> ${cost:.4f}</div>
                             </div>
-                        </div>'''
+                        </div>"""
 
-                    desc_html += '</div></div>'
+                    desc_html += "</div></div>"
 
             # Check if this tool call has a completion
-            seq = event.get('sequence')
+            seq = event.get("sequence")
             has_completion = completion_map.get(seq, False)
-            status_html = '<span class="status-ok">✓ OK</span>' if has_completion else '<span class="status-na">⏳ Running</span>'
+            status_html = (
+                '<span class="status-ok">✓ OK</span>'
+                if has_completion
+                else '<span class="status-na">⏳ Running</span>'
+            )
 
-        elif event_type == 'tool_call_complete':
-            tool_name = event.get('tool_name', 'Unknown')
-            error = event.get('error')
-            duration = event.get('duration_ms')
+        elif event_type == "tool_call_complete":
+            tool_name = event.get("tool_name", "Unknown")
+            error = event.get("error")
+            duration = event.get("duration_ms")
 
             badge_html = '<span class="event-badge event-tool">Tool Complete</span>'
             desc_html = f'<span class="tool-name">{tool_name}</span> finished'
-            status_html = '<span class="status-error">✗ ERROR</span>' if error else f'<span class="status-ok">✓ {format_duration(duration)}</span>'
+            status_html = (
+                '<span class="status-error">✗ ERROR</span>'
+                if error
+                else f'<span class="status-ok">✓ {format_duration(duration)}</span>'
+            )
 
-        elif event_type == 'subagent_stop':
-            agent_id = event.get('agent_id', 'unknown')
+        elif event_type == "subagent_stop":
+            agent_id = event.get("agent_id", "unknown")
             badge_html = '<span class="event-badge event-subagent-stop">Sub-Agent Complete</span>'
-            desc_html = f'Agent <strong>{agent_id}</strong> completed'
+            desc_html = f"Agent <strong>{agent_id}</strong> completed"
 
-        elif event_type == 'subagent_user_message':
+        elif event_type == "subagent_user_message":
             badge_html = '<span class="event-badge event-subagent-prompt">User Prompt</span>'
-            content = event.get('content', '')
+            content = event.get("content", "")
             desc_html = format_code_content(content)
 
-        elif event_type == 'subagent_text':
+        elif event_type == "subagent_text":
             badge_html = '<span class="event-badge event-subagent-text">Assistant Text</span>'
-            text = event.get('text', '')
+            text = event.get("text", "")
             desc_html = format_code_content(text)
 
-        elif event_type == 'subagent_tool_call':
+        elif event_type == "subagent_tool_call":
             badge_html = '<span class="event-badge event-tool">Tool Call</span>'
-            tool_name = event.get('tool_name', 'Unknown')
-            params = event.get('parameters', {})
+            tool_name = event.get("tool_name", "Unknown")
+            params = event.get("parameters", {})
             desc_html = f'<span class="tool-name">{tool_name}</span><br><small style="color: #8b949e;">{format_params_inline(params)}</small>'
 
-        elif event_type == 'assistant_message':
+        elif event_type == "assistant_message":
             badge_html = '<span class="event-badge event-assistant">💬 Claude</span>'
-            content = event.get('content', '')
-            before_tool = event.get('before_tool', '')
+            content = event.get("content", "")
+            before_tool = event.get("before_tool", "")
             # Truncate long messages for timeline view
             if len(content) > 200:
-                content_preview = content[:200] + '...'
+                content_preview = content[:200] + "..."
             else:
                 content_preview = content
             # Escape HTML and preserve newlines
@@ -1016,7 +1068,7 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
 
         else:
             badge_html = f'<span class="event-badge" style="background: #6e7681; color: #fff;">{event_type}</span>'
-            desc_html = '<em>Unknown event</em>'
+            desc_html = "<em>Unknown event</em>"
 
         html += f'''
                     <tr class="{row_class}">
@@ -1029,7 +1081,7 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                     </tr>
 '''
 
-    html += '''
+    html += """
                     </tbody>
                 </table>
             </div>
@@ -1043,20 +1095,21 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
 </body>
 </html>
-'''
+"""
 
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    with open(output_file, 'w', encoding='utf-8', errors='surrogatepass') as f:
+    with open(output_file, "w", encoding="utf-8", errors="surrogatepass") as f:
         f.write(html)
 
-    print(f'HTML report generated: {output_file}')
-    print(f'Open in browser: file:///{output_file.as_posix()}')
+    print(f"HTML report generated: {output_file}")
+    print(f"Open in browser: file:///{output_file.as_posix()}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
+
     if len(sys.argv) != 3:
-        print('Usage: python html_report_generator_v9.py <recording.json> <output.html>')
+        print("Usage: python html_report_generator_v9.py <recording.json> <output.html>")
         sys.exit(1)
 
     recording_file = Path(sys.argv[1])

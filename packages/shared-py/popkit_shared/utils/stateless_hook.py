@@ -10,24 +10,22 @@ Part of the popkit plugin stateless hook architecture.
 """
 
 import json
-import sys
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Type
+from typing import Type
 
 from .context_carrier import (
     HookContext,
     create_context,
-    update_context,
     serialize_context,
-    deserialize_context
+    update_context,
 )
 from .message_builder import (
-    build_user_message,
     build_assistant_message,
-    build_tool_use_message,
     build_tool_result_message,
+    build_tool_use_message,
+    build_user_message,
     compose_conversation,
-    rebuild_from_history
+    rebuild_from_history,
 )
 
 
@@ -197,28 +195,22 @@ class StatelessHook(ABC):
 
             # Create context from input
             ctx = create_context(
-                session_id=input_data.get('session_id', 'unknown'),
-                tool_name=input_data.get('tool_name', ''),
-                tool_input=input_data.get('tool_input', {}),
-                message_history=input_data.get('message_history', [])
+                session_id=input_data.get("session_id", "unknown"),
+                tool_name=input_data.get("tool_name", ""),
+                tool_input=input_data.get("tool_input", {}),
+                message_history=input_data.get("message_history", []),
             )
 
             # Process
             result_ctx = self.process(ctx)
 
             # Build output
-            output = {
-                "action": "continue",
-                "context": json.loads(serialize_context(result_ctx))
-            }
+            output = {"action": "continue", "context": json.loads(serialize_context(result_ctx))}
 
             return json.dumps(output)
 
         except Exception as e:
-            return json.dumps({
-                "action": "error",
-                "error": str(e)
-            })
+            return json.dumps({"action": "error", "error": str(e)})
 
 
 def run_hook(hook_class: Type[StatelessHook], input_json: str) -> str:
@@ -259,11 +251,9 @@ if __name__ == "__main__":
     print(f"Direct process: {result.tool_result}")
 
     # Test JSON protocol
-    input_json = json.dumps({
-        "session_id": "sess_456",
-        "tool_name": "Read",
-        "tool_input": {"file_path": "test.py"}
-    })
+    input_json = json.dumps(
+        {"session_id": "sess_456", "tool_name": "Read", "tool_input": {"file_path": "test.py"}}
+    )
     output = run_hook(TestHook, input_json)
     output_data = json.loads(output)
     print(f"JSON protocol: {output_data['action']}, {output_data['context']['tool_result']}")

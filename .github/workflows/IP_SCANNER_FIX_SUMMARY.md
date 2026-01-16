@@ -5,6 +5,7 @@
 The IP Leak Scanner workflow was flagging false positives in documentation and example files that legitimately contain secret patterns for educational purposes.
 
 **Example**: `packages/popkit-ops/skills/pop-assessment-security/standards/secret-patterns.md` contains patterns like:
+
 ```python
 # BAD - Hardcoded API key
 api_key = "sk_test_1234567890abcdef1234567890"
@@ -49,12 +50,14 @@ Specific files can have pattern-specific exemptions.
 ### 1. `.github/workflows/ip-scan.yml`
 
 **Added**:
+
 - `EXEMPT_PATHS` list (14 path patterns)
 - `EXEMPT_MARKERS` list (11 content markers)
 - `is_exempt_path()` function
 - `has_exempt_marker()` function with code block detection
 
 **Modified**:
+
 - `scan_file()` - Now checks exemptions before flagging
 
 **Lines changed**: ~60 lines added/modified
@@ -77,6 +80,7 @@ Comprehensive test suite with 8 test cases:
 ### 3. `.github/workflows/IP_SCANNER_EXEMPTIONS.md` (NEW)
 
 User guide documenting:
+
 - How exemptions work
 - All exemption patterns
 - How to add new exemptions
@@ -114,9 +118,11 @@ Results: 8 passed, 0 failed
 ### False Positive File (secret-patterns.md)
 
 **Before**:
+
 - ❌ Flagged: Contains example patterns like `api_key = "sk_test_..."`
 
 **After**:
+
 - ✅ Exempt: Matches `/standards/` path exemption
 - ✅ Exempt: All examples inside markdown code blocks with `# BAD -` markers
 
@@ -174,12 +180,14 @@ print(f'Is exempt: {is_exempt}')
 ## Impact
 
 ### Before
+
 - ❌ Documentation files flagged
 - ❌ Example code flagged
 - ❌ Test fixtures flagged
 - ❌ Workflow failures on legitimate docs
 
 ### After
+
 - ✅ Documentation exempt
 - ✅ Examples exempt
 - ✅ Tests exempt
@@ -189,6 +197,7 @@ print(f'Is exempt: {is_exempt}')
 ## Next Steps
 
 1. **Commit changes**:
+
    ```bash
    git add .github/workflows/ip-scan.yml
    git add .github/workflows/test-ip-scanner.py
@@ -197,6 +206,7 @@ print(f'Is exempt: {is_exempt}')
    ```
 
 2. **Push to trigger workflow**:
+
    ```bash
    git push
    ```

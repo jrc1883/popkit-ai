@@ -6,32 +6,32 @@ Tests Voyage AI embedding API client with caching and rate limiting.
 Critical for semantic search and embeddings functionality.
 """
 
-import sys
 import json
+import sys
 import time
-import pytest
-from pathlib import Path
-from unittest.mock import patch, MagicMock
 import urllib.error
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 import popkit_shared.utils.voyage_client as voyage_client_module
 from popkit_shared.utils.voyage_client import (
+    BATCH_SIZE,
+    MAX_REQUESTS_PER_MINUTE,
+    MAX_TOKENS_PER_MINUTE,
+    VOYAGE_MODEL,
     EmbeddingResponse,
     EmbeddingUsage,
     VoyageClient,
-    get_client,
     embed,
-    embed_single,
-    embed_query,
     embed_document,
+    embed_query,
+    embed_single,
+    get_client,
     is_available,
-    VOYAGE_MODEL,
-    MAX_REQUESTS_PER_MINUTE,
-    MAX_TOKENS_PER_MINUTE,
-    BATCH_SIZE,
-    _client,
 )
 
 
@@ -42,9 +42,7 @@ class TestEmbeddingResponseDataClass:
         """Test creating an embedding response"""
         embeddings = [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]]
         response = EmbeddingResponse(
-            embeddings=embeddings,
-            model="voyage-3.5",
-            usage={"total_tokens": 10}
+            embeddings=embeddings, model="voyage-3.5", usage={"total_tokens": 10}
         )
 
         assert response.embeddings == embeddings
@@ -53,10 +51,7 @@ class TestEmbeddingResponseDataClass:
 
     def test_embedding_response_default_usage(self):
         """Test default usage dict"""
-        response = EmbeddingResponse(
-            embeddings=[[0.1]],
-            model="test"
-        )
+        response = EmbeddingResponse(embeddings=[[0.1]], model="test")
 
         assert response.usage == {}
 
@@ -282,9 +277,7 @@ class TestVoyageClientEmbed:
 
         # Mock API response
         mock_response = EmbeddingResponse(
-            embeddings=[[0.1, 0.2], [0.3, 0.4]],
-            model="voyage-3.5",
-            usage={"total_tokens": 10}
+            embeddings=[[0.1, 0.2], [0.3, 0.4]], model="voyage-3.5", usage={"total_tokens": 10}
         )
 
         with patch.object(client, "_call_api_with_retry", return_value=mock_response):
@@ -304,9 +297,7 @@ class TestVoyageClientEmbed:
 
         # Mock API (should not be called for cached text)
         mock_response = EmbeddingResponse(
-            embeddings=[[0.5, 0.6, 0.7]],
-            model="voyage-3.5",
-            usage={"total_tokens": 5}
+            embeddings=[[0.5, 0.6, 0.7]], model="voyage-3.5", usage={"total_tokens": 5}
         )
 
         with patch.object(client, "_call_api_with_retry", return_value=mock_response) as mock_call:
@@ -323,9 +314,7 @@ class TestVoyageClientEmbed:
         client = VoyageClient(api_key="test", cache_enabled=False)
 
         mock_response = EmbeddingResponse(
-            embeddings=[[0.1, 0.2]],
-            model="voyage-3.5",
-            usage={"total_tokens": 5}
+            embeddings=[[0.1, 0.2]], model="voyage-3.5", usage={"total_tokens": 5}
         )
 
         with patch.object(client, "_call_api_with_retry", return_value=mock_response) as mock_call:
@@ -347,10 +336,12 @@ class TestVoyageClientEmbed:
             return EmbeddingResponse(
                 embeddings=[[0.1, 0.2] for _ in range(len(batch_texts))],
                 model="voyage-3.5",
-                usage={"total_tokens": len(batch_texts) * 2}
+                usage={"total_tokens": len(batch_texts) * 2},
             )
 
-        with patch.object(client, "_call_api_with_retry", side_effect=mock_response_side_effect) as mock_call:
+        with patch.object(
+            client, "_call_api_with_retry", side_effect=mock_response_side_effect
+        ) as mock_call:
             result = client.embed(texts)
 
             # Should make 2 API calls (one full batch, one partial)
@@ -363,9 +354,7 @@ class TestVoyageClientEmbed:
         client = VoyageClient(api_key="test")
 
         mock_response = EmbeddingResponse(
-            embeddings=[[0.1, 0.2, 0.3]],
-            model="voyage-3.5",
-            usage={"total_tokens": 5}
+            embeddings=[[0.1, 0.2, 0.3]], model="voyage-3.5", usage={"total_tokens": 5}
         )
 
         with patch.object(client, "_call_api_with_retry", return_value=mock_response):
@@ -379,9 +368,7 @@ class TestVoyageClientEmbed:
         client = VoyageClient(api_key="test")
 
         mock_response = EmbeddingResponse(
-            embeddings=[[0.1, 0.2]],
-            model="voyage-3.5",
-            usage={"total_tokens": 5}
+            embeddings=[[0.1, 0.2]], model="voyage-3.5", usage={"total_tokens": 5}
         )
 
         with patch.object(client, "_call_api_with_retry", return_value=mock_response) as mock_call:
@@ -398,9 +385,7 @@ class TestVoyageClientEmbed:
         client = VoyageClient(api_key="test")
 
         mock_response = EmbeddingResponse(
-            embeddings=[[0.1, 0.2]],
-            model="voyage-3.5",
-            usage={"total_tokens": 5}
+            embeddings=[[0.1, 0.2]], model="voyage-3.5", usage={"total_tokens": 5}
         )
 
         with patch.object(client, "_call_api_with_retry", return_value=mock_response) as mock_call:
@@ -444,11 +429,7 @@ class TestAPIRetry:
         """Test successful API call on first try"""
         client = VoyageClient(api_key="test")
 
-        mock_response = EmbeddingResponse(
-            embeddings=[[0.1]],
-            model="test",
-            usage={}
-        )
+        mock_response = EmbeddingResponse(embeddings=[[0.1]], model="test", usage={})
 
         with patch.object(client, "_call_api", return_value=mock_response) as mock_call:
             result = client._call_api_with_retry(["text"], "document")
@@ -460,18 +441,11 @@ class TestAPIRetry:
         """Test successful API call after retry"""
         client = VoyageClient(api_key="test")
 
-        mock_response = EmbeddingResponse(
-            embeddings=[[0.1]],
-            model="test",
-            usage={}
-        )
+        mock_response = EmbeddingResponse(embeddings=[[0.1]], model="test", usage={})
 
         # Fail first, succeed second
         with patch.object(client, "_call_api") as mock_call:
-            mock_call.side_effect = [
-                RuntimeError("500: Server error"),
-                mock_response
-            ]
+            mock_call.side_effect = [RuntimeError("500: Server error"), mock_response]
 
             with patch("time.sleep"):
                 result = client._call_api_with_retry(["text"], "document")
@@ -527,7 +501,9 @@ class TestAPIRetry:
 
             with patch("time.sleep") as mock_sleep:
                 with pytest.raises(RuntimeError):
-                    client._call_api_with_retry(["text"], "document", max_attempts=3, initial_delay=1.0)
+                    client._call_api_with_retry(
+                        ["text"], "document", max_attempts=3, initial_delay=1.0
+                    )
 
             # Should have delays: 1.0, 2.0
             assert mock_sleep.call_count == 2
@@ -544,12 +520,9 @@ class TestCallAPI:
         client = VoyageClient(api_key="test-key")
 
         mock_response_data = {
-            "data": [
-                {"embedding": [0.1, 0.2, 0.3]},
-                {"embedding": [0.4, 0.5, 0.6]}
-            ],
+            "data": [{"embedding": [0.1, 0.2, 0.3]}, {"embedding": [0.4, 0.5, 0.6]}],
             "model": "voyage-3.5",
-            "usage": {"total_tokens": 10}
+            "usage": {"total_tokens": 10},
         }
 
         mock_response = MagicMock()
@@ -570,11 +543,7 @@ class TestCallAPI:
         client = VoyageClient(api_key="test-key")
 
         http_error = urllib.error.HTTPError(
-            "https://api.voyageai.com",
-            401,
-            "Unauthorized",
-            {},
-            None
+            "https://api.voyageai.com", 401, "Unauthorized", {}, None
         )
 
         with patch("urllib.request.urlopen", side_effect=http_error):
@@ -674,11 +643,7 @@ class TestEdgeCases:
 
         # This tests the internal logic - all results start as None
         # and are filled in by cache or API
-        mock_response = EmbeddingResponse(
-            embeddings=[[0.1]],
-            model="test",
-            usage={}
-        )
+        mock_response = EmbeddingResponse(embeddings=[[0.1]], model="test", usage={})
 
         with patch.object(client, "_call_api_with_retry", return_value=mock_response):
             result = client.embed(["text"])
@@ -691,9 +656,7 @@ class TestEdgeCases:
         client = VoyageClient(api_key="test")
 
         mock_response = EmbeddingResponse(
-            embeddings=[[0.1]],
-            model="test",
-            usage={"total_tokens": 50}
+            embeddings=[[0.1]], model="test", usage={"total_tokens": 50}
         )
 
         with patch.object(client, "_call_api_with_retry", return_value=mock_response):
@@ -728,9 +691,7 @@ class TestEdgeCases:
         texts = [f"text{i}" for i in range(5)]
 
         mock_response = EmbeddingResponse(
-            embeddings=[[float(i)] for i in range(5)],
-            model="test",
-            usage={}
+            embeddings=[[float(i)] for i in range(5)], model="test", usage={}
         )
 
         with patch.object(client, "_call_api_with_retry", return_value=mock_response):

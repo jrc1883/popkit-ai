@@ -62,6 +62,7 @@ grep -q "^\.worktrees/$" .gitignore || grep -q "^worktrees/$" .gitignore
 **If NOT in .gitignore:**
 
 Fix broken things immediately:
+
 1. Add appropriate line to .gitignore
 2. Commit the change
 3. Proceed with worktree creation
@@ -143,31 +144,35 @@ Ready to implement <feature-name>
 
 ## Quick Reference
 
-| Situation | Action |
-|-----------|--------|
-| `.worktrees/` exists | Use it (verify .gitignore) |
-| `worktrees/` exists | Use it (verify .gitignore) |
-| Both exist | Use `.worktrees/` |
-| Neither exists | Check CLAUDE.md -> Ask user |
+| Situation                   | Action                      |
+| --------------------------- | --------------------------- |
+| `.worktrees/` exists        | Use it (verify .gitignore)  |
+| `worktrees/` exists         | Use it (verify .gitignore)  |
+| Both exist                  | Use `.worktrees/`           |
+| Neither exists              | Check CLAUDE.md -> Ask user |
 | Directory not in .gitignore | Add it immediately + commit |
-| Tests fail during baseline | Report failures + ask |
-| No package.json/Cargo.toml | Skip dependency install |
+| Tests fail during baseline  | Report failures + ask       |
+| No package.json/Cargo.toml  | Skip dependency install     |
 
 ## Common Mistakes
 
 **Skipping .gitignore verification**
+
 - **Problem:** Worktree contents get tracked, pollute git status
 - **Fix:** Always grep .gitignore before creating project-local worktree
 
 **Assuming directory location**
+
 - **Problem:** Creates inconsistency, violates project conventions
 - **Fix:** Follow priority: existing > CLAUDE.md > ask
 
 **Proceeding with failing tests**
+
 - **Problem:** Can't distinguish new bugs from pre-existing issues
 - **Fix:** Report failures, get explicit permission to proceed
 
 **Hardcoding setup commands**
+
 - **Problem:** Breaks on projects using different tools
 - **Fix:** Auto-detect from project files (package.json, etc.)
 
@@ -190,6 +195,7 @@ Ready to implement auth feature
 ## Red Flags
 
 **Never:**
+
 - Create worktree without .gitignore verification (project-local)
 - Skip baseline test verification
 - Proceed with failing tests without asking
@@ -197,6 +203,7 @@ Ready to implement auth feature
 - Skip CLAUDE.md check
 
 **Always:**
+
 - Follow directory priority: existing > CLAUDE.md > ask
 - Verify .gitignore for project-local
 - Auto-detect and run project setup
@@ -205,9 +212,11 @@ Ready to implement auth feature
 ## Integration
 
 **Called by:**
+
 - **popkit:brainstorming** (Phase 4) - When design is approved and implementation follows
 - Any skill needing isolated workspace
 
 **Pairs with:**
+
 - **popkit:finishing-a-development-branch** - For cleanup after work complete
 - **popkit:executing-plans** or **popkit:subagent-driven-development** - Work happens in this worktree

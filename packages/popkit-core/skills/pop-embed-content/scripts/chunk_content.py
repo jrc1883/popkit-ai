@@ -24,7 +24,7 @@ import re
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional
 
 
 def get_project_root(path: Optional[str] = None) -> Path:
@@ -34,7 +34,9 @@ def get_project_root(path: Optional[str] = None) -> Path:
     return Path.cwd()
 
 
-def discover_content(project_root: Path, content_type: Optional[str] = None) -> List[Dict[str, Any]]:
+def discover_content(
+    project_root: Path, content_type: Optional[str] = None
+) -> List[Dict[str, Any]]:
     """Discover all embeddable content in the project."""
     items = []
 
@@ -75,16 +77,18 @@ def discover_content(project_root: Path, content_type: Optional[str] = None) -> 
                     else:
                         item_id = file_path.stem
 
-                    items.append({
-                        "id": f"{source_type}:{item_id}",
-                        "type": category,
-                        "source_type": source_type,
-                        "path": str(file_path.relative_to(project_root)),
-                        "name": metadata.get("name", item_id),
-                        "description": metadata.get("description", ""),
-                        "content_hash": compute_hash(content),
-                        "size_bytes": len(content.encode('utf-8'))
-                    })
+                    items.append(
+                        {
+                            "id": f"{source_type}:{item_id}",
+                            "type": category,
+                            "source_type": source_type,
+                            "path": str(file_path.relative_to(project_root)),
+                            "name": metadata.get("name", item_id),
+                            "description": metadata.get("description", ""),
+                            "content_hash": compute_hash(content),
+                            "size_bytes": len(content.encode("utf-8")),
+                        }
+                    )
 
     return items
 
@@ -93,15 +97,15 @@ def parse_frontmatter(content: str) -> Dict[str, Any]:
     """Parse YAML frontmatter from markdown content."""
     metadata = {}
 
-    if content.startswith('---'):
-        parts = content.split('---', 2)
+    if content.startswith("---"):
+        parts = content.split("---", 2)
         if len(parts) >= 3:
             frontmatter = parts[1].strip()
-            for line in frontmatter.split('\n'):
-                if ':' in line:
-                    key, value = line.split(':', 1)
+            for line in frontmatter.split("\n"):
+                if ":" in line:
+                    key, value = line.split(":", 1)
                     key = key.strip()
-                    value = value.strip().strip('"\'')
+                    value = value.strip().strip("\"'")
                     metadata[key] = value
 
     return metadata
@@ -109,7 +113,7 @@ def parse_frontmatter(content: str) -> Dict[str, Any]:
 
 def compute_hash(content: str) -> str:
     """Compute content hash for change detection."""
-    return hashlib.sha256(content.encode('utf-8')).hexdigest()[:16]
+    return hashlib.sha256(content.encode("utf-8")).hexdigest()[:16]
 
 
 def chunk_content(content: str, item_type: str) -> List[Dict[str, Any]]:
@@ -118,8 +122,8 @@ def chunk_content(content: str, item_type: str) -> List[Dict[str, Any]]:
 
     # Parse frontmatter
     body = content
-    if content.startswith('---'):
-        parts = content.split('---', 2)
+    if content.startswith("---"):
+        parts = content.split("---", 2)
         if len(parts) >= 3:
             body = parts[2].strip()
 
@@ -127,9 +131,9 @@ def chunk_content(content: str, item_type: str) -> List[Dict[str, Any]]:
     sections = []
     current_section = {"title": "Overview", "content": [], "level": 0}
 
-    for line in body.split('\n'):
+    for line in body.split("\n"):
         # Check for headers
-        header_match = re.match(r'^(#{1,3})\s+(.+)$', line)
+        header_match = re.match(r"^(#{1,3})\s+(.+)$", line)
 
         if header_match:
             # Save current section if it has content
@@ -148,7 +152,7 @@ def chunk_content(content: str, item_type: str) -> List[Dict[str, Any]]:
 
     # Convert sections to chunks
     for i, section in enumerate(sections):
-        section_content = '\n'.join(section["content"]).strip()
+        section_content = "\n".join(section["content"]).strip()
 
         if not section_content:
             continue
@@ -157,33 +161,37 @@ def chunk_content(content: str, item_type: str) -> List[Dict[str, Any]]:
         if len(section_content) < 20:
             continue
 
-        chunks.append({
-            "chunk_id": f"section-{i}",
-            "title": section["title"],
-            "level": section["level"],
-            "content": section_content[:2000],  # Limit chunk size
-            "word_count": len(section_content.split())
-        })
+        chunks.append(
+            {
+                "chunk_id": f"section-{i}",
+                "title": section["title"],
+                "level": section["level"],
+                "content": section_content[:2000],  # Limit chunk size
+                "word_count": len(section_content.split()),
+            }
+        )
 
     return chunks
 
 
-def generate_embedding_description(item: Dict[str, Any], chunks: List[Dict[str, Any]]) -> str:
+def generate_embedding_description(
+    item: Dict[str, Any], chunks: List[Dict[str, Any]]
+) -> str:
     """Generate an embedding-friendly description for an item."""
     parts = []
 
     # Start with name and description
     parts.append(f"Name: {item['name']}")
-    if item.get('description'):
+    if item.get("description"):
         parts.append(f"Description: {item['description']}")
 
     # Add type context
     type_context = {
         "skill": "Claude Code skill for specialized tasks",
         "agent": "Claude Code agent for automated workflows",
-        "command": "Slash command for quick actions"
+        "command": "Slash command for quick actions",
     }
-    if item['type'] in type_context:
+    if item["type"] in type_context:
         parts.append(f"Type: {type_context[item['type']]}")
 
     # Add key sections
@@ -191,7 +199,7 @@ def generate_embedding_description(item: Dict[str, Any], chunks: List[Dict[str, 
         if chunk["title"] not in ["Template Variables", "Metadata"]:
             parts.append(f"{chunk['title']}: {chunk['content'][:200]}")
 
-    return ' | '.join(parts)
+    return " | ".join(parts)
 
 
 def check_embedding_status(items: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -209,18 +217,14 @@ def check_embedding_status(items: List[Dict[str, Any]]) -> Dict[str, Any]:
         "missing_items": 0,
         "api_available": bool(os.environ.get("VOYAGE_API_KEY")),
         "store_exists": embed_db.exists(),
-        "by_type": {}
+        "by_type": {},
     }
 
     # Group by type
     for item in items:
         item_type = item["type"]
         if item_type not in status["by_type"]:
-            status["by_type"][item_type] = {
-                "total": 0,
-                "embedded": 0,
-                "missing": 0
-            }
+            status["by_type"][item_type] = {"total": 0, "embedded": 0, "missing": 0}
         status["by_type"][item_type]["total"] += 1
         status["by_type"][item_type]["missing"] += 1
         status["missing_items"] += 1
@@ -228,7 +232,9 @@ def check_embedding_status(items: List[Dict[str, Any]]) -> Dict[str, Any]:
     return status
 
 
-def prepare_for_embedding(items: List[Dict[str, Any]], project_root: Path) -> List[Dict[str, Any]]:
+def prepare_for_embedding(
+    items: List[Dict[str, Any]], project_root: Path
+) -> List[Dict[str, Any]]:
     """Prepare items for embedding by chunking and generating descriptions."""
     prepared = []
 
@@ -242,23 +248,31 @@ def prepare_for_embedding(items: List[Dict[str, Any]], project_root: Path) -> Li
         chunks = chunk_content(content, item["type"])
         description = generate_embedding_description(item, chunks)
 
-        prepared.append({
-            **item,
-            "chunks": chunks,
-            "embedding_description": description,
-            "chunk_count": len(chunks)
-        })
+        prepared.append(
+            {
+                **item,
+                "chunks": chunks,
+                "embedding_description": description,
+                "chunk_count": len(chunks),
+            }
+        )
 
     return prepared
 
 
 def main():
     import argparse
+
     parser = argparse.ArgumentParser(description="Chunk content for embedding")
-    parser.add_argument("--mode", choices=["discover", "chunk", "embed", "status"],
-                        default="discover", help="Operation mode")
-    parser.add_argument("--type", choices=["skill", "agent", "command"],
-                        help="Filter by content type")
+    parser.add_argument(
+        "--mode",
+        choices=["discover", "chunk", "embed", "status"],
+        default="discover",
+        help="Operation mode",
+    )
+    parser.add_argument(
+        "--type", choices=["skill", "agent", "command"], help="Filter by content type"
+    )
     parser.add_argument("--project", help="Project root path")
     parser.add_argument("--output", "-o", help="Output file path")
     args = parser.parse_args()
@@ -268,7 +282,7 @@ def main():
     result = {
         "operation": f"chunk_content_{args.mode}",
         "project_root": str(project_root),
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.now().isoformat(),
     }
 
     if args.mode == "discover":
@@ -315,11 +329,16 @@ def main():
 
     if args.output:
         Path(args.output).write_text(output)
-        print(json.dumps({
-            "operation": f"chunk_content_{args.mode}",
-            "output_file": args.output,
-            "success": True
-        }, indent=2))
+        print(
+            json.dumps(
+                {
+                    "operation": f"chunk_content_{args.mode}",
+                    "output_file": args.output,
+                    "success": True,
+                },
+                indent=2,
+            )
+        )
     else:
         print(output)
 

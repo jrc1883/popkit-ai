@@ -5,6 +5,7 @@ Automated end-of-day maintenance routine for PopKit.
 ## Overview
 
 The `pop-nightly` skill provides a comprehensive nightly routine that:
+
 - Calculates Sleep Score (0-100) based on project health
 - Generates actionable nightly report
 - Automatically captures session state to STATUS.json
@@ -12,14 +13,14 @@ The `pop-nightly` skill provides a comprehensive nightly routine that:
 
 ## Sleep Score (0-100)
 
-| Check | Points | Description |
-|-------|--------|-------------|
-| Uncommitted work saved | 25 | No uncommitted changes OR committed |
-| Branches cleaned | 20 | No stale merged branches |
-| Issues updated | 20 | Today's issues have status updates |
-| CI passing | 15 | Latest CI run successful |
-| Services stopped | 10 | No dev services running |
-| Logs archived | 10 | Session logs saved |
+| Check                  | Points | Description                         |
+| ---------------------- | ------ | ----------------------------------- |
+| Uncommitted work saved | 25     | No uncommitted changes OR committed |
+| Branches cleaned       | 20     | No stale merged branches            |
+| Issues updated         | 20     | Today's issues have status updates  |
+| CI passing             | 15     | Latest CI run successful            |
+| Services stopped       | 10     | No dev services running             |
+| Logs archived          | 10     | Session logs saved                  |
 
 **Total**: 100 points
 
@@ -98,11 +99,13 @@ python scripts/report_generator.py
 ## Performance
 
 ### Baseline (Manual)
+
 - Tool calls: 11
 - Duration: ~60 seconds
 - Token usage: High (no caching)
 
 ### Optimized (Automated)
+
 - Tool calls: 4 (64% reduction)
 - Duration: ~10-15 seconds (75-83% improvement)
 - Token usage: 40-96% reduction (with --optimized)
@@ -119,14 +122,14 @@ python scripts/report_generator.py
 
 ## Score Breakdown
 
-| Check | Points | Status |
-|-------|--------|--------|
-| Uncommitted work saved | 0/25 | ❌ 3 uncommitted files |
-| Branches cleaned | 20/20 | ✅ No stale branches |
-| Issues updated | 20/20 | ✅ All issues current |
-| CI passing | 0/15 | ❌ Latest run skipped |
-| Services stopped | 10/10 | ✅ All services stopped |
-| Logs archived | 10/10 | ✅ No logs to archive |
+| Check                  | Points | Status                  |
+| ---------------------- | ------ | ----------------------- |
+| Uncommitted work saved | 0/25   | ❌ 3 uncommitted files  |
+| Branches cleaned       | 20/20  | ✅ No stale branches    |
+| Issues updated         | 20/20  | ✅ All issues current   |
+| CI passing             | 0/15   | ❌ Latest run skipped   |
+| Services stopped       | 10/10  | ✅ All services stopped |
+| Logs archived          | 10/10  | ✅ No logs to archive   |
 
 ## 📝 Uncommitted Changes
 
@@ -139,10 +142,12 @@ python scripts/report_generator.py
 ## 📋 Recommendations
 
 **Before Leaving:**
+
 - Commit or stash 3 uncommitted files
 - Review 8 stashes - consider cleaning up old ones
 
 **Next Morning:**
+
 - Run `/popkit:routine morning` to check overnight changes
 - Review and address items from nightly report
 

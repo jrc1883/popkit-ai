@@ -8,36 +8,39 @@ Provides persistent storage for captured bugs, consent preferences,
 and sharing status tracking.
 """
 
-import sqlite3
-import json
 import hashlib
+import json
+import sqlite3
 import uuid
-from datetime import datetime
-from dataclasses import dataclass, asdict
-from typing import Dict, List, Optional, Any
-from pathlib import Path
 from contextlib import contextmanager
+from dataclasses import asdict, dataclass
+from datetime import datetime
 from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 
 class ShareStatus(Enum):
     """Status of bug sharing"""
-    PENDING = "pending"      # Not yet asked
-    SHARED = "shared"        # User approved sharing
+
+    PENDING = "pending"  # Not yet asked
+    SHARED = "shared"  # User approved sharing
     LOCAL_ONLY = "local_only"  # User declined sharing
     NEVER_ASK = "never_ask"  # User said never ask again
 
 
 class ConsentLevel(Enum):
     """User consent levels for bug sharing"""
-    STRICT = "strict"        # No sharing, local only
-    MODERATE = "moderate"    # Share anonymized patterns
-    MINIMAL = "minimal"      # Share more context (open source projects)
+
+    STRICT = "strict"  # No sharing, local only
+    MODERATE = "moderate"  # Share anonymized patterns
+    MINIMAL = "minimal"  # Share more context (open source projects)
 
 
 @dataclass
 class CapturedBug:
     """Represents a captured bug"""
+
     id: str
     error_type: str
     error_message: Optional[str]
@@ -62,6 +65,7 @@ class CapturedBug:
 @dataclass
 class ConsentPreference:
     """User consent preference"""
+
     key: str
     value: str
     updated_at: str
@@ -71,7 +75,7 @@ class BugStore:
     """SQLite-based storage for captured bugs and consent preferences"""
 
     DB_VERSION = 1
-    DEFAULT_DB_PATH = Path.home() / '.claude' / 'config' / 'bug_reports.db'
+    DEFAULT_DB_PATH = Path.home() / ".claude" / "config" / "bug_reports.db"
 
     def __init__(self, db_path: Optional[Path] = None):
         """
@@ -177,7 +181,7 @@ class BugStore:
 
     def _hash_message(self, message: str) -> str:
         """Create a hash of an error message for deduplication"""
-        normalized = ' '.join(message.lower().split())
+        normalized = " ".join(message.lower().split())
         return hashlib.sha256(normalized.encode()).hexdigest()[:16]
 
     # =========================================================================
@@ -195,7 +199,7 @@ class BugStore:
         anonymized_context: Optional[str] = None,
         raw_context: Optional[Dict] = None,
         detection_source: str = "auto",
-        confidence: float = 0.5
+        confidence: float = 0.5,
     ) -> CapturedBug:
         """
         Capture a new bug.
@@ -216,36 +220,57 @@ class BugStore:
             The captured bug
         """
         import sys
+
         platform = platform or sys.platform
         bug_id = self._generate_id()
         error_hash = self._hash_message(error_message) if error_message else None
         raw_json = json.dumps(raw_context) if raw_context else None
 
         with self._get_connection() as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT INTO captured_bugs
                 (id, error_type, error_message, error_message_hash, command_pattern,
                  platform, shell, context_summary, anonymized_context, raw_context,
                  detection_source, confidence)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (bug_id, error_type, error_message, error_hash, command_pattern,
-                  platform, shell, context_summary, anonymized_context, raw_json,
-                  detection_source, confidence))
+            """,
+                (
+                    bug_id,
+                    error_type,
+                    error_message,
+                    error_hash,
+                    command_pattern,
+                    platform,
+                    shell,
+                    context_summary,
+                    anonymized_context,
+                    raw_json,
+                    detection_source,
+                    confidence,
+                ),
+            )
 
             # Log to history
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT INTO sharing_history (bug_id, action, result)
                 VALUES (?, 'capture', 'created')
-            """, (bug_id,))
+            """,
+                (bug_id,),
+            )
 
         return self.get_bug(bug_id)
 
     def get_bug(self, bug_id: str) -> Optional[CapturedBug]:
         """Get a bug by ID"""
         with self._get_connection() as conn:
-            row = conn.execute("""
+            row = conn.execute(
+                """
                 SELECT * FROM captured_bugs WHERE id = ?
-            """, (bug_id,)).fetchone()
+            """,
+                (bug_id,),
+            ).fetchone()
 
             if row:
                 return self._row_to_bug(row)
@@ -254,21 +279,21 @@ class BugStore:
     def _row_to_bug(self, row: sqlite3.Row) -> CapturedBug:
         """Convert a database row to a CapturedBug"""
         return CapturedBug(
-            id=row['id'],
-            error_type=row['error_type'],
-            error_message=row['error_message'],
-            error_message_hash=row['error_message_hash'],
-            command_pattern=row['command_pattern'],
-            platform=row['platform'],
-            shell=row['shell'],
-            context_summary=row['context_summary'],
-            anonymized_context=row['anonymized_context'],
-            raw_context=row['raw_context'],
-            share_status=row['share_status'],
-            detection_source=row['detection_source'],
-            confidence=row['confidence'],
-            created_at=row['created_at'],
-            updated_at=row['updated_at']
+            id=row["id"],
+            error_type=row["error_type"],
+            error_message=row["error_message"],
+            error_message_hash=row["error_message_hash"],
+            command_pattern=row["command_pattern"],
+            platform=row["platform"],
+            shell=row["shell"],
+            context_summary=row["context_summary"],
+            anonymized_context=row["anonymized_context"],
+            raw_context=row["raw_context"],
+            share_status=row["share_status"],
+            detection_source=row["detection_source"],
+            confidence=row["confidence"],
+            created_at=row["created_at"],
+            updated_at=row["updated_at"],
         )
 
     def list_bugs(
@@ -276,7 +301,7 @@ class BugStore:
         limit: int = 50,
         error_type: Optional[str] = None,
         share_status: Optional[str] = None,
-        since: Optional[str] = None
+        since: Optional[str] = None,
     ) -> List[CapturedBug]:
         """
         List captured bugs with optional filters.
@@ -319,17 +344,23 @@ class BugStore:
     def update_share_status(self, bug_id: str, status: ShareStatus) -> bool:
         """Update the share status of a bug"""
         with self._get_connection() as conn:
-            cursor = conn.execute("""
+            cursor = conn.execute(
+                """
                 UPDATE captured_bugs
                 SET share_status = ?, updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
-            """, (status.value, bug_id))
+            """,
+                (status.value, bug_id),
+            )
 
             if cursor.rowcount > 0:
-                conn.execute("""
+                conn.execute(
+                    """
                     INSERT INTO sharing_history (bug_id, action, result)
                     VALUES (?, 'status_change', ?)
-                """, (bug_id, status.value))
+                """,
+                    (bug_id, status.value),
+                )
                 return True
             return False
 
@@ -345,36 +376,47 @@ class BugStore:
         """Clear bugs older than N days"""
         with self._get_connection() as conn:
             # First get IDs to delete
-            rows = conn.execute("""
+            rows = conn.execute(
+                """
                 SELECT id FROM captured_bugs
                 WHERE created_at < datetime('now', '-' || ? || ' days')
-            """, (days,)).fetchall()
+            """,
+                (days,),
+            ).fetchall()
 
-            ids = [row['id'] for row in rows]
+            ids = [row["id"] for row in rows]
             if not ids:
                 return 0
 
-            placeholders = ','.join('?' * len(ids))
+            placeholders = ",".join("?" * len(ids))
             conn.execute(f"DELETE FROM sharing_history WHERE bug_id IN ({placeholders})", ids)
             conn.execute(f"DELETE FROM captured_bugs WHERE id IN ({placeholders})", ids)
             return len(ids)
 
-    def find_similar(self, error_type: str, error_message: Optional[str] = None) -> List[CapturedBug]:
+    def find_similar(
+        self, error_type: str, error_message: Optional[str] = None
+    ) -> List[CapturedBug]:
         """Find similar bugs by error type and message hash"""
         with self._get_connection() as conn:
             if error_message:
                 error_hash = self._hash_message(error_message)
-                rows = conn.execute("""
+                rows = conn.execute(
+                    """
                     SELECT * FROM captured_bugs
                     WHERE error_type = ? OR error_message_hash = ?
                     ORDER BY created_at DESC LIMIT 10
-                """, (error_type, error_hash)).fetchall()
+                """,
+                    (error_type, error_hash),
+                ).fetchall()
             else:
-                rows = conn.execute("""
+                rows = conn.execute(
+                    """
                     SELECT * FROM captured_bugs
                     WHERE error_type = ?
                     ORDER BY created_at DESC LIMIT 10
-                """, (error_type,)).fetchall()
+                """,
+                    (error_type,),
+                ).fetchall()
 
             return [self._row_to_bug(row) for row in rows]
 
@@ -390,7 +432,7 @@ class BugStore:
             """).fetchone()
             if row:
                 try:
-                    return ConsentLevel(row['value'])
+                    return ConsentLevel(row["value"])
                 except ValueError:
                     return ConsentLevel.STRICT
             return ConsentLevel.STRICT
@@ -398,50 +440,59 @@ class BugStore:
     def set_consent_level(self, level: ConsentLevel) -> None:
         """Set the consent level"""
         with self._get_connection() as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT OR REPLACE INTO consent_preferences (key, value, updated_at)
                 VALUES ('consent_level', ?, CURRENT_TIMESTAMP)
-            """, (level.value,))
+            """,
+                (level.value,),
+            )
 
     def get_preference(self, key: str, default: str = "") -> str:
         """Get a consent preference"""
         with self._get_connection() as conn:
-            row = conn.execute("""
+            row = conn.execute(
+                """
                 SELECT value FROM consent_preferences WHERE key = ?
-            """, (key,)).fetchone()
-            return row['value'] if row else default
+            """,
+                (key,),
+            ).fetchone()
+            return row["value"] if row else default
 
     def set_preference(self, key: str, value: str) -> None:
         """Set a consent preference"""
         with self._get_connection() as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT OR REPLACE INTO consent_preferences (key, value, updated_at)
                 VALUES (?, ?, CURRENT_TIMESTAMP)
-            """, (key, value))
+            """,
+                (key, value),
+            )
 
     def is_sharing_enabled(self) -> bool:
         """Check if sharing is enabled"""
-        return self.get_preference('sharing_enabled', 'false') == 'true'
+        return self.get_preference("sharing_enabled", "false") == "true"
 
     def set_sharing_enabled(self, enabled: bool) -> None:
         """Enable or disable sharing"""
-        self.set_preference('sharing_enabled', 'true' if enabled else 'false')
+        self.set_preference("sharing_enabled", "true" if enabled else "false")
 
     def should_ask_before_share(self) -> bool:
         """Check if we should ask before sharing"""
-        return self.get_preference('ask_before_share', 'true') == 'true'
+        return self.get_preference("ask_before_share", "true") == "true"
 
     def set_ask_before_share(self, ask: bool) -> None:
         """Set whether to ask before sharing"""
-        self.set_preference('ask_before_share', 'true' if ask else 'false')
+        self.set_preference("ask_before_share", "true" if ask else "false")
 
     def is_auto_detect_enabled(self) -> bool:
         """Check if auto-detection is enabled"""
-        return self.get_preference('auto_detect_enabled', 'true') == 'true'
+        return self.get_preference("auto_detect_enabled", "true") == "true"
 
     def set_auto_detect_enabled(self, enabled: bool) -> None:
         """Enable or disable auto-detection"""
-        self.set_preference('auto_detect_enabled', 'true' if enabled else 'false')
+        self.set_preference("auto_detect_enabled", "true" if enabled else "false")
 
     # =========================================================================
     # STATISTICS
@@ -450,17 +501,19 @@ class BugStore:
     def get_stats(self) -> Dict[str, Any]:
         """Get statistics about captured bugs"""
         with self._get_connection() as conn:
-            total = conn.execute(
-                "SELECT COUNT(*) FROM captured_bugs"
-            ).fetchone()[0]
+            total = conn.execute("SELECT COUNT(*) FROM captured_bugs").fetchone()[0]
 
-            by_type = dict(conn.execute("""
+            by_type = dict(
+                conn.execute("""
                 SELECT error_type, COUNT(*) FROM captured_bugs GROUP BY error_type
-            """).fetchall())
+            """).fetchall()
+            )
 
-            by_status = dict(conn.execute("""
+            by_status = dict(
+                conn.execute("""
                 SELECT share_status, COUNT(*) FROM captured_bugs GROUP BY share_status
-            """).fetchall())
+            """).fetchall()
+            )
 
             recent_count = conn.execute("""
                 SELECT COUNT(*) FROM captured_bugs
@@ -473,7 +526,7 @@ class BugStore:
                 "by_share_status": by_status,
                 "recent_7_days": recent_count,
                 "consent_level": self.get_consent_level().value,
-                "sharing_enabled": self.is_sharing_enabled()
+                "sharing_enabled": self.is_sharing_enabled(),
             }
 
     # =========================================================================
@@ -487,10 +540,10 @@ class BugStore:
             "version": self.DB_VERSION,
             "exported_at": datetime.now().isoformat(),
             "bugs": [bug.to_dict() for bug in bugs],
-            "preferences": self._export_preferences()
+            "preferences": self._export_preferences(),
         }
 
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(data, f, indent=2)
 
         return len(bugs)
@@ -499,7 +552,7 @@ class BugStore:
         """Export all preferences"""
         with self._get_connection() as conn:
             rows = conn.execute("SELECT key, value FROM consent_preferences").fetchall()
-            return {row['key']: row['value'] for row in rows}
+            return {row["key"]: row["value"] for row in rows}
 
     def delete_all_data(self) -> Dict[str, int]:
         """Delete all user data (GDPR right to be forgotten)"""
@@ -519,10 +572,7 @@ class BugStore:
                 WHERE key = 'sharing_enabled'
             """)
 
-            return {
-                "bugs_deleted": bugs_count,
-                "history_deleted": history_count
-            }
+            return {"bugs_deleted": bugs_count, "history_deleted": history_count}
 
 
 # Singleton instance
@@ -539,8 +589,8 @@ def get_bug_store() -> BugStore:
 
 if __name__ == "__main__":
     # Test the bug store
-    import tempfile
     import shutil
+    import tempfile
 
     temp_dir = tempfile.mkdtemp()
     db_path = Path(temp_dir) / "test_bugs.db"
@@ -555,7 +605,7 @@ if __name__ == "__main__":
             error_message="TypeError: Cannot read property 'token' of undefined",
             command_pattern="npm run build",
             detection_source="auto",
-            confidence=0.85
+            confidence=0.85,
         )
         print(f"Captured bug: {bug.id}")
 

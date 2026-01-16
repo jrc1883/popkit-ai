@@ -17,17 +17,18 @@ mcp__{server-name}__{tool-pattern}
 ```
 
 **Components:**
+
 - `mcp__` - Required prefix
 - `{server-name}` - MCP server identifier (from mcpServers config)
 - `{tool-pattern}` - Tool name or wildcard (`*`)
 
 ### Examples
 
-| Pattern | Matches |
-|---------|---------|
-| `mcp__project-health__*` | All tools from project-health server |
+| Pattern                  | Matches                               |
+| ------------------------ | ------------------------------------- |
+| `mcp__project-health__*` | All tools from project-health server  |
 | `mcp__git-tools__status` | Only the "status" tool from git-tools |
-| `mcp__git-tools__git-*` | All tools starting with "git-" |
+| `mcp__git-tools__git-*`  | All tools starting with "git-"        |
 
 ## Configuration Patterns
 
@@ -50,6 +51,7 @@ Trust all current and future tools from a server you control:
 ```
 
 **Use when:**
+
 - Server is developed by you/your team
 - Tools are primarily read-only (git-status, health-checks)
 - You want new tools automatically available
@@ -78,6 +80,7 @@ Allow most tools but explicitly block dangerous operations:
 ```
 
 **Use when:**
+
 - Server has mix of safe/risky operations
 - You want explicit control over destructive actions
 - Maintaining an allow-list would be tedious
@@ -105,6 +108,7 @@ Only allow specific tools from untrusted sources:
 ```
 
 **Use when:**
+
 - Server is from external source
 - You want tight security controls
 - Only a subset of tools are needed
@@ -132,6 +136,7 @@ Allow tools matching a prefix pattern:
 ```
 
 **Use when:**
+
 - Tools are organized by namespace
 - You want granular control by category
 - Server has logical tool groupings
@@ -204,6 +209,7 @@ Allow tools matching a prefix pattern:
 ```
 
 **Benefits:**
+
 - ✅ 30+ lines removed
 - ✅ New tools automatically available
 - ✅ Clearer intent: "trust this server"
@@ -223,6 +229,7 @@ Wildcard permissions are secure for PopKit-generated MCP servers because:
 ### Caution for Third-Party Servers
 
 For external MCP servers:
+
 - ✅ Review server source code before wildcarding
 - ✅ Use explicit allow-lists for untrusted sources
 - ✅ Prefer namespace wildcards over full wildcards
@@ -230,12 +237,12 @@ For external MCP servers:
 
 ### Recommended Defaults
 
-| Server Type | Recommended Pattern |
-|-------------|---------------------|
-| PopKit-generated | Full wildcard (`*`) |
-| First-party (your team) | Full wildcard (`*`) |
-| Community/verified | Namespace wildcards (`health-*`, `git-*`) |
-| Third-party/unverified | Explicit allow-list |
+| Server Type             | Recommended Pattern                       |
+| ----------------------- | ----------------------------------------- |
+| PopKit-generated        | Full wildcard (`*`)                       |
+| First-party (your team) | Full wildcard (`*`)                       |
+| Community/verified      | Namespace wildcards (`health-*`, `git-*`) |
+| Third-party/unverified  | Explicit allow-list                       |
 
 ## Backward Compatibility
 
@@ -268,6 +275,7 @@ Keep `tools` section for documentation while using wildcard permissions:
 ```
 
 **Benefits:**
+
 - Documentation of available tools
 - Permission control via wildcard
 - Discoverable capabilities
@@ -312,6 +320,7 @@ Users can customize permissions after generation:
 **Problem:** Tools don't show up in Claude Code after adding wildcard
 
 **Solutions:**
+
 1. Verify server name matches: `"project-health"` in mcpServers vs `mcp__project-health__*`
 2. Restart Claude Code to reload MCP configuration
 3. Check server logs: `node .claude/mcp-servers/{server}/dist/index.js`
@@ -322,6 +331,7 @@ Users can customize permissions after generation:
 **Problem:** Tool call fails with permission error
 
 **Solutions:**
+
 1. Check if tool is in denied list: `"denied": ["mcp__server__tool"]`
 2. Verify wildcard syntax: must be `mcp__server__*` not `mcp__server_*`
 3. Ensure server name is exact match (case-sensitive)
@@ -331,6 +341,7 @@ Users can customize permissions after generation:
 **Problem:** Wildcard syntax not recognized
 
 **Solutions:**
+
 1. Verify Claude Code version: `claude --version` (need 2.0.70+)
 2. Check .mcp.json syntax (valid JSON, correct structure)
 3. Try explicit tool list as fallback
@@ -356,20 +367,14 @@ Users can customize permissions after generation:
       "args": [".claude/mcp-servers/git-tools/dist/index.js"],
       "permissions": {
         "allowed": ["mcp__git-tools__*"],
-        "denied": [
-          "mcp__git-tools__force-push",
-          "mcp__git-tools__delete-branch"
-        ]
+        "denied": ["mcp__git-tools__force-push", "mcp__git-tools__delete-branch"]
       }
     },
     "third-party-analyzer": {
       "command": "npx",
       "args": ["third-party-mcp@latest"],
       "permissions": {
-        "allowed": [
-          "mcp__third-party-analyzer__analyze",
-          "mcp__third-party-analyzer__report"
-        ]
+        "allowed": ["mcp__third-party-analyzer__analyze", "mcp__third-party-analyzer__report"]
       }
     }
   },

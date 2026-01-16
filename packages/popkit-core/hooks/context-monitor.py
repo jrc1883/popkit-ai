@@ -6,12 +6,11 @@ Tracks cumulative input tokens and warns before context window exhaustion.
 Part of PopKit plugin - Issue #16
 """
 
-import os
 import sys
 import json
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 # Context window limits by model (approximate)
 MODEL_CONTEXT_LIMITS = {
@@ -19,22 +18,22 @@ MODEL_CONTEXT_LIMITS = {
     "claude-sonnet-4": 200000,
     "claude-sonnet-4-5": 200000,
     "claude-haiku-4": 200000,
-    "default": 200000
+    "default": 200000,
 }
 
 # Warning thresholds
 THRESHOLDS = {
-    "info": 0.60,      # 60% - informational
-    "warning": 0.80,   # 80% - suggest summarization
+    "info": 0.60,  # 60% - informational
+    "warning": 0.80,  # 80% - suggest summarization
     "critical": 0.90,  # 90% - suggest session capture
-    "danger": 0.95     # 95% - urgent warning
+    "danger": 0.95,  # 95% - urgent warning
 }
 
 
 class ContextMonitor:
     def __init__(self):
-        self.claude_dir = Path.home() / '.claude'
-        self.project_claude_dir = Path.cwd() / '.claude'
+        self.claude_dir = Path.home() / ".claude"
+        self.project_claude_dir = Path.cwd() / ".claude"
         self.session_file = self.get_session_file()
         self.session_data = self.load_session_data()
 
@@ -44,14 +43,14 @@ class ContextMonitor:
         Prefers project-local .claude/ if it exists, otherwise uses global.
         """
         if self.project_claude_dir.exists():
-            return self.project_claude_dir / 'session-tokens.json'
-        return self.claude_dir / 'session-tokens.json'
+            return self.project_claude_dir / "session-tokens.json"
+        return self.claude_dir / "session-tokens.json"
 
     def load_session_data(self) -> Dict[str, Any]:
         """Load existing session token data."""
         if self.session_file.exists():
             try:
-                with open(self.session_file, 'r') as f:
+                with open(self.session_file, "r") as f:
                     return json.load(f)
             except (json.JSONDecodeError, IOError):
                 pass
@@ -62,7 +61,7 @@ class ContextMonitor:
             "total_output_tokens": 0,
             "tool_calls": 0,
             "last_updated": datetime.now().isoformat(),
-            "warnings_shown": []
+            "warnings_shown": [],
         }
 
     def save_session_data(self):
@@ -70,7 +69,7 @@ class ContextMonitor:
         try:
             self.session_file.parent.mkdir(parents=True, exist_ok=True)
             self.session_data["last_updated"] = datetime.now().isoformat()
-            with open(self.session_file, 'w') as f:
+            with open(self.session_file, "w") as f:
                 json.dump(self.session_data, f, indent=2)
         except IOError as e:
             print(f"Warning: Could not save token data: {e}", file=sys.stderr)
@@ -109,7 +108,7 @@ class ContextMonitor:
             "output_tokens": output_tokens,
             "total_input": self.session_data["total_input_tokens"],
             "total_output": self.session_data["total_output_tokens"],
-            "tool_calls": self.session_data["tool_calls"]
+            "tool_calls": self.session_data["tool_calls"],
         }
 
     def check_thresholds(self, model: str = None) -> Dict[str, Any]:
@@ -125,21 +124,33 @@ class ContextMonitor:
             "limit": limit,
             "level": "ok",
             "warning": None,
-            "suggestion": None
+            "suggestion": None,
         }
 
         if usage_ratio >= THRESHOLDS["danger"]:
             result["level"] = "danger"
-            result["warning"] = f"URGENT: Context at {result['usage_percent']}% capacity ({total:,}/{limit:,} tokens)"
-            result["suggestion"] = "Run /popkit:session-capture IMMEDIATELY to save state before context overflow"
+            result["warning"] = (
+                f"URGENT: Context at {result['usage_percent']}% capacity ({total:,}/{limit:,} tokens)"
+            )
+            result["suggestion"] = (
+                "Run /popkit:session-capture IMMEDIATELY to save state before context overflow"
+            )
         elif usage_ratio >= THRESHOLDS["critical"]:
             result["level"] = "critical"
-            result["warning"] = f"Context at {result['usage_percent']}% capacity ({total:,}/{limit:,} tokens)"
-            result["suggestion"] = "Strongly recommend: /popkit:session-capture to save state now"
+            result["warning"] = (
+                f"Context at {result['usage_percent']}% capacity ({total:,}/{limit:,} tokens)"
+            )
+            result["suggestion"] = (
+                "Strongly recommend: /popkit:session-capture to save state now"
+            )
         elif usage_ratio >= THRESHOLDS["warning"]:
             result["level"] = "warning"
-            result["warning"] = f"Context at {result['usage_percent']}% capacity ({total:,}/{limit:,} tokens)"
-            result["suggestion"] = "Consider: /popkit:session-capture to save state, or summarize conversation"
+            result["warning"] = (
+                f"Context at {result['usage_percent']}% capacity ({total:,}/{limit:,} tokens)"
+            )
+            result["suggestion"] = (
+                "Consider: /popkit:session-capture to save state, or summarize conversation"
+            )
         elif usage_ratio >= THRESHOLDS["info"]:
             result["level"] = "info"
             # Info level doesn't show warning, just tracks
@@ -167,7 +178,7 @@ class ContextMonitor:
             "status": "success",
             "tokens": {},
             "threshold_check": {},
-            "display": None
+            "display": None,
         }
 
         # Update token counts
@@ -180,11 +191,13 @@ class ContextMonitor:
         result["threshold_check"] = threshold_check
 
         # Generate display if warning needed
-        if threshold_check["level"] != "ok" and self.should_show_warning(threshold_check["level"]):
+        if threshold_check["level"] != "ok" and self.should_show_warning(
+            threshold_check["level"]
+        ):
             result["display"] = {
                 "level": threshold_check["level"],
                 "warning": threshold_check["warning"],
-                "suggestion": threshold_check["suggestion"]
+                "suggestion": threshold_check["suggestion"],
             }
 
         # Save updated data
@@ -206,10 +219,10 @@ def main():
         if display:
             level = display["level"]
             if level == "danger":
-                print(f"\n{'='*60}", file=sys.stderr)
+                print(f"\n{'=' * 60}", file=sys.stderr)
                 print(f"🔴 {display['warning']}", file=sys.stderr)
                 print(f"💡 {display['suggestion']}", file=sys.stderr)
-                print(f"{'='*60}\n", file=sys.stderr)
+                print(f"{'=' * 60}\n", file=sys.stderr)
             elif level == "critical":
                 print(f"\n🔴 {display['warning']}", file=sys.stderr)
                 print(f"💡 {display['suggestion']}", file=sys.stderr)

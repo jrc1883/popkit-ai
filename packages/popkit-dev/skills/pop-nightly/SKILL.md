@@ -19,16 +19,17 @@ Automated end-of-day maintenance that ensures clean project state before leaving
 
 Comprehensive health check across 6 dimensions:
 
-| Check | Points | Criteria |
-|-------|--------|----------|
-| Uncommitted work saved | 25 | No uncommitted changes OR committed |
-| Branches cleaned | 20 | No stale merged branches |
-| Issues updated | 20 | Today's issues have status updates |
-| CI passing | 15 | Latest CI run successful |
-| Services stopped | 10 | No dev services running |
-| Logs archived | 10 | Session logs saved |
+| Check                  | Points | Criteria                            |
+| ---------------------- | ------ | ----------------------------------- |
+| Uncommitted work saved | 25     | No uncommitted changes OR committed |
+| Branches cleaned       | 20     | No stale merged branches            |
+| Issues updated         | 20     | Today's issues have status updates  |
+| CI passing             | 15     | Latest CI run successful            |
+| Services stopped       | 10     | No dev services running             |
+| Logs archived          | 10     | Session logs saved                  |
 
 **Score Interpretation:**
+
 - **90-100**: Perfect shutdown - ready for tomorrow
 - **70-89**: Good - minor cleanup needed
 - **50-69**: Fair - some uncommitted work or failed CI
@@ -52,6 +53,7 @@ state = capture_project_state()
 ```
 
 **Git Analysis:**
+
 - Current branch
 - Uncommitted files (count and list)
 - Stashed changes count
@@ -59,11 +61,13 @@ state = capture_project_state()
 - Merged branches count
 
 **GitHub Analysis:**
+
 - Open issues (last 5)
 - Recent issue updates
 - Latest CI run status
 
 **Service Analysis:**
+
 - Running dev services (node, npm, pnpm, redis, postgres, supabase)
 - Session log files to archive
 
@@ -116,6 +120,7 @@ Invoke `pop-session-capture` skill to update STATUS.json:
 ### 5. Present Report to User
 
 Display nightly report with:
+
 - **Sleep Score** (0-100) with visual indicator
 - **Score Breakdown** - What contributed to the score
 - **Uncommitted Changes** - Files that need attention
@@ -151,6 +156,40 @@ for section in sections:
 print(json.dumps(data))
 "
 ```
+
+**Branch Protection Detection (Issue #142):**
+
+After collecting branch name, check if it's a protected branch:
+
+```python
+from popkit_shared.utils.session_recorder import is_recording_enabled, record_reasoning
+
+# Get current branch
+current_branch = git_output['branch']
+
+# Protected branches
+PROTECTED_BRANCHES = ["main", "master", "develop", "production"]
+is_protected = current_branch in PROTECTED_BRANCHES
+
+# Record if on protected branch
+if is_recording_enabled():
+    record_reasoning(
+        step="Check branch protection",
+        reasoning=f"Branch '{current_branch}' is {'PROTECTED' if is_protected else 'not protected'}",
+        data={
+            "current_branch": current_branch,
+            "is_protected": is_protected
+        }
+    )
+```
+
+**Sleep Score Impact:**
+
+If on protected branch with uncommitted work:
+
+- **Warning:** Include ⚠️ PROTECTED indicator in output
+- **Recommendation:** "Create feature branch and move uncommitted work before committing"
+- **Option Priority:** Prioritize "Create feature branch" over "Commit and push"
 
 ### GitHub Commands (Consolidated)
 
@@ -194,6 +233,7 @@ def capture_project_state() -> dict:
 Located: `packages/shared-py/popkit_shared/utils/routine_measurement.py`
 
 When invoked with `--measure` flag:
+
 - Tracks tool call count
 - Measures duration
 - Calculates token usage
@@ -204,6 +244,7 @@ When invoked with `--measure` flag:
 Located: `packages/shared-py/popkit_shared/utils/routine_cache.py`
 
 Caching strategy:
+
 - **Never cache**: Git status (changes frequently)
 - **Cache 15 min**: CI status
 - **Cache 1 hour**: GitHub issue list
@@ -218,14 +259,14 @@ Caching strategy:
 
 ## Score Breakdown
 
-| Check | Points | Status |
-|-------|--------|--------|
-| Uncommitted work saved | 0/25 | ❌ 3 uncommitted files |
-| Branches cleaned | 20/20 | ✅ No stale branches |
-| Issues updated | 20/20 | ✅ All issues current |
-| CI passing | 0/15 | ❌ Latest run skipped |
-| Services stopped | 10/10 | ✅ All services stopped |
-| Logs archived | 10/10 | ✅ No logs to archive |
+| Check                  | Points | Status                  |
+| ---------------------- | ------ | ----------------------- |
+| Uncommitted work saved | 0/25   | ❌ 3 uncommitted files  |
+| Branches cleaned       | 20/20  | ✅ No stale branches    |
+| Issues updated         | 20/20  | ✅ All issues current   |
+| CI passing             | 0/15   | ❌ Latest run skipped   |
+| Services stopped       | 10/10  | ✅ All services stopped |
+| Logs archived          | 10/10  | ✅ No logs to archive   |
 
 ## Uncommitted Changes (3 files)
 
@@ -236,11 +277,13 @@ Caching strategy:
 ## 📋 Recommendations
 
 **Before Leaving:**
+
 - Commit or stash uncommitted changes
 - Review 8 stashes: `git stash list`
 - Check why CI was skipped
 
 **Next Morning:**
+
 - Run `/popkit:routine morning` to check overnight changes
 - Review and test pending PRs
 - Clear stash backlog
@@ -258,40 +301,48 @@ Use AskUserQuestion tool with context-aware options based on nightly report:
 
 **Option 1: If uncommitted work exists (Score < 70)**
 ```
+
 What would you like to do before ending the day?
 ├─ Commit and push all changes (Recommended)
-│  └─ Save all uncommitted work
+│ └─ Save all uncommitted work
 ├─ Stash changes for tomorrow
 ├─ Review uncommitted files
 └─ Other
+
 ```
 
 **Option 2: If clean working directory (Score >= 70)**
 ```
+
 Ready to wrap up! What's your last action?
 ├─ Review tomorrow's priorities
 ├─ Check overnight CI status
 ├─ End session (all clean)
 └─ Other
+
 ```
 
 **Option 3: If services still running**
 ```
+
 Dev services are still running. What would you like to do?
 ├─ Stop all dev services (Recommended)
 ├─ Leave services running
 ├─ Check which services are running
 └─ Other
+
 ```
 
 **Option 4: If CI failing**
 ```
+
 Latest CI run failed. What would you like to do?
 ├─ Investigate CI failure now
 ├─ Note for morning review
 ├─ Check CI logs
 └─ Other
-```
+
+````
 
 ### Implementation
 
@@ -325,9 +376,10 @@ questions = generate_next_action_questions(score, breakdown, state)
         ]
     }]
 }
-```
+````
 
 **Why This Matters (The PopKit Way):**
+
 - ✅ Keeps PopKit in control of the workflow
 - ✅ Prevents "forgot to commit" situations
 - ✅ Enables graceful session shutdown
@@ -336,7 +388,7 @@ questions = generate_next_action_questions(score, breakdown, state)
 
 **Never just show a report and end the session!**
 
-```
+````
 
 ## Error Handling
 
@@ -348,7 +400,7 @@ try:
 except GitNotFoundError:
     print("[WARN] Git not available - skipping git checks")
     # Continue with partial score
-```
+````
 
 ### GitHub CLI Not Available
 
@@ -384,6 +436,7 @@ except GhNotFoundError:
 ### Caching
 
 With `--optimized` flag:
+
 - Uses `routine_cache.py` for GitHub data
 - Reduces redundant API calls
 - 40-96% token reduction (per routine.md)

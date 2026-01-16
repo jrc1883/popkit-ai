@@ -16,6 +16,7 @@ Analyzes current project state and provides prioritized, context-aware recommend
 ## When to Use
 
 Invoke this skill when:
+
 - User asks "what should I do next?"
 - User seems stuck or unsure of direction
 - User mentions "popkit" and needs guidance
@@ -31,6 +32,9 @@ Collect information from multiple sources:
 ```bash
 # Git status
 git status --short 2>/dev/null
+
+# Current branch name (for protected branch detection)
+current_branch=$(git branch --show-current 2>/dev/null)
 
 # Branch info
 git branch -vv 2>/dev/null | head -5
@@ -57,10 +61,26 @@ if is_recording_enabled():
     )
     uncommitted_lines = len([l for l in result.stdout.strip().split('\n') if l])
 
+    # Get current branch name
+    branch_result = subprocess.run(
+        ["git", "branch", "--show-current"],
+        capture_output=True,
+        text=True
+    )
+    current_branch = branch_result.stdout.strip()
+
+    # Check if on protected branch
+    PROTECTED_BRANCHES = ["main", "master", "develop", "production"]
+    is_protected = current_branch in PROTECTED_BRANCHES
+
     record_reasoning(
         step="Analyze git status",
-        reasoning=f"Checked working directory, branch status, and recent activity",
-        data={"uncommitted_files": uncommitted_lines}
+        reasoning=f"Checked working directory, branch={current_branch}, protected={is_protected}",
+        data={
+            "uncommitted_files": uncommitted_lines,
+            "current_branch": current_branch,
+            "is_protected": is_protected
+        }
     )
 ```
 
@@ -149,6 +169,7 @@ if branches:
 ```
 
 **Research Branch Patterns:**
+
 - `origin/claude/research-*` - Explicit research branches
 - `origin/claude/*-research-*` - Topic-specific research
 - Branches with `docs/research/*.md` or `RESEARCH*.md` files
@@ -157,16 +178,17 @@ if branches:
 
 Identify what kind of project and what state it's in:
 
-| Indicator | What It Means | Weight |
-|-----------|---------------|--------|
-| Uncommitted changes | Active work in progress | HIGH |
-| Ahead of remote | Ready to push/PR | MEDIUM |
-| TypeScript errors | Build broken | HIGH |
-| **Research branches** | Web session findings to process | HIGH |
-| Open issues | Known work items | MEDIUM |
-| **Issue votes** | Community priority | MEDIUM |
-| TECHNICAL_DEBT.md | Documented debt | MEDIUM |
-| Recent commits | Active development | LOW |
+| Indicator               | What It Means                   | Weight       |
+| ----------------------- | ------------------------------- | ------------ |
+| **On protected branch** | **Requires feature branch**     | **CRITICAL** |
+| Uncommitted changes     | Active work in progress         | HIGH         |
+| Ahead of remote         | Ready to push/PR                | MEDIUM       |
+| TypeScript errors       | Build broken                    | HIGH         |
+| **Research branches**   | Web session findings to process | HIGH         |
+| Open issues             | Known work items                | MEDIUM       |
+| **Issue votes**         | Community priority              | MEDIUM       |
+| TECHNICAL_DEBT.md       | Documented debt                 | MEDIUM       |
+| Recent commits          | Active development              | LOW          |
 
 ### Step 2.5: Fetch Issue Votes (NEW)
 
@@ -199,6 +221,7 @@ for issue in ranked[:3]:
 ```
 
 **Vote Weights:**
+
 - 👍 (+1) = 1 point (community interest)
 - ❤️ (heart) = 2 points (strong support)
 - 🚀 (rocket) = 3 points (approved/prioritized)
@@ -212,18 +235,20 @@ For each potential recommendation, calculate a relevance score:
 Score = Base Priority + Context Multipliers
 
 Base Priorities:
+- Create feature branch (if on protected): 100  # NEW - HIGHEST PRIORITY
 - Fix build errors: 90
 - Process research branches: 85  # NEW - important to merge findings
 - Commit uncommitted work: 80
-- Push ahead commits: 60
+- Push ahead commits (if on feature branch): 60  # UPDATED - only if safe
 - Address open issues: 50
 - Tackle tech debt: 40
 - Start new feature: 30
 
 Context Multipliers:
+- On protected branch with commits: +50 to branch creation  # NEW
 - Has uncommitted changes: +20 to commit
 - TypeScript errors: +30 to fix
-- Research branches detected: +25 to process  # NEW
+- Research branches detected: +25 to process
 - Many open issues: +10 to issue work
 - Long time since commit: +15 to commit
 ```
@@ -233,6 +258,7 @@ Context Multipliers:
 Create 3-5 prioritized recommendations based on scores.
 
 For each recommendation, provide:
+
 1. **Command** - The exact popkit command to run
 2. **Why** - Context-specific reason (not generic)
 3. **What it does** - Brief description
@@ -245,60 +271,115 @@ Use the `next-action-report` output style:
 ```markdown
 ## Current State
 
-| Indicator | Status | Urgency |
-|-----------|--------|---------|
-| Uncommitted | X files | [HIGH/MEDIUM/LOW] |
-| Branch Sync | [status] | [urgency] |
-| TypeScript | [clean/errors] | [urgency] |
-| Open Issues | X open | [urgency] |
+| Indicator      | Status         | Urgency           |
+| -------------- | -------------- | ----------------- |
+| Current Branch | [branch-name]  | [urgency]         |
+| Uncommitted    | X files        | [HIGH/MEDIUM/LOW] |
+| Branch Sync    | [status]       | [urgency]         |
+| TypeScript     | [clean/errors] | [urgency]         |
+| Open Issues    | X open         | [urgency]         |
+
+**Note:** When on protected branch (main/master), display urgency as:
+```
+
+| Current Branch | main (PROTECTED) | ⚠️ CRITICAL |
+
+```
 
 ## Recommended Actions
 
 ### 1. [Primary Action] (Score: XX)
+
 **Command:** `/popkit:[command]`
 **Why:** [Specific reason based on detected state]
 **What it does:** [Brief description]
 **Benefit:** [What you gain]
 
 ### 2. [Secondary Action] (Score: XX)
+
 ...
 
 ### 3. [Tertiary Action] (Score: XX)
+
 ...
 
 ## Quick Reference
 
-| If you want to... | Use this command |
-|-------------------|------------------|
-| Commit changes | `/popkit:git commit` |
-| Review code | `/popkit:git review` |
+| If you want to...  | Use this command          |
+| ------------------ | ------------------------- |
+| Commit changes     | `/popkit:git commit`      |
+| Review code        | `/popkit:git review`      |
 | Get project health | `/popkit:routine morning` |
-| Plan a feature | `/popkit:dev brainstorm` |
-| Debug an issue | `/popkit:debug` |
+| Plan a feature     | `/popkit:dev brainstorm`  |
+| Debug an issue     | `/popkit:debug`           |
 
 ## Alternative Paths
 
 Based on your context, you could also:
+
 - [Alternative 1]
 - [Alternative 2]
 ```
 
 ## Recommendation Logic
 
+### If On Protected Branch with Unpushed Commits (NEW - Issue #141)
+
+````markdown
+### 1. Create Feature Branch
+
+**Command:** `git checkout -b feat/descriptive-name`
+
+**Why:** You have [X] commits on `main` but cannot push directly due to branch protection
+
+**What it does:**
+
+- Creates feature branch from current state
+- Moves all commits to feature branch
+- Resets local main to match remote
+
+**Benefit:**
+
+- Complies with branch protection policy
+- Enables proper PR workflow
+- Prevents failed push attempts
+
+**Next steps:**
+
+```bash
+# Create and push feature branch
+git checkout -b feat/your-feature-name
+git push -u origin feat/your-feature-name
+
+# Create pull request
+gh pr create --title "..." --body "..."
+
+# Clean up local main
+git checkout main
+git reset --hard origin/main
+```
+````
+
+````
+
+**CRITICAL**: This recommendation should **suppress** the "Push ahead commits" recommendation when on a protected branch.
+
 ### If Uncommitted Changes Detected
 
 ```markdown
 ### 1. Commit Your Current Work
+
 **Command:** `/popkit:commit`
 **Why:** You have [X] uncommitted files including [key files]
 **What it does:** Auto-generates commit message matching repo style
 **Benefit:** Clean working directory, changes safely versioned
-```
+````
 
 ### If TypeScript Errors
 
 ```markdown
 ### 1. Fix Build Errors
+
 **Command:** `/popkit:debug`
 **Why:** TypeScript has [X] errors blocking build
 **What it does:** Systematic debugging with root cause analysis
@@ -309,6 +390,7 @@ Based on your context, you could also:
 
 ```markdown
 ### 1. Process Research Branches
+
 **Command:** Invoke `pop-research-merge` skill
 **Why:** Found [X] research branch(es) from Claude Code Web sessions
 **Branches:**
@@ -342,6 +424,7 @@ If user selects "Yes, process" or "Review first", invoke the `pop-research-merge
 
 ```markdown
 ### 2. Work on Open Issue
+
 **Command:** `/popkit:dev work #[number]`
 **Why:** Issue #[X] "[title]" is high priority (Score: XX)
 **Votes:** 👍5 ❤️2 🚀1
@@ -378,6 +461,7 @@ if is_recording_enabled():
 
 ```markdown
 ### 1. Check Project Health
+
 **Command:** `/popkit:routine morning`
 **Why:** No urgent items - good time for health check
 **What it does:** Comprehensive project status with "Ready to Code" score
@@ -394,6 +478,7 @@ When called with `quick` argument, provide condensed output:
 **State:** 5 uncommitted | branch synced | TS clean | 3 issues
 
 **Top 3:**
+
 1. `/popkit:git commit` - Commit 5 files (HIGH)
 2. `/popkit:dev work #42` - Work on "Add auth" (MEDIUM)
 3. `/popkit:routine morning` - Health check (LOW)
@@ -401,16 +486,17 @@ When called with `quick` argument, provide condensed output:
 
 ## Error Handling
 
-| Situation | Response |
-|-----------|----------|
-| Not a git repo | Note it, skip git-based recommendations |
-| No package.json | Skip Node-specific checks |
-| gh CLI not available | Skip issue recommendations |
-| Empty project | Recommend `/popkit:project init` |
+| Situation            | Response                                |
+| -------------------- | --------------------------------------- |
+| Not a git repo       | Note it, skip git-based recommendations |
+| No package.json      | Skip Node-specific checks               |
+| gh CLI not available | Skip issue recommendations              |
+| Empty project        | Recommend `/popkit:project init`        |
 
 ## Visual Style
 
 Use components from `output-styles/visual-components.md`:
+
 - Status indicators: ✓ (success), ✗ (failure), → (in progress)
 - Urgency levels: HIGH (red), MEDIUM (yellow), LOW (blue), OK (green)
 - Tables with status columns

@@ -24,8 +24,7 @@ Part of Issue #66 - Power Mode v2
 
 import re
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
-
+from typing import Any, Dict, List, Optional
 
 # =============================================================================
 # CONFIGURATION
@@ -68,9 +67,11 @@ MIN_AGENTS_FOR_SUGGESTION = 2
 # DETECTION RESULT
 # =============================================================================
 
+
 @dataclass
 class PowerModeRecommendation:
     """Result of Power Mode detection analysis."""
+
     should_suggest: bool = False
     should_auto_enable: bool = False
     confidence: float = 0.0
@@ -97,6 +98,7 @@ class PowerModeRecommendation:
 # =============================================================================
 # POWER DETECTOR
 # =============================================================================
+
 
 class PowerDetector:
     """
@@ -202,16 +204,18 @@ class PowerDetector:
             if file_count >= MIN_FILES_FOR_SUGGESTION:
                 reasons.append(f"~{file_count} files")
             if title_keywords:
-                reasons.append(f"complexity keywords in title")
+                reasons.append("complexity keywords in title")
 
             result.reason = "Consider Power Mode: " + ", ".join(reasons[:3])
 
         if result.should_auto_enable:
             result.should_suggest = True
             result.reason = "Power Mode recommended: " + (
-                "epic issue" if "epic" in labels else
-                "power-mode label" if "power-mode" in labels else
-                "PopKit Guidance requires parallel agents"
+                "epic issue"
+                if "epic" in labels
+                else "power-mode label"
+                if "power-mode" in labels
+                else "PopKit Guidance requires parallel agents"
             )
 
         return result
@@ -257,7 +261,7 @@ class PowerDetector:
         ]
         for pattern in file_patterns:
             if re.search(pattern, task_lower):
-                signals.append(f"Multi-file indicator")
+                signals.append("Multi-file indicator")
                 result.confidence += 0.15
                 break
 
@@ -313,7 +317,7 @@ class PowerDetector:
         phases_match = re.search(
             r"(?:phases?|development\s+phases?)[\s:]+\[?([\w\s,→-]+)\]?",
             guidance_text,
-            re.IGNORECASE
+            re.IGNORECASE,
         )
         if phases_match:
             phases_text = phases_match.group(1)
@@ -328,9 +332,7 @@ class PowerDetector:
 
         # Extract agents
         agents_match = re.search(
-            r"(?:agents?|suggested\s+agents?)[\s:]+([^\n]+)",
-            guidance_text,
-            re.IGNORECASE
+            r"(?:agents?|suggested\s+agents?)[\s:]+([^\n]+)", guidance_text, re.IGNORECASE
         )
         if agents_match:
             agents_text = agents_match.group(1)
@@ -339,9 +341,7 @@ class PowerDetector:
 
         # Extract complexity
         complexity_match = re.search(
-            r"complexity[\s:]+\[?x?\]?\s*(\w+)",
-            guidance_text,
-            re.IGNORECASE
+            r"complexity[\s:]+\[?x?\]?\s*(\w+)", guidance_text, re.IGNORECASE
         )
         if complexity_match:
             result["complexity"] = complexity_match.group(1)
@@ -383,7 +383,7 @@ class PowerDetector:
         issue_data: Optional[Dict] = None,
         task_description: Optional[str] = None,
         context: Optional[Dict] = None,
-        flags: Optional[Dict] = None
+        flags: Optional[Dict] = None,
     ) -> PowerModeRecommendation:
         """
         Determine if Power Mode should be used based on all available signals.
@@ -412,7 +412,7 @@ class PowerDetector:
                 should_auto_enable=True,
                 confidence=1.0,
                 reason="Power Mode enabled via -p/--power flag",
-                detected_signals=["Explicit flag: --power"]
+                detected_signals=["Explicit flag: --power"],
             )
 
         if flags.get("solo"):
@@ -421,7 +421,7 @@ class PowerDetector:
                 should_auto_enable=False,
                 confidence=1.0,
                 reason="Sequential mode via --solo flag",
-                detected_signals=["Explicit flag: --solo"]
+                detected_signals=["Explicit flag: --solo"],
             )
 
         # 2. Analyze issue if provided
@@ -436,13 +436,14 @@ class PowerDetector:
         return PowerModeRecommendation(
             should_suggest=False,
             confidence=0.0,
-            reason="No signals detected, defaulting to sequential mode"
+            reason="No signals detected, defaulting to sequential mode",
         )
 
 
 # =============================================================================
 # CONVENIENCE FUNCTIONS
 # =============================================================================
+
 
 def should_suggest_power_mode(issue_data: Dict) -> bool:
     """Quick check if Power Mode should be suggested for an issue."""
@@ -452,17 +453,11 @@ def should_suggest_power_mode(issue_data: Dict) -> bool:
 
 
 def get_power_mode_recommendation(
-    issue_data: Optional[Dict] = None,
-    task: Optional[str] = None,
-    flags: Optional[Dict] = None
+    issue_data: Optional[Dict] = None, task: Optional[str] = None, flags: Optional[Dict] = None
 ) -> PowerModeRecommendation:
     """Get Power Mode recommendation for any context."""
     detector = PowerDetector()
-    return detector.should_use_power_mode(
-        issue_data=issue_data,
-        task_description=task,
-        flags=flags
-    )
+    return detector.should_use_power_mode(issue_data=issue_data, task_description=task, flags=flags)
 
 
 # =============================================================================
@@ -488,11 +483,17 @@ if __name__ == "__main__":
         # Fetch issue data
         try:
             result = subprocess.run(
-                ["gh", "issue", "view", str(args.issue), "--json",
-                 "number,title,body,labels,state"],
+                [
+                    "gh",
+                    "issue",
+                    "view",
+                    str(args.issue),
+                    "--json",
+                    "number,title,body,labels,state",
+                ],
                 capture_output=True,
                 text=True,
-                timeout=10
+                timeout=10,
             )
             if result.returncode != 0:
                 print(f"Error fetching issue: {result.stderr}", file=sys.stderr)
@@ -515,14 +516,14 @@ if __name__ == "__main__":
     if args.json:
         print(json.dumps(recommendation.to_dict(), indent=2))
     else:
-        print(f"\nPower Mode Recommendation:")
+        print("\nPower Mode Recommendation:")
         print(f"  Should suggest: {recommendation.should_suggest}")
         print(f"  Should auto-enable: {recommendation.should_auto_enable}")
         print(f"  Confidence: {recommendation.confidence:.1%}")
         print(f"  Reason: {recommendation.reason}")
 
         if recommendation.detected_signals:
-            print(f"\nDetected signals:")
+            print("\nDetected signals:")
             for signal in recommendation.detected_signals:
                 print(f"  - {signal}")
 

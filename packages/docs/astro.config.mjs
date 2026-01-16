@@ -3,47 +3,34 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
+	site: 'https://popkit-docs.pages.dev',
 	integrations: [
 		starlight({
-			title: 'PopKit',
-			description: 'AI-powered development workflows for Claude Code',
-			social: {
-				github: 'https://github.com/jrc1883/popkit',
-			},
+			title: 'PopKit Documentation',
+			description: 'AI-powered development workflow system for Claude Code',
+			social: [
+				{
+					icon: 'github',
+					label: 'GitHub',
+					href: 'https://github.com/jrc1883/popkit-claude',
+				},
+			],
 			sidebar: [
 				{
 					label: 'Getting Started',
-					items: [
-						{ label: 'Introduction', slug: 'index' },
-						{ label: 'Installation', slug: 'getting-started/installation' },
-						{ label: 'Quick Start', slug: 'getting-started/quick-start' },
-					],
+					autogenerate: { directory: 'getting-started' },
 				},
 				{
 					label: 'Core Concepts',
-					items: [
-						{ label: 'Agent System', slug: 'concepts/agents' },
-						{ label: 'Skills', slug: 'concepts/skills' },
-						{ label: 'Commands', slug: 'concepts/commands' },
-						{ label: 'Hooks', slug: 'concepts/hooks' },
-					],
+					autogenerate: { directory: 'concepts' },
 				},
 				{
 					label: 'Features',
-					items: [
-						{ label: 'Power Mode', slug: 'features/power-mode' },
-						{ label: 'Feature Development', slug: 'features/feature-dev' },
-						{ label: 'Git Workflows', slug: 'features/git-workflows' },
-						{ label: 'Morning/Nightly Routines', slug: 'features/routines' },
-					],
+					autogenerate: { directory: 'features' },
 				},
 				{
 					label: 'Guides',
-					items: [
-						{ label: 'Creating Custom Skills', slug: 'guides/custom-skills' },
-						{ label: 'Agent Configuration', slug: 'guides/agent-config' },
-						{ label: 'Hook Development', slug: 'guides/hooks' },
-					],
+					autogenerate: { directory: 'guides' },
 				},
 				{
 					label: 'Reference',

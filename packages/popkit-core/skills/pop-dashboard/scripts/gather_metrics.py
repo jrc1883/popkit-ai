@@ -24,7 +24,7 @@ import json
 import os
 import subprocess
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -47,8 +47,8 @@ def load_registry() -> Dict[str, Any]:
         "settings": {
             "autoDiscover": True,
             "healthCheckInterval": "daily",
-            "maxInactiveProjects": 20
-        }
+            "maxInactiveProjects": 20,
+        },
     }
 
 
@@ -59,14 +59,17 @@ def save_registry(registry: Dict[str, Any]) -> None:
     registry_path.write_text(json.dumps(registry, indent=2))
 
 
-def run_command(cmd: str, cwd: Optional[str] = None, timeout: int = 30) -> Tuple[str, bool]:
+def run_command(
+    cmd: str, cwd: Optional[str] = None, timeout: int = 30
+) -> Tuple[str, bool]:
     """Run a shell command and return output and success status."""
     try:
-        result = subprocess.run(cmd.split() if isinstance(cmd, str) else cmd,
+        result = subprocess.run(
+            cmd.split() if isinstance(cmd, str) else cmd,
             capture_output=True,
             text=True,
             timeout=timeout,
-            cwd=cwd
+            cwd=cwd,
         )
         return result.stdout.strip(), result.returncode == 0
     except subprocess.TimeoutExpired:
@@ -82,7 +85,7 @@ def detect_project_info(path: str) -> Dict[str, Any]:
         "name": project_path.name,
         "path": str(project_path),
         "type": "unknown",
-        "repo": None
+        "repo": None,
     }
 
     # Try package.json
@@ -111,11 +114,7 @@ def detect_project_info(path: str) -> Dict[str, Any]:
 
 def calculate_health_score(path: str) -> Dict[str, Any]:
     """Calculate full health score for a project."""
-    result = {
-        "score": 0,
-        "components": {},
-        "details": []
-    }
+    result = {"score": 0, "components": {}, "details": []}
 
     if not Path(path).exists():
         result["error"] = "Project path not found"
@@ -126,7 +125,7 @@ def calculate_health_score(path: str) -> Dict[str, Any]:
     status, ok = run_command("git status --porcelain", cwd=path)
     if ok:
         if status:
-            uncommitted = len(status.split('\n'))
+            uncommitted = len(status.split("\n"))
             penalty = min(uncommitted, 4) * 5  # Max 20 point penalty
             git_score -= penalty
             result["details"].append(f"{uncommitted} uncommitted files")
@@ -147,7 +146,9 @@ def calculate_health_score(path: str) -> Dict[str, Any]:
     build_score = 20
     # Check for TypeScript errors if tsconfig exists
     if (Path(path) / "tsconfig.json").exists():
-        ts_errors, ok = run_command("npx tsc --noEmit 2>&1 | grep -c 'error TS' || echo 0", cwd=path, timeout=60)
+        ts_errors, ok = run_command(
+            "npx tsc --noEmit 2>&1 | grep -c 'error TS' || echo 0", cwd=path, timeout=60
+        )
         try:
             error_count = int(ts_errors.strip())
             if error_count > 0:
@@ -176,14 +177,18 @@ def calculate_health_score(path: str) -> Dict[str, Any]:
 
     # Issue health (20 points) - check via gh CLI
     issue_score = 20
-    issues, ok = run_command("gh issue list --state open --limit 20 --json createdAt", cwd=path)
+    issues, ok = run_command(
+        "gh issue list --state open --limit 20 --json createdAt", cwd=path
+    )
     if ok and issues:
         try:
             issue_list = json.loads(issues)
             stale_count = 0
             now = datetime.now()
             for issue in issue_list:
-                created = datetime.fromisoformat(issue["createdAt"].replace("Z", "+00:00"))
+                created = datetime.fromisoformat(
+                    issue["createdAt"].replace("Z", "+00:00")
+                )
                 age_days = (now - created.replace(tzinfo=None)).days
                 if age_days > 30:
                     stale_count += 1
@@ -236,7 +241,7 @@ def calculate_quick_health(path: str) -> int:
         if not status:
             score += 50
         else:
-            uncommitted = len(status.split('\n'))
+            uncommitted = len(status.split("\n"))
             score += max(0, 50 - uncommitted * 10)
 
     # Activity (50 points)
@@ -260,7 +265,9 @@ def calculate_quick_health(path: str) -> int:
     return score
 
 
-def get_recent_activity(projects: List[Dict[str, Any]], limit: int = 10) -> List[Dict[str, Any]]:
+def get_recent_activity(
+    projects: List[Dict[str, Any]], limit: int = 10
+) -> List[Dict[str, Any]]:
     """Get recent activity across all projects."""
     activities = []
 
@@ -271,26 +278,29 @@ def get_recent_activity(projects: List[Dict[str, Any]], limit: int = 10) -> List
 
         # Get recent commits
         commits, ok = run_command(
-            "git log -3 --format='%h|%s|%ar' 2>/dev/null",
-            cwd=path
+            "git log -3 --format='%h|%s|%ar' 2>/dev/null", cwd=path
         )
         if ok and commits:
-            for line in commits.split('\n')[:3]:
-                if '|' in line:
-                    parts = line.split('|')
+            for line in commits.split("\n")[:3]:
+                if "|" in line:
+                    parts = line.split("|")
                     if len(parts) >= 3:
-                        activities.append({
-                            "project": project.get("name", "unknown"),
-                            "action": f"Commit: {parts[1][:50]}",
-                            "time": parts[2],
-                            "type": "commit"
-                        })
+                        activities.append(
+                            {
+                                "project": project.get("name", "unknown"),
+                                "action": f"Commit: {parts[1][:50]}",
+                                "time": parts[2],
+                                "type": "commit",
+                            }
+                        )
 
     # Sort by recency (would need proper timestamp parsing for accuracy)
     return activities[:limit]
 
 
-def get_unhealthy_projects(projects: List[Dict[str, Any]], threshold: int = 70) -> List[Dict[str, Any]]:
+def get_unhealthy_projects(
+    projects: List[Dict[str, Any]], threshold: int = 70
+) -> List[Dict[str, Any]]:
     """Get projects with health below threshold."""
     return [p for p in projects if p.get("healthScore", 0) < threshold]
 
@@ -320,7 +330,7 @@ def add_project(path: str, tags: Optional[List[str]] = None) -> Tuple[bool, str]
         "healthComponents": health["components"],
         "tags": tags or [],
         "addedAt": datetime.now().isoformat(),
-        "lastAccessed": datetime.now().isoformat()
+        "lastAccessed": datetime.now().isoformat(),
     }
 
     registry["projects"].append(project)
@@ -388,7 +398,7 @@ def generate_dashboard_data() -> Dict[str, Any]:
     sorted_projects = sorted(
         projects,
         key=lambda p: (p.get("healthScore", 0), p.get("lastAccessed", "")),
-        reverse=True
+        reverse=True,
     )
 
     # Get unhealthy projects
@@ -402,19 +412,19 @@ def generate_dashboard_data() -> Dict[str, Any]:
             "total": total,
             "healthy": healthy,
             "warning": warning,
-            "critical": critical
+            "critical": critical,
         },
         "projects": sorted_projects,
         "alerts": [
             {
                 "project": p["name"],
                 "health": p.get("healthScore", 0),
-                "reason": "Health score below threshold"
+                "reason": "Health score below threshold",
             }
             for p in alerts
         ],
         "activity": activity,
-        "settings": registry.get("settings", {})
+        "settings": registry.get("settings", {}),
     }
 
 
@@ -427,7 +437,9 @@ def format_dashboard_display(data: Dict[str, Any]) -> str:
     lines.append("|                      PopKit Dashboard                          |")
     lines.append("+===============================================================+")
     lines.append("")
-    lines.append(f"  Total: {summary['total']}  |  Healthy: {summary['healthy']}  |  Warning: {summary['warning']}  |  Critical: {summary['critical']}")
+    lines.append(
+        f"  Total: {summary['total']}  |  Healthy: {summary['healthy']}  |  Warning: {summary['warning']}  |  Critical: {summary['critical']}"
+    )
     lines.append("")
     lines.append("  -------------------------------------------------------------")
     lines.append("  | Project          | Health | Issues | Last Active   |")
@@ -481,20 +493,33 @@ def format_dashboard_display(data: Dict[str, Any]) -> str:
 
 def main():
     import argparse
+
     parser = argparse.ArgumentParser(description="Gather dashboard metrics")
-    parser.add_argument("--operation", "-o",
-                        choices=["load_registry", "health_check", "activity",
-                                "add", "remove", "refresh", "full"],
-                        default="full", help="Operation to perform")
+    parser.add_argument(
+        "--operation",
+        "-o",
+        choices=[
+            "load_registry",
+            "health_check",
+            "activity",
+            "add",
+            "remove",
+            "refresh",
+            "full",
+        ],
+        default="full",
+        help="Operation to perform",
+    )
     parser.add_argument("--project", "-p", help="Project path or name")
-    parser.add_argument("--format", choices=["json", "display"], default="json",
-                        help="Output format")
+    parser.add_argument(
+        "--format", choices=["json", "display"], default="json", help="Output format"
+    )
     parser.add_argument("--tags", help="Comma-separated tags (for add)")
     args = parser.parse_args()
 
     result = {
         "operation": f"dashboard_{args.operation}",
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.now().isoformat(),
     }
 
     if args.operation == "load_registry":

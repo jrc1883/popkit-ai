@@ -26,10 +26,7 @@
           "description": "Hook must parse JSON from stdin",
           "type": "file_contains_any",
           "pattern": "hooks/*.py",
-          "contains_any": [
-            "json.load(sys.stdin)",
-            "json.loads(sys.stdin.read())"
-          ],
+          "contains_any": ["json.load(sys.stdin)", "json.loads(sys.stdin.read())"],
           "severity": "critical",
           "deduction": 20
         },
@@ -39,11 +36,7 @@
           "description": "Hook must output JSON to stdout",
           "type": "file_contains_any",
           "pattern": "hooks/*.py",
-          "contains_any": [
-            "print(json.dumps(",
-            "json.dump(",
-            "sys.stdout.write(json.dumps("
-          ],
+          "contains_any": ["print(json.dumps(", "json.dump(", "sys.stdout.write(json.dumps("],
           "severity": "critical",
           "deduction": 20
         },
@@ -83,11 +76,7 @@
           "description": "JSON output must include action field",
           "type": "file_contains_any",
           "pattern": "hooks/*.py",
-          "contains_any": [
-            "\"action\":",
-            "'action':",
-            "action="
-          ],
+          "contains_any": ["\"action\":", "'action':", "action="],
           "severity": "critical",
           "deduction": 20
         }

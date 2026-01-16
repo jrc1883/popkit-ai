@@ -6,15 +6,13 @@ Client for Cloudflare API - Workers, Pages, DNS management.
 Part of PopKit Issue #222 (Cloudflare Integration Skills).
 """
 
-import os
 import json
+import os
 import time
-from typing import List, Optional, Dict, Any, Tuple
-from dataclasses import dataclass, field
-from pathlib import Path
-import urllib.request
 import urllib.error
-
+import urllib.request
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional, Tuple
 
 # =============================================================================
 # CONFIGURATION
@@ -31,9 +29,11 @@ REQUEST_COOLDOWN = 0.3  # seconds between requests
 # DATA CLASSES
 # =============================================================================
 
+
 @dataclass
 class Zone:
     """Cloudflare Zone (domain)."""
+
     id: str
     name: str
     status: str
@@ -47,13 +47,14 @@ class Zone:
             name=data["name"],
             status=data["status"],
             account_id=data.get("account", {}).get("id", ""),
-            plan=data.get("plan", {})
+            plan=data.get("plan", {}),
         )
 
 
 @dataclass
 class DNSRecord:
     """Cloudflare DNS Record."""
+
     id: str
     zone_id: str
     name: str
@@ -73,7 +74,7 @@ class DNSRecord:
             content=data["content"],
             proxied=data.get("proxied", False),
             ttl=data.get("ttl", 1),
-            comment=data.get("comment")
+            comment=data.get("comment"),
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -83,7 +84,7 @@ class DNSRecord:
             "name": self.name,
             "content": self.content,
             "proxied": self.proxied,
-            "ttl": self.ttl
+            "ttl": self.ttl,
         }
         if self.comment:
             result["comment"] = self.comment
@@ -93,6 +94,7 @@ class DNSRecord:
 @dataclass
 class Worker:
     """Cloudflare Worker."""
+
     id: str
     name: str
     created_on: str
@@ -106,13 +108,14 @@ class Worker:
             name=data.get("name", ""),
             created_on=data.get("created_on", ""),
             modified_on=data.get("modified_on", ""),
-            routes=data.get("routes", [])
+            routes=data.get("routes", []),
         )
 
 
 @dataclass
 class Deployment:
     """Cloudflare Worker Deployment."""
+
     id: str
     version_id: str
     source: str
@@ -124,13 +127,14 @@ class Deployment:
             id=data.get("id", ""),
             version_id=data.get("version_id", ""),
             source=data.get("source", ""),
-            created_on=data.get("created_on", "")
+            created_on=data.get("created_on", ""),
         )
 
 
 @dataclass
 class APIResponse:
     """Generic Cloudflare API response."""
+
     success: bool
     result: Any
     errors: List[Dict[str, Any]] = field(default_factory=list)
@@ -140,6 +144,7 @@ class APIResponse:
 # =============================================================================
 # CLOUDFLARE CLIENT
 # =============================================================================
+
 
 class CloudflareClient:
     """
@@ -154,11 +159,7 @@ class CloudflareClient:
     - Retry with backoff
     """
 
-    def __init__(
-        self,
-        api_token: Optional[str] = None,
-        account_id: Optional[str] = None
-    ):
+    def __init__(self, api_token: Optional[str] = None, account_id: Optional[str] = None):
         """
         Initialize Cloudflare client.
 
@@ -228,10 +229,7 @@ class CloudflareClient:
     # =========================================================================
 
     def list_dns_records(
-        self,
-        zone_id: str,
-        record_type: Optional[str] = None,
-        name: Optional[str] = None
+        self, zone_id: str, record_type: Optional[str] = None, name: Optional[str] = None
     ) -> List[DNSRecord]:
         """
         List DNS records for a zone.
@@ -276,7 +274,7 @@ class CloudflareClient:
         content: str,
         proxied: bool = True,
         ttl: int = 1,
-        comment: Optional[str] = None
+        comment: Optional[str] = None,
     ) -> DNSRecord:
         """
         Create a DNS record.
@@ -298,7 +296,7 @@ class CloudflareClient:
             "name": name,
             "content": content,
             "proxied": proxied,
-            "ttl": ttl
+            "ttl": ttl,
         }
         if comment:
             data["comment"] = comment
@@ -315,7 +313,7 @@ class CloudflareClient:
         content: Optional[str] = None,
         proxied: Optional[bool] = None,
         ttl: Optional[int] = None,
-        comment: Optional[str] = None
+        comment: Optional[str] = None,
     ) -> DNSRecord:
         """
         Update a DNS record.
@@ -341,7 +339,7 @@ class CloudflareClient:
             "name": name or existing.name,
             "content": content or existing.content,
             "proxied": proxied if proxied is not None else existing.proxied,
-            "ttl": ttl if ttl is not None else existing.ttl
+            "ttl": ttl if ttl is not None else existing.ttl,
         }
         if comment is not None:
             data["comment"] = comment
@@ -396,8 +394,7 @@ class CloudflareClient:
             raise ValueError("CLOUDFLARE_ACCOUNT_ID required for Worker operations")
 
         response = self._request(
-            "GET",
-            f"/accounts/{self.account_id}/workers/scripts/{worker_name}"
+            "GET", f"/accounts/{self.account_id}/workers/scripts/{worker_name}"
         )
         return Worker.from_dict(response.result)
 
@@ -415,8 +412,7 @@ class CloudflareClient:
             raise ValueError("CLOUDFLARE_ACCOUNT_ID required for Worker operations")
 
         response = self._request(
-            "GET",
-            f"/accounts/{self.account_id}/workers/scripts/{worker_name}/deployments"
+            "GET", f"/accounts/{self.account_id}/workers/scripts/{worker_name}/deployments"
         )
         return [Deployment.from_dict(d) for d in response.result.get("deployments", [])]
 
@@ -442,10 +438,7 @@ class CloudflareClient:
     # =========================================================================
 
     def _request(
-        self,
-        method: str,
-        endpoint: str,
-        data: Optional[Dict[str, Any]] = None
+        self, method: str, endpoint: str, data: Optional[Dict[str, Any]] = None
     ) -> APIResponse:
         """
         Make API request to Cloudflare.
@@ -472,19 +465,11 @@ class CloudflareClient:
         self._wait_for_rate_limit()
 
         url = f"{CLOUDFLARE_API_URL}{endpoint}"
-        headers = {
-            "Authorization": f"Bearer {self.api_token}",
-            "Content-Type": "application/json"
-        }
+        headers = {"Authorization": f"Bearer {self.api_token}", "Content-Type": "application/json"}
 
         body = json.dumps(data).encode("utf-8") if data else None
 
-        request = urllib.request.Request(
-            url,
-            data=body,
-            headers=headers,
-            method=method
-        )
+        request = urllib.request.Request(url, data=body, headers=headers, method=method)
 
         try:
             with urllib.request.urlopen(request, timeout=60) as response:
@@ -493,7 +478,7 @@ class CloudflareClient:
                     success=result.get("success", True),
                     result=result.get("result"),
                     errors=result.get("errors", []),
-                    messages=result.get("messages", [])
+                    messages=result.get("messages", []),
                 )
         except urllib.error.HTTPError as e:
             body_text = e.read().decode("utf-8") if e.fp else ""
@@ -570,10 +555,12 @@ def create_dns_record(
     name: str,
     content: str,
     proxied: bool = True,
-    comment: Optional[str] = None
+    comment: Optional[str] = None,
 ) -> DNSRecord:
     """Create a DNS record."""
-    return get_client().create_dns_record(zone_id, record_type, name, content, proxied, comment=comment)
+    return get_client().create_dns_record(
+        zone_id, record_type, name, content, proxied, comment=comment
+    )
 
 
 def delete_dns_record(zone_id: str, record_id: str) -> bool:
@@ -608,7 +595,7 @@ if __name__ == "__main__":
         print("Set: export CLOUDFLARE_API_TOKEN=your-token-here")
         sys.exit(1)
 
-    print(f"API Token: {client.api_token[:8]}...{client.api_token[-4:]}")
+    print("API Token: [REDACTED]")
 
     # Verify token
     print("\nVerifying token...")

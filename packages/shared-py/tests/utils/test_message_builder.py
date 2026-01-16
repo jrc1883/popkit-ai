@@ -7,24 +7,25 @@ Critical for hook communication and stateless message handling.
 """
 
 import sys
-import pytest
 from pathlib import Path
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from popkit_shared.utils.message_builder import (
-    build_user_message,
     build_assistant_message,
-    build_tool_use_message,
-    build_tool_result_message,
     build_text_block,
-    build_tool_use_block,
     build_tool_result_block,
+    build_tool_result_message,
+    build_tool_use_block,
+    build_tool_use_message,
+    build_user_message,
     compose_conversation,
-    merge_tool_uses,
-    merge_tool_results,
     extract_tool_use,
-    rebuild_from_history
+    merge_tool_results,
+    merge_tool_uses,
+    rebuild_from_history,
 )
 
 
@@ -107,7 +108,9 @@ class TestContentBlockBuilders:
 
     def test_build_tool_use_block(self):
         """Test building tool use block"""
-        block = build_tool_use_block("toolu_789", "Write", {"file_path": "test.py", "content": "data"})
+        block = build_tool_use_block(
+            "toolu_789", "Write", {"file_path": "test.py", "content": "data"}
+        )
 
         assert block["type"] == "tool_use"
         assert block["id"] == "toolu_789"
@@ -135,10 +138,7 @@ class TestComposeConversation:
 
     def test_compose_conversation_with_valid_messages(self):
         """Test composing valid conversation"""
-        messages = [
-            build_user_message("Hello"),
-            build_assistant_message("Hi there")
-        ]
+        messages = [build_user_message("Hello"), build_assistant_message("Hi there")]
 
         result = compose_conversation(messages)
         assert len(result) == 2
@@ -155,7 +155,7 @@ class TestComposeConversation:
         messages = [
             build_user_message("First"),
             build_assistant_message("Second"),
-            build_user_message("Third")
+            build_user_message("Third"),
         ]
 
         result = compose_conversation(messages)
@@ -171,7 +171,7 @@ class TestMergeToolMessages:
         """Test merging multiple tool uses"""
         tool_uses = [
             {"type": "tool_use", "id": "t1", "name": "Read", "input": {}},
-            {"type": "tool_use", "id": "t2", "name": "Write", "input": {}}
+            {"type": "tool_use", "id": "t2", "name": "Write", "input": {}},
         ]
 
         msg = merge_tool_uses(tool_uses)
@@ -182,9 +182,7 @@ class TestMergeToolMessages:
 
     def test_merge_tool_uses_single(self):
         """Test merging single tool use"""
-        tool_uses = [
-            {"type": "tool_use", "id": "t1", "name": "Read", "input": {}}
-        ]
+        tool_uses = [{"type": "tool_use", "id": "t1", "name": "Read", "input": {}}]
 
         msg = merge_tool_uses(tool_uses)
         assert len(msg["content"]) == 1
@@ -193,7 +191,7 @@ class TestMergeToolMessages:
         """Test merging multiple tool results"""
         results = [
             {"type": "tool_result", "tool_use_id": "t1", "content": "result1", "is_error": False},
-            {"type": "tool_result", "tool_use_id": "t2", "content": "result2", "is_error": False}
+            {"type": "tool_result", "tool_use_id": "t2", "content": "result2", "is_error": False},
         ]
 
         msg = merge_tool_results(results)
@@ -229,8 +227,8 @@ class TestExtractToolUse:
             "role": "assistant",
             "content": [
                 {"type": "text", "text": "I'll read the file"},
-                {"type": "tool_use", "id": "toolu_xyz", "name": "Read", "input": {}}
-            ]
+                {"type": "tool_use", "id": "toolu_xyz", "name": "Read", "input": {}},
+            ],
         }
 
         tool_uses = extract_tool_use(msg)
@@ -243,11 +241,7 @@ class TestRebuildFromHistory:
 
     def test_rebuild_from_history_simple(self):
         """Test rebuilding simple conversation"""
-        history = {
-            "user_prompt": "Hello",
-            "tool_uses": [],
-            "tool_results": []
-        }
+        history = {"user_prompt": "Hello", "tool_uses": [], "tool_results": []}
 
         messages = rebuild_from_history(history)
         # Should at least have the user prompt
@@ -262,8 +256,13 @@ class TestRebuildFromHistory:
                 {"type": "tool_use", "id": "t1", "name": "Read", "input": {"file": "test.py"}}
             ],
             "tool_results": [
-                {"type": "tool_result", "tool_use_id": "t1", "content": "file contents", "is_error": False}
-            ]
+                {
+                    "type": "tool_result",
+                    "tool_use_id": "t1",
+                    "content": "file contents",
+                    "is_error": False,
+                }
+            ],
         }
 
         messages = rebuild_from_history(history)
@@ -288,7 +287,7 @@ class TestEdgeCases:
         """Test composing conversation with consecutive same roles"""
         messages = [
             build_user_message("First"),
-            build_user_message("Second")  # Consecutive user messages
+            build_user_message("Second"),  # Consecutive user messages
         ]
 
         result = compose_conversation(messages)

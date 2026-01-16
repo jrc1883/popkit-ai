@@ -8,11 +8,11 @@ Handles user consent prompts for bug sharing using AskUserQuestion integration.
 Provides formatted questions for Claude to present to users.
 """
 
-from dataclasses import dataclass
-from typing import Optional, List, Dict, Any
-from enum import Enum
 import sys
+from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
+from typing import Any, Dict, List
 
 # Ensure utils directory is in path
 utils_dir = Path(__file__).parent
@@ -20,20 +20,22 @@ if str(utils_dir) not in sys.path:
     sys.path.insert(0, str(utils_dir))
 
 # Import from same module that will be used elsewhere
-from utils.bug_store import get_bug_store, ShareStatus, ConsentLevel
+from utils.bug_store import ConsentLevel, ShareStatus, get_bug_store
 
 
 class ConsentAction(Enum):
     """Actions from consent prompts"""
-    SHARE_NOW = "share_now"           # Share this bug
-    SHARE_ALWAYS = "share_always"     # Share this and future bugs automatically
-    LOCAL_ONLY = "local_only"         # Keep local only
-    NEVER_ASK = "never_ask"           # Never ask about sharing again
+
+    SHARE_NOW = "share_now"  # Share this bug
+    SHARE_ALWAYS = "share_always"  # Share this and future bugs automatically
+    LOCAL_ONLY = "local_only"  # Keep local only
+    NEVER_ASK = "never_ask"  # Never ask about sharing again
 
 
 @dataclass
 class ConsentQuestion:
     """Formatted question for AskUserQuestion tool"""
+
     question: str
     header: str
     options: List[Dict[str, str]]
@@ -45,7 +47,7 @@ class ConsentQuestion:
             "question": self.question,
             "header": self.header,
             "options": self.options,
-            "multiSelect": self.multi_select
+            "multiSelect": self.multi_select,
         }
 
 
@@ -65,22 +67,19 @@ def get_share_consent_question(bug_summary: str) -> ConsentQuestion:
         options=[
             {
                 "label": "Share this bug",
-                "description": "Anonymize and share this pattern to the collective learning database"
+                "description": "Anonymize and share this pattern to the collective learning database",
             },
             {
                 "label": "Always share",
-                "description": "Share this and automatically share future bugs (can be changed later)"
+                "description": "Share this and automatically share future bugs (can be changed later)",
             },
-            {
-                "label": "Keep local",
-                "description": "Keep this bug report local, don't share"
-            },
+            {"label": "Keep local", "description": "Keep this bug report local, don't share"},
             {
                 "label": "Never ask",
-                "description": "Don't ask about sharing - keep everything local"
-            }
+                "description": "Don't ask about sharing - keep everything local",
+            },
         ],
-        multi_select=False
+        multi_select=False,
     )
 
 
@@ -97,18 +96,18 @@ def get_first_time_consent_question() -> ConsentQuestion:
         options=[
             {
                 "label": "Strict (default)",
-                "description": "All bugs stay local. You manually choose what to share."
+                "description": "All bugs stay local. You manually choose what to share.",
             },
             {
                 "label": "Moderate",
-                "description": "Auto-detect bugs, ask before sharing anonymized patterns"
+                "description": "Auto-detect bugs, ask before sharing anonymized patterns",
             },
             {
                 "label": "Minimal",
-                "description": "Auto-share anonymized patterns to help improve collective learning"
-            }
+                "description": "Auto-share anonymized patterns to help improve collective learning",
+            },
         ],
-        multi_select=False
+        multi_select=False,
     )
 
 
@@ -125,14 +124,11 @@ def get_auto_detect_consent_question() -> ConsentQuestion:
         options=[
             {
                 "label": "Enable",
-                "description": "Automatically detect errors and stuck patterns, log locally"
+                "description": "Automatically detect errors and stuck patterns, log locally",
             },
-            {
-                "label": "Disable",
-                "description": "Only log bugs when you manually report them"
-            }
+            {"label": "Disable", "description": "Only log bugs when you manually report them"},
         ],
-        multi_select=False
+        multi_select=False,
     )
 
 
@@ -152,7 +148,7 @@ def process_share_response(response: str, bug_id: str) -> Dict[str, Any]:
         "bug_id": bug_id,
         "action": None,
         "sharing_enabled": store.is_sharing_enabled(),
-        "ask_before_share": store.should_ask_before_share()
+        "ask_before_share": store.should_ask_before_share(),
     }
 
     response_lower = response.lower()
@@ -204,7 +200,7 @@ def process_consent_level_response(response: str) -> Dict[str, Any]:
         "consent_level": None,
         "sharing_enabled": False,
         "ask_before_share": True,
-        "auto_detect": True
+        "auto_detect": True,
     }
 
     response_lower = response.lower()
@@ -309,7 +305,7 @@ def get_pending_bugs_for_consent(limit: int = 5) -> List[Dict[str, Any]]:
             "error_type": bug.error_type,
             "summary": bug.context_summary,
             "confidence": bug.confidence,
-            "created_at": bug.created_at
+            "created_at": bug.created_at,
         }
         for bug in bugs
     ]
@@ -336,9 +332,9 @@ def format_consent_summary() -> str:
         f"Total Bugs Captured: {stats['total_bugs']}",
     ]
 
-    if stats.get('by_share_status'):
+    if stats.get("by_share_status"):
         lines.append("Share Status:")
-        for status, count in stats['by_share_status'].items():
+        for status, count in stats["by_share_status"].items():
             lines.append(f"  {status}: {count}")
 
     return "\n".join(lines)

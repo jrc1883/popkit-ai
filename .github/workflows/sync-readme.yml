@@ -31,7 +31,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
@@ -46,17 +46,17 @@ jobs:
       - name: Check for changes
         id: check
         run: |
-          if git diff --quiet packages/plugin/README.md; then
-            echo "changed=false" >> $GITHUB_OUTPUT
+          if git diff --quiet 'packages/plugin/README.md'; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
           else
-            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Commit changes
         if: steps.check.outputs.changed == 'true'
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add packages/plugin/README.md
-          git commit -m "chore(readme): auto-sync generated sections [skip ci]"
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add 'packages/plugin/README.md'
+          git commit -m 'chore(readme): auto-sync generated sections [skip ci]'
           git push

@@ -13,10 +13,10 @@ PopKit-Research is the knowledge management plugin for the PopKit ecosystem. It 
 
 ### Commands (2)
 
-| Command | Description |
-|---------|-------------|
-| `/popkit-research:research` | Research capture and search (list, search, add, tag, show, delete, merge) |
-| `/popkit-research:knowledge` | Knowledge base management (list, add, remove, sync, search) |
+| Command                      | Description                                                               |
+| ---------------------------- | ------------------------------------------------------------------------- |
+| `/popkit-research:research`  | Research capture and search (list, search, add, tag, show, delete, merge) |
+| `/popkit-research:knowledge` | Knowledge base management (list, add, remove, sync, search)               |
 
 ### Skills (3)
 
@@ -30,8 +30,8 @@ This plugin provides 3 specialized skills:
 
 ### Agents (1)
 
-| Agent | Tier | Trigger |
-|-------|------|---------|
+| Agent        | Tier               | Trigger                                                   |
+| ------------ | ------------------ | --------------------------------------------------------- |
 | `researcher` | Tier 2 (on-demand) | Project analysis, codebase exploration, pattern discovery |
 
 ## Installation
@@ -138,6 +138,7 @@ popkit-research (knowledge)    ← You are here
 ### Researcher Agent
 
 The researcher agent activates for:
+
 - Project analysis and pattern discovery
 - Codebase exploration requests
 - Meta-research about plugin opportunities

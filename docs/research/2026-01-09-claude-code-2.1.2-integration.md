@@ -11,6 +11,7 @@
 ## Overview
 
 This document provides comprehensive documentation of PopKit's integration with Claude Code 2.1.2 features. It includes:
+
 - Analysis of 2.1.2 changelog and relevant features
 - Implementation decisions and rationale
 - Code changes and architecture
@@ -25,30 +26,30 @@ This document provides comprehensive documentation of PopKit's integration with 
 
 ### New Features
 
-| Feature | Description | PopKit Integration |
-|---------|-------------|-------------------|
-| `agent_type` in SessionStart | Hook input includes agent type when `--agent` flag used | **Implemented** |
-| `FORCE_AUTOUPDATE_PLUGINS` | Env var to control plugin auto-updates independently | **Documented** |
-| Image source path metadata | Terminal enhancement for dragged images | N/A |
-| Clickable file path hyperlinks | OSC 8 terminal support | N/A |
-| Shift+Tab auto-accept edits | Plan mode UX shortcut | N/A |
-| Windows Package Manager detection | winget installation support | N/A |
+| Feature                           | Description                                             | PopKit Integration |
+| --------------------------------- | ------------------------------------------------------- | ------------------ |
+| `agent_type` in SessionStart      | Hook input includes agent type when `--agent` flag used | **Implemented**    |
+| `FORCE_AUTOUPDATE_PLUGINS`        | Env var to control plugin auto-updates independently    | **Documented**     |
+| Image source path metadata        | Terminal enhancement for dragged images                 | N/A                |
+| Clickable file path hyperlinks    | OSC 8 terminal support                                  | N/A                |
+| Shift+Tab auto-accept edits       | Plan mode UX shortcut                                   | N/A                |
+| Windows Package Manager detection | winget installation support                             | N/A                |
 
 ### Security Fixes
 
-| Fix | Description | PopKit Impact |
-|-----|-------------|---------------|
+| Fix                             | Description                   | PopKit Impact               |
+| ------------------------------- | ----------------------------- | --------------------------- |
 | Command injection vulnerability | Bash command processing fixed | Already addressed in beta.2 |
-| Memory leak (Tree-sitter) | WASM memory properly freed | Automatic benefit |
-| Binary file handling | @include directives fixed | Awareness only |
+| Memory leak (Tree-sitter)       | WASM memory properly freed    | Automatic benefit           |
+| Binary file handling            | @include directives fixed     | Awareness only              |
 
 ### UX Improvements
 
-| Improvement | Description | PopKit Impact |
-|-------------|-------------|---------------|
-| Large tool outputs to disk | Outputs saved instead of truncated | Automatic benefit |
-| Permission explainer update | Routine dev commands not flagged | Validates wildcard permissions |
-| Unified /plugins tab | Scope-based grouping | Documentation update |
+| Improvement                 | Description                        | PopKit Impact                  |
+| --------------------------- | ---------------------------------- | ------------------------------ |
+| Large tool outputs to disk  | Outputs saved instead of truncated | Automatic benefit              |
+| Permission explainer update | Routine dev commands not flagged   | Validates wildcard permissions |
+| Unified /plugins tab        | Scope-based grouping               | Documentation update           |
 
 ---
 
@@ -59,6 +60,7 @@ This document provides comprehensive documentation of PopKit's integration with 
 **File**: `packages/popkit-core/hooks/session-start.py`
 
 **What Changed**:
+
 - Added `detect_agent_type_session()` function (lines 605-695)
 - Integrated into `main()` function
 - Conditional skip of embedding-based agent filtering when agent already selected
@@ -92,6 +94,7 @@ def detect_agent_type_session(data):
 ```
 
 **Benefits**:
+
 1. **Faster session start**: Skips embedding-based agent filtering when unnecessary
 2. **Better analytics**: Tracks agent-specific session patterns
 3. **Optimized context**: Category-specific initialization
@@ -102,11 +105,13 @@ def detect_agent_type_session(data):
 **File**: `CLAUDE.md`
 
 **What Changed**:
+
 - Added 3 new rows to Version Requirements table (lines 277-279)
 - Added "New in Claude Code 2.1.2" section (lines 171-197)
 - Updated recommended version to 2.1.2+
 
 **Documentation Added**:
+
 - SessionStart hook agent_type usage
 - FORCE_AUTOUPDATE_PLUGINS environment variable
 - Large output persistence benefits
@@ -119,44 +124,47 @@ def detect_agent_type_session(data):
 PopKit maps all 23 agents to categories for optimization:
 
 ### Tier 1 (Always Active) - 10 agents
+
 Standard context loading, foundational capabilities.
 
-| Agent | Plugin |
-|-------|--------|
-| code-reviewer | popkit-dev |
-| refactoring-expert | popkit-dev |
-| accessibility-guardian | popkit-core |
-| api-designer | popkit-core |
+| Agent                    | Plugin      |
+| ------------------------ | ----------- |
+| code-reviewer            | popkit-dev  |
+| refactoring-expert       | popkit-dev  |
+| accessibility-guardian   | popkit-core |
+| api-designer             | popkit-core |
 | documentation-maintainer | popkit-core |
-| migration-specialist | popkit-core |
-| bug-whisperer | popkit-ops |
-| performance-optimizer | popkit-ops |
-| security-auditor | popkit-ops |
-| test-writer-fixer | popkit-ops |
+| migration-specialist     | popkit-core |
+| bug-whisperer            | popkit-ops  |
+| performance-optimizer    | popkit-ops  |
+| security-auditor         | popkit-ops  |
+| test-writer-fixer        | popkit-ops  |
 
 ### Tier 2 (On-Demand) - 11 agents
+
 On-demand context loading, specialist capabilities.
 
-| Agent | Plugin |
-|-------|--------|
-| bundle-analyzer | popkit-core |
-| dead-code-eliminator | popkit-core |
-| feature-prioritizer | popkit-core |
-| meta-agent | popkit-core |
-| power-coordinator | popkit-core |
-| rapid-prototyper | popkit-dev |
-| merge-conflict-resolver | popkit-dev |
-| prd-parser | popkit-dev |
-| deployment-validator | popkit-ops |
-| rollback-specialist | popkit-ops |
-| researcher | popkit-research |
+| Agent                   | Plugin          |
+| ----------------------- | --------------- |
+| bundle-analyzer         | popkit-core     |
+| dead-code-eliminator    | popkit-core     |
+| feature-prioritizer     | popkit-core     |
+| meta-agent              | popkit-core     |
+| power-coordinator       | popkit-core     |
+| rapid-prototyper        | popkit-dev      |
+| merge-conflict-resolver | popkit-dev      |
+| prd-parser              | popkit-dev      |
+| deployment-validator    | popkit-ops      |
+| rollback-specialist     | popkit-ops      |
+| researcher              | popkit-research |
 
 ### Feature Workflow - 2 agents
+
 Multi-phase feature development context.
 
-| Agent | Plugin |
-|-------|--------|
-| code-explorer | popkit-dev |
+| Agent          | Plugin     |
+| -------------- | ---------- |
+| code-explorer  | popkit-dev |
 | code-architect | popkit-dev |
 
 ---
@@ -168,11 +176,13 @@ Multi-phase feature development context.
 **Purpose**: Control plugin auto-updates independently from Claude Code updates.
 
 **Use Cases**:
+
 1. Teams wanting stable Claude Code but latest plugins
 2. CI/CD pipelines requiring specific plugin versions
 3. Development environments testing new plugin features
 
 **Usage**:
+
 ```bash
 # Enable plugin auto-updates even when main auto-updater is disabled
 export FORCE_AUTOUPDATE_PLUGINS=true
@@ -243,6 +253,7 @@ claude --agent custom-agent
 ## Changelog
 
 ### 2026-01-09
+
 - Initial implementation of agent_type detection
 - Updated CLAUDE.md with 2.1.2 version requirements
 - Documented FORCE_AUTOUPDATE_PLUGINS environment variable

@@ -14,10 +14,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from popkit_shared.utils.complexity_scoring import (
     ComplexityAnalyzer,
-    ComplexityLevel,
     analyze_complexity,
+    get_complexity_analyzer,
     quick_score,
-    get_complexity_analyzer
 )
 
 
@@ -38,8 +37,11 @@ class TestComplexityScoring(unittest.TestCase):
 
         for task in tasks:
             result = self.analyzer.analyze(task)
-            self.assertIn(result.complexity_score, [1, 2, 3],
-                          f"Task '{task}' should be trivial (1-3), got {result.complexity_score}")
+            self.assertIn(
+                result.complexity_score,
+                [1, 2, 3],
+                f"Task '{task}' should be trivial (1-3), got {result.complexity_score}",
+            )
             self.assertLessEqual(result.recommended_subtasks, 2)
 
     def test_simple_task_scoring(self):
@@ -52,8 +54,11 @@ class TestComplexityScoring(unittest.TestCase):
 
         for task in tasks:
             result = self.analyzer.analyze(task)
-            self.assertIn(result.complexity_score, [2, 3, 4, 5],
-                          f"Task '{task}' should be simple (3-4), got {result.complexity_score}")
+            self.assertIn(
+                result.complexity_score,
+                [2, 3, 4, 5],
+                f"Task '{task}' should be simple (3-4), got {result.complexity_score}",
+            )
             self.assertLessEqual(result.recommended_subtasks, 4)
 
     def test_moderate_task_scoring(self):
@@ -66,8 +71,11 @@ class TestComplexityScoring(unittest.TestCase):
 
         for task in tasks:
             result = self.analyzer.analyze(task)
-            self.assertIn(result.complexity_score, [4, 5, 6, 7],
-                          f"Task '{task}' should be moderate (5-6), got {result.complexity_score}")
+            self.assertIn(
+                result.complexity_score,
+                [4, 5, 6, 7],
+                f"Task '{task}' should be moderate (5-6), got {result.complexity_score}",
+            )
             self.assertGreaterEqual(result.recommended_subtasks, 3)
             self.assertLessEqual(result.recommended_subtasks, 7)
 
@@ -81,8 +89,11 @@ class TestComplexityScoring(unittest.TestCase):
 
         for task in tasks:
             result = self.analyzer.analyze(task)
-            self.assertIn(result.complexity_score, [6, 7, 8, 9],
-                          f"Task '{task}' should be complex (7-8), got {result.complexity_score}")
+            self.assertIn(
+                result.complexity_score,
+                [6, 7, 8, 9],
+                f"Task '{task}' should be complex (7-8), got {result.complexity_score}",
+            )
             self.assertGreaterEqual(result.recommended_subtasks, 5)
 
     def test_very_complex_task_scoring(self):
@@ -95,8 +106,11 @@ class TestComplexityScoring(unittest.TestCase):
 
         for task in tasks:
             result = self.analyzer.analyze(task)
-            self.assertGreaterEqual(result.complexity_score, 6,
-                                    f"Task '{task}' should be very complex (6+), got {result.complexity_score}")
+            self.assertGreaterEqual(
+                result.complexity_score,
+                6,
+                f"Task '{task}' should be very complex (6+), got {result.complexity_score}",
+            )
             self.assertGreaterEqual(result.recommended_subtasks, 5)
 
     def test_metadata_override(self):
@@ -107,14 +121,15 @@ class TestComplexityScoring(unittest.TestCase):
         result1 = self.analyzer.analyze(task)
 
         # With metadata indicating high complexity
-        result2 = self.analyzer.analyze(task, metadata={
-            "files_affected": 25,
-            "loc_estimate": 600,
-            "dependencies": 12
-        })
+        result2 = self.analyzer.analyze(
+            task, metadata={"files_affected": 25, "loc_estimate": 600, "dependencies": 12}
+        )
 
-        self.assertGreater(result2.complexity_score, result1.complexity_score,
-                           "Metadata should increase complexity score")
+        self.assertGreater(
+            result2.complexity_score,
+            result1.complexity_score,
+            "Metadata should increase complexity score",
+        )
 
     def test_keyword_detection_architecture(self):
         """Test detection of architecture keywords"""
@@ -126,8 +141,11 @@ class TestComplexityScoring(unittest.TestCase):
 
         for task in tasks:
             result = self.analyzer.analyze(task)
-            self.assertGreater(result.factors.architecture_change, 0,
-                               f"Task '{task}' should detect architecture change")
+            self.assertGreater(
+                result.factors.architecture_change,
+                0,
+                f"Task '{task}' should detect architecture change",
+            )
 
     def test_keyword_detection_security(self):
         """Test detection of security keywords"""
@@ -139,8 +157,9 @@ class TestComplexityScoring(unittest.TestCase):
 
         for task in tasks:
             result = self.analyzer.analyze(task)
-            self.assertGreater(result.factors.security_impact, 0,
-                               f"Task '{task}' should detect security impact")
+            self.assertGreater(
+                result.factors.security_impact, 0, f"Task '{task}' should detect security impact"
+            )
             self.assertIn("security_critical", result.risk_factors)
 
     def test_keyword_detection_integration(self):
@@ -153,8 +172,9 @@ class TestComplexityScoring(unittest.TestCase):
 
         for task in tasks:
             result = self.analyzer.analyze(task)
-            self.assertGreater(result.factors.integration_points, 0,
-                               f"Task '{task}' should detect integration")
+            self.assertGreater(
+                result.factors.integration_points, 0, f"Task '{task}' should detect integration"
+            )
 
     def test_breaking_changes_detection(self):
         """Test detection of breaking changes"""
@@ -166,8 +186,9 @@ class TestComplexityScoring(unittest.TestCase):
 
         for task in tasks:
             result = self.analyzer.analyze(task)
-            self.assertGreater(result.factors.breaking_changes, 0,
-                               f"Task '{task}' should detect breaking changes")
+            self.assertGreater(
+                result.factors.breaking_changes, 0, f"Task '{task}' should detect breaking changes"
+            )
             self.assertIn("breaking_changes", result.risk_factors)
 
     def test_subtask_recommendations(self):
@@ -182,8 +203,11 @@ class TestComplexityScoring(unittest.TestCase):
 
         for task, expected_min_subtasks in tasks:
             result = self.analyzer.analyze(task)
-            self.assertGreaterEqual(result.recommended_subtasks, expected_min_subtasks,
-                                    f"Task '{task}' should recommend at least {expected_min_subtasks} subtasks")
+            self.assertGreaterEqual(
+                result.recommended_subtasks,
+                expected_min_subtasks,
+                f"Task '{task}' should recommend at least {expected_min_subtasks} subtasks",
+            )
 
     def test_phase_distribution_trivial(self):
         """Test phase distribution for trivial tasks"""
@@ -219,7 +243,7 @@ class TestComplexityScoring(unittest.TestCase):
 
         self.assertTrue(
             "code-architect" in agents or "refactoring-expert" in agents,
-            "Complex tasks should suggest senior agents"
+            "Complex tasks should suggest senior agents",
         )
 
     def test_token_estimation_scales(self):
@@ -227,9 +251,11 @@ class TestComplexityScoring(unittest.TestCase):
         simple_task = self.analyzer.analyze("Fix typo")
         complex_task = self.analyzer.analyze("Migrate to microservices")
 
-        self.assertLess(simple_task.estimated_tokens["total"],
-                        complex_task.estimated_tokens["total"],
-                        "Complex tasks should have higher token estimates")
+        self.assertLess(
+            simple_task.estimated_tokens["total"],
+            complex_task.estimated_tokens["total"],
+            "Complex tasks should have higher token estimates",
+        )
 
     def test_risk_factor_identification(self):
         """Test risk factor identification"""
@@ -240,7 +266,7 @@ class TestComplexityScoring(unittest.TestCase):
         self.assertGreater(len(result.risk_factors), 0)
         self.assertTrue(
             any(risk in result.risk_factors for risk in ["breaking_changes", "data_migration"]),
-            "Should identify migration/breaking change risks"
+            "Should identify migration/breaking change risks",
         )
 
     def test_reasoning_generation(self):
@@ -274,7 +300,7 @@ class TestComplexityScoring(unittest.TestCase):
             "breaking_changes": 0.20,
             "testing_complexity": 0.10,
             "security_impact": 0.10,
-            "integration_points": 0.05
+            "integration_points": 0.05,
         }
 
         custom_analyzer = ComplexityAnalyzer(weights=custom_weights)
@@ -370,8 +396,9 @@ class TestComplexityFactors(unittest.TestCase):
 
         for task, expected_min in test_cases:
             estimated = self.analyzer._estimate_files(task)
-            self.assertGreaterEqual(estimated, expected_min * 0.5,
-                                    f"Files estimate for '{task}' too low")
+            self.assertGreaterEqual(
+                estimated, expected_min * 0.5, f"Files estimate for '{task}' too low"
+            )
 
     def test_loc_estimation(self):
         """Test LOC estimation"""
@@ -383,8 +410,9 @@ class TestComplexityFactors(unittest.TestCase):
 
         for task, expected_min in test_cases:
             estimated = self.analyzer._estimate_loc(task)
-            self.assertGreaterEqual(estimated, expected_min * 0.5,
-                                    f"LOC estimate for '{task}' too low")
+            self.assertGreaterEqual(
+                estimated, expected_min * 0.5, f"LOC estimate for '{task}' too low"
+            )
 
     def test_dependencies_estimation(self):
         """Test dependencies estimation"""
@@ -396,8 +424,7 @@ class TestComplexityFactors(unittest.TestCase):
 
         for task in tasks_with_deps:
             estimated = self.analyzer._estimate_dependencies(task)
-            self.assertGreater(estimated, 0,
-                               f"Should detect dependencies in '{task}'")
+            self.assertGreater(estimated, 0, f"Should detect dependencies in '{task}'")
 
 
 class TestIntegrationScenarios(unittest.TestCase):
@@ -419,12 +446,14 @@ class TestIntegrationScenarios(unittest.TestCase):
         scored_features = []
         for feature in features:
             result = analyze_complexity(feature)
-            scored_features.append({
-                "feature": feature,
-                "complexity": result["complexity_score"],
-                "subtasks": result["recommended_subtasks"],
-                "tokens": result["estimated_tokens"]["total"]
-            })
+            scored_features.append(
+                {
+                    "feature": feature,
+                    "complexity": result["complexity_score"],
+                    "subtasks": result["recommended_subtasks"],
+                    "tokens": result["estimated_tokens"]["total"],
+                }
+            )
 
         # All features should have valid scores
         for feature in scored_features:
@@ -446,7 +475,7 @@ class TestIntegrationScenarios(unittest.TestCase):
             # Check if expected agent type is in suggestions
             self.assertTrue(
                 any(expected_agent_type in agent for agent in agents),
-                f"Expected {expected_agent_type} for '{task}', got {agents}"
+                f"Expected {expected_agent_type} for '{task}', got {agents}",
             )
 
     def test_workflow_mode_selection(self):

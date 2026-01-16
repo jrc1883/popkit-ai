@@ -20,11 +20,10 @@ Output:
 import hashlib
 import json
 import os
-import re
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional
 
 
 def get_project_root() -> Path:
@@ -42,15 +41,14 @@ def check_entitlement() -> Dict[str, Any]:
         "api_available": bool(os.environ.get("VOYAGE_API_KEY")),
         "has_api_key": bool(os.environ.get("POPKIT_API_KEY")),
         "allowed": True,  # All features work without API key
-        "enhancement_available": bool(os.environ.get("POPKIT_API_KEY"))
+        "enhancement_available": bool(os.environ.get("POPKIT_API_KEY")),
     }
 
     return result
 
 
 def scan_project_locations(
-    project_root: Path,
-    content_type: Optional[str] = None
+    project_root: Path, content_type: Optional[str] = None
 ) -> List[Dict[str, Any]]:
     """Scan project for embeddable items."""
     items = []
@@ -90,18 +88,20 @@ def scan_project_locations(
             # Skip items without description
             description = metadata.get("description", "")
 
-            items.append({
-                "id": f"{source_type}:{item_id}",
-                "name": metadata.get("name", item_id),
-                "description": description,
-                "source_type": source_type,
-                "item_type": item_type,
-                "path": str(file_path.relative_to(project_root)),
-                "content_hash": compute_content_hash(content),
-                "size_bytes": len(content.encode('utf-8')),
-                "has_description": bool(description),
-                "premium": metadata.get("premium", False)
-            })
+            items.append(
+                {
+                    "id": f"{source_type}:{item_id}",
+                    "name": metadata.get("name", item_id),
+                    "description": description,
+                    "source_type": source_type,
+                    "item_type": item_type,
+                    "path": str(file_path.relative_to(project_root)),
+                    "content_hash": compute_content_hash(content),
+                    "size_bytes": len(content.encode("utf-8")),
+                    "has_description": bool(description),
+                    "premium": metadata.get("premium", False),
+                }
+            )
 
     return items
 
@@ -110,23 +110,23 @@ def parse_frontmatter(content: str) -> Dict[str, Any]:
     """Parse YAML frontmatter from markdown content."""
     metadata = {}
 
-    if content.startswith('---'):
-        parts = content.split('---', 2)
+    if content.startswith("---"):
+        parts = content.split("---", 2)
         if len(parts) >= 3:
             frontmatter = parts[1].strip()
-            for line in frontmatter.split('\n'):
-                if ':' in line:
-                    key, value = line.split(':', 1)
+            for line in frontmatter.split("\n"):
+                if ":" in line:
+                    key, value = line.split(":", 1)
                     key = key.strip()
                     value = value.strip()
 
                     # Handle boolean values
-                    if value.lower() == 'true':
+                    if value.lower() == "true":
                         value = True
-                    elif value.lower() == 'false':
+                    elif value.lower() == "false":
                         value = False
                     else:
-                        value = value.strip('"\'')
+                        value = value.strip("\"'")
 
                     metadata[key] = value
 
@@ -135,7 +135,7 @@ def parse_frontmatter(content: str) -> Dict[str, Any]:
 
 def compute_content_hash(content: str) -> str:
     """Compute SHA256 hash of content."""
-    return hashlib.sha256(content.encode('utf-8')).hexdigest()[:16]
+    return hashlib.sha256(content.encode("utf-8")).hexdigest()[:16]
 
 
 def get_embedding_status(items: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -152,27 +152,20 @@ def get_embedding_status(items: List[Dict[str, Any]]) -> Dict[str, Any]:
         "api_available": bool(os.environ.get("VOYAGE_API_KEY")),
         "by_type": {},
         "missing_items": [],
-        "stale_items": []
+        "stale_items": [],
     }
 
     # Group by type
     for item in items:
         item_type = item["item_type"]
         if item_type not in status["by_type"]:
-            status["by_type"][item_type] = {
-                "found": 0,
-                "embedded": 0,
-                "missing": 0
-            }
+            status["by_type"][item_type] = {"found": 0, "embedded": 0, "missing": 0}
         status["by_type"][item_type]["found"] += 1
 
         # For now, assume all items are missing (would check actual store)
         status["by_type"][item_type]["missing"] += 1
         status["items_missing"] += 1
-        status["missing_items"].append({
-            "id": item["id"],
-            "path": item["path"]
-        })
+        status["missing_items"].append({"id": item["id"], "path": item["path"]})
 
     return status
 
@@ -184,16 +177,13 @@ def generate_embedding_text(item: Dict[str, Any]) -> str:
         f"Type: {item['item_type']}",
     ]
 
-    if item.get('description'):
+    if item.get("description"):
         parts.append(f"Description: {item['description']}")
 
     return " | ".join(parts)
 
 
-def embed_items(
-    items: List[Dict[str, Any]],
-    force: bool = False
-) -> Dict[str, Any]:
+def embed_items(items: List[Dict[str, Any]], force: bool = False) -> Dict[str, Any]:
     """Embed items using Voyage AI."""
     result = {
         "status": "success",
@@ -205,8 +195,8 @@ def embed_items(
             "started": datetime.now().isoformat(),
             "completed": None,
             "batches": 0,
-            "total_delay": 0
-        }
+            "total_delay": 0,
+        },
     }
 
     # Check API key
@@ -214,7 +204,7 @@ def embed_items(
         return {
             "status": "error",
             "error": "VOYAGE_API_KEY not set",
-            "items_to_embed": len(items)
+            "items_to_embed": len(items),
         }
 
     # Filter items to embed
@@ -236,7 +226,9 @@ def embed_items(
 
     # Batch items (50 per batch)
     batch_size = 50
-    batches = [to_embed[i:i + batch_size] for i in range(0, len(to_embed), batch_size)]
+    batches = [
+        to_embed[i : i + batch_size] for i in range(0, len(to_embed), batch_size)
+    ]
     result["timing"]["batches"] = len(batches)
 
     # Process batches
@@ -268,19 +260,25 @@ def free_tier_fallback() -> Dict[str, Any]:
             "find_skills": "ls .claude/skills/*/SKILL.md 2>/dev/null",
             "find_agents": "ls .claude/agents/*/AGENT.md 2>/dev/null",
             "find_commands": "ls .claude/commands/*.md 2>/dev/null",
-            "keyword_search": "grep -r 'keyword' .claude/"
+            "keyword_search": "grep -r 'keyword' .claude/",
         },
-        "upgrade_command": "/popkit:upgrade"
+        "upgrade_command": "/popkit:upgrade",
     }
 
 
 def main():
     import argparse
+
     parser = argparse.ArgumentParser(description="Scan project for embeddable content")
-    parser.add_argument("--mode", choices=["entitlement", "scan", "status", "embed"],
-                        default="scan", help="Operation mode")
-    parser.add_argument("--type", choices=["skill", "agent", "command"],
-                        help="Filter by content type")
+    parser.add_argument(
+        "--mode",
+        choices=["entitlement", "scan", "status", "embed"],
+        default="scan",
+        help="Operation mode",
+    )
+    parser.add_argument(
+        "--type", choices=["skill", "agent", "command"], help="Filter by content type"
+    )
     parser.add_argument("--force", action="store_true", help="Re-embed all items")
     parser.add_argument("--output", "-o", help="Output file path")
     args = parser.parse_args()
@@ -290,7 +288,7 @@ def main():
     result = {
         "operation": f"scan_project_{args.mode}",
         "project_root": str(project_root),
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.now().isoformat(),
     }
 
     if args.mode == "entitlement":
@@ -335,11 +333,16 @@ def main():
 
     if args.output:
         Path(args.output).write_text(output)
-        print(json.dumps({
-            "operation": f"scan_project_{args.mode}",
-            "output_file": args.output,
-            "success": True
-        }, indent=2))
+        print(
+            json.dumps(
+                {
+                    "operation": f"scan_project_{args.mode}",
+                    "output_file": args.output,
+                    "success": True,
+                },
+                indent=2,
+            )
+        )
     else:
         print(output)
 

@@ -6,6 +6,55 @@ All notable changes to PopKit are documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- **Power Mode Transcript Parsing** (#110): Enhanced observability for Power Mode subagent executions
+  - Added `record_subagent_completion()` method to session_recorder for structured subagent data
+  - Integrated TranscriptParser into subagent-stop.py hook (line 195 TODO resolved)
+  - Records tool call count, token usage (input/output/total), and first 10 tool details per subagent
+  - Graceful error handling: parsing failures don't block hook execution
+  - Foundation for Phase 2 cloud observability (popkit-observe plugin)
+  - Zero user-facing changes (internal enhancement)
+  - Test coverage: 7 transcript_parser tests + 1 session_recorder test (all passing)
+
+- **GitHub Issue Dashboard Integration** (#111): Display real-time issue counts in the multi-project dashboard
+  - Implemented 15-minute cache with instant dashboard load times
+  - Added `get_cached_issue_count()`, `fetch_project_issues()`, and `refresh_project_issue_counts()` functions
+  - Manual refresh via `/dashboard refresh` command
+  - Graceful fallback for non-GitHub projects (displays '--')
+  - Sequential fetching (~0.5s per project, ~5-10s for 10 projects)
+  - Comprehensive test suite: 8 unit tests + 5 integration tests (all passing)
+  - Documentation updates for dashboard skill and command
+  - Cache format: `github_issues: { open_count: N, cached_at: ISO timestamp }`
+
+---
+
+## [1.0.0-beta.5] - 2026-01-13
+
+### Fixed
+
+- **Hook Import Paths**: Corrected import paths in 5 hooks to use `popkit_shared.utils` package instead of non-existent local utils directory
+  - Fixed: user-prompt-submit.py, session-start.py, post-tool-use.py, test_findings_xml.py, issue-workflow.py
+  - Resolves UserPromptSubmit hook error preventing hook execution
+- **CI/CD Pipeline**: Complete test and lint infrastructure implementation (#125)
+  - Python tests (3.11, 3.12, 3.13) with proper PYTHONPATH configuration
+  - TypeScript tests and type checking (Node 20, 22)
+  - Ruff formatting validation for Python code
+  - ESLint validation for TypeScript code
+  - Prettier formatting validation for Markdown/JSON
+  - All validation checks passing (25/25 checks)
+
+### Changed
+
+- **Documentation**: Added Claude Code 2.1.3-2.1.6 feature documentation to CLAUDE.md
+- **Documentation**: Updated version requirements table with latest features
+- **Documentation**: Updated recommended version to 2.1.6+ for security fixes
+
+### Chore
+
+- **CI/CD**: Added tmpclaude-\*-cwd files to .gitignore
+- **Testing**: Fixed hook_validator.py to use absolute paths for subprocess execution
+
 ---
 
 ## [1.0.0-rc.1] - 2026-01-12
@@ -19,6 +68,7 @@ This release candidate represents a major milestone with comprehensive test cove
 ### Test Coverage Epic Completed
 
 **Overall Test Results**:
+
 - **Total Test Cases**: 74 test definitions (~340 individual tests)
 - **Pass Rate**: 100% (74/74 passing, 0 failures)
 - **Duration**: ~79 seconds
@@ -38,6 +88,7 @@ This release candidate represents a major milestone with comprehensive test cove
 ### Added
 
 **Comprehensive Hook Tests** (#115):
+
 - `test-post-tool-use.json` - 5 test cases for PostToolUse hook protocol
 - `test-pre-tool-use.json` - 5 test cases for PreToolUse hook protocol (updated in #118)
 - `test-quality-gate.json` - 8 test cases for code quality validation
@@ -46,6 +97,7 @@ This release candidate represents a major milestone with comprehensive test cove
 - `test-task-tool-without-orchestrator.json` - 4 test cases verifying Task tool functionality (#118)
 
 **Comprehensive Utility Tests** (#115):
+
 - `test_context_storage.py` - 395 tests for context storage and encryption
 - `test_message_builder.py` - 305 tests for XML message construction
 - `test_security_scanner.py` - 910 tests for secret detection and path scanning
@@ -58,6 +110,7 @@ This release candidate represents a major milestone with comprehensive test cove
 - `test_privacy.py` - Privacy control validation
 
 **Skill Script Tests** (#120):
+
 - `test_ready_to_code_score.py` - 54 tests for morning routine score calculation
 - `test_sleep_score.py` - 46 tests for nightly routine shutdown score
 - `test_detect_project_type.py` - 42 tests for project type detection
@@ -67,11 +120,13 @@ This release candidate represents a major milestone with comprehensive test cove
 - `SKILL_SCRIPT_TEST_REPORT.md` - Comprehensive test coverage report
 
 **Output Validation Schemas** (#119):
+
 - 22 JSON Schema files for all agent output styles in `packages/popkit-core/output-styles/schemas/`
 - Schemas for all 23 PopKit agents (core: 7, dev: 5, ops: 6, research: 1, shared: 4)
 - `schemas/README.md` - Schema documentation and agent mappings
 
 **Cross-Plugin Validation** (#116):
+
 - `test-plugin-ecosystem.json` - 11 ecosystem validation tests
 - `tests/cross-plugin/validators/ecosystem_validators.py` - Custom validator implementation
 - Command name uniqueness across all plugins
@@ -83,6 +138,7 @@ This release candidate represents a major milestone with comprehensive test cove
 - Agent distribution validation (23 total agents across 4 plugins)
 
 **Test Infrastructure**:
+
 - Enhanced `run_all_tests.py` with cross-plugin test execution support
 - Modular test runner supporting all plugin packages independently
 - Comprehensive summary reporting with per-plugin and per-category breakdowns
@@ -91,6 +147,7 @@ This release candidate represents a major milestone with comprehensive test cove
 ### Fixed
 
 **Dead Code Removal** (#118):
+
 - Removed `agent-orchestrator.py` hook (480 lines of dead code)
   - Legacy OPTIMUS/Contains Studio artifact with hardcoded paths
   - Functionality now handled by Power Mode and SessionStart hook
@@ -109,11 +166,13 @@ This release candidate represents a major milestone with comprehensive test cove
 ### Changed
 
 **Hook Portability Audit** (#118):
+
 - Updated `docs/HOOK_PORTABILITY_AUDIT.md` reflecting hook removal
 - Hook count: 16 → 15 (after agent-orchestrator removal)
 - All remaining hooks maintain 100% portability compliance
 
 ### Removed
+
 - **popkit-suite plugin**: Removed non-functional meta-plugin
   - Claude Code doesn't support plugin dependency management
   - Users should install the 4 core plugins individually
@@ -145,6 +204,7 @@ This release candidate represents a major milestone with comprehensive test cove
 ### Documentation
 
 All test infrastructure and results documented:
+
 - Modular test runner (`packages/popkit-core/run_all_tests.py`)
 - Test categories: agents, hooks, skills, structure, cross-plugin
 - Test utilities in `shared-py/popkit_shared/utils/`
@@ -158,6 +218,7 @@ All test infrastructure and results documented:
 ### Claude Code 2.1.2 Integration
 
 **Agent Type Detection Support**:
+
 - Added `detect_agent_type_session()` function for `--agent` flag support
 - Detects agent_type from Claude Code 2.1.2+ SessionStart hook
 - Maps all 23 PopKit agents to categories (Tier 1, Tier 2, Feature Workflow)
@@ -165,6 +226,7 @@ All test infrastructure and results documented:
 - Category-specific optimizations for context loading and Power Mode configuration
 
 **Comprehensive Test Coverage**:
+
 - Created `test_agent_type_detection.py` with 42 comprehensive tests
 - Tests all 23 PopKit agents across 3 categories
 - Tests edge cases: unknown agents, empty values, error handling
@@ -174,41 +236,48 @@ All test infrastructure and results documented:
 - **All tests passing**: 42/42 in 0.11s
 
 **Code Quality Improvements**:
+
 - Extracted `detect_agent_type_session()` to `session_start_helpers.py` for testability
 - Proper error handling with graceful degradation
 - Comprehensive logging for agent-specific sessions
 - JSON-serializable optimization results
 
 **Documentation Updates**:
+
 - Updated CLAUDE.md with Claude Code 2.1.2 features
 - Added SessionStart agent_type documentation
 - Added FORCE_AUTOUPDATE_PLUGINS environment variable documentation
 - Updated version requirements table
 
 **Files Added**:
+
 - `packages/popkit-core/hooks/session_start_helpers.py` - Agent detection logic
 - `packages/popkit-core/hooks/tests/test_agent_type_detection.py` - Test suite
 - `docs/research/2026-01-09-claude-code-2.1.2-integration.md` - Research documentation
 
 **Files Modified**:
+
 - `packages/popkit-core/hooks/session-start.py` - Import from helpers module
 - `CLAUDE.md` - Updated documentation for 2.1.2 features
 
 ### Plugin Metadata Fixes
 
 **Repository Field Format Compliance**:
+
 - Fixed repository field format in all plugin.json files (commit 29b1224)
 - Changed from npm-style object format to Claude Code string format
 - Ensures proper GitHub integration and marketplace compatibility
 - Aligns with official Claude Code plugin specification
 
 **Files Updated**:
+
 - `packages/popkit-core/.claude-plugin/plugin.json`
 - `packages/popkit-dev/.claude-plugin/plugin.json`
 - `packages/popkit-ops/.claude-plugin/plugin.json`
 - `packages/popkit-research/.claude-plugin/plugin.json`
 
 **Format Change**:
+
 ```json
 // Before (npm-style - incorrect):
 "repository": {
@@ -228,6 +297,7 @@ All test infrastructure and results documented:
 ### Marketplace Publication Fixes (2026-01-06)
 
 **Critical Fixes for Public Release**:
+
 - Fixed popkit-dev plugin.json: Removed invalid `pop-project-templates` skill reference
 - Updated all marketplace.json files: Version alignment (beta.1 → beta.3)
 - Fixed repository URLs: Updated from `jrc1883/popkit` to `jrc1883/popkit-claude`
@@ -239,6 +309,7 @@ All test infrastructure and results documented:
 ### Stripe Billing Integration (2026-01-05)
 
 **Stripe Integration Complete**:
+
 - Fixed JSON parse bug in billing endpoints (3 instances)
 - Updated redirect URLs: popkit.dev → thehouseofdeals.com
 - Configured Stripe secrets: API key, webhook, price IDs (Pro $9, Team $29)
@@ -246,6 +317,7 @@ All test infrastructure and results documented:
 - Tested endpoints: checkout, subscription, account keys
 
 **Endpoints Working**:
+
 - `POST /v1/billing/checkout` - Create Stripe checkout sessions ✅
 - `GET /v1/billing/subscription` - Get subscription status ✅
 - `GET /v1/account/keys` - List API keys ✅
@@ -254,6 +326,7 @@ All test infrastructure and results documented:
 ### Command Testing Framework
 
 **Command Blueprints Created**:
+
 - New testing framework: `.workspace/COMMAND_BLUEPRINTS.md`
 - Step-by-step execution traces with bash commands, expected output, success criteria
 - Completed blueprints: `/popkit-core:account status`, `/popkit-core:account usage`, `/popkit-core:account keys`
@@ -262,6 +335,7 @@ All test infrastructure and results documented:
 ### Repository Cleanup
 
 **Root Directory Cleanup**:
+
 - Deleted 7 old files (ESLint outputs, test files, phase summaries)
 - Moved `measure_plugin_tokens.py` to `packages/popkit-core/scripts/`
 - Updated README.md (fixed agent count: 19 → 22)
@@ -269,8 +343,8 @@ All test infrastructure and results documented:
 
 ### Issues Created
 
- UX improvement for API key naming flow
- Add soft limits to Pro tier "unlimited" rate limits
+UX improvement for API key naming flow
+Add soft limits to Pro tier "unlimited" rate limits
 
 ## [1.0.0-beta.2] - 2025-12-30
 
@@ -283,12 +357,14 @@ This release completes comprehensive validation, security hardening, and quality
 ### Security Improvements (Critical)
 
 **Command Injection Vulnerabilities Fixed**:
+
 - Eliminated 18+ `shell=True` usages across hooks and skills
 - Replaced with safe list-based subprocess calls
 - Added platform-specific path validation (Windows/macOS/Linux)
 - **Security Score**: 55/100 → 75/100 (target achieved)
 
 **Platform-Specific Security**:
+
 - Added Windows path validation (`C:\`, `%APPDATA%`)
 - Added macOS path validation (`/Users/`, `~/Library/`)
 - Enhanced security checks for cross-platform compatibility
@@ -296,12 +372,14 @@ This release completes comprehensive validation, security hardening, and quality
 ### Core Features
 
 **Unified Account Management**:
+
 - Consolidated 3 fragmented commands → single `/popkit-core:account` command
 - 6 subcommands: status, signup, login, keys, usage, logout
 - 672 lines of comprehensive account management
 - Deprecated `/popkit:upgrade` and `/popkit:cloud` (removal in v1.2.0)
 
 **Power Mode Simplification**:
+
 - Archived 6 test/benchmark files (2,514 LOC) to `packages/benchmarks/`
 - Deleted experimental consensus protocol (8 files, 5,055 LOC)
 - Extracted generic Redis interfaces to `popkit-shared` (400 LOC)
@@ -311,18 +389,21 @@ This release completes comprehensive validation, security hardening, and quality
 ### Comprehensive v1.0.0 Validation
 
 **Epic Validation Plan Created**:
+
 - 6-category validation strategy (functional, security, performance, docs, integration, UAT)
-- 10 sub-issues created  for systematic testing
+- 10 sub-issues created for systematic testing
 - 5-phase execution plan (Dec 31 - Jan 14)
 - Quality gates defined (P0/P1/P2/P3)
 
 **Tech Stack Alignment Assessment** (Epic):
+
 - Comprehensive dependency audit across 12 packages
-- 5 sub-issues created  for version alignment
+- 5 sub-issues created for version alignment
 - Identified TypeScript 5.3.0-5.6.0 → 5.9.3 upgrade path
 - No critical conflicts found
 
 **Quality Audits Completed**:
+
 - ✅ TODO/FIXME Audit: 7 TODOs found, all tracked or intentional (
 - ✅ Plugin Metadata Consistency: Fixed 8 files (plugin.json, marketplace.json)
 - ✅ Command Documentation: 93.5/100 quality score (Grade A)
@@ -333,6 +414,7 @@ This release completes comprehensive validation, security hardening, and quality
 ### Documentation & Reports
 
 **Assessment Reports Created**:
+
 - `2025-12-30-popkit-tech-stack-alignment.md` - Dependency audit
 - `2025-12-30-deprecated-code-cleanup-report.md` - Code quality verification
 - `2025-12-30-test-coverage-report.md` - Test validation
@@ -341,6 +423,7 @@ This release completes comprehensive validation, security hardening, and quality
 - `2025-12-30-issue-471-resolution.md` - Gap analysis
 
 **Validation Plans Created**:
+
 - `2025-12-30-v1-0-0-validation-comprehensive-plan.md` - Complete validation strategy
 - `2025-12-30-phase6-final-completion-checklist.md` - Epic completion
 - `command-documentation-quality-report.md` - Command quality analysis
@@ -373,6 +456,7 @@ This release completes comprehensive validation, security hardening, and quality
 **Status**: ✅ **MARKETPLACE READY**
 
 All P0-critical issues resolved:
+
 - ✅ Security vulnerabilities eliminated
 - ✅ Plugin metadata consistent
 - ✅ Documentation accurate
@@ -386,7 +470,7 @@ All P0-critical issues resolved:
 
 ## [1.0.0-beta.1] - 2025-12-28
 
-### Epic  Plugin Modularization Complete ✅
+### Epic Plugin Modularization Complete ✅
 
 **Status**: Phase 6 of 6 (Documentation & Release) - Ready for Marketplace Publication
 
@@ -395,6 +479,7 @@ This release completes the transformation from a monolithic plugin to a focused,
 ### Final Architecture
 
 **5 Modular Plugins**:
+
 - **popkit-core** (v1.0.0-beta.1) - Foundation: plugin management, project analysis, Power Mode, stats, privacy
 - **popkit-dev** (v1.0.0-beta.1) - Development: feature workflows, git operations, GitHub integration, routines
 - **popkit-ops** (v1.0.0-beta.1) - Operations: quality assessment, deployment, debugging, security
@@ -402,16 +487,19 @@ This release completes the transformation from a monolithic plugin to a focused,
 - **popkit-suite** (v1.0.0-beta.1) - Meta-plugin: installation guide for complete PopKit
 
 **Shared Foundation**:
+
 - **popkit-shared** (v1.0.0) - 70 utility modules shared by all plugins
 
 ### Package Cleanup
 
 **Removed**:
+
 - `packages/semantic-search/` - Moved to ElShaddai monorepo (belongs there)
 - `packages/ui/` - Moved to ElShaddai monorepo (shared component library)
 - `packages/cloud-docs/` - Merged into main `packages/docs/`
 
 **Consolidated**:
+
 - popkit-github → Merged into popkit-dev (unified development workflow)
 - popkit-quality + popkit-deploy → Consolidated into popkit-ops (operations)
 
@@ -420,6 +508,7 @@ This release completes the transformation from a monolithic plugin to a focused,
 ### Version Alignment
 
 All plugins standardized to v1.0.0-beta.1:
+
 - popkit-core: 0.1.0 → 1.0.0-beta.1
 - popkit-dev: 0.2.0 → 1.0.0-beta.1
 - shared-py: 0.1.0 → 1.0.0
@@ -444,7 +533,7 @@ All plugins standardized to v1.0.0-beta.1:
 
 ## [Unreleased] - Plugin Modularization (Historical Record)
 
-### Epic  Transform Monolithic Plugin into 8 Focused Packages
+### Epic Transform Monolithic Plugin into 8 Focused Packages
 
 **Status**: Phase 5 of 6 (Testing & Validation) - 75% Complete
 
@@ -470,12 +559,14 @@ packages/
 ### Phase Completion Summary
 
 #### Phase 1: Shared Foundation ✅
+
 - Extracted 69 utility modules into `packages/popkit-shared/`
 - Created reusable foundation for all plugins
 - Zero dependencies, pure Python utilities
 - **Impact**: DRY principle - single source of truth for shared code
 
 #### Phase 2: Development Workflows ✅
+
 - **popkit-dev** plugin extracted
 - **Commands**: dev, git, worktree, routine, next
 - **Skills**: brainstorming, writing-plans, executing-plans, next-action, routine-optimized, routine-measure, session-capture, session-resume, context-restore
@@ -483,6 +574,7 @@ packages/
 - **Dependencies**: popkit-shared>=0.1.0, requests>=2.31.0
 
 #### Phase 3: GitHub Integration ✅
+
 - **popkit-github** plugin extracted
 - **Commands**: issue, milestone
 - **Skills**: None (uses gh CLI directly)
@@ -491,6 +583,7 @@ packages/
 - **Impact**: Minimal plugin demonstrating command-only architecture
 
 #### Phase 4: Quality Assurance ✅
+
 - **popkit-quality** plugin extracted
 - **Commands**: assess, audit, debug, security
 - **Skills**: 11 total (6 assessment + 5 quality-focused)
@@ -499,6 +592,7 @@ packages/
 - **Impact**: Largest skill/agent extraction validating modular architecture
 
 #### Phase 5: Deployment Automation ✅
+
 - **popkit-deploy** plugin extracted
 - **Commands**: deploy (with 5 subcommands)
 - **Skills**: 13 platform-specific skills
@@ -510,6 +604,7 @@ packages/
 - **Impact**: Most complex skill set demonstrating platform extensibility
 
 #### Phase 6: Research & Knowledge ✅
+
 - **popkit-research** plugin extracted
 - **Commands**: research, knowledge
 - **Skills**: research-local, research-cloud, knowledge-local
@@ -519,6 +614,7 @@ packages/
 - **Impact**: Demonstrates freemium model architecture
 
 #### Phase 7: Core Utilities ✅
+
 - **popkit-core** plugin extracted
 - **Commands**: 10 total (plugin, stats, privacy, account, upgrade, dashboard, workflow-viz, bug, power, project)
 - **Skills**: 10 meta-feature skills
@@ -528,6 +624,7 @@ packages/
 - **Impact**: Largest plugin with advanced orchestration features
 
 #### Phase 8: Backwards Compatibility ✅
+
 - **popkit-meta** plugin created
 - **Architecture**: Pure dependency aggregator (zero implementation code)
 - **Dependencies**: All 6 plugins + shared foundation
@@ -536,41 +633,49 @@ packages/
 
 ### Component Distribution
 
-| Plugin | Commands | Skills | Agents | Size | Install Size |
-|--------|----------|--------|--------|------|--------------|
-| popkit-shared | 0 | 0 | 0 | 69 utils | ~8 MB |
-| popkit-dev | 5 | 9 | 5 | Medium | ~15 MB |
-| popkit-github | 2 | 0 | 0 | Small | ~2 MB |
-| popkit-quality | 4 | 11 | 11 | Large | ~20 MB |
-| popkit-deploy | 1 | 13 | 3 | Large | ~12 MB |
-| popkit-research | 2 | 3 | 1 | Small | ~4 MB |
-| popkit-core | 10 | 10 | 9 | Largest | ~35 MB |
-| popkit-meta | 0 | 0 | 0 | Tiny | ~1 KB |
-| **Total** | **24** | **46** | **29** | **~96 MB** | **~96 MB** |
+| Plugin          | Commands | Skills | Agents | Size       | Install Size |
+| --------------- | -------- | ------ | ------ | ---------- | ------------ |
+| popkit-shared   | 0        | 0      | 0      | 69 utils   | ~8 MB        |
+| popkit-dev      | 5        | 9      | 5      | Medium     | ~15 MB       |
+| popkit-github   | 2        | 0      | 0      | Small      | ~2 MB        |
+| popkit-quality  | 4        | 11     | 11     | Large      | ~20 MB       |
+| popkit-deploy   | 1        | 13     | 3      | Large      | ~12 MB       |
+| popkit-research | 2        | 3      | 1      | Small      | ~4 MB        |
+| popkit-core     | 10       | 10     | 9      | Largest    | ~35 MB       |
+| popkit-meta     | 0        | 0      | 0      | Tiny       | ~1 KB        |
+| **Total**       | **24**   | **46** | **29** | **~96 MB** | **~96 MB**   |
 
 ### Key Features
 
 #### Modular Installation
+
 Users can now install:
+
 - **Complete suite**: `/plugin install popkit@popkit-claude`
 - **Selective plugins**: `/plugin install popkit-dev@popkit-claude`
 - **Custom combinations**: Mix and match based on needs
 
 #### Backwards Compatibility
+
 The `popkit` meta-plugin ensures existing users experience zero breaking changes:
+
 - All commands work identically under `/popkit:` namespace
 - No configuration changes required
 - Seamless upgrade path via `MIGRATION.md`
 
 #### API Key Enhancement Model
+
 All features work FREE locally. API key adds:
+
 - **Semantic Search**: Natural language tool discovery
 - **Cloud Knowledge**: Cross-project learning
 - **Community Intelligence**: Shared patterns
 - **Enhanced Routing**: Better agent selection
 
 #### Plugin Structure Consistency
+
 Every plugin follows the same architecture:
+
 ```
 packages/popkit-*/
 ├── .claude-plugin/
@@ -591,11 +696,13 @@ packages/popkit-*/
 ### Documentation
 
 Each plugin includes comprehensive documentation:
+
 - **README.md**: Installation, quick start, features, troubleshooting
 - **CHANGELOG.md**: Version history and release notes
 - **MIGRATION.md** (meta-plugin): Step-by-step migration guide
 
 Root documentation organized:
+
 ```
 docs/
 ├── research/    # Research documents (INTERACTIVE_MENU, PARALLEL_WORK, etc.)
@@ -611,6 +718,7 @@ docs/
 ### Migration Paths
 
 See `packages/popkit-meta/MIGRATION.md` for three migration options:
+
 1. **Meta-Plugin** (recommended): Install complete suite with one command
 2. **Selective Installation**: Install only needed plugins
 3. **Hybrid Approach**: Install all, then remove unused plugins
@@ -632,6 +740,7 @@ See `packages/popkit-meta/MIGRATION.md` for three migration options:
 ### Related Issues
 
 Completed Issues:
+
 - - Phase 1: Extract shared Python package
 - - Phase 2: Extract popkit-dev plugin
 - - Phase 3: Extract popkit-github plugin
@@ -644,11 +753,13 @@ Completed Issues:
 - - Superseded by modularization
 
 Active Issues:
+
 - - Epic: Plugin Modularization (tracking issue)
 
 ### Version Notes
 
 All modular plugins start at **v0.1.0 (Beta)** to signal:
+
 - New architecture under active development
 - Testing and validation in progress
 - API may evolve based on feedback
@@ -886,12 +997,14 @@ All modular plugins start at **v0.1.0 (Beta)** to signal:
 **Breaking Change:** Version rolled back from 1.2.0 to 0.1.0 to correctly signal preview status.
 
 **Rationale:**
+
 - PopKit is not yet stable for production use
 - 1.x signals "public API stable" which isn't accurate
 - 0.x better communicates "preview" status
 - Many features still being refined before stable release
 
 **Version Scheme Going Forward:**
+
 ```
 0.1.0 - Initial public preview (current)
 0.2.0 - Major feature additions (GitHub polish)
@@ -909,21 +1022,25 @@ All features from previous 1.x releases are included in this version.
 ### Feature: AskUserQuestion Enforcement (Issue)
 
 Following Anthropic's recommendation from the Hooks Guide:
+
 > "By encoding these rules as hooks rather than prompting instructions, you turn suggestions into app-level code that executes every time."
 
 **New skill decision enforcement mechanism:**
+
 - Skills can now define required decision points in `agents/config.json` under `skill_decisions`
 - Pre-tool-use hook tracks when skills are invoked
 - Post-tool-use hook outputs reminders for pending completion decisions
 - Ensures consistent UX across all PopKit skills
 
 **Implementation:**
+
 - New `skill_decisions` section in `agents/config.json`
 - New `hooks/utils/skill_state.py` for state tracking
 - Updated `pre-tool-use.py` with skill invocation tracking
 - Updated `post-tool-use.py` with pending decision reminders
 
 **Skills with enforced decisions:**
+
 - `pop-project-init`: "What would you like to do next?"
 - `pop-brainstorming`: "Continue to implementation?"
 - `pop-writing-plans`: "Ready to execute?"
@@ -976,6 +1093,7 @@ This release marks the completion of all planned features for PopKit's initial s
 #### Major Features
 
 **Benchmarking Framework (Epic)**
+
 - Complete benchmark task schema with Zod validation
 - 5 standard benchmarks: bouncing-balls, todo-app, api-client, binary-search-tree, bug-fix
 - Metrics collection system with SQLite storage adapter
@@ -984,6 +1102,7 @@ This release marks the completion of all planned features for PopKit's initial s
 - Dashboard with Markdown and HTML report generators
 
 **Multi-Project Dashboard**
+
 - Global project registry with CRUD operations
 - Health score calculation (git, build, tests, issues, activity)
 - Auto-discovery of projects in common locations
@@ -991,6 +1110,7 @@ This release marks the completion of all planned features for PopKit's initial s
 - `/popkit-core:dashboard` command with switch, refresh, discover subcommands
 
 **Cross-Project Pattern Sharing**
+
 - Privacy-first pattern anonymization
 - Cloud API client for community pattern sharing
 - Three sharing levels: private, team, community
@@ -998,6 +1118,7 @@ This release marks the completion of all planned features for PopKit's initial s
 - `pop-pattern-share` skill for interactive sharing
 
 **Quality Assurance (Epic)**
+
 - TypeScript migration for cloud packages
 - Pytest test suite for hooks
 - Linting and code quality tooling
@@ -1006,15 +1127,15 @@ This release marks the completion of all planned features for PopKit's initial s
 
 #### Component Summary
 
-| Component | Count |
-|-----------|-------|
-| Tier 1 Agents | 11 |
-| Tier 2 Agents | 17 |
-| Feature Workflow Agents | 2 |
-| Skills | 43 |
-| Commands | 18 |
-| Hooks | 18 |
-| Output Styles | 15+ |
+| Component               | Count |
+| ----------------------- | ----- |
+| Tier 1 Agents           | 11    |
+| Tier 2 Agents           | 17    |
+| Feature Workflow Agents | 2     |
+| Skills                  | 43    |
+| Commands                | 18    |
+| Hooks                   | 18    |
+| Output Styles           | 15+   |
 
 #### Cloud Integration
 
@@ -1169,7 +1290,7 @@ This release marks the completion of all planned features for PopKit's initial s
 - **Unified Routine Management** - Single command interface for morning/nightly routines
 - **Routine Storage Utility** - `hooks/utils/routine_storage.py`
 - **Plugin Conflict Detection** - `hooks/utils/plugin_detector.py`
-- **GitHub Issues Created** - 
+- **GitHub Issues Created** -
 
 ## [0.9.4] - Platform Integration Completion
 
@@ -1180,7 +1301,7 @@ This release marks the completion of all planned features for PopKit's initial s
 
 - **Effort Parameter Configuration** - Per-agent effort levels in `agents/config.json`
 - **Extended Thinking Configuration** - Model-specific defaults with flag overrides
-- **Platform Integration Issues** - Created 14 GitHub issues 
+- **Platform Integration Issues** - Created 14 GitHub issues
 
 ## [0.9.2] - Deep Command Consolidation
 

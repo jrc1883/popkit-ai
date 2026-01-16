@@ -9,13 +9,13 @@ Manage the popkit plugin itself - tests, docs, validation, conflicts, and versio
 
 ## Subcommands
 
-| Subcommand | Description |
-|------------|-------------|
-| test (default) | Run plugin self-tests |
-| docs | Generate and update documentation |
-| sync | Validate plugin integrity |
-| detect | Detect conflicts with other plugins |
-| version | Bump version with full release workflow |
+| Subcommand     | Description                             |
+| -------------- | --------------------------------------- |
+| test (default) | Run plugin self-tests                   |
+| docs           | Generate and update documentation       |
+| sync           | Validate plugin integrity               |
+| detect         | Detect conflicts with other plugins     |
+| version        | Bump version with full release workflow |
 
 ---
 
@@ -85,15 +85,15 @@ Bump plugin version with full release workflow.
 
 ## Architecture
 
-| Component | Integration |
-|-----------|-------------|
-| Test Definitions | tests/ directory |
-| Test Skills | skills/pop-plugin-test/, pop-sandbox-test/ |
-| Doc Skills | skills/pop-auto-docs/, pop-doc-sync/ |
-| Doc-Sync Utility | hooks/utils/doc_sync.py |
-| Validation | skills/pop-validation-engine/ |
-| Conflict Detector | hooks/utils/plugin_detector.py |
-| Sandbox Analytics | tests/sandbox/analytics.py |
+| Component         | Integration                                |
+| ----------------- | ------------------------------------------ |
+| Test Definitions  | tests/ directory                           |
+| Test Skills       | skills/pop-plugin-test/, pop-sandbox-test/ |
+| Doc Skills        | skills/pop-auto-docs/, pop-doc-sync/       |
+| Doc-Sync Utility  | hooks/utils/doc_sync.py                    |
+| Validation        | skills/pop-validation-engine/              |
+| Conflict Detector | hooks/utils/plugin_detector.py             |
+| Sandbox Analytics | tests/sandbox/analytics.py                 |
 
 **Related:** /popkit-ops:debug routing, /popkit:morning, /popkit:nightly
 

@@ -213,6 +213,7 @@ If design document exists, **read it first** instead of asking questions already
 ## Bite-Sized Task Granularity
 
 **Each step is one action (2-5 minutes):**
+
 - "Write the failing test" - step
 - "Run it to make sure it fails" - step
 - "Implement the minimal code to make the test pass" - step
@@ -243,6 +244,7 @@ If design document exists, **read it first** instead of asking questions already
 ### Task N: [Component Name]
 
 **Files:**
+
 - Create: `exact/path/to/file.py`
 - Modify: `exact/path/to/existing.py:123-145`
 - Test: `tests/exact/path/to/test.py`
@@ -251,8 +253,8 @@ If design document exists, **read it first** instead of asking questions already
 
 \`\`\`python
 def test_specific_behavior():
-    result = function(input)
-    assert result == expected
+result = function(input)
+assert result == expected
 \`\`\`
 
 **Step 2: Run test to verify it fails**
@@ -264,7 +266,7 @@ Expected: FAIL with "function not defined"
 
 \`\`\`python
 def function(input):
-    return expected
+return expected
 \`\`\`
 
 **Step 4: Run test to verify it passes**
@@ -281,6 +283,7 @@ git commit -m "feat: add specific feature"
 ```
 
 ## Remember
+
 - Exact file paths always
 - Complete code in plan (not "add validation")
 - Exact commands with expected output
@@ -378,12 +381,14 @@ Use AskUserQuestion tool with:
 **NEVER present as plain text** like "1. Subagent, 2. Parallel... type 1 or 2".
 
 **If Subagent-Driven chosen:**
+
 - Use subagent-driven-development skill
 - Stay in this session
 - Fresh subagent per task + code review
 - Context automatically passed via skill_context
 
 **If Parallel Session chosen:**
+
 - Guide them to open new session in worktree
 - New session uses executing-plans skill
 - Context available via `.popkit/context/current-workflow.json`

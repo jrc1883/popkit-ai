@@ -16,6 +16,7 @@ Provides a unified view across all PopKit-enabled projects, showing health score
 ## When to Use
 
 Invoke this skill when:
+
 - Managing multiple projects
 - Need quick overview of all project statuses
 - Switching context between projects
@@ -79,13 +80,47 @@ print(f"Quick Health: {quick_score}/100")
 
 ### Health Score Breakdown
 
-| Component | Points | Criteria |
-|-----------|--------|----------|
-| **Git Status** | 20 | Clean working tree (+20), uncommitted (-5/10 files), unpushed (-5/commit) |
-| **Build Status** | 20 | Passed (+20), warnings (-2 each), failed (0) |
-| **Test Coverage** | 20 | >80% (+20), 60-80% (+15), <60% (+10), none (+5) |
-| **Issue Health** | 20 | No stale (+20), -2 per stale issue (>30 days) |
-| **Activity** | 20 | Today (+20), week (+15), month (+10), older (+5) |
+| Component         | Points | Criteria                                                                  |
+| ----------------- | ------ | ------------------------------------------------------------------------- |
+| **Git Status**    | 20     | Clean working tree (+20), uncommitted (-5/10 files), unpushed (-5/commit) |
+| **Build Status**  | 20     | Passed (+20), warnings (-2 each), failed (0)                              |
+| **Test Coverage** | 20     | >80% (+20), 60-80% (+15), <60% (+10), none (+5)                           |
+| **Issue Health**  | 20     | No stale (+20), -2 per stale issue (>30 days)                             |
+| **Activity**      | 20     | Today (+20), week (+15), month (+10), older (+5)                          |
+
+### Step 4: Refresh Issue Counts
+
+Fetch fresh GitHub issue counts for all projects:
+
+```python
+from project_registry import load_registry, refresh_project_issue_counts, save_registry
+
+# Load registry
+registry = load_registry()
+
+# Fetch fresh issue counts for all projects
+updated_count = refresh_project_issue_counts(registry)
+
+# Save updated registry
+save_registry(registry)
+
+print(f"Updated issue counts for {updated_count} projects")
+```
+
+**Cache Behavior:**
+
+- Issue counts are cached for 15 minutes (TTL)
+- Dashboard displays cached counts when fresh (`< 15 min`)
+- Stale cache displays `'--'` until refreshed
+- Non-GitHub projects always show `'--'`
+
+**Performance Considerations:**
+
+- Dashboard loads instantly (uses cache, no network calls)
+- Refresh fetches issue counts sequentially (~0.5s per project)
+- 10 projects refresh in ~5-10 seconds
+- Manual refresh gives user control over when to pay fetch cost
+- Falls back gracefully if `gh` CLI is unavailable
 
 ## Subcommand Operations
 
@@ -105,6 +140,7 @@ Display the full dashboard with all projects, health scores, and quick actions.
 ```
 
 Register a project in the global registry. Auto-detects:
+
 - Project name from package.json/pyproject.toml
 - GitHub repo from git remote
 - Initial health score
@@ -266,12 +302,12 @@ Configure dashboard behavior in registry:
 
 ## Error Handling
 
-| Situation | Response |
-|-----------|----------|
+| Situation              | Response                          |
+| ---------------------- | --------------------------------- |
 | No projects registered | Suggest `/popkit:dashboard add .` |
 | Project path not found | Remove from registry with warning |
-| Health check fails | Show "--" for health, log error |
-| gh CLI unavailable | Skip issue counts |
+| Health check fails     | Show "--" for health, log error   |
+| gh CLI unavailable     | Skip issue counts                 |
 
 ## Related
 

@@ -8,22 +8,17 @@ Handles registration, discovery, health tracking, and project switching.
 Part of the popkit plugin system.
 """
 
-import os
 import json
+import os
 import re
-from typing import Dict, List, Any, Optional, Tuple
-from pathlib import Path
-from datetime import datetime, timezone
-
+import subprocess
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict, List, Optional, Tuple
 
 # Constants
 GLOBAL_POPKIT_DIR = os.path.join(os.path.expanduser("~"), ".claude", "popkit")
 PROJECTS_FILE = "projects.json"
-DEFAULT_SETTINGS = {
-    "autoDiscover": True,
-    "healthCheckInterval": "daily",
-    "maxInactiveProjects": 20
-}
+DEFAULT_SETTINGS = {"autoDiscover": True, "healthCheckInterval": "daily", "maxInactiveProjects": 20}
 
 
 def get_global_dir() -> str:
@@ -57,6 +52,7 @@ def get_projects_path() -> str:
 # =============================================================================
 # Registry Loading/Saving
 # =============================================================================
+
 
 def load_registry() -> Dict[str, Any]:
     """Load the project registry.
@@ -104,6 +100,7 @@ def save_registry(registry: Dict[str, Any]) -> str:
 # Project Detection
 # =============================================================================
 
+
 def detect_project_info(path: str) -> Optional[Dict[str, Any]]:
     """Detect project information from a directory.
 
@@ -145,14 +142,17 @@ def detect_project_info(path: str) -> Optional[Dict[str, Any]]:
     if has_git:
         try:
             import subprocess
+
             result = subprocess.run(
                 ["git", "-C", path, "config", "--get", "remote.origin.url"],
-                capture_output=True, text=True, timeout=5
+                capture_output=True,
+                text=True,
+                timeout=5,
             )
             if result.returncode == 0:
                 remote = result.stdout.strip()
                 # Parse GitHub URL
-                match = re.search(r'github\.com[:/]([^/]+/[^/\.]+)', remote)
+                match = re.search(r"github\.com[:/]([^/]+/[^/\.]+)", remote)
                 if match:
                     repo = match.group(1)
         except Exception:
@@ -169,11 +169,13 @@ def detect_project_info(path: str) -> Optional[Dict[str, Any]]:
         "hasClaude": has_claude,
         "lastActive": now,
         "healthScore": None,
-        "tags": []
+        "tags": [],
     }
 
 
-def discover_projects(search_dirs: Optional[List[str]] = None, max_depth: int = 2) -> List[Dict[str, Any]]:
+def discover_projects(
+    search_dirs: Optional[List[str]] = None, max_depth: int = 2
+) -> List[Dict[str, Any]]:
     """Auto-discover projects in common locations.
 
     Args:
@@ -225,6 +227,7 @@ def discover_projects(search_dirs: Optional[List[str]] = None, max_depth: int = 
 # Project CRUD Operations
 # =============================================================================
 
+
 def list_projects() -> List[Dict[str, Any]]:
     """List all registered projects.
 
@@ -257,7 +260,9 @@ def get_project(identifier: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-def add_project(path: str, tags: Optional[List[str]] = None, update_if_exists: bool = True) -> Tuple[bool, str]:
+def add_project(
+    path: str, tags: Optional[List[str]] = None, update_if_exists: bool = True
+) -> Tuple[bool, str]:
     """Add a project to the registry.
 
     Args:
@@ -317,7 +322,9 @@ def remove_project(identifier: str) -> Tuple[bool, str]:
         name = project.get("name", "")
         path = project.get("path", "")
 
-        if name.lower() == identifier_lower or (identifier_abs and os.path.abspath(path) == identifier_abs):
+        if name.lower() == identifier_lower or (
+            identifier_abs and os.path.abspath(path) == identifier_abs
+        ):
             removed = registry["projects"].pop(i)
             save_registry(registry)
             return True, f"Removed project: {removed['name']}"
@@ -343,7 +350,9 @@ def update_project(identifier: str, updates: Dict[str, Any]) -> Tuple[bool, str]
         name = project.get("name", "")
         path = project.get("path", "")
 
-        if name.lower() == identifier_lower or (identifier_abs and os.path.abspath(path) == identifier_abs):
+        if name.lower() == identifier_lower or (
+            identifier_abs and os.path.abspath(path) == identifier_abs
+        ):
             # Apply updates
             for key, value in updates.items():
                 if key == "tags" and isinstance(value, list):
@@ -385,6 +394,7 @@ def touch_project(path: str) -> None:
 # Health Score Operations
 # =============================================================================
 
+
 def update_health_score(identifier: str, score: int) -> bool:
     """Update a project's health score.
 
@@ -414,7 +424,7 @@ def get_projects_by_health(ascending: bool = False) -> List[Dict[str, Any]]:
     return sorted(
         projects,
         key=lambda p: (p.get("healthScore") is None, p.get("healthScore", 0)),
-        reverse=not ascending
+        reverse=not ascending,
     )
 
 
@@ -428,7 +438,8 @@ def get_unhealthy_projects(threshold: int = 70) -> List[Dict[str, Any]]:
         List of unhealthy projects
     """
     return [
-        p for p in list_projects()
+        p
+        for p in list_projects()
         if p.get("healthScore") is not None and p["healthScore"] < threshold
     ]
 
@@ -436,6 +447,7 @@ def get_unhealthy_projects(threshold: int = 70) -> List[Dict[str, Any]]:
 # =============================================================================
 # Tag Operations
 # =============================================================================
+
 
 def add_tag(identifier: str, tag: str) -> bool:
     """Add a tag to a project.
@@ -495,10 +507,7 @@ def get_projects_by_tag(tag: str) -> List[Dict[str, Any]]:
         List of matching projects
     """
     tag_lower = tag.lower()
-    return [
-        p for p in list_projects()
-        if tag_lower in [t.lower() for t in p.get("tags", [])]
-    ]
+    return [p for p in list_projects() if tag_lower in [t.lower() for t in p.get("tags", [])]]
 
 
 def get_all_tags() -> List[str]:
@@ -517,6 +526,7 @@ def get_all_tags() -> List[str]:
 # Activity Tracking
 # =============================================================================
 
+
 def get_recent_projects(limit: int = 5) -> List[Dict[str, Any]]:
     """Get most recently active projects.
 
@@ -529,11 +539,7 @@ def get_recent_projects(limit: int = 5) -> List[Dict[str, Any]]:
     projects = list_projects()
 
     # Sort by lastActive descending
-    sorted_projects = sorted(
-        projects,
-        key=lambda p: p.get("lastActive", ""),
-        reverse=True
-    )
+    sorted_projects = sorted(projects, key=lambda p: p.get("lastActive", ""), reverse=True)
 
     return sorted_projects[:limit]
 
@@ -552,15 +558,13 @@ def get_inactive_projects(days: int = 30) -> List[Dict[str, Any]]:
     cutoff = datetime.now(timezone.utc) - timedelta(days=days)
     cutoff_str = cutoff.isoformat().replace("+00:00", "Z")
 
-    return [
-        p for p in list_projects()
-        if p.get("lastActive", "") < cutoff_str
-    ]
+    return [p for p in list_projects() if p.get("lastActive", "") < cutoff_str]
 
 
 # =============================================================================
 # Formatting Utilities
 # =============================================================================
+
 
 def format_health_indicator(score: Optional[int]) -> str:
     """Format health score as colored indicator.
@@ -653,6 +657,99 @@ def format_project_table(projects: List[Dict[str, Any]], show_path: bool = False
     return "\n".join(lines)
 
 
+def get_cached_issue_count(project: Dict[str, Any]) -> str:
+    """Get cached GitHub issue count for project.
+
+    Args:
+        project: Project dict from registry
+
+    Returns:
+        String representation of issue count or '--'
+    """
+    # Check if project has GitHub issues data
+    issue_data = project.get("github_issues", {})
+    if not issue_data:
+        return "--"
+
+    # Check cache freshness (15 minute TTL)
+    cached_at_str = issue_data.get("cached_at")
+    if not cached_at_str:
+        return "--"
+
+    try:
+        cached_at = datetime.fromisoformat(cached_at_str)
+        ttl = timedelta(minutes=15)
+
+        if datetime.now() - cached_at < ttl:
+            # Cache is fresh
+            open_count = issue_data.get("open_count")
+            if open_count is not None:
+                return str(open_count)
+    except (ValueError, TypeError):
+        pass
+
+    return "--"
+
+
+def fetch_project_issues(path: str, timeout: int = 5) -> Optional[int]:
+    """Fetch open issue count from GitHub via gh CLI.
+
+    Args:
+        path: Path to the project directory
+        timeout: Timeout in seconds (default: 5)
+
+    Returns:
+        Number of open issues, or None on error
+    """
+    try:
+        result = subprocess.run(
+            ["gh", "issue", "list", "--state", "open", "--json", "number"],
+            cwd=path,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+
+        if result.returncode == 0:
+            issues = json.loads(result.stdout)
+            return len(issues)
+        else:
+            return None
+    except Exception:
+        return None
+
+
+def refresh_project_issue_counts(registry: Dict[str, Any]) -> int:
+    """Refresh GitHub issue counts for all projects in registry.
+
+    Args:
+        registry: Project registry dict with 'projects' list
+
+    Returns:
+        Number of projects successfully updated
+    """
+    updated = 0
+    projects = registry.get("projects", [])
+
+    for project in projects:
+        path = project.get("path")
+        if not path:
+            continue
+
+        # Fetch issue count
+        count = fetch_project_issues(path, timeout=5)
+
+        if count is not None:
+            # Update project with fresh data
+            project["github_issues"] = {
+                "open_count": count,
+                "cached_at": datetime.now().isoformat(),
+            }
+            updated += 1
+
+    return updated
+
+
 def format_dashboard(projects: List[Dict[str, Any]]) -> str:
     """Format full dashboard display.
 
@@ -677,7 +774,9 @@ def format_dashboard(projects: List[Dict[str, Any]]) -> str:
     critical = len([p for p in projects if 0 < (p.get("healthScore") or 0) < 60])
     unknown = len([p for p in projects if p.get("healthScore") is None])
 
-    lines.append(f"  Total: {total}  |  Healthy: {healthy}  |  Warning: {warning}  |  Critical: {critical}  |  Unknown: {unknown}")
+    lines.append(
+        f"  Total: {total}  |  Healthy: {healthy}  |  Warning: {warning}  |  Critical: {critical}  |  Unknown: {unknown}"
+    )
     lines.append("")
 
     # Projects table
@@ -699,7 +798,7 @@ def format_dashboard(projects: List[Dict[str, Any]]) -> str:
             health_icon = "!"
 
         health_str = f"{health:>2}" if health is not None else "--"
-        issues = "--"  # TODO(#692): Integrate with GitHub issues
+        issues = get_cached_issue_count(p)
         activity = format_activity(p.get("lastActive", ""))[:13].ljust(13)
 
         lines.append(f"  | {name} | {health_icon} {health_str}  | {issues:>6} | {activity} |")
