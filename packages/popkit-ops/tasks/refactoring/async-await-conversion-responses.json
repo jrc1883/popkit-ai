@@ -1,0 +1,21 @@
+{
+  "responses": {
+    "Backwards compatibility": "Add async versions alongside callback versions with deprecation warnings",
+    "Promisification approach": "Use util.promisify for Node.js built-ins, wrap third-party manually",
+    "Conversion strategy": "Convert module by module (UserService first, then dependencies)",
+    "Error handling pattern": "Try/catch in async functions, throw Error objects with context",
+    "Parallel operations": "Use Promise.all() for critical ops, Promise.allSettled() for non-critical",
+    "Testing approach": "Update tests incrementally with each module conversion",
+    "JSDoc format": "@async tag + @returns {Promise<Type>} description",
+    "Migration order": "UserService → AuthController → EmailService → FileUploadHandler → Scripts"
+  },
+  "standardAutoApprove": [
+    "run.*tests",
+    "run.*test:integration",
+    "commit.*changes",
+    "format.*code",
+    "lint.*fix",
+    "npm.*audit.*fix"
+  ],
+  "explicitDeclines": []
+}

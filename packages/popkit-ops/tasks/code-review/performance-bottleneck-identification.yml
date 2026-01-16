@@ -1,0 +1,223 @@
+id: performance-bottleneck-identification
+category: code-review
+description: Profile application and identify performance bottlenecks with optimization recommendations
+codebase: demo-app-fullstack
+initial_state: main
+difficulty: hard
+
+user_prompt: |
+  Conduct a comprehensive performance audit of the application to identify bottlenecks,
+  inefficiencies, and optimization opportunities. Create detailed report with measurements,
+  analysis, and actionable recommendations.
+
+  **Performance Audit Scope:**
+
+  1. **Frontend Performance**
+     - Initial load time and bundle size analysis
+     - Time to First Byte (TTFB)
+     - First Contentful Paint (FCP)
+     - Largest Contentful Paint (LCP)
+     - Cumulative Layout Shift (CLS)
+     - First Input Delay (FID)
+     - Total Blocking Time (TBT)
+
+  2. **React Component Performance**
+     - Identify unnecessary re-renders
+     - Check for missing React.memo/useMemo/useCallback
+     - Review component tree depth
+     - Check for prop drilling vs context usage
+     - Identify expensive render operations
+     - Check for proper key usage in lists
+
+  3. **API & Network Performance**
+     - API response times for all endpoints
+     - N+1 query problems
+     - Missing database indexes
+     - Unnecessary API calls (waterfall requests)
+     - Large payload sizes
+     - Missing caching strategies
+
+  4. **Database Performance**
+     - Slow queries (> 100ms)
+     - Missing indexes
+     - Inefficient joins
+     - Full table scans
+     - Connection pool configuration
+     - Query result set sizes
+
+  5. **Bundle & Asset Optimization**
+     - JavaScript bundle size breakdown
+     - Code splitting effectiveness
+     - Tree shaking opportunities
+     - Image optimization (format, size, lazy loading)
+     - Font loading strategy
+     - Third-party script impact
+
+  6. **Memory & Resource Usage**
+     - Memory leaks (heap snapshots)
+     - Event listener accumulation
+     - DOM node count
+     - JavaScript heap size
+     - Resource cleanup on unmount
+     - Cache size and eviction strategy
+
+  **Profiling Tools to Use:**
+
+  1. **Chrome DevTools**
+     - Lighthouse audit (Performance score)
+     - Performance tab (CPU profiling, flame charts)
+     - Memory tab (heap snapshots, allocation timeline)
+     - Network tab (waterfall analysis, payload sizes)
+     - Coverage tab (unused code)
+
+  2. **React DevTools**
+     - Profiler (component render times, flamegraph)
+     - Components tree (props, state inspection)
+     - Highlight updates (unnecessary re-renders)
+
+  3. **Webpack Bundle Analyzer** (or similar)
+     - Bundle composition
+     - Large dependencies
+     - Duplicate code
+
+  4. **Database Profiling**
+     - Query execution plans
+     - Slow query logs
+     - Index usage analysis
+
+  **Required Deliverables:**
+
+  1. **Performance Audit Report** (`docs/PERFORMANCE_AUDIT.md`)
+     - Executive summary with overall assessment
+     - Current performance metrics (baseline)
+     - Identified bottlenecks by category
+     - Each bottleneck should include:
+       - Issue title and location
+       - Impact (High/Medium/Low)
+       - Current measurements (time, size, count)
+       - Root cause analysis
+       - Recommended optimization
+       - Expected improvement estimate
+       - Implementation effort (hours)
+
+  2. **Profiling Data** (`docs/performance/`)
+     - Lighthouse reports (JSON + HTML)
+     - React Profiler flamegraphs (screenshots)
+     - Bundle analyzer report (HTML)
+     - Slow query logs
+     - Chrome DevTools Performance traces
+
+  3. **Optimization Roadmap** (`docs/PERFORMANCE_ROADMAP.md`)
+     - Prioritized list of optimizations
+     - Quick wins (< 2 hours, high impact)
+     - Short-term improvements (< 1 week)
+     - Long-term strategic changes (> 1 week)
+     - Performance budget recommendations
+
+  4. **Benchmark Results** (`docs/PERFORMANCE_BENCHMARKS.json`)
+     - Structured JSON with all measurements
+     - Before/after comparison format
+     - Target metrics for each category
+
+  **Analysis Requirements:**
+
+  - Run Lighthouse audit (3 times, take median)
+  - Profile 5+ critical user journeys
+  - Analyze bundle with webpack-bundle-analyzer
+  - Take heap snapshots before/after navigation
+  - Review top 20 slowest API endpoints
+  - Analyze top 10 slowest database queries
+  - Check Core Web Vitals compliance
+  - Compare against industry benchmarks
+
+  **Specific Areas to Check:**
+
+  Frontend:
+  - Unoptimized images (> 500KB)
+  - Render-blocking resources
+  - Large bundle chunks (> 1MB)
+  - Missing code splitting
+  - Unnecessary JavaScript execution
+
+  Backend:
+  - API endpoints > 500ms response time
+  - Database queries > 100ms
+  - Missing caching (Redis, CDN)
+  - Synchronous operations that should be async
+  - Unindexed database columns
+
+  **Expected Measurements:**
+
+  Capture baseline metrics:
+  - Lighthouse Performance Score: ___ / 100
+  - Bundle Size: ___ KB (gzipped)
+  - Initial Load Time: ___ ms
+  - LCP: ___ ms
+  - FID: ___ ms
+  - CLS: ___
+  - API Response Time (p95): ___ ms
+  - Database Query Time (p95): ___ ms
+
+expected_files:
+  - "docs/PERFORMANCE_AUDIT.md"
+  - "docs/PERFORMANCE_ROADMAP.md"
+  - "docs/PERFORMANCE_BENCHMARKS.json"
+  - "docs/performance/lighthouse-report.json"
+  - "docs/performance/lighthouse-report.html"
+  - "docs/performance/bundle-analysis.html"
+  - "docs/performance/react-profiler-screenshots/"
+  - "docs/performance/slow-queries.log"
+
+verification:
+  - npm run build
+  - npm run analyze:bundle
+  - npm run lighthouse
+  - test -f docs/PERFORMANCE_AUDIT.md
+  - test -f docs/PERFORMANCE_ROADMAP.md
+
+expected_outcomes:
+  - "Comprehensive performance audit report with baseline metrics"
+  - "All bottlenecks documented with impact and root cause"
+  - "Prioritized optimization roadmap created"
+  - "Profiling data collected and archived"
+  - "Quick wins identified (< 2 hours effort each)"
+  - "Performance budget recommendations provided"
+  - "Comparison against Core Web Vitals thresholds"
+
+estimated_duration_minutes: 30
+
+dependencies:
+  - "webpack-bundle-analyzer"
+  - "lighthouse"
+
+environment:
+  NODE_ENV: production
+  PROFILING_MODE: true
+
+codebase_constraints:
+  allowed_directories:
+    - src/
+    - docs/
+    - config/
+
+success_criteria:
+  coverage:
+    min_critical_paths_profiled: 5
+    min_api_endpoints_analyzed: 20
+  documentation:
+    includes_measurements: true
+    includes_recommendations: true
+    includes_effort_estimates: true
+  profiling_data:
+    lighthouse_runs: 3
+    heap_snapshots: 2
+
+tags:
+  - performance
+  - profiling
+  - optimization
+  - core-web-vitals
+  - code-review
+
+author: PopKit Team
+version: 1.0.0

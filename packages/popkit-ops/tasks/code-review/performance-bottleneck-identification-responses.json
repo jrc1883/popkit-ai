@@ -1,0 +1,23 @@
+{
+  "responses": {
+    "Profiling tool priority": "Chrome DevTools Lighthouse first, then React Profiler, then bundle analyzer",
+    "User journey selection": "Top 5 most frequent: login, dashboard load, data table scroll, form submission, search",
+    "Benchmark baseline": "Run Lighthouse 3 times in incognito, take median scores",
+    "Report format": "Executive summary + detailed findings + roadmap with effort estimates",
+    "Quick win threshold": "High impact (> 10% improvement) + Low effort (< 2 hours)",
+    "Performance budget": "Lighthouse score > 90, LCP < 2.5s, FID < 100ms, CLS < 0.1",
+    "Database profiling": "Enable slow query log, analyze with EXPLAIN, check index usage",
+    "Bundle analysis": "Use webpack-bundle-analyzer with stat size, identify large dependencies",
+    "Memory profiling": "Take heap snapshots before/after critical journeys, compare retained size"
+  },
+  "standardAutoApprove": [
+    "npm.*install.*webpack-bundle-analyzer",
+    "npm.*install.*lighthouse",
+    "run.*build",
+    "run.*analyze:bundle",
+    "run.*lighthouse",
+    "format.*code",
+    "commit.*changes"
+  ],
+  "explicitDeclines": []
+}

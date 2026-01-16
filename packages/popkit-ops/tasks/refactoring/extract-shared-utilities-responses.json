@@ -1,0 +1,23 @@
+{
+  "responses": {
+    "Extraction priority": "Start with most duplicated (API error handling, then date formatting, then validators)",
+    "Language choice": "Match existing codebase (JavaScript or TypeScript)",
+    "Export style": "Named exports (easier to tree-shake and more explicit)",
+    "Testing framework": "Jest with @testing-library/react for component-related utilities",
+    "Documentation format": "UTILITIES.md with JSDoc inline + separate usage guide",
+    "Search strategy": "Use grep/ripgrep to find all instances before refactoring",
+    "Migration approach": "Extract utility first, write tests, then replace all usages",
+    "Backwards compatibility": "Maintain exact behavior, don't change external APIs"
+  },
+  "standardAutoApprove": [
+    "install.*dependencies",
+    "npm.*install",
+    "run.*tests",
+    "run.*test:coverage",
+    "run.*test:integration",
+    "commit.*changes",
+    "format.*code",
+    "lint.*fix"
+  ],
+  "explicitDeclines": []
+}
