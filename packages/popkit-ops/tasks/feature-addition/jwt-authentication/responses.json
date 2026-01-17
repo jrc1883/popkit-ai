@@ -1,0 +1,38 @@
+{
+  "responses": {
+    "Auth method": "JWT",
+    "Token library": "jsonwebtoken",
+    "Token expiration": "24 hours",
+    "Algorithm": "HS256",
+    "Storage": "Environment variable",
+    "Protected routes": "/api/*",
+    "Login endpoint": "/auth/login",
+    "Add tests": true,
+    "Run tests": true,
+    "Install dependencies": true,
+    "Coverage target": "90%"
+  },
+  "standardAutoApprove": [
+    "run tests?",
+    "run.*test.*",
+    "test.*",
+    "build.*",
+    "lint.*",
+    "install.*dependencies",
+    "npm install.*",
+    "add.*package",
+    "create.*test.*file",
+    "update.*package\\.json",
+    "run.*coverage",
+    "format.*code"
+  ],
+  "explicitDeclines": [
+    "deploy.*production",
+    "publish.*npm",
+    "delete.*",
+    "drop.*database",
+    "force.*push",
+    "hardcode.*secret",
+    "commit.*secret"
+  ]
+}

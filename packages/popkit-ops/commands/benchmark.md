@@ -60,7 +60,7 @@ Generate comprehensive benchmark report with visualizations.
 
 ## Instructions
 
-This command invokes the `pop-benchmark-runner` skill to execute the benchmark workflow.
+This command invokes the `pop-benchmark-runner` skill to execute the benchmark workflow using the **orchestrator pattern** for side-by-side trial viewing.
 
 ### When user runs `/popkit-ops:benchmark run <task-id> --trials N`:
 
@@ -69,16 +69,27 @@ This command invokes the `pop-benchmark-runner` skill to execute the benchmark w
    Use Skill tool: skill="popkit-ops:pop-benchmark-runner", args="run <task-id> --trials N"
    ```
 
-2. **The skill will:**
+2. **The skill will orchestrate trials in separate windows:**
    - Load task definition from `packages/popkit-ops/tasks/<category>/<task-id>.yml`
-   - Create fresh git worktrees for isolated test environments
-   - Execute N trials with PopKit enabled (recording enabled)
-   - Execute N trials without PopKit (baseline, recording enabled)
-   - Collect all recordings from `.claude/popkit/recordings/`
+   - Load response file from `packages/popkit-ops/tasks/<category>/<task-id>/responses.json`
+   - For each trial (1 to N):
+     - Create fresh git worktrees for isolated test environments
+     - Spawn new Claude Code window for WITH PopKit trial
+     - Spawn new Claude Code window for BASELINE trial
+     - Monitor both trials via recording files
+     - Show progress in orchestrator window
+   - Collect all recordings when trials complete
    - Run statistical analysis (t-tests, Cohen's d effect size)
-   - Generate comparison report
+   - Generate HTML report and open in browser
 
-3. **Display summary:**
+3. **User Experience:**
+   - Run one command in current Claude session
+   - See separate terminal windows open automatically (2 per trial)
+   - Watch WITH PopKit and BASELINE trials work side-by-side
+   - Orchestrator window shows real-time progress
+   - HTML report opens automatically when complete
+
+4. **Display summary:**
    - Show metric improvements (context usage, tool calls, backtracking, errors, time, code quality)
    - Show statistical significance (p-values, effect sizes)
    - Link to full report in `docs/benchmark/results/`
@@ -175,10 +186,13 @@ Full report: docs/benchmark/results/jwt-authentication-2025-01-15.html
 ## Notes
 
 - Benchmark runs can take 30-60 minutes depending on task complexity
-- Recordings are automatically saved to `.claude/popkit/recordings/`
-- Git worktrees are created in `benchmark-worktrees/` and cleaned up after completion
+- **Orchestrator Pattern**: Current session becomes orchestrator, spawns trials in new windows
+- **User watches trials**: See WITH PopKit and BASELINE work side-by-side in separate terminal windows
+- **Automatic monitoring**: Orchestrator tracks progress by polling recording files every 3 seconds
+- **Recordings**: WITH PopKit trials → `.claude/popkit/recordings/` (JSON), BASELINE trials → `.claude/projects/` (JSONL)
+- **Git worktrees**: Created in `benchmark-worktrees/` and cleaned up after completion
 - Use `--no-cleanup` flag to keep worktrees for debugging
-- Requires two Claude Code instances (with/without PopKit plugins)
+- **Cross-platform**: Window spawning works on Windows (cmd), Mac (Terminal), Linux (gnome-terminal)
 
 ## Success Criteria
 
