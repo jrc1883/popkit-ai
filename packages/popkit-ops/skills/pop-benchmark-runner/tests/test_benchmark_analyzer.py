@@ -35,7 +35,6 @@ class TestBenchmarkAnalyzer(unittest.TestCase):
         self.analyzer = BenchmarkAnalyzer(
             with_popkit_recordings=self.with_popkit_recordings,
             baseline_recordings=self.baseline_recordings,
-            task_id="test-task",
         )
 
     def tearDown(self):
@@ -69,7 +68,6 @@ class TestBenchmarkAnalyzer(unittest.TestCase):
 
     def test_init(self):
         """Test analyzer initialization"""
-        self.assertEqual(self.analyzer.task_id, "test-task")
         self.assertEqual(len(self.analyzer.with_popkit_recordings), 3)
         self.assertEqual(len(self.analyzer.baseline_recordings), 3)
 
@@ -113,9 +111,8 @@ class TestBenchmarkAnalyzer(unittest.TestCase):
         results = self.analyzer.analyze()
 
         # Verify structure
-        self.assertIn("task_id", results)
         self.assertIn("metrics", results)
-        self.assertIn("timestamp", results)
+        self.assertIn("summary", results)
 
         # Verify both extractions called
         self.assertEqual(mock_extract.call_count, 2)
@@ -442,8 +439,6 @@ class TestBenchmarkAnalyzer(unittest.TestCase):
     def test_generate_summary_report(self):
         """Test summary report generation"""
         results = {
-            "task_id": "test-task",
-            "timestamp": "2026-01-16T12:00:00",
             "metrics": {
                 "context_usage": {
                     "with_popkit": {
@@ -485,8 +480,6 @@ class TestBenchmarkAnalyzer(unittest.TestCase):
     def test_generate_summary_report_empty_results(self):
         """Test summary report with minimal results"""
         results = {
-            "task_id": "test-task",
-            "timestamp": "2026-01-16T12:00:00",
             "metrics": {},
             "summary": {
                 "total_metrics": 0,

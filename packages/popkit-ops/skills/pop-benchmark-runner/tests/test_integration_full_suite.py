@@ -202,7 +202,6 @@ class TestIntegrationFullSuite(unittest.TestCase):
             analyzer = BenchmarkAnalyzer(
                 with_popkit_recordings=with_popkit_recordings,
                 baseline_recordings=baseline_recordings,
-                task_id=task_def["id"],
             )
 
             # Mock RecordingAnalyzer for consistent test data
@@ -264,8 +263,8 @@ class TestIntegrationFullSuite(unittest.TestCase):
                 task_def=task_def, trials=3, output_dir=self.output_dir
             )
 
-            with_popkit_recordings = runner.run_with_popkit()
-            baseline_recordings = runner.run_baseline()
+            _with_popkit_recordings = runner.run_with_popkit()
+            _baseline_recordings = runner.run_baseline()
 
             category = task_def["category"]
             category_results[category].append({"task_id": task_def["id"], "trials": 3})
@@ -356,7 +355,6 @@ class TestIntegrationFullSuite(unittest.TestCase):
             analyzer = BenchmarkAnalyzer(
                 with_popkit_recordings=with_popkit_recordings,
                 baseline_recordings=baseline_recordings,
-                task_id=task_def["id"],
             )
 
             # Mock analysis results

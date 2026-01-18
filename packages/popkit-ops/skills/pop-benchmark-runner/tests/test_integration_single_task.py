@@ -86,7 +86,6 @@ class TestIntegrationSingleTask(unittest.TestCase):
         analyzer = BenchmarkAnalyzer(
             with_popkit_recordings=with_popkit_recordings,
             baseline_recordings=baseline_recordings,
-            task_id=self.task_def["id"],
         )
 
         # Mock RecordingAnalyzer for analysis
