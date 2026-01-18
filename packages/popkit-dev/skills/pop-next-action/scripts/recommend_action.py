@@ -175,6 +175,25 @@ def calculate_action_scores(state: Dict[str, Any]) -> List[Dict[str, Any]]:
             }
         )
 
+    # Sync worktree with base branch
+    worktree = git.get("worktree", {})
+    if worktree and worktree.get("behindBase", 0) > 0:
+        base_ref = worktree.get("baseRef", "main")
+        behind_count = worktree["behindBase"]
+        score = 70  # Higher than push, important to stay in sync
+
+        actions.append(
+            {
+                "id": "sync_worktree",
+                "name": f"Sync worktree with {base_ref}",
+                "command": f"/popkit-dev:git merge {base_ref}",
+                "score": score,
+                "why": f"Worktree is {behind_count} commits behind {base_ref}",
+                "what": f"Merge latest changes from {base_ref} into current worktree",
+                "benefit": "Stay up to date with base branch, avoid merge conflicts later",
+            }
+        )
+
     # Work on issue
     if issues.get("open_count", 0) > 0 and issues.get("issues"):
         top_issue = issues["issues"][0]
