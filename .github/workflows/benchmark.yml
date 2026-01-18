@@ -1,0 +1,477 @@
+# PopKit Benchmark Suite - Value Measurement
+#
+# Measures PopKit's value by comparing AI-assisted development with PopKit enabled vs
+# without PopKit (baseline Claude Code). Tracks 6 metrics across standardized tasks:
+# - Context Usage (tokens consumed)
+# - Tool Calls (Read/Write/Edit/Bash count)
+# - Backtracking (code edited then reverted)
+# - Error Recovery (failed tool calls, retries)
+# - Time to Complete (wall clock duration)
+# - Code Quality (test/lint pass rate)
+#
+# Results are statistically analyzed (t-tests, Cohen's d effect sizes, 95% CIs) and
+# published to GitHub Pages for public access.
+#
+# Trigger Strategy (Beta Development):
+#   - Manual: Primary method (workflow_dispatch with task selection and reason)
+#   - PR-triggered: Optional validation (add 'benchmark' label)
+#   - Post-v1.0: Pre-release automation will be enabled
+#
+# Rationale: During beta, benchmarks are only meaningful when code changes.
+# Automated runs without changes just measure AI variance, not PopKit improvements.
+
+name: Benchmark Suite
+
+on:
+  # Manual trigger with task selection
+  workflow_dispatch:
+    inputs:
+      task_ids:
+        description: 'Task IDs to benchmark (comma-separated, or "all")'
+        required: true
+        default: 'jwt-authentication,dark-mode-implementation'
+        type: string
+      trials:
+        description: 'Number of trials per task (3-5 recommended)'
+        required: true
+        default: '3'
+        type: choice
+        options:
+          - '3'
+          - '5'
+          - '7'
+      report_format:
+        description: 'Report format'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+          - 'markdown'
+          - 'html'
+          - 'both'
+      reason:
+        description: 'Why are you running this benchmark? (for documentation)'
+        required: false
+        type: string
+        default: 'Manual validation'
+
+  # PR-triggered benchmarks (add 'benchmark' label)
+  pull_request:
+    types: [labeled]
+
+  # Future: Pre-release automation (post-beta, v1.0+)
+  # release:
+  #   types: [published]
+
+# Cancel in-progress runs for the same workflow
+concurrency:
+  group: benchmark-${{ github.ref }}
+  cancel-in-progress: true
+
+# Set permissions for GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  # ===========================================================================
+  # JOB 1: SETUP & VALIDATION
+  # ===========================================================================
+
+  setup:
+    name: Setup & Validation
+    runs-on: ubuntu-latest
+    # Only run if manually triggered or PR has 'benchmark' label
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && contains(github.event.label.name, 'benchmark'))
+
+    outputs:
+      task_ids: ${{ steps.config.outputs.task_ids }}
+      trials: ${{ steps.config.outputs.trials }}
+      report_format: ${{ steps.config.outputs.report_format }}
+      reason: ${{ steps.config.outputs.reason }}
+      should_run: ${{ steps.config.outputs.should_run }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          cd packages/shared-py
+          pip install -e .
+          pip install PyYAML
+
+      - name: Configure benchmark parameters
+        id: config
+        run: |
+          # Determine task IDs based on trigger
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TASK_IDS="${{ github.event.inputs.task_ids }}"
+            TRIALS="${{ github.event.inputs.trials }}"
+            FORMAT="${{ github.event.inputs.report_format }}"
+            REASON="${{ github.event.inputs.reason }}"
+          else
+            # PR-triggered: quick run (2 sample tasks, 3 trials)
+            TASK_IDS="jwt-authentication,race-condition-fix"
+            TRIALS="3"
+            FORMAT="markdown"
+            REASON="PR validation (label: benchmark)"
+          fi
+
+          echo "task_ids=$TASK_IDS" >> $GITHUB_OUTPUT
+          echo "trials=$TRIALS" >> $GITHUB_OUTPUT
+          echo "report_format=$FORMAT" >> $GITHUB_OUTPUT
+          echo "reason=$REASON" >> $GITHUB_OUTPUT
+          echo "should_run=true" >> $GITHUB_OUTPUT
+
+          echo "📊 Benchmark Configuration:"
+          echo "  Task IDs: $TASK_IDS"
+          echo "  Trials: $TRIALS"
+          echo "  Format: $FORMAT"
+          echo "  Reason: $REASON"
+
+      - name: Validate task definitions
+        run: |
+          echo "Validating task YAML files..."
+
+          # Validate YAML syntax for all task files
+          find packages/popkit-ops/tasks -name "*.yml" | while read -r file; do
+            echo "Checking $file..."
+            python3 -c "import yaml; yaml.safe_load(open('$file'))"
+          done
+
+          echo "✅ All task definitions valid"
+
+      - name: Check Claude Code availability
+        run: |
+          echo "⚠️ Note: Benchmark execution requires Claude Code CLI"
+          echo "This workflow prepares the environment but does not execute benchmarks yet."
+          echo "Full execution will be implemented in future iterations."
+
+  # ===========================================================================
+  # JOB 2: BENCHMARK EXECUTION (Matrix Strategy)
+  # ===========================================================================
+
+  benchmark-matrix:
+    name: Benchmark (${{ matrix.task_id }}, PopKit=${{ matrix.popkit_enabled }})
+    runs-on: ubuntu-latest
+    needs: setup
+    if: needs.setup.outputs.should_run == 'true'
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # Task matrix (expand from comma-separated list)
+        task_id:
+          - jwt-authentication
+          - dark-mode-implementation
+          - race-condition-fix
+          - memory-leak-fix
+          - async-await-conversion
+          - extract-shared-utilities
+          - security-vulnerability-scan
+          - performance-bottleneck-identification
+        # PopKit enabled/disabled matrix
+        popkit_enabled: [true, false]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          cd packages/shared-py
+          pip install -e .
+          pip install PyYAML numpy scipy matplotlib
+
+      - name: Install PopKit plugins (if enabled)
+        if: matrix.popkit_enabled == true
+        run: |
+          echo "Installing PopKit plugins for benchmark run..."
+          # Note: This is a placeholder for future implementation
+          # Actual installation will use Claude Code plugin system
+          echo "PopKit installation: SIMULATED"
+
+      - name: Prepare benchmark environment
+        run: |
+          echo "Preparing environment for task: ${{ matrix.task_id }}"
+          echo "PopKit enabled: ${{ matrix.popkit_enabled }}"
+
+          # Create benchmark working directory
+          mkdir -p benchmark-workspace/${{ matrix.task_id }}
+
+          # Set environment variables
+          echo "BENCHMARK_TASK_ID=${{ matrix.task_id }}" >> $GITHUB_ENV
+          echo "POPKIT_ENABLED=${{ matrix.popkit_enabled }}" >> $GITHUB_ENV
+          echo "BENCHMARK_TRIALS=${{ needs.setup.outputs.trials }}" >> $GITHUB_ENV
+
+      - name: Execute benchmark trials
+        id: execute
+        run: |
+          echo "🚀 Starting benchmark execution..."
+          echo "Task: ${{ matrix.task_id }}"
+          echo "PopKit: ${{ matrix.popkit_enabled }}"
+          echo "Trials: ${{ needs.setup.outputs.trials }}"
+
+          # Note: This is a placeholder for future implementation
+          # Actual execution will invoke Claude Code CLI with recording enabled
+          echo "⚠️ Benchmark execution: SIMULATED (Claude Code integration pending)"
+
+          # Simulate success for CI testing
+          echo "status=simulated" >> $GITHUB_OUTPUT
+          echo "duration=0" >> $GITHUB_OUTPUT
+
+      - name: Collect metrics
+        if: steps.execute.outputs.status == 'simulated' || steps.execute.outputs.status == 'success'
+        run: |
+          echo "📊 Collecting benchmark metrics..."
+
+          # Create mock results directory
+          mkdir -p benchmark-results/${{ matrix.task_id }}/popkit-${{ matrix.popkit_enabled }}
+
+          # Note: Actual implementation will use RecordingAnalyzer
+          echo "Metrics collection: SIMULATED"
+
+      - name: Upload results artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: benchmark-results-${{ matrix.task_id }}-popkit-${{ matrix.popkit_enabled }}
+          path: benchmark-results/
+          retention-days: 90
+
+  # ===========================================================================
+  # JOB 3: ANALYSIS & STATISTICS
+  # ===========================================================================
+
+  analyze:
+    name: Analyze Results
+    runs-on: ubuntu-latest
+    needs: [setup, benchmark-matrix]
+    if: always() && needs.setup.outputs.should_run == 'true'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install analysis dependencies
+        run: |
+          cd packages/shared-py
+          pip install -e .
+          pip install numpy scipy matplotlib pandas
+
+      - name: Download all benchmark results
+        uses: actions/download-artifact@v6
+        with:
+          path: benchmark-results/
+          pattern: benchmark-results-*
+
+      - name: Run statistical analysis
+        id: analyze
+        run: |
+          echo "📈 Running statistical analysis..."
+          echo "  - Independent samples t-tests"
+          echo "  - Cohen's d effect sizes"
+          echo "  - 95% confidence intervals"
+
+          # Note: Actual implementation will use BenchmarkAnalyzer
+          echo "Analysis: SIMULATED"
+
+          # Set output for report generation
+          echo "analysis_complete=true" >> $GITHUB_OUTPUT
+
+      - name: Upload analysis artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: benchmark-analysis
+          path: benchmark-results/analysis/
+          retention-days: 90
+
+  # ===========================================================================
+  # JOB 4: REPORT GENERATION
+  # ===========================================================================
+
+  report:
+    name: Generate Reports
+    runs-on: ubuntu-latest
+    needs: [setup, analyze]
+    if: always() && needs.analyze.result == 'success'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install report dependencies
+        run: |
+          cd packages/shared-py
+          pip install -e .
+          pip install jinja2 markdown
+
+      - name: Download analysis results
+        uses: actions/download-artifact@v6
+        with:
+          name: benchmark-analysis
+          path: benchmark-results/analysis/
+
+      - name: Generate markdown report
+        if: needs.setup.outputs.report_format == 'markdown' || needs.setup.outputs.report_format == 'both'
+        run: |
+          echo "📄 Generating markdown report..."
+          # Note: Actual implementation will use ReportGenerator
+          echo "Markdown generation: SIMULATED"
+
+      - name: Generate HTML dashboard
+        if: needs.setup.outputs.report_format == 'html' || needs.setup.outputs.report_format == 'both'
+        run: |
+          echo "🌐 Generating HTML dashboard..."
+          # Note: Actual implementation will use ReportGenerator with Chart.js
+          echo "HTML generation: SIMULATED"
+
+      - name: Upload report artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: benchmark-reports
+          path: docs/benchmark/results/
+          retention-days: 365
+
+      - name: Prepare GitHub Pages deployment
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "📦 Preparing GitHub Pages deployment..."
+          mkdir -p gh-pages
+          cp -r docs/benchmark/results/* gh-pages/ || true
+
+      - name: Upload Pages artifact
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: gh-pages/
+
+  # ===========================================================================
+  # JOB 5: DEPLOY TO GITHUB PAGES
+  # ===========================================================================
+
+  deploy-pages:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: report
+    if: |
+      always() &&
+      needs.report.result == 'success' &&
+      github.event_name == 'workflow_dispatch'
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Post deployment summary
+        run: |
+          echo "✅ Benchmark results deployed to GitHub Pages"
+          echo "URL: ${{ steps.deployment.outputs.page_url }}"
+
+  # ===========================================================================
+  # JOB 6: NOTIFICATION & SUMMARY
+  # ===========================================================================
+
+  notify:
+    name: Notify Results
+    runs-on: ubuntu-latest
+    needs: [setup, benchmark-matrix, analyze, report]
+    if: always() && needs.setup.outputs.should_run == 'true'
+
+    steps:
+      - name: Generate workflow summary
+        run: |
+          echo "# 📊 PopKit Benchmark Suite Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Reason:** ${{ needs.setup.outputs.reason }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Tasks:** ${{ needs.setup.outputs.task_ids }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Trials:** ${{ needs.setup.outputs.trials }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Format:** ${{ needs.setup.outputs.report_format }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "## Job Status" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Setup | ${{ needs.setup.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Benchmark Execution | ${{ needs.benchmark-matrix.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Analysis | ${{ needs.analyze.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Report Generation | ${{ needs.report.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "## Beta Development Note" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "⚠️ This workflow currently simulates benchmark execution." >> $GITHUB_STEP_SUMMARY
+          echo "Full Claude Code integration will be implemented in Phase 4." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Current Strategy:** Manual triggers during beta development" >> $GITHUB_STEP_SUMMARY
+          echo "**Post-v1.0:** Pre-release automation will be enabled" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Phase 3 Status:** CI/CD infrastructure complete ✅" >> $GITHUB_STEP_SUMMARY
+          echo "**Next Phase:** Phase 4 - Testing & validation" >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment on PR (if applicable)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 📊 Benchmark Results
+
+              Benchmark suite execution completed for this PR.
+
+              **Configuration:**
+              - Tasks: ${{ needs.setup.outputs.task_ids }}
+              - Trials: ${{ needs.setup.outputs.trials }}
+
+              **Status:**
+              - Benchmark Execution: ${{ needs.benchmark-matrix.result }}
+              - Analysis: ${{ needs.analyze.result }}
+              - Report Generation: ${{ needs.report.result }}
+
+              **Note:** This is a simulated run. Full execution will be available after Phase 4 completion.
+
+              View detailed results in the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).`
+            })
