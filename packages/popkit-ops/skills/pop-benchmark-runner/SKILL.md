@@ -14,10 +14,129 @@ Automates the execution of benchmark tasks that quantitatively measure PopKit's 
 
 ## Core Functions
 
-1. **Task Execution** - Runs benchmark tasks in isolated git worktrees
-2. **Recording Collection** - Captures all tool calls, durations, and results
-3. **Statistical Analysis** - Calculates t-tests, effect sizes, confidence intervals
-4. **Report Generation** - Creates markdown and HTML reports with visualizations
+1. **Orchestrated Execution** - Spawns trials in separate windows for side-by-side viewing
+2. **Task Execution** - Runs benchmark tasks in isolated git worktrees
+3. **Recording Collection** - Captures all tool calls, durations, and results
+4. **Statistical Analysis** - Calculates t-tests, effect sizes, confidence intervals
+5. **Report Generation** - Creates markdown and HTML reports with visualizations
+
+## Orchestrated Execution (Option B Architecture)
+
+The benchmark runner uses an **orchestrator pattern** where the current Claude session becomes the orchestrator and spawns trial sessions in separate terminal windows.
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ Current Claude Session (Orchestrator)                   │
+│                                                          │
+│  1. Load task definition and responses                  │
+│  2. For each trial:                                     │
+│     ├─ Spawn WITH PopKit window → New terminal         │
+│     ├─ Spawn BASELINE window → New terminal            │
+│     └─ Monitor via recording files (poll every 3s)     │
+│  3. Collect all recordings when complete               │
+│  4. Run statistical analysis                            │
+│  5. Generate and open HTML report                       │
+└─────────────────────────────────────────────────────────┘
+         │                           │
+         ▼                           ▼
+┌──────────────────┐        ┌──────────────────┐
+│ WITH PopKit      │        │ BASELINE         │
+│ Terminal Window  │        │ Terminal Window  │
+│                  │        │                  │
+│ Claude Code      │        │ Claude Code      │
+│ + PopKit enabled │        │ PopKit disabled  │
+│                  │        │                  │
+│ Recording: JSON  │        │ Recording: JSONL │
+└──────────────────┘        └──────────────────┘
+```
+
+### User Experience Flow
+
+```bash
+# User runs in current Claude session
+/popkit-ops:benchmark run jwt-authentication --trials 3
+
+# Orchestrator takes over:
+🚀 PopKit Benchmark Suite
+▶ Trial 1/3 WITH PopKit - Launching window...
+  [New terminal window opens → user sees Claude working with PopKit]
+▶ Trial 1/3 BASELINE - Launching window...
+  [New terminal window opens → user sees vanilla Claude working]
+⏳ Monitoring trials... (watch the windows work)
+✓ Trial 1 WITH PopKit completed (45s)
+✓ Trial 1 BASELINE completed (68s)
+...
+📊 Analyzing results...
+📈 Generating HTML report...
+🎉 Opening report in browser...
+```
+
+### Cross-Platform Window Spawning
+
+**Windows:**
+```python
+cmd = f'start "Claude Benchmark - {session_id}" cmd /k "cd /d {worktree_path} && claude "{prompt}""'
+subprocess.Popen(cmd, env=env, shell=True)
+```
+
+**Mac:**
+```python
+script = f'''
+tell application "Terminal"
+    do script "cd '{worktree_path}' && claude '{prompt}'"
+    activate
+end tell
+'''
+subprocess.Popen(["osascript", "-e", script], env=env)
+```
+
+**Linux:**
+```python
+cmd = ["gnome-terminal", "--", "bash", "-c", f"cd '{worktree_path}' && claude '{prompt}'; exec bash"]
+subprocess.Popen(cmd, env=env)
+```
+
+### Monitoring Trials
+
+The orchestrator monitors trial completion by polling recording files:
+
+```python
+def _monitor_trials(session_ids: List[str], timeout: int = 3600):
+    """Wait for all trials to complete."""
+    while len(completed) < len(session_ids):
+        for session_id in session_ids:
+            # Check for recording
+            recording_path = _find_recording(session_id)
+            if recording_path and _is_complete(recording_path):
+                completed.add(session_id)
+        time.sleep(3)  # Poll every 3 seconds
+```
+
+**Recording Locations:**
+- WITH PopKit: `~/.claude/popkit/recordings/<session_id>.json`
+- BASELINE: `~/.claude/projects/*/<session_id>.jsonl`
+
+**Completion Detection:**
+- JSON: Check for `session_end` event
+- JSONL: Check if file has content and last line is valid JSON
+
+### Implementation
+
+Main orchestrator entry point:
+
+```python
+from benchmark_orchestrator import BenchmarkOrchestrator
+
+orchestrator = BenchmarkOrchestrator(
+    task_id="jwt-authentication",
+    trials=3,
+    verbose=True
+)
+report_path = orchestrator.run()
+# Returns: Path to HTML report, automatically opened in browser
+```
 
 ## Workflow
 
@@ -371,7 +490,8 @@ For a benchmark to be considered valid:
 
 ## Related Files
 
-- `benchmark_runner.py` - Orchestrates execution
+- `benchmark_orchestrator.py` - **NEW**: Orchestrates parallel trials in separate windows
+- `benchmark_runner.py` - Single trial execution (called by orchestrator)
 - `benchmark_analyzer.py` - Statistical analysis
 - `codebase_manager.py` - Git worktree management
 - `report_generator.py` - Markdown/HTML reports

@@ -293,7 +293,9 @@ class BenchmarkRunner:
 
             # Step 4: Collect recording
             self._log("[4/5] Collecting recording...")
-            recording_path = self._collect_recording(session_id)
+            recording_path = self._collect_recording(
+                session_id, with_popkit=with_popkit
+            )
 
             if not recording_path:
                 self._log(f"[WARN] Recording not found for session {session_id}")
@@ -347,15 +349,36 @@ class BenchmarkRunner:
         config_label = "with-popkit" if with_popkit else "baseline"
         env["POPKIT_COMMAND"] = f"benchmark-{self.task_id}-{config_label}"
 
-        # Load response file if exists
-        response_file = (
+        # Load response file if exists (check multiple locations)
+        response_file_paths = [
+            # Location 1: Alongside task definition (if task_path was provided)
+            Path(self.task_def.get("__task_path__", "")).parent / "responses.json"
+            if self.task_def.get("__task_path__")
+            else None,
+            # Location 2: In tasks directory with category
             Path("packages/popkit-ops/tasks")
             / self.task_def.get("category", "feature-addition")
-            / f"{self.task_id}-responses.json"
-        )
-        if response_file.exists():
+            / f"{self.task_id}"
+            / "responses.json",
+            # Location 3: In tasks directory without category
+            Path("packages/popkit-ops/tasks") / f"{self.task_id}" / "responses.json",
+            # Location 4: Legacy format with hyphenated name
+            Path("packages/popkit-ops/tasks")
+            / self.task_def.get("category", "feature-addition")
+            / f"{self.task_id}-responses.json",
+        ]
+
+        response_file = None
+        for path in response_file_paths:
+            if path and path.exists():
+                response_file = path
+                break
+
+        if response_file:
             env["POPKIT_BENCHMARK_RESPONSES"] = str(response_file.absolute())
             self._log(f"[INFO] Using response file: {response_file}")
+        else:
+            self._log("[WARN] No response file found - questions may block execution")
 
         # PopKit configuration
         if not with_popkit:
@@ -376,15 +399,12 @@ class BenchmarkRunner:
         """
         Execute the benchmark task in the worktree.
 
-        This is a mock implementation. In production, this would:
-        1. Launch Claude Code CLI in the worktree
-        2. Feed the user prompt from task_def
-        3. Monitor for completion
-        4. Return success/failure
+        Launches Claude Code CLI with the user prompt and waits for completion.
+        Recordings are captured automatically via environment variables.
 
         Args:
             worktree_path: Path to worktree
-            env: Environment variables
+            env: Environment variables (with POPKIT_RECORD, POPKIT_BENCHMARK_MODE, etc.)
             session_id: Session identifier
 
         Returns:
@@ -392,30 +412,65 @@ class BenchmarkRunner:
         """
         user_prompt = self.task_def.get("user_prompt", "")
 
-        # MOCK: For now, we simulate task execution
-        # In production, this would be:
-        #   subprocess.run(['claude', '--prompt', user_prompt], cwd=worktree_path, env=env)
-
-        self._log(f"[INFO] User prompt: {user_prompt[:100]}...")
-
-        # Create a mock recording file for testing
+        # Test mode: Create mock recording
         if os.getenv("TEST_MODE") == "true":
             self._create_mock_recording(session_id, worktree_path)
             return True
 
-        # TODO: Real implementation
-        # command = ['claude', '--prompt', user_prompt]
-        # result = subprocess.run(
-        #     command,
-        #     cwd=worktree_path,
-        #     env=env,
-        #     capture_output=True,
-        #     timeout=3600  # 1 hour timeout
-        # )
-        # return result.returncode == 0
+        self._log(f"[INFO] User prompt: {user_prompt[:100]}...")
 
-        self._log("[WARN] Task execution not implemented (mock mode)")
-        return False
+        # Build Claude Code command
+        # Use -p/--print for non-interactive mode
+        # Use --permission-mode dontAsk to skip permission prompts
+        command = [
+            "claude",
+            "-p",  # Print mode (non-interactive)
+            user_prompt,
+            "--permission-mode",
+            "dontAsk",  # Skip permission prompts for automation
+        ]
+
+        # Get timeout from task definition (default 1 hour)
+        timeout = self.task_def.get("timeout_seconds", 3600)
+
+        try:
+            self._log(f"[INFO] Launching Claude Code (timeout: {timeout}s)")
+            result = subprocess.run(
+                command,
+                cwd=str(worktree_path),
+                env=env,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+            )
+
+            # Log output
+            if result.stdout:
+                self._log(f"[STDOUT] {result.stdout[:500]}...")
+            if result.stderr:
+                self._log(f"[STDERR] {result.stderr[:500]}...")
+
+            # Check result
+            if result.returncode == 0:
+                self._log("[SUCCESS] Claude Code completed (exit code 0)")
+                return True
+            else:
+                self._log(
+                    f"[WARN] Claude Code failed with exit code {result.returncode}"
+                )
+                return False
+
+        except subprocess.TimeoutExpired:
+            self._log(f"[ERROR] Claude Code execution timed out after {timeout}s")
+            return False
+        except FileNotFoundError:
+            self._log(
+                "[ERROR] 'claude' command not found. Is Claude Code installed and in PATH?"
+            )
+            return False
+        except Exception as e:
+            self._log(f"[ERROR] Failed to execute Claude Code: {e}")
+            return False
 
     def _create_mock_recording(self, session_id: str, worktree_path: Path) -> None:
         """Create a mock recording for testing."""
@@ -460,31 +515,82 @@ class BenchmarkRunner:
 
         self._log(f"[MOCK] Created recording: {recording_path}")
 
-    def _collect_recording(self, session_id: str) -> Optional[Path]:
+    def _collect_recording(
+        self, session_id: str, with_popkit: bool = True
+    ) -> Optional[Path]:
         """
         Collect recording file for the given session.
 
+        For WITH PopKit trials: Looks in PopKit recordings directory (JSON format)
+        For baseline trials: Looks in Claude Code projects directory (JSONL format)
+
         Args:
             session_id: Session identifier
+            with_popkit: Whether PopKit was enabled (determines search location)
 
         Returns:
             Path to recording file, or None if not found
         """
-        # Look for recording file matching session ID
-        for recording_file in self.recordings_dir.glob("*.json"):
-            try:
-                with open(recording_file, "r") as f:
-                    data = json.load(f)
-                    if data.get("session_id") == session_id:
-                        return recording_file
-            except (json.JSONDecodeError, IOError):
-                continue
+        if with_popkit:
+            # WITH PopKit: Look in PopKit recordings directory
+            for recording_file in self.recordings_dir.glob("*.json"):
+                try:
+                    with open(recording_file, "r") as f:
+                        data = json.load(f)
+                        if data.get("session_id") == session_id:
+                            self._log(
+                                f"[INFO] Found PopKit recording: {recording_file}"
+                            )
+                            return recording_file
+                except (json.JSONDecodeError, IOError):
+                    continue
+        else:
+            # Baseline (WITHOUT PopKit): Look in Claude Code projects directory
+            # Location: ~/.claude/projects/[encoded-directory]/[session-uuid].jsonl
+            claude_projects_dir = Path.home() / ".claude" / "projects"
 
+            if not claude_projects_dir.exists():
+                self._log("[WARN] Claude Code projects directory not found")
+                return None
+
+            # Search for JSONL files (Claude Code's native transcripts)
+            # Session ID might be in filename or we need to check content
+            for project_dir in claude_projects_dir.iterdir():
+                if not project_dir.is_dir():
+                    continue
+
+                for jsonl_file in project_dir.glob("*.jsonl"):
+                    try:
+                        # Check if this JSONL file matches our session
+                        # Claude Code JSONL files don't have a session_id field like PopKit,
+                        # so we check the filename or first entry
+                        if session_id in jsonl_file.stem:
+                            self._log(
+                                f"[INFO] Found Claude JSONL transcript: {jsonl_file}"
+                            )
+                            return jsonl_file
+
+                        # Alternative: Check first line for session info
+                        with open(jsonl_file, "r") as f:
+                            first_line = f.readline()
+                            if first_line.strip():
+                                entry = json.loads(first_line)
+                                if session_id in entry.get("sessionId", ""):
+                                    self._log(
+                                        f"[INFO] Found Claude JSONL transcript: {jsonl_file}"
+                                    )
+                                    return jsonl_file
+                    except (json.JSONDecodeError, IOError):
+                        continue
+
+        self._log(f"[WARN] Recording not found for session {session_id}")
         return None
 
     def _verify_recording(self, recording_path: Path) -> bool:
         """
         Verify that recording file is valid and complete.
+
+        Handles both PopKit JSON format and Claude Code JSONL format.
 
         Args:
             recording_path: Path to recording file
@@ -493,29 +599,54 @@ class BenchmarkRunner:
             True if recording is valid
         """
         try:
-            with open(recording_path, "r") as f:
-                data = json.load(f)
+            # Check file extension to determine format
+            if recording_path.suffix == ".jsonl":
+                # Claude Code JSONL format - just verify it has content and is valid JSONL
+                with open(recording_path, "r") as f:
+                    lines = f.readlines()
+                    if not lines:
+                        self._log("[WARN] JSONL file is empty")
+                        return False
 
-            # Check required fields
-            if "session_id" not in data:
-                self._log("[WARN] Missing session_id in recording")
-                return False
+                    # Verify first and last lines are valid JSON
+                    try:
+                        json.loads(lines[0])
+                        json.loads(lines[-1])
+                    except json.JSONDecodeError:
+                        self._log("[WARN] Invalid JSON in JSONL file")
+                        return False
 
-            if "events" not in data or not isinstance(data["events"], list):
-                self._log("[WARN] Missing or invalid events in recording")
-                return False
+                self._log(f"[INFO] JSONL verification passed ({len(lines)} entries)")
+                return True
 
-            # Check for session_start and session_end events
-            event_types = {e.get("type") for e in data["events"]}
-            if "session_start" not in event_types:
-                self._log("[WARN] Missing session_start event")
-                return False
+            else:
+                # PopKit JSON format - full verification
+                with open(recording_path, "r") as f:
+                    data = json.load(f)
 
-            if "session_end" not in event_types:
-                self._log("[WARN] Missing session_end event")
-                return False
+                # Check required fields
+                if "session_id" not in data:
+                    self._log("[WARN] Missing session_id in recording")
+                    return False
 
-            return True
+                if "events" not in data or not isinstance(data["events"], list):
+                    self._log("[WARN] Missing or invalid events in recording")
+                    return False
+
+                # Check for session_start and session_end events
+                event_types = {e.get("type") for e in data["events"]}
+                if "session_start" not in event_types:
+                    self._log("[WARN] Missing session_start event")
+                    return False
+
+                if "session_end" not in event_types:
+                    self._log("[WARN] Missing session_end event")
+                    return False
+
+                self._log(
+                    f"[INFO] PopKit JSON verification passed ({len(data['events'])} events)"
+                )
+                return True
 
         except (json.JSONDecodeError, IOError) as e:
             self._log(f"[WARN] Failed to verify recording: {e}")

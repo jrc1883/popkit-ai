@@ -1,0 +1,96 @@
+id: jwt-authentication
+category: feature-addition
+description: Add JWT authentication to Express.js application
+difficulty: medium
+estimated_duration_minutes: 15
+
+user_prompt: |
+  Add JWT authentication to the Express.js application.
+
+  Implementation requirements:
+  - Install jsonwebtoken library (^9.0.0)
+  - Create src/auth/jwt.js with token generation and verification
+  - Algorithm: HS256
+  - Secret: Load from JWT_SECRET environment variable
+  - Token expiration: 24 hours
+  - Claims: { userId, email, role, iat, exp }
+
+  Endpoints:
+  - POST /auth/login
+    - Input: { email, password }
+    - Output: { token, user: { id, email, role } }
+    - Error: 401 Unauthorized if invalid credentials
+
+  - POST /auth/refresh
+    - Input: { token } (in Authorization header)
+    - Output: { token } (new token with fresh expiration)
+    - Error: 401 if token invalid/expired
+
+  Middleware:
+  - Create authenticateToken middleware in src/auth/middleware.js
+  - Extract token from Authorization: Bearer <token> header
+  - Verify token using jwt.verify()
+  - Attach user object to req.user
+  - Error handling: 401 with { error: "Unauthorized" } JSON
+
+  Protected routes:
+  - Apply authenticateToken to all /api/* routes
+  - Do NOT protect /auth/login and /auth/refresh
+
+  Testing:
+  - Create tests/auth/jwt.test.js
+  - Test cases:
+    - login_with_valid_credentials_returns_token
+    - login_with_invalid_credentials_returns_401
+    - protected_route_requires_valid_token
+    - expired_token_returns_401
+    - refresh_token_generates_new_token
+  - Coverage target: 90%
+
+  Error handling:
+  - Invalid credentials: 401 with { error: "Invalid email or password" }
+  - Missing token: 401 with { error: "No token provided" }
+  - Invalid token: 401 with { error: "Invalid token" }
+  - Expired token: 401 with { error: "Token expired" }
+
+  DO NOT ASK QUESTIONS about:
+  - Authentication strategy (use JWT as specified)
+  - Token expiration (use 24 hours)
+  - Algorithm (use HS256)
+  - Library choice (use jsonwebtoken)
+  - Endpoint paths (use /auth/login and /auth/refresh)
+  - Protected route pattern (use /api/*)
+
+  Proceed immediately with implementation using the specifications above.
+
+environment:
+  JWT_SECRET: test-secret-key-do-not-use-in-production
+  NODE_ENV: test
+
+verification:
+  - npm test
+  - npm run test:auth
+  - npm run lint
+
+expected_outcomes:
+  - All tests pass
+  - Coverage >= 90%
+  - Linter passes with no errors
+
+success_criteria:
+  security:
+    - Tokens must be signed with HS256
+    - Secret must not be hardcoded
+    - Expired tokens must be rejected
+  performance:
+    - Token generation: < 10ms
+    - Token verification: < 5ms
+  testing:
+    - Test coverage: >= 90%
+    - All security test cases pass
+
+tags:
+  - authentication
+  - jwt
+  - security
+  - express
