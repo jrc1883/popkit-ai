@@ -111,8 +111,10 @@ class TestWorktreeWorkflow(unittest.TestCase):
                         )
 
             shutil.rmtree(self.test_dir)
-        except Exception:
-            pass
+        except Exception as exc:
+            import sys
+
+            print(f"tearDown cleanup failed: {exc}", file=sys.stderr)
 
     def test_full_workflow_create_switch_remove(self):
         """Test: create worktree → switch → remove."""
@@ -316,8 +318,10 @@ class TestStatusJsonIntegration(unittest.TestCase):
                         )
 
             shutil.rmtree(self.test_dir)
-        except Exception:
-            pass
+        except Exception as exc:
+            import sys
+
+            print(f"tearDown cleanup failed: {exc}", file=sys.stderr)
 
     def test_status_json_created_on_worktree_creation(self):
         """Test: STATUS.json is created/updated when worktree is created."""

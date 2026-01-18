@@ -452,8 +452,8 @@ class MorningWorkflow:
                             f"commits behind {base_ref}",
                             file=sys.stderr,
                         )
-            except (json.JSONDecodeError, FileNotFoundError, Exception):
-                pass
+            except (json.JSONDecodeError, FileNotFoundError, Exception) as e:
+                print(f"[WARN] Could not load worktree status: {e}", file=sys.stderr)
 
         return state
 
