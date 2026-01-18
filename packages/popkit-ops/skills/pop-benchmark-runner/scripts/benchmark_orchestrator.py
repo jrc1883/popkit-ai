@@ -287,8 +287,16 @@ class BenchmarkOrchestrator:
         try:
             if system == "Windows":
                 # Windows: Use 'start' to open new cmd window
-                cmd = f'start "Claude Benchmark - {session_id}" cmd /k "cd /d {worktree_path} && claude "{escaped_prompt}""'
-                subprocess.Popen(cmd, env=env, shell=True)
+                cmd = [
+                    "cmd",
+                    "/c",
+                    "start",
+                    f"Claude Benchmark - {session_id}",
+                    "cmd",
+                    "/k",
+                    f'cd /d "{worktree_path}" && claude "{escaped_prompt}"',
+                ]
+                subprocess.Popen(cmd, env=env)
 
             elif system == "Darwin":
                 # Mac: Use osascript to open new Terminal window
@@ -423,7 +431,6 @@ class BenchmarkOrchestrator:
 
         # Analyze
         analyzer = BenchmarkAnalyzer(
-            task_def=self.task_def,
             with_popkit_recordings=with_popkit_recordings,
             baseline_recordings=baseline_recordings,
         )
