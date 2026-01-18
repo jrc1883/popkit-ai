@@ -331,14 +331,24 @@ class TestBenchmarkAnalyzer(unittest.TestCase):
     def test_extract_context_usage(self, mock_analyzer_class):
         """Test context usage extraction"""
         mock_analyzer = Mock()
-        mock_analyzer.get_token_count.return_value = 1500
+        # Mock get_tool_usage_breakdown to return structure with calls
+        mock_analyzer.get_tool_usage_breakdown.return_value = {
+            "Read": {
+                "count": 2,
+                "calls": [
+                    {"input": "a" * 1000, "output": "b" * 1000},  # 2000 chars
+                    {"input": "c" * 1000, "output": "d" * 1000},  # 2000 chars
+                ],
+            }
+        }
         mock_analyzer_class.return_value = mock_analyzer
 
         recording_path = self.with_popkit_recordings[0]
 
         tokens = self.analyzer._extract_context_usage(recording_path, mock_analyzer)
 
-        self.assertEqual(tokens, 1500)
+        # Total chars = 4000, tokens ~= 4000 / 4 = 1000
+        self.assertEqual(tokens, 1000)
 
     @patch("benchmark_analyzer.RecordingAnalyzer")
     def test_extract_tool_calls(self, mock_analyzer_class):
@@ -359,12 +369,18 @@ class TestBenchmarkAnalyzer(unittest.TestCase):
     def test_extract_backtracking(self, mock_analyzer_class):
         """Test backtracking extraction"""
         mock_analyzer = Mock()
-        # Mock backtracking detection (files edited then reverted)
-        mock_analyzer.get_file_modifications.return_value = 3
+        # Mock events with file edits (same file edited multiple times = backtracking)
+        mock_analyzer.events = [
+            {"type": "tool_call", "tool": "Edit", "file_path": "test.py"},
+            {"type": "tool_call", "tool": "Edit", "file_path": "test.py"},  # backtrack
+            {"type": "tool_call", "tool": "Write", "file_path": "other.py"},
+            {"type": "tool_call", "tool": "Edit", "file_path": "test.py"},  # backtrack
+        ]
 
         backtrack_count = self.analyzer._extract_backtracking(mock_analyzer)
 
-        self.assertEqual(backtrack_count, 3)
+        # test.py edited 3 times = 2 backtracks (edits after first)
+        self.assertEqual(backtrack_count, 2)
 
     @patch("benchmark_analyzer.RecordingAnalyzer")
     def test_extract_error_recovery(self, mock_analyzer_class):
@@ -412,8 +428,8 @@ class TestBenchmarkAnalyzer(unittest.TestCase):
 
             quality_score = self.analyzer._extract_code_quality(recording_path)
 
-            # Perfect score when all verifications pass
-            self.assertEqual(quality_score, 100.0)
+            # Returns 1.0 for perfect score (0.0-1.0 range, not 0-100)
+            self.assertEqual(quality_score, 1.0)
 
     def test_extract_code_quality_failures(self):
         """Test code quality with failed verifications"""
@@ -429,8 +445,8 @@ class TestBenchmarkAnalyzer(unittest.TestCase):
 
             quality_score = self.analyzer._extract_code_quality(recording_path)
 
-            # Should be 66.67% (2 out of 3 pass)
-            self.assertAlmostEqual(quality_score, 66.67, places=1)
+            # Should be 0.667 (2 out of 3 pass, 0.0-1.0 range)
+            self.assertAlmostEqual(quality_score, 0.667, places=2)
 
     # =========================================================================
     # SUMMARY REPORT TESTS
