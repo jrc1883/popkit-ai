@@ -82,7 +82,6 @@ class RecordingAnalyzer:
         # Extract data
         tool_uses = parser.get_all_tool_uses()
         total_usage = parser.get_total_token_usage()
-        assistant_messages = parser.get_assistant_messages()
 
         # Convert to PopKit event structure
         events = []
@@ -246,6 +245,7 @@ class RecordingAnalyzer:
                 end_dt = datetime.fromisoformat(end_time.replace("Z", "+00:00"))
                 session_duration_ms = int((end_dt - start_dt).total_seconds() * 1000)
             except Exception:
+                # Duration calculation failed - leave session_duration_ms as 0
                 pass
 
         return {

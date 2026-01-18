@@ -263,8 +263,9 @@ class TestIntegrationFullSuite(unittest.TestCase):
                 task_def=task_def, trials=3, output_dir=self.output_dir
             )
 
-            _with_popkit_recordings = runner.run_with_popkit()
-            _baseline_recordings = runner.run_baseline()
+            # Run trials (results not needed for this test)
+            runner.run_with_popkit()
+            runner.run_baseline()
 
             category = task_def["category"]
             category_results[category].append({"task_id": task_def["id"], "trials": 3})

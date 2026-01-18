@@ -65,7 +65,7 @@ class TestBenchmarkRunner(unittest.TestCase):
     def test_init_creates_output_dir(self):
         """Test that output directory is created"""
         custom_output = self.temp_dir / "custom-output"
-        _runner = BenchmarkRunner(task_def=self.task_def, output_dir=custom_output)
+        BenchmarkRunner(task_def=self.task_def, output_dir=custom_output)
         self.assertTrue(custom_output.exists())
 
     # =========================================================================

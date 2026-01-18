@@ -69,8 +69,8 @@ class TestCodebaseManager(unittest.TestCase):
         )
 
         # Verify worktree path format
-        self.assertTrue("test-task-trial1" in str(worktree_path))
-        self.assertTrue(worktree_path.parent == self.manager.base_dir)
+        self.assertIn("test-task-trial1", str(worktree_path))
+        self.assertEqual(worktree_path.parent, self.manager.base_dir)
 
         # Verify git command called
         mock_git.assert_called_once()
