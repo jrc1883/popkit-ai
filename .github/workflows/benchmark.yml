@@ -127,11 +127,13 @@ jobs:
             REASON="PR validation (label: benchmark)"
           fi
 
-          echo "task_ids=$TASK_IDS" >> $GITHUB_OUTPUT
-          echo "trials=$TRIALS" >> $GITHUB_OUTPUT
-          echo "report_format=$FORMAT" >> $GITHUB_OUTPUT
-          echo "reason=$REASON" >> $GITHUB_OUTPUT
-          echo "should_run=true" >> $GITHUB_OUTPUT
+          {
+            echo "task_ids=$TASK_IDS"
+            echo "trials=$TRIALS"
+            echo "report_format=$FORMAT"
+            echo "reason=$REASON"
+            echo "should_run=true"
+          } >> "$GITHUB_OUTPUT"
 
           echo "📊 Benchmark Configuration:"
           echo "  Task IDs: $TASK_IDS"
@@ -222,9 +224,11 @@ jobs:
           mkdir -p benchmark-workspace/${{ matrix.task_id }}
 
           # Set environment variables
-          echo "BENCHMARK_TASK_ID=${{ matrix.task_id }}" >> $GITHUB_ENV
-          echo "POPKIT_ENABLED=${{ matrix.popkit_enabled }}" >> $GITHUB_ENV
-          echo "BENCHMARK_TRIALS=${{ needs.setup.outputs.trials }}" >> $GITHUB_ENV
+          {
+            echo "BENCHMARK_TASK_ID=${{ matrix.task_id }}"
+            echo "POPKIT_ENABLED=${{ matrix.popkit_enabled }}"
+            echo "BENCHMARK_TRIALS=${{ needs.setup.outputs.trials }}"
+          } >> "$GITHUB_ENV"
 
       - name: Execute benchmark trials
         id: execute
@@ -239,8 +243,10 @@ jobs:
           echo "⚠️ Benchmark execution: SIMULATED (Claude Code integration pending)"
 
           # Simulate success for CI testing
-          echo "status=simulated" >> $GITHUB_OUTPUT
-          echo "duration=0" >> $GITHUB_OUTPUT
+          {
+            echo "status=simulated"
+            echo "duration=0"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Collect metrics
         if: steps.execute.outputs.status == 'simulated' || steps.execute.outputs.status == 'success'
@@ -304,7 +310,7 @@ jobs:
           echo "Analysis: SIMULATED"
 
           # Set output for report generation
-          echo "analysis_complete=true" >> $GITHUB_OUTPUT
+          echo "analysis_complete=true" >> "$GITHUB_OUTPUT"
 
       - name: Upload analysis artifacts
         uses: actions/upload-artifact@v6
@@ -419,35 +425,35 @@ jobs:
     steps:
       - name: Generate workflow summary
         run: |
-          echo "# 📊 PopKit Benchmark Suite Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Reason:** ${{ needs.setup.outputs.reason }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Tasks:** ${{ needs.setup.outputs.task_ids }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Trials:** ${{ needs.setup.outputs.trials }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Format:** ${{ needs.setup.outputs.report_format }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          echo "## Job Status" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Setup | ${{ needs.setup.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Benchmark Execution | ${{ needs.benchmark-matrix.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Analysis | ${{ needs.analyze.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Report Generation | ${{ needs.report.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          echo "## Beta Development Note" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "⚠️ This workflow currently simulates benchmark execution." >> $GITHUB_STEP_SUMMARY
-          echo "Full Claude Code integration will be implemented in Phase 4." >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Current Strategy:** Manual triggers during beta development" >> $GITHUB_STEP_SUMMARY
-          echo "**Post-v1.0:** Pre-release automation will be enabled" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Phase 3 Status:** CI/CD infrastructure complete ✅" >> $GITHUB_STEP_SUMMARY
-          echo "**Next Phase:** Phase 4 - Testing & validation" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "# 📊 PopKit Benchmark Suite Results"
+            echo ""
+            echo "**Trigger:** ${{ github.event_name }}"
+            echo "**Reason:** ${{ needs.setup.outputs.reason }}"
+            echo "**Tasks:** ${{ needs.setup.outputs.task_ids }}"
+            echo "**Trials:** ${{ needs.setup.outputs.trials }}"
+            echo "**Format:** ${{ needs.setup.outputs.report_format }}"
+            echo ""
+            echo "## Job Status"
+            echo ""
+            echo "| Job | Status |"
+            echo "|-----|--------|"
+            echo "| Setup | ${{ needs.setup.result }} |"
+            echo "| Benchmark Execution | ${{ needs.benchmark-matrix.result }} |"
+            echo "| Analysis | ${{ needs.analyze.result }} |"
+            echo "| Report Generation | ${{ needs.report.result }} |"
+            echo ""
+            echo "## Beta Development Note"
+            echo ""
+            echo "⚠️ This workflow currently simulates benchmark execution."
+            echo "Full Claude Code integration will be implemented in Phase 4."
+            echo ""
+            echo "**Current Strategy:** Manual triggers during beta development"
+            echo "**Post-v1.0:** Pre-release automation will be enabled"
+            echo ""
+            echo "**Phase 3 Status:** CI/CD infrastructure complete ✅"
+            echo "**Next Phase:** Phase 4 - Testing & validation"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Comment on PR (if applicable)
         if: github.event_name == 'pull_request'
