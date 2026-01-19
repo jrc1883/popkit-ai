@@ -61,15 +61,6 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 from scipy import stats
 
-# Import RecordingAnalyzer for metrics extraction
-try:
-    from popkit_shared.utils.recording_analyzer import RecordingAnalyzer
-
-    HAS_RECORDING_ANALYZER = True
-except ImportError:
-    HAS_RECORDING_ANALYZER = False
-    RecordingAnalyzer = None  # For type checking
-
 
 class BenchmarkAnalyzer:
     """Analyzes benchmark recordings and calculates statistics."""
