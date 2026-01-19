@@ -415,6 +415,46 @@ class MorningWorkflow:
 
         state["github"] = github_data
 
+        # Check worktree status (if in worktree)
+        status_file = Path(".popkit") / "STATUS.json"
+        if status_file.exists():
+            try:
+                status_data = json.loads(status_file.read_text(encoding="utf-8"))
+                worktree_info = status_data.get("git", {}).get("worktree", {})
+
+                if worktree_info.get("isWorktree"):
+                    # Add worktree data to git section
+                    git_data["worktree"] = {
+                        "name": worktree_info.get("name", "unknown"),
+                        "baseRef": worktree_info.get("baseRef", "main"),
+                        "linkedPath": worktree_info.get("linkedPath", ""),
+                    }
+
+                    # Check if behind base branch
+                    base_ref = worktree_info.get("baseRef", "main")
+                    behind_output = run_command(
+                        ["git", "rev-list", "--count", f"HEAD..{base_ref}"]
+                    )
+                    try:
+                        behind_count = int(behind_output) if behind_output else 0
+                        git_data["worktree"]["behindBase"] = behind_count
+                    except ValueError:
+                        git_data["worktree"]["behindBase"] = 0
+
+                    print(
+                        f"[OK] Worktree detected: {git_data['worktree']['name']} "
+                        f"(base: {base_ref})",
+                        file=sys.stderr,
+                    )
+                    if git_data["worktree"]["behindBase"] > 0:
+                        print(
+                            f"[WARN] Worktree is {git_data['worktree']['behindBase']} "
+                            f"commits behind {base_ref}",
+                            file=sys.stderr,
+                        )
+            except (json.JSONDecodeError, FileNotFoundError, Exception) as e:
+                print(f"[WARN] Could not load worktree status: {e}", file=sys.stderr)
+
         return state
 
     def _collect_state_fallback(self) -> Dict[str, Any]:

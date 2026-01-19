@@ -1,168 +1,157 @@
 ---
-description: "create <branch> | list | analyze | remove [--force]"
-argument-hint: "<subcommand> [branch] [options]"
+description: "list | create | remove | switch | update-all | prune | init | analyze"
+argument-hint: "<operation> [options]"
 ---
 
 # /popkit-dev:worktree - Git Worktree Management
 
-Create and manage isolated workspaces for parallel development.
+Manage git worktrees for parallel development without branch switching overhead.
 
 ## Usage
 
 ```
-/popkit-dev:worktree <subcommand> [options]
+/popkit-dev:worktree <operation> [options]
 ```
 
-## Subcommands
-
-### create
-
-Create new worktree with branch:
-
-```
-/popkit-dev:worktree create <name>
-/popkit-dev:worktree create feature/auth
-/popkit-dev:worktree create fix-123 --from main
-```
-
-Process:
-
-1. Check worktree directory exists
-2. Verify .gitignore includes worktrees
-3. Create worktree: `git worktree add .worktrees/<name> -b <name>`
-4. Run project setup (npm install, etc.)
-5. Verify tests pass
-6. Report location
+## Operations
 
 ### list
 
-List all worktrees:
+Display all worktrees with branch, path, status:
 
 ```
 /popkit-dev:worktree list
 ```
 
-Output:
+### create
+
+Create worktree (dev or feature branch):
 
 ```
-Worktrees:
-- main (default): /path/to/project
-- feature/auth: /path/to/project/.worktrees/feature-auth
-- fix/login: /path/to/project/.worktrees/fix-login
+/popkit-dev:worktree create <branch>
+/popkit-dev:worktree create feat/new-feature --base main --name my-feature
 ```
+
+Options:
+- `--base <branch>` - Base branch (default: current branch)
+- `--name <name>` - Worktree directory name (default: derived from branch)
+
+### remove
+
+Remove worktree with uncommitted change warnings:
+
+```
+/popkit-dev:worktree remove <name>
+/popkit-dev:worktree remove dev-feat-worktree --force
+```
+
+Options:
+- `--force` - Remove even with uncommitted changes
+
+### switch
+
+Navigate to worktree directory:
+
+```
+/popkit-dev:worktree switch <name>
+```
+
+### update-all
+
+Pull latest in all worktrees:
+
+```
+/popkit-dev:worktree update-all
+/popkit-dev:worktree update-all --install
+```
+
+Options:
+- `--install` - Run npm install after updates
+
+### prune
+
+Remove stale references:
+
+```
+/popkit-dev:worktree prune
+/popkit-dev:worktree prune --dry-run
+```
+
+Options:
+- `--dry-run` - Preview changes without executing
+
+### init
+
+Auto-branch with updates for dev branches:
+
+```
+/popkit-dev:worktree init
+/popkit-dev:worktree init --pattern "dev-*"
+```
+
+Options:
+- `--pattern <pattern>` - Filter branches by pattern
 
 ### analyze
 
-Find opportunities for worktrees:
+Health analysis and cleanup recommendations:
 
 ```
 /popkit-dev:worktree analyze
 ```
 
-Checks for:
+## Skill Integration
 
-- Multiple in-progress branches
-- Stale branches with uncommitted work
-- Complex merge situations
+This command delegates to the **pop-worktree-manager** skill which handles:
 
-### remove
+- Cross-platform path handling (Windows long paths, Path objects)
+- STATUS.json integration for morning routine reporting
+- Protected branch safety checks (main/master/develop/production)
+- Multi-operation routing via `--operation` flag
+- Shared utilities from `popkit_shared` package
 
-Remove worktree and optionally branch:
+## Integration Points
 
-```
-/popkit-dev:worktree remove <name>
-/popkit-dev:worktree remove feature/auth --keep-branch
-```
+**Morning Routine**: Displays worktree status (name, base branch, commits behind)
 
-Process:
+**Next Action**: Recommends sync when worktree is behind base branch
 
-1. Confirm worktree exists
-2. Check for uncommitted changes
-3. Warn if uncommitted: "Worktree has uncommitted changes. Delete anyway?"
-4. Remove: `git worktree remove .worktrees/<name>`
-5. Optionally delete branch
-
-### prune
-
-Clean up stale worktrees:
-
-```
-/popkit-dev:worktree prune
-```
-
-Removes worktrees with deleted directories.
-
-## Architecture Integration
-
-| Component           | Integration                                         |
-| ------------------- | --------------------------------------------------- |
-| Skill               | `skills/pop-worktrees/SKILL.md`                     |
-| Git Worktrees       | `git worktree add/list/remove/prune` commands       |
-| Directory Structure | Creates `.worktrees/` in project root               |
-| Branch Management   | Creates feature branches with `-b` flag             |
-| Project Detection   | Detects npm/cargo/pip for dependency installation   |
-| Test Verification   | Runs detected test framework after setup            |
-| .gitignore          | Verifies `.worktrees/` is ignored                   |
-| Safety Checks       | Warns on uncommitted changes before removal         |
-| Hooks               | Can trigger `pre-tool-use.py` for safety validation |
-
-## Executable Commands
-
-### Create Worktree
-
-```bash
-# Create worktree directory
-mkdir -p .worktrees
-
-# Add worktree with new branch
-git worktree add .worktrees/<name> -b <name>
-
-# Or from specific base branch
-git worktree add .worktrees/<name> -b <name> origin/main
-
-# Setup dependencies
-cd .worktrees/<name> && npm install  # Node.js
-cd .worktrees/<name> && pip install -e .  # Python
-cd .worktrees/<name> && cargo build  # Rust
-```
-
-### List Worktrees
-
-```bash
-git worktree list
-```
-
-### Remove Worktree
-
-```bash
-# Check for uncommitted changes first
-cd .worktrees/<name> && git status --porcelain
-
-# Remove worktree
-git worktree remove .worktrees/<name>
-
-# Optionally delete branch
-git branch -d <name>
-```
-
-### Prune Stale
-
-```bash
-git worktree prune
+**STATUS.json Schema**:
+```json
+{
+  "git": {
+    "worktree": {
+      "isWorktree": true,
+      "name": "dev-feat-worktree",
+      "baseRef": "main",
+      "linkedPath": "/abs/path/to/main-repo"
+    }
+  }
+}
 ```
 
 ## Examples
 
-```
-# Start new feature
-/popkit-dev:worktree create feature/user-profiles
-
-# See all workspaces
+```bash
+# List all worktrees with status
 /popkit-dev:worktree list
 
-# Clean up after merge
-/popkit-dev:worktree remove feature/user-profiles
+# Create feature worktree from main
+/popkit-dev:worktree create feat/new-feature --base main
 
-# Find parallel work opportunities
+# Update all worktrees and install dependencies
+/popkit-dev:worktree update-all --install
+
+# Analyze worktree health
 /popkit-dev:worktree analyze
+
+# Remove worktree with safety checks
+/popkit-dev:worktree remove dev-feat-worktree
+
+# Clean up stale references
+/popkit-dev:worktree prune --dry-run
 ```
+
+---
+
+Use this command to work on multiple branches simultaneously without the overhead of constant branch switching.
