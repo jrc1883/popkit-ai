@@ -74,7 +74,7 @@ verification:
 
 expected_outcomes:
   - All tests pass
-  - Coverage >= 90%
+  - "Coverage >= 90%"
   - Linter passes with no errors
 
 success_criteria:
@@ -83,10 +83,10 @@ success_criteria:
     - Secret must not be hardcoded
     - Expired tokens must be rejected
   performance:
-    - Token generation: < 10ms
-    - Token verification: < 5ms
+    - "Token generation: < 10ms"
+    - "Token verification: < 5ms"
   testing:
-    - Test coverage: >= 90%
+    - "Test coverage: >= 90%"
     - All security test cases pass
 
 tags:
