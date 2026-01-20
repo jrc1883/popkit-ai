@@ -220,8 +220,9 @@ class BenchmarkOrchestrator:
         # Build environment
         env = self._build_environment(session_id, with_popkit, worktree_path)
 
-        # Get prompt
-        prompt = self.task_def.get("user_prompt", "")
+        # Get prompt and augment with benchmark instructions
+        base_prompt = self.task_def.get("user_prompt", "")
+        prompt = self._augment_prompt_for_benchmark(base_prompt)
 
         # Spawn window
         self._spawn_window(prompt, env, worktree_path, session_id)
@@ -250,6 +251,31 @@ class BenchmarkOrchestrator:
             branch_name=branch_name,
         )
 
+    def _augment_prompt_for_benchmark(self, base_prompt: str) -> str:
+        """Add benchmark-specific instructions to prompt for autonomous execution."""
+        benchmark_instructions = """
+
+IMPORTANT BENCHMARK INSTRUCTIONS:
+This is an automated benchmark test. You must work COMPLETELY AUTONOMOUSLY without asking any questions or requesting approvals.
+
+For all decisions:
+- Choose the most reasonable/recommended option
+- Follow standard best practices
+- Auto-approve all reasonable actions (tests, installs, builds, linting)
+- Make implementation decisions based on the task requirements
+- Do NOT use AskUserQuestion - make decisions directly
+- Do NOT ask for permission - proceed with standard operations
+
+For this specific task:
+- Use the specifications provided in the task description
+- Follow standard patterns for this type of implementation
+- Test your work when complete
+- Fix any issues that arise
+
+Work efficiently and complete the task without human intervention.
+"""
+        return base_prompt + benchmark_instructions
+
     def _build_environment(
         self, session_id: str, with_popkit: bool, worktree_path: Path
     ) -> Dict[str, str]:
@@ -262,6 +288,9 @@ class BenchmarkOrchestrator:
 
         # Enable benchmark mode
         env["POPKIT_BENCHMARK_MODE"] = "true"
+
+        # Disable security filters for benchmarks (prevent false positives)
+        env["POPKIT_SECURITY_FILTERS"] = "off"
 
         # Set response file
         if self.response_file:
@@ -286,7 +315,23 @@ class BenchmarkOrchestrator:
 
         try:
             if system == "Windows":
-                # Windows: Use 'start' to open new cmd window
+                # Windows: Create batch file with environment embedded
+                # This ensures PATH and other env vars are available in spawned window
+                batch_file = self.output_dir / f"launch-{session_id}.bat"
+
+                with open(batch_file, "w") as f:
+                    # Write environment variables
+                    for key, value in env.items():
+                        # Escape special chars for batch
+                        safe_value = value.replace("%", "%%").replace('"', '""')
+                        f.write(f'set "{key}={safe_value}"\n')
+
+                    # Change to worktree and run claude
+                    f.write(f'cd /d "{worktree_path}"\n')
+                    f.write(f'claude "{escaped_prompt}"\n')
+                    f.write("pause\n")  # Keep window open after completion
+
+                # Spawn new window running the batch file
                 cmd = [
                     "cmd",
                     "/c",
@@ -294,9 +339,9 @@ class BenchmarkOrchestrator:
                     f"Claude Benchmark - {session_id}",
                     "cmd",
                     "/k",
-                    f'cd /d "{worktree_path}" && claude "{escaped_prompt}"',
+                    str(batch_file),
                 ]
-                subprocess.Popen(cmd, env=env)
+                subprocess.Popen(cmd)
 
             elif system == "Darwin":
                 # Mac: Use osascript to open new Terminal window

@@ -405,26 +405,68 @@ class UserPromptSubmitHook:
             },
         }
 
-    def load_security_filters(self) -> List[str]:
-        """Load security filters for malicious content detection"""
-        return [
-            r"rm\s+-rf\s+/",
-            r"sudo\s+rm",
-            r"format\s+c:",
-            r"del\s+/s\s+/q",
-            r"DROP\s+DATABASE",
-            r"eval\s*\(",
-            r"exec\s*\(",
-            r"system\s*\(",
-            r"shell_exec",
-            r"passthru",
-            r"curl.*\|\s*sh",
-            r"wget.*\|\s*sh",
-            r"\.\.\/.*\.\.\/",
-            r"password\s*=\s*[\"'][^\"']+[\"']",
-            r"secret\s*=\s*[\"'][^\"']+[\"']",
-            r"api[_-]?key\s*=\s*[\"'][^\"']+[\"']",
-        ]
+    def load_security_filters(self) -> Dict[str, List[str]]:
+        """Load tiered security filters for malicious content detection
+
+        Returns dict with keys: 'light', 'moderate', 'strict'
+        """
+        return {
+            # Light: Only catastrophic operations (data loss, system damage)
+            "light": [
+                r"rm\s+-rf\s+/(?!tmp|var)",  # Exclude safe temp dirs
+                r"sudo\s+rm\s+-rf\s+/",
+                r"format\s+c:",
+                r"del\s+/s\s+/q\s+c:\\",
+                r"DROP\s+DATABASE\s+\w+\s*;",  # Actual SQL execution
+                r"DROP\s+TABLE\s+\w+\s*;",
+            ],
+            # Moderate: Add command injection and credential exposure
+            "moderate": [
+                # Catastrophic operations (from light)
+                r"rm\s+-rf\s+/(?!tmp|var)",
+                r"sudo\s+rm\s+-rf\s+/",
+                r"format\s+c:",
+                r"del\s+/s\s+/q\s+c:\\",
+                r"DROP\s+DATABASE\s+\w+\s*;",
+                r"DROP\s+TABLE\s+\w+\s*;",
+                # Command injection (only in execution context)
+                r";\s*rm\s+",  # Command chaining
+                r"&&\s*rm\s+",
+                r"\|\s*sh\s*$",  # Pipe to shell at end of line
+                r"curl\s+[^|]+\|\s*bash",
+                r"wget\s+[^|]+\|\s*bash",
+                # Actual credential patterns (not in code blocks/examples)
+                r"(?<!example|test|demo)password\s*=\s*[\"'][^\"']{8,}[\"']",
+                r"(?<!example|test|demo)secret\s*=\s*[\"'][^\"']{20,}[\"']",
+                r"(?<!example|test)api[_-]?key\s*=\s*[\"'][^\"']{20,}[\"']",
+            ],
+            # Strict: Include code discussions (many false positives)
+            "strict": [
+                # Everything from moderate
+                r"rm\s+-rf\s+/",
+                r"sudo\s+rm",
+                r"format\s+c:",
+                r"del\s+/s\s+/q",
+                r"DROP\s+DATABASE",
+                r"DROP\s+TABLE",
+                r";\s*rm\s+",
+                r"&&\s*rm\s+",
+                r"\|\s*sh",
+                r"curl.*\|\s*bash",
+                r"wget.*\|\s*bash",
+                # Code discussions (high false positive rate)
+                r"eval\s*\(",
+                r"exec\s*\(",
+                r"system\s*\(",
+                r"shell_exec",
+                r"passthru",
+                r"\.\.\/.*\.\.\/",  # Path traversal
+                # Any credential patterns
+                r"password\s*=\s*[\"'][^\"']+[\"']",
+                r"secret\s*=\s*[\"'][^\"']+[\"']",
+                r"api[_-]?key\s*=\s*[\"'][^\"']+[\"']",
+            ],
+        }
 
     def load_agent_registry(self) -> Dict[str, Any]:
         """Load agent registry for capability mapping"""
@@ -533,14 +575,27 @@ class UserPromptSubmitHook:
         conn.commit()
         return conn
 
-    def detect_security_issues(self, prompt: str) -> List[str]:
-        """Detect potential security issues in user prompt"""
-        issues = []
-        prompt_lower = prompt.lower()
+    def detect_security_issues(self, prompt: str, mode: str = "moderate") -> List[str]:
+        """Detect potential security issues in user prompt
 
-        for pattern in self.security_filters:
+        Args:
+            prompt: User prompt to check
+            mode: Security level - "light", "moderate", or "strict"
+
+        Returns:
+            List of detected security issues
+        """
+        issues = []
+
+        # Get filters for the specified mode (default to moderate)
+        if mode not in self.security_filters:
+            mode = "moderate"
+
+        filters = self.security_filters[mode]
+
+        for pattern in filters:
             if re.search(pattern, prompt, re.IGNORECASE):
-                issues.append(f"Potential security risk: {pattern}")
+                issues.append(f"[{mode.upper()}] Potential security risk: {pattern}")
 
         return issues
 
@@ -809,15 +864,32 @@ class UserPromptSubmitHook:
 
     def process_prompt(self, prompt: str) -> Dict[str, Any]:
         """Main processing function for user prompts"""
-        # Security check
-        security_issues = self.detect_security_issues(prompt)
-        if security_issues:
-            return {
-                "action": "block",
-                "reason": "Security violation detected",
-                "issues": security_issues,
-                "session_id": self.session_id,
-            }
+        # Security check (opt-in via POPKIT_SECURITY_FILTERS environment variable)
+        # Modes: "off" (default), "light", "moderate", "strict"
+        # - off: No security checks
+        # - light: Only catastrophic operations (rm -rf /, DROP DATABASE)
+        # - moderate: Light + command injection + credential exposure
+        # - strict: Everything including code discussions (high false positives)
+        security_mode = os.environ.get("POPKIT_SECURITY_FILTERS", "off").lower()
+
+        if security_mode != "off":
+            # Detect security issues using appropriate filter tier
+            security_issues = self.detect_security_issues(prompt, mode=security_mode)
+            if security_issues:
+                # Always block on strict mode
+                if security_mode == "strict":
+                    return {
+                        "action": "block",
+                        "reason": "Security violation detected",
+                        "issues": security_issues,
+                        "session_id": self.session_id,
+                    }
+                # For light/moderate, just log warnings (non-blocking)
+                else:
+                    print(
+                        f"[SECURITY WARNING - {security_mode.upper()}] {security_issues}",
+                        file=sys.stderr,
+                    )
 
         # Parse thinking flags (-T, --thinking, --no-thinking)
         thinking_flags = parse_thinking_flags(prompt)
