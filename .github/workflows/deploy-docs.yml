@@ -183,6 +183,10 @@ jobs:
             });
 
       - name: Preview summary
+        env:
+          BRANCH_NAME: ${{ github.head_ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PREVIEW_URL: ${{ steps.deploy-preview.outputs.url }}
         run: |
           {
             echo "## Documentation Preview"
@@ -190,9 +194,9 @@ jobs:
             echo "| Property | Value |"
             echo "|----------|-------|"
             echo "| Environment | Preview |"
-            echo "| PR | #${{ github.event.pull_request.number }} |"
-            echo "| Branch | \`${{ github.head_ref }}\` |"
-            echo "| Preview URL | ${{ steps.deploy-preview.outputs.url }} |"
+            echo "| PR | #${PR_NUMBER} |"
+            echo "| Branch | \`${BRANCH_NAME}\` |"
+            echo "| Preview URL | ${PREVIEW_URL} |"
             echo ""
             echo "Preview deployment available for testing."
           } >> "$GITHUB_STEP_SUMMARY"
