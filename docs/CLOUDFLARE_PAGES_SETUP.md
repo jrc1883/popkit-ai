@@ -264,9 +264,11 @@ Both should show the PopKit documentation site with:
 ### Deployment Process
 
 1. **Download artifact**: Get build output from build job
-2. **Deploy to Cloudflare Pages**: Use `cloudflare/pages-action@v1`
+2. **Deploy to Cloudflare Pages**: Use `cloudflare/wrangler-action@v3` with `pages deploy` command
 3. **Comment on PR**: (Preview only) Add preview URL to PR
 4. **Summary**: Add deployment details to workflow summary
+
+**Note**: The official `cloudflare/pages-action` is now deprecated. We use `wrangler-action@v3` which is the recommended approach from Cloudflare.
 
 ---
 
