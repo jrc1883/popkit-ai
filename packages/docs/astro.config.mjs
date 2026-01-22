@@ -3,7 +3,7 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://popkit-docs.pages.dev',
+	site: 'https://popkit.unjoe.me',
 	integrations: [
 		starlight({
 			title: 'PopKit Documentation',
