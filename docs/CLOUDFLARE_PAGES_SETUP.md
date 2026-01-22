@@ -57,7 +57,7 @@ Keep this tab open for the next step.
 2. Click on your **popkit-docs** project
 3. Go to **Settings** tab
 4. Scroll to **API** section
-5. Copy your **Account ID** (looks like: `abc123def456ghi789jkl012mno345pq`)
+5. Copy your **Account ID** (32-character hex string)
 
 **Save this**: You'll need it for GitHub secrets.
 
@@ -78,7 +78,7 @@ Keep this tab open for the next step.
 9. Click **Create Token**
 10. **IMPORTANT**: Copy the token immediately (shown only once!)
 
-**Token looks like**: `abc123-XyZ789-def456-GhI012-jkl345`
+**Token format**: Long alphanumeric string (40+ characters)
 
 **Save this securely**: You'll need it for GitHub secrets.
 
