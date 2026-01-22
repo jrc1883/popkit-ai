@@ -110,14 +110,11 @@ jobs:
           path: packages/docs/dist
 
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: popkit-docs
-          directory: packages/docs/dist
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          command: pages deploy packages/docs/dist --project-name=popkit-docs --branch=main
 
       - name: Deployment summary
         run: |
@@ -158,15 +155,12 @@ jobs:
           path: packages/docs/dist
 
       - name: Deploy preview to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+        uses: cloudflare/wrangler-action@v3
         id: deploy-preview
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: popkit-docs
-          directory: packages/docs/dist
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.head_ref }}
+          command: pages deploy packages/docs/dist --project-name=popkit-docs --branch=${{ github.head_ref }}
 
       - name: Comment preview URL on PR
         uses: actions/github-script@v7
