@@ -1,0 +1,207 @@
+# Deploy Documentation to Cloudflare Pages
+#
+# Builds and deploys the PopKit documentation site (Astro + Starlight) to
+# Cloudflare Pages with custom domain support.
+#
+# Triggers:
+# - Push to main: Production deployment to popkit.unjoe.me
+# - Pull requests: Preview deployments for testing
+#
+# Required Secrets:
+# - CLOUDFLARE_API_TOKEN: API token with Pages:Edit permissions
+# - CLOUDFLARE_ACCOUNT_ID: Cloudflare account ID
+#
+# Issue #97 - Documentation Website Implementation
+
+name: Deploy Docs
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'packages/docs/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/deploy-docs.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'packages/docs/**'
+      - 'package.json'
+      - 'package-lock.json'
+
+concurrency:
+  group: deploy-docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # =============================================================================
+  # BUILD DOCUMENTATION
+  # =============================================================================
+
+  build:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build documentation site
+        run: npm run docs:build
+        env:
+          NODE_ENV: production
+
+      - name: Verify build output
+        run: |
+          echo "Verifying build output..."
+
+          if [ ! -d "packages/docs/dist" ]; then
+            echo "Error: Build output directory not found"
+            exit 1
+          fi
+
+          if [ ! -f "packages/docs/dist/index.html" ]; then
+            echo "Error: index.html not found in build output"
+            exit 1
+          fi
+
+          echo "Build verification passed!"
+          echo ""
+          echo "Build output contents:"
+          ls -la packages/docs/dist/
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-build
+          path: packages/docs/dist
+          retention-days: 1
+
+  # =============================================================================
+  # DEPLOY TO CLOUDFLARE PAGES
+  # =============================================================================
+
+  deploy:
+    name: Deploy to Cloudflare Pages
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docs-build
+          path: packages/docs/dist
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy packages/docs/dist --project-name=popkit-docs --branch=main --commit-dirty=true
+          wranglerVersion: '3.90.0'
+
+      - name: Deployment summary
+        run: |
+          {
+            echo "## Documentation Deployment"
+            echo ""
+            echo "| Property | Value |"
+            echo "|----------|-------|"
+            echo "| Environment | Production |"
+            echo "| Branch | \`main\` |"
+            echo "| Domain | https://popkit.unjoe.me |"
+            echo "| Cloudflare Pages | https://popkit-docs.pages.dev |"
+            echo ""
+            echo "### What was deployed"
+            echo "- Documentation pages built from \`packages/docs/\`"
+            echo "- Astro static site with Starlight theme"
+            echo "- Custom domain: popkit.unjoe.me"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # =============================================================================
+  # PREVIEW DEPLOYMENT FOR PULL REQUESTS
+  # =============================================================================
+
+  preview:
+    name: Deploy Preview
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docs-build
+          path: packages/docs/dist
+
+      - name: Deploy preview to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        id: deploy-preview
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy packages/docs/dist --project-name=popkit-docs --branch=${{ github.head_ref }} --commit-dirty=true
+          wranglerVersion: '3.90.0'
+
+      - name: Comment preview URL on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const previewUrl = '${{ steps.deploy-preview.outputs.url }}';
+            const comment = `## 📚 Documentation Preview
+
+            Your documentation changes are ready for preview!
+
+            **Preview URL:** ${previewUrl}
+
+            This preview will be available until the PR is closed.`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Preview summary
+        env:
+          BRANCH_NAME: ${{ github.head_ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PREVIEW_URL: ${{ steps.deploy-preview.outputs.url }}
+        run: |
+          {
+            echo "## Documentation Preview"
+            echo ""
+            echo "| Property | Value |"
+            echo "|----------|-------|"
+            echo "| Environment | Preview |"
+            echo "| PR | #${PR_NUMBER} |"
+            echo "| Branch | \`${BRANCH_NAME}\` |"
+            echo "| Preview URL | ${PREVIEW_URL} |"
+            echo ""
+            echo "Preview deployment available for testing."
+          } >> "$GITHUB_STEP_SUMMARY"
