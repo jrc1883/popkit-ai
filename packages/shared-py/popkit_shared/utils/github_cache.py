@@ -18,6 +18,7 @@ import subprocess
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from urllib.parse import urlparse
 
 # =============================================================================
 # Cache Configuration
@@ -127,11 +128,24 @@ class LocalGitHubCache:
                 url = result.stdout.strip()
                 # Parse GitHub URL: https://github.com/owner/repo.git
                 # or git@github.com:owner/repo.git
-                if "github.com" in url:
-                    parts = url.split("/")[-2:]
-                    owner = parts[0].split(":")[-1]  # Handle git@ format
-                    repo = parts[1].replace(".git", "")
-                    return f"{owner}/{repo}"
+
+                # Handle SSH format (git@github.com:owner/repo.git)
+                if url.startswith("git@"):
+                    # Extract the part after git@
+                    if "github.com:" in url:
+                        path = url.split("github.com:")[-1]
+                        parts = path.rstrip(".git").split("/")
+                        if len(parts) == 2:
+                            return f"{parts[0]}/{parts[1]}"
+                else:
+                    # Handle HTTPS format (https://github.com/owner/repo.git)
+                    parsed = urlparse(url)
+                    # Security: Verify the hostname is exactly github.com
+                    if parsed.netloc == "github.com":
+                        path = parsed.path.strip("/").rstrip(".git")
+                        parts = path.split("/")
+                        if len(parts) == 2:
+                            return f"{parts[0]}/{parts[1]}"
 
             return "unknown"
         except Exception:
