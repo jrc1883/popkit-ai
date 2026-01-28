@@ -7,10 +7,13 @@ Generates formatted markdown report for nightly routine with:
 - Score breakdown table
 - Uncommitted changes (if any)
 - Recommendations before leaving
+- Encouraging Bible verse (Issue #71)
 - Next session actions
 """
 
+import sys
 from datetime import datetime
+from pathlib import Path
 from typing import Dict, Any, List
 
 # Try relative import (when used as package), fall back to direct import
@@ -18,6 +21,18 @@ try:
     from .sleep_score import format_breakdown_table, get_score_interpretation
 except ImportError:
     from sleep_score import format_breakdown_table, get_score_interpretation
+
+# Import Bible verse utility (Issue #71)
+try:
+    # Add shared-py to path
+    sys.path.insert(
+        0, str(Path.home() / ".claude" / "popkit" / "packages" / "shared-py")
+    )
+    from popkit_shared.utils.bible_verses import get_nightly_verse
+
+    HAS_BIBLE_VERSES = True
+except ImportError:
+    HAS_BIBLE_VERSES = False
 
 
 def generate_nightly_report(
@@ -161,6 +176,17 @@ def generate_nightly_report(
     report.append("STATUS.json updated ✅")
     report.append("Session state captured for tomorrow's resume.")
     report.append("")
+
+    # Bible verse (Issue #71)
+    if HAS_BIBLE_VERSES:
+        verse = get_nightly_verse()
+        if verse:
+            report.append("## 🙏 Good Night")
+            report.append("")
+            report.append(verse)
+            report.append("")
+            report.append("Rest well! See you tomorrow.")
+            report.append("")
 
     # Add PopKit Way ending: AskUserQuestion instructions
     report.append("## 🎯 Next Steps")

@@ -1,0 +1,265 @@
+#!/usr/bin/env python3
+"""
+Bible Verse Utility for Nightly Routine
+
+Provides encouraging Bible verses for nightly routine output.
+Supports rotation modes: random, sequential, daily.
+
+Part of PopKit Issue #71.
+"""
+
+import json
+import random
+from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Optional
+
+
+@dataclass
+class BibleVerse:
+    """A Bible verse with text and reference."""
+
+    text: str
+    reference: str
+
+    def format(self) -> str:
+        """Format verse for display.
+
+        Returns:
+            Formatted string with text and reference
+        """
+        return f'"{self.text}"\n- {self.reference}'
+
+
+# =============================================================================
+# DEFAULT VERSE COLLECTION
+# =============================================================================
+
+DEFAULT_VERSES = [
+    BibleVerse(
+        text="Come to me, all you who are weary and burdened, and I will give you rest.",
+        reference="Matthew 11:28",
+    ),
+    BibleVerse(
+        text="Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God. And the peace of God, which transcends all understanding, will guard your hearts and your minds in Christ Jesus.",
+        reference="Philippians 4:6-7",
+    ),
+    BibleVerse(
+        text="In peace I will lie down and sleep, for you alone, Lord, make me dwell in safety.",
+        reference="Psalm 4:8",
+    ),
+    BibleVerse(
+        text="When you lie down, you will not be afraid; when you lie down, your sleep will be sweet.",
+        reference="Proverbs 3:24",
+    ),
+    BibleVerse(
+        text="In vain you rise early and stay up late, toiling for food to eat— for he grants sleep to those he loves.",
+        reference="Psalm 127:2",
+    ),
+    BibleVerse(
+        text="But those who hope in the Lord will renew their strength. They will soar on wings like eagles; they will run and not grow weary, they will walk and not be faint.",
+        reference="Isaiah 40:31",
+    ),
+    BibleVerse(
+        text="The Lord is my shepherd, I lack nothing. He makes me lie down in green pastures, he leads me beside quiet waters, he refreshes my soul.",
+        reference="Psalm 23:1-3",
+    ),
+    BibleVerse(
+        text="Cast all your anxiety on him because he cares for you.",
+        reference="1 Peter 5:7",
+    ),
+    BibleVerse(
+        text="Be still, and know that I am God.",
+        reference="Psalm 46:10",
+    ),
+    BibleVerse(
+        text="I have told you these things, so that in me you may have peace. In this world you will have trouble. But take heart! I have overcome the world.",
+        reference="John 16:33",
+    ),
+]
+
+
+# =============================================================================
+# VERSE SELECTOR
+# =============================================================================
+
+
+class VerseSelector:
+    """Selects verses according to rotation mode."""
+
+    def __init__(
+        self,
+        verses: Optional[list[BibleVerse]] = None,
+        rotation: str = "random",
+        state_file: Optional[Path] = None,
+    ):
+        """Initialize verse selector.
+
+        Args:
+            verses: List of verses (uses DEFAULT_VERSES if None)
+            rotation: Rotation mode ('random', 'sequential', 'daily')
+            state_file: Path to state file for sequential/daily tracking
+        """
+        self.verses = verses or DEFAULT_VERSES
+        self.rotation = rotation
+        self.state_file = state_file or Path(".claude/popkit/verse-state.json")
+        self.state = self._load_state()
+
+    def _load_state(self) -> dict:
+        """Load state from file.
+
+        Returns:
+            State dict with 'index' and 'date'
+        """
+        if not self.state_file.exists():
+            return {"index": 0, "date": None}
+
+        try:
+            with open(self.state_file, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, IOError):
+            return {"index": 0, "date": None}
+
+    def _save_state(self) -> None:
+        """Save state to file."""
+        self.state_file.parent.mkdir(parents=True, exist_ok=True)
+        with open(self.state_file, "w", encoding="utf-8") as f:
+            json.dump(self.state, f, indent=2)
+
+    def select(self) -> BibleVerse:
+        """Select a verse according to rotation mode.
+
+        Returns:
+            Selected BibleVerse
+        """
+        if self.rotation == "random":
+            return random.choice(self.verses)
+
+        elif self.rotation == "sequential":
+            index = self.state.get("index", 0) % len(self.verses)
+            verse = self.verses[index]
+
+            # Update state for next time
+            self.state["index"] = (index + 1) % len(self.verses)
+            self._save_state()
+
+            return verse
+
+        elif self.rotation == "daily":
+            today = datetime.now().date().isoformat()
+            last_date = self.state.get("date")
+
+            # If it's a new day, move to next verse
+            if last_date != today:
+                index = self.state.get("index", 0)
+                self.state["index"] = (index + 1) % len(self.verses)
+                self.state["date"] = today
+                self._save_state()
+
+            index = self.state.get("index", 0) % len(self.verses)
+            return self.verses[index]
+
+        else:
+            # Fallback to random
+            return random.choice(self.verses)
+
+
+# =============================================================================
+# CONFIGURATION
+# =============================================================================
+
+
+def load_verse_config() -> dict:
+    """Load verse configuration from popkit config.
+
+    Returns:
+        Config dict with 'enabled', 'rotation', and 'custom_verses'
+    """
+    config_file = Path(".claude/popkit/config.json")
+    if not config_file.exists():
+        return {
+            "enabled": True,
+            "rotation": "random",
+            "custom_verses": [],
+        }
+
+    try:
+        with open(config_file, "r", encoding="utf-8") as f:
+            config = json.load(f)
+            verse_config = config.get("nightly_routine", {}).get("bible_verse", {})
+            return {
+                "enabled": verse_config.get("enabled", True),
+                "rotation": verse_config.get("rotation", "random"),
+                "custom_verses": verse_config.get("custom_verses", []),
+            }
+    except (json.JSONDecodeError, IOError):
+        return {
+            "enabled": True,
+            "rotation": "random",
+            "custom_verses": [],
+        }
+
+
+def get_nightly_verse() -> Optional[str]:
+    """Get formatted verse for nightly routine.
+
+    Returns:
+        Formatted verse string, or None if disabled
+    """
+    config = load_verse_config()
+
+    if not config["enabled"]:
+        return None
+
+    # Use custom verses if provided
+    verses = DEFAULT_VERSES
+    if config["custom_verses"]:
+        verses = [
+            BibleVerse(text=v["text"], reference=v["reference"]) for v in config["custom_verses"]
+        ]
+
+    selector = VerseSelector(verses=verses, rotation=config["rotation"])
+    verse = selector.select()
+    return verse.format()
+
+
+# =============================================================================
+# CLI INTERFACE
+# =============================================================================
+
+if __name__ == "__main__":
+    # Test the verse selector
+    print("=== Bible Verse Selector Test ===\n")
+
+    print("Random selection:")
+    for i in range(3):
+        verse = get_nightly_verse()
+        print(f"\n{i + 1}. {verse}")
+
+    print("\n\n=== Configuration Options ===")
+    print(
+        """
+Add to .claude/popkit/config.json:
+
+{
+  "nightly_routine": {
+    "bible_verse": {
+      "enabled": true,
+      "rotation": "random",  // or "sequential", "daily"
+      "custom_verses": []
+    }
+  }
+}
+
+Custom verse format:
+{
+  "custom_verses": [
+    {
+      "text": "Your verse text here",
+      "reference": "Book Chapter:Verse"
+    }
+  ]
+}
+"""
+    )

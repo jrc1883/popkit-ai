@@ -55,5 +55,8 @@
     "eslint": "^9.39.2",
     "prettier": "^3.8.1",
     "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "h3": "^1.15.5"
   }
 }
