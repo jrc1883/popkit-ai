@@ -8,8 +8,8 @@ Requires 3+ occurrences before adding new patterns.
 Part of Agent Expertise System (Issue #201).
 
 IMPORTANT: Agent identification currently requires POPKIT_ACTIVE_AGENT environment
-variable to be set by the agent routing system. Until Issue #672 is resolved,
-agent-specific expertise tracking will only work when this variable is properly set.
+variable to be set by the agent routing system (Issue #80).
+This variable is now set by session-start.py and semantic_router.py.
 """
 
 import json
