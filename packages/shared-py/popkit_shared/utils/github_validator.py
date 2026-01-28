@@ -225,9 +225,6 @@ def _find_similar_labels(target: str, options: List[str], max_suggestions: int =
     # Sort by distance
     distances.sort(key=lambda x: x[0])
 
-    # Return top matches
-    suggestions = [opt for _, opt in distances[:max_suggestions]]
-
     # Only return if reasonably close (distance < 5 or < half of target length)
     max_distance = min(5, len(target) // 2)
     return [s for d, s in distances if d <= max_distance][:max_suggestions]
