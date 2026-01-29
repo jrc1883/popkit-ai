@@ -1158,10 +1158,8 @@ def update_agent_expertise(tool_name: str, tool_input: dict, tool_output: str):
         from popkit_shared.utils.expertise_manager import ExpertiseManager
 
         # Determine which agent is active
-        # NOTE: POPKIT_ACTIVE_AGENT must be set by agent routing system
-        # LIMITATION: This environment variable is not currently set anywhere,
-        # so agent-specific tracking won't work until the routing system is updated.
-        # See Issue #672 for tracking this limitation.
+        # NOTE: POPKIT_ACTIVE_AGENT must be set by agent routing system (Issue #80)
+        # This is now handled by session-start.py and semantic_router.py
         agent_id = os.environ.get("POPKIT_ACTIVE_AGENT")
         if not agent_id:
             return  # No active agent identified

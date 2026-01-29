@@ -203,15 +203,28 @@ class SemanticRouter:
         query: str,
         min_confidence: float = DEFAULT_MIN_CONFIDENCE,
         context: Optional[Dict[str, Any]] = None,
+        set_active_agent: bool = False,
     ) -> Optional[RoutingResult]:
         """
         Route to single best agent.
+
+        Args:
+            query: User request or context
+            min_confidence: Minimum confidence threshold
+            context: Optional context dict (file, error, etc.)
+            set_active_agent: If True, sets POPKIT_ACTIVE_AGENT env var (Issue #80)
 
         Returns:
             Best RoutingResult or None if no match
         """
         results = self.route(query, top_k=1, min_confidence=min_confidence, context=context)
-        return results[0] if results else None
+        result = results[0] if results else None
+
+        # Set environment variable for agent expertise tracking (Issue #80)
+        if set_active_agent and result:
+            os.environ["POPKIT_ACTIVE_AGENT"] = result.agent
+
+        return result
 
     def explain_routing(
         self, query: str, context: Optional[Dict[str, Any]] = None
@@ -499,9 +512,22 @@ def route(
     return get_router().route(query, top_k=top_k, context=context)
 
 
-def route_single(query: str, context: Optional[Dict[str, Any]] = None) -> Optional[RoutingResult]:
-    """Convenience function to get single best agent."""
-    return get_router().route_single(query, context=context)
+def route_single(
+    query: str,
+    context: Optional[Dict[str, Any]] = None,
+    set_active_agent: bool = False,
+) -> Optional[RoutingResult]:
+    """Convenience function to get single best agent.
+
+    Args:
+        query: User request or context
+        context: Optional context dict
+        set_active_agent: If True, sets POPKIT_ACTIVE_AGENT env var (Issue #80)
+
+    Returns:
+        Best RoutingResult or None if no match
+    """
+    return get_router().route_single(query, context=context, set_active_agent=set_active_agent)
 
 
 # =============================================================================

@@ -29,6 +29,41 @@ All notable changes to PopKit are documented in this file.
 
 ---
 
+## [1.0.0-beta.6] - 2026-01-27
+
+### Added
+
+- **Agent Expertise Tracking Environment Variable** (#80): POPKIT_ACTIVE_AGENT now set automatically
+  - Modified `semantic_router.py` to set environment variable when routing to agent
+  - Modified `session-start.py` to set environment variable from `--agent` flag
+  - Enables agent-specific expertise tracking throughout the system
+  - Unblocks agent expertise system for all PopKit agents
+  - Fixed stale issue references (#672 → #80) from ElShaddai migration
+
+- **Bible Verses in Nightly Routine** (#71): Spiritual encouragement feature
+  - New `bible_verses.py` utility module with 10 default verses
+  - Integrated into nightly routine report generator
+  - Supports three rotation modes: random, sequential, daily
+  - Fully configurable via `.claude/popkit/config.json`
+  - Users can add custom verses or disable feature
+  - Displays verse, reference, and encouraging message
+
+### Fixed
+
+- **Security Vulnerability**: Updated h3 package from 1.15.4 to 1.15.5 (CVE-2025-23330)
+  - Fixed HTTP Request Smuggling vulnerability
+  - Applied via npm overrides in root package.json
+
+- **Code Quality**: Removed unused variable in github_validator.py
+  - Resolved Copilot Autofix warning
+
+### Chore
+
+- **Dependabot Updates**: Merged PRs #205 (prettier) and #204 (starlight)
+- **Repository Cleanup**: Removed untracked research files from root directory
+
+---
+
 ## [1.0.0-beta.5] - 2026-01-13
 
 ### Fixed
