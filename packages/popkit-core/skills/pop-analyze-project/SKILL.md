@@ -180,197 +180,39 @@ Perform deep analysis of a codebase to understand its architecture, patterns, de
 | `--quick`        | Quick summary only (5-10 lines)                                             |
 | `--focus <area>` | Focus analysis: `arch`, `deps`, `quality`, `patterns`                       |
 
-## JSON Output Mode
-
-When `--json` flag is provided:
-
-1. **Output Format**: Structured JSON matching `output-styles/schemas/project-analysis.schema.json`
-2. **Save Location**: `.claude/analysis.json`
-3. **Purpose**: Machine-readable output for skill generators and MCP generators
-
-### JSON Output Process
-
-```python
-import sys
-import json
-from datetime import datetime
-from pathlib import Path
-
-# Add pattern detector to path
-# No longer needed - install popkit-shared instead
-from pattern_detector import analyze_project, detect_frameworks
-
-# Detect patterns
-project_dir = Path.cwd()
-patterns = analyze_project(project_dir)
-frameworks = detect_frameworks(project_dir)
-
-# Build output
-output = {
-    "project_name": project_dir.name,
-    "project_type": frameworks[0].name if frameworks else "unknown",
-    "analyzed_at": datetime.now().isoformat(),
-    "frameworks": [
-        {"name": p.name, "confidence": p.confidence, "version": ""}
-        for p in frameworks
-    ],
-    "patterns": [
-        {
-            "name": p.name,
-            "category": p.category,
-            "confidence": p.confidence,
-            "examples": p.examples,
-            "description": p.description
-        }
-        for p in patterns if p.category != "framework"
-    ],
-    "recommended_skills": [],  # Populated based on patterns
-    "recommended_agents": [],  # Populated based on analysis
-    "commands": {},  # Extracted from package.json
-    "quality_metrics": {}  # TypeScript, linting, etc.
-}
-
-# Save to .claude/analysis.json
-claude_dir = project_dir / ".claude"
-claude_dir.mkdir(exist_ok=True)
-(claude_dir / "analysis.json").write_text(json.dumps(output, indent=2))
-print(json.dumps(output, indent=2))
-```
-
-### Skill/Agent Recommendation Logic
-
-Based on detected patterns, recommend:
-
-| Pattern                | Recommended Skill        | Priority |
-| ---------------------- | ------------------------ | -------- |
-| nextjs + vercel-config | `project:deploy`         | high     |
-| prisma OR drizzle      | `project:db-migrate`     | high     |
-| supabase               | `project:supabase-sync`  | medium   |
-| docker-compose         | `project:docker-dev`     | medium   |
-| feature-flags          | `project:feature-toggle` | low      |
-
-| Pattern                     | Recommended Agent        |
-| --------------------------- | ------------------------ |
-| Large codebase (>100 files) | `performance-optimizer`  |
-| React/Vue components        | `accessibility-guardian` |
-| API routes                  | `api-designer`           |
-| Security-sensitive          | `security-auditor`       |
-| Low test coverage           | `test-writer-fixer`      |
-
 ## Analysis Areas
 
 ### 1. Project Structure
 
-```bash
-# Map directory structure
-find . -type d -name "node_modules" -prune -o -type d -print | head -50
-
-# Find main entry points
-ls index.* main.* app.* src/index.* src/main.* 2>/dev/null
-
-# Count files by type
-find . -name "node_modules" -prune -o -type f -print | \
-  sed 's/.*\.//' | sort | uniq -c | sort -rn | head -20
-```
+Directory structure, entry points, file counts by type.
 
 ### 2. Technology Stack
 
-**Detect package managers:**
-
-```bash
-ls package.json yarn.lock pnpm-lock.yaml Cargo.toml pyproject.toml go.mod 2>/dev/null
-```
-
-**Detect frameworks:**
-
-- Next.js: `next.config.*`, `app/` or `pages/`
-- React: `react` in dependencies
-- Vue: `vue.config.*`
-- Express: `express` in dependencies
-- FastAPI: `fastapi` in dependencies
-- Rust: `Cargo.toml`
-
-**Detect databases:**
-
-- Supabase: `@supabase/supabase-js`
-- Prisma: `prisma/schema.prisma`
-- MongoDB: `mongoose`
-- PostgreSQL: `pg` or `postgres`
+Package managers, frameworks (Next.js, React, Vue, Express, FastAPI, Rust), databases (Supabase, Prisma, MongoDB, PostgreSQL).
 
 ### 3. Architecture Patterns
 
-**Frontend:**
-
-- Component structure (atomic design, feature-based, etc.)
-- State management (Redux, Zustand, Context)
-- Routing patterns
-
-**Backend:**
-
-- API design (REST, GraphQL, tRPC)
-- Service layer organization
-- Database access patterns
-
-**Common:**
-
-- Error handling patterns
-- Logging approach
-- Configuration management
+Frontend (component structure, state management, routing), Backend (API design, service layer, database access), Common (error handling, logging, configuration).
 
 ### 4. Code Quality
 
-```bash
-# Check for linting config
-ls .eslintrc* eslint.config.* .prettierrc* biome.json 2>/dev/null
-
-# Check TypeScript config
-ls tsconfig.json 2>/dev/null && grep "strict" tsconfig.json
-
-# Find TODO/FIXME comments
-grep -r "TODO\|FIXME" --include="*.ts" --include="*.tsx" --include="*.py" . | wc -l
-```
+Linting config, TypeScript strictness, TODO/FIXME comments.
 
 ### 5. Testing Coverage
 
-```bash
-# Find test files
-find . -name "*.test.*" -o -name "*.spec.*" -o -name "test_*" 2>/dev/null | wc -l
-
-# Check test config
-ls jest.config.* vitest.config.* pytest.ini 2>/dev/null
-
-# Find coverage reports
-ls coverage/ .coverage htmlcov/ 2>/dev/null
-```
+Test files, test frameworks, coverage reports.
 
 ### 6. Dependencies
 
-```bash
-# Count dependencies
-jq '.dependencies | length' package.json 2>/dev/null
-jq '.devDependencies | length' package.json 2>/dev/null
-
-# Check for outdated
-npm outdated 2>/dev/null | head -10
-
-# Check for vulnerabilities
-npm audit --json 2>/dev/null | jq '.metadata.vulnerabilities'
-```
+Count, outdated packages, security vulnerabilities.
 
 ### 7. CI/CD and DevOps
 
-```bash
-# Find CI config
-ls .github/workflows/*.yml .gitlab-ci.yml Jenkinsfile .circleci/config.yml 2>/dev/null
-
-# Find Docker
-ls Dockerfile docker-compose.yml 2>/dev/null
-
-# Find deployment config
-ls vercel.json netlify.toml fly.toml 2>/dev/null
-```
+CI config, Docker, deployment configuration.
 
 ## Output Format
+
+### Markdown Report
 
 ```markdown
 # [Project Name] Analysis Report
@@ -404,12 +246,6 @@ ls vercel.json netlify.toml fly.toml 2>/dev/null
 
 ## Architecture
 
-### Directory Structure
-
-\`\`\`
-[Tree output of main directories]
-\`\`\`
-
 ### Key Patterns
 
 - [Pattern 1]: [Where used]
@@ -430,18 +266,6 @@ ls vercel.json netlify.toml fly.toml 2>/dev/null
 | Test Coverage     | [X%]                 | [OK/Warning] |
 | TODO Comments     | [N]                  | [OK/Warning] |
 
-## Dependencies
-
-### Production ([N] packages)
-
-Top 5:
-
-- [package]: [version]
-
-### Security
-
-- Vulnerabilities: [Low: X, Medium: Y, High: Z]
-
 ## Recommendations
 
 ### Critical
@@ -456,19 +280,60 @@ Top 5:
 
 1. [Enhancement suggestion]
 
-## Agent Opportunities
-
-Based on analysis, these agents would be valuable:
-
-- [agent-name]: [why]
-- [agent-name]: [why]
-
 ## Next Steps
 
 1. Run `/generate-mcp` to create project-specific tools
 2. Run `/generate-skills` to capture discovered patterns
 3. Run `/setup-precommit` to configure quality gates
 ```
+
+### JSON Output
+
+When `--json` flag is provided, saves to `.claude/analysis.json`:
+
+```json
+{
+  "project_name": "project-name",
+  "project_type": "nextjs",
+  "analyzed_at": "2026-01-30T00:00:00Z",
+  "frameworks": [
+    {"name": "nextjs", "confidence": 0.95, "version": "14.0.0"}
+  ],
+  "patterns": [
+    {
+      "name": "pattern-name",
+      "category": "architecture",
+      "confidence": 0.85,
+      "examples": ["path1", "path2"],
+      "description": "Description"
+    }
+  ],
+  "recommended_skills": ["skill1", "skill2"],
+  "recommended_agents": ["agent1", "agent2"],
+  "commands": {},
+  "quality_metrics": {}
+}
+```
+
+## Skill/Agent Recommendations
+
+Based on detected patterns:
+
+| Pattern                | Recommended Skill        | Priority |
+| ---------------------- | ------------------------ | -------- |
+| nextjs + vercel-config | `project:deploy`         | high     |
+| prisma OR drizzle      | `project:db-migrate`     | high     |
+| supabase               | `project:supabase-sync`  | medium   |
+| docker-compose         | `project:docker-dev`     | medium   |
+| feature-flags          | `project:feature-toggle` | low      |
+
+| Pattern                     | Recommended Agent        |
+| --------------------------- | ------------------------ |
+| Large codebase (>100 files) | `performance-optimizer`  |
+| React/Vue components        | `accessibility-guardian` |
+| API routes                  | `api-designer`           |
+| Security-sensitive          | `security-auditor`       |
+| Low test coverage           | `test-writer-fixer`      |
 
 ## Integration
 
