@@ -19,154 +19,8 @@ next_skills:
   - pop-executing-plans
   - pop-subagent-driven
 workflow:
-  id: writing-plans
-  name: Plan Creation Workflow
-  version: 1
-  description: Create comprehensive implementation plans with validation
-  steps:
-    - id: check_context
-      description: Check for upstream context from brainstorming
-      type: skill
-      skill: pop-knowledge-lookup
-      next: context_decision
-    - id: context_decision
-      description: Decide how to proceed with available context
-      type: user_decision
-      question: "Do you have design context to start from?"
-      header: "Context"
-      options:
-        - id: from_design
-          label: "From design"
-          description: "Use existing design document"
-          next: gather_requirements
-        - id: from_issue
-          label: "From issue"
-          description: "Use GitHub issue as input"
-          next: gather_requirements
-        - id: fresh
-          label: "Start fresh"
-          description: "No existing context"
-          next: gather_requirements
-      next_map:
-        from_design: gather_requirements
-        from_issue: gather_requirements
-        fresh: gather_requirements
-    - id: gather_requirements
-      description: Gather and understand requirements
-      type: agent
-      agent: code-explorer
-      next: approach_decision
-    - id: approach_decision
-      description: Choose planning approach
-      type: user_decision
-      question: "What level of detail for the plan?"
-      header: "Detail"
-      options:
-        - id: comprehensive
-          label: "Comprehensive"
-          description: "Full TDD with every step documented"
-          next: write_plan
-        - id: standard
-          label: "Standard"
-          description: "Task-level with code examples"
-          next: write_plan
-        - id: outline
-          label: "Outline"
-          description: "High-level tasks only"
-          next: write_plan
-      next_map:
-        comprehensive: write_plan
-        standard: write_plan
-        outline: write_plan
-    - id: write_plan
-      description: Write the implementation plan
-      type: agent
-      agent: code-architect
-      next: validate_plan
-    - id: validate_plan
-      description: Validate plan structure and completeness
-      type: skill
-      skill: pop-validation-engine
-      next: validation_result
-    - id: validation_result
-      description: Review validation results
-      type: user_decision
-      question: "Plan validation complete. How to proceed?"
-      header: "Validation"
-      options:
-        - id: approved
-          label: "Approved"
-          description: "Plan is complete and correct"
-          next: github_decision
-        - id: revise
-          label: "Revise"
-          description: "Need to fix issues"
-          next: write_plan
-      next_map:
-        approved: github_decision
-        revise: write_plan
-    - id: github_decision
-      description: Decide on GitHub issue integration
-      type: user_decision
-      question: "Create or link a GitHub issue for tracking?"
-      header: "GitHub"
-      options:
-        - id: create
-          label: "Create issue"
-          description: "Create new tracking issue"
-          next: create_issue
-        - id: link
-          label: "Link existing"
-          description: "Link to existing issue"
-          next: link_issue
-        - id: skip
-          label: "Skip"
-          description: "No GitHub tracking"
-          next: execution_decision
-      next_map:
-        create: create_issue
-        link: link_issue
-        skip: execution_decision
-    - id: create_issue
-      description: Create GitHub issue with task checklist
-      type: skill
-      skill: pop-research-capture
-      next: execution_decision
-    - id: link_issue
-      description: Link plan to existing issue
-      type: skill
-      skill: pop-knowledge-lookup
-      next: execution_decision
-    - id: execution_decision
-      description: Choose how to execute the plan
-      type: user_decision
-      question: "Plan saved. How would you like to execute it?"
-      header: "Execution"
-      options:
-        - id: subagent
-          label: "Subagent-Driven"
-          description: "Execute now with fresh subagent per task"
-          next: execute_subagent
-        - id: parallel
-          label: "Parallel Session"
-          description: "Open new session with executing-plans"
-          next: complete
-        - id: later
-          label: "Later"
-          description: "Save for manual execution"
-          next: complete
-      next_map:
-        subagent: execute_subagent
-        parallel: complete
-        later: complete
-    - id: execute_subagent
-      description: Execute plan with subagent-driven approach
-      type: skill
-      skill: pop-subagent-dev
-      next: complete
-    - id: complete
-      description: Plan creation workflow complete
-      type: terminal
+  file: examples/workflow-definition.yml
+  description: Complete workflow definition with all decision points
 ---
 
 # Writing Plans
@@ -181,214 +35,141 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Save plans to:** `docs/plans/YYYY-MM-DD-<feature-name>.md`
 
-## Step 0: Check Upstream Context
+## Workflow
 
-**BEFORE creating a plan**, check for context from previous skills:
+See [examples/workflow-definition.yml](examples/workflow-definition.yml) for complete workflow with all decision points.
 
-```python
-from popkit_shared.utils.skill_context import load_skill_context, get_artifact
+**Key steps:**
+1. Check upstream context (from brainstorming or GitHub issue)
+2. Gather requirements
+3. Choose detail level (comprehensive/standard/outline)
+4. Write plan with code-architect agent
+5. Validate structure
+6. Create/link GitHub issue
+7. Offer execution choice (subagent/parallel/later)
 
-# Check for design context from brainstorming
-ctx = load_skill_context()
+## Plan Structure
 
-if ctx and ctx.previous_skill == "pop-brainstorming":
-    # Use design document as input
-    design_doc = get_artifact("design_document") or ctx.artifacts.get("design_document")
-    topic = ctx.previous_output.get("topic")
-    approach = ctx.previous_output.get("approach")
+### Document Header
 
-    # Don't re-ask decisions that were already made
-    existing_decisions = ctx.shared_decisions
+See [examples/plan-template.md](examples/plan-template.md) for complete template.
 
-    print(f"Using design from brainstorming: {design_doc}")
-    print(f"Topic: {topic}, Approach: {approach}")
-else:
-    # No upstream context - need to gather information
-    # Check for existing design docs
-    design_doc = None
-```
+Every plan must include:
+- **Goal**: One sentence describing what this builds
+- **Architecture**: 2-3 sentences about approach
+- **Tech Stack**: Key technologies/libraries
 
-If design document exists, **read it first** instead of asking questions already answered.
+### Task Breakdown
 
-## Bite-Sized Task Granularity
+**Bite-sized tasks** (2-5 minutes each):
+- Write failing test
+- Run to verify failure
+- Implement minimal code
+- Run to verify pass
+- Commit
 
-**Each step is one action (2-5 minutes):**
+Each task specifies:
+- **Files**: Exact paths to create/modify/test
+- **Steps**: Numbered with complete code examples
+- **Commands**: Exact commands with expected output
 
-- "Write the failing test" - step
-- "Run it to make sure it fails" - step
-- "Implement the minimal code to make the test pass" - step
-- "Run the tests and make sure they pass" - step
-- "Commit" - step
+**Template**: See [examples/plan-template.md](examples/plan-template.md) for full task structure.
 
-## Plan Document Header
+## Context Integration
 
-**Every plan MUST start with this header:**
+### Check Upstream Context
 
-```markdown
-# [Feature Name] Implementation Plan
+Before creating plan, check for context from previous skills (brainstorming, GitHub issues).
 
-> **For Claude:** Use executing-plans skill to implement this plan task-by-task.
+**Implementation**: See [examples/context-handling.md](examples/context-handling.md)
 
-**Goal:** [One sentence describing what this builds]
+Key points:
+- Load skill_context to check for design documents
+- Reuse decisions already made
+- Don't re-ask questions answered in brainstorming
 
-**Architecture:** [2-3 sentences about approach]
+### Save Context Output
 
-**Tech Stack:** [Key technologies/libraries]
+Save plan context for downstream skills (executing-plans, subagent-driven).
 
----
-```
+**Implementation**: See [examples/context-handling.md](examples/context-handling.md)
 
-## Task Structure
+Includes:
+- Plan file path
+- Task count
+- GitHub issue number
+- Link to workflow
 
-```markdown
-### Task N: [Component Name]
+## GitHub Integration
 
-**Files:**
+After plan created, integrate with GitHub for tracking:
 
-- Create: `exact/path/to/file.py`
-- Modify: `exact/path/to/existing.py:123-145`
-- Test: `tests/exact/path/to/test.py`
-
-**Step 1: Write the failing test**
-
-\`\`\`python
-def test_specific_behavior():
-result = function(input)
-assert result == expected
-\`\`\`
-
-**Step 2: Run test to verify it fails**
-
-Run: `pytest tests/path/test.py::test_name -v`
-Expected: FAIL with "function not defined"
-
-**Step 3: Write minimal implementation**
-
-\`\`\`python
-def function(input):
-return expected
-\`\`\`
-
-**Step 4: Run test to verify it passes**
-
-Run: `pytest tests/path/test.py::test_name -v`
-Expected: PASS
-
-**Step 5: Commit**
-
-\`\`\`bash
-git add tests/path/test.py src/path/file.py
-git commit -m "feat: add specific feature"
-\`\`\`
-```
-
-## Remember
-
-- Exact file paths always
-- Complete code in plan (not "add validation")
-- Exact commands with expected output
-- Reference relevant skills with @ syntax
-- DRY, YAGNI, TDD, frequent commits
-
-## After Plan Created: GitHub Issue
-
-**Check for existing issue or create one:**
-
+**Search for existing issue:**
 ```bash
-# Search for existing issue
 gh issue list --search "<topic>" --state open --json number,title --limit 5
 ```
 
-**If no issue exists, offer to create:**
+**Offer choices** via AskUserQuestion:
+- Create new issue with plan summary and task checklist
+- Link to existing issue number
+- Skip GitHub tracking
 
-```
-Use AskUserQuestion tool with:
-- question: "No GitHub issue exists for this work. Create one?"
-- header: "Issue"
-- options:
-  - label: "Create issue"
-    description: "Create tracking issue with plan summary and task checklist"
-  - label: "Link existing"
-    description: "I'll provide an issue number to link"
-  - label: "Skip"
-    description: "Don't track in GitHub"
-- multiSelect: false
-```
-
-**If creating issue:**
-
-```bash
-gh issue create --title "[Feature] <topic>" --body "$(cat <<'EOF'
-## Summary
-<brief description>
-
-## Implementation Plan
-See: `docs/plans/YYYY-MM-DD-<feature>.md`
-
-## Tasks
-- [ ] Task 1
-- [ ] Task 2
-...
-
----
-*Plan created by PopKit*
-EOF
-)"
-```
-
-## Context Output (for downstream skills)
-
-```python
-from popkit_shared.utils.skill_context import save_skill_context, SkillOutput, link_workflow_to_issue
-
-# Save plan context for executing-plans or subagent-driven
-save_skill_context(SkillOutput(
-    skill_name="pop-writing-plans",
-    status="completed",
-    output={
-        "plan_file": "docs/plans/YYYY-MM-DD-<feature>.md",
-        "task_count": <number of tasks>,
-        "github_issue": <issue number if created>
-    },
-    artifacts=["docs/plans/YYYY-MM-DD-<feature>.md"],
-    next_suggested="pop-executing-plans",
-    decisions_made=[<list of AskUserQuestion results>]
-))
-
-# Link to GitHub issue
-if issue_number:
-    link_workflow_to_issue(issue_number)
-```
+**Issue creation**: See [examples/context-handling.md](examples/context-handling.md) for template.
 
 ## Execution Handoff
 
-After saving the plan, use AskUserQuestion to offer execution choice:
+After saving plan, use AskUserQuestion to offer execution choice:
 
-```
-Use AskUserQuestion tool with:
-- question: "Plan saved. How would you like to execute it?"
-- header: "Execution"
-- options:
-  - label: "Subagent-Driven"
-    description: "Execute in this session with fresh subagent per task"
-  - label: "Parallel Session"
-    description: "Open new session with executing-plans skill"
-  - label: "Later"
-    description: "Save for now, I'll execute it manually"
-- multiSelect: false
-```
+**Options:**
+1. **Subagent-Driven**: Execute in this session with fresh subagent per task
+2. **Parallel Session**: Open new session with executing-plans skill
+3. **Later**: Save for manual execution
 
-**NEVER present as plain text** like "1. Subagent, 2. Parallel... type 1 or 2".
+**NEVER** present as plain text like "1. Subagent, 2. Parallel... type 1 or 2". Always use AskUserQuestion tool.
 
 **If Subagent-Driven chosen:**
-
 - Use subagent-driven-development skill
 - Stay in this session
 - Fresh subagent per task + code review
-- Context automatically passed via skill_context
+- Context automatically passed
 
 **If Parallel Session chosen:**
-
-- Guide them to open new session in worktree
+- Guide user to open new session in worktree
 - New session uses executing-plans skill
 - Context available via `.popkit/context/current-workflow.json`
+
+## Quality Guidelines
+
+**Always include:**
+- Exact file paths (not "add to utils folder")
+- Complete code examples (not "add validation")
+- Exact commands with expected output
+- Reference relevant skills with @ syntax
+
+**Principles:**
+- DRY (Don't Repeat Yourself)
+- YAGNI (You Aren't Gonna Need It)
+- TDD (Test-Driven Development)
+- Frequent commits (after each passing test)
+
+## Related Skills
+
+- **pop-brainstorming**: Upstream - provides design document input
+- **pop-executing-plans**: Downstream - executes plan task-by-task
+- **pop-subagent-driven**: Downstream - executes with fresh subagent per task
+- **pop-code-architect**: Called internally - writes the actual plan
+
+## Examples
+
+See [examples/](examples/) directory for:
+- Complete workflow definition
+- Plan document template
+- Task structure template
+- Context handling code
+- GitHub integration examples
+
+---
+
+**Version**: 1.0.0
+**Category**: Development Workflow
+**Tier**: Core

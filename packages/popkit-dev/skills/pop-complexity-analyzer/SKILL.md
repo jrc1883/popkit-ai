@@ -97,15 +97,11 @@ Complexity analysis is automatically performed when you use development workflow
 
 ### 2. Explicit Analysis
 
-For standalone complexity analysis:
-
 ```bash
 /popkit:dev analyze "Refactor database layer"
 ```
 
 ### 3. From Skills (Python)
-
-Skills can invoke complexity analysis programmatically:
 
 ```python
 from popkit_shared.utils.complexity_scoring import analyze_complexity
@@ -128,8 +124,6 @@ agents = result["suggested_agents"]  # ["code-architect", "refactoring-expert"]
 ```
 
 ### 4. Integration with Skill Context
-
-Save complexity analysis for downstream skills:
 
 ```python
 from popkit_shared.utils.skill_context import save_skill_context, SkillOutput
@@ -156,8 +150,6 @@ save_skill_context(SkillOutput(
 
 ## Output Format
 
-The analyzer produces structured JSON output:
-
 ```json
 {
   "complexity_score": 7,
@@ -172,25 +164,7 @@ The analyzer produces structured JSON output:
     "integration": 1
   },
   "risk_factors": ["architecture_impact", "security_critical"],
-  "reasoning": "Complexity Score: 7/10 (Architecture changes, high impact). Primary factors: architecture changes required, external dependencies, security considerations. This is a complex task requiring architectural consideration.",
-  "factors": {
-    "files_affected": 60.0,
-    "loc_estimate": 50.0,
-    "dependencies": 50.0,
-    "architecture_change": 100.0,
-    "breaking_changes": 0.0,
-    "testing_complexity": 50.0,
-    "security_impact": 100.0,
-    "integration_points": 0.0
-  },
-  "estimated_tokens": {
-    "discovery": 5000,
-    "planning": 12000,
-    "implementation": 35000,
-    "testing": 10000,
-    "review": 6000,
-    "total": 68000
-  },
+  "reasoning": "Complexity Score: 7/10 (Architecture changes, high impact)...",
   "suggested_agents": ["code-architect", "refactoring-expert", "security-auditor"]
 }
 ```
@@ -198,8 +172,6 @@ The analyzer produces structured JSON output:
 ## Integration Points
 
 ### 1. Agent Router
-
-The agent router uses complexity scores to select appropriate agents:
 
 ```python
 from popkit_shared.utils.complexity_scoring import quick_score
@@ -217,8 +189,6 @@ else:
 
 ### 2. PRD Parser
 
-PRD parser uses complexity for feature prioritization:
-
 ```python
 features = parse_prd(document)
 for feature in features:
@@ -232,40 +202,19 @@ features.sort(key=lambda f: f.complexity_score)
 
 ### 3. Planning Workflows
 
-Planning workflows use complexity to determine approach:
-
 ```python
 complexity_result = analyze_complexity(task_description)
 score = complexity_result["complexity_score"]
 
 if score <= 4:
-    # Use quick mode (5 steps)
-    workflow = "quick_mode"
+    workflow = "quick_mode"  # 5 steps
 elif score <= 7:
-    # Use standard mode (7 phases)
-    workflow = "standard_mode"
+    workflow = "standard_mode"  # 7 phases
 else:
-    # Use full planning mode with architecture review
     workflow = "full_mode_with_architecture"
 ```
 
-### 4. Merge Conflict Resolver
-
-Complexity scores prioritize conflict resolution:
-
-```python
-conflicts = detect_conflicts()
-for conflict in conflicts:
-    complexity = analyze_complexity(conflict.description)
-    conflict.priority = complexity["complexity_score"]
-
-# Resolve highest complexity conflicts first
-conflicts.sort(key=lambda c: c.priority, reverse=True)
-```
-
 ## Subtask Recommendations
-
-Based on complexity score, the analyzer suggests subtask counts:
 
 | Complexity | Subtasks | Strategy            |
 | ---------- | -------- | ------------------- |
@@ -277,49 +226,17 @@ Based on complexity score, the analyzer suggests subtask counts:
 
 ## Phase Distribution
 
-The analyzer recommends phase distribution for task planning:
+**Trivial (1-2):** Implementation: 1, Testing: 1
 
-**Trivial (1-2):**
+**Simple (3-4):** Planning: 1, Implementation: 2, Testing: 1
 
-- Implementation: 1
-- Testing: 1
+**Moderate (5-6):** Planning: 1, Implementation: 3, Testing: 2, Review: 1
 
-**Simple (3-4):**
+**Complex (7-8):** Discovery: 1, Planning: 2, Implementation: 4, Testing: 2, Review: 1, Integration: 1
 
-- Planning: 1
-- Implementation: 2
-- Testing: 1
-
-**Moderate (5-6):**
-
-- Planning: 1
-- Implementation: 3
-- Testing: 2
-- Review: 1
-
-**Complex (7-8):**
-
-- Discovery: 1
-- Planning: 2
-- Implementation: 4
-- Testing: 2
-- Review: 1
-- Integration: 1
-
-**Very Complex (9-10):**
-
-- Discovery: 2
-- Architecture: 2
-- Planning: 3
-- Implementation: 5
-- Testing: 3
-- Review: 2
-- Integration: 2
-- Documentation: 1
+**Very Complex (9-10):** Discovery: 2, Architecture: 2, Planning: 3, Implementation: 5, Testing: 3, Review: 2, Integration: 2, Documentation: 1
 
 ## Risk Factor Detection
-
-The analyzer identifies potential risks:
 
 | Risk Factor            | Trigger                  | Impact                 |
 | ---------------------- | ------------------------ | ---------------------- |
@@ -330,21 +247,7 @@ The analyzer identifies potential risks:
 | performance_sensitive  | Performance keywords     | Performance testing    |
 | data_migration         | Migration keywords       | Data safety concerns   |
 
-## Token Estimation
-
-The analyzer estimates token usage for planning:
-
-| Complexity | Total Tokens | Planning | Implementation | Testing |
-| ---------- | ------------ | -------- | -------------- | ------- |
-| 1-2        | 7,000        | 2,000    | 5,000          | -       |
-| 3-4        | 17,000       | 4,000    | 10,000         | 3,000   |
-| 5-6        | 38,000       | 8,000    | 20,000         | 6,000   |
-| 7-8        | 68,000       | 12,000   | 35,000         | 10,000  |
-| 9-10       | 135,000      | 20,000   | 60,000         | 20,000  |
-
 ## Agent Recommendations
-
-Based on complexity, appropriate agents are suggested:
 
 | Complexity | Suggested Agents                                             |
 | ---------- | ------------------------------------------------------------ |
@@ -355,37 +258,12 @@ Based on complexity, appropriate agents are suggested:
 
 ## Keyword Detection
 
-The analyzer uses keyword detection to identify complexity factors:
-
 **Architecture:** architecture, refactor, redesign, restructure, migrate
 **Breaking Changes:** breaking, incompatible, migration, deprecated
 **Security:** auth, authentication, authorization, security, crypto, encryption
 **Integration:** integrate, api, webhook, third-party, external
 **Database:** database, schema, migration, query, index
 **Testing:** e2e, integration test, test coverage, regression
-
-## Customization
-
-Custom weights can be provided for specific use cases:
-
-```python
-from popkit_shared.utils.complexity_scoring import ComplexityAnalyzer
-
-# Custom weights (must sum to ~1.0)
-custom_weights = {
-    "files_affected": 0.10,
-    "loc_estimate": 0.10,
-    "dependencies": 0.10,
-    "architecture_change": 0.30,  # Emphasize architecture
-    "breaking_changes": 0.20,     # Emphasize compatibility
-    "testing_complexity": 0.10,
-    "security_impact": 0.05,
-    "integration_points": 0.05
-}
-
-analyzer = ComplexityAnalyzer(weights=custom_weights)
-result = analyzer.analyze("Refactor core module")
-```
 
 ## Best Practices
 
@@ -395,68 +273,6 @@ result = analyzer.analyze("Refactor core module")
 4. **Monitor Risks:** Pay attention to identified risk factors
 5. **Right-Size Agents:** Use suggested agents for better results
 6. **Iterate if Needed:** Re-analyze after scope changes
-
-## Examples
-
-### Example 1: Simple Task
-
-```python
-result = analyze_complexity("Update button color in settings")
-
-# Result:
-# complexity_score: 2
-# recommended_subtasks: 1
-# phase_distribution: {"implementation": 1, "testing": 1}
-# risk_factors: []
-# suggested_agents: ["rapid-prototyper"]
-```
-
-### Example 2: Moderate Task
-
-```python
-result = analyze_complexity("Add user profile page with avatar upload")
-
-# Result:
-# complexity_score: 5
-# recommended_subtasks: 4
-# phase_distribution: {"planning": 1, "implementation": 3, "testing": 2, "review": 1}
-# risk_factors: []
-# suggested_agents: ["refactoring-expert", "code-explorer"]
-```
-
-### Example 3: Complex Task
-
-```python
-result = analyze_complexity("Implement JWT authentication with refresh tokens")
-
-# Result:
-# complexity_score: 7
-# recommended_subtasks: 6
-# phase_distribution: {"discovery": 1, "planning": 2, "implementation": 4, "testing": 2, "review": 1, "integration": 1}
-# risk_factors: ["security_critical"]
-# suggested_agents: ["code-architect", "refactoring-expert", "security-auditor"]
-```
-
-### Example 4: Very Complex Task
-
-```python
-result = analyze_complexity("Migrate monolith to microservices architecture")
-
-# Result:
-# complexity_score: 10
-# recommended_subtasks: 12
-# phase_distribution: {"discovery": 2, "architecture": 2, "planning": 3, "implementation": 5, "testing": 3, "review": 2, "integration": 2, "documentation": 1}
-# risk_factors: ["breaking_changes", "architecture_impact", "integration_complexity"]
-# suggested_agents: ["code-architect", "system-designer", "tech-lead", "security-auditor"]
-```
-
-## Future Enhancements
-
-- **Machine Learning:** Train on historical task data for improved accuracy
-- **Project Context:** Consider project-specific factors (team size, tech stack)
-- **Historical Calibration:** Adjust scoring based on actual task completion times
-- **Dependency Graph:** Analyze task dependencies for better sequencing
-- **Resource Estimation:** Estimate time and resources beyond token usage
 
 ## Related Skills
 

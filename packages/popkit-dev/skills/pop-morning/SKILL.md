@@ -17,27 +17,24 @@ Automated start-of-day setup that ensures optimal development environment before
 
 ## Ready to Code Score (0-100)
 
+See [examples/scoring-system.md](examples/scoring-system.md) for complete scoring documentation.
+
 Comprehensive readiness check across 6 dimensions:
 
-| Check                | Points | Criteria                                           |
-| -------------------- | ------ | -------------------------------------------------- |
-| Session Restored     | 20     | Previous session context restored from STATUS.json |
-| Services Healthy     | 20     | All required dev services running                  |
-| Dependencies Updated | 15     | Package dependencies up to date                    |
-| Branches Synced      | 15     | Local branch synced with remote                    |
-| PRs Reviewed         | 15     | No PRs waiting for review                          |
-| Issues Triaged       | 15     | All issues assigned/prioritized                    |
+| Check | Points | Criteria |
+|-------|--------|----------|
+| Session Restored | 20 | Previous session context restored from STATUS.json |
+| Services Healthy | 20 | All required dev services running |
+| Dependencies Updated | 15 | Package dependencies up to date |
+| Branches Synced | 15 | Local branch synced with remote |
+| PRs Reviewed | 15 | No PRs waiting for review |
+| Issues Triaged | 15 | All issues assigned/prioritized |
 
 **Branch Protection Penalty (Issue #142):**
-
-If on protected branch (`main`, `master`, `develop`, `production`) with uncommitted changes:
-
-- **Penalty:** -10 points from Branches Synced score
-- **Indicator:** Show ⚠️ PROTECTED warning in Current State table
-- **Recommendation:** Create feature branch before starting work
+- **Penalty:** -10 points if on protected branch (`main`, `master`, `develop`, `production`) with uncommitted changes
+- **Indicator:** Shows ⚠️ PROTECTED warning
 
 **Score Interpretation:**
-
 - **90-100**: Excellent - Fully ready to code
 - **80-89**: Very Good - Almost ready, minor setup
 - **70-79**: Good - Ready with minor issues
@@ -45,489 +42,98 @@ If on protected branch (`main`, `master`, `develop`, `production`) with uncommit
 - **50-59**: Poor - Significant setup required
 - **0-49**: Not Ready - Focus on environment setup
 
-## Workflow Steps
+## Workflow
 
-### 1. Restore Previous Session
+See [examples/workflow-implementation.md](examples/workflow-implementation.md) for complete implementation details.
 
-Load context from STATUS.json:
+**Six-step process:**
 
-```python
-from pathlib import Path
-import json
+1. **Restore Previous Session** - Load context from STATUS.json (last nightly score, work summary, branch, stashes)
+2. **Check Dev Environment** - Using `capture_state.py` utility (git, GitHub, services, dependencies)
+3. **Calculate Ready to Code Score** - Using `ready_to_code_score.py` module
+4. **Generate Morning Report** - Using `morning_report_generator.py` module
+5. **Capture Session State** - Update STATUS.json with morning routine data
+6. **Present Report to User** - Display score, breakdown, issues, and recommendations
 
-status_file = Path('STATUS.json')
-if status_file.exists():
-    status = json.loads(status_file.read_text())
+## Data Collection
 
-    # Extract session context
-    last_nightly = status.get('last_nightly_routine', {})
-    git_status = status.get('git_status', {})
+See [examples/data-collection.md](examples/data-collection.md) for consolidated bash commands.
 
-    session_data = {
-        'restored': True,
-        'last_nightly_score': last_nightly.get('sleep_score'),
-        'last_work_summary': git_status.get('action_required'),
-        'previous_branch': git_status.get('current_branch'),
-        'stashed_count': git_status.get('stashes', 0)
-    }
-```
+**Consolidated commands:**
+- **Git**: Single command for branch, commits behind, status, stashes (with `git fetch`)
+- **GitHub**: PRs and issues in one call using `gh` CLI
+- **Services**: Process check and dependency updates in one pass
 
-**Restored Context Includes:**
+All wrapped in `capture_state.py` for consistent error handling.
 
-- Last nightly routine Sleep Score
-- Previous work summary
-- Git branch and uncommitted work
-- Stashed changes count
+## Integration
 
-### 2. Check Dev Environment
+See [examples/integration.md](examples/integration.md) for integration with shared utilities.
 
-Using `capture_state.py` utility with morning-specific checks:
+**Key utilities:**
+- `capture_state.py` - Complete project state capture
+- `routine_measurement.py` - Performance tracking (when using `--measure`)
+- `routine_cache.py` - GitHub/service data caching (when using `--optimized`)
 
-```python
-from popkit_shared.utils.capture_state import capture_project_state
-
-state = capture_project_state()
-# Returns: {
-#   'git': {...},
-#   'github': {...},
-#   'services': {...}
-# }
-```
-
-**Git Analysis:**
-
-- Current branch
-- Commits behind remote (after git fetch)
-- Uncommitted files
-- Stashed changes
-
-**GitHub Analysis:**
-
-- PRs needing review (no review decision or changes requested)
-- Issues needing triage (no assignee or labels)
-- Latest CI status
-
-**Service Analysis:**
-
-- Running dev services (node, npm, pnpm, redis, postgres, supabase)
-- Required services vs. running services
-
-**Dependency Analysis:**
-
-- Outdated package count
-- Major/minor updates available
-
-### 3. Calculate Ready to Code Score
-
-Using `ready_to_code_score.py` module:
-
-```python
-from pop_morning.scripts.ready_to_code_score import calculate_ready_to_code_score
-
-score, breakdown = calculate_ready_to_code_score(state)
-# score: 0-100
-# breakdown: {
-#   'session_restored': {'points': 20, 'max': 20, 'reason': '...'},
-#   'services_healthy': {'points': 10, 'max': 20, 'reason': '...'},
-#   ...
-# }
-```
-
-### 4. Generate Morning Report
-
-Using `morning_report_generator.py` module:
-
-```python
-from pop_morning.scripts.morning_report_generator import generate_morning_report
-
-report = generate_morning_report(score, breakdown, state)
-# Returns formatted markdown report with:
-# - Ready to Code Score headline
-# - Score breakdown table
-# - Service status (if not all running)
-# - Setup recommendations
-# - Today's focus items
-```
-
-### 5. Capture Session State
-
-Update STATUS.json with morning routine data:
-
-```python
-# This happens automatically via direct STATUS.json update
-# Updates STATUS.json with:
-# - Morning routine execution timestamp
-# - Ready to Code score
-# - Session restoration status
-# - Dev environment state
-# - Recommendations
-```
-
-### 6. Present Report to User
-
-Display morning report with:
-
-- **Ready to Code Score** (0-100) with visual indicator
-- **Score Breakdown** - What contributed to the score
-- **Setup Issues** - Services down, sync needed, outdated deps
-- **Recommendations** - Actions before coding
-- **Today's Focus** - PRs to review, issues to triage
-
-## Data Collection Commands
-
-### Git Commands (Consolidated)
-
-Single command to gather all git data:
-
-```bash
-{
-  git fetch --quiet
-  echo "=== BRANCH ==="
-  git rev-parse --abbrev-ref HEAD
-  echo "=== BEHIND ==="
-  git rev-list --count HEAD..origin/$(git rev-parse --abbrev-ref HEAD)
-  echo "=== STATUS ==="
-  git status --porcelain
-  echo "=== STASHES ==="
-  git stash list | wc -l
-}
-```
-
-**Branch Protection Detection (Issue #142):**
-
-After collecting branch name, check if it's a protected branch:
-
-```python
-from popkit_shared.utils.session_recorder import is_recording_enabled, record_reasoning
-
-# Get current branch
-current_branch = git_output['branch']
-
-# Protected branches
-PROTECTED_BRANCHES = ["main", "master", "develop", "production"]
-is_protected = current_branch in PROTECTED_BRANCHES
-
-# Record if on protected branch
-if is_recording_enabled():
-    record_reasoning(
-        step="Check branch protection",
-        reasoning=f"Branch '{current_branch}' is {'PROTECTED' if is_protected else 'not protected'}",
-        data={
-            "current_branch": current_branch,
-            "is_protected": is_protected
-        }
-    )
-```
-
-### GitHub Commands (Consolidated)
-
-```bash
-{
-  gh pr list --state open --json number,title,reviewDecision
-  echo "---SEPARATOR---"
-  gh issue list --state open --json number,title,assignees,labels
-} > /tmp/gh_morning_data.json
-```
-
-### Service Check (Consolidated)
-
-```bash
-{
-  ps aux | grep -E "(node|npm|pnpm|redis|postgres|supabase)" | grep -v grep
-  echo "---SEPARATOR---"
-  pnpm outdated --json 2>/dev/null || echo "{}"
-} > /tmp/service_morning_data.txt
-```
-
-## Integration with Existing Utilities
-
-### capture_state.py
-
-Located: `packages/shared-py/popkit_shared/utils/capture_state.py`
-
-```python
-def capture_project_state() -> dict:
-    """Capture complete project state for morning routine."""
-    return {
-        'git': capture_git_state(),
-        'github': capture_github_state(),
-        'services': capture_service_state(),
-        'timestamp': datetime.now().isoformat()
-    }
-```
-
-### routine_measurement.py
-
-Located: `packages/shared-py/popkit_shared/utils/routine_measurement.py`
-
-When invoked with `--measure` flag:
-
-- Tracks tool call count
-- Measures duration
-- Calculates token usage
-- Saves to `.claude/popkit/measurements/morning-<timestamp>.json`
-
-### routine_cache.py
-
-Located: `packages/shared-py/popkit_shared/utils/routine_cache.py`
-
-Caching strategy:
-
-- **Never cache**: Git status (changes frequently)
-- **Cache 5 min**: Service status, dependency checks
-- **Cache 15 min**: GitHub PR/issue data
+**Performance:**
+- **Tool call reduction**: ~67% (15 → 5 calls)
+- **Execution time**: 78-83% faster (90s → 15-20s)
+- **Token reduction**: 40-96% (with `--optimized`)
 
 ## Output Format
 
-```markdown
-# ☀️ Morning Routine Report
+See [examples/output-format.md](examples/output-format.md) for complete report examples.
 
-**Date**: 2025-12-28 09:30
-**Ready to Code Score**: 75/100 👍
-**Grade**: B - Good - Ready with minor issues
+**Report includes:**
+- Ready to Code Score (0-100) with visual indicator and grade
+- Score breakdown table (what contributed to score)
+- Dev services status (if not all running)
+- Branch sync status (if behind remote)
+- Recommendations (actions before coding)
+- Today's focus (PRs, issues, continuations)
 
-## Score Breakdown
+## Next Actions (The PopKit Way)
 
-| Check                | Points | Status                               |
-| -------------------- | ------ | ------------------------------------ |
-| Session Restored     | 20/20  | ✅ Previous session context restored |
-| Services Healthy     | 10/20  | ⚠️ Missing: redis                    |
-| Dependencies Updated | 15/15  | ✅ All dependencies up to date       |
-| Branches Synced      | 10/15  | ⚠️ 3 commits behind remote           |
-| PRs Reviewed         | 15/15  | ✅ No PRs pending review             |
-| Issues Triaged       | 10/15  | ⚠️ 2 issues need triage              |
-
-## 🔧 Dev Services Status
-
-**Required**: 2 services
-**Running**: 1 services
-
-**Not Running:**
-
-- redis
-
-## 🔄 Branch Sync Status
-
-**Current Branch**: fix/critical-build-blockers
-**Commits Behind Remote**: 3
-
-Run `git pull` to sync with remote.
-
-## 📋 Recommendations
-
-**Before Starting Work:**
-
-- Start dev services: redis
-- Sync with remote: git pull (behind by 3 commits)
-
-**Today's Focus:**
-
-- Triage 2 open issues
-- Review overnight commits and CI results
-- Continue: Fix critical build blockers
-
----
-
-STATUS.json updated ✅
-Morning session initialized. Ready to code!
-
-## 🎯 Next Actions (The PopKit Way)
+See [examples/next-actions.md](examples/next-actions.md) for complete implementation.
 
 **CRITICAL**: Always end with AskUserQuestion to keep PopKit in control.
 
-Use AskUserQuestion tool with context-aware options based on morning report:
+**Context-aware options based on score:**
+- **Score < 80**: Fix environment issues (Recommended)
+- **Score >= 80**: Work on highest priority, review PRs, or continue yesterday's work
+- **Issues need triage**: Triage now (Recommended) or skip
 
-**Option 1: If services are down or sync needed (Score < 80)**
-```
-
-What would you like to do next?
-├─ Fix environment issues (Recommended)
-│ └─ Start redis, pull 3 commits, etc.
-├─ Start work anyway (skip setup)
-├─ Review what changed overnight
-└─ Other
-
-```
-
-**Option 2: If environment is healthy (Score >= 80)**
-```
-
-Ready to code! What's your focus today?
-├─ Work on highest priority issue
-├─ Review open PRs (X pending)
-├─ Continue yesterday's work: [last task]
-└─ Other
-
-```
-
-**Option 3: If issues need triage**
-```
-
-You have X issues needing attention. What would you like to do?
-├─ Triage issues now (Recommended)
-├─ Review issue #Y (highest priority)
-├─ Skip triage, start coding
-└─ Other
-
-````
-
-### Implementation
-
-After generating the morning report, invoke AskUserQuestion based on score and context:
-
-```python
-# After generating report
-questions = generate_next_action_questions(score, breakdown, state)
-# Returns AskUserQuestion tool invocation
-
-# Example output to Claude:
-{
-    "type": "ask_user_question",
-    "questions": [{
-        "question": "What would you like to do next?",
-        "header": "Next Action",
-        "multiSelect": false,
-        "options": [
-            {
-                "label": "Fix environment issues (Recommended)",
-                "description": "Start redis, sync with remote (3 commits behind)"
-            },
-            {
-                "label": "Work on #42: Fix critical build blockers",
-                "description": "Continue yesterday's work (highest priority)"
-            },
-            {
-                "label": "Review open PRs",
-                "description": "2 PRs waiting for review"
-            }
-        ]
-    }]
-}
-````
-
-**Why This Matters (The PopKit Way):**
-
-- ✅ Keeps PopKit in control of the workflow
-- ✅ Forces intentional user decisions
-- ✅ Enables context-aware next actions
-- ✅ Prevents "report dump and done" anti-pattern
-- ✅ Maintains continuous workflow loop
-
-**Never just show a report and end the session!**
-
-````
+Never just show a report and end the session!
 
 ## Error Handling
 
-### Git Not Available
+See [examples/error-handling.md](examples/error-handling.md) for complete error handling strategy.
 
-```python
-try:
-    git_state = capture_git_state()
-except GitNotFoundError:
-    print("[WARN] Git not available - skipping git checks")
-    # Continue with partial score
-````
+**Graceful degradation:**
+- Git not available → Skip git checks, continue with partial score
+- GitHub CLI not available → Skip GitHub checks, continue with partial score
+- Service check failures → Best-effort, don't block
+- Session restore failures → Start fresh session
 
-### GitHub CLI Not Available
-
-```python
-try:
-    github_state = capture_github_state()
-except GhNotFoundError:
-    print("[WARN] GitHub CLI not available - skipping GitHub checks")
-    # Continue with partial score
-```
-
-### Service Check Failures
-
-```python
-# Service checks are best-effort
-# If they fail, provide recommendations but don't block
-```
-
-### Session Restore Failures
-
-```python
-try:
-    session_data = restore_session()
-except Exception:
-    print("[WARN] Could not restore session - starting fresh")
-    session_data = {'restored': False}
-```
-
-## Optimization Features
-
-### Tool Call Reduction
-
-- **Estimated Baseline**: ~15 tool calls (manual)
-- **Optimized**: ~5 tool calls (automated)
-- **Reduction**: ~67%
-
-### Execution Time
-
-- **Estimated Baseline**: ~90 seconds (manual, with thinking)
-- **Optimized**: ~15-20 seconds (automated)
-- **Improvement**: 78-83%
-
-### Caching
-
-With `--optimized` flag:
-
-- Uses `routine_cache.py` for GitHub/service data
-- Reduces redundant API calls
-- 40-96% token reduction (per routine.md)
+**Never block** - provide best possible score with available data.
 
 ## Usage Examples
 
-### Basic Usage
+See [examples/usage.md](examples/usage.md) for all usage scenarios.
 
 ```bash
+# Basic usage
 /popkit:routine morning
-# → Runs default morning routine
-# → Calculates Ready to Code Score
-# → Updates STATUS.json
-# → Shows report
-```
 
-### With Measurement
-
-```bash
+# With measurement
 /popkit:routine morning --measure
-# → Runs morning routine
-# → Tracks performance metrics
-# → Saves to .claude/popkit/measurements/
-```
 
-### Quick Summary
-
-```bash
+# Quick summary
 /popkit:routine morning quick
-# → Shows one-line summary
-# → Ready to Code Score: 75/100 👍 - redis down, 3 commits behind
-```
 
-### With Optimization
-
-```bash
+# With optimization (caching)
 /popkit:routine morning --optimized
-# → Uses caching for GitHub/service data
-# → Reduces token usage by 40-96%
 ```
-
-## Files Modified
-
-1. **STATUS.json** - Session state updated with:
-   - Ready to Code score
-   - Session restoration status
-   - Dev environment state
-   - Morning routine timestamp
-   - Recommendations
-
-2. **.claude/popkit/measurements/** (if --measure used)
-   - Performance metrics
-   - Tool call breakdown
-   - Duration and token usage
 
 ## Related Skills
 
