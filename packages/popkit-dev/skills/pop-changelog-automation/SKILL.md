@@ -75,8 +75,6 @@ PopKit follows conventional commit format:
 
 ## Version Bump Rules
 
-The changelog generator automatically determines the appropriate version bump:
-
 ```python
 # MAJOR bump (1.0.0 → 2.0.0)
 - Any commit with "BREAKING CHANGE" in body or footer
@@ -207,25 +205,21 @@ python packages/shared-py/popkit_shared/utils/changelog_generator.py --json
 
 ### Changelog Automation
 
-Enhanced changelog generation with semantic versioning, auto-categorization, and intelligent version bump detection. Simply commit using conventional format and get professional changelogs automatically.
-(#27)
+Enhanced changelog generation with semantic versioning, auto-categorization, and intelligent version bump detection. (#27)
 
 ### Git Workflow Integration
 
-Automatic changelog updates on PR creation and merge. No more manual changelog maintenance - PopKit handles it all for you.
-(#28)
+Automatic changelog updates on PR creation and merge. (#28)
 
 ### Release Notes Generation
 
-Auto-generate GitHub release notes from commits with proper formatting, breaking change warnings, and migration guides.
-(#29)
+Auto-generate GitHub release notes from commits with proper formatting. (#29)
 
 ## 💥 Breaking Changes
 
 ### Change authentication endpoint from /auth to /api/auth
 
 **Migration:**
-
 - Update all API calls to use new endpoint
 - See migration guide: docs/migrations/v1.1.0.md
 
@@ -240,18 +234,28 @@ Auto-generate GitHub release notes from commits with proper formatting, breaking
 - **Bug Fixes:** 2
 - **Total Commits:** 12
 - **Issues Closed:** 5
-
-## 🔗 Links
-
-- **Full Changelog:** [CHANGELOG.md](CHANGELOG.md#110---2026-01-08)
-- **Issues Closed:** #27, #28, #29, #30, #31
-
----
-
-**Install:** `/plugin install popkit-suite@popkit-claude`
-
-**Upgrade:** `/plugin update popkit-suite`
 ```
+
+## Breaking Change Format
+
+When introducing breaking changes, use this format:
+
+```
+feat(api): Change authentication endpoint
+
+Move authentication from /auth to /api/auth for consistency.
+
+BREAKING CHANGE: Authentication endpoint changed from /auth to /api/auth
+Migration: Update all API calls to use new endpoint
+See migration guide: docs/migrations/v1.1.0.md
+```
+
+The changelog generator will:
+
+- Detect "BREAKING CHANGE" in footer
+- Categorize as MAJOR version bump
+- Extract migration notes from footer
+- Highlight in both CHANGELOG.md and release notes
 
 ## Integration with Git Workflow
 
@@ -286,37 +290,6 @@ Auto-generate GitHub release notes from commits with proper formatting, breaking
 10. Publish release
 ```
 
-## Breaking Change Format
-
-When introducing breaking changes, use this format:
-
-```
-feat(api): Change authentication endpoint
-
-Move authentication from /auth to /api/auth for consistency with REST API structure.
-
-BREAKING CHANGE: Authentication endpoint changed from /auth to /api/auth
-Migration: Update all API calls to use new endpoint
-See migration guide: docs/migrations/v1.1.0.md
-```
-
-The changelog generator will:
-
-- Detect "BREAKING CHANGE" in footer
-- Categorize as MAJOR version bump
-- Extract migration notes from footer
-- Highlight in both CHANGELOG.md and release notes
-
-## Validation
-
-The changelog generator validates:
-
-1. **Conventional commit format** - Ensures commits follow `type(scope): description` format
-2. **Version bump logic** - Correctly determines MAJOR/MINOR/PATCH
-3. **Breaking change detection** - Identifies "BREAKING CHANGE" in footer
-4. **Issue reference extraction** - Finds all #N references
-5. **Categorization** - Groups commits by type with proper priority
-
 ## Best Practices
 
 1. **Use conventional commits** - Always format commits as `type(scope): description`
@@ -345,8 +318,6 @@ The changelog generator validates:
 
 ### Implementation
 
-The changelog automation is implemented in:
-
 **Python utility:** `packages/shared-py/popkit_shared/utils/changelog_generator.py`
 
 - Main `ChangelogGenerator` class
@@ -370,90 +341,7 @@ No external dependencies required. Uses only Python standard library:
 - `datetime` - Timestamp generation
 - `pathlib` - File path handling
 
-## Examples
+## Related Skills
 
-### Example 1: Automatic Version Bump
-
-```bash
-# Current version: v1.0.0
-# Commits since last tag:
-# - feat(ui): Add dark mode toggle
-# - fix(api): Correct rate limit calculation
-# - docs: Update README
-
-# Run changelog generator
-python changelog_generator.py --auto --update
-
-# Output:
-# Auto-determined version bump: MINOR
-# Next version: 1.1.0
-# ✅ Updated CHANGELOG.md with v1.1.0
-```
-
-### Example 2: Breaking Change Release
-
-```bash
-# Current version: v1.5.2
-# Commits include:
-# - feat(auth): Implement OAuth2
-#   BREAKING CHANGE: Removed basic auth support
-
-# Run changelog generator
-python changelog_generator.py --auto --release
-
-# Output:
-# Auto-determined version bump: MAJOR
-# Next version: 2.0.0
-#
-# # PopKit 2.0.0
-#
-# ## 🎉 What's New
-# ⚠️ This release contains 1 breaking change(s) - please review...
-```
-
-### Example 3: JSON Analysis
-
-```bash
-# Get version bump analysis
-python changelog_generator.py --json
-
-# Output:
-{
-  "version": "1.1.0",
-  "version_bump": "minor",
-  "suggested_version": "1.1.0",
-  "commit_count": 12,
-  "issues_closed": [27, 28, 29],
-  "grouped": {
-    "feat": [...],
-    "fix": [...],
-    "docs": [...]
-  }
-}
-```
-
-## Success Criteria
-
-- [x] Conventional commits parsed correctly
-- [x] Version bump determined automatically
-- [x] Changes categorized by type with emojis
-- [x] CHANGELOG.md updated with new entry
-- [x] GitHub release notes generated
-- [x] Breaking changes highlighted with migration notes
-- [x] Python CLI with all features
-- [ ] Integration with `/popkit:git pr` command
-- [ ] Integration with `/popkit:git release` command
-- [ ] Commit message validation hook
-- [ ] Automated tests
-
-## Next Steps
-
-1. **Git command integration** - Add changelog flags to `/popkit:git pr` and `/popkit:git release`
-2. **Pre-commit hook** - Validate conventional commit format
-3. **Automated tests** - Test version bump logic and changelog generation
-4. **GitHub Actions** - Auto-update changelog on PR merge
-5. **Visual reports** - Generate HTML changelog reports
-
----
-
-**Strategic Value:** This quick win from Issue #27 delivers immediate time savings while establishing PopKit as superior to Auto Claude in changelog automation quality and intelligence.
+- `pop-finish-branch` - Branch cleanup after release
+- `pop-git-workflow` - Git workflow automation
