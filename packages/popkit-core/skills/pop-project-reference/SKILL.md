@@ -15,8 +15,7 @@ Enables loading context from other projects in a monorepo workspace. Essential f
 
 ## When to Use
 
-Invoke this skill when:
-
+Invoke when:
 - User asks to "load context from [project-name]"
 - Working on integration between multiple monorepo projects
 - User runs `/popkit:project reference` command
@@ -30,7 +29,7 @@ Invoke this skill when:
 - **Lerna**: `lerna.json`
 - **PopKit**: `.claude/workspace.json`
 
-## Usage Patterns
+## Usage
 
 ### List Available Projects
 
@@ -38,17 +37,7 @@ Invoke this skill when:
 /popkit:project reference
 ```
 
-**Output:**
-```
-Found 13 projects in workspace:
-
-| Name          | Type | Path                  |
-|---------------|------|-----------------------|
-| genesis       | app  | apps/genesis          |
-| optimus       | app  | apps/optimus          |
-| matrix-engine | pkg  | packages/matrix       |
-| ...
-```
+Shows all workspace projects with name, type, and path.
 
 ### Load Project Context
 
@@ -58,179 +47,37 @@ Found 13 projects in workspace:
 /popkit:project reference packages/matrix
 ```
 
-**Output:**
-```
-===================================================================
-                         Project: genesis
-===================================================================
+Displays:
+- Project overview (from package.json)
+- CLAUDE.md instructions (if exists)
+- Dependencies (package.json)
+- Current status (.claude/STATUS.json, if exists)
+- README content
 
-Path: /workspace/apps/genesis
-
-## Overview
-{package.json description}
-
-## Instructions (CLAUDE.md)
-{Full CLAUDE.md content}
-
-## Dependencies (package.json)
-{dependencies section from package.json}
-
-## Current Status (.claude/STATUS.json)
-{STATUS.json if exists}
-
-## README
-{README.md content}
-```
+**Note**: Missing files are skipped gracefully with "(No [file] found in this project)" message.
 
 ## Implementation
 
-### Step 1: Import Utilities
+See [examples/implementation.md](examples/implementation.md) for complete Python implementation.
 
-```python
-import sys
-from pathlib import Path
-
-# Add shared-py to path
-sys.path.insert(0, str(Path.home() / ".claude" / "popkit" / "packages" / "shared-py"))
-
-try:
-    from popkit_shared.utils.workspace_config import (
-        find_workspace_root,
-        get_workspace_projects,
-        find_project_by_name,
-        load_project_context,
-        format_project_context,
-    )
-except ImportError:
-    print("Error: PopKit shared utilities not available", file=sys.stderr)
-    sys.exit(1)
-```
-
-### Step 2: Detect Workspace
-
-```python
-import os
-
-workspace_root = find_workspace_root(os.getcwd())
-
-if workspace_root is None:
-    print("Not in a monorepo workspace.")
-    print("\nWorkspace markers:")
-    print("  - pnpm-workspace.yaml (pnpm)")
-    print("  - package.json with 'workspaces' field (npm/yarn)")
-    print("  - lerna.json (Lerna)")
-    print("  - .claude/workspace.json (PopKit)")
-    sys.exit(0)
-```
-
-### Step 3: List Projects (No Arguments)
-
-```python
-def list_projects():
-    """List all projects in workspace."""
-    projects = get_workspace_projects(workspace_root)
-
-    if not projects:
-        print("No projects found in workspace.")
-        return
-
-    print(f"\nFound {len(projects)} project(s) in workspace:\n")
-    print("| Name | Type | Path |")
-    print("|------|------|------|")
-
-    for project in projects:
-        name = project["name"]
-        proj_type = project.get("type", "unknown")
-        path = os.path.relpath(project["path"], workspace_root)
-        print(f"| {name} | {proj_type} | {path} |")
-
-    print("\nUsage: /popkit:project reference <project-name>")
-```
-
-### Step 4: Load Project Context (With Argument)
-
-```python
-def load_project(project_name: str):
-    """Load and display project context."""
-    # Find project
-    project = find_project_by_name(project_name, workspace_root)
-
-    if project is None:
-        print(f"Project '{project_name}' not found.")
-        print("\nAvailable projects:")
-        projects = get_workspace_projects(workspace_root)
-        for proj in projects[:10]:  # Show first 10
-            print(f"  - {proj['name']}")
-        if len(projects) > 10:
-            print(f"  ... and {len(projects) - 10} more")
-        sys.exit(1)
-
-    # Load context files
-    project_path = project["path"]
-    context = load_project_context(project_path)
-
-    # Format and display
-    formatted = format_project_context(
-        project["name"],
-        project_path,
-        context
-    )
-    print(formatted)
-```
-
-### Step 5: Main Entry Point
-
-```python
-import sys
-
-def main():
-    if len(sys.argv) < 2:
-        # No project name provided - list projects
-        list_projects()
-    else:
-        # Project name provided - load context
-        project_name = sys.argv[1]
-        load_project(project_name)
-
-if __name__ == "__main__":
-    main()
-```
+**Key utilities from** `packages/shared-py/popkit_shared/utils/workspace_config.py`:
+- `find_workspace_root()` - Detect workspace root
+- `get_workspace_projects()` - List all projects
+- `find_project_by_name()` - Find specific project
+- `load_project_context()` - Load project files
+- `format_project_context()` - Format output
 
 ## Output Format
 
-### Project Context Display
+See [examples/output-formats.md](examples/output-formats.md) for complete output examples.
 
-```
-===================================================================
-                         Project: {name}
-===================================================================
-
-Path: {absolute path}
-
-## Overview
-{package.json description}
-
-## Instructions (CLAUDE.md)
-{CLAUDE.md content}
-[... full content of each file ...]
-
-## Dependencies (package.json)
-{dependencies section}
-
-## Current Status (.claude/STATUS.json)
-{STATUS.json if exists}
-
-## README
-{README.md content}
-```
-
-### Missing Files
-
-If a file doesn't exist, skip it gracefully:
-```
-## Instructions (CLAUDE.md)
-(No CLAUDE.md found in this project)
-```
+**Context display includes:**
+- Project header with path
+- Overview from package.json
+- Full CLAUDE.md content
+- Dependencies section
+- STATUS.json (if exists)
+- README content
 
 ## Error Handling
 
@@ -269,58 +116,24 @@ Install shared-py package:
 
 ## Use Cases
 
-### Cross-Project Integration
+See [examples/use-cases.md](examples/use-cases.md) for detailed scenarios.
 
-```
-User: "Load context from the genesis project"
-→ Invoke pop-project-reference with argument "genesis"
-→ Display CLAUDE.md, dependencies, README
-```
-
-### API Discovery
-
-```
-User: "What APIs does the optimus service expose?"
-→ Invoke pop-project-reference with "optimus"
-→ User reads API documentation from README/CLAUDE.md
-```
-
-### Dependency Analysis
-
-```
-User: "Show me what matrix-engine depends on"
-→ Invoke pop-project-reference with "matrix-engine"
-→ Display package.json dependencies section
-```
-
-## Architecture Integration
-
-This skill integrates with:
-
-- **Workspace Config Utilities**: `packages/shared-py/popkit_shared/utils/workspace_config.py`
-- **Project Command**: `/popkit:project reference` command wrapper
-- **Session Context**: Can read STATUS.json from other projects
-
-## Testing
-
-Test cases in `tests/skill-test.json`:
-
-1. **List Projects**: Verify all workspace projects are detected
-2. **Load Context**: Verify CLAUDE.md, package.json, README loaded
-3. **Invalid Project**: Verify error handling for non-existent projects
-4. **Not in Workspace**: Verify graceful handling when not in monorepo
+**Common patterns:**
+- **Cross-Project Integration**: Load context from another project for integration work
+- **API Discovery**: Check what APIs a service exposes
+- **Dependency Analysis**: See what packages a project depends on
 
 ## Performance
 
-- **Fast**: Uses glob patterns for project discovery (< 100ms)
-- **Lazy Loading**: Only reads files when project is requested
+- **Fast**: Glob patterns for discovery (< 100ms)
+- **Lazy Loading**: Only reads files when project requested
 - **Caching**: Workspace root detection cached per session
 
 ## Related Skills
 
-- `pop-project-init` - Initialize new monorepo projects
-- `pop-analyze-project` - Analyze current project structure
-- `pop-project-observe` - Watch for project changes
+- **pop-project-init**: Initialize new monorepo projects
+- **pop-analyze-project**: Analyze current project structure
+- **pop-project-observe**: Watch for project changes
 
 ## Related Commands
 
@@ -328,14 +141,21 @@ Test cases in `tests/skill-test.json`:
 - `/popkit:project init` - Create new projects
 - `/popkit:project analyze` - Analyze project health
 
+## Testing
+
+Test cases in `tests/skill-test.json`:
+1. List all workspace projects
+2. Load context from named project
+3. Handle invalid project names
+4. Handle non-monorepo directories
+
 ## Success Criteria
 
-✅ Lists all projects in ElShaddai monorepo (13 apps)
+✅ Lists all projects in monorepo
 ✅ Loads context from named projects
 ✅ Handles missing files gracefully
 ✅ Error messages guide user to correct usage
 ✅ Works with pnpm/npm/yarn/Lerna workspaces
-✅ Unicode handling works correctly
 
 ---
 
