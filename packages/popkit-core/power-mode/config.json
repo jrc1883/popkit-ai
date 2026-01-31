@@ -201,5 +201,40 @@
   "consensus": {
     "threshold": 0.7,
     "require_unanimous_for": ["delete_files", "modify_security", "push_changes"]
+  },
+
+  "task_scheduling": {
+    "enabled": true,
+    "priority_levels": {
+      "critical": {
+        "level": 4,
+        "description": "Blocking issues, security vulnerabilities, production failures"
+      },
+      "high": {
+        "level": 3,
+        "description": "Important features, critical bugs, tight deadlines"
+      },
+      "medium": {
+        "level": 2,
+        "description": "Standard features, non-critical bugs, routine maintenance"
+      },
+      "low": {
+        "level": 1,
+        "description": "Nice-to-have features, documentation, code cleanup"
+      }
+    },
+    "priority_rules": {
+      "critical_keywords": ["security", "vulnerability", "production", "crash", "blocking", "emergency", "urgent"],
+      "high_keywords": ["important", "bug", "deadline", "critical", "asap"],
+      "low_keywords": ["documentation", "cleanup", "refactor", "nice-to-have", "optional"],
+      "critical_tags": ["security", "production", "p0"],
+      "high_tags": ["bug", "deadline", "p1"],
+      "low_tags": ["docs", "cleanup", "nice-to-have"]
+    },
+    "assignment": {
+      "auto_assign": true,
+      "track_agent_workload": true,
+      "max_tasks_per_agent": 3
+    }
   }
 }
