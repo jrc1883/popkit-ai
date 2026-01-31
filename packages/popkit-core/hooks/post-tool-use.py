@@ -82,6 +82,14 @@ except ImportError:
         return None
 
 
+# Import semantic router for agent detection (Issue #80)
+try:
+    from popkit_shared.utils.semantic_router import SemanticRouter
+
+    SEMANTIC_ROUTER_AVAILABLE = True
+except ImportError:
+    SEMANTIC_ROUTER_AVAILABLE = False
+
 # Import routine measurement for context tracking
 try:
     from routine_measurement import RoutineMeasurementTracker, check_measure_flag
@@ -773,6 +781,50 @@ class PostToolUseHook:
 
         # Get project context
         project_context = self.get_project_context()
+
+        # Issue #80: Detect and set active agent for expertise tracking
+        # This activates the dormant Agent Expertise System by setting POPKIT_ACTIVE_AGENT
+        if SEMANTIC_ROUTER_AVAILABLE:
+            try:
+                router = SemanticRouter()
+
+                # Build context from tool usage and analysis
+                context = {
+                    "tool": tool_name,
+                    "category": analysis.get("category", ""),
+                    "has_issues": len(analysis.get("issues", [])) > 0,
+                    "has_error": analysis.get("error") is not None,
+                }
+
+                # Add file path if available
+                if "file_path" in tool_args:
+                    context["file"] = tool_args["file_path"]
+
+                # Build query from tool usage pattern
+                query_parts = [tool_name]
+                if analysis.get("category"):
+                    query_parts.append(analysis["category"])
+                if analysis.get("issues"):
+                    query_parts.append("issues")
+                query = " ".join(query_parts)
+
+                # Route and automatically set POPKIT_ACTIVE_AGENT env var
+                routing_result = router.route_single(
+                    query,
+                    context=context,
+                    set_active_agent=True,  # Key parameter - sets env var
+                )
+
+                # Log agent detection (non-blocking)
+                if routing_result and routing_result.confidence >= 0.3:
+                    print(
+                        f"  [Expertise] Active agent: {routing_result.agent} "
+                        f"(confidence: {routing_result.confidence:.2f})",
+                        file=sys.stderr,
+                    )
+            except Exception as e:
+                # Silent failure - don't block on agent detection
+                print(f"  [Expertise] Agent detection failed: {e}", file=sys.stderr)
 
         # Determine follow-up agents
         followup_agents = self.determine_followup_agents(

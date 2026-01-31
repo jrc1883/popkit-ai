@@ -8,6 +8,17 @@ All notable changes to PopKit are documented in this file.
 
 ### Added
 
+- **Agent Expertise Tracking Activation** (#80): Automatic agent detection for expertise learning
+  - Integrated semantic_router into post-tool-use.py hook for automatic agent detection
+  - POPKIT_ACTIVE_AGENT now set after every tool execution via semantic router
+  - Activates dormant Agent Expertise System (85% infrastructure complete from #201)
+  - Agent detection uses embedding similarity with 0.3+ confidence threshold
+  - Fallback to keyword matching when embeddings unavailable
+  - Test suite included: 4 comprehensive integration tests (all passing)
+  - Updated expertise_manager.py documentation to reflect accurate implementation
+  - Enables automatic pattern learning for all 3 pilot agents: code-reviewer, security-auditor, bug-whisperer
+  - Zero configuration required - works automatically on all tool executions
+
 - **Power Mode Transcript Parsing** (#110): Enhanced observability for Power Mode subagent executions
   - Added `record_subagent_completion()` method to session_recorder for structured subagent data
   - Integrated TranscriptParser into subagent-stop.py hook (line 195 TODO resolved)

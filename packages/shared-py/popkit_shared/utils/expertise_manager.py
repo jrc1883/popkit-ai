@@ -7,9 +7,11 @@ Requires 3+ occurrences before adding new patterns.
 
 Part of Agent Expertise System (Issue #201).
 
-IMPORTANT: Agent identification currently requires POPKIT_ACTIVE_AGENT environment
-variable to be set by the agent routing system (Issue #80).
-This variable is now set by session-start.py and semantic_router.py.
+IMPORTANT: Agent identification requires POPKIT_ACTIVE_AGENT environment variable.
+
+As of Issue #80, this variable is set automatically by:
+1. session-start.py - When --agent flag is used explicitly
+2. post-tool-use.py - After each tool execution via semantic_router (automatic detection)
 """
 
 import json
