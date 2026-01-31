@@ -20,6 +20,13 @@ All notable changes to PopKit are documented in this file.
   - Utility module: `popkit_shared.utils.upstream_tracker`
   - Prevents duplicate research and maintains historical context
 
+- **GitHub CLI Detection and Graceful Handling** (#217): Better UX when `gh` CLI not installed
+  - New `is_gh_cli_available()` function checks for gh CLI and authentication
+  - New `ensure_gh_cli()` raises helpful RuntimeError with platform-specific installation instructions
+  - GitHubCache methods now check for gh CLI before fetching from API
+  - Clear error messages for macOS (brew), Windows (winget), Linux users
+  - Prevents silent failures when gh CLI not available
+
 ### Fixed
 
 ### Changed

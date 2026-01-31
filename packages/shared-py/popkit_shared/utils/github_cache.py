@@ -343,6 +343,65 @@ class RedisGitHubCache:
 
 
 # =============================================================================
+# GitHub CLI Detection
+# =============================================================================
+
+
+def is_gh_cli_available() -> bool:
+    """Check if GitHub CLI is installed and authenticated.
+
+    Returns:
+        True if gh CLI is available and authenticated, False otherwise
+    """
+    try:
+        result = subprocess.run(
+            ["gh", "auth", "status"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        return result.returncode == 0
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return False
+
+
+def ensure_gh_cli() -> None:
+    """Display helpful error message if GitHub CLI is not available.
+
+    Raises:
+        RuntimeError: If GitHub CLI is not available
+    """
+    if is_gh_cli_available():
+        return
+
+    import platform
+
+    error_msg = [
+        "",
+        "GitHub CLI (gh) not found or not authenticated",
+        "",
+        "PopKit requires GitHub CLI for GitHub operations.",
+        "",
+        "Installation:",
+    ]
+
+    # Platform-specific installation instructions
+    system = platform.system()
+    if system == "Darwin":  # macOS
+        error_msg.append("  • macOS: brew install gh")
+    elif system == "Windows":
+        error_msg.append("  • Windows: winget install --id GitHub.cli")
+    elif system == "Linux":
+        error_msg.append("  • Linux: See https://cli.github.com/")
+    else:
+        error_msg.append("  • See https://cli.github.com/")
+
+    error_msg.extend(["", "After installation, run: gh auth login", ""])
+
+    raise RuntimeError("\n".join(error_msg))
+
+
+# =============================================================================
 # GitHub API Fetchers
 # =============================================================================
 
@@ -471,7 +530,8 @@ class GitHubCache:
         if cached is not None:
             return cached
 
-        # Fetch from GitHub
+        # Fetch from GitHub - requires gh CLI
+        ensure_gh_cli()
         labels = fetch_labels_from_github()
         if labels:
             self._backend.set_labels(labels)
@@ -485,7 +545,8 @@ class GitHubCache:
         if cached is not None:
             return cached
 
-        # Fetch from GitHub
+        # Fetch from GitHub - requires gh CLI
+        ensure_gh_cli()
         milestones = fetch_milestones_from_github(state=state)
         if milestones:
             self._backend.set_milestones(milestones)
@@ -497,7 +558,8 @@ class GitHubCache:
         if cached is not None:
             return cached
 
-        # Fetch from GitHub
+        # Fetch from GitHub - requires gh CLI
+        ensure_gh_cli()
         branch = fetch_default_branch_from_github()
         if branch:
             self._backend.set_default_branch(branch)
