@@ -317,6 +317,153 @@ PopKit Core includes an automatic **Ruff pre-commit hook** that validates Python
 
 ---
 
+## Integration with Official Claude Plugins
+
+PopKit is designed to complement and extend official Claude Code plugins through workflow orchestration. Rather than replacing official tools, PopKit integrates them into complete development workflows.
+
+### Architecture Philosophy
+
+**PopKit = Workflow Orchestration Layer**
+
+- **Official Plugins**: Building blocks (agents, tools, capabilities)
+- **PopKit**: Orchestration (workflows, coordination, automation)
+
+PopKit uses official Claude agents (code-explorer, code-architect, code-reviewer) as foundational components within larger, context-aware workflows that span the entire development lifecycle.
+
+### Code Review Integration
+
+PopKit provides a two-tier code review strategy:
+
+#### Local Pre-PR Review: `/popkit-dev:git review`
+
+**Purpose**: Internal quality check before creating PR
+**Usage**: During implementation phase
+**Features**:
+- Confidence-based filtering (80+ threshold)
+- Reviews staged changes, branches, or specific files
+- Focus areas: simplicity, correctness, conventions
+- Output: Local terminal report for immediate fixes
+
+**When to use**: Before creating PR to catch issues early
+
+```bash
+# Review current changes
+/popkit-dev:git review --staged
+
+# Review specific branch
+/popkit-dev:git review --branch feat/user-auth
+
+# Review with specific focus
+/popkit-dev:git review --focus security
+```
+
+#### Automated PR Review: Official `code-review` Plugin
+
+**Purpose**: Post-PR automated review with GitHub integration
+**Usage**: After PR creation
+**Features**:
+- 4 parallel agents (2× CLAUDE.md compliance, bugs, git history)
+- Native GitHub comment posting with code links
+- Confidence threshold filtering (80+)
+- Full SHA references for permanent links
+
+**Integration Point**: Automatically invoked after PR creation in workflows
+
+**Installation**:
+```bash
+claude plugin install code-review@claude-plugins-official
+```
+
+**Workflow Integration**:
+
+The official code-review plugin is integrated into:
+
+1. **`pop-finish-branch` skill**: After PR creation step
+   ```
+   create_pr → automated_pr_review → issue_close_decision
+   ```
+
+2. **`/popkit-dev:dev` workflow**: In Phase 7 (Summary)
+   ```
+   Phase 6: Quality Review (local)
+   Phase 7: Summary → Create PR → Auto code-review
+   ```
+
+**Usage**: Automatically triggered, or manually via:
+```bash
+# Review current PR
+/code-review
+
+# Review specific PR with GitHub comments
+/code-review --comment
+```
+
+### GitHub Integration Strategy
+
+PopKit uses `gh` CLI with intelligent caching instead of MCP for GitHub operations.
+
+**Technical Approach**:
+
+| Aspect | PopKit Implementation |
+|--------|----------------------|
+| **Method** | `gh` CLI via subprocess + smart caching |
+| **Cache Layer** | Two-tier: Local JSON + optional Redis |
+| **TTL** | 60min (labels/milestones), 24hr (team members) |
+| **Features** | Fuzzy label matching, typo detection, validation |
+| **Offline** | ✅ Yes (cached data remains available) |
+| **Token Cost** | 0 upfront (no tool descriptions in context) |
+
+**Why CLI over MCP**:
+
+1. **Zero Setup**: `gh` CLI already installed for GitHub users
+2. **Smart Caching**: Reduces API calls more effectively than MCP
+3. **Offline Support**: Works with cached data when disconnected
+4. **Token Efficiency**: No upfront context overhead
+5. **Simplicity**: Direct command execution, no server required
+
+**Cache Implementation** (Issue #96):
+```python
+from popkit_shared.utils.github_cache import GitHubCache
+
+cache = GitHubCache()
+labels = cache.get_labels()  # Fast, cached
+valid, invalid, suggestions = validate_labels(requested_labels, cache)
+```
+
+**JSON Output**: PopKit uses `--json` flag by default for structured, type-safe responses:
+```bash
+gh pr list --json number,title,state,labels
+gh issue view 123 --json body,assignees,milestone
+gh run list --json status,conclusion,name
+```
+
+**Alternative**: GitHub MCP server available for teams preferring Model Context Protocol architecture. Install separately if needed for real-time API integration.
+
+### When to Use Official Plugins vs PopKit
+
+| Use Case | Recommendation |
+|----------|---------------|
+| **Complete workflows** | PopKit (e.g., `/popkit-dev:dev`, `/popkit-dev:routine`) |
+| **PR code review with GitHub comments** | Official code-review plugin |
+| **Feature development** | PopKit `/dev` (includes code-explorer/code-architect) |
+| **GitHub operations** | PopKit CLI + cache (simpler, cached) |
+| **Frontend design** | PopKit document-skills (already included) |
+| **Multi-agent coordination** | PopKit Power Mode (unique capability) |
+| **Morning/nightly routines** | PopKit (unique capability) |
+
+### Complementary Official Plugins
+
+These official plugins work well alongside PopKit:
+
+- **code-review**: Automated PR reviews with GitHub integration
+- **github** (MCP): Alternative to CLI approach (optional)
+- **pubmed**: Life sciences research integration
+- **playwright**: Browser automation and testing
+
+PopKit includes frontend-design, code-simplifier (refactoring-expert), and workflow orchestration capabilities, so those official plugins are redundant.
+
+---
+
 ## Testing
 
 ### Plugin Validation
