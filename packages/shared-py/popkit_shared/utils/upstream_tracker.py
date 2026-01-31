@@ -283,7 +283,9 @@ class UpstreamTracker:
                         delta = researched_dt - discovered
                         research_times.append(delta.total_seconds() / (24 * 3600))  # days
                     except ValueError:
-                        pass
+                        # Invalid date format - skip this item for research time calculation
+                        # This is safe to ignore as it only affects statistics, not core functionality
+                        continue
 
         stats["total_items_tracked"] = total
         stats["pending_research"] = pending
@@ -322,6 +324,8 @@ class UpstreamTracker:
                     if datetime.now() - last_check < timedelta(hours=CHECK_FREQUENCY_HOURS):
                         continue
                 except ValueError:
+                    # Invalid date format in last_checked - treat as never checked
+                    # This is safe to ignore as we'll simply recheck the repo
                     pass
 
             # Fetch new items
