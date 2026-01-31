@@ -97,9 +97,70 @@ Pull request management via `gh` CLI.
 | ready            | Mark draft as ready                      |
 | update           | Update PR branch with base               |
 
-**Process (create):** Verify clean state → Create/switch branch → Stage → Commit → Push → Create PR with template.
+**Process (create):** Verify clean state → Create/switch branch → Stage → Commit → Push → **Validate labels (Issue #96)** → Create PR with template.
 
-**Options:** --draft, --base <branch>, --title <text>, --squash, --rebase, --delete-branch
+**Options:** --draft, --base <branch>, --title <text>, --label <labels>, --squash, --rebase, --delete-branch
+
+### Label Validation for PR Creation (Issue #96)
+
+**CRITICAL:** Always validate labels BEFORE calling `gh pr create` to prevent errors.
+
+**Implementation:**
+
+```python
+from popkit_shared.utils.github_validator import validate_labels
+from popkit_shared.utils.github_cache import GitHubCache
+
+# 1. Determine labels (from flags or branch prefix)
+if user_labels:
+    requested_labels = user_labels  # e.g., ["enhancement", "needs-review"]
+else:
+    # Infer from branch name
+    branch_name = get_current_branch()
+    requested_labels = infer_labels_from_branch(branch_name)
+    # feat/* → ["enhancement"]
+    # fix/* → ["bug"]
+    # docs/* → ["documentation"]
+
+# 2. Validate using cache
+cache = GitHubCache()
+valid, invalid, suggestions = validate_labels(requested_labels, cache)
+
+# 3. Handle invalid labels
+if invalid:
+    print(f"⚠️  Invalid labels: {', '.join(invalid)}")
+
+    # Auto-fix with suggestions
+    fixed_labels = valid.copy()
+    for s in suggestions:
+        if s['suggestions']:
+            best_match = s['suggestions'][0]
+            fixed_labels.append(best_match)
+            print(f"   Auto-corrected: {s['invalid']} → {best_match}")
+
+    labels_to_use = fixed_labels
+else:
+    labels_to_use = valid
+
+# 4. Create PR with validated labels
+if labels_to_use:
+    gh pr create --title "..." --body "..." --label {','.join(labels_to_use)}
+else:
+    gh pr create --title "..." --body "..."
+```
+
+**Example Output:**
+
+```
+Creating PR from branch: feat/user-auth
+
+Inferred labels from branch: enhancement
+⚠️  Invalid labels: enhancement
+   Auto-corrected: enhancement → feature
+
+✓ Using labels: feature
+✓ PR #45 created successfully
+```
 
 ---
 

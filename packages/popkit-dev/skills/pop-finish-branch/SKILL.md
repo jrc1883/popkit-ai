@@ -116,9 +116,36 @@ workflow:
       agent: test-writer-fixer
       next: cleanup_branch
     - id: create_pr
-      description: Push branch and create PR
+      description: Push branch and create PR with label validation (Issue #96)
       type: agent
       agent: code-architect
+      implementation: |
+        # Infer labels from branch name
+        branch_name = get_current_branch()
+        inferred_labels = infer_labels_from_branch(branch_name)
+
+        # Validate labels using cache
+        from popkit_shared.utils.github_validator import validate_labels
+        from popkit_shared.utils.github_cache import GitHubCache
+
+        cache = GitHubCache()
+        valid, invalid, suggestions = validate_labels(inferred_labels, cache)
+
+        # Auto-fix invalid labels
+        if invalid:
+            fixed_labels = valid.copy()
+            for s in suggestions:
+                if s['suggestions']:
+                    fixed_labels.append(s['suggestions'][0])
+            labels_to_use = fixed_labels
+        else:
+            labels_to_use = valid
+
+        # Create PR with validated labels
+        if labels_to_use:
+            gh pr create --title "..." --body "..." --label {','.join(labels_to_use)}
+        else:
+            gh pr create --title "..." --body "..."
       next: issue_close_decision
     - id: keep_branch
       description: Keep branch as-is
