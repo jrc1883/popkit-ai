@@ -20,6 +20,12 @@ All notable changes to PopKit are documented in this file.
   - Utility module: `popkit_shared.utils.upstream_tracker`
   - Prevents duplicate research and maintains historical context
 
+- **GitHub Cache Status Inspection** (#216): Show cache state and freshness
+  - New `status` command for `github_cache.py` CLI
+  - Displays count, last updated timestamp, TTL, and fresh/expired status for each cache type
+  - Shows overall cache health (All entries fresh / Some entries expired)
+  - Makes cache "programmatically useful and realistically useful for the user"
+
 ### Fixed
 
 ### Changed

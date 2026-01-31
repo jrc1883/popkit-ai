@@ -536,6 +536,72 @@ if __name__ == "__main__":
             branch = cache.get_default_branch()
             print(f"Default branch: {branch}")
 
+        elif cmd == "status":
+            print("GitHub Cache Status\n")
+            backend = cache._backend
+            cache_data = backend._load_cache()
+
+            print(f"Repository: {cache_data.get('repository', 'unknown')}")
+            print(f"Cache Version: {cache_data.get('cache_version', '1.0.0')}")
+            print(f"Created: {cache_data.get('created_at', 'unknown')}\n")
+
+            # Labels status
+            labels_updated = cache_data.get("labels_updated")
+            labels_count = len(cache_data.get("labels", [])) if cache_data.get("labels") else 0
+            labels_ttl = cache_data.get("labels_ttl_minutes", DEFAULT_TTL_MINUTES)
+            labels_expired = backend._is_expired(labels_updated, labels_ttl)
+
+            print("Labels:")
+            print(f"  Count: {labels_count}")
+            print(f"  Last Updated: {labels_updated or 'Never'}")
+            print(f"  TTL: {labels_ttl} minutes")
+            print(f"  Status: {'Expired' if labels_expired else 'Fresh'}\n")
+
+            # Milestones status
+            milestones_updated = cache_data.get("milestones_updated")
+            milestones_count = (
+                len(cache_data.get("milestones", [])) if cache_data.get("milestones") else 0
+            )
+            milestones_ttl = cache_data.get("milestones_ttl_minutes", DEFAULT_TTL_MINUTES)
+            milestones_expired = backend._is_expired(milestones_updated, milestones_ttl)
+
+            print("Milestones:")
+            print(f"  Count: {milestones_count}")
+            print(f"  Last Updated: {milestones_updated or 'Never'}")
+            print(f"  TTL: {milestones_ttl} minutes")
+            print(f"  Status: {'Expired' if milestones_expired else 'Fresh'}\n")
+
+            # Team members status
+            team_updated = cache_data.get("team_updated")
+            team_count = (
+                len(cache_data.get("team_members", [])) if cache_data.get("team_members") else 0
+            )
+            team_ttl = cache_data.get("team_ttl_minutes", TEAM_TTL_MINUTES)
+            team_expired = backend._is_expired(team_updated, team_ttl)
+
+            print("Team Members:")
+            print(f"  Count: {team_count}")
+            print(f"  Last Updated: {team_updated or 'Never'}")
+            print(f"  TTL: {team_ttl} minutes (24 hours)")
+            print(f"  Status: {'Expired' if team_expired else 'Fresh'}\n")
+
+            # Default branch status
+            default_branch = cache_data.get("default_branch")
+            default_branch_updated = cache_data.get("default_branch_updated")
+            default_branch_expired = backend._is_expired(
+                default_branch_updated, cache_data.get("labels_ttl_minutes", DEFAULT_TTL_MINUTES)
+            )
+
+            print(f"Default Branch: {default_branch or 'Not cached'}")
+            print(f"  Last Updated: {default_branch_updated or 'Never'}")
+            print(f"  Status: {'Expired' if default_branch_expired else 'Fresh'}\n")
+
+            # Overall health
+            all_fresh = not any(
+                [labels_expired, milestones_expired, team_expired, default_branch_expired]
+            )
+            print(f"Cache Health: {'All entries fresh' if all_fresh else 'Some entries expired'}")
+
         elif cmd == "clear":
             print("Clearing cache...")
             cache.clear()
@@ -556,6 +622,7 @@ if __name__ == "__main__":
             print("  python github_cache.py labels     # Show cached labels")
             print("  python github_cache.py milestones # Show cached milestones")
             print("  python github_cache.py branch     # Show default branch")
+            print("  python github_cache.py status     # Show cache status")
             print("  python github_cache.py clear      # Clear cache")
             print("  python github_cache.py refresh    # Force refresh all")
     else:
@@ -564,5 +631,6 @@ if __name__ == "__main__":
         print("  python github_cache.py labels     # Show cached labels")
         print("  python github_cache.py milestones # Show cached milestones")
         print("  python github_cache.py branch     # Show default branch")
+        print("  python github_cache.py status     # Show cache status")
         print("  python github_cache.py clear      # Clear cache")
         print("  python github_cache.py refresh    # Force refresh all")
