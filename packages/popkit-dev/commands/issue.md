@@ -200,6 +200,66 @@ What type of issue is this?
 4. Research - Investigation or spike
 ```
 
+### Label Validation (Issue #96)
+
+**CRITICAL:** Always validate labels BEFORE calling `gh issue create` to prevent errors.
+
+**Implementation:**
+
+```python
+from popkit_shared.utils.github_validator import validate_labels
+from popkit_shared.utils.github_cache import GitHubCache
+
+# 1. Collect labels from template and user flags
+requested_labels = get_labels_from_template(template)  # e.g., ["bug"]
+if user_labels:
+    requested_labels.extend(user_labels)  # e.g., ["priority:high"]
+
+# 2. Validate using cache
+cache = GitHubCache()
+valid, invalid, suggestions = validate_labels(requested_labels, cache)
+
+# 3. Handle invalid labels
+if invalid:
+    print(f"⚠️  Invalid labels: {', '.join(invalid)}")
+
+    # Auto-fix with suggestions
+    fixed_labels = valid.copy()
+    for s in suggestions:
+        if s['suggestions']:
+            best_match = s['suggestions'][0]
+            fixed_labels.append(best_match)
+            print(f"   Auto-corrected: {s['invalid']} → {best_match}")
+
+    # Ask user to confirm
+    # Use AskUserQuestion: "Use corrected labels or cancel?"
+
+    labels_to_use = fixed_labels
+else:
+    labels_to_use = valid
+
+# 4. Create issue with validated labels
+gh issue create --title "..." --body "..." --label {','.join(labels_to_use)}
+```
+
+**Example Output:**
+
+```
+Creating issue with labels: bug, priority:high
+
+⚠️  Invalid labels: priority:high
+   Auto-corrected: priority:high → P1-high
+
+✓ Using labels: bug, P1-high
+✓ Issue #123 created successfully
+```
+
+**Benefits:**
+- ✅ Prevents "label does not exist" errors
+- ✅ Catches typos with fuzzy matching
+- ✅ Suggests correct alternatives
+- ✅ Improves first-time success rate
+
 ### PopKit Guidance Section
 
 All templates include a **PopKit Guidance** section that directs workflow:
@@ -381,9 +441,32 @@ Update issue metadata.
 ### Process
 
 1. **Parse Arguments**: Extract issue number and edit flags
-2. **Build Command**: Construct `gh issue edit` with appropriate flags
-3. **Execute**: Run the edit command
-4. **Confirm**: Report changes made
+2. **Validate Labels** (Issue #96): If adding labels, validate them first
+3. **Build Command**: Construct `gh issue edit` with appropriate flags
+4. **Execute**: Run the edit command
+5. **Confirm**: Report changes made
+
+**Label Validation (when using `--label add:name`):**
+
+```python
+from popkit_shared.utils.github_validator import validate_labels
+from popkit_shared.utils.github_cache import GitHubCache
+
+# Parse labels to add
+labels_to_add = parse_label_flags(args)  # e.g., ["priority:high", "needs-review"]
+
+if labels_to_add:
+    cache = GitHubCache()
+    valid, invalid, suggestions = validate_labels(labels_to_add, cache)
+
+    if invalid:
+        # Show suggestions and auto-correct
+        for s in suggestions:
+            if s['suggestions']:
+                print(f"⚠️  {s['invalid']} → {s['suggestions'][0]}")
+
+# Proceed with validated labels
+```
 
 **Execute this command:**
 
@@ -504,19 +587,22 @@ gh issue comment 45 --body "..."
 
 ## Architecture Integration
 
-| Component              | Integration                            |
-| ---------------------- | -------------------------------------- |
-| Issue Listing          | `hooks/utils/issue_list.py`            |
-| Issue Fetching         | `gh issue view/list` via GitHub CLI    |
-| PopKit Guidance Parser | `hooks/utils/github_issues.py`         |
-| Vote Fetching          | `hooks/utils/vote_fetcher.py`          |
-| Priority Scoring       | `hooks/utils/priority_scorer.py`       |
-| Flag Parsing           | `hooks/utils/flag_parser.py`           |
-| Issue Templates        | `.github/ISSUE_TEMPLATE/*.md`          |
-| Phase Tracking         | `STATUS.json` integration              |
-| Power Mode             | `power-mode/coordinator.py`            |
-| Status Line            | `power-mode/statusline.py`             |
-| State                  | `.claude/popkit/power-mode-state.json` |
+| Component              | Integration                                                |
+| ---------------------- | ---------------------------------------------------------- |
+| Issue Listing          | `hooks/utils/issue_list.py`                                |
+| Issue Fetching         | `gh issue view/list` via GitHub CLI                        |
+| PopKit Guidance Parser | `hooks/utils/github_issues.py`                             |
+| Vote Fetching          | `hooks/utils/vote_fetcher.py`                              |
+| Priority Scoring       | `hooks/utils/priority_scorer.py`                           |
+| Flag Parsing           | `hooks/utils/flag_parser.py`                               |
+| Issue Templates        | `.github/ISSUE_TEMPLATE/*.md`                              |
+| Phase Tracking         | `STATUS.json` integration                                  |
+| Power Mode             | `power-mode/coordinator.py`                                |
+| Status Line            | `power-mode/statusline.py`                                 |
+| State                  | `.claude/popkit/power-mode-state.json`                     |
+| **GitHub Cache**       | `popkit_shared.utils.github_cache` **(Issue #96)**         |
+| **Label Validation**   | `popkit_shared.utils.github_validator` **(Issue #96)**     |
+| Cache Storage          | `.claude/popkit/github-cache.json` (60 min TTL)            |
 
 ## Related Commands
 

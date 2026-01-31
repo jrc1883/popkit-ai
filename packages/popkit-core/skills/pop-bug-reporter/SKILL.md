@@ -104,11 +104,34 @@ file_path = capture.save(ctx)
 print(f"Logged to: {file_path}")
 ```
 
-**--issue** - Create GitHub issue:
+**--issue** - Create GitHub issue with validated labels (Issue #96):
 
 ```python
+from popkit_shared.utils.github_validator import validate_labels
+from popkit_shared.utils.github_cache import GitHubCache
+
 issue_body = format_github_issue(ctx)
-# Use gh issue create with formatted body
+
+# Validate default bug labels
+default_labels = ["bug", "needs-triage"]
+cache = GitHubCache()
+valid, invalid, suggestions = validate_labels(default_labels, cache)
+
+# Auto-fix or fallback
+if invalid:
+    fixed_labels = valid.copy()
+    for s in suggestions:
+        if s['suggestions']:
+            fixed_labels.append(s['suggestions'][0])
+    labels_to_use = fixed_labels if fixed_labels else []
+else:
+    labels_to_use = valid
+
+# Create issue (don't block on invalid labels)
+if labels_to_use:
+    gh issue create --title "Bug: ..." --body issue_body --label {','.join(labels_to_use)}
+else:
+    gh issue create --title "Bug: ..." --body issue_body
 ```
 
 **--share** - Share to collective (Pro/Team):
