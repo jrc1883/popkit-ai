@@ -8,6 +8,38 @@ All notable changes to PopKit are documented in this file.
 
 ### Added
 
+### Fixed
+
+### Changed
+
+---
+
+## [1.0.0-beta.7] - 2026-01-30
+
+### Added
+
+- **GitHub Metadata Caching** (#96): Two-tier caching system for GitHub labels, milestones, and team members
+  - Implemented GitHubCache class with local JSON and Redis support
+  - 60-minute TTL for labels/milestones, 24-hour TTL for team members
+  - Fuzzy label matching with Levenshtein distance for typo detection
+  - Label validation before gh issue/pr create to prevent errors
+  - Auto-suggestion for invalid labels with confidence scoring
+  - Integration points: issue.md, git.md, bug.md commands
+  - Test suite: 6 comprehensive integration tests (all passing)
+  - Cache storage: `.claude/popkit/github-cache.json`
+  - Reduces API calls and prevents "label does not exist" failures
+
+- **Power Mode Priority Scheduling** (#193): Four-level task prioritization system (Phase 1)
+  - TaskScheduler with CRITICAL/HIGH/MEDIUM/LOW priority levels
+  - Automatic priority assignment from keywords and tags
+  - Heap-based priority queue for O(log n) performance
+  - Conservative 3+ occurrence pattern promotion threshold
+  - Configuration-driven priority rules via config.json
+  - Agent workload tracking with max 3 tasks per agent
+  - FIFO ordering for same-priority tasks
+  - Test suite: Built-in test scenario with 6 tasks
+  - Foundation for Phase 2-5 (dependencies, reprioritization, load balancing)
+
 - **Agent Expertise Tracking Activation** (#80): Automatic agent detection for expertise learning
   - Integrated semantic_router into post-tool-use.py hook for automatic agent detection
   - POPKIT_ACTIVE_AGENT now set after every tool execution via semantic router

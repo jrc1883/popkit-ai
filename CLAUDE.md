@@ -443,7 +443,7 @@ PopKit requires specific Claude Code versions for full functionality:
 
 ## Current Status
 
-**Version**: 1.0.0-beta.5
+**Version**: 1.0.0-beta.7
 **Status**: Beta release
 **Plugins**: 4 modular plugins
 **Commands**: 23 workflow commands
@@ -452,6 +452,7 @@ PopKit requires specific Claude Code versions for full functionality:
 
 ### Recent Updates
 
+- **2026-01-31**: GitHub cache, priority scheduling, agent expertise system (v1.0.0-beta.7)
 - **2026-01-13**: CI/CD pipeline complete, all tests passing (v1.0.0-beta.5)
 - **2026-01-12**: Claude Code 2.1.6 compatibility verified, hook import paths fixed (v1.0.0-rc.1)
 - **2026-01-09**: Claude Code 2.1.2 integration complete (v1.0.0-beta.4)
