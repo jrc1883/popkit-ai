@@ -8,6 +8,18 @@ All notable changes to PopKit are documented in this file.
 
 ### Added
 
+- **Anthropic Upstream Tracking System** (#215): "Dependabot for Claude Code" - track Anthropic repository updates
+  - New `/popkit-core:upstream` command with 5 subcommands: check, list, research, synthesize, stats
+  - Monitors 4 repositories: claude-code, claude-plugins-official, anthropic-sdk-python, anthropic-sdk-typescript
+  - Status lifecycle: pending_research → researched → synthesized
+  - Impact assessment system: critical/high/medium/low/none/alignment
+  - Link research to PopKit issues/PRs with synthesize command
+  - Research velocity metrics and statistics dashboard
+  - Data storage: `.claude/popkit/upstream-tracking.json`
+  - Morning routine integration with `--no-upstream` flag
+  - Utility module: `popkit_shared.utils.upstream_tracker`
+  - Prevents duplicate research and maintains historical context
+
 ### Fixed
 
 ### Changed

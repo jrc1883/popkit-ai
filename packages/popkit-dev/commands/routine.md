@@ -85,6 +85,22 @@ Start your day with a comprehensive project health assessment.
 | Dependencies            | 15     | No critical vulnerabilities |
 | Documentation           | 15     | CLAUDE.md up to date        |
 
+### Anthropic Upstream Check (Issue #215)
+
+Morning routine automatically checks for Anthropic repository updates (Claude Code, official plugins, SDKs) and displays a brief summary if new items need research.
+
+**Output Example**:
+```
+🔍 Anthropic Updates: 3 items need research
+```
+
+**Commands**:
+- View pending items: `/popkit-core:upstream list pending`
+- Research an item: `/popkit-core:upstream research <item-id>`
+- Skip check: Add `--no-upstream` flag
+
+See `/popkit-core:upstream` documentation for full details.
+
 ### Flags
 
 | Flag               | Description                                                  |
@@ -99,6 +115,7 @@ Start your day with a comprehensive project health assessment.
 | --measure          | Track and report context usage, duration, and tool breakdown |
 | --optimized        | Use caching and selective execution (reduces token usage)    |
 | --no-cache         | Force fresh execution, bypass cached results                 |
+| --no-upstream      | Skip Anthropic upstream update check (Issue #215)            |
 
 ---
 
