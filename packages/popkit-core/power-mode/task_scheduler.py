@@ -23,6 +23,7 @@ from enum import IntEnum
 from typing import List, Optional, Dict, Any
 from pathlib import Path
 import heapq
+from functools import total_ordering
 
 
 class TaskPriority(IntEnum):
@@ -56,6 +57,7 @@ class TaskPriority(IntEnum):
         return self.name.lower()
 
 
+@total_ordering
 @dataclass
 class Task:
     """
