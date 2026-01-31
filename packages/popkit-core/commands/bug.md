@@ -57,10 +57,51 @@ Report issues the agent encountered with automatic context capture, local loggin
    - Error analysis
    - Suggested next steps
 
-3. **Output** - Based on flags:
+3. **Validate Labels** (Issue #96) - If creating GitHub issue:
+   - Validate bug labels before `gh issue create`
+   - Auto-correct invalid labels with fuzzy matching
+   - Default labels: `["bug", "needs-triage"]`
+
+4. **Output** - Based on flags:
    - Default: Log to `.claude/bugs/`
-   - `--issue`: Create GitHub issue
+   - `--issue`: Create GitHub issue with validated labels
    - `--share`: Upload anonymized pattern
+
+### Label Validation for Bug Reports (Issue #96)
+
+When `--issue` flag is used, validate labels before creating GitHub issue:
+
+```python
+from popkit_shared.utils.github_validator import validate_labels
+from popkit_shared.utils.github_cache import GitHubCache
+
+# Bug reports use standard labels
+default_labels = ["bug", "needs-triage"]
+
+# Validate
+cache = GitHubCache()
+valid, invalid, suggestions = validate_labels(default_labels, cache)
+
+if invalid:
+    # Auto-fix: Use suggestions or fallback
+    fixed_labels = valid.copy()
+    for s in suggestions:
+        if s['suggestions']:
+            fixed_labels.append(s['suggestions'][0])
+
+    # Don't block bug reports - use fixed labels or proceed without
+    labels_to_use = fixed_labels if fixed_labels else []
+else:
+    labels_to_use = valid
+
+# Create issue
+if labels_to_use:
+    gh issue create --title "Bug: ..." --body "..." --label {','.join(labels_to_use)}
+else:
+    gh issue create --title "Bug: ..." --body "..."  # No labels if none valid
+```
+
+**Note:** Bug reports should NEVER be blocked by invalid labels. If no valid labels found, create the issue without labels.
 
 ### Context Capture
 
