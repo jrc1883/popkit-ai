@@ -89,3 +89,6 @@ create-*.sh
 *_body.md
 commit_message.txt
 issue-audit-report.md
+
+# Runtime status files (generated during morning routine)
+STATUS.json
