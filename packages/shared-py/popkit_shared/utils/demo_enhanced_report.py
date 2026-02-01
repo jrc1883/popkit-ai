@@ -177,7 +177,7 @@ def demo_enhanced_report():
     print()
     print("=" * 70)
     print("This is what your enhanced recording reports will look like!")
-    print("Next: Integrate transcript parser into html_report_generator_v9.py")
+    print("Next: Integrate transcript parser into html_report_generator.py")
     print("=" * 70)
 
 

@@ -590,15 +590,17 @@ if __name__ == "__main__":
 
     client = CloudflareClient()
 
+    from popkit_shared.utils.secure_logger import secure_print
+
     if not client.is_available:
-        print("ERROR: CLOUDFLARE_API_TOKEN not set")
-        print("Set: export CLOUDFLARE_API_TOKEN=your-token-here")
+        secure_print("ERROR: CLOUDFLARE_API_TOKEN not set")
+        secure_print("Set: export CLOUDFLARE_API_TOKEN=your-token-here")
         sys.exit(1)
 
-    print("API Token: [REDACTED]")
+    secure_print("API Token: [REDACTED]")
 
     # Verify token
-    print("\nVerifying token...")
+    secure_print("\nVerifying token...")
     valid, message = client.verify_token()
     print(f"Valid: {valid} - {message}")
 

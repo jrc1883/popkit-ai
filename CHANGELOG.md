@@ -35,11 +35,42 @@ All notable changes to PopKit are documented in this file.
 
 ### Fixed
 
+- **Documentation Cleanup** (#[TBD]): Fixed broken links and version misalignments
+  - Updated command count from 23 to 25 in README.md
+  - Fixed broken links to deprecated plugins (popkit-github, popkit-quality, popkit-deploy, popkit-meta)
+  - Updated plugin documentation links to current 4-plugin architecture
+  - Aligned all plugin CHANGELOG versions to beta.7
+
 ### Changed
 
 ---
 
 ## [1.0.0-beta.7] - 2026-01-30
+
+### Architecture
+
+**Plugin Consolidation** - Streamlined from 6 plugins to 4 focused plugins:
+
+**Current Architecture (v1.0.0-beta.7):**
+- `popkit-core` - Foundation & Power Mode orchestration
+- `popkit-dev` - Complete development workflows (merged from popkit-github)
+- `popkit-ops` - Operations & quality (consolidated from popkit-quality + popkit-deploy)
+- `popkit-research` - Knowledge management
+
+**Deprecated Plugins (merged in beta.7):**
+- `popkit-github` → Merged into `popkit-dev` (Issue #583)
+  - GitHub functionality (issues, PRs, milestones) now integrated with dev workflows
+  - Unified workflow: Issues → Dev → PR → Merge → Close (all in one plugin)
+- `popkit-quality` → Consolidated into `popkit-ops`
+  - Quality assessment, code auditing, debugging features
+- `popkit-deploy` → Consolidated into `popkit-ops`
+  - Deployment orchestration and validation
+- `popkit-meta` → Removed (functionality distributed to core and shared-py)
+
+**Migration Notes:**
+- Existing users: Uninstall old plugins and install updated 4-plugin suite
+- All commands remain available - just grouped more logically
+- No functionality lost - only architectural simplification
 
 ### Added
 

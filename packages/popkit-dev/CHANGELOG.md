@@ -5,6 +5,14 @@ All notable changes to PopKit Dev will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-beta.7] - 2026-02-01
+
+### Changed
+
+- Version alignment with PopKit monorepo beta.7 release
+- Updated all dependencies to match core plugin versions
+- Documentation improvements and broken link fixes
+
 ## [0.2.0] - 2025-12-21
 
 ### Added

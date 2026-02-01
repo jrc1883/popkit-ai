@@ -145,9 +145,9 @@ def generate_main_script(skill_path: Path, config: Dict[str, Any]) -> Optional[P
     output_path = skill_path / "scripts" / "main.py"
     output_path.write_text(content)
 
-    # Make executable on Unix
+    # Make executable on Unix (owner only for security)
     try:
-        os.chmod(output_path, 0o755)
+        os.chmod(output_path, 0o700)
     except:
         pass
 
