@@ -76,7 +76,7 @@ class GenericProjectDetector:
 
         # Use tech_stack_detector for comprehensive detection
         detector = TechStackDetector(str(self.project_path))
-        tech_stack = detector.detect()
+        tech_stack = detector.detect_all()
 
         # Extract primary language
         primary_language = tech_stack.primary_language or "Unknown"
