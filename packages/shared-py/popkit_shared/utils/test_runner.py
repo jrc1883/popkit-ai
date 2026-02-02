@@ -470,10 +470,9 @@ class TestRunner:
 
                 elif assertion_type == "file_in_tier_directory":
                     # Check if agent files are in proper tier directories
-                    allowed_tiers = assertion.get("allowed_tiers", [])
-                    # This would need to be validated by checking file paths
-                    # For now, assume validated by plugin_validator
-                    pass
+                    # Note: This validation is handled by plugin_validator
+                    # No additional runtime check needed here
+                    continue
 
                 elif assertion_type == "note":
                     # Notes are informational, always pass

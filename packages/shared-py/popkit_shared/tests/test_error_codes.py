@@ -215,7 +215,6 @@ class TestErrorResponseIntegration:
         assert error["code"] == "E001_JSON_PARSE"
         assert error["message"] == "Invalid JSON syntax in input"
         assert error["help_url"].startswith("https://github.com/")
-        assert "github.com" in error["help_url"]
         assert len(error["recovery"]) >= 4  # 3 default + 1 additional
         assert error["context"]["hook"] == "pre-tool-use"
         assert error["context"]["line"] == 42
