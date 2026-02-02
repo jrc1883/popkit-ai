@@ -338,28 +338,8 @@ class MorningWorkflow:
         # Count stale local branches (whose remote tracking branches were deleted)
         git_data["stale_branches"] = count_stale_branches()
 
-        # Check for outdated dependencies
-        # This is a placeholder - would need actual implementation based on package manager
-        deps_data = {"outdated_count": 0, "outdated_packages": []}
-
-        # Try pnpm outdated (if available)
-        # SECURE: stderr redirect handled via subprocess parameter
-        pnpm_outdated = run_command(
-            ["pnpm", "outdated", "--json"], stderr_redirect=True
-        )
-        if pnpm_outdated:
-            try:
-                outdated = json.loads(pnpm_outdated)
-                deps_data["outdated_count"] = len(outdated)
-                deps_data["outdated_packages"] = [
-                    f"{name}: {info.get('current')} → {info.get('latest')}"
-                    for name, info in list(outdated.items())[:10]
-                ]
-            except json.JSONDecodeError:
-                # Ignore malformed JSON from pnpm outdated
-                pass
-
-        state["dependencies"] = deps_data
+        # Note: Dependency state is already gathered by generic_state_capture.py
+        # based on detected package manager. No need to override here.
 
         # Check PRs needing review
         github_data = state.get("github", {})

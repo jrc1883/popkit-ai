@@ -16,10 +16,12 @@ from typing import Any, Dict, List, Optional
 
 try:
     from .generic_project_detector import GenericProjectDetector, ProjectType
+    from .project_config import get_project_type_with_cache
 
     HAS_PROJECT_DETECTOR = True
 except ImportError:
     HAS_PROJECT_DETECTOR = False
+    get_project_type_with_cache = None
 
 
 def run_command(
@@ -199,21 +201,38 @@ def gather_service_state(project_type: ProjectType, project_path: Path = None) -
 
     Args:
         project_type: Detected project type with expected services
-        project_path: Path to project directory (unused but kept for API consistency)
+        project_path: Path to project directory
 
     Returns:
         Service state dictionary
     """
+    if project_path is None:
+        project_path = Path.cwd()
+
     state = {
         "expected_services": [],
         "running_services": [],
         "missing_services": [],
     }
 
-    if not project_type.expected_services:
+    # Check for config overrides first
+    try:
+        from .project_config import ProjectConfig
+
+        config_manager = ProjectConfig(str(project_path))
+        override_services = config_manager.get_override("expected_services")
+
+        # Use override if available, otherwise use project type defaults
+        expected_services = (
+            override_services if override_services else project_type.expected_services
+        )
+    except (ImportError, Exception):
+        expected_services = project_type.expected_services
+
+    if not expected_services:
         return state
 
-    for service in project_type.expected_services:
+    for service in expected_services:
         service_info = {
             "name": service["name"],
             "port": service["port"],
@@ -363,10 +382,22 @@ def capture_generic_project_state(
     """
     path = Path(project_path).resolve()
 
-    # Detect project type
-    if HAS_PROJECT_DETECTOR:
-        detector = GenericProjectDetector(str(path))
-        project_type = detector.detect()
+    # Detect project type with caching
+    if HAS_PROJECT_DETECTOR and get_project_type_with_cache:
+        project_type = get_project_type_with_cache(str(path))
+
+        if not project_type:
+            # Fallback: minimal state with just git
+            print("[WARN] Project detection failed, using minimal state")
+            return {
+                "project_type": {"language": "Unknown", "package_manager": None},
+                "git": gather_git_state(path),
+                "dependencies": {"installed": False, "outdated_count": 0},
+                "services": {"running_services": [], "missing_services": []},
+                "tests": {"tests_exist": False},
+                "build": {"build_script_exists": False},
+                "timestamp": datetime.now().isoformat(),
+            }
     else:
         # Fallback: minimal state with just git
         return {
