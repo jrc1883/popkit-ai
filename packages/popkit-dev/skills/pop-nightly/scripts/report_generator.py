@@ -441,9 +441,7 @@ def _generate_ask_user_question_section(
 if __name__ == "__main__":
     # Test with sample data
     # Import directly (not relative) for standalone execution
-    import sleep_score
-
-    calculate_sleep_score = sleep_score.calculate_sleep_score
+    from sleep_score import calculate_sleep_score
 
     sample_state = {
         "git": {

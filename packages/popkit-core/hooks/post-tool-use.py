@@ -45,9 +45,6 @@ try:
     from popkit_shared.utils.response_router import (
         route_user_response,
         should_route_response,
-        format_hook_output,
-        get_workflow_status,
-        get_pending_decision,
     )
 
     WORKFLOW_ROUTER_AVAILABLE = True
@@ -61,13 +58,10 @@ try:
         get_test_session_id,
         create_trace,
         create_decision,
-        create_event,
     )
     from popkit_shared.utils.local_telemetry import (
-        get_local_storage,
         log_trace_if_test_mode,
         log_decision_if_test_mode,
-        log_event_if_test_mode,
     )
 
     TEST_TELEMETRY_AVAILABLE = True

@@ -41,7 +41,7 @@ except ImportError:
 
 # Import project registration client
 try:
-    from popkit_shared.utils.project_client import ProjectClient, ProjectRegistration
+    from popkit_shared.utils.project_client import ProjectClient
 
     HAS_PROJECT_CLIENT = True
 except ImportError:

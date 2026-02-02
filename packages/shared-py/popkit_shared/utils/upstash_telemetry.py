@@ -49,11 +49,8 @@ try:
     from test_telemetry import (
         CustomEvent,
         DecisionPoint,
-        TestMetrics,
         TestSession,
         ToolTrace,
-        get_test_session_id,
-        is_test_mode,
     )
 
     TELEMETRY_TYPES_AVAILABLE = True

@@ -25,7 +25,6 @@ try:
     from popkit_shared.utils.conflict_analyzer import (
         Conflict,
         ConflictResolver,
-        detect_and_analyze_conflicts,
     )
     from popkit_shared.utils.complexity_scoring import analyze_complexity
 except ImportError as e:
