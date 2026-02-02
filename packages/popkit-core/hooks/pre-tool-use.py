@@ -31,7 +31,7 @@ PREMIUM_CHECKER_AVAILABLE = False
 
 # Import skill state tracker for AskUserQuestion enforcement (Issue #159)
 try:
-    from skill_state import get_tracker, SkillStateTracker
+    from skill_state import get_tracker
 
     SKILL_STATE_AVAILABLE = True
 except ImportError:
@@ -39,7 +39,7 @@ except ImportError:
 
 # Import tool filter for context optimization (Issue #275)
 try:
-    from tool_filter import ToolFilter, filter_tools_for_workflow
+    from tool_filter import ToolFilter
 
     TOOL_FILTER_AVAILABLE = True
 except ImportError:

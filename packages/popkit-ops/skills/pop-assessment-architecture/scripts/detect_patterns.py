@@ -274,7 +274,8 @@ def detect_solid_violations(project_dir: Path) -> List[Dict[str, Any]]:
                                         "message": f"{check['message']} ({matches} instances)",
                                     }
                                 )
-            except:
+            except (IOError, UnicodeDecodeError):
+                # Skip files that can't be read or decoded
                 pass
 
     return violations

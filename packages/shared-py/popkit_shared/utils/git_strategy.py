@@ -232,7 +232,6 @@ class GitStrategyDetector:
             (strategy, confidence, evidence)
         """
         evidence = []
-        confidence = 0.0
 
         # Git Flow indicators
         gitflow_score = 0

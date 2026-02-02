@@ -41,7 +41,7 @@ except ImportError:
 
 # Import project registration client
 try:
-    from popkit_shared.utils.project_client import ProjectClient, ProjectRegistration
+    from popkit_shared.utils.project_client import ProjectClient
 
     HAS_PROJECT_CLIENT = True
 except ImportError:
@@ -596,6 +596,7 @@ def detect_project_context():
                     if "flask" in requirements:
                         context["stack"].append("Flask")
             except IOError:
+                # Ignore file read errors - requirements.txt is optional context
                 pass
 
         # Detect current branch
@@ -614,6 +615,7 @@ def detect_project_context():
                 if branch:
                     context["current_work"]["branch"] = branch
         except Exception:
+            # Ignore git command errors - branch detection is optional context
             pass
 
         return context

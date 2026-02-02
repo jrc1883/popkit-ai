@@ -16,7 +16,7 @@
 
 Transforms Claude Code into a complete development workflow system with intelligent agents that coordinate automatically, handle tasks in parallel, and get smarter over time. One subscription, zero installation friction.
 
-**Version:** 1.0.0-beta.7 | **Plugins:** 4 | **Commands:** 23 | **Skills:** 38 | **Agents:** 22
+**Version:** 1.0.0-beta.7 | **Plugins:** 4 | **Commands:** 25 | **Skills:** 38 | **Agents:** 22
 
 [Quick Start](#-quick-start) • [Features](#-what-is-popkit) • [Documentation](#-documentation) • [Contributing](#-contributing)
 
@@ -68,7 +68,7 @@ PopKit transforms Claude Code into a complete development workflow system with i
 ### What's Included
 
 - **5 Focused Plugins**: Install only what you need (core, dev, ops, research, or complete suite)
-- **23 Workflow Commands**: From morning routines to deployment automation
+- **25 Workflow Commands**: From morning routines to deployment automation
 - **38 Reusable Skills**: Battle-tested workflows from planning to production
 - **22 Specialized Agents**: Context-aware AI assistance that routes automatically
 - **FREE Local Execution**: All features work without cloud API keys
@@ -146,9 +146,9 @@ PopKit is split into 5 focused workflow plugins:
 - `popkit-ops` - Operations & quality (testing, security, deploy) - 5 commands
 - `popkit-research` - Knowledge management (research, notes) - 2 commands
 
-**Minimum**: popkit-core (9 commands)
-**Recommended**: popkit-core + popkit-dev (16 commands)
-**Complete**: All 4 plugins (23 commands)
+**Minimum**: popkit-core (11 commands)
+**Recommended**: popkit-core + popkit-dev (18 commands)
+**Complete**: All 4 plugins (25 commands)
 
 ---
 
@@ -241,13 +241,11 @@ popkit/
 
 ### Plugin Documentation
 
-- [popkit-dev README](packages/popkit-dev/README.md)
-- [popkit-github README](packages/popkit-github/README.md)
-- [popkit-quality README](packages/popkit-quality/README.md)
-- [popkit-deploy README](packages/popkit-deploy/README.md)
-- [popkit-research README](packages/popkit-research/README.md)
-- [popkit-core README](packages/popkit-core/README.md)
-- [popkit-meta Migration Guide](packages/popkit-meta/MIGRATION.md)
+- [popkit-core README](packages/popkit-core/README.md) - Foundation & Power Mode
+- [popkit-dev README](packages/popkit-dev/README.md) - Development workflows & GitHub integration
+- [popkit-ops README](packages/popkit-ops/README.md) - Operations, quality & deployment
+- [popkit-research README](packages/popkit-research/README.md) - Knowledge management
+- [shared-py Migration Guide](packages/shared-py/MIGRATION.md) - Shared utilities migration
 
 ### Architecture
 

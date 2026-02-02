@@ -395,13 +395,15 @@ if __name__ == "__main__":
 
     client = VoyageClient()
 
+    from popkit_shared.utils.secure_logger import secure_print
+
     if not client.is_available:
-        print("ERROR: VOYAGE_API_KEY not set")
-        print("Set: export VOYAGE_API_KEY=your-key-here")
+        secure_print("ERROR: VOYAGE_API_KEY not set")
+        secure_print("Set: export VOYAGE_API_KEY=your-key-here")
         sys.exit(1)
 
-    print("API Key: [REDACTED]")
-    print(f"Model: {client.model}")
+    secure_print("API Key: [REDACTED]")
+    secure_print(f"Model: {client.model}")
 
     # Test single embedding
     print("\nTesting single embedding...")

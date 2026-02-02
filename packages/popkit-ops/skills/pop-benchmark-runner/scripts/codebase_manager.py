@@ -109,6 +109,7 @@ class CodebaseManager:
             raise GitError(f"Failed to checkout {ref}: {stderr}")
 
         print(f"[INFO] Checked out {ref} in {worktree_path.name}")
+        return
 
     def cleanup_worktree(self, worktree_path: Path, force: bool = False) -> None:
         """

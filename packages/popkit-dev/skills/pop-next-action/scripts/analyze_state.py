@@ -162,6 +162,7 @@ def analyze_issues() -> Dict[str, Any]:
                 elif "P2-medium" in labels and state["urgency"] != "HIGH":
                     state["urgency"] = "MEDIUM"
         except json.JSONDecodeError:
+            # Ignore malformed JSON - issue data is optional context
             pass
 
     return state

@@ -442,19 +442,25 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.status:
-        print("Upstash Redis Status")
-        print("=" * 40)
+        from popkit_shared.utils.secure_logger import secure_print
+
+        secure_print("Upstash Redis Status")
+        secure_print("=" * 40)
         if UPSTASH_REST_URL:
-            print(f"URL: {UPSTASH_REST_URL[:40]}...")
+            secure_print(f"URL: {UPSTASH_REST_URL[:40]}...")
         else:
-            print("URL: Not configured")
-        print(f"Token: {'Configured' if UPSTASH_REST_TOKEN else 'Not configured'}")
-        print(f"Available: {is_upstash_available()}")
+            secure_print("URL: Not configured")
+        secure_print(
+            f"Token: {'Configured' if UPSTASH_REST_TOKEN else 'Not configured'}"
+        )
+        secure_print(f"Available: {is_upstash_available()}")
 
     elif args.ping:
         if not is_upstash_available():
-            print("[!] Upstash not configured")
-            print("Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN")
+            from popkit_shared.utils.secure_logger import secure_print
+
+            secure_print("[!] Upstash not configured")
+            secure_print("Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN")
         else:
             try:
                 client = get_redis_client()
