@@ -81,7 +81,7 @@ jobs:
 
   setup:
     name: Setup & Validation
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     # Only run if manually triggered or PR has 'benchmark' label
     if: |
       github.event_name == 'workflow_dispatch' ||
@@ -165,7 +165,7 @@ jobs:
 
   benchmark-matrix:
     name: Benchmark (${{ matrix.task_id }}, PopKit=${{ matrix.popkit_enabled }})
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: setup
     if: needs.setup.outputs.should_run == 'true'
 
@@ -272,7 +272,7 @@ jobs:
 
   analyze:
     name: Analyze Results
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: [setup, benchmark-matrix]
     if: always() && needs.setup.outputs.should_run == 'true'
 
@@ -325,7 +325,7 @@ jobs:
 
   report:
     name: Generate Reports
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: [setup, analyze]
     if: always() && needs.analyze.result == 'success'
 
@@ -391,7 +391,7 @@ jobs:
 
   deploy-pages:
     name: Deploy to GitHub Pages
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: report
     if: |
       always() &&
@@ -418,7 +418,7 @@ jobs:
 
   notify:
     name: Notify Results
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: [setup, benchmark-matrix, analyze, report]
     if: always() && needs.setup.outputs.should_run == 'true'
 

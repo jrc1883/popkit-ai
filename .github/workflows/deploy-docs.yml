@@ -43,7 +43,7 @@ jobs:
 
   build:
     name: Build Documentation
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout
@@ -95,7 +95,7 @@ jobs:
 
   deploy:
     name: Deploy to Cloudflare Pages
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
@@ -141,7 +141,7 @@ jobs:
 
   preview:
     name: Deploy Preview
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: build
     if: github.event_name == 'pull_request'
     permissions:

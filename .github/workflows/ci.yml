@@ -28,7 +28,7 @@ jobs:
 
   plugin-validate:
     name: Validate Plugins
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout
@@ -99,7 +99,7 @@ jobs:
 
   agents-validate:
     name: Validate Agents
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout
@@ -130,7 +130,7 @@ jobs:
 
   hooks-validate:
     name: Validate Hooks
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout
@@ -176,7 +176,7 @@ jobs:
 
   ci-complete:
     name: CI Complete
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs:
       - plugin-validate
       - agents-validate
