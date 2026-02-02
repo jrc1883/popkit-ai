@@ -66,14 +66,14 @@ def gather_git_state(project_path: Path = None) -> Dict[str, Any]:
 
     state = {
         "branch": "",
-        "lastCommit": "",
-        "uncommittedFiles": 0,
-        "stagedFiles": 0,
-        "modifiedFiles": [],
-        "untrackedFiles": [],
-        "behindRemote": 0,
-        "aheadRemote": 0,
-        "stashCount": 0,
+        "last_commit": "",
+        "uncommitted_files": 0,
+        "staged_files": 0,
+        "modified_files": [],
+        "untracked_files": [],
+        "behind_remote": 0,
+        "ahead_remote": 0,
+        "stashes": 0,
     }
 
     # Get current branch
@@ -84,38 +84,38 @@ def gather_git_state(project_path: Path = None) -> Dict[str, Any]:
     # Get last commit
     commit, ok = run_command("git log -1 --format='%h - %s'", cwd=project_path)
     if ok:
-        state["lastCommit"] = commit
+        state["last_commit"] = commit
 
     # Count uncommitted changes
     status, ok = run_command("git status --porcelain", cwd=project_path)
     if ok:
         lines = [line for line in status.split("\n") if line.strip()]
-        state["uncommittedFiles"] = len(lines)
+        state["uncommitted_files"] = len(lines)
 
         for line in lines:
             if line.startswith("??"):
-                state["untrackedFiles"].append(line[3:].strip())
+                state["untracked_files"].append(line[3:].strip())
             else:
-                state["modifiedFiles"].append(line[3:].strip())
+                state["modified_files"].append(line[3:].strip())
 
     # Count staged files
     staged, ok = run_command("git diff --cached --name-only", cwd=project_path)
     if ok:
         staged_files = [f for f in staged.split("\n") if f.strip()]
-        state["stagedFiles"] = len(staged_files)
+        state["staged_files"] = len(staged_files)
 
     # Check remote sync status
     fetch_output, _ = run_command("git fetch --dry-run", cwd=project_path)
     rev_list, ok = run_command("git rev-list --left-right --count HEAD...@{u}", cwd=project_path)
     if ok and "\t" in rev_list:
         ahead, behind = rev_list.split("\t")
-        state["aheadRemote"] = int(ahead)
-        state["behindRemote"] = int(behind)
+        state["ahead_remote"] = int(ahead)
+        state["behind_remote"] = int(behind)
 
     # Count stashes
     stash_list, ok = run_command("git stash list", cwd=project_path)
     if ok:
-        state["stashCount"] = len([s for s in stash_list.split("\n") if s.strip()])
+        state["stashes"] = len([s for s in stash_list.split("\n") if s.strip()])
 
     return state
 
@@ -135,10 +135,10 @@ def gather_dependency_state(project_type: ProjectType, project_path: Path = None
         project_path = Path.cwd()
 
     state = {
-        "packageManager": project_type.package_manager,
+        "package_manager": project_type.package_manager,
         "installed": False,
-        "outdatedCount": 0,
-        "outdatedPackages": [],
+        "outdated_count": 0,
+        "outdated_packages": [],
     }
 
     if not project_type.check_installed:
@@ -156,18 +156,18 @@ def gather_dependency_state(project_type: ProjectType, project_path: Path = None
             if project_type.package_manager in ("npm", "pnpm", "yarn"):
                 # npm/pnpm outdated format
                 lines = [line for line in outdated.split("\n") if line.strip()]
-                state["outdatedCount"] = max(0, len(lines) - 1)  # Exclude header
-                state["outdatedPackages"] = lines[1:6]  # First 5 packages
+                state["outdated_count"] = max(0, len(lines) - 1)  # Exclude header
+                state["outdated_packages"] = lines[1:6]  # First 5 packages
             elif project_type.package_manager == "pip":
                 # pip list --outdated format
                 lines = [line for line in outdated.split("\n") if line.strip()]
-                state["outdatedCount"] = max(0, len(lines) - 2)  # Exclude headers
-                state["outdatedPackages"] = lines[2:7]  # First 5 packages
+                state["outdated_count"] = max(0, len(lines) - 2)  # Exclude headers
+                state["outdated_packages"] = lines[2:7]  # First 5 packages
             else:
                 # Generic: count non-empty lines
                 lines = [line for line in outdated.split("\n") if line.strip()]
-                state["outdatedCount"] = len(lines)
-                state["outdatedPackages"] = lines[:5]
+                state["outdated_count"] = len(lines)
+                state["outdated_packages"] = lines[:5]
 
     return state
 
@@ -205,9 +205,9 @@ def gather_service_state(project_type: ProjectType, project_path: Path = None) -
         Service state dictionary
     """
     state = {
-        "expectedServices": [],
-        "runningServices": [],
-        "missingServices": [],
+        "expected_services": [],
+        "running_services": [],
+        "missing_services": [],
     }
 
     if not project_type.expected_services:
@@ -219,12 +219,12 @@ def gather_service_state(project_type: ProjectType, project_path: Path = None) -
             "port": service["port"],
             "description": service.get("description", ""),
         }
-        state["expectedServices"].append(service_info)
+        state["expected_services"].append(service_info)
 
         if check_service_running(service["port"]):
-            state["runningServices"].append(service_info)
+            state["running_services"].append(service_info)
         else:
-            state["missingServices"].append(service_info)
+            state["missing_services"].append(service_info)
 
     return state
 
@@ -247,9 +247,9 @@ def gather_test_state(
         project_path = Path.cwd()
 
     state = {
-        "testFramework": project_type.test_framework,
-        "testsExist": False,
-        "lastRunPassed": None,  # None = unknown, True/False = known status
+        "test_framework": project_type.test_framework,
+        "tests_exist": False,
+        "last_run_passed": None,  # None = unknown, True/False = known status
     }
 
     if not project_type.test_framework:
@@ -270,10 +270,10 @@ def gather_test_state(
     pattern = test_patterns.get(project_type.test_framework)
     if pattern:
         test_files = list(project_path.glob(pattern))
-        state["testsExist"] = len(test_files) > 0
+        state["tests_exist"] = len(test_files) > 0
 
     # Optionally run tests (expensive, usually skipped in quick mode)
-    if not skip_tests and state["testsExist"]:
+    if not skip_tests and state["tests_exist"]:
         # Build test command
         test_cmd = None
         if project_type.test_framework == "jest":
@@ -287,7 +287,7 @@ def gather_test_state(
 
         if test_cmd:
             _, ok = run_command(test_cmd, timeout=60, cwd=project_path)
-            state["lastRunPassed"] = ok
+            state["last_run_passed"] = ok
 
     return state
 
@@ -307,8 +307,8 @@ def gather_build_state(project_type: ProjectType, project_path: Path = None) -> 
         project_path = Path.cwd()
 
     state = {
-        "buildTool": project_type.build_tool,
-        "buildScriptExists": False,
+        "build_tool": project_type.build_tool,
+        "build_script_exists": False,
     }
 
     if not project_type.build_tool:
@@ -322,12 +322,12 @@ def gather_build_state(project_type: ProjectType, project_path: Path = None) -> 
             try:
                 with open(package_json, encoding="utf-8") as f:
                     pkg = json.load(f)
-                    state["buildScriptExists"] = "build" in pkg.get("scripts", {})
+                    state["build_script_exists"] = "build" in pkg.get("scripts", {})
             except Exception:
                 pass
     elif project_type.build_tool:
         # Other languages: assume build tool exists if specified
-        state["buildScriptExists"] = True
+        state["build_script_exists"] = True
 
     return state
 
@@ -370,22 +370,22 @@ def capture_generic_project_state(
     else:
         # Fallback: minimal state with just git
         return {
-            "projectType": {"language": "Unknown", "packageManager": None},
+            "project_type": {"language": "Unknown", "package_manager": None},
             "git": gather_git_state(path),
-            "dependencies": {"installed": False, "outdatedCount": 0},
-            "services": {"runningServices": [], "missingServices": []},
-            "tests": {"testsExist": False},
-            "build": {"buildScriptExists": False},
+            "dependencies": {"installed": False, "outdated_count": 0},
+            "services": {"running_services": [], "missing_services": []},
+            "tests": {"tests_exist": False},
+            "build": {"build_script_exists": False},
             "timestamp": datetime.now().isoformat(),
         }
 
     # Gather all state
     state = {
-        "projectType": {
+        "project_type": {
             "language": project_type.primary_language,
-            "packageManager": project_type.package_manager,
-            "testFramework": project_type.test_framework,
-            "buildTool": project_type.build_tool,
+            "package_manager": project_type.package_manager,
+            "test_framework": project_type.test_framework,
+            "build_tool": project_type.build_tool,
             "linter": project_type.linter,
             "formatter": project_type.formatter,
         },
