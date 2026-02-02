@@ -692,7 +692,8 @@ class QualityGateHook:
         if manifest_path.exists():
             try:
                 manifest = json.loads(manifest_path.read_text())
-            except:
+            except (json.JSONDecodeError, IOError):
+                # Use default manifest if file is corrupted or unreadable
                 pass
 
         manifest["checkpoints"].append(

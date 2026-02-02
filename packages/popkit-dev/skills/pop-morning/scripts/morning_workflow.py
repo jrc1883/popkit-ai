@@ -356,6 +356,7 @@ class MorningWorkflow:
                     for name, info in list(outdated.items())[:10]
                 ]
             except json.JSONDecodeError:
+                # Ignore malformed JSON from pnpm outdated
                 pass
 
         state["dependencies"] = deps_data
@@ -566,7 +567,8 @@ class MorningWorkflow:
                 )
                 if result.returncode == 0 and result.stdout.strip():
                     running_services.append(service_name)
-            except Exception:
+            except (subprocess.SubprocessError, FileNotFoundError):
+                # Skip services that can't be checked
                 pass
 
         services_state = {

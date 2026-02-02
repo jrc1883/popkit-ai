@@ -82,7 +82,8 @@ def measure_file_complexity(project_dir: Path) -> Dict[str, Any]:
                             }
                         )
 
-            except Exception:
+            except (IOError, UnicodeDecodeError):
+                # Skip files that can't be read or decoded
                 pass
 
     # Limit lists

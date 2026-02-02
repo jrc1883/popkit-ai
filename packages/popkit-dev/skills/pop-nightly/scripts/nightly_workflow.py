@@ -325,7 +325,8 @@ class NightlyWorkflow:
                 )
                 if result.returncode == 0 and result.stdout.strip():
                     running_services.append(service_name)
-            except Exception:
+            except (subprocess.SubprocessError, FileNotFoundError):
+                # Skip services that can't be checked
                 pass
 
         # Count log files - SECURE: Use Python glob instead of shell
@@ -334,7 +335,8 @@ class NightlyWorkflow:
             log_dir = Path.home() / ".claude" / "logs"
             if log_dir.exists():
                 log_count = len(list(log_dir.glob("*.log")))
-        except Exception:
+        except (IOError, PermissionError):
+            # Skip if log directory is inaccessible
             pass
 
         services_state = {"running_services": running_services, "log_files": log_count}

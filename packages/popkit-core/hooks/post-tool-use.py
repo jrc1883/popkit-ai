@@ -700,8 +700,9 @@ class PostToolUseHook:
                     json=optimus_data,
                     timeout=1,
                 )
-            except:
-                pass  # Fail silently for OPTIMUS integration
+            except (requests.RequestException, OSError):
+                # Fail silently for OPTIMUS integration
+                pass
 
         except Exception as e:
             print(

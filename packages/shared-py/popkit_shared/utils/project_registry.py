@@ -686,6 +686,7 @@ def get_cached_issue_count(project: Dict[str, Any]) -> str:
             if open_count is not None:
                 return str(open_count)
     except (ValueError, TypeError):
+        # Ignore cache parsing errors - fall through to return default
         pass
 
     return "--"
