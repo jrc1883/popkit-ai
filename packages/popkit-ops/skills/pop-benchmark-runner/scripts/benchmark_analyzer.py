@@ -323,9 +323,6 @@ class BenchmarkAnalyzer:
         Returns:
             Pass rate (0.0 to 1.0)
         """
-        # Check if we have pre-computed verification results
-        recording_name = recording_path.name
-
         # Determine configuration from path or filename
         if "with-popkit" in str(recording_path).lower():
             config = "with_popkit"
@@ -370,10 +367,9 @@ class BenchmarkAnalyzer:
 
         # Independent samples t-test
         try:
-            t_statistic, p_value = stats.ttest_ind(with_popkit, baseline)
+            _, p_value = stats.ttest_ind(with_popkit, baseline)
         except Exception:
             # Handle edge cases (e.g., identical values)
-            t_statistic = 0.0
             p_value = np.nan
 
         # Cohen's d effect size
