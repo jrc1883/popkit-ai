@@ -27,7 +27,7 @@ if sys.platform == "win32":
 sys.path.insert(0, str(Path.home() / ".claude" / "popkit" / "packages" / "shared-py"))
 
 try:
-    from popkit_shared.utils.capture_state import capture_project_state
+    from popkit_shared.utils.generic_state_capture import capture_project_state
     from popkit_shared.utils.routine_measurement import RoutineMeasurement
     from popkit_shared.utils.routine_cache import RoutineCache
     from popkit_shared.utils.session_recorder import (

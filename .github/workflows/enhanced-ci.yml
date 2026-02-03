@@ -32,7 +32,7 @@ jobs:
 
   json-syntax-validation:
     name: JSON Syntax Validation
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout
@@ -58,7 +58,7 @@ jobs:
 
   plugin-manifest-validation:
     name: Plugin Manifest Validation
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: json-syntax-validation
 
     steps:
@@ -85,7 +85,7 @@ jobs:
 
   marketplace-validation:
     name: Marketplace Validation
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: plugin-manifest-validation
 
     steps:
@@ -110,7 +110,7 @@ jobs:
 
   cross-plugin-validation:
     name: Cross-Plugin Validation
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: plugin-manifest-validation
 
     steps:
@@ -128,7 +128,7 @@ jobs:
 
   hooks-validation:
     name: Hooks Validation
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout
@@ -178,7 +178,7 @@ jobs:
 
   security-checks:
     name: Security Checks
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout
@@ -219,7 +219,7 @@ jobs:
 
   documentation-checks:
     name: Documentation Checks
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout
@@ -263,7 +263,7 @@ jobs:
 
   plugin-tests:
     name: Plugin Test Suite
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: [plugin-manifest-validation]
 
     steps:
@@ -294,7 +294,7 @@ jobs:
 
   ci-complete:
     name: CI Complete
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs:
       - json-syntax-validation
       - plugin-manifest-validation
