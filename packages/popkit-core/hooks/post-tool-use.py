@@ -55,7 +55,6 @@ except ImportError:
 try:
     from popkit_shared.utils.test_telemetry import (
         is_test_mode,
-        get_test_session_id,
         create_trace,
         create_decision,
     )
@@ -71,9 +70,6 @@ except ImportError:
     # Define stubs when not available
     def is_test_mode():
         return False
-
-    def get_test_session_id():
-        return None
 
 
 # Import semantic router for agent detection (Issue #80)
@@ -103,7 +99,6 @@ except ImportError:
 # Import session recorder for --record flag support
 try:
     from popkit_shared.utils.session_recorder import (
-        record_tool_call,
         is_recording_enabled,
         get_recorder,
     )

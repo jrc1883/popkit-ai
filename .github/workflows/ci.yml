@@ -28,11 +28,16 @@ jobs:
 
   plugin-validate:
     name: Validate Plugins
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
       - name: Validate modular plugins
         run: |
@@ -99,7 +104,7 @@ jobs:
 
   agents-validate:
     name: Validate Agents
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout
@@ -130,7 +135,7 @@ jobs:
 
   hooks-validate:
     name: Validate Hooks
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout
@@ -176,7 +181,7 @@ jobs:
 
   ci-complete:
     name: CI Complete
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs:
       - plugin-validate
       - agents-validate

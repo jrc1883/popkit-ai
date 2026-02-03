@@ -22,7 +22,7 @@ on:
 
 jobs:
   ip-scan:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     name: Scan for IP Leaks
     permissions:
       contents: read
