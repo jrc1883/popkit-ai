@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 try:
-    from .generic_project_detector import GenericProjectDetector, ProjectType
+    from .generic_project_detector import ProjectType
     from .project_config import get_project_type_with_cache
 
     HAS_PROJECT_DETECTOR = True
@@ -343,6 +343,7 @@ def gather_build_state(project_type: ProjectType, project_path: Path = None) -> 
                     pkg = json.load(f)
                     state["build_script_exists"] = "build" in pkg.get("scripts", {})
             except Exception:
+                # Ignore errors reading package.json - build_script_exists defaults to False
                 pass
     elif project_type.build_tool:
         # Other languages: assume build tool exists if specified
