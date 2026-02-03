@@ -21,13 +21,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-# Import transcript parser for reasoning extraction and token tracking
-try:
-    from transcript_parser import TranscriptParser
-
-    HAS_TRANSCRIPT_PARSER = True
-except ImportError:
-    HAS_TRANSCRIPT_PARSER = False
+# Transcript parser feature flag (for future use)
+HAS_TRANSCRIPT_PARSER = False
 
 # Import narrative generator for AI summaries
 try:
