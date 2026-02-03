@@ -97,10 +97,17 @@ jobs:
 
           echo "✅ All workflows pass parameter naming check"
 
+      - name: Install actionlint
+        run: |
+          # Download and install actionlint binary
+          ACTIONLINT_VERSION="1.7.4"
+          curl -fsSL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" | tar -xz -C /tmp
+          sudo mv /tmp/actionlint /usr/local/bin/
+          actionlint -version
+
       - name: Validate workflow syntax with actionlint
-        uses: docker://rhysd/actionlint:latest
-        with:
-          args: -color -verbose
+        run: |
+          actionlint -color -verbose
 
       - name: Summary
         if: success()
