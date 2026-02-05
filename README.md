@@ -6,6 +6,7 @@
 ![Version](https://img.shields.io/badge/version-1.0.0--beta.7-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Build Status](https://img.shields.io/github/actions/workflow/status/jrc1883/popkit-claude/ci.yml?branch=main)
+![CodeQL](https://img.shields.io/github/actions/workflow/status/jrc1883/popkit-claude/codeql.yml?branch=main&label=CodeQL)
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
 ![TypeScript](https://img.shields.io/badge/typescript-5.0+-blue.svg)
 ![GitHub Stars](https://img.shields.io/github/stars/jrc1883/popkit-claude?style=social)
