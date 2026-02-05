@@ -78,6 +78,7 @@ All wrapped in `capture_state.py` for consistent error handling.
 - Score breakdown table
 - Uncommitted changes list (if any)
 - Recommendations before leaving
+- Encouraging Bible verse (Issue #71)
 - Next morning actions
 
 ## Next Actions (The PopKit Way)
