@@ -26,7 +26,9 @@ tools:
   - Bash(curl --head*)
   - Bash(curl -f*)
   - WebFetch
-  - Task
+  # Sub-agent spawning (scoped to relevant types)
+  - Task(rollback-specialist)
+  - Task(test-writer-fixer)
 output_style: deployment-report
 model: inherit
 version: 1.0.0
