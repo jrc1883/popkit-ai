@@ -12,6 +12,7 @@ tools:
 output_style: documentation-report
 model: inherit
 version: 1.0.0
+memory: project
 ---
 
 # Documentation Maintainer Agent

@@ -32,6 +32,7 @@ tools:
 output_style: deployment-report
 model: inherit
 version: 1.0.0
+memory: local
 ---
 
 # Deployment Validator Agent

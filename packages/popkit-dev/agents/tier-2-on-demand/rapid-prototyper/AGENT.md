@@ -25,6 +25,7 @@ tools:
 output_style: prototype-report
 model: inherit
 version: 1.0.0
+memory: project
 ---
 
 # Rapid Prototyper Agent
