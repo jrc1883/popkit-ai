@@ -510,7 +510,7 @@ class BenchmarkRunner:
             ],
         }
 
-        with open(recording_path, "w") as f:
+        with open(recording_path, "w", encoding="utf-8") as f:
             json.dump(mock_recording, f, indent=2)
 
         self._log(f"[MOCK] Created recording: {recording_path}")
@@ -535,7 +535,7 @@ class BenchmarkRunner:
             # WITH PopKit: Look in PopKit recordings directory
             for recording_file in self.recordings_dir.glob("*.json"):
                 try:
-                    with open(recording_file, "r") as f:
+                    with open(recording_file, "r", encoding="utf-8") as f:
                         data = json.load(f)
                         if data.get("session_id") == session_id:
                             self._log(
@@ -571,7 +571,7 @@ class BenchmarkRunner:
                             return jsonl_file
 
                         # Alternative: Check first line for session info
-                        with open(jsonl_file, "r") as f:
+                        with open(jsonl_file, "r", encoding="utf-8") as f:
                             first_line = f.readline()
                             if first_line.strip():
                                 entry = json.loads(first_line)
@@ -602,7 +602,7 @@ class BenchmarkRunner:
             # Check file extension to determine format
             if recording_path.suffix == ".jsonl":
                 # Claude Code JSONL format - just verify it has content and is valid JSONL
-                with open(recording_path, "r") as f:
+                with open(recording_path, "r", encoding="utf-8") as f:
                     lines = f.readlines()
                     if not lines:
                         self._log("[WARN] JSONL file is empty")
@@ -621,7 +621,7 @@ class BenchmarkRunner:
 
             else:
                 # PopKit JSON format - full verification
-                with open(recording_path, "r") as f:
+                with open(recording_path, "r", encoding="utf-8") as f:
                     data = json.load(f)
 
                 # Check required fields
@@ -720,7 +720,7 @@ def main():
         print(f"[ERROR] Task file not found: {task_file}")
         sys.exit(1)
 
-    with open(task_file, "r") as f:
+    with open(task_file, "r", encoding="utf-8") as f:
         task_def = yaml.safe_load(f)
 
     # Create runner
