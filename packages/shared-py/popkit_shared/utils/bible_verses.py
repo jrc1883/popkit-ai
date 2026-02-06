@@ -37,13 +37,10 @@ class BibleVerse:
 # =============================================================================
 
 DEFAULT_VERSES = [
+    # --- Rest ---
     BibleVerse(
         text="Come to me, all you who are weary and burdened, and I will give you rest.",
         reference="Matthew 11:28",
-    ),
-    BibleVerse(
-        text="Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God. And the peace of God, which transcends all understanding, will guard your hearts and your minds in Christ Jesus.",
-        reference="Philippians 4:6-7",
     ),
     BibleVerse(
         text="In peace I will lie down and sleep, for you alone, Lord, make me dwell in safety.",
@@ -58,24 +55,92 @@ DEFAULT_VERSES = [
         reference="Psalm 127:2",
     ),
     BibleVerse(
-        text="But those who hope in the Lord will renew their strength. They will soar on wings like eagles; they will run and not grow weary, they will walk and not be faint.",
-        reference="Isaiah 40:31",
-    ),
-    BibleVerse(
         text="The Lord is my shepherd, I lack nothing. He makes me lie down in green pastures, he leads me beside quiet waters, he refreshes my soul.",
         reference="Psalm 23:1-3",
+    ),
+    BibleVerse(
+        text="He gives strength to the weary and increases the power of the weak.",
+        reference="Isaiah 40:29",
+    ),
+    # --- Peace ---
+    BibleVerse(
+        text="Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God. And the peace of God, which transcends all understanding, will guard your hearts and your minds in Christ Jesus.",
+        reference="Philippians 4:6-7",
+    ),
+    BibleVerse(
+        text="I have told you these things, so that in me you may have peace. In this world you will have trouble. But take heart! I have overcome the world.",
+        reference="John 16:33",
+    ),
+    BibleVerse(
+        text="Peace I leave with you; my peace I give you. I do not give to you as the world gives. Do not let your hearts be troubled and do not be afraid.",
+        reference="John 14:27",
+    ),
+    BibleVerse(
+        text="The Lord gives strength to his people; the Lord blesses his people with peace.",
+        reference="Psalm 29:11",
+    ),
+    BibleVerse(
+        text="You will keep in perfect peace those whose minds are steadfast, because they trust in you.",
+        reference="Isaiah 26:3",
+    ),
+    # --- Trust ---
+    BibleVerse(
+        text="Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight.",
+        reference="Proverbs 3:5-6",
     ),
     BibleVerse(
         text="Cast all your anxiety on him because he cares for you.",
         reference="1 Peter 5:7",
     ),
     BibleVerse(
+        text="For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you, plans to give you hope and a future.",
+        reference="Jeremiah 29:11",
+    ),
+    BibleVerse(
+        text="The Lord himself goes before you and will be with you; he will never leave you nor forsake you. Do not be afraid; do not be discouraged.",
+        reference="Deuteronomy 31:8",
+    ),
+    BibleVerse(
+        text="And we know that in all things God works for the good of those who love him, who have been called according to his purpose.",
+        reference="Romans 8:28",
+    ),
+    # --- Strength & Renewal ---
+    BibleVerse(
+        text="But those who hope in the Lord will renew their strength. They will soar on wings like eagles; they will run and not grow weary, they will walk and not be faint.",
+        reference="Isaiah 40:31",
+    ),
+    BibleVerse(
         text="Be still, and know that I am God.",
         reference="Psalm 46:10",
     ),
     BibleVerse(
-        text="I have told you these things, so that in me you may have peace. In this world you will have trouble. But take heart! I have overcome the world.",
-        reference="John 16:33",
+        text="I can do all this through him who gives me strength.",
+        reference="Philippians 4:13",
+    ),
+    BibleVerse(
+        text="The Lord is my light and my salvation— whom shall I fear? The Lord is the stronghold of my life— of whom shall I be afraid?",
+        reference="Psalm 27:1",
+    ),
+    # --- Gratitude & Completion ---
+    BibleVerse(
+        text="This is the day that the Lord has made; let us rejoice and be glad in it.",
+        reference="Psalm 118:24",
+    ),
+    BibleVerse(
+        text="Give thanks to the Lord, for he is good; his love endures forever.",
+        reference="Psalm 107:1",
+    ),
+    BibleVerse(
+        text="Being confident of this, that he who began a good work in you will carry it on to completion until the day of Christ Jesus.",
+        reference="Philippians 1:6",
+    ),
+    BibleVerse(
+        text="Whatever you do, work at it with all your heart, as working for the Lord, not for human masters.",
+        reference="Colossians 3:23",
+    ),
+    BibleVerse(
+        text="Let us not become weary in doing good, for at the proper time we will reap a harvest if we do not give up.",
+        reference="Galatians 6:9",
     ),
 ]
 
