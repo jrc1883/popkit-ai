@@ -21,6 +21,7 @@ tools:
 output_style: refactoring-report
 model: inherit
 version: 1.0.0
+memory: project
 ---
 
 # Refactoring Expert Agent

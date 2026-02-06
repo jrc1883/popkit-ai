@@ -9,6 +9,7 @@ tools:
 output_style: code-review-report
 model: inherit
 version: 1.0.0
+memory: project
 ---
 
 # Code Reviewer Agent

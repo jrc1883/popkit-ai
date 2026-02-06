@@ -28,6 +28,7 @@ tools:
 output_style: rollback-report
 model: inherit
 version: 1.0.0
+memory: local
 ---
 
 # Rollback Specialist Agent
