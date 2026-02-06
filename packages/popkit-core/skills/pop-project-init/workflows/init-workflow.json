@@ -1,60 +1,61 @@
 {
   "name": "Project Initialization Workflow",
-  "version": "1.0.0",
-  "description": "Guided workflow for initializing new projects with best practices",
+  "version": "2.0.0",
+  "description": "Interactive guided workflow for initializing new projects with best practices (Issue #65)",
   "phases": [
     {
       "id": "detect",
       "name": "Detect Environment",
-      "description": "Analyze existing state and determine project type",
+      "description": "Run interactive detection and gather user preferences",
       "steps": [
         {
-          "id": "check_existing",
-          "name": "Check for Existing Project",
-          "prompt": "Checking for existing project files...",
+          "id": "interactive_detect",
+          "name": "Run Interactive Detection",
           "type": "automated",
-          "checks": [
-            "package.json exists",
-            "pyproject.toml exists",
-            ".git directory exists",
-            "README.md exists"
+          "script": "scripts/interactive_init.py",
+          "description": "Detects monorepo, stack, quality tools, and premium features"
+        },
+        {
+          "id": "monorepo_config",
+          "name": "Monorepo Configuration",
+          "type": "ask_user_question",
+          "conditional": "detection.monorepo.is_monorepo == true",
+          "question": "Monorepo detected. How should PopKit be configured?",
+          "header": "Workspace",
+          "options": [
+            {
+              "label": "App-specific config (Recommended)",
+              "value": "app_specific",
+              "description": "Configure PopKit for this app only with its own .claude/popkit/"
+            },
+            {
+              "label": "Shared workspace config",
+              "value": "shared",
+              "description": "Single PopKit config at workspace root shared by all apps"
+            },
+            {
+              "label": "Both (hybrid)",
+              "value": "hybrid",
+              "description": "Workspace config with app-specific overrides"
+            }
           ]
         },
         {
-          "id": "detect_type",
-          "name": "Detect Project Type",
-          "prompt": "What type of project would you like to create?",
-          "type": "selection",
-          "options": [
-            {
-              "label": "Next.js Application",
-              "value": "nextjs",
-              "description": "Full-stack React framework"
-            },
-            {
-              "label": "FastAPI Service",
-              "value": "fastapi",
-              "description": "Python API with async support"
-            },
-            { "label": "CLI Tool", "value": "cli", "description": "Command-line application" },
-            {
-              "label": "Library/Package",
-              "value": "library",
-              "description": "Reusable package for npm/PyPI"
-            },
-            {
-              "label": "Claude Code Plugin",
-              "value": "plugin",
-              "description": "Claude Code plugin with skills/commands"
-            }
-          ]
+          "id": "stack_selection",
+          "name": "Stack Selection",
+          "type": "ask_user_question",
+          "question": "What type of project would you like to initialize?",
+          "header": "Stack",
+          "options_source": "detection.stack.suggestions",
+          "max_options": 4,
+          "description": "Auto-populated from detection results. Detected stack shown first."
         },
         {
           "id": "detect_language",
           "name": "Detect Primary Language",
           "prompt": "What is the primary language?",
           "type": "selection",
-          "conditional": "project_type in ['cli', 'library']",
+          "conditional": "stack_selection in ['cli', 'library']",
           "options": [
             { "label": "TypeScript", "value": "typescript" },
             { "label": "Python", "value": "python" },
@@ -67,79 +68,7 @@
     {
       "id": "configure",
       "name": "Configure Project",
-      "description": "Gather project configuration details",
-      "steps": [
-        {
-          "id": "project_name",
-          "name": "Project Name",
-          "prompt": "What is the project name?",
-          "type": "input",
-          "validation": "kebab-case"
-        },
-        {
-          "id": "description",
-          "name": "Project Description",
-          "prompt": "Briefly describe the project:",
-          "type": "input"
-        },
-        {
-          "id": "features",
-          "name": "Select Features",
-          "prompt": "Which features would you like to include?",
-          "type": "multiselect",
-          "options_by_type": {
-            "nextjs": [
-              { "label": "TypeScript", "value": "typescript", "default": true },
-              { "label": "Tailwind CSS", "value": "tailwind", "default": true },
-              { "label": "ESLint", "value": "eslint", "default": true },
-              { "label": "App Router", "value": "app-router", "default": true },
-              { "label": "Prisma ORM", "value": "prisma" },
-              { "label": "NextAuth.js", "value": "nextauth" },
-              { "label": "Shadcn/UI", "value": "shadcn" }
-            ],
-            "fastapi": [
-              { "label": "SQLAlchemy ORM", "value": "sqlalchemy", "default": true },
-              { "label": "Alembic Migrations", "value": "alembic", "default": true },
-              { "label": "Pydantic Settings", "value": "pydantic-settings", "default": true },
-              { "label": "Redis Cache", "value": "redis" },
-              { "label": "Celery Tasks", "value": "celery" },
-              { "label": "OAuth2", "value": "oauth2" }
-            ],
-            "cli": [
-              { "label": "Rich Output", "value": "rich", "default": true },
-              { "label": "Click Framework", "value": "click", "default": true },
-              { "label": "Config File Support", "value": "config" },
-              { "label": "Shell Completion", "value": "completion" }
-            ],
-            "library": [
-              { "label": "TypeScript Types", "value": "types", "default": true },
-              { "label": "ESM + CJS", "value": "dual-module" },
-              { "label": "Jest Testing", "value": "jest", "default": true },
-              { "label": "Changeset Versioning", "value": "changeset" }
-            ]
-          }
-        },
-        {
-          "id": "git_init",
-          "name": "Initialize Git",
-          "prompt": "Initialize git repository?",
-          "type": "boolean",
-          "default": true
-        },
-        {
-          "id": "github_repo",
-          "name": "Create GitHub Repository",
-          "prompt": "Create GitHub repository?",
-          "type": "boolean",
-          "default": false,
-          "conditional": "git_init == true"
-        }
-      ]
-    },
-    {
-      "id": "scaffold",
-      "name": "Scaffold Project",
-      "description": "Generate project files and structure",
+      "description": "Create structure and configure quality gates",
       "steps": [
         {
           "id": "create_structure",
@@ -160,24 +89,122 @@
           ]
         },
         {
-          "id": "generate_source",
-          "name": "Generate Source Files",
-          "type": "automated",
-          "action": "copy_templates"
+          "id": "quality_gates",
+          "name": "Quality Gate Selection",
+          "type": "ask_user_question",
+          "question": "What quality gate level?",
+          "header": "Quality",
+          "options": [
+            {
+              "label": "Basic",
+              "value": "basic",
+              "description": "Formatting only (Prettier/Ruff). Fast, minimal overhead."
+            },
+            {
+              "label": "Standard (Recommended)",
+              "value": "standard",
+              "description": "Formatting + linting + type checking. Good balance."
+            },
+            {
+              "label": "Strict",
+              "value": "strict",
+              "description": "All of Standard + pre-commit hooks + test requirements."
+            },
+            {
+              "label": "Enterprise",
+              "value": "enterprise",
+              "description": "All of Strict + security scanning + audit logging."
+            }
+          ]
         },
         {
-          "id": "install_dependencies",
-          "name": "Install Dependencies",
+          "id": "popkit_config",
+          "name": "Create PopKit Config",
           "type": "automated",
-          "action": "npm install or pip install"
+          "action": "generate_popkit_config",
+          "description": "Generates .claude/popkit/config.json with stack and quality selections"
+        },
+        {
+          "id": "update_claude_md",
+          "name": "Update CLAUDE.md",
+          "type": "automated",
+          "action": "surgical_claude_md_update"
+        }
+      ]
+    },
+    {
+      "id": "features",
+      "name": "Feature Setup",
+      "description": "Configure Power Mode and premium features",
+      "steps": [
+        {
+          "id": "power_mode",
+          "name": "Power Mode Setup",
+          "type": "ask_user_question",
+          "question": "Set up Power Mode for multi-agent orchestration?",
+          "header": "Power Mode",
+          "options": [
+            {
+              "label": "Native Async (Recommended)",
+              "value": "native",
+              "description": "5+ agents, zero setup (requires Claude Code 2.0.64+)"
+            },
+            {
+              "label": "Upstash Redis",
+              "value": "redis",
+              "description": "10+ agents, cloud-based, env vars only"
+            },
+            {
+              "label": "File Mode (Fallback)",
+              "value": "file",
+              "description": "2-3 agents, automatic fallback"
+            },
+            {
+              "label": "Skip for now",
+              "value": "skip",
+              "description": "Can be configured later with /popkit:power init"
+            }
+          ]
+        },
+        {
+          "id": "premium_features",
+          "name": "Premium Features",
+          "type": "ask_user_question",
+          "conditional": "detection.premium.is_authenticated == true || detection.premium.has_voyage_key == true",
+          "question": "Which premium features would you like to enable?",
+          "header": "Features",
+          "multiSelect": true,
+          "options": [
+            {
+              "label": "Power Mode (Recommended)",
+              "value": "power_mode",
+              "description": "Multi-agent orchestration for parallel task execution"
+            },
+            {
+              "label": "Semantic Search",
+              "value": "semantic_search",
+              "description": "Natural language search for skills, agents, and commands"
+            },
+            {
+              "label": "Cloud Sync",
+              "value": "cloud_sync",
+              "description": "Cross-session state and analytics via PopKit Cloud"
+            }
+          ]
         }
       ]
     },
     {
       "id": "finalize",
       "name": "Finalize Setup",
-      "description": "Complete project setup with git and optional GitHub",
+      "description": "Complete project setup with git and next actions",
       "steps": [
+        {
+          "id": "update_gitignore",
+          "name": "Update .gitignore",
+          "type": "automated",
+          "action": "update_gitignore"
+        },
         {
           "id": "git_setup",
           "name": "Git Setup",
@@ -186,20 +213,33 @@
           "commands": ["git init", "git add .", "git commit -m 'Initial commit'"]
         },
         {
-          "id": "github_setup",
-          "name": "GitHub Setup",
-          "type": "automated",
-          "conditional": "github_repo == true",
-          "commands": [
-            "gh repo create {project_name} --private --source=.",
-            "git push -u origin main"
+          "id": "next_action",
+          "name": "Next Action",
+          "type": "ask_user_question",
+          "question": "What would you like to do next?",
+          "header": "Next",
+          "options": [
+            {
+              "label": "Analyze codebase (Recommended)",
+              "value": "analyze",
+              "description": "Run /popkit:project analyze for deep codebase insights"
+            },
+            {
+              "label": "Setup quality gates",
+              "value": "setup",
+              "description": "Configure pre-commit hooks with /popkit:project setup"
+            },
+            {
+              "label": "View issues",
+              "value": "issues",
+              "description": "Check GitHub issues with /popkit:issue list"
+            },
+            {
+              "label": "Done for now",
+              "value": "done",
+              "description": "End initialization - run /popkit:routine morning later"
+            }
           ]
-        },
-        {
-          "id": "next_steps",
-          "name": "Show Next Steps",
-          "type": "display",
-          "content": "next_steps_template"
         }
       ]
     }
@@ -209,6 +249,8 @@
     "fastapi": "templates/fastapi/",
     "cli": "templates/cli/",
     "library": "templates/library/",
-    "plugin": "templates/plugin/"
+    "plugin": "templates/plugin/",
+    "cloudflare-workers": "templates/cloudflare-workers/",
+    "react-spa": "templates/react-spa/"
   }
 }
