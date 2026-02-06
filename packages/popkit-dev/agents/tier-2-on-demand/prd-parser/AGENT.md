@@ -13,6 +13,7 @@ tools:
 output_style: structured-planning
 model: inherit
 version: 1.0.0
+memory: user
 triggers:
   - "parse this PRD"
   - "analyze requirements document"
