@@ -109,6 +109,9 @@ jobs:
           name: docs-build
           path: packages/docs/dist
 
+      - name: Clean node_modules to avoid workspace symlink conflicts
+        run: rm -rf node_modules
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
@@ -157,6 +160,9 @@ jobs:
         with:
           name: docs-build
           path: packages/docs/dist
+
+      - name: Clean node_modules to avoid workspace symlink conflicts
+        run: rm -rf node_modules
 
       - name: Deploy preview to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
