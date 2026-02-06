@@ -610,15 +610,16 @@ PopKit requires specific Claude Code versions for full functionality:
 
 ## Current Status
 
-**Version**: 1.0.0-beta.7
+**Version**: 1.0.0-beta.8
 **Status**: Beta release
 **Plugins**: 4 modular plugins
-**Commands**: 23 workflow commands
+**Commands**: 25 workflow commands
 **Skills**: 38 reusable skills
-**Agents**: 22 specialized agents
+**Agents**: 23 specialized agents
 
 ### Recent Updates
 
+- **2026-02-06**: CC 2.1.33 integration, agent memory, interactive init, routing accuracy (v1.0.0-beta.8)
 - **2026-01-31**: GitHub cache, priority scheduling, agent expertise system (v1.0.0-beta.7)
 - **2026-01-13**: CI/CD pipeline complete, all tests passing (v1.0.0-beta.5)
 - **2026-01-12**: Claude Code 2.1.6 compatibility verified, hook import paths fixed (v1.0.0-rc.1)
