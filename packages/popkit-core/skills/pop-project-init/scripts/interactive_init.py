@@ -82,7 +82,7 @@ def _has_workspace_marker(directory: Path) -> bool:
             if "workspaces" in data:
                 return True
         except (json.JSONDecodeError, IOError):
-            pass
+            pass  # Intentionally ignored: fallback to return False below
 
     return False
 
@@ -173,7 +173,7 @@ def detect_stack(project_dir: Path) -> Dict[str, Any]:
                 result["detected"] = "typescript"
                 result["confidence"] = "medium"
         except (json.JSONDecodeError, IOError):
-            pass
+            pass  # Intentionally ignored: stack detection continues with other indicators
 
     # Detect from pyproject.toml
     if indicators["pyproject_toml"]:
@@ -197,7 +197,7 @@ def detect_stack(project_dir: Path) -> Dict[str, Any]:
                 result["detected"] = "python"
                 result["confidence"] = "medium"
         except IOError:
-            pass
+            pass  # Intentionally ignored: stack detection continues with other indicators
 
     # Detect Cloudflare Workers
     if indicators["wrangler_toml"]:
@@ -284,7 +284,6 @@ def detect_quality_gates(project_dir: Path) -> Dict[str, Any]:
         Dict with existing quality tools and recommended level
     """
     existing_tools = []
-    recommended_level = "standard"
 
     # Check for existing quality tools
     if (project_dir / ".eslintrc.json").exists() or (
@@ -307,7 +306,7 @@ def detect_quality_gates(project_dir: Path) -> Dict[str, Any]:
             if "[tool.pytest]" in content:
                 existing_tools.append("pytest")
         except IOError:
-            pass
+            pass  # Intentionally ignored: quality detection continues without pyproject.toml data
     if (project_dir / ".github" / "workflows").is_dir():
         existing_tools.append("ci-workflows")
     if (project_dir / "SECURITY.md").exists():
@@ -351,7 +350,7 @@ def detect_premium_features(project_dir: Path) -> Dict[str, Any]:
             config = json.loads(config_path.read_text(encoding="utf-8"))
             current_tier = config.get("tier", "free")
         except (json.JSONDecodeError, IOError):
-            pass
+            pass  # Intentionally ignored: defaults to free tier if config unreadable
 
     return {
         "is_authenticated": is_authenticated,
