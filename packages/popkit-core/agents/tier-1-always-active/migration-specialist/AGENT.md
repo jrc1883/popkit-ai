@@ -28,6 +28,7 @@ tools:
 output_style: migration-report
 model: inherit
 version: 1.0.0
+memory: project
 ---
 
 # Migration Specialist Agent

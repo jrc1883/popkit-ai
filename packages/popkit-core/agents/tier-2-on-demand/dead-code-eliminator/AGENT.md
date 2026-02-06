@@ -23,6 +23,7 @@ tools:
 output_style: code-optimization-report
 model: inherit
 version: 1.0.0
+memory: project
 ---
 
 # Dead Code Eliminator Agent

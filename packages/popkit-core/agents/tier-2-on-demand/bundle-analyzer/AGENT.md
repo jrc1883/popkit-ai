@@ -24,6 +24,7 @@ tools:
 output_style: bundle-report
 model: inherit
 version: 1.0.0
+memory: project
 ---
 
 # Bundle Analyzer Agent
