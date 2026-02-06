@@ -315,6 +315,160 @@ PopKit Core includes an automatic **Ruff pre-commit hook** that validates Python
 - Fixed text styling (bold, colors) getting progressively misaligned
 - Removed ability to @-mention MCP servers (use `/mcp enable <name>` instead)
 
+### New in Claude Code 2.1.7
+
+**Wildcard Permission Security:**
+
+- Fixed security vulnerability where wildcard permission rules could match compound commands containing shell operators
+- `Bash(git log*)` no longer matches `git log && rm -rf /` - this is the correct, intended behavior
+- Validates PopKit's wildcard permission design in AGENT.md files
+
+**MCP Tool Search Auto Mode:**
+
+- MCP tool search auto mode enabled by default for all users
+- When MCP tool descriptions exceed 10% of context window, they are deferred and discovered via MCPSearch
+- Users can disable by adding `MCPSearch` to `disallowedTools`
+- Agents with MCP wildcard permissions (`mcp__server__*`) may find tools deferred; use MCPSearch to discover first
+
+**Windows Fixes:**
+
+- Fixed false "file modified" errors from cloud sync tools, antivirus, or Git touching timestamps
+- Fixed bash commands failing when temp directory paths contained characters misinterpreted as escape sequences
+
+### New in Claude Code 2.1.9
+
+**PreToolUse `additionalContext` (Critical):**
+
+- PreToolUse hooks can now return `additionalContext` to inject context directly into model reasoning
+- PopKit's `pre-tool-use.py` can return safety warnings, agent suggestions, and coordination recommendations visible to the model
+- Example: `{"decision": "approve", "additionalContext": "POPKIT: This file is in production path. Create backup first."}`
+- This is the single most impactful hook protocol change for PopKit
+
+**Skill Session ID:**
+
+- Skills can access `${CLAUDE_SESSION_ID}` via string substitution
+- Enables session-specific output paths and tracking in skill definitions
+
+**Plans Directory:**
+
+- `plansDirectory` setting customizes where plan files are stored
+- PopKit should not hardcode plan file paths
+
+**AskUserQuestion Editor:**
+
+- External editor support (Ctrl+G) in AskUserQuestion "Other" input field
+- Useful for detailed responses in The PopKit Way interaction pattern
+
+### New in Claude Code 2.1.10
+
+**Setup Hook Event (Critical):**
+
+- New `Setup` hook event triggered via `--init`, `--init-only`, or `--maintenance` CLI flags
+- `claude --init` can trigger PopKit's `pop-project-init` workflow
+- `claude --maintenance` can trigger PopKit health checks and cleanup routines
+- `--init-only` is perfect for CI/CD pipelines needing setup without an interactive session
+- PopKit should add a `Setup` hook entry in `hooks.json`
+
+### New in Claude Code 2.1.14
+
+**Plugin SHA Pinning:**
+
+- Plugins can be pinned to specific git commit SHAs
+- Marketplace entries can install exact versions: `/plugin install popkit-core@popkit-claude#<sha>`
+- Teams can pin to known-good PopKit versions while testing updates
+- CI/CD pipelines benefit from deterministic plugin installations
+
+**Stability Fixes:**
+
+- Fixed context window blocking at ~65% instead of intended ~98% (regression fix)
+- Fixed memory crashes when running parallel subagents (Power Mode reliability)
+- Fixed memory leak in long-running sessions from uncleaned stream resources
+
+### New in Claude Code 2.1.16
+
+**Native Task Management:**
+
+- New task management system with dependency tracking
+- PopKit's Power Mode could leverage native dependency tracking for subagent coordination
+- Skills generating TODOs should consider native tasks
+- `CLAUDE_CODE_ENABLE_TASKS=false` temporarily reverts to old system (2.1.19)
+
+### New in Claude Code 2.1.19
+
+**Command Argument Syntax:**
+
+- Shorthand `$0`, `$1` for accessing individual arguments in custom commands
+- Bracket syntax `$ARGUMENTS[0]` replaces dot syntax `$ARGUMENTS.0`
+- Audit PopKit commands for old dot syntax
+
+**Skill Auto-Approval:**
+
+- Skills without additional permissions or hooks are allowed without user approval
+- Many PopKit informational/orchestration skills now execute without prompts
+
+**Background Hook Fix:**
+
+- Backgrounded hook commands with `"blocking": false` now correctly return early
+- Enables more PopKit hooks to run non-blocking without session delays
+
+### New in Claude Code 2.1.32
+
+**Claude Opus 4.6:**
+
+- New frontier model available for all agents
+- Agents with `model: inherit` automatically use Opus 4.6 when user selects it
+- May have different response patterns affecting structured output expectations
+
+**Agent Teams (Research Preview):**
+
+- Native multi-agent collaboration built into Claude Code
+- Uses tmux-based inter-agent messaging (vs PopKit Power Mode's Redis pub/sub)
+- Strategic consideration: PopKit Power Mode differentiates with phase management, drift detection, sync barriers, pattern learning
+- Research preview - API may change before GA
+
+**Agent Memory:**
+
+- Automatic memory recording and recall during operations
+- Overlaps with PopKit's `knowledge-sync.py` hook and `pop-knowledge-lookup` skill
+- PopKit should focus on structured, domain-specific knowledge management
+
+**Other Notable Changes:**
+
+- `--resume` reuses previous `--agent` value (better agent session continuity)
+- Skill character budget now scales at 2% of context window size
+- "Summarize from here" for partial conversation summarization
+
+### New in Claude Code 2.1.33
+
+**New Hook Events:**
+
+- `TeammateIdle`: Fires when a teammate agent becomes idle in multi-agent teams
+  - PopKit can reassign idle agents, track utilization, trigger phase transitions
+- `TaskCompleted`: Fires when a task completes
+  - PopKit can track metrics, trigger dependent tasks, route completion insights
+
+**`Task(agent_type)` Restriction Syntax:**
+
+- Agents can restrict which sub-agent types they spawn: `Task(code-reviewer)`
+- PopKit's `power-coordinator` can be restricted to known agent types only
+- Enhances security and predictability of multi-agent workflows
+
+**Agent `memory` Frontmatter Field:**
+
+- Agents declare memory persistence scope in frontmatter:
+  ```yaml
+  memory: user      # Persists across all projects
+  memory: project   # Persists within this project
+  memory: local     # Persists within this directory
+  ```
+- All 22 PopKit agents should declare appropriate memory scopes
+- Example: `researcher` → `memory: project`, `accessibility-guardian` → `memory: user`
+
+**Skill Discoverability:**
+
+- Plugin names now shown in skill descriptions and `/skills` menu
+- PopKit skills appear with their plugin prefix (popkit-core, popkit-dev, etc.)
+
 ---
 
 ## Integration with Official Claude Plugins
@@ -574,6 +728,7 @@ chore: Maintenance tasks
 - **Agents**: AGENT.md with purpose, triggers, capabilities
 - **Hooks**: Python scripts with JSON stdin/stdout, proper error handling
 - **No build required**: Configuration-only plugin (no TypeScript/compilation)
+- **Code Comments**: Follow [COMMENTING-STANDARD.md](docs/standards/COMMENTING-STANDARD.md) - comments explain _why_ not _what_. Target Level 2 (Moderate) for most Python modules. Always document magic numbers and design decisions.
 
 ---
 
@@ -603,8 +758,34 @@ PopKit requires specific Claude Code versions for full functionality:
 | **Settings Search**             | 2.1.6           | Keyword filtering in `/config`                 |
 | **Nested Skills Discovery**     | 2.1.6           | Auto-detect `.claude/skills` subdirectories    |
 | **Shell Continuation Security** | 2.1.6           | Permission bypass fix                          |
+| **Wildcard Permission Security**| 2.1.7           | Shell operator matching fix for compound cmds  |
+| **MCP Auto Search Default**     | 2.1.7           | MCP tools deferred when >10% context window    |
+| **PreToolUse additionalContext**| 2.1.9           | Hooks can inject context into model reasoning  |
+| **Skill Session ID Access**     | 2.1.9           | `${CLAUDE_SESSION_ID}` substitution in skills  |
+| **Plans Directory Config**      | 2.1.9           | `plansDirectory` setting for plan file location|
+| **Setup Hook Event**            | 2.1.10          | `--init`, `--init-only`, `--maintenance` flags |
+| **Plugin SHA Pinning**          | 2.1.14          | Pin plugins to specific git commit SHAs        |
+| **Native Task Management**      | 2.1.16          | Task system with dependency tracking           |
+| **Customizable Keybindings**    | 2.1.18          | `/keybindings` for personalized shortcuts      |
+| **Argument Bracket Syntax**     | 2.1.19          | `$ARGUMENTS[0]` replaces `$ARGUMENTS.0`        |
+| **Auto-Approved Simple Skills** | 2.1.19          | Skills without hooks/permissions skip approval  |
+| **PR Status Footer**            | 2.1.20          | Native PR review status in prompt footer       |
+| **Additional Dir CLAUDE.md**    | 2.1.20          | `--add-dir` loads CLAUDE.md from extra dirs    |
+| **File Tool Preference**        | 2.1.21          | Model prefers Read/Edit/Write over bash equiv  |
+| **PR Session Linking**          | 2.1.27          | `--from-pr` flag and auto-linking via `gh pr`  |
+| **PDF Page Ranges**             | 2.1.30          | `pages` parameter on Read tool for PDFs        |
+| **Task Tool Metrics**           | 2.1.30          | Token count, tool uses, duration in results    |
+| **Claude Opus 4.6**             | 2.1.32          | New frontier model available                   |
+| **Agent Teams (Preview)**       | 2.1.32          | Native multi-agent collaboration               |
+| **Agent Memory**                | 2.1.32          | Automatic memory recording and recall          |
+| **Session Resume Agent Reuse**  | 2.1.32          | `--resume` reuses previous `--agent` value     |
+| **Skill Budget Scaling**        | 2.1.32          | Skill character budget = 2% of context window  |
+| **TeammateIdle Hook**           | 2.1.33          | New hook event for idle teammate agents        |
+| **TaskCompleted Hook**          | 2.1.33          | New hook event for completed tasks             |
+| **Task(agent_type) Syntax**     | 2.1.33          | Restrict sub-agent spawning in frontmatter     |
+| **Agent Memory Frontmatter**    | 2.1.33          | `memory: user\|project\|local` in AGENT.md     |
 
-**Recommended**: Claude Code 2.1.6+ for full feature support and latest security fixes.
+**Recommended**: Claude Code 2.1.33+ for full feature support including Agent Teams, Agent Memory, and latest hook events.
 
 ---
 
@@ -619,16 +800,12 @@ PopKit requires specific Claude Code versions for full functionality:
 
 ### Recent Updates
 
-- **2026-02-06**: CC 2.1.33 integration, agent memory, interactive init, routing accuracy (v1.0.0-beta.8)
+- **2026-02-06**: Claude Code 2.1.33 compatibility audit, version table updated (27 versions documented)
+- **2026-02-05**: Issue triage and cleanup (17 issues closed), commenting standards, design integration strategy
 - **2026-01-31**: GitHub cache, priority scheduling, agent expertise system (v1.0.0-beta.7)
 - **2026-01-13**: CI/CD pipeline complete, all tests passing (v1.0.0-beta.5)
 - **2026-01-12**: Claude Code 2.1.6 compatibility verified, hook import paths fixed (v1.0.0-rc.1)
 - **2026-01-09**: Claude Code 2.1.2 integration complete (v1.0.0-beta.4)
-- **2026-01-06**: Repository field format fix (all plugin.json files)
-- **2025-12-29**: Core cleanup and account consolidation (v1.0.0-beta.3)
-- **2025-12-28**: Version alignment at v1.0.0-beta.1
-- **2025-12-21**: Testing & validation complete (96.3% pass rate)
-- **2025-12-20**: Plugin modularization complete
 
 See [CHANGELOG.md](CHANGELOG.md) for full version history.
 

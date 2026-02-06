@@ -1173,6 +1173,19 @@ def main():
             "suggested_agent": result.get("suggested_agent"),
         }
 
+        # CC 2.1.9+: Build additionalContext for model reasoning injection
+        context_parts = []
+        if result.get("warnings"):
+            context_parts.append("Safety warnings: " + "; ".join(result["warnings"]))
+        if result.get("suggested_agent"):
+            context_parts.append(f"Suggested agent: {result['suggested_agent']}")
+        if result.get("recommendations"):
+            context_parts.append(
+                "Recommendations: " + "; ".join(result["recommendations"])
+            )
+        if context_parts:
+            response["additionalContext"] = " | ".join(context_parts)
+
         if result["action"] == "block":
             violations = result["safety_check"]["violations"]
             response["reason"] = "; ".join(violations)
