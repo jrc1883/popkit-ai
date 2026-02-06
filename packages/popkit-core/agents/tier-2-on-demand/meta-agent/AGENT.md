@@ -10,6 +10,7 @@ tools:
 output_style: agent-specification
 model: inherit
 version: 1.0.0
+memory: user
 ---
 
 # Meta Agent - Agent Creator

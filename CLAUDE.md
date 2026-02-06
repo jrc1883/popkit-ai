@@ -447,20 +447,40 @@ gh run list --json status,conclusion,name
 | **PR code review with GitHub comments** | Official code-review plugin |
 | **Feature development** | PopKit `/dev` (includes code-explorer/code-architect) |
 | **GitHub operations** | PopKit CLI + cache (simpler, cached) |
-| **Frontend design** | PopKit document-skills (already included) |
-| **Multi-agent coordination** | PopKit Power Mode (unique capability) |
+| **Frontend design** | Official `frontend-design` plugin, orchestrated via PopKit brainstorming |
+| **Multi-agent coordination** | PopKit Power Mode (complex) or Agent Teams (simple, 2.1.32+) |
 | **Morning/nightly routines** | PopKit (unique capability) |
 
 ### Complementary Official Plugins
 
 These official plugins work well alongside PopKit:
 
+- **frontend-design**: Production-grade UI design (orchestrated via PopKit brainstorming workflow)
 - **code-review**: Automated PR reviews with GitHub integration
 - **github** (MCP): Alternative to CLI approach (optional)
 - **pubmed**: Life sciences research integration
 - **playwright**: Browser automation and testing
 
-PopKit includes frontend-design, code-simplifier (refactoring-expert), and workflow orchestration capabilities, so those official plugins are redundant.
+PopKit includes code-simplifier (refactoring-expert) and workflow orchestration capabilities. For frontend design, use the official `frontend-design` plugin which PopKit can orchestrate through brainstorming and UX assessment workflows.
+
+### Frontend Design Integration Strategy
+
+PopKit does not include its own UI/design agents. Instead, it orchestrates official and community tools:
+
+**Recommended Workflow for Frontend Tasks:**
+1. **Ideation**: `pop-brainstorming` skill for design specification and decision exploration
+2. **Implementation**: Official `frontend-design` plugin for production-grade UI code
+3. **Validation**: `pop-assessment-ux` skill for UX heuristic evaluation
+4. **Accessibility**: `accessibility-guardian` agent for WCAG compliance audits
+
+**Official Plugin**: Install `frontend-design` from `claude-plugins-official` for:
+- Distinctive typography, color palettes, and animations
+- Context-aware design that avoids generic AI aesthetics
+- Component architecture and design system creation
+
+**Community Options**:
+- `frontend-dev` plugin: AI vision-based visual testing (closed-loop test/fix/validate)
+- Figma MCP connector: Design-to-code pipeline from Figma files
 
 ---
 
