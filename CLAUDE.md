@@ -554,6 +554,7 @@ chore: Maintenance tasks
 - **Agents**: AGENT.md with purpose, triggers, capabilities
 - **Hooks**: Python scripts with JSON stdin/stdout, proper error handling
 - **No build required**: Configuration-only plugin (no TypeScript/compilation)
+- **Code Comments**: Follow [COMMENTING-STANDARD.md](docs/standards/COMMENTING-STANDARD.md) - comments explain _why_ not _what_. Target Level 2 (Moderate) for most Python modules. Always document magic numbers and design decisions.
 
 ---
 
