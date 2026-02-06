@@ -24,6 +24,7 @@ tools:
 output_style: security-audit-report
 model: inherit
 version: 1.0.0
+memory: project
 hooks:
   PreToolUse:
     - script: "${CLAUDE_PLUGIN_ROOT}/../../shared-py/hooks/validate-security-tool.py"
