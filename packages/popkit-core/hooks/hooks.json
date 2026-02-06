@@ -149,6 +149,18 @@
         ]
       }
     ],
+    "Setup": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/setup.py\"",
+            "timeout": 15000
+          }
+        ]
+      }
+    ],
     "Notification": [
       {
         "matcher": "",
