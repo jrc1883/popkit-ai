@@ -151,8 +151,11 @@ def main():
                         if age_days > 7:
                             cache_file.unlink()
                             stale_count += 1
-                    except OSError:
-                        pass
+                    except OSError as e:
+                        print(
+                            f"  Warning: failed to clean cache file {cache_file}: {e}",
+                            file=sys.stderr,
+                        )
 
             response["maintenance"] = {
                 "stale_caches_cleared": stale_count,
