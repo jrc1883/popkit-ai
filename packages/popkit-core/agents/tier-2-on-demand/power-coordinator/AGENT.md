@@ -20,6 +20,7 @@ tools:
 output_style: power-mode-checkin
 model: inherit
 version: 1.0.0
+memory: local
 ---
 
 # Power Coordinator Agent

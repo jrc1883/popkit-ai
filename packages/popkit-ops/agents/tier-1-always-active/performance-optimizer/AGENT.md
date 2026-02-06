@@ -25,6 +25,7 @@ tools:
 output_style: performance-report
 model: inherit
 version: 1.0.0
+memory: project
 ---
 
 # Performance Optimizer Agent
