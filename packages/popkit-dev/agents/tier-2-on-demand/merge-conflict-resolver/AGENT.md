@@ -20,6 +20,7 @@ tools:
 output_style: conflict-resolution-report
 model: inherit
 version: 1.0.0
+memory: local
 triggers:
   - "merge conflict"
   - "resolve conflicts"

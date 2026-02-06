@@ -27,6 +27,7 @@ tools:
 output_style: debugging-report
 model: inherit
 version: 1.0.0
+memory: project
 ---
 
 # Bug Whisperer Agent

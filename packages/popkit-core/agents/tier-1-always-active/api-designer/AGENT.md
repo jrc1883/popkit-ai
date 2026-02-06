@@ -11,6 +11,7 @@ tools:
 output_style: api-design-report
 model: inherit
 version: 1.0.0
+memory: user
 ---
 
 # API Designer Agent

@@ -11,6 +11,7 @@ tools:
 output_style: analysis-report
 model: inherit
 version: 1.0.0
+memory: user
 ---
 
 # Researcher Agent - Agent Discovery & Analysis

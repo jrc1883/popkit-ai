@@ -10,6 +10,7 @@ tools:
 output_style: prioritization-report
 model: inherit
 version: 1.0.0
+memory: user
 ---
 
 # Feature Prioritizer Agent
