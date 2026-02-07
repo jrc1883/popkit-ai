@@ -8,12 +8,19 @@ on:
 
 jobs:
   python-tests:
-    name: Python Tests (Python ${{ matrix.python-version }})
-    runs-on: self-hosted
+    name: Python Tests (${{ matrix.os }}, Python ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
+        os: [self-hosted, ubuntu-latest]
         python-version: ["3.11", "3.12", "3.13"]
+        exclude:
+          # Only test latest Python on ubuntu to reduce CI minutes
+          - os: ubuntu-latest
+            python-version: "3.11"
+          - os: ubuntu-latest
+            python-version: "3.12"
 
     steps:
       - name: Checkout code
@@ -28,7 +35,8 @@ jobs:
       - name: Install shared-py dependencies
         run: |
           cd packages/shared-py
-          pip install -e .
+          pip install -e ".[xml-validation]"
+          pip install pytest-cov
 
       - name: Run all plugin tests
         env:
@@ -37,6 +45,22 @@ jobs:
           cd packages/popkit-core
           python run_all_tests.py --verbose || echo "⚠️ Some plugin tests failed (pre-existing issues, non-blocking for now)"
         continue-on-error: true
+
+      - name: Run shared-py pytest suite with coverage
+        env:
+          PYTHONPATH: ${{ github.workspace }}/packages/shared-py
+        run: |
+          cd packages/shared-py
+          python -m pytest tests/ -v --tb=short --cov=popkit_shared --cov-report=term-missing --cov-report=html:htmlcov 2>&1 || echo "pytest suite completed with failures"
+        continue-on-error: true
+
+      - name: Upload coverage report
+        if: matrix.python-version == '3.13' && matrix.os == 'self-hosted'
+        uses: actions/upload-artifact@v6
+        with:
+          name: coverage-report
+          path: packages/shared-py/htmlcov/
+          retention-days: 7
 
   typescript-tests:
     name: TypeScript Tests (Node ${{ matrix.node-version }})
@@ -76,3 +100,39 @@ jobs:
           else
             echo "No test script configured, skipping"
           fi
+
+  docs-build:
+    name: Documentation Build Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build documentation site
+        run: npm run docs:build
+        env:
+          NODE_ENV: production
+
+      - name: Verify build output
+        run: |
+          if [ ! -d "packages/docs/dist" ]; then
+            echo "Error: Build output directory not found"
+            exit 1
+          fi
+          if [ ! -f "packages/docs/dist/index.html" ]; then
+            echo "Error: index.html not found in build output"
+            exit 1
+          fi
+          # Count generated pages
+          PAGE_COUNT=$(find packages/docs/dist -name "*.html" | wc -l)
+          echo "Documentation build successful: ${PAGE_COUNT} pages generated"
