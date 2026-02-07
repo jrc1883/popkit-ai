@@ -791,12 +791,12 @@ PopKit requires specific Claude Code versions for full functionality:
 
 ## Current Status
 
-**Version**: 1.0.0-beta.7
+**Version**: 1.0.0-beta.8
 **Status**: Beta release
 **Plugins**: 4 modular plugins
-**Commands**: 23 workflow commands
+**Commands**: 25 workflow commands
 **Skills**: 38 reusable skills
-**Agents**: 22 specialized agents
+**Agents**: 23 specialized agents
 
 ### Recent Updates
 
