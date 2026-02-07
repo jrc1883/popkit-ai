@@ -237,6 +237,6 @@ class TestPendingPatternsTracker:
 
     def test_creates_directory(self, tmp_path):
         """Tracker creates expertise directory."""
-        tracker = PendingPatternsTracker("my-agent", project_root=tmp_path)
+        PendingPatternsTracker("my-agent", project_root=tmp_path)
         expected_dir = tmp_path / ".claude" / "expertise" / "my-agent"
         assert expected_dir.exists()
