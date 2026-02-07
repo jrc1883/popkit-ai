@@ -5,46 +5,26 @@ description: Complete reference for PopKit commands, agents, and skills
 
 # API Reference
 
-This section will contain auto-generated reference documentation for all PopKit components.
+Complete reference documentation for all PopKit components.
 
-## Coming in Phase 3
+## Components
 
-The API reference will include:
+### [Commands (25)](/reference/commands/)
 
-### Commands (24)
+All slash commands across 4 plugins with subcommands, options, and examples.
 
-- Complete command syntax
-- Parameter descriptions
-- Usage examples
-- Related commands
+### [Agents (23)](/reference/agents/)
 
-### Agents (31)
+Specialized AI agents organized by tier (Always Active, On-Demand, Feature Workflow) with descriptions, tools, and triggers.
 
-- Agent descriptions
-- Trigger conditions
-- Tool permissions
-- Use cases
+### [Skills (43)](/reference/skills/)
 
-### Skills (68)
+Reusable automation skills for project management, development workflows, operations, and research.
 
-- Skill documentation
-- Invocation methods
-- Examples
-- Related skills
+## Source Files
 
-## Auto-generation
-
-API reference pages will be auto-generated from plugin source files:
+Reference pages are generated from plugin source files:
 
 - Commands: `packages/*/commands/*.md`
 - Agents: `packages/*/agents/*/AGENT.md`
 - Skills: `packages/*/skills/*/SKILL.md`
-
-## For Now
-
-Use the following resources:
-
-- [Commands Concept](/concepts/commands/)
-- [Agents Concept](/concepts/agents/)
-- [Skills Concept](/concepts/skills/)
-- [GitHub Repository](https://github.com/jrc1883/popkit-claude)
