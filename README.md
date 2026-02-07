@@ -17,7 +17,7 @@
 
 Transforms Claude Code into a complete development workflow system with intelligent agents that coordinate automatically, handle tasks in parallel, and get smarter over time. One subscription, zero installation friction.
 
-**Version:** 1.0.0-beta.7 | **Plugins:** 4 | **Commands:** 25 | **Skills:** 38 | **Agents:** 22
+**Version:** 1.0.0-beta.8 | **Plugins:** 4 | **Commands:** 25 | **Skills:** 38 | **Agents:** 23
 
 [Quick Start](#-quick-start) • [Features](#-what-is-popkit) • [Documentation](#-documentation) • [Contributing](#-contributing)
 
