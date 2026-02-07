@@ -213,7 +213,7 @@ def get_workflow_config(issue_number: int) -> Dict[str, Any]:
         "number": issue.get("number"),
         "title": issue.get("title"),
         "state": issue.get("state"),
-        "labels": [l.get("name") for l in issue.get("labels", [])],
+        "labels": [label.get("name") for label in issue.get("labels", [])],
     }
 
     # Parse guidance from issue body
@@ -291,7 +291,7 @@ def infer_issue_type(issue: Dict[str, Any]) -> str:
         One of: "bug", "feature", "architecture", "research", "unknown"
     """
     title = (issue.get("title") or "").lower()
-    labels = [l.lower() for l in issue.get("labels", [])]
+    labels = [label.lower() for label in issue.get("labels", [])]
 
     # Check labels first
     if "bug" in labels:
@@ -378,7 +378,7 @@ def infer_complexity(issue: Dict[str, Any]) -> str:
     """
     title = (issue.get("title") or "").lower()
     body = (issue.get("body") or "").lower()
-    labels = [l.lower() for l in issue.get("labels", [])]
+    labels = [label.lower() for label in issue.get("labels", [])]
 
     # Check labels for explicit complexity
     if "epic" in labels:

@@ -44,7 +44,7 @@ def parse_timestamp(ts_str: str) -> datetime:
         try:
             # Fallback: try without microseconds
             return datetime.strptime(ts_str[:19], "%Y-%m-%dT%H:%M:%S")
-        except:
+        except Exception:
             return datetime.min
 
 
@@ -76,7 +76,7 @@ def try_parse_python_structure(text: str) -> Optional[Any]:
         cleaned = clean_escaped_text(text)
         parsed = ast.literal_eval(cleaned)
         return parsed
-    except:
+    except Exception:
         return None
 
 
@@ -84,7 +84,7 @@ def try_parse_json(text: str) -> Optional[Any]:
     """Try to parse text as JSON."""
     try:
         return json.loads(text)
-    except:
+    except Exception:
         return None
 
 
@@ -534,7 +534,6 @@ def mark_subagent_scopes(events: List[Dict]) -> List[Dict]:
     Adds 'in_subagent' flag and 'subagent_id' to events between launch and stop.
     """
     result = []
-    active_subagents = []  # Stack of active sub-agent IDs
 
     for event in events:
         event_type = event.get("type")
@@ -736,7 +735,7 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
         # Sanity check - negative duration means bad timestamps
         if duration_sec < 0:
             duration_sec = 0.0
-    except:
+    except Exception:
         duration_sec = 0.0
 
     # Count main tool calls (exclude sub-agent events)
@@ -827,7 +826,7 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                     main_reasoning = parse_transcript_for_reasoning(transcript_data, events)
                     reasoning_lookup.update(main_reasoning)
                     break
-                except:
+                except Exception:
                     continue
 
     # If we have transcripts, try to parse reasoning from them
@@ -859,7 +858,7 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                     transcript_data = {"messages": messages}
                     agent_reasoning = parse_transcript_for_reasoning(transcript_data, sub_events)
                     reasoning_lookup.update(agent_reasoning)
-                except:
+                except Exception:
                     pass
 
                 break
@@ -1430,7 +1429,7 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                 time_str = dt.strftime("%H:%M:%S")
             else:
                 time_str = "N/A"
-        except:
+        except Exception:
             time_str = "N/A"
 
         bg_color, border_color = get_agent_color(source)

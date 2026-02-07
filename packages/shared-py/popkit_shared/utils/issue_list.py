@@ -109,7 +109,7 @@ def infer_complexity_from_labels(labels: List[str]) -> str:
     Returns:
         "small", "medium", "large", "epic", or "unknown"
     """
-    label_set = set(l.lower() for l in labels)
+    label_set = set(label.lower() for label in labels)
 
     if "epic" in label_set:
         return "epic"
@@ -164,7 +164,7 @@ def list_issues_with_power_mode_status(
     processed = []
     for issue in issues:
         # Extract labels as list of names
-        labels = [l.get("name", "") for l in issue.get("labels", [])]
+        labels = [label.get("name", "") for label in issue.get("labels", [])]
 
         # Parse PopKit Guidance from body
         body = issue.get("body", "") or ""

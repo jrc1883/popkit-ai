@@ -364,7 +364,6 @@ class CommandTranslator:
             ShellType.GIT_BASH,
             ShellType.WSL,
         }
-        windows_shells = {ShellType.CMD, ShellType.POWERSHELL, ShellType.POWERSHELL_CORE}
 
         unix_commands = {"cp", "mv", "rm", "ls", "cat", "grep", "find", "mkdir", "head", "tail"}
         cmd_commands = {

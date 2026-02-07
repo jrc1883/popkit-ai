@@ -157,7 +157,7 @@ ALLOWED_EXCEPTIONS: Dict[str, List[str]] = {
     # Audit command documents the ip-leak feature (lists patterns as examples)
     "audit.md": list(FORBIDDEN_PATTERNS.keys()),
     # Git command documents publishing
-    "git.md": ["private_repo_ref", "cloud_code"],
+    "git.md": ["private_repo_ref", "cloud_code", "proprietary_marker"],
     # Project command documents architecture
     "project.md": ["cloud_code", "cloud_billing", "cloud_team", "cloud_scripts"],
     # Upgrade command has example API key placeholder
@@ -182,8 +182,6 @@ ALLOWED_EXCEPTIONS: Dict[str, List[str]] = {
     "test_ip_protection.py": list(FORBIDDEN_PATTERNS.keys()),
     # Output styles mention terms in templates
     "pdf-report.md": ["proprietary_marker"],
-    # Git command mentions proprietary
-    "git.md": ["private_repo_ref", "cloud_code", "proprietary_marker"],
     # Routine command mentions proprietary
     "routine.md": ["proprietary_marker"],
     # Hooks that check premium status (legitimate functionality)

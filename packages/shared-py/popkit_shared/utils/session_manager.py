@@ -22,7 +22,7 @@ from typing import Any, Dict, Optional
 
 # File locking (Unix-only)
 try:
-    import fcntl
+    import fcntl  # noqa: F401
 
     HAS_FCNTL = True
 except ImportError:
