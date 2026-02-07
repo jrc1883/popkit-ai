@@ -18,15 +18,15 @@ This hook ties together:
 Part of Issue #11 - Unified Orchestration System
 """
 
-import sys
 import json
 import subprocess
+import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
 
-from popkit_shared.utils.github_issues import get_workflow_config
 from popkit_shared.utils.flag_parser import parse_work_args
+from popkit_shared.utils.github_issues import get_workflow_config
 
 # Import quality gate hook for phase transitions
 sys.path.insert(0, str(Path(__file__).parent))

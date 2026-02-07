@@ -5,18 +5,14 @@ Provides git fetch --prune functionality and stale branch detection.
 """
 
 import subprocess
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
 
 
 def run_git_command(cmd: List[str], cwd: Optional[str] = None) -> Tuple[int, str, str]:
     """Run a git command and return exit code, stdout, stderr."""
     try:
         result = subprocess.run(
-            cmd,
-            cwd=cwd,
-            capture_output=True,
-            text=True,
-            timeout=30
+            cmd, cwd=cwd, capture_output=True, text=True, timeout=30
         )
         return result.returncode, result.stdout, result.stderr
     except subprocess.TimeoutExpired:
@@ -72,13 +68,17 @@ def find_stale_local_branches() -> List[Tuple[str, str]]:
     return stale_branches
 
 
-def format_stale_branches_report(stale_branches: List[Tuple[str, str]], max_display: int = 5) -> str:
+def format_stale_branches_report(
+    stale_branches: List[Tuple[str, str]], max_display: int = 5
+) -> str:
     """Format stale branches into a human-readable report."""
     if not stale_branches:
         return "✓ No stale local branches found"
 
     count = len(stale_branches)
-    lines = [f"⚠️  Found {count} stale local branch{'es' if count != 1 else ''} (remote deleted):"]
+    lines = [
+        f"⚠️  Found {count} stale local branch{'es' if count != 1 else ''} (remote deleted):"
+    ]
 
     for branch_name, _ in stale_branches[:max_display]:
         lines.append(f"   - {branch_name}")

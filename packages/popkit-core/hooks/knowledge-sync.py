@@ -10,13 +10,13 @@ Features:
 - HTML to markdown conversion
 """
 
-import sys
+import hashlib
 import json
 import sqlite3
-import hashlib
-from pathlib import Path
+import sys
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any
+from pathlib import Path
+from typing import Any, Dict, Optional
 
 # Optional imports with graceful fallback
 try:
@@ -440,7 +440,7 @@ def main():
     try:
         # Read input data from stdin
         input_data = sys.stdin.read()
-        data = json.loads(input_data) if input_data.strip() else {}
+        json.loads(input_data) if input_data.strip() else {}
 
         # Initialize and sync knowledge
         syncer = KnowledgeSync()

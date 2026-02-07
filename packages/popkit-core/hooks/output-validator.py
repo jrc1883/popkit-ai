@@ -6,25 +6,26 @@ Validates agent outputs against their declared output_style schema.
 Part of the popkit plugin output validation layer.
 """
 
-import sys
 import json
 import re
-from pathlib import Path
+import sys
 from datetime import datetime
+from pathlib import Path
 
 
 def load_schema(output_style: str) -> dict | None:
     """Load JSON schema for given output style."""
     # Try relative to hooks directory first, then project root
     schema_paths = [
-        Path(__file__).parent.parent / f"output-styles/schemas/{output_style}.schema.json",
+        Path(__file__).parent.parent
+        / f"output-styles/schemas/{output_style}.schema.json",
         Path(f"output-styles/schemas/{output_style}.schema.json"),
     ]
 
     for schema_path in schema_paths:
         if schema_path.exists():
             try:
-                with open(schema_path, 'r', encoding='utf-8') as f:
+                with open(schema_path, "r", encoding="utf-8") as f:
                     return json.load(f)
             except (json.JSONDecodeError, IOError):
                 continue
@@ -67,12 +68,16 @@ def extract_fields_from_markdown(output: str) -> dict:
                 extracted[field] = value
 
     # Check for summary section
-    summary_match = re.search(r"### Summary\s*\n(.+?)(?:\n###|\n---|\Z)", output, re.DOTALL)
+    summary_match = re.search(
+        r"### Summary\s*\n(.+?)(?:\n###|\n---|\Z)", output, re.DOTALL
+    )
     if summary_match:
         extracted["summary"] = summary_match.group(1).strip()[:500]  # Limit length
 
     # Check for symptom section (debugging report)
-    symptom_match = re.search(r"### Symptom\s*\n(.+?)(?:\n###|\n---|\Z)", output, re.DOTALL)
+    symptom_match = re.search(
+        r"### Symptom\s*\n(.+?)(?:\n###|\n---|\Z)", output, re.DOTALL
+    )
     if symptom_match:
         extracted["symptom"] = {"description": symptom_match.group(1).strip()[:500]}
 
@@ -117,7 +122,7 @@ def validate_output(output: str, schema: dict) -> dict:
         "missing_fields": missing,
         "extracted_fields": list(extracted.keys()),
         "confidence": confidence,
-        "field_count": len(extracted)
+        "field_count": len(extracted),
     }
 
 
@@ -135,13 +140,13 @@ def main():
         # Try to get output_style from agent config if not provided
         if not output_style:
             # Check if we can infer from agent metadata
-            agent_config_path = Path(__file__).parent.parent / f"agents/*/{agent_name}.md"
+            Path(__file__).parent.parent / f"agents/*/{agent_name}.md"
             # For now, skip validation if no output_style declared
             response = {
                 "status": "skip",
                 "reason": "no output_style declared",
                 "agent": agent_name,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
             print(json.dumps(response))
             return
@@ -154,7 +159,7 @@ def main():
                 "reason": f"schema not found: {output_style}",
                 "agent": agent_name,
                 "output_style": output_style,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
             print(json.dumps(response))
             return
@@ -168,7 +173,9 @@ def main():
 
         # Add suggestions for missing fields
         if not result["valid"]:
-            result["suggestion"] = f"Agent output missing required fields: {', '.join(result['missing_fields'])}. Please ensure the output follows the {output_style} format."
+            result["suggestion"] = (
+                f"Agent output missing required fields: {', '.join(result['missing_fields'])}. Please ensure the output follows the {output_style} format."
+            )
 
         print(json.dumps(result))
 
@@ -176,7 +183,7 @@ def main():
         response = {
             "status": "error",
             "error": f"Invalid JSON input: {e}",
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
         print(json.dumps(response))
         sys.exit(0)  # Don't block on errors
@@ -184,7 +191,7 @@ def main():
         response = {
             "status": "error",
             "error": str(e),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
         print(json.dumps(response))
         print(f"Error in output-validator hook: {e}", file=sys.stderr)

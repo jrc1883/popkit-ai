@@ -8,20 +8,20 @@ PostToolUse hook that captures command failures and learns from them.
 Also provides PreToolUse suggestions for commands that have known corrections.
 """
 
-import sys
 import json
 import re
-from typing import Dict, Optional, Any
+import sys
 from pathlib import Path
+from typing import Any, Dict, Optional
 
 # Add hooks directory to path for imports
 hooks_dir = Path(__file__).parent
 if str(hooks_dir) not in sys.path:
     sys.path.insert(0, str(hooks_dir))
 
-from popkit_shared.utils.platform_detector import OSType, ShellType, get_platform_info
-from popkit_shared.utils.command_translator import CommandTranslator
-from popkit_shared.utils.pattern_learner import get_learner
+from popkit_shared.utils.command_translator import CommandTranslator  # noqa: E402
+from popkit_shared.utils.pattern_learner import get_learner  # noqa: E402
+from popkit_shared.utils.platform_detector import OSType, ShellType, get_platform_info  # noqa: E402
 
 
 class CommandLearningHook:
@@ -222,7 +222,7 @@ class CommandLearningHook:
 
         if translation and translation.translated != command:
             # Record this as a learned correction
-            correction = self.learner.record_correction(
+            self.learner.record_correction(
                 original_command=command,
                 corrected_command=translation.translated,
                 error_pattern=error_type,

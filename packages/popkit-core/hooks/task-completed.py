@@ -9,10 +9,10 @@ Responsibilities:
 3. Track cumulative session metrics
 """
 
-import sys
 import json
-from pathlib import Path
+import sys
 from datetime import datetime
+from pathlib import Path
 
 
 def log_task_completion(data):

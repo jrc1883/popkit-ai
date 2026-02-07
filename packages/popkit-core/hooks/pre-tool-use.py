@@ -5,15 +5,16 @@ Safety checks, agent coordination, and orchestration before tool execution
 Prevents dangerous operations and coordinates multi-agent workflows
 """
 
-import os
-import sys
 import json
+import os
 import re
-import requests
 import sqlite3
+import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Any, Dict, List, Optional, Tuple
+
+import requests
 
 # Import error code system (Issue #104)
 try:
@@ -48,7 +49,7 @@ except ImportError:
 # Import session recorder for forensic analysis (Issue #603)
 try:
     sys.path.insert(0, str(Path(__file__).parent.parent.parent / "shared-py"))
-    from popkit_shared.utils.session_recorder import is_recording_enabled, get_recorder
+    from popkit_shared.utils.session_recorder import get_recorder, is_recording_enabled
 
     SESSION_RECORDER_AVAILABLE = True
 except ImportError:
@@ -785,7 +786,10 @@ class PreToolUseHook:
         # If security-related infrastructure detected, escalate to security-auditor
         if any(
             sec in infrastructure for sec in ["redis", "elasticsearch"]
-        ) and category in ["bug", "feature"]:
+        ) and category in [
+            "bug",
+            "feature",
+        ]:
             # Don't override, but note in metadata
             pass
 
