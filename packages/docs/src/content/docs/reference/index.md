@@ -11,21 +11,21 @@ This section will contain auto-generated reference documentation for all PopKit 
 
 The API reference will include:
 
-### Commands (24)
+### Commands (25)
 
 - Complete command syntax
 - Parameter descriptions
 - Usage examples
 - Related commands
 
-### Agents (31)
+### Agents (23)
 
 - Agent descriptions
 - Trigger conditions
 - Tool permissions
 - Use cases
 
-### Skills (68)
+### Skills (43)
 
 - Skill documentation
 - Invocation methods
