@@ -1,0 +1,113 @@
+{
+  "test_id": "hook-teammate-idle-protocol",
+  "category": "hooks",
+  "name": "TeammateIdle Hook Observability",
+  "description": "Verify teammate-idle.py logs idle events and updates STATUS.json",
+  "severity": "medium",
+  "hook_file": "hooks/teammate-idle.py",
+  "test_cases": [
+    {
+      "case_id": "basic-idle-event",
+      "name": "Basic teammate idle event",
+      "input": {
+        "event": "TeammateIdle",
+        "teammate": "code-reviewer",
+        "reason": "completed_work",
+        "duration_ms": 45000,
+        "tools_used": 12,
+        "tokens_used": 8500
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0,
+          "description": "Should complete successfully"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "has_field",
+          "field": "status"
+        },
+        {
+          "type": "contains",
+          "field": "status",
+          "expected": "success"
+        },
+        {
+          "type": "duration",
+          "max_ms": 5000,
+          "description": "Should complete quickly"
+        }
+      ]
+    },
+    {
+      "case_id": "empty-input",
+      "name": "Handles empty input gracefully",
+      "input": {},
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "contains",
+          "field": "status",
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "case_id": "invalid-json-input",
+      "name": "Handles invalid JSON input gracefully",
+      "input": "not valid json{",
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0,
+          "description": "Should not block on errors"
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        }
+      ]
+    },
+    {
+      "case_id": "timestamp-present",
+      "name": "Response includes timestamp",
+      "input": {
+        "event": "TeammateIdle",
+        "teammate": "bug-whisperer"
+      },
+      "assertions": [
+        {
+          "type": "exit_code",
+          "expected": 0
+        },
+        {
+          "type": "json_valid",
+          "field": "stdout"
+        },
+        {
+          "type": "has_field",
+          "field": "timestamp"
+        }
+      ]
+    }
+  ],
+  "dependencies": ["hooks/teammate-idle.py"],
+  "notes": [
+    "TeammateIdle is a new hook event in Claude Code 2.1.33",
+    "Fires when an Agent Teams teammate becomes idle",
+    "Logs events to .claude/popkit/logs/teammate-events.json",
+    "Updates STATUS.json with teammate state",
+    "Must not block Claude operation even on errors"
+  ]
+}

@@ -59,6 +59,8 @@ class PluginValidator:
         "SessionEnd",
         "PreCompact",
         "Setup",
+        "TeammateIdle",
+        "TaskCompleted",
     }
 
     VALID_LICENSES = {

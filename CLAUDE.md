@@ -411,6 +411,55 @@ PopKit Core includes an automatic **Ruff pre-commit hook** that validates Python
 - Backgrounded hook commands with `"blocking": false` now correctly return early
 - Enables more PopKit hooks to run non-blocking without session delays
 
+### New in Claude Code 2.1.20
+
+**PR Status Footer:**
+
+- Native PR review status indicator in the prompt footer
+- PopKit can reduce redundant PR status queries in workflows
+- `--add-dir` flag and `CLAUDE_ADD_DIR` env var load CLAUDE.md from additional directories
+
+**Background Agent Permissions:**
+
+- Background agents now prompt for permissions before launch (not after)
+- `Bash(*)` is equivalent to `Bash` (validates PopKit's wildcard permission approach)
+- `TaskUpdate` gains `delete` capability for cleaner task cleanup
+
+### New in Claude Code 2.1.21
+
+**File Tool Preference:**
+
+- Model now prefers Read/Edit/Write tools over bash equivalents (cat/sed/awk)
+- Validates PopKit's agent permission model (agents don't need `Bash(cat *)`)
+- VSCode auto-activates Python venv for hook execution
+
+### New in Claude Code 2.1.27
+
+**PR Workflow Improvements:**
+
+- `--from-pr` flag links sessions to specific pull requests
+- Auto PR linking via `gh pr create` for better traceability
+- Tool denials now appear in debug logs (helps debug agent permissions)
+
+**Windows Compatibility:**
+
+- Fixed .bashrc compatibility for Windows environments
+- Important for Windows PopKit hook execution reliability
+
+### New in Claude Code 2.1.30
+
+**PDF and Research:**
+
+- `pages` parameter on Read tool for large PDFs (e.g., `pages: "1-5"`)
+- PDFs >10 pages return `@` reference instead of inline content
+- PopKit research workflows should use `pages` parameter for large documents
+
+**Task Tool Metrics:**
+
+- Task results now include token count, tool uses, and duration
+- PopKit's `chain-metrics.py` can consume native metrics instead of computing manually
+- New `/debug` command for session troubleshooting
+
 ### New in Claude Code 2.1.32
 
 **Claude Opus 4.6:**
@@ -769,12 +818,17 @@ PopKit requires specific Claude Code versions for full functionality:
 | **Customizable Keybindings**    | 2.1.18          | `/keybindings` for personalized shortcuts      |
 | **Argument Bracket Syntax**     | 2.1.19          | `$ARGUMENTS[0]` replaces `$ARGUMENTS.0`        |
 | **Auto-Approved Simple Skills** | 2.1.19          | Skills without hooks/permissions skip approval  |
+| **Background Hook Fix**         | 2.1.19          | Non-blocking hooks return early correctly       |
 | **PR Status Footer**            | 2.1.20          | Native PR review status in prompt footer       |
 | **Additional Dir CLAUDE.md**    | 2.1.20          | `--add-dir` loads CLAUDE.md from extra dirs    |
+| **Bash(*) = Bash Equivalence**  | 2.1.20          | Validates wildcard permission design            |
 | **File Tool Preference**        | 2.1.21          | Model prefers Read/Edit/Write over bash equiv  |
+| **Async Hook Cancellation**     | 2.1.23          | Pending hooks cancelled on session end         |
 | **PR Session Linking**          | 2.1.27          | `--from-pr` flag and auto-linking via `gh pr`  |
+| **Windows Bash Fix**            | 2.1.27          | .bashrc compatibility for Windows hooks        |
 | **PDF Page Ranges**             | 2.1.30          | `pages` parameter on Read tool for PDFs        |
 | **Task Tool Metrics**           | 2.1.30          | Token count, tool uses, duration in results    |
+| **Debug Command**               | 2.1.30          | `/debug` for session troubleshooting           |
 | **Claude Opus 4.6**             | 2.1.32          | New frontier model available                   |
 | **Agent Teams (Preview)**       | 2.1.32          | Native multi-agent collaboration               |
 | **Agent Memory**                | 2.1.32          | Automatic memory recording and recall          |
@@ -800,7 +854,8 @@ PopKit requires specific Claude Code versions for full functionality:
 
 ### Recent Updates
 
-- **2026-02-06**: Claude Code 2.1.33 compatibility audit, version table updated (27 versions documented)
+- **2026-02-06**: TeammateIdle + TaskCompleted hooks, CC 2.1.7-2.1.33 full changelog audit, version table expanded (42 entries)
+- **2026-02-06**: CC 2.1.33 integration, agent memory, interactive init, routing accuracy (v1.0.0-beta.8)
 - **2026-02-05**: Issue triage and cleanup (17 issues closed), commenting standards, design integration strategy
 - **2026-01-31**: GitHub cache, priority scheduling, agent expertise system (v1.0.0-beta.7)
 - **2026-01-13**: CI/CD pipeline complete, all tests passing (v1.0.0-beta.5)
