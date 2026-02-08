@@ -87,7 +87,7 @@ def get_project_name(cwd):
                     if line.startswith("name"):
                         return line.split("=")[1].strip().strip('"').strip("'")
         except Exception:
-            pass
+            pass  # Graceful fallback: pyproject.toml parse failure shouldn't block project name detection
 
     # Fall back to directory name
     return cwd_path.name

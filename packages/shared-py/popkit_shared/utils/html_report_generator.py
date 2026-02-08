@@ -859,7 +859,7 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
                     agent_reasoning = parse_transcript_for_reasoning(transcript_data, sub_events)
                     reasoning_lookup.update(agent_reasoning)
                 except Exception:
-                    pass
+                    pass  # Graceful fallback: transcript parsing failure shouldn't block report generation
 
                 break
 
