@@ -220,6 +220,7 @@ Auto-generate GitHub release notes from commits with proper formatting. (#29)
 ### Change authentication endpoint from /auth to /api/auth
 
 **Migration:**
+
 - Update all API calls to use new endpoint
 - See migration guide: docs/migrations/v1.1.0.md
 

@@ -14,6 +14,7 @@ PopKit provides unified git commands that automatically gather context and follo
 **Command**: `/popkit-dev:git commit`
 
 **What it does**:
+
 1. Runs `git status` to see staged changes
 2. Runs `git diff` to see modifications
 3. Reviews recent commits for style
@@ -21,6 +22,7 @@ PopKit provides unified git commands that automatically gather context and follo
 5. Creates commit with co-author tag
 
 **Usage**:
+
 ```bash
 # Stage files first
 git add src/auth.js src/routes.js
@@ -30,6 +32,7 @@ git add src/auth.js src/routes.js
 ```
 
 **Output**:
+
 ```
 feat: Implement OAuth2 authentication with Google provider
 
@@ -46,12 +49,14 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
 **Command**: `/popkit-dev:git push`
 
 **What it does**:
+
 1. Checks branch protection rules
 2. Runs pre-push hooks
 3. Validates tests pass
 4. Pushes to remote
 
 **Usage**:
+
 ```bash
 /popkit-dev:git push
 ```
@@ -61,6 +66,7 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
 **Command**: `/popkit-dev:git pr`
 
 **What it does**:
+
 1. Analyzes all commits in branch
 2. Examines full diff from base branch
 3. Generates comprehensive PR summary
@@ -68,6 +74,7 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
 5. Links related issues
 
 **Usage**:
+
 ```bash
 # Create PR
 /popkit-dev:git pr
@@ -77,13 +84,16 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
 ```
 
 **Output**:
+
 ```markdown
 ## Summary
+
 - Implement OAuth2 authentication with Google provider
 - Add token refresh mechanism
 - Create middleware for protected routes
 
 ## Test Plan
+
 - [ ] Test Google Sign-In flow
 - [ ] Verify token refresh works
 - [ ] Check protected routes block unauthenticated users
@@ -97,6 +107,7 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
 **Command**: `/popkit-dev:git publish`
 
 **What it does**:
+
 1. Checks for sensitive data
 2. Reviews commit history
 3. Creates public repository
@@ -104,6 +115,7 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
 5. Sets up README and LICENSE
 
 **Usage**:
+
 ```bash
 /popkit-dev:git publish
 ```
@@ -130,6 +142,7 @@ When on a protected branch with uncommitted changes, PopKit will:
 3. **Guide**: Provide feature branch creation commands
 
 **Recommended Workflow**:
+
 ```bash
 # Create feature branch
 git checkout -b feat/your-feature-name
@@ -159,6 +172,7 @@ git reset --hard origin/main
 **Symptom**: Generic commit message
 
 **Solution**:
+
 - Ensure files are staged (`git add`)
 - Check that there are actual changes (`git diff --staged`)
 
@@ -167,6 +181,7 @@ git reset --hard origin/main
 **Symptom**: `gh pr create` fails
 
 **Solution**:
+
 - Install GitHub CLI: `brew install gh` or `choco install gh`
 - Authenticate: `gh auth login`
 - Ensure branch is pushed: `git push -u origin branch-name`
@@ -176,6 +191,7 @@ git reset --hard origin/main
 **Symptom**: PopKit warns about committing to main
 
 **Solution**:
+
 - Create feature branch: `git checkout -b feat/my-feature`
 - Push feature branch: `git push -u origin feat/my-feature`
 - Create PR: `/popkit-dev:git pr`

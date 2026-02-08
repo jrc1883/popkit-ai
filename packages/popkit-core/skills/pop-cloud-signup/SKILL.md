@@ -166,11 +166,11 @@ except Exception as e:
 
 ### 6. Display Setup Instructions
 
-```markdown
+````markdown
 ✅ PopKit Cloud Account Created
 
 **Email:** user@example.com
-**API Key:** ******def456 (saved securely)
+**API Key:** **\*\***def456 (saved securely)
 **Tier:** Free (100 requests/day)
 
 ## Quick Start
@@ -181,9 +181,11 @@ Your API key is already saved in `~/.claude/popkit/cloud-config.json`.
 PopKit will automatically use it for cloud enhancements.
 
 **Verify connection:**
+
 ```bash
 /popkit:cloud status
 ```
+````
 
 ### Option 2: Set environment variable
 
@@ -220,11 +222,13 @@ Need more? Upgrade at: `/popkit:upgrade`
 ## Next Steps
 
 1. **Verify connection:**
+
    ```bash
    /popkit:cloud status
    ```
 
 2. **Test semantic routing:**
+
    ```bash
    /popkit:next  # Uses embeddings to recommend next action
    ```
@@ -242,10 +246,12 @@ Need more? Upgrade at: `/popkit:upgrade`
 - Config file: `~/.claude/popkit/cloud-config.json`
 
 **To disconnect:**
+
 ```bash
 /popkit:cloud logout
 ```
-```
+
+````
 
 ## Error Handling
 
@@ -259,8 +265,9 @@ Need more? Upgrade at: `/popkit:upgrade`
 Try logging in instead:
 ```bash
 /popkit:cloud login
-```
-```
+````
+
+````
 
 ### Invalid Email/Password (400)
 
@@ -274,7 +281,7 @@ Requirements:
 - Password: Minimum 8 characters
 
 Please try again with valid credentials.
-```
+````
 
 ### Connection Timeout
 
@@ -284,6 +291,7 @@ Please try again with valid credentials.
 **Error:** Request timed out
 
 Please check:
+
 1. Your internet connection
 2. Firewall/proxy settings
 3. Cloud status: https://status.thehouseofdeals.com
@@ -300,16 +308,19 @@ Try again in a moment.
 ## Security
 
 **API Key Storage:**
+
 - File: `~/.claude/popkit/cloud-config.json`
 - Permissions: chmod 600 (user read/write only)
 - Never logged in full (only last 6 chars shown)
 
 **Password Handling:**
+
 - Never stored locally
 - Only transmitted to cloud API over HTTPS
 - Never logged or printed
 
 **Best Practices:**
+
 - Use strong passwords (16+ characters recommended)
 - Don't share API keys
 - Use `/popkit:cloud logout` when switching accounts
