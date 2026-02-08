@@ -8,19 +8,12 @@ on:
 
 jobs:
   python-tests:
-    name: Python Tests (${{ matrix.os }}, Python ${{ matrix.python-version }})
-    runs-on: ${{ matrix.os }}
+    name: Python Tests (Python ${{ matrix.python-version }})
+    runs-on: self-hosted
     strategy:
       fail-fast: false
       matrix:
-        os: [self-hosted, ubuntu-latest]
         python-version: ["3.11", "3.12", "3.13"]
-        exclude:
-          # Only test latest Python on ubuntu to reduce CI minutes
-          - os: ubuntu-latest
-            python-version: "3.11"
-          - os: ubuntu-latest
-            python-version: "3.12"
 
     steps:
       - name: Checkout code
@@ -55,7 +48,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload coverage report
-        if: matrix.python-version == '3.13' && matrix.os == 'self-hosted'
+        if: matrix.python-version == '3.13'
         uses: actions/upload-artifact@v6
         with:
           name: coverage-report
@@ -103,7 +96,7 @@ jobs:
 
   docs-build:
     name: Documentation Build Test
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout code
