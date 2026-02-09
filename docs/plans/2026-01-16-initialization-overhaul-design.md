@@ -427,7 +427,7 @@ Which PopKit tier are you using?
   "git": {
     "branch": "main",
     "worktree": {
-      "path": "/Users/josep/popkit-claude",
+      "path": "/path/to/project",
       "name": "main",
       "isMainWorktree": true,
       "baseRef": null
