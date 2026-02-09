@@ -13,6 +13,7 @@
 PopKit demonstrates a well-structured plugin ecosystem with strong architectural foundations, but suffers from technical debt accumulated through rapid development. The codebase shows evidence of iterative development without consistent refactoring, leading to code duplication, inconsistent naming, and organizational issues.
 
 ### Critical Findings
+
 - 🔴 **10+ versions of HTML report generator** (massive duplication)
 - 🔴 **37 test files mixed into production code** (shared-py/utils/)
 - 🔴 **Multiple duplicate git utility functions** across packages
@@ -27,16 +28,19 @@ PopKit demonstrates a well-structured plugin ecosystem with strong architectural
 ### Package Organization (Score: 75/100)
 
 **Strengths:**
+
 - Clear separation of concerns across 4 main packages
 - Dedicated shared-py package for common utilities
 - Logical grouping: core (foundation), dev (workflow), ops (operations), research (knowledge)
 
 **Issues:**
+
 - No clear package.json or manifest files for Python packages
-- Missing __init__.py in many skill directories
+- Missing **init**.py in many skill directories
 - Inconsistent directory structure between packages
 
 ### File Count Analysis
+
 - **Total Python files:** ~220+ files
 - **Core hooks:** ~30 files
 - **Skills:** ~40+ skills across packages
@@ -50,6 +54,7 @@ PopKit demonstrates a well-structured plugin ecosystem with strong architectural
 ### Critical Duplications (Score: 35/100)
 
 #### 2.1 HTML Report Generators (CRITICAL)
+
 **Location:** `packages/shared-py/popkit_shared/utils/`
 
 ```
@@ -71,7 +76,9 @@ demo_enhanced_report.py
 **Est. Savings:** ~5,000+ lines of duplicated code
 
 #### 2.2 Git Utility Functions (HIGH)
+
 **Found in:**
+
 - `packages/shared-py/hooks/auto-save-state.py` → `get_git_state()`
 - `packages/popkit-dev/hooks/git_utils.py` → `run_git_command()`, `git_fetch_prune()`
 - `packages/shared-py/popkit_shared/utils/routine_cache.py` → `check_git_status_unchanged()`
@@ -82,7 +89,9 @@ demo_enhanced_report.py
 **Est. Savings:** ~200 lines, reduced maintenance burden
 
 #### 2.3 Project Name/Root Detection (MEDIUM)
+
 **Found in:**
+
 - `packages/shared-py/popkit_shared/utils/routine_storage.py` → `get_project_root()`, `get_project_name()`
 - `packages/shared-py/hooks/auto-save-state.py` → `get_project_name()`
 - Multiple skill scripts
@@ -91,6 +100,7 @@ demo_enhanced_report.py
 **Recommendation:** Centralize in shared utilities
 
 #### 2.4 Subprocess Execution Patterns (MEDIUM)
+
 - 20+ files use `subprocess.run()` with similar error handling
 - Inconsistent timeout values (5s, 30s, none)
 - No centralized process execution utility
@@ -102,9 +112,11 @@ demo_enhanced_report.py
 ## 3. File Organization Issues
 
 ### 3.1 Test Files in Production Code (CRITICAL)
+
 **Location:** `packages/shared-py/popkit_shared/utils/`
 
 **Misplaced test files (37 total):**
+
 ```
 agent_router_test.py
 bug_context.py (contains tests)
@@ -116,16 +128,19 @@ test_runner.py
 ```
 
 **Impact:** HIGH
-**Recommendation:** Move all test_*.py files to `packages/shared-py/tests/utils/`
+**Recommendation:** Move all test\_\*.py files to `packages/shared-py/tests/utils/`
 **Note:** Proper tests ARE in `packages/shared-py/tests/` but duplicates exist in utils/
 
-### 3.2 Missing __init__.py Files
-**Status:** Good - Only 6 __init__.py files found (minimal Python packages)
+### 3.2 Missing **init**.py Files
+
+**Status:** Good - Only 6 **init**.py files found (minimal Python packages)
+
 - Most packages use direct imports
 - Could benefit from more package structure
 
 ### 3.3 Python Cache Files
-**Found:** 142 __pycache__ directories/files
+
+**Found:** 142 **pycache** directories/files
 **Recommendation:** Add to .gitignore, clean repository
 
 ---
@@ -135,6 +150,7 @@ test_runner.py
 ### 4.1 File Naming (Score: 60/100)
 
 **Inconsistent patterns found:**
+
 - Python files: Mostly `snake_case.py` ✓
 - Hook files: Mix of `snake-case.py` and `snake_case.py`
   - Examples: `auto-save-state.py`, `pre-tool-use.py` (kebab)
@@ -143,10 +159,12 @@ test_runner.py
 **Recommendation:** Standardize on snake_case for all Python files
 
 ### 4.2 Function Naming (Score: 80/100)
+
 **Mostly consistent** - Python functions use snake_case
 **Minor issues:** Some camelCase in JSON/JavaScript interop code
 
 ### 4.3 Directory Naming (Score: 70/100)
+
 - Skills: Consistent `pop-skill-name` format ✓
 - Hooks: Consistent location ✓
 - Utils: Single flat directory (should be organized)
@@ -160,6 +178,7 @@ test_runner.py
 **Current state:** 150+ files in flat `popkit_shared/utils/` directory
 
 **Recommended structure:**
+
 ```
 popkit_shared/
 ├── __init__.py
@@ -186,6 +205,7 @@ popkit_shared/
 ```
 
 ### 5.2 Circular Dependencies (Score: 85/100)
+
 **Status:** Good - No obvious circular dependencies detected
 **Evidence:** No cross-package imports found in preliminary scan
 
@@ -217,17 +237,20 @@ popkit_shared/
 ## 6. Code Quality Indicators
 
 ### 6.1 Import Statements (Score: 70/100)
+
 - **545 occurrences** of `import os/sys/json/pathlib` across 218 files
 - Shows heavy use of basic file operations
 - No evidence of relative imports abuse (good)
 
 ### 6.2 Documentation (Score: 75/100)
+
 - Most files have docstrings ✓
 - Hook files well-documented with purpose/scope ✓
 - Some utility files lack usage examples
 - No comprehensive API documentation
 
 ### 6.3 TODO/FIXME Comments (Score: 95/100)
+
 **Found:** Only 1 file with TODO comments
 **File:** `packages/shared-py/popkit_shared/utils/upstream_tracker.py`
 **Status:** Excellent - Clean codebase without tech debt markers
@@ -237,49 +260,64 @@ popkit_shared/
 ## 7. Package-Specific Analysis
 
 ### 7.1 popkit-core (Score: 70/100)
+
 **Strengths:**
+
 - Well-organized hooks system
 - Clear separation: hooks/, skills/, power-mode/
 - Good test coverage structure
 
 **Issues:**
+
 - Hook naming inconsistency (kebab vs snake)
 - power-mode/ could be promoted to own package
 
 ### 7.2 popkit-dev (Score: 75/100)
+
 **Strengths:**
+
 - Good workflow-focused skills
 - Dedicated git_utils.py (but duplicated elsewhere)
 
 **Issues:**
+
 - git_utils.py should be in shared-py
 - Test files mixed with production
 
 ### 7.3 popkit-ops (Score: 80/100)
+
 **Strengths:**
+
 - Best organized package
 - Clear assessment structure
 - Good script organization
 
 **Issues:**
+
 - Minor - some scripts could share more code
 
 ### 7.4 popkit-research (Score: 70/100)
+
 **Strengths:**
+
 - Clear research-focused functionality
 - Good separation of concerns
 
 **Issues:**
+
 - Smaller package - could merge with ops or core
 - Some duplication with knowledge management
 
 ### 7.5 shared-py (Score: 45/100)
+
 **Strengths:**
+
 - Centralized location for shared code ✓
 - Good error code system ✓
 - Storage abstraction ✓
 
 **Critical Issues:**
+
 - 10+ HTML generator versions
 - 37 test files in production code
 - 150+ files in flat utils/ directory
@@ -299,7 +337,7 @@ popkit_shared/
 
 2. **Test Files in Production Code**
    - **Impact:** Package bloat, confusion
-   - **Action:** Move 37 test_*.py files to tests/ directory
+   - **Action:** Move 37 test\_\*.py files to tests/ directory
    - **Effort:** 1 hour
 
 3. **Shared-py Utils Reorganization**
@@ -329,7 +367,7 @@ popkit_shared/
 ### Low Priority (Technical Debt)
 
 7. **Python Cache Cleanup**
-   - **Action:** Remove 142 __pycache__ files, update .gitignore
+   - **Action:** Remove 142 **pycache** files, update .gitignore
    - **Effort:** 15 minutes
 
 8. **Project Detection Utilities**
@@ -363,6 +401,7 @@ find packages -name "*.pyc" -delete
 ### Phase 2: Structural Improvements (Total: 10 hours)
 
 1. **Create domain-organized shared utilities:**
+
    ```python
    # shared-py/popkit_shared/git/operations.py
    def run_git_command(cmd: List[str], cwd: str = None, timeout: int = 30)
@@ -397,8 +436,10 @@ find packages -name "*.pyc" -delete
 ## 10. Quick Wins for Immediate Improvement
 
 ### Quick Win #1: Clean Test Files (15 min)
+
 **Impact:** HIGH
 **Effort:** LOW
+
 ```bash
 # Move misplaced test files
 cd packages/shared-py
@@ -407,8 +448,10 @@ mv popkit_shared/utils/agent_router_test.py tests/utils/
 ```
 
 ### Quick Win #2: Delete Old HTML Generators (10 min)
+
 **Impact:** HIGH
 **Effort:** LOW
+
 ```bash
 # Keep only v10, rename to canonical
 cd packages/shared-py/popkit_shared/utils
@@ -418,8 +461,10 @@ rm html_report_generator_v*.py demo_enhanced_report.py
 ```
 
 ### Quick Win #3: Add .gitignore Rules (5 min)
+
 **Impact:** MEDIUM
 **Effort:** LOW
+
 ```gitignore
 # Add to .gitignore
 **/__pycache__/
@@ -429,8 +474,10 @@ rm html_report_generator_v*.py demo_enhanced_report.py
 ```
 
 ### Quick Win #4: Create Git Utils Module (30 min)
+
 **Impact:** MEDIUM
 **Effort:** LOW
+
 ```python
 # packages/shared-py/popkit_shared/git/__init__.py
 from .operations import (
@@ -442,8 +489,10 @@ from .operations import (
 ```
 
 ### Quick Win #5: Standardize Hook Names (20 min)
+
 **Impact:** LOW
 **Effort:** LOW
+
 ```bash
 # Rename kebab-case to snake_case
 cd packages/popkit-core/hooks
@@ -457,19 +506,20 @@ mv post-tool-use.py post_tool_use.py
 
 ## 11. Health Metrics Summary
 
-| Category | Score | Status |
-|----------|-------|--------|
-| Package Organization | 75/100 | Good |
-| Code Duplication | 35/100 | Poor |
-| File Organization | 55/100 | Fair |
-| Naming Consistency | 65/100 | Fair |
-| Architecture | 70/100 | Good |
-| Documentation | 75/100 | Good |
-| Test Coverage | 80/100 | Good |
-| Technical Debt | 50/100 | Fair |
-| **Overall Score** | **62/100** | **Fair** |
+| Category             | Score      | Status   |
+| -------------------- | ---------- | -------- |
+| Package Organization | 75/100     | Good     |
+| Code Duplication     | 35/100     | Poor     |
+| File Organization    | 55/100     | Fair     |
+| Naming Consistency   | 65/100     | Fair     |
+| Architecture         | 70/100     | Good     |
+| Documentation        | 75/100     | Good     |
+| Test Coverage        | 80/100     | Good     |
+| Technical Debt       | 50/100     | Fair     |
+| **Overall Score**    | **62/100** | **Fair** |
 
 ### Score Breakdown:
+
 - **90-100:** Excellent - Production ready
 - **75-89:** Good - Minor improvements needed
 - **60-74:** Fair - Significant improvements needed ← PopKit is here
@@ -481,6 +531,7 @@ mv post-tool-use.py post_tool_use.py
 ## 12. Comparison to Best Practices
 
 ### What PopKit Does Well ✓
+
 - Clear package separation by domain
 - Good hook system architecture
 - Comprehensive error code system
@@ -489,6 +540,7 @@ mv post-tool-use.py post_tool_use.py
 - No circular dependencies
 
 ### What Needs Improvement ✗
+
 - Code duplication (especially HTML generators)
 - File organization (test files in production)
 - Utility module organization (flat 150+ file directory)
@@ -501,6 +553,7 @@ mv post-tool-use.py post_tool_use.py
 ## 13. Action Plan
 
 ### Week 1: Critical Fixes
+
 - [ ] Move 37 test files to proper test directory
 - [ ] Consolidate 11 HTML generators to 1
 - [ ] Clean Python cache files
@@ -510,6 +563,7 @@ mv post-tool-use.py post_tool_use.py
 **Impact:** Immediate reduction in confusion and maintenance burden
 
 ### Week 2: Structural Improvements
+
 - [ ] Create git/ subdirectory in shared-py with consolidated utilities
 - [ ] Create io/ subdirectory with file operation utilities
 - [ ] Create process/ subdirectory with subprocess utilities
@@ -519,6 +573,7 @@ mv post-tool-use.py post_tool_use.py
 **Impact:** Reduced code duplication, improved discoverability
 
 ### Week 3: Long-term Architecture
+
 - [ ] Reorganize shared-py/utils/ into domain modules
 - [ ] Add package metadata (pyproject.toml) to each package
 - [ ] Create API documentation
@@ -532,6 +587,7 @@ mv post-tool-use.py post_tool_use.py
 ## 14. Files Requiring Immediate Attention
 
 ### Delete Candidates (11 files)
+
 ```
 packages/shared-py/popkit_shared/utils/html_report_generator.py (keep v10 only)
 packages/shared-py/popkit_shared/utils/html_report_generator_v2.py
@@ -546,9 +602,11 @@ packages/shared-py/popkit_shared/utils/demo_enhanced_report.py
 ```
 
 ### Move Candidates (37 files)
+
 All `test_*.py` and `*_test.py` files in `packages/shared-py/popkit_shared/utils/` should move to `packages/shared-py/tests/utils/`
 
 ### Refactor Candidates (4 files)
+
 ```
 packages/shared-py/hooks/auto-save-state.py → extract get_git_state()
 packages/popkit-dev/hooks/git_utils.py → move to shared-py
@@ -565,6 +623,7 @@ PopKit has a solid architectural foundation with clear package separation and go
 **The good news:** Most issues are organizational rather than architectural. With focused effort on consolidation and restructuring, PopKit can achieve excellent health scores.
 
 **Recommended Priority:**
+
 1. **Immediate** (This Week): Clean up test files and HTML generators
 2. **Short-term** (This Month): Consolidate utilities and standardize naming
 3. **Long-term** (This Quarter): Reorganize shared-py and add comprehensive docs
@@ -581,16 +640,18 @@ PopKit has a solid architectural foundation with clear package separation and go
 - Hook Files: ~30
 - Skill Directories: ~40
 - Test Files: ~80 (including misplaced ones)
-- __pycache__ Directories: 142
+- **pycache** Directories: 142
 
 ## Appendix B: Key Dependencies
 
 **Python Standard Library Heavy Usage:**
+
 - `os`, `sys`, `json`, `pathlib`: 545 imports across 218 files
 - `subprocess`: 20+ files
 - `datetime`: Common across all packages
 
 **External Dependencies:** (Need to scan package.json/requirements.txt for full list)
+
 - Detected: No obvious over-reliance on external packages
 
 ---

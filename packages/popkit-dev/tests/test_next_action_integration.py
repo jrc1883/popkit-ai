@@ -31,7 +31,7 @@ def test_complete_workflow_on_protected_branch():
         "commits_ahead": 10,
         "commits_behind": 0,
         "typescript_errors": 0,
-        "open_issues": 3
+        "open_issues": 3,
     }
 
     # Simulate recommendation scoring
@@ -41,23 +41,27 @@ def test_complete_workflow_on_protected_branch():
     if project_state["is_protected"] and project_state["commits_ahead"] > 0:
         score = 100  # Base priority
         score += 50  # Context: On protected branch with commits
-        recommendations.append({
-            "action": "Create feature branch",
-            "score": score,
-            "command": "git checkout -b feat/descriptive-name",
-            "why": f"You have {project_state['commits_ahead']} commits on main but cannot push directly due to branch protection",
-            "includes_push": False
-        })
+        recommendations.append(
+            {
+                "action": "Create feature branch",
+                "score": score,
+                "command": "git checkout -b feat/descriptive-name",
+                "why": f"You have {project_state['commits_ahead']} commits on main but cannot push directly due to branch protection",
+                "includes_push": False,
+            }
+        )
 
     # Score: Push ahead commits (if on feature branch) - SHOULD BE SUPPRESSED
     if not project_state["is_protected"] and project_state["commits_ahead"] > 0:
         score = 60  # Base priority
-        recommendations.append({
-            "action": "Push ahead commits",
-            "score": score,
-            "command": "/popkit:git push",
-            "includes_push": True
-        })
+        recommendations.append(
+            {
+                "action": "Push ahead commits",
+                "score": score,
+                "command": "/popkit:git push",
+                "includes_push": True,
+            }
+        )
 
     # Sort by score
     recommendations.sort(key=lambda x: x["score"], reverse=True)
@@ -66,7 +70,9 @@ def test_complete_workflow_on_protected_branch():
     assert len(recommendations) == 1, "Should have exactly 1 recommendation"
 
     top_rec = recommendations[0]
-    assert top_rec["action"] == "Create feature branch", "Top recommendation should be feature branch creation"
+    assert top_rec["action"] == "Create feature branch", (
+        "Top recommendation should be feature branch creation"
+    )
     assert top_rec["score"] == 150, f"Expected score 150, got {top_rec['score']}"
     assert "git checkout -b" in top_rec["command"], "Should include branch creation command"
     assert "branch protection" in top_rec["why"], "Should mention branch protection"
@@ -93,7 +99,7 @@ def test_workflow_on_feature_branch():
         "commits_ahead": 5,
         "commits_behind": 0,
         "typescript_errors": 0,
-        "open_issues": 0
+        "open_issues": 0,
     }
 
     # Simulate recommendation scoring
@@ -102,19 +108,14 @@ def test_workflow_on_feature_branch():
     # Score: Create feature branch (if on protected)
     if project_state["is_protected"] and project_state["commits_ahead"] > 0:
         score = 100 + 50
-        recommendations.append({
-            "action": "Create feature branch",
-            "score": score
-        })
+        recommendations.append({"action": "Create feature branch", "score": score})
 
     # Score: Push ahead commits (if on feature branch)
     if not project_state["is_protected"] and project_state["commits_ahead"] > 0:
         score = 60  # Base priority
-        recommendations.append({
-            "action": "Push ahead commits",
-            "score": score,
-            "command": "/popkit:git push"
-        })
+        recommendations.append(
+            {"action": "Push ahead commits", "score": score, "command": "/popkit:git push"}
+        )
 
     # Sort by score
     recommendations.sort(key=lambda x: x["score"], reverse=True)
@@ -151,7 +152,9 @@ def test_output_format_on_protected_branch():
         urgency = "OK"
 
     # Assertions
-    assert status_display == "main (PROTECTED)", f"Expected 'main (PROTECTED)', got '{status_display}'"
+    assert status_display == "main (PROTECTED)", (
+        f"Expected 'main (PROTECTED)', got '{status_display}'"
+    )
     assert urgency == "⚠️ CRITICAL", f"Expected '⚠️ CRITICAL', got '{urgency}'"
 
 
@@ -170,7 +173,7 @@ def test_multiple_priorities_with_protected_branch():
         "is_protected": True,
         "uncommitted_files": 5,
         "commits_ahead": 10,
-        "typescript_errors": 3
+        "typescript_errors": 3,
     }
 
     # Simulate recommendation scoring

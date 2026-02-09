@@ -5,18 +5,18 @@ Test suite for codebase_manager.py
 Tests git worktree operations for benchmark isolation.
 """
 
+import shutil
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
-import tempfile
-import shutil
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent / "shared-py"))
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
-from codebase_manager import CodebaseManager, WorktreeExistsError, GitError
+from codebase_manager import CodebaseManager, GitError, WorktreeExistsError
 
 
 class TestCodebaseManager(unittest.TestCase):
@@ -84,9 +84,7 @@ class TestCodebaseManager(unittest.TestCase):
         """Test worktree creation with custom branch name"""
         mock_git.return_value = (0, "", "")
 
-        self.manager.create_worktree(
-            task_id="test-task", trial_num=1, branch_name="custom-branch"
-        )
+        self.manager.create_worktree(task_id="test-task", trial_num=1, branch_name="custom-branch")
 
         cmd = mock_git.call_args[0][0]
         self.assertIn("custom-branch", cmd)

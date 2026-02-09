@@ -10,13 +10,13 @@ Features:
 - HTML to markdown conversion
 """
 
-import sys
+import hashlib
 import json
 import sqlite3
-import hashlib
-from pathlib import Path
+import sys
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any
+from pathlib import Path
+from typing import Any, Dict, Optional
 
 # Optional imports with graceful fallback
 try:
@@ -189,9 +189,7 @@ class KnowledgeSync:
         elapsed = (datetime.now() - self.start_time).total_seconds()
         return max(0, TIME_BUDGET_SECONDS - elapsed)
 
-    def fetch_url(
-        self, url: str, timeout: int = FETCH_TIMEOUT_SECONDS
-    ) -> Optional[str]:
+    def fetch_url(self, url: str, timeout: int = FETCH_TIMEOUT_SECONDS) -> Optional[str]:
         """Fetch URL and convert HTML to markdown."""
         if not HAS_REQUESTS:
             return None
@@ -324,9 +322,7 @@ class KnowledgeSync:
 
         # Sort by priority (high first)
         priority_order = {"high": 0, "medium": 1, "low": 2}
-        sources = sorted(
-            sources, key=lambda s: priority_order.get(s.get("priority", "medium"), 1)
-        )
+        sources = sorted(sources, key=lambda s: priority_order.get(s.get("priority", "medium"), 1))
 
         results = {"synced": [], "fresh": [], "skipped": [], "errors": []}
 
@@ -361,9 +357,7 @@ class KnowledgeSync:
                     self.log_fetch(source_id, url, True, duration_ms, len(content))
                 else:
                     results["errors"].append(source_id)
-                    self.log_fetch(
-                        source_id, url, False, duration_ms, error="Cache write failed"
-                    )
+                    self.log_fetch(source_id, url, False, duration_ms, error="Cache write failed")
             else:
                 results["errors"].append(source_id)
                 self.log_fetch(source_id, url, False, duration_ms, error="Fetch failed")
@@ -440,7 +434,7 @@ def main():
     try:
         # Read input data from stdin
         input_data = sys.stdin.read()
-        data = json.loads(input_data) if input_data.strip() else {}
+        json.loads(input_data) if input_data.strip() else {}
 
         # Initialize and sync knowledge
         syncer = KnowledgeSync()

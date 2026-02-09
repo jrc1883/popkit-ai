@@ -6,20 +6,21 @@ Tests end-to-end benchmark workflow for a single task.
 """
 
 import json
+import shutil
 import sys
+import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch, Mock
-import tempfile
-import shutil
+from unittest.mock import Mock, patch
+
 import yaml
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent / "shared-py"))
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
-from benchmark_runner import BenchmarkRunner
 from benchmark_analyzer import BenchmarkAnalyzer
+from benchmark_runner import BenchmarkRunner
 from report_generator import ReportGenerator
 
 
@@ -95,9 +96,7 @@ class TestIntegrationSingleTask(unittest.TestCase):
             mock_ra_instance.get_tool_usage_breakdown.return_value = {"Read": 10}
             mock_ra_instance.get_file_modifications.return_value = 2
             mock_ra_instance.get_error_summary.return_value = {"failed_tool_calls": 1}
-            mock_ra_instance.get_performance_metrics.return_value = {
-                "duration_seconds": 120
-            }
+            mock_ra_instance.get_performance_metrics.return_value = {"duration_seconds": 120}
             mock_ra.return_value = mock_ra_instance
 
             with patch("benchmark_analyzer.subprocess.run") as mock_subprocess:
@@ -146,9 +145,7 @@ class TestIntegrationSingleTask(unittest.TestCase):
         ]
         mock_cm_class.return_value = mock_cm
 
-        runner = BenchmarkRunner(
-            task_def=self.task_def, trials=3, output_dir=self.output_dir
-        )
+        runner = BenchmarkRunner(task_def=self.task_def, trials=3, output_dir=self.output_dir)
 
         # Run with some failures
         with_popkit_recordings = runner.run_with_popkit()
@@ -167,9 +164,7 @@ class TestIntegrationSingleTask(unittest.TestCase):
         mock_cm.create_worktree.return_value = self.temp_dir / "worktree"
         mock_cm_class.return_value = mock_cm
 
-        runner = BenchmarkRunner(
-            task_def=self.task_def, trials=3, output_dir=self.output_dir
-        )
+        runner = BenchmarkRunner(task_def=self.task_def, trials=3, output_dir=self.output_dir)
 
         # Run benchmarks
         with_popkit_recordings = runner.run_with_popkit()

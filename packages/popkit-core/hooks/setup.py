@@ -14,11 +14,11 @@ Responsibilities:
 5. Validate plugin integrity
 """
 
-import sys
 import json
 import os
-from pathlib import Path
+import sys
 from datetime import datetime
+from pathlib import Path
 
 
 def ensure_popkit_directories():

@@ -454,7 +454,7 @@ class BugContextCapture:
                 cwd=self.working_dir,
             )
             if result.returncode == 0:
-                lines = [l for l in result.stdout.strip().split("\n") if l]
+                lines = [ln for ln in result.stdout.strip().split("\n") if ln]
                 ctx.uncommitted_files = len(lines)
                 ctx.has_changes = len(lines) > 0
 
@@ -466,7 +466,9 @@ class BugContextCapture:
                 cwd=self.working_dir,
             )
             if result.returncode == 0:
-                ctx.recent_commits = [l.strip() for l in result.stdout.strip().split("\n") if l][:3]
+                ctx.recent_commits = [
+                    line.strip() for line in result.stdout.strip().split("\n") if line
+                ][:3]
 
         except (subprocess.SubprocessError, FileNotFoundError):
             pass

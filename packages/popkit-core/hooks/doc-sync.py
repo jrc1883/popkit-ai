@@ -18,8 +18,7 @@ Output: Suggestions for documentation updates (non-blocking)
 import json
 import sys
 from pathlib import Path
-from typing import Dict, Any, List, Optional
-
+from typing import Any, Dict, List, Optional
 
 # Files that impact documentation
 DOC_IMPACTING_PATTERNS = {
@@ -160,9 +159,7 @@ class DocSyncChecker:
                     counts["tier1"] = len(tiers.get("tier-1-always-active", []))
                     counts["tier2"] = len(tiers.get("tier-2-on-demand", []))
                     counts["feature_workflow"] = len(tiers.get("feature-workflow", []))
-                    counts["total"] = (
-                        counts["tier1"] + counts["tier2"] + counts["feature_workflow"]
-                    )
+                    counts["total"] = counts["tier1"] + counts["tier2"] + counts["feature_workflow"]
             except (json.JSONDecodeError, IOError):
                 pass
 

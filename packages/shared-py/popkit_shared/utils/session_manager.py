@@ -20,10 +20,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-# File locking (Unix-only)
+# File locking (Unix-only) - fcntl used locally where needed
 try:
-    import fcntl
-
+    __import__("fcntl")
     HAS_FCNTL = True
 except ImportError:
     HAS_FCNTL = False

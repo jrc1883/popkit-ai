@@ -15,9 +15,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 # Add parent directory to path for imports
-sys.path.insert(
-    0, str(Path(__file__).parents[1] / "skills" / "pop-worktree-manager" / "scripts")
-)
+sys.path.insert(0, str(Path(__file__).parents[1] / "skills" / "pop-worktree-manager" / "scripts"))
 
 from worktree_operations import (
     DEFAULT_CONFIG,
@@ -52,8 +50,12 @@ class TestGitCommandExecution(unittest.TestCase):
 
     @patch("subprocess.run")
     def test_run_git_command_failure(self, mock_run):
-        """Test failed command execution."""
-        mock_run.return_value = MagicMock(stdout="error\n", returncode=1)
+        """Test failed command execution returns stderr on failure."""
+        mock_result = MagicMock()
+        mock_result.returncode = 1
+        mock_result.stdout = ""
+        mock_result.stderr = "error\n"
+        mock_run.return_value = mock_result
 
         output, ok = run_git_command("invalid")
 
@@ -228,9 +230,7 @@ class TestOperationCreate(unittest.TestCase):
     @patch("worktree_operations.enable_windows_longpaths")
     @patch("worktree_operations.run_git_command")
     @patch("worktree_operations.resolve_worktree_path")
-    def test_create_success(
-        self, mock_resolve, mock_git, mock_enable, mock_load, mock_save
-    ):
+    def test_create_success(self, mock_resolve, mock_git, mock_enable, mock_load, mock_save):
         """Test successful worktree creation."""
         with tempfile.TemporaryDirectory() as tmpdir:
             worktree_path = Path(tmpdir) / "nonexistent"
@@ -264,9 +264,7 @@ class TestOperationRemove(unittest.TestCase):
         """Test removing worktree with uncommitted changes."""
         mock_list.return_value = {
             "success": True,
-            "worktrees": [
-                {"path": "/test/path", "branch": "test", "uncommittedChanges": True}
-            ],
+            "worktrees": [{"path": "/test/path", "branch": "test", "uncommittedChanges": True}],
         }
 
         result = operation_remove("test", force=False)
@@ -280,9 +278,7 @@ class TestOperationRemove(unittest.TestCase):
         """Test successful worktree removal."""
         mock_list.return_value = {
             "success": True,
-            "worktrees": [
-                {"path": "/test/path", "branch": "test", "uncommittedChanges": False}
-            ],
+            "worktrees": [{"path": "/test/path", "branch": "test", "uncommittedChanges": False}],
         }
         mock_git.return_value = ("", True)
 

@@ -16,6 +16,7 @@ Unified view across all PopKit-enabled projects, showing health scores, activity
 ## When to Use
 
 Invoke when:
+
 - Managing multiple projects
 - Need quick overview of all project statuses
 - Switching context between projects
@@ -31,6 +32,7 @@ Projects stored globally at `~/.claude/popkit/projects.json`
 See [examples/registry-operations.md](examples/registry-operations.md) for all operations.
 
 **Key operations:**
+
 - Load/list projects
 - Add/remove projects
 - Switch projects
@@ -64,6 +66,7 @@ See [examples/registry-operations.md](examples/registry-operations.md) for all o
 See [examples/health-scoring.md](examples/health-scoring.md) for complete scoring details.
 
 **Score components** (100 points total):
+
 - **Git Status** (20): Clean working tree, commits, push status
 - **Build Status** (20): Passing builds, warnings, failures
 - **Test Coverage** (20): Coverage percentage
@@ -71,6 +74,7 @@ See [examples/health-scoring.md](examples/health-scoring.md) for complete scorin
 - **Activity** (20): Last activity timestamp
 
 **Quick vs Full checks:**
+
 - **Quick** (~0.5s): Git + activity only (dashboard default)
 - **Full** (~2-3s): All components including tests
 
@@ -79,6 +83,7 @@ See [examples/health-scoring.md](examples/health-scoring.md) for complete scorin
 See [examples/subcommands.md](examples/subcommands.md) for all commands and examples.
 
 **Available commands:**
+
 - `/popkit:dashboard` - Show dashboard (default)
 - `/popkit:dashboard add <path>` - Register project
 - `/popkit:dashboard remove <name>` - Unregister project
@@ -88,18 +93,23 @@ See [examples/subcommands.md](examples/subcommands.md) for all commands and exam
 ## Features
 
 ### Auto-Discovery
+
 Automatically find projects in common dev directories.
 
 ### Project Tags
+
 Filter and organize projects by tags (`active`, `client-work`, etc.).
 
 ### Activity Feed
+
 Show recent activity across all projects.
 
 ### Unhealthy Alerts
+
 Identify projects needing attention (health < 70).
 
 ### Issue Count Cache
+
 - Cached for 15 minutes (no network calls on dashboard load)
 - Manual refresh available
 - Graceful fallback if `gh` CLI unavailable
@@ -109,10 +119,12 @@ See [examples/registry-operations.md](examples/registry-operations.md) for imple
 ## Integration
 
 **Related commands:**
+
 - `/popkit:routine morning` - Single-project health check
 - `/popkit:next` - Context-aware recommendations
 
 **Implementation files:**
+
 - `hooks/utils/project_registry.py` - Registry CRUD operations
 - `hooks/utils/health_calculator.py` - Health score calculation
 
@@ -128,6 +140,7 @@ See [examples/registry-operations.md](examples/registry-operations.md) for imple
 ## Examples
 
 See [examples/](examples/) directory for:
+
 - Complete health scoring details
 - All registry operations with code
 - Subcommand reference and usage

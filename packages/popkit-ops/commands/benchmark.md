@@ -23,11 +23,13 @@ Quantitatively measure PopKit's value by comparing AI-assisted development with 
 Execute benchmark trials comparing with/without PopKit.
 
 **Arguments:**
+
 - `<task-id>` - Task to benchmark (e.g., `jwt-authentication`) or `all` for full suite
 - `--trials N` - Number of trials per task (default: 3, recommended: 5 for statistical significance)
 - `--no-cleanup` - Keep worktrees after completion (for debugging)
 
 **Example:**
+
 ```bash
 /popkit-ops:benchmark run jwt-authentication --trials 5
 ```
@@ -37,10 +39,12 @@ Execute benchmark trials comparing with/without PopKit.
 Analyze recordings from recent benchmark runs and calculate statistics.
 
 **Options:**
+
 - `--task <task-id>` - Analyze specific task (default: all recent)
 - `--show-details` - Show detailed metric breakdown
 
 **Example:**
+
 ```bash
 /popkit-ops:benchmark analyze --task jwt-authentication --show-details
 ```
@@ -50,10 +54,12 @@ Analyze recordings from recent benchmark runs and calculate statistics.
 Generate comprehensive benchmark report with visualizations.
 
 **Options:**
+
 - `--format markdown|html|both` - Report format (default: both)
 - `--output <path>` - Output directory (default: `docs/benchmark/results/`)
 
 **Example:**
+
 ```bash
 /popkit-ops:benchmark report --format both
 ```
@@ -65,6 +71,7 @@ This command invokes the `pop-benchmark-runner` skill to execute the benchmark w
 ### When user runs `/popkit-ops:benchmark run <task-id> --trials N`:
 
 1. **Invoke the pop-benchmark-runner skill:**
+
    ```
    Use Skill tool: skill="popkit-ops:pop-benchmark-runner", args="run <task-id> --trials N"
    ```
@@ -97,6 +104,7 @@ This command invokes the `pop-benchmark-runner` skill to execute the benchmark w
 ### When user runs `/popkit-ops:benchmark analyze`:
 
 1. **Invoke the pop-benchmark-runner skill:**
+
    ```
    Use Skill tool: skill="popkit-ops:pop-benchmark-runner", args="analyze"
    ```
@@ -110,6 +118,7 @@ This command invokes the `pop-benchmark-runner` skill to execute the benchmark w
 ### When user runs `/popkit-ops:benchmark report`:
 
 1. **Invoke the pop-benchmark-runner skill:**
+
    ```
    Use Skill tool: skill="popkit-ops:pop-benchmark-runner", args="report --format both"
    ```
@@ -124,14 +133,14 @@ This command invokes the `pop-benchmark-runner` skill to execute the benchmark w
 
 The benchmark suite measures 6 key metrics:
 
-| Metric | Description | Source |
-|--------|-------------|--------|
-| **Context Usage** | Tokens consumed during task | `routine_measurement.py` token estimation |
-| **Tool Calls** | Number of Read, Write, Edit, Bash calls | `recording_analyzer.get_tool_usage_breakdown()` |
-| **Backtracking** | Code edited then reverted | `transcript_parser` file edit detection |
-| **Error Recovery** | Failed tool calls, retries needed | `recording_analyzer.get_error_summary()` |
-| **Time to Complete** | Wall clock duration | `recording_analyzer.get_performance_metrics()` |
-| **Code Quality** | Passes tests, lint, typecheck | Verification command exit codes |
+| Metric               | Description                             | Source                                          |
+| -------------------- | --------------------------------------- | ----------------------------------------------- |
+| **Context Usage**    | Tokens consumed during task             | `routine_measurement.py` token estimation       |
+| **Tool Calls**       | Number of Read, Write, Edit, Bash calls | `recording_analyzer.get_tool_usage_breakdown()` |
+| **Backtracking**     | Code edited then reverted               | `transcript_parser` file edit detection         |
+| **Error Recovery**   | Failed tool calls, retries needed       | `recording_analyzer.get_error_summary()`        |
+| **Time to Complete** | Wall clock duration                     | `recording_analyzer.get_performance_metrics()`  |
+| **Code Quality**     | Passes tests, lint, typecheck           | Verification command exit codes                 |
 
 ## Task Categories
 
@@ -145,6 +154,7 @@ Benchmark tasks are organized into 4 categories:
 ## Statistical Analysis
 
 Each benchmark run includes:
+
 - **T-tests**: Determine if differences are statistically significant (p < 0.05)
 - **Cohen's d**: Effect size measurement (> 0.5 = medium, > 0.8 = large effect)
 - **Confidence Intervals**: 95% CI for mean improvements
@@ -197,6 +207,7 @@ Full report: docs/benchmark/results/jwt-authentication-2025-01-15.html
 ## Success Criteria
 
 For a benchmark to be valid:
+
 - ✅ All trials complete successfully
 - ✅ All verification commands pass (tests, lint, typecheck)
 - ✅ Statistical significance (p < 0.05) for at least 4/6 metrics

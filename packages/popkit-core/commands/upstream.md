@@ -10,6 +10,7 @@ Track Anthropic repository updates (Claude Code, official plugins, SDKs) with re
 ## Problem
 
 Manually tracking which Anthropic changelog items have been researched becomes "muddy and confusing":
+
 - Unclear if already researched a specific item
 - No historical tracking of what was investigated
 - No linkage between Anthropic changes and PopKit issues/PRs
@@ -22,13 +23,13 @@ Automated tracking with status lifecycle: **pending_research** → **researched*
 
 ## Subcommands
 
-| Subcommand  | Description                                 |
-| ----------- | ------------------------------------------- |
-| check       | Check monitored repos for new updates       |
-| list        | List changelog items by status              |
-| research    | Research a specific item with guided flow   |
-| synthesize  | Mark item as integrated, link issues/PRs    |
-| stats       | Show tracking statistics and velocity       |
+| Subcommand | Description                               |
+| ---------- | ----------------------------------------- |
+| check      | Check monitored repos for new updates     |
+| list       | List changelog items by status            |
+| research   | Research a specific item with guided flow |
+| synthesize | Mark item as integrated, link issues/PRs  |
+| stats      | Show tracking statistics and velocity     |
 
 ---
 
@@ -84,11 +85,11 @@ Last checked: 2026-01-31T10:30:00Z
 
 ### Options
 
-| Flag      | Description                       |
-| --------- | --------------------------------- |
-| --brief   | One-line summary for routines     |
-| --json    | Machine-readable JSON output      |
-| --verbose | Show detailed discovery process   |
+| Flag      | Description                     |
+| --------- | ------------------------------- |
+| --brief   | One-line summary for routines   |
+| --json    | Machine-readable JSON output    |
+| --verbose | Show detailed discovery process |
 
 ### Brief Output (for morning routine)
 
@@ -147,10 +148,10 @@ Synthesized (1 item):
 
 ### Options
 
-| Flag   | Description              |
-| ------ | ------------------------ |
-| --json | Machine-readable output  |
-| --repo | Filter by repository     |
+| Flag   | Description             |
+| ------ | ----------------------- |
+| --json | Machine-readable output |
+| --repo | Filter by repository    |
 
 ---
 
@@ -277,11 +278,11 @@ Thank you for completing the research cycle!
 
 ### Options
 
-| Flag     | Description                       |
-| -------- | --------------------------------- |
-| --issues | Comma-separated issue numbers     |
-| --prs    | Comma-separated PR numbers        |
-| --notes  | Integration notes                 |
+| Flag     | Description                   |
+| -------- | ----------------------------- |
+| --issues | Comma-separated issue numbers |
+| --prs    | Comma-separated PR numbers    |
+| --notes  | Integration notes             |
 
 ---
 
@@ -384,6 +385,7 @@ Add to `/popkit-dev:routine morning`:
 ```
 
 User can disable with:
+
 ```bash
 /popkit-dev:routine morning --no-upstream
 ```
@@ -392,14 +394,15 @@ User can disable with:
 
 ## Architecture
 
-| Component | Location | Purpose |
-|-----------|----------|---------|
-| Command Definition | commands/upstream.md | This file |
-| Tracking Utility | hooks/utils/upstream_tracker.py | Core tracking logic |
-| Data Storage | .claude/popkit/upstream-tracking.json | Persistent state |
-| Morning Integration | commands/routine.md | Auto-check support |
+| Component           | Location                              | Purpose             |
+| ------------------- | ------------------------------------- | ------------------- |
+| Command Definition  | commands/upstream.md                  | This file           |
+| Tracking Utility    | hooks/utils/upstream_tracker.py       | Core tracking logic |
+| Data Storage        | .claude/popkit/upstream-tracking.json | Persistent state    |
+| Morning Integration | commands/routine.md                   | Auto-check support  |
 
 **Related:**
+
 - `/popkit-dev:routine morning` - Integrated auto-check
 - `/popkit-core:stats` - Similar statistics pattern
 - `/popkit-dev:issue` - Issue creation pattern
@@ -446,6 +449,7 @@ User can disable with:
 ## Future Enhancements
 
 ### Phase 3: Automation
+
 - GitHub Actions daily check
 - Auto-discovery of new Anthropic plugins
 - LLM-powered impact assessment

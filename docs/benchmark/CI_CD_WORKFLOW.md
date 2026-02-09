@@ -12,14 +12,14 @@ The PopKit Benchmark Suite includes automated GitHub Actions workflow for contin
 
 ## Metrics Tracked
 
-| Metric | Description | Source |
-|--------|-------------|--------|
-| **Context Usage** | Tokens consumed during task | `routine_measurement.py` token estimation |
-| **Tool Calls** | Number of Read/Write/Edit/Bash calls | `recording_analyzer.get_tool_usage_breakdown()` |
-| **Backtracking** | Code edited then reverted | `transcript_parser` file edit detection |
-| **Error Recovery** | Failed tool calls, retries needed | `recording_analyzer.get_error_summary()` |
-| **Time to Complete** | Wall clock duration | `recording_analyzer.get_performance_metrics()` |
-| **Code Quality** | Passes tests, lint, typecheck | Verification command exit codes |
+| Metric               | Description                          | Source                                          |
+| -------------------- | ------------------------------------ | ----------------------------------------------- |
+| **Context Usage**    | Tokens consumed during task          | `routine_measurement.py` token estimation       |
+| **Tool Calls**       | Number of Read/Write/Edit/Bash calls | `recording_analyzer.get_tool_usage_breakdown()` |
+| **Backtracking**     | Code edited then reverted            | `transcript_parser` file edit detection         |
+| **Error Recovery**   | Failed tool calls, retries needed    | `recording_analyzer.get_error_summary()`        |
+| **Time to Complete** | Wall clock duration                  | `recording_analyzer.get_performance_metrics()`  |
+| **Code Quality**     | Passes tests, lint, typecheck        | Verification command exit codes                 |
 
 ---
 
@@ -46,6 +46,7 @@ strategy:
 ```
 
 **Benefits:**
+
 - Parallel execution (up to 16 tasks × 2 configurations = 32 concurrent jobs)
 - Consistent environment across with/without PopKit runs
 - Automatic retry on failure
@@ -58,12 +59,14 @@ strategy:
 ### Philosophy: Manual During Beta, Automated Post-v1.0
 
 **Why this approach?**
+
 - AI responses vary between runs (non-deterministic)
 - Weekly automation without code changes measures AI variance, not PopKit improvements
 - Benchmarks are only meaningful when something actually changed
 - During beta development, manual control is more appropriate
 
 **Post-v1.0 Plan:**
+
 - Enable pre-release automation (validate before tagging)
 - Monthly trend analysis (not weekly)
 - Event-driven triggers (when PopKit code changes)
@@ -77,12 +80,14 @@ strategy:
 **Use Case:** On-demand benchmarking when you need validation
 
 **Inputs:**
+
 - `task_ids` - Comma-separated task IDs or "all" (default: `jwt-authentication,dark-mode-implementation`)
 - `trials` - Number of trials (3, 5, or 7) (default: 3)
 - `report_format` - markdown, html, or both (default: both)
 - `reason` - Why you're running this benchmark (for documentation) (default: "Manual validation")
 
 **How to Trigger:**
+
 1. Go to Actions tab in GitHub
 2. Select "Benchmark Suite" workflow
 3. Click "Run workflow"
@@ -90,6 +95,7 @@ strategy:
 5. Click "Run workflow"
 
 **Example:**
+
 ```yaml
 task_ids: jwt-authentication,race-condition-fix
 trials: 5
@@ -98,6 +104,7 @@ reason: Testing new agent optimization feature
 ```
 
 **When to use:**
+
 - After implementing major PopKit improvements
 - Before creating a release
 - When validating specific optimizations
@@ -110,6 +117,7 @@ reason: Testing new agent optimization feature
 **Trigger:** Add `benchmark` label to PR
 
 **Configuration:**
+
 - Quick run (2 sample tasks: jwt-authentication, race-condition-fix)
 - 3 trials per task per configuration
 - Markdown report only
@@ -118,6 +126,7 @@ reason: Testing new agent optimization feature
 **Total Runtime:** ~20-30 minutes (when fully implemented)
 
 **When to use:**
+
 - PRs that modify benchmark infrastructure
 - PRs that change core PopKit workflow code
 - When you want to verify no performance regressions
@@ -129,12 +138,14 @@ reason: Testing new agent optimization feature
 **Use Case:** Automatically benchmark before each release
 
 **Configuration:**
+
 ```yaml
 # release:
 #   types: [published]
 ```
 
 **Activation Plan:**
+
 - Enable after v1.0.0 release
 - Run full benchmark suite (all 8 tasks, 5 trials)
 - Publish results to GitHub Pages
@@ -151,6 +162,7 @@ reason: Testing new agent optimization feature
 **Duration:** ~30 seconds
 
 **Steps:**
+
 1. Checkout repository
 2. Setup Python 3.11 with pip cache
 3. Install dependencies (shared-py, PyYAML)
@@ -159,6 +171,7 @@ reason: Testing new agent optimization feature
 6. Check Claude Code availability
 
 **Outputs:**
+
 - `task_ids` - Tasks to benchmark
 - `trials` - Number of trials per task
 - `report_format` - Report format (markdown/html/both)
@@ -171,10 +184,12 @@ reason: Testing new agent optimization feature
 **Duration:** ~5-15 minutes per task (simulated: ~1 minute)
 
 **Matrix Dimensions:**
+
 - 8 tasks × 2 configurations (with/without PopKit) = 16 concurrent jobs
 - Each job runs N trials (3-5)
 
 **Steps:**
+
 1. Checkout repository
 2. Setup Python 3.11 and Node.js 20
 3. Install dependencies (numpy, scipy, matplotlib)
@@ -185,6 +200,7 @@ reason: Testing new agent optimization feature
 8. Upload results as artifacts (retention: 90 days)
 
 **Artifacts:**
+
 - `benchmark-results-<task-id>-popkit-<true|false>`
 - Contains: recordings, metrics, logs
 
@@ -195,6 +211,7 @@ reason: Testing new agent optimization feature
 **Duration:** ~2-5 minutes
 
 **Steps:**
+
 1. Download all benchmark result artifacts
 2. Run statistical analysis:
    - Independent samples t-tests (p-values)
@@ -204,6 +221,7 @@ reason: Testing new agent optimization feature
 3. Upload analysis artifacts (retention: 90 days)
 
 **Outputs:**
+
 - Statistical significance (p < 0.05)
 - Effect sizes (small/medium/large)
 - Confidence intervals for improvements
@@ -227,6 +245,7 @@ reason: Testing new agent optimization feature
    - Filterable task views
 
 **Artifacts:**
+
 - `benchmark-reports` (retention: 365 days)
 - Uploaded to GitHub Pages (permanent)
 
@@ -238,12 +257,14 @@ reason: Testing new agent optimization feature
 **Condition:** Only for scheduled and manual runs
 
 **Process:**
+
 1. Prepare gh-pages directory
 2. Upload Pages artifact
 3. Deploy to GitHub Pages environment
 4. Output public URL
 
 **Result:**
+
 - Public dashboard at `https://<username>.github.io/popkit-claude/benchmark/`
 - Persistent historical data
 
@@ -276,6 +297,7 @@ reason: Testing new agent optimization feature
 None required for Phase 3 (simulated execution).
 
 **Phase 4 Requirements:**
+
 - `CLAUDE_API_KEY` - For Claude Code execution (if using API mode)
 - `ANTHROPIC_API_KEY` - Alternative name (if using Anthropic SDK)
 
@@ -283,10 +305,10 @@ None required for Phase 3 (simulated execution).
 
 ```yaml
 permissions:
-  contents: read        # Read repository
-  pages: write          # Deploy to GitHub Pages
-  id-token: write       # GitHub Pages authentication
-  pull-requests: write  # Comment on PRs (implicit via github-script)
+  contents: read # Read repository
+  pages: write # Deploy to GitHub Pages
+  id-token: write # GitHub Pages authentication
+  pull-requests: write # Comment on PRs (implicit via github-script)
 ```
 
 ### Concurrency Control
@@ -303,12 +325,12 @@ concurrency:
 
 ## Artifacts & Retention
 
-| Artifact | Retention | Purpose |
-|----------|-----------|---------|
-| `benchmark-results-*` | 90 days | Raw benchmark data (per task, per config) |
-| `benchmark-analysis` | 90 days | Statistical analysis results |
-| `benchmark-reports` | 365 days | Generated markdown/HTML reports |
-| GitHub Pages | Permanent | Public dashboard with historical data |
+| Artifact              | Retention | Purpose                                   |
+| --------------------- | --------- | ----------------------------------------- |
+| `benchmark-results-*` | 90 days   | Raw benchmark data (per task, per config) |
+| `benchmark-analysis`  | 90 days   | Statistical analysis results              |
+| `benchmark-reports`   | 365 days  | Generated markdown/HTML reports           |
+| GitHub Pages          | Permanent | Public dashboard with historical data     |
 
 ---
 
@@ -383,6 +405,7 @@ concurrency:
 **Use Case:** Testing a specific optimization or bug fix
 
 **Configuration:**
+
 ```yaml
 task_ids: jwt-authentication,race-condition-fix
 trials: 3
@@ -393,6 +416,7 @@ reason: Testing new agent routing optimization
 **Expected Runtime:** ~10-15 minutes (when fully implemented)
 
 **Output:**
+
 - Markdown report in workflow summary
 - Artifacts available for download (90 days)
 
@@ -403,6 +427,7 @@ reason: Testing new agent routing optimization
 **Use Case:** Pre-release validation or major feature testing
 
 **Configuration:**
+
 ```yaml
 task_ids: all
 trials: 5
@@ -413,6 +438,7 @@ reason: Pre-release validation for v1.0.0
 **Expected Runtime:** ~2-4 hours (when fully implemented)
 
 **Output:**
+
 - HTML dashboard on GitHub Pages
 - Markdown report in artifacts
 - Workflow summary
@@ -425,6 +451,7 @@ reason: Pre-release validation for v1.0.0
 **Use Case:** Validate benchmark infrastructure changes or core workflow updates
 
 **Configuration:**
+
 ```yaml
 task_ids: jwt-authentication,race-condition-fix
 trials: 3
@@ -435,6 +462,7 @@ reason: PR validation (label: benchmark)
 **Expected Runtime:** ~20-30 minutes (when fully implemented)
 
 **Output:**
+
 - PR comment with results summary
 - Markdown report in artifacts
 - Pass/fail status for PR checks
@@ -446,6 +474,7 @@ reason: PR validation (label: benchmark)
 ### Workflow Logs
 
 All jobs produce structured logs:
+
 - Setup: Configuration details, validation results
 - Benchmark: Execution status, trial progress
 - Analysis: Statistical results, significance tests
@@ -455,6 +484,7 @@ All jobs produce structured logs:
 ### Artifact Inspection
 
 Download artifacts for debugging:
+
 ```bash
 gh run download <run-id> --name benchmark-results-jwt-authentication-popkit-true
 ```

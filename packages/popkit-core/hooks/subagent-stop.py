@@ -5,11 +5,12 @@ Handles subagent completion with logging, error tracking, and optional TTS notif
 Integrates with the popkit error tracking and lessons learned system.
 """
 
-import sys
 import json
 import os
-from pathlib import Path
+import sys
 from datetime import datetime
+from pathlib import Path
+
 from popkit_shared.utils.transcript_parser import TranscriptParser
 
 # Import error tracking utilities
@@ -195,9 +196,7 @@ def record_subagent_completion(data: dict):
                 "timestamp": datetime.now().isoformat(),
                 "agent_id": agent_id,
                 "session_id": incoming_session_id,
-                "transcript_available": bool(
-                    transcript_path and Path(transcript_path).exists()
-                ),
+                "transcript_available": bool(transcript_path and Path(transcript_path).exists()),
             }
         )
 
@@ -270,7 +269,7 @@ def main():
 
         if validation_error:
             # Track the error
-            track_result = track_error(validation_error)
+            track_error(validation_error)
 
             # Check if we should retry
             if should_retry(data, validation_error):

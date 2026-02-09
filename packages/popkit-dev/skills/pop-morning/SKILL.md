@@ -21,20 +21,22 @@ See [examples/scoring-system.md](examples/scoring-system.md) for complete scorin
 
 Comprehensive readiness check across 6 dimensions:
 
-| Check | Points | Criteria |
-|-------|--------|----------|
-| Session Restored | 20 | Previous session context restored from STATUS.json |
-| Services Healthy | 20 | All required dev services running |
-| Dependencies Updated | 15 | Package dependencies up to date |
-| Branches Synced | 15 | Local branch synced with remote |
-| PRs Reviewed | 15 | No PRs waiting for review |
-| Issues Triaged | 15 | All issues assigned/prioritized |
+| Check                | Points | Criteria                                           |
+| -------------------- | ------ | -------------------------------------------------- |
+| Session Restored     | 20     | Previous session context restored from STATUS.json |
+| Services Healthy     | 20     | All required dev services running                  |
+| Dependencies Updated | 15     | Package dependencies up to date                    |
+| Branches Synced      | 15     | Local branch synced with remote                    |
+| PRs Reviewed         | 15     | No PRs waiting for review                          |
+| Issues Triaged       | 15     | All issues assigned/prioritized                    |
 
 **Branch Protection Penalty (Issue #142):**
+
 - **Penalty:** -10 points if on protected branch (`main`, `master`, `develop`, `production`) with uncommitted changes
 - **Indicator:** Shows ⚠️ PROTECTED warning
 
 **Score Interpretation:**
+
 - **90-100**: Excellent - Fully ready to code
 - **80-89**: Very Good - Almost ready, minor setup
 - **70-79**: Good - Ready with minor issues
@@ -60,6 +62,7 @@ See [examples/workflow-implementation.md](examples/workflow-implementation.md) f
 See [examples/data-collection.md](examples/data-collection.md) for consolidated bash commands.
 
 **Consolidated commands:**
+
 - **Git**: Single command for branch, commits behind, status, stashes (with `git fetch`)
 - **GitHub**: PRs and issues in one call using `gh` CLI
 - **Services**: Process check and dependency updates in one pass
@@ -71,11 +74,13 @@ All wrapped in `capture_state.py` for consistent error handling.
 See [examples/integration.md](examples/integration.md) for integration with shared utilities.
 
 **Key utilities:**
+
 - `capture_state.py` - Complete project state capture
 - `routine_measurement.py` - Performance tracking (when using `--measure`)
 - `routine_cache.py` - GitHub/service data caching (when using `--optimized`)
 
 **Performance:**
+
 - **Tool call reduction**: ~67% (15 → 5 calls)
 - **Execution time**: 78-83% faster (90s → 15-20s)
 - **Token reduction**: 40-96% (with `--optimized`)
@@ -85,6 +90,7 @@ See [examples/integration.md](examples/integration.md) for integration with shar
 See [examples/output-format.md](examples/output-format.md) for complete report examples.
 
 **Report includes:**
+
 - Ready to Code Score (0-100) with visual indicator and grade
 - Score breakdown table (what contributed to score)
 - Dev services status (if not all running)
@@ -99,6 +105,7 @@ See [examples/next-actions.md](examples/next-actions.md) for complete implementa
 **CRITICAL**: Always end with AskUserQuestion to keep PopKit in control.
 
 **Context-aware options based on score:**
+
 - **Score < 80**: Fix environment issues (Recommended)
 - **Score >= 80**: Work on highest priority, review PRs, or continue yesterday's work
 - **Issues need triage**: Triage now (Recommended) or skip
@@ -110,6 +117,7 @@ Never just show a report and end the session!
 See [examples/error-handling.md](examples/error-handling.md) for complete error handling strategy.
 
 **Graceful degradation:**
+
 - Git not available → Skip git checks, continue with partial score
 - GitHub CLI not available → Skip GitHub checks, continue with partial score
 - Service check failures → Best-effort, don't block

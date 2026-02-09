@@ -133,14 +133,14 @@ Read workspace config → Load CLAUDE.md, package.json, README → Output to cha
 
 ## Architecture
 
-| Component | Integration                                                      |
-| --------- | ---------------------------------------------------------------- |
-| Init      | skills/pop-project-init/                                         |
-| Analysis  | skills/pop-analyze-project/                                      |
-| Embed     | skills/pop-embed-project/, hooks/utils/embedding_project.py      |
-| MCP       | skills/pop-mcp-generator/, templates/mcp-server/                 |
-| Board     | gh project CLI                                                   |
-| Observe   | packages/cloud/src/routes/projects.ts                            |
+| Component | Integration                                                        |
+| --------- | ------------------------------------------------------------------ |
+| Init      | skills/pop-project-init/                                           |
+| Analysis  | skills/pop-analyze-project/                                        |
+| Embed     | skills/pop-embed-project/, hooks/utils/embedding_project.py        |
+| MCP       | skills/pop-mcp-generator/, templates/mcp-server/                   |
+| Board     | gh project CLI                                                     |
+| Observe   | packages/cloud/src/routes/projects.ts                              |
 | Reference | skills/pop-project-reference/, shared-py/utils/workspace_config.py |
 
 ## Related

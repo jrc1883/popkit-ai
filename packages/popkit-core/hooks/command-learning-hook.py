@@ -8,20 +8,20 @@ PostToolUse hook that captures command failures and learns from them.
 Also provides PreToolUse suggestions for commands that have known corrections.
 """
 
-import sys
 import json
 import re
-from typing import Dict, Optional, Any
+import sys
 from pathlib import Path
+from typing import Any, Dict, Optional
 
 # Add hooks directory to path for imports
 hooks_dir = Path(__file__).parent
 if str(hooks_dir) not in sys.path:
     sys.path.insert(0, str(hooks_dir))
 
-from popkit_shared.utils.platform_detector import OSType, ShellType, get_platform_info
-from popkit_shared.utils.command_translator import CommandTranslator
-from popkit_shared.utils.pattern_learner import get_learner
+from popkit_shared.utils.command_translator import CommandTranslator  # noqa: E402
+from popkit_shared.utils.pattern_learner import get_learner  # noqa: E402
+from popkit_shared.utils.platform_detector import OSType, ShellType, get_platform_info  # noqa: E402
 
 
 class CommandLearningHook:
@@ -151,9 +151,7 @@ class CommandLearningHook:
             }
 
         # Check if command translation is available
-        translation = CommandTranslator.translate(
-            command, self.platform_info.shell_type
-        )
+        translation = CommandTranslator.translate(command, self.platform_info.shell_type)
 
         if translation.translated != command and translation.confidence > 0.8:
             return {
@@ -190,15 +188,9 @@ class CommandLearningHook:
             if match:
                 # Check if platform hint matches
                 if platform_hint != "any":
-                    if (
-                        platform_hint == "windows"
-                        and self.platform_info.os_type != OSType.WINDOWS
-                    ):
+                    if platform_hint == "windows" and self.platform_info.os_type != OSType.WINDOWS:
                         continue
-                    if (
-                        platform_hint == "unix"
-                        and self.platform_info.os_type == OSType.WINDOWS
-                    ):
+                    if platform_hint == "unix" and self.platform_info.os_type == OSType.WINDOWS:
                         # Could be Git Bash on Windows
                         if self.platform_info.shell_type != ShellType.GIT_BASH:
                             continue
@@ -216,13 +208,11 @@ class CommandLearningHook:
         messages = []
 
         # Try to get a translation suggestion
-        translation = CommandTranslator.suggest_for_error(
-            command, output, self.platform_info
-        )
+        translation = CommandTranslator.suggest_for_error(command, output, self.platform_info)
 
         if translation and translation.translated != command:
             # Record this as a learned correction
-            correction = self.learner.record_correction(
+            self.learner.record_correction(
                 original_command=command,
                 corrected_command=translation.translated,
                 error_pattern=error_type,

@@ -193,9 +193,7 @@ def test_passthrough_for_non_skill_tools():
         return False
 
     if output.get("type") != "passthrough":
-        print(
-            f"❌ Expected 'passthrough' for non-Skill tool, got '{output.get('type')}'"
-        )
+        print(f"❌ Expected 'passthrough' for non-Skill tool, got '{output.get('type')}'")
         return False
 
     print("[PASS] Test passed: Hook passes through for non-Skill tools")

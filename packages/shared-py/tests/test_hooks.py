@@ -57,7 +57,7 @@ def test_hook(hook_path, test_data):
 
 def main():
     """Run hook tests."""
-    hooks_dir = Path(__file__).parent
+    hooks_dir = Path(__file__).parent.parent / "hooks"
 
     # Test cases for each hook
     test_cases = {

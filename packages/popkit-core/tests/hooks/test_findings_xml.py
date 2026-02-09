@@ -26,12 +26,8 @@ def test_successful_tool_use():
     # Verify
     assert "<tool>Write</tool>" in xml, "Tool name should be present"
     assert "<status>success</status>" in xml, "Status should be success"
-    assert "<quality_score>0.80</quality_score>" in xml, (
-        "Quality score should be formatted"
-    )
-    assert "<issue>Potential secret exposed in code</issue>" in xml, (
-        "Issues should be present"
-    )
+    assert "<quality_score>0.80</quality_score>" in xml, "Quality score should be formatted"
+    assert "<issue>Potential secret exposed in code</issue>" in xml, "Issues should be present"
     assert "<suggestion>Consider running code review and linting</suggestion>" in xml, (
         "Suggestions should be present"
     )
@@ -66,9 +62,9 @@ def test_failed_tool_use():
     assert "<issue>Command execution failed: permission denied</issue>" in xml, (
         "Error issues present"
     )
-    assert (
-        "<error_message>bash: ./script.sh: Permission denied</error_message>" in xml
-    ), "Error message should be present"
+    assert "<error_message>bash: ./script.sh: Permission denied</error_message>" in xml, (
+        "Error message should be present"
+    )
     assert "<agent>bug-whisperer</agent>" in xml, "Debug agent recommended"
 
     print("[PASS] Test 2 PASSED")

@@ -38,6 +38,7 @@ Load plan, review critically, execute tasks in batches, report for review betwee
 See [examples/workflow-definition.yml](examples/workflow-definition.yml) for complete workflow.
 
 **Key phases:**
+
 1. Load and critically review plan
 2. Execute batch (default: 3 tasks)
 3. Report results and get feedback
@@ -50,6 +51,7 @@ See [examples/workflow-definition.yml](examples/workflow-definition.yml) for com
 See [examples/batch-execution-guide.md](examples/batch-execution-guide.md) for detailed process.
 
 **Key points:**
+
 - **Default batch size**: 3 tasks
 - **Checkpoint after each batch**: Report and wait for feedback
 - **TodoWrite integration**: Track progress through tasks
@@ -63,6 +65,7 @@ Plans can be provided as Markdown or PDF format.
 See [examples/pdf-plan-support.md](examples/pdf-plan-support.md) for PDF processing details.
 
 **Supported formats:**
+
 - Markdown implementation plans
 - PDF implementation plans
 - PDF PRDs (for context)
@@ -70,6 +73,7 @@ See [examples/pdf-plan-support.md](examples/pdf-plan-support.md) for PDF process
 ## Quality Gates
 
 **Stop and ask for help when:**
+
 - Plan has concerns or gaps before starting
 - Hit blocker mid-batch (missing dependency, failing test, unclear instruction)
 - Verification fails repeatedly
@@ -80,6 +84,7 @@ See [examples/pdf-plan-support.md](examples/pdf-plan-support.md) for PDF process
 ## Batch Feedback
 
 After each batch, use AskUserQuestion with options:
+
 - **Continue**: Proceed to next batch
 - **Revise**: Apply feedback to current batch
 - **Pause**: Stop and save progress
@@ -89,8 +94,9 @@ See [examples/batch-execution-guide.md](examples/batch-execution-guide.md) for t
 ## Next Action Loop (Issue #118)
 
 **CRITICAL**: After completion, ALWAYS present next actions:
+
 - Work on another issue
-- Run tests/checks  
+- Run tests/checks
 - Session capture and exit
 
 **NEVER end without presenting next step options.**
@@ -100,14 +106,17 @@ See [examples/batch-execution-guide.md](examples/batch-execution-guide.md#step-6
 ## Integration
 
 **Upstream skills:**
+
 - **pop-writing-plans**: Provides implementation plan
 - **pop-brainstorming**: Provides design context
 
 **Downstream skills:**
+
 - **pop-finishing-a-development-branch**: Called after all tasks complete
 - **pop-session-capture**: Called when pausing execution
 
 **Internal agents:**
+
 - **code-explorer**: Loads and parses plans
 - **code-architect**: Reviews plans and implements tasks
 - **test-writer-fixer**: Runs verification steps

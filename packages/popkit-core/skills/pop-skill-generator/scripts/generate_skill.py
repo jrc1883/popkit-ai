@@ -17,7 +17,6 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-
 SKILLS_DIR = Path(__file__).parent.parent.parent  # skills/ directory
 TEMPLATES_DIR = Path(__file__).parent.parent / "templates" / "skill"
 
@@ -240,22 +239,12 @@ def main():
         ],
         help="Skill category",
     )
-    parser.add_argument(
-        "--no-workflow", action="store_true", help="Skip workflow generation"
-    )
-    parser.add_argument(
-        "--no-scripts", action="store_true", help="Skip script generation"
-    )
-    parser.add_argument(
-        "--no-checklists", action="store_true", help="Skip checklist generation"
-    )
-    parser.add_argument(
-        "--with-templates", action="store_true", help="Include templates directory"
-    )
+    parser.add_argument("--no-workflow", action="store_true", help="Skip workflow generation")
+    parser.add_argument("--no-scripts", action="store_true", help="Skip script generation")
+    parser.add_argument("--no-checklists", action="store_true", help="Skip checklist generation")
+    parser.add_argument("--with-templates", action="store_true", help="Include templates directory")
     parser.add_argument("--keywords", nargs="+", help="Trigger keywords")
-    parser.add_argument(
-        "--dry-run", action="store_true", help="Show what would be created"
-    )
+    parser.add_argument("--dry-run", action="store_true", help="Show what would be created")
     args = parser.parse_args()
 
     # Validate skill name
@@ -295,9 +284,7 @@ def main():
                             if config["has_workflow"]
                             else None,
                             "scripts/main.py" if config["has_scripts"] else None,
-                            "checklists/checklist.json"
-                            if config["has_checklists"]
-                            else None,
+                            "checklists/checklist.json" if config["has_checklists"] else None,
                         ],
                     },
                 },

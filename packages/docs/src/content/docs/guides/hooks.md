@@ -12,6 +12,7 @@ Learn how to create custom hooks that respond to lifecycle events in Claude Code
 Hooks are event-driven scripts that execute at specific points in the Claude Code lifecycle.
 
 **Key Characteristics**:
+
 - Event-triggered execution
 - JSON stdin/stdout protocol
 - Cross-platform compatible
@@ -214,7 +215,7 @@ Set reasonable timeout (milliseconds):
   "SessionStart": {
     "type": "command",
     "command": "...",
-    "timeout": 10000  // 10 seconds
+    "timeout": 10000 // 10 seconds
   }
 }
 ```
@@ -401,6 +402,7 @@ if __name__ == "__main__":
 **Symptom**: Hook doesn't run
 
 **Solution**:
+
 - Check `hooks.json` syntax
 - Verify script permissions
 - Test script manually
@@ -411,6 +413,7 @@ if __name__ == "__main__":
 **Symptom**: Hook fails with parse error
 
 **Solution**:
+
 - Validate JSON output
 - Check for extra stdout
 - Remove debug prints
@@ -421,6 +424,7 @@ if __name__ == "__main__":
 **Symptom**: Hook times out
 
 **Solution**:
+
 - Optimize hook execution
 - Increase timeout value
 - Move slow operations to background

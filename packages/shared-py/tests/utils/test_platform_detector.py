@@ -237,7 +237,7 @@ class TestPlatformDetector:
     def test_detect_force_refresh(self):
         """Test force_refresh parameter"""
         PlatformDetector._cached_info = None
-        info1 = PlatformDetector.detect()
+        PlatformDetector.detect()
         info2 = PlatformDetector.detect(force_refresh=True)
         # Should be different objects (new detection)
         # Values might be same, but instances are different

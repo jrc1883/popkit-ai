@@ -47,6 +47,7 @@ Hooks in PopKit:
 All hooks use a standard JSON protocol:
 
 **Input** (stdin):
+
 ```json
 {
   "event": "SessionStart",
@@ -58,6 +59,7 @@ All hooks use a standard JSON protocol:
 ```
 
 **Output** (stdout):
+
 ```json
 {
   "status": "success",

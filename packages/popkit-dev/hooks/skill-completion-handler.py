@@ -19,7 +19,7 @@ Protocol:
 import json
 import re
 import sys
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 
 def extract_ask_user_question_config(skill_output: str) -> Optional[Dict[str, Any]]:
@@ -38,15 +38,15 @@ def extract_ask_user_question_config(skill_output: str) -> Optional[Dict[str, An
         AskUserQuestion config dict or None if not found
     """
     # Check for PopKit Way marker
-    if '**IMPORTANT - The PopKit Way**' not in skill_output:
+    if "**IMPORTANT - The PopKit Way**" not in skill_output:
         return None
 
-    if 'You MUST now use the AskUserQuestion tool' not in skill_output:
+    if "You MUST now use the AskUserQuestion tool" not in skill_output:
         return None
 
     # Extract JSON configuration from code block
     # Pattern: ```json\n{...}\n```
-    json_pattern = r'```json\s*\n(.*?)\n```'
+    json_pattern = r"```json\s*\n(.*?)\n```"
     matches = re.findall(json_pattern, skill_output, re.DOTALL)
 
     if not matches:
@@ -59,7 +59,7 @@ def extract_ask_user_question_config(skill_output: str) -> Optional[Dict[str, An
         config = json.loads(json_str)
 
         # Validate it has the expected structure
-        if 'questions' in config and isinstance(config['questions'], list):
+        if "questions" in config and isinstance(config["questions"], list):
             return config
 
     except json.JSONDecodeError as e:
@@ -83,29 +83,26 @@ def handle_skill_completion(input_data: Dict[str, Any]) -> Dict[str, Any]:
     # The exact structure depends on Claude Code's PostToolUse hook format
     # This may need adjustment based on actual format
 
-    tool_name = input_data.get('tool', '')
-    tool_result = input_data.get('result', '')
+    tool_name = input_data.get("tool", "")
+    tool_result = input_data.get("result", "")
 
     # Only process Skill tool invocations
-    if tool_name != 'Skill':
-        return {'type': 'passthrough'}
+    if tool_name != "Skill":
+        return {"type": "passthrough"}
 
     # Check if this is a string result (skill output)
     if not isinstance(tool_result, str):
-        return {'type': 'passthrough'}
+        return {"type": "passthrough"}
 
     # Try to extract AskUserQuestion configuration
     ask_config = extract_ask_user_question_config(tool_result)
 
     if ask_config:
         # Found PopKit Way instructions - invoke AskUserQuestion programmatically
-        return {
-            'type': 'ask_user_question',
-            'questions': ask_config['questions']
-        }
+        return {"type": "ask_user_question", "questions": ask_config["questions"]}
 
     # No AskUserQuestion instructions found - pass through
-    return {'type': 'passthrough'}
+    return {"type": "passthrough"}
 
 
 def main():
@@ -126,9 +123,9 @@ def main():
         print(f"[ERROR] Skill completion handler failed: {e}", file=sys.stderr)
 
         # Passthrough on error (fail gracefully)
-        print(json.dumps({'type': 'passthrough'}))
+        print(json.dumps({"type": "passthrough"}))
         sys.exit(0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
