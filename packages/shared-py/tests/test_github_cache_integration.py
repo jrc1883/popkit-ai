@@ -4,14 +4,14 @@ Integration test for GitHub cache and validator.
 Demonstrates "Check First" pattern to prevent GitHub API errors.
 
 Run from popkit-claude root:
-    python packages/shared-py/test_github_cache_integration.py
+    python packages/shared-py/tests/test_github_cache_integration.py
 """
 
 import sys
 from pathlib import Path
 
 # Add popkit_shared to path
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from popkit_shared.utils.github_cache import GitHubCache
 from popkit_shared.utils.github_validator import (

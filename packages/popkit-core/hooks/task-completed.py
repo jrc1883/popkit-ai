@@ -9,10 +9,10 @@ Responsibilities:
 3. Track cumulative session metrics
 """
 
-import sys
 import json
-from pathlib import Path
+import sys
 from datetime import datetime
+from pathlib import Path
 
 
 def log_task_completion(data):
@@ -82,12 +82,8 @@ def update_session_metrics(data):
     )
 
     metrics["tasks_completed"] = metrics.get("tasks_completed", 0) + 1
-    metrics["total_duration_ms"] = metrics.get("total_duration_ms", 0) + data.get(
-        "duration_ms", 0
-    )
-    metrics["total_tokens"] = metrics.get("total_tokens", 0) + data.get(
-        "tokens_used", 0
-    )
+    metrics["total_duration_ms"] = metrics.get("total_duration_ms", 0) + data.get("duration_ms", 0)
+    metrics["total_tokens"] = metrics.get("total_tokens", 0) + data.get("tokens_used", 0)
     metrics["total_tools"] = metrics.get("total_tools", 0) + data.get("tools_used", 0)
     metrics["last_task_completed"] = datetime.now().isoformat()
 

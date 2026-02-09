@@ -24,10 +24,13 @@ jobs:
       - name: Install ruff
         run: pip install ruff
 
-      - name: Run ruff check
+      - name: Run ruff check (shared-py)
         run: |
           cd packages/shared-py
           ruff check .
+
+      - name: Run ruff check (hook scripts)
+        run: ruff check packages/popkit-core/hooks/ packages/popkit-dev/hooks/ --config packages/shared-py/pyproject.toml
 
   ruff-format:
     name: Ruff - Python Formatting
@@ -46,10 +49,13 @@ jobs:
       - name: Install ruff
         run: pip install ruff
 
-      - name: Check Python formatting
+      - name: Check Python formatting (shared-py)
         run: |
           cd packages/shared-py
           ruff format --check .
+
+      - name: Check Python formatting (hook scripts)
+        run: ruff format --check packages/popkit-core/hooks/ packages/popkit-dev/hooks/ --config packages/shared-py/pyproject.toml
 
   eslint:
     name: ESLint - TypeScript Linting

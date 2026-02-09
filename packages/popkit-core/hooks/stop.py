@@ -4,10 +4,11 @@ Stop Hook
 Handles session termination and cleanup.
 """
 
-import sys
 import json
-from pathlib import Path
+import sys
 from datetime import datetime
+from pathlib import Path
+
 
 def create_logs_directory():
     """Create logs directory if it doesn't exist."""
@@ -15,38 +16,41 @@ def create_logs_directory():
     logs_dir.mkdir(exist_ok=True)
     return logs_dir
 
+
 def log_session_stop(data):
     """Log session stop data to JSON file."""
     logs_dir = create_logs_directory()
     log_file = logs_dir / "stop.json"
-    
+
     # Add timestamp
-    data['timestamp'] = datetime.now().isoformat()
-    
+    data["timestamp"] = datetime.now().isoformat()
+
     # Read existing log data
     log_data = []
     if log_file.exists():
         try:
-            with open(log_file, 'r') as f:
+            with open(log_file, "r") as f:
                 log_data = json.load(f)
         except json.JSONDecodeError:
             log_data = []
-    
+
     # Append new data
     log_data.append(data)
-    
+
     # Write updated log
-    with open(log_file, 'w') as f:
+    with open(log_file, "w") as f:
         json.dump(log_data, f, indent=2)
+
 
 def save_chat_transcript(data, chat_file):
     """Save chat transcript to specified file."""
     logs_dir = create_logs_directory()
     transcript_file = logs_dir / chat_file
-    
-    if 'transcript' in data:
-        with open(transcript_file, 'w') as f:
-            json.dump(data['transcript'], f, indent=2)
+
+    if "transcript" in data:
+        with open(transcript_file, "w") as f:
+            json.dump(data["transcript"], f, indent=2)
+
 
 def main():
     """Main entry point for the hook - JSON stdin/stdout protocol"""
@@ -60,7 +64,7 @@ def main():
 
         # Check if chat saving is requested via data
         save_chat = data.get("save_chat", data.get("chat", False))
-        if save_chat and 'transcript' in data:
+        if save_chat and "transcript" in data:
             save_chat_transcript(data, "chat.json")
 
         # Print completion message to stderr
@@ -71,7 +75,7 @@ def main():
             "status": "success",
             "message": "Session ended - logs saved",
             "timestamp": datetime.now().isoformat(),
-            "chat_saved": save_chat and 'transcript' in data
+            "chat_saved": save_chat and "transcript" in data,
         }
         print(json.dumps(response))
 
@@ -84,6 +88,7 @@ def main():
         print(json.dumps(response))
         print(f"Error in stop hook: {e}", file=sys.stderr)
         sys.exit(0)  # Don't block on errors
+
 
 if __name__ == "__main__":
     main()

@@ -19,8 +19,8 @@ from typing import Optional
 utils_dir = Path(__file__).parent / "utils"
 sys.path.insert(0, str(utils_dir))
 
-from feedback_store import get_feedback_store
-from feedback_triggers import get_trigger_manager, FeedbackTrigger
+from feedback_store import get_feedback_store  # noqa: E402
+from feedback_triggers import FeedbackTrigger, get_trigger_manager  # noqa: E402
 
 
 def process_hook(hook_input: dict) -> dict:
@@ -33,8 +33,8 @@ def process_hook(hook_input: dict) -> dict:
     Returns:
         Hook output dict with continue status and optional feedback prompt
     """
-    tool_name = hook_input.get("tool_name", "")
-    tool_output = hook_input.get("tool_output", "")
+    hook_input.get("tool_name", "")
+    hook_input.get("tool_output", "")
     session_id = hook_input.get("session_id", "unknown")
 
     # Get feedback store and check if enabled
@@ -128,9 +128,7 @@ def evaluate_trigger(hook_input: dict, manager) -> Optional[FeedbackTrigger]:
 
     # Check Skill tool (may indicate workflow phase)
     if tool_name == "Skill" and workflow_phase:
-        return manager.evaluate_workflow_phase(
-            phase_name=workflow_phase, phase_output=tool_output
-        )
+        return manager.evaluate_workflow_phase(phase_name=workflow_phase, phase_output=tool_output)
 
     return None
 
@@ -273,9 +271,7 @@ def main():
         print(json.dumps(result))
 
     except json.JSONDecodeError as e:
-        print(
-            json.dumps({"action": "continue", "error": f"Invalid JSON input: {str(e)}"})
-        )
+        print(json.dumps({"action": "continue", "error": f"Invalid JSON input: {str(e)}"}))
     except Exception as e:
         print(json.dumps({"action": "continue", "error": f"Hook error: {str(e)}"}))
 

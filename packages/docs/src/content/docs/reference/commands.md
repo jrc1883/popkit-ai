@@ -5,7 +5,7 @@ description: Complete reference for all PopKit commands
 
 # Commands Reference
 
-PopKit provides 24 slash commands across 4 plugins for managing development workflows.
+PopKit provides 25 slash commands across 4 plugins for managing development workflows.
 
 ## popkit-core
 

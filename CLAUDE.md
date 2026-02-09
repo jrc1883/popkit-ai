@@ -862,7 +862,7 @@ PopKit requires specific Claude Code versions for full functionality:
 **Status**: Beta release
 **Plugins**: 4 modular plugins
 **Commands**: 25 workflow commands
-**Skills**: 38 reusable skills
+**Skills**: 43 reusable skills
 **Agents**: 23 specialized agents
 
 ### Recent Updates

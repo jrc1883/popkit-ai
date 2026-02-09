@@ -13,8 +13,8 @@ import os
 import sys
 from pathlib import Path
 
-# Add shared-py to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "shared-py"))
+# Add shared-py to path (tests/hooks/ -> tests/ -> popkit-core/ -> packages/ -> shared-py)
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "shared-py"))
 
 # Mock the imports that post-tool-use needs
 os.environ["POPKIT_TEST_MODE"] = "false"
@@ -27,7 +27,7 @@ def test_semantic_router_import():
     print("=" * 60)
 
     try:
-        from popkit_shared.utils.semantic_router import SemanticRouter
+        from popkit_shared.utils.semantic_router import SemanticRouter  # noqa: F401
 
         print("[PASS] SemanticRouter imported successfully")
         return True
@@ -109,9 +109,7 @@ def test_agent_detection():
                 status = "[OK]" if env_var_set else "[FAIL]"
                 print(f"    POPKIT_ACTIVE_AGENT set: {status} ({env_var_set})")
                 match_status = "[OK]" if matched_expected else "[WARN]"
-                print(
-                    f"    Expected agent: {match_status} (wanted {test_case['expected_agents']})"
-                )
+                print(f"    Expected agent: {match_status} (wanted {test_case['expected_agents']})")
 
                 results.append(env_var_set == result.agent)
             else:
@@ -120,9 +118,7 @@ def test_agent_detection():
                 results.append(False)
 
         success_count = sum(results)
-        print(
-            f"\n  Results: {success_count}/{len(test_cases)} tests set POPKIT_ACTIVE_AGENT"
-        )
+        print(f"\n  Results: {success_count}/{len(test_cases)} tests set POPKIT_ACTIVE_AGENT")
 
         return success_count > 0
 
@@ -203,9 +199,7 @@ def main():
     if passed == total:
         print("\n[PASS] All tests PASSED")
         print("\nThe semantic router integration is working correctly.")
-        print(
-            "POPKIT_ACTIVE_AGENT will now be set automatically after each tool execution."
-        )
+        print("POPKIT_ACTIVE_AGENT will now be set automatically after each tool execution.")
         return 0
     else:
         print("\n[WARN] Some tests FAILED or WARNED")
