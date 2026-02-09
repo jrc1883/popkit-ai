@@ -8,20 +8,21 @@ Intelligent technology stack detection for PopKit projects. Automatically identi
 
 ### Supported Technologies
 
-| Category | Technologies |
-|----------|-------------|
-| **Languages** | Python, JavaScript/TypeScript, Rust, Go, Ruby, Java, C/C++ |
-| **Package Managers** | pip, Poetry, Pipenv, npm, Yarn, pnpm, Cargo, Go Modules, Bundler, Maven, Gradle |
-| **Linters** | Ruff, mypy, ESLint, Clippy, golangci-lint, RuboCop, clang-tidy |
-| **Formatters** | Black, isort, Prettier, rustfmt, gofmt |
-| **Testing Frameworks** | pytest, Jest, Mocha, Vitest |
-| **Databases** | PostgreSQL, MySQL, MongoDB, Redis |
-| **Containerization** | Docker, Docker Compose, Kubernetes |
-| **Build Tools** | CMake, Maven, Gradle |
+| Category               | Technologies                                                                    |
+| ---------------------- | ------------------------------------------------------------------------------- |
+| **Languages**          | Python, JavaScript/TypeScript, Rust, Go, Ruby, Java, C/C++                      |
+| **Package Managers**   | pip, Poetry, Pipenv, npm, Yarn, pnpm, Cargo, Go Modules, Bundler, Maven, Gradle |
+| **Linters**            | Ruff, mypy, ESLint, Clippy, golangci-lint, RuboCop, clang-tidy                  |
+| **Formatters**         | Black, isort, Prettier, rustfmt, gofmt                                          |
+| **Testing Frameworks** | pytest, Jest, Mocha, Vitest                                                     |
+| **Databases**          | PostgreSQL, MySQL, MongoDB, Redis                                               |
+| **Containerization**   | Docker, Docker Compose, Kubernetes                                              |
+| **Build Tools**        | CMake, Maven, Gradle                                                            |
 
 ### Detection Patterns
 
 Technologies are detected via:
+
 - **Configuration files**: `pyproject.toml`, `package.json`, `Cargo.toml`, etc.
 - **Lock files**: `poetry.lock`, `yarn.lock`, `Cargo.lock`, etc.
 - **Docker files**: `Dockerfile`, `docker-compose.yml`, `k8s/` directory
@@ -30,6 +31,7 @@ Technologies are detected via:
 ### Confidence Scoring
 
 Each detected technology includes a confidence score (0.0-1.0):
+
 - **1.0**: Explicit configuration file found (e.g., `tsconfig.json` → TypeScript)
 - **0.9**: Inferred from package manager (e.g., `package.json` → Node.js)
 - **0.8**: Standard tool inferred from language (e.g., Rust → Clippy)
@@ -78,31 +80,38 @@ print(report)
 **Configuration Files**: 5
 
 ## Language
+
 - **Python** (v3.11) - 100% confidence - `pyproject.toml`
   - pyproject.toml found
   - requirements.txt found
 
 ## Linter
+
 - **Ruff** - 100% confidence - `pyproject.toml`
   - [tool.ruff] section found
 - **mypy** - 100% confidence - `pyproject.toml`
   - [tool.mypy] section found
 
 ## Formatter
+
 - **Black** - 100% confidence - `pyproject.toml`
   - [tool.black] section found
 
 ## Package Manager
+
 - **Poetry** - 100% confidence - `poetry.lock`
 
 ## Testing Framework
+
 - **pytest** - 90% confidence - `pyproject.toml`
 
 ## Containerization
+
 - **Docker** - 100% confidence - `Dockerfile`
 - **Docker Compose** - 100% confidence - `docker-compose.yml`
 
 ## Configuration Files Detected
+
 - `pyproject.toml`
 - `requirements.txt`
 - `poetry.lock`
@@ -263,6 +272,7 @@ def recommend_quality_checks():
 ## Testing
 
 Comprehensive test suite with 48 tests covering:
+
 - Python detection (8 tests)
 - JavaScript/TypeScript detection (7 tests)
 - Rust detection (4 tests)
@@ -310,6 +320,7 @@ This module follows PopKit's established patterns:
 ### Example 1: Python Project
 
 **Project Structure:**
+
 ```
 project/
 ├── pyproject.toml  ([tool.ruff], [tool.mypy])
@@ -318,6 +329,7 @@ project/
 ```
 
 **Detection:**
+
 ```python
 detector = TechStackDetector("project")
 stack = detector.detect_all()
@@ -332,6 +344,7 @@ stack = detector.detect_all()
 ### Example 2: Full-Stack Project
 
 **Project Structure:**
+
 ```
 project/
 ├── backend/
@@ -346,6 +359,7 @@ project/
 ```
 
 **Detection:**
+
 ```python
 detector = TechStackDetector("project")
 stack = detector.detect_all()
@@ -360,6 +374,7 @@ stack = detector.detect_all()
 ### Example 3: Monorepo
 
 **Project Structure:**
+
 ```
 monorepo/
 ├── services/
@@ -370,6 +385,7 @@ monorepo/
 ```
 
 **Detection:**
+
 ```python
 detector = TechStackDetector("monorepo")
 stack = detector.detect_all()
@@ -387,6 +403,7 @@ stack = detector.detect_all()
 **Issue**: `stack.technologies` is empty
 
 **Solutions**:
+
 1. Ensure project has config files (`pyproject.toml`, `package.json`, etc.)
 2. Check path is correct: `TechStackDetector("/absolute/path/to/project")`
 3. Verify file permissions (must be readable)
@@ -396,6 +413,7 @@ stack = detector.detect_all()
 **Issue**: All detections have low confidence
 
 **Explanation**:
+
 - Confidence < 0.9 means inferred rather than explicit
 - Add explicit config files for higher confidence
 - Example: Add `tsconfig.json` for TypeScript (1.0 vs 0.9)
@@ -405,6 +423,7 @@ stack = detector.detect_all()
 **Issue**: `tech.version` is None
 
 **Explanation**:
+
 - Version detection is optional and best-effort
 - Only available for some tools (e.g., package.json dependencies)
 - Not critical for tech stack identification

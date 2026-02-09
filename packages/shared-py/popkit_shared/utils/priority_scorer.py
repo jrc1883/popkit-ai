@@ -210,7 +210,7 @@ class PriorityScorer:
 
         # If no priority label found, default to medium for enhancements
         if max_priority == LabelPriority.NONE:
-            if any("bug" in l.lower() for l in labels):
+            if any("bug" in label.lower() for label in labels):
                 return LabelPriority.HIGH.value  # Bugs are high priority
             return LabelPriority.MEDIUM.value
 
@@ -228,7 +228,7 @@ class PriorityScorer:
             Epic score (0 or bonus)
         """
         # Is this issue itself an epic?
-        is_epic = any(l.lower() in self.EPIC_LABELS for l in labels)
+        is_epic = any(label.lower() in self.EPIC_LABELS for label in labels)
         if is_epic:
             return 100.0  # Epics are high priority
 
@@ -254,7 +254,10 @@ class PriorityScorer:
         """
         number = issue.get("number", 0)
         title = issue.get("title", "")
-        labels = [l.get("name", l) if isinstance(l, dict) else l for l in issue.get("labels", [])]
+        labels = [
+            label.get("name", label) if isinstance(label, dict) else label
+            for label in issue.get("labels", [])
+        ]
         state = issue.get("state", "open")
         created_at = issue.get("createdAt", issue.get("created_at", ""))
         updated_at = issue.get("updatedAt", issue.get("updated_at", created_at))

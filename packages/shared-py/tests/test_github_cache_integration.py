@@ -32,7 +32,7 @@ def test_label_caching():
     print("\n[1] First call - fetching from GitHub API...")
     labels = cache.get_labels()
     print(f"    Fetched {len(labels)} labels")
-    print(f"    Sample labels: {', '.join([l['name'] for l in labels[:5]])}")
+    print(f"    Sample labels: {', '.join([label['name'] for label in labels[:5]])}")
 
     # Second call - uses cache
     print("\n[2] Second call - using cache...")

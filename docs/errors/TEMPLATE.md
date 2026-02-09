@@ -35,15 +35,19 @@
 ## Resolution Steps
 
 1. **[Step 1 Title]**
+
    ```bash
    # Command or action to diagnose/fix
    ```
+
    [Additional explanation if needed]
 
 2. **[Step 2 Title]**
+
    ```bash
    # Command or action to diagnose/fix
    ```
+
    [Additional explanation if needed]
 
 3. **[Step 3 Title]**
@@ -69,4 +73,4 @@
 
 ---
 
-*This error code is part of PopKit's standardized error system (Issue #104). See [Error Codes Reference](README.md) for the complete list.*
+_This error code is part of PopKit's standardized error system (Issue #104). See [Error Codes Reference](README.md) for the complete list._

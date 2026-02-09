@@ -14,7 +14,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-import requests
+# Optional import for observability features (not required for core functionality)
+try:
+    import requests
+
+    HAS_REQUESTS = True
+except ImportError:
+    HAS_REQUESTS = False
 
 # Import error code system (Issue #104)
 try:
@@ -646,6 +652,8 @@ class PostToolUseHook:
         analysis: Dict[str, Any],
     ):
         """Log post-tool-use event to observability system"""
+        if not HAS_REQUESTS:
+            return
         try:
             event_data = {
                 "timestamp": datetime.now().isoformat(),
@@ -703,6 +711,8 @@ class PostToolUseHook:
         self, tool_name: str, analysis: Dict[str, Any], followup_agents: List[str]
     ) -> Optional[Dict]:
         """Request follow-up orchestration from orchestrator service"""
+        if not HAS_REQUESTS:
+            return None
         try:
             orchestration_data = {
                 "session_id": self.session_id,

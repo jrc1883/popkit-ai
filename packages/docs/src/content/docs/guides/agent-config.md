@@ -41,6 +41,7 @@ Clear description of what this agent does and when to use it.
 ## Triggers
 
 Conditions that activate this agent:
+
 - Keyword mentions
 - File patterns
 - Commands
@@ -49,6 +50,7 @@ Conditions that activate this agent:
 ## Capabilities
 
 What the agent can do:
+
 - Specific tasks
 - Domain expertise
 - Tools available
@@ -63,6 +65,7 @@ tier: 1
 ```
 
 **Characteristics**:
+
 - Always active
 - Fundamental tasks
 - Broad capabilities
@@ -75,6 +78,7 @@ tier: 2
 ```
 
 **Characteristics**:
+
 - Auto-activated by context
 - Specialized domains
 - Moderate capabilities
@@ -87,6 +91,7 @@ tier: 3
 ```
 
 **Characteristics**:
+
 - Manually activated
 - Highly specialized
 - Narrow focus
@@ -141,28 +146,28 @@ Agent activates for specific workflow contexts.
 
 ```yaml
 tools:
-  - Read          # Read files
-  - Write         # Write files
-  - Grep          # Search files
-  - Glob          # Find files
-  - Edit          # Edit files
+  - Read # Read files
+  - Write # Write files
+  - Grep # Search files
+  - Glob # Find files
+  - Edit # Edit files
 ```
 
 ### Bash Permissions
 
 ```yaml
 tools:
-  - Bash(git status)           # Exact command
-  - Bash(git log*)             # Git log with any args
-  - Bash(npm test*)            # Any npm test command
-  - Bash(pytest *)             # Any pytest command
+  - Bash(git status) # Exact command
+  - Bash(git log*) # Git log with any args
+  - Bash(npm test*) # Any npm test command
+  - Bash(pytest *) # Any pytest command
 ```
 
 ### MCP Wildcards
 
 ```yaml
 tools:
-  - mcp__server__*             # All tools from MCP server
+  - mcp__server__* # All tools from MCP server
 ```
 
 ## Configuration Files
@@ -194,13 +199,8 @@ tools:
 
 ```json
 {
-  "project_agents": [
-    "security-auditor",
-    "api-designer"
-  ],
-  "disabled_agents": [
-    "ui-ux-designer"
-  ]
+  "project_agents": ["security-auditor", "api-designer"],
+  "disabled_agents": ["ui-ux-designer"]
 }
 ```
 
@@ -209,6 +209,7 @@ tools:
 ### 1. Choose Agent Tier
 
 Decide tier based on frequency of use:
+
 - Tier 1: Daily use
 - Tier 2: Weekly use
 - Tier 3: Occasional use
@@ -216,6 +217,7 @@ Decide tier based on frequency of use:
 ### 2. Define Triggers
 
 Specify when agent should activate:
+
 - Keywords in user messages
 - File patterns
 - Commands
@@ -224,6 +226,7 @@ Specify when agent should activate:
 ### 3. Set Tool Permissions
 
 List only tools the agent needs:
+
 - Be conservative
 - Use wildcards for Bash
 - Request only necessary permissions
@@ -231,6 +234,7 @@ List only tools the agent needs:
 ### 4. Write Clear Purpose
 
 Explain:
+
 - What the agent does
 - When to use it
 - What it doesn't do
@@ -238,6 +242,7 @@ Explain:
 ### 5. Test Thoroughly
 
 Test agent:
+
 - Triggers activate correctly
 - Tools work as expected
 - Permissions are sufficient
@@ -272,6 +277,7 @@ Specialized agent for PostgreSQL database design, migrations, optimization, and 
 ## Triggers
 
 Activated when:
+
 - User mentions "postgres" or "database"
 - SQL files are opened or modified
 - Migration files are accessed
@@ -280,16 +286,19 @@ Activated when:
 ## Capabilities
 
 ### Database Design
+
 - Schema design and normalization
 - Index optimization
 - Query performance tuning
 
 ### Migrations
+
 - Create migration scripts
 - Review migration safety
 - Rollback strategies
 
 ### Administration
+
 - Backup and restore
 - User permissions
 - Configuration tuning
@@ -318,6 +327,7 @@ Activated when:
 **Symptom**: Agent doesn't activate when expected
 
 **Solution**:
+
 - Check trigger conditions
 - Verify agent is enabled
 - Check tier configuration
@@ -328,6 +338,7 @@ Activated when:
 **Symptom**: Agent can't access tools
 
 **Solution**:
+
 - Add required tools to `tools` list
 - Use wildcard Bash patterns
 - Check MCP permissions
@@ -337,6 +348,7 @@ Activated when:
 **Symptom**: Multiple agents responding
 
 **Solution**:
+
 - Make triggers more specific
 - Adjust agent priorities
 - Disable conflicting agents

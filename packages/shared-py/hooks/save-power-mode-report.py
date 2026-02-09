@@ -30,7 +30,7 @@ def load_insights(cwd):
         with open(insights_path) as f:
             data = json.load(f)
             return data.get("insights", [])
-    except:
+    except Exception:
         return []
 
 
@@ -44,7 +44,7 @@ def load_power_state(cwd):
     try:
         with open(state_path) as f:
             return json.load(f)
-    except:
+    except Exception:
         return None
 
 

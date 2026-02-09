@@ -14,11 +14,13 @@
 ### 1. Be Extremely Specific
 
 **❌ Vague**:
+
 ```
 Add user authentication to the application
 ```
 
 **✅ Specific**:
+
 ```
 Add JWT authentication using the jsonwebtoken library (^9.0.0).
 
@@ -38,6 +40,7 @@ Do NOT ask for implementation preferences. Use these exact specifications.
 ### 2. Provide All Technical Details
 
 **Include**:
+
 - Library names and versions
 - Configuration values
 - File paths and locations
@@ -46,6 +49,7 @@ Do NOT ask for implementation preferences. Use these exact specifications.
 - Testing requirements
 
 **Example**:
+
 ```
 Fix the race condition in src/services/payment-processor.js line 45.
 
@@ -80,6 +84,7 @@ Proceed immediately with the implementation using the specifications above.
 ### 4. Provide Defaults for Common Choices
 
 **Common decision points**:
+
 - Framework/library choices
 - Database schema details
 - API endpoint paths
@@ -88,6 +93,7 @@ Proceed immediately with the implementation using the specifications above.
 - Testing strategy
 
 **Example**:
+
 ```
 Add real-time notifications using WebSocket.
 
@@ -109,23 +115,28 @@ Use clear sections:
 # Task: [Brief title]
 
 ## Problem
+
 [What needs to be fixed/added]
 
 ## Implementation Requirements
+
 - Requirement 1
 - Requirement 2
 - ...
 
 ## Technical Specifications
+
 - Library: [name]
 - Configuration: [details]
 - File locations: [paths]
 
 ## Success Criteria
+
 - [Criterion 1]
 - [Criterion 2]
 
 ## DO NOT ASK
+
 Proceed immediately without asking about implementation choices.
 Use the specifications above.
 ```
@@ -135,11 +146,13 @@ Use the specifications above.
 ### Example 1: Feature Addition
 
 **❌ Bad**:
+
 ```
 Add caching to the API
 ```
 
 **✅ Good**:
+
 ```
 Add Redis caching to the REST API to reduce database load.
 
@@ -166,11 +179,13 @@ Proceed with these specifications.
 ### Example 2: Bug Fix
 
 **❌ Bad**:
+
 ```
 Fix the memory leak in the server
 ```
 
 **✅ Good**:
+
 ```
 Fix memory leak in src/server.js caused by unclosed WebSocket connections.
 
@@ -202,11 +217,13 @@ Do NOT ask about alternative cleanup approaches. Use the solution above.
 ### Example 3: Refactoring
 
 **❌ Bad**:
+
 ```
 Refactor the authentication code
 ```
 
 **✅ Good**:
+
 ```
 Refactor authentication code in src/auth/ directory to use dependency injection.
 
@@ -242,11 +259,13 @@ Follow the structure above exactly.
 ### Example 4: Performance Optimization
 
 **❌ Bad**:
+
 ```
 Optimize the database queries
 ```
 
 **✅ Good**:
+
 ```
 Optimize slow database query in src/api/users.js line 45.
 
@@ -292,11 +311,13 @@ Do NOT ask about optimization strategy. Implement the solution above.
 ### Pitfall 1: Assuming Context
 
 **❌ Wrong**:
+
 ```
 Fix the bug we discussed earlier
 ```
 
 **✅ Right**:
+
 ```
 Fix the race condition in payment-processor.js line 45 where concurrent
 requests can double-charge users. Use Redis distributed locks.
@@ -305,11 +326,13 @@ requests can double-charge users. Use Redis distributed locks.
 ### Pitfall 2: Open-Ended Requirements
 
 **❌ Wrong**:
+
 ```
 Add better error handling
 ```
 
 **✅ Right**:
+
 ```
 Add error handling to API routes:
 - Wrap all async route handlers with asyncHandler() middleware
@@ -321,11 +344,13 @@ Add error handling to API routes:
 ### Pitfall 3: Missing Technical Details
 
 **❌ Wrong**:
+
 ```
 Add unit tests
 ```
 
 **✅ Right**:
+
 ```
 Add unit tests for src/services/payment-processor.js:
 - Framework: Jest (already installed)
@@ -397,12 +422,15 @@ Before using a prompt in benchmarks, verify:
 ## Testing Your Prompt
 
 ### Test 1: Read Aloud
+
 Read the prompt out loud. Can someone implement it without asking ANY clarifying questions?
 
 ### Test 2: Give to Another Developer
+
 Have a colleague read it. What would they ask? Add those answers to the prompt.
 
 ### Test 3: Run Without PopKit
+
 ```bash
 claude plugin disable popkit-core popkit-dev popkit-ops
 claude -p "$(cat tasks/my-task/task.yml | yq .user_prompt)"
@@ -411,6 +439,7 @@ claude -p "$(cat tasks/my-task/task.yml | yq .user_prompt)"
 Did it block on any questions? If yes, revise prompt.
 
 ### Test 4: Run With Benchmark Mode
+
 ```bash
 export POPKIT_BENCHMARK_MODE=true
 export POPKIT_BENCHMARK_RESPONSES=tasks/my-task/responses.json

@@ -82,6 +82,11 @@ class TestRunner:
 
                     print(f"  [x] {test_case.get('name', 'unknown')}")
                     print(f"    Reason: {case_result['failure']['reason']}")
+                    # Show expected/actual for debugging
+                    if "expected" in case_result["failure"]:
+                        print(f"    Expected: {case_result['failure']['expected']}")
+                    if "actual" in case_result["failure"]:
+                        print(f"    Actual: {case_result['failure']['actual']}")
 
                     if self.fail_fast:
                         break

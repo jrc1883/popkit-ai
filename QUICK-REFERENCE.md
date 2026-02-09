@@ -13,11 +13,13 @@ gh issue close 213 -c "Merged via PR #214. Official plugin integration guidance 
 ## 🔴 STATUS UPDATES NEEDED (5 min each)
 
 **Issue #81** - PopKit Workflow Benchmark Testing (HIGH priority, stale 21 days)
+
 ```bash
 gh issue comment 81 -b "Status check: This HIGH-priority task hasn't been updated since Jan 10. Please provide: 1) Completion %, 2) Blockers, 3) Target date, 4) Owner. Related: Issue #82 (closed). Does completion address this?"
 ```
 
 **Issues #18, #11, #10** - Validation Testing (HIGH priority)
+
 ```bash
 gh issue comment 18 -b "Validation milestone status: Please provide current progress, blockers, and target completion for UAT."
 gh issue comment 11 -b "Validation milestone status: Please provide current progress, blockers, and target completion for cross-plugin testing."
@@ -27,16 +29,19 @@ gh issue comment 10 -b "Validation milestone status: Please provide current prog
 ## ❓ SCOPE CLARIFICATION NEEDED (5 min each)
 
 **Issue #68** - Agent Expertise System
+
 ```bash
 gh issue comment 68 -b "Clarification needed: Issue #80 (agent detection) is now complete. Please clarify remaining scope for this issue: 1) Is full /popkit:expertise command still needed? 2) What features beyond auto-detection? 3) Should split into subtasks? 4) Timeline and owner?"
 ```
 
 **Issue #67** - Cache Management System
+
 ```bash
 gh issue comment 67 -b "Scope clarification: Issue #216 (cache status inspection) just merged. Please clarify: 1) Is #216 sufficient? 2) Additional cache features needed? 3) Should defer or split? 4) Priority?"
 ```
 
 **Issue #69** - Routine Templates
+
 ```bash
 gh issue comment 69 -b "Related issue status: Issue #70 (nightly routine) was completed. Does that address this task? If yes, can close. If additional morning templates needed, clarify scope."
 ```
@@ -45,13 +50,13 @@ gh issue comment 69 -b "Related issue status: Issue #70 (nightly routine) was co
 
 ## 📊 BY THE NUMBERS
 
-| Metric | Count | % |
-|--------|-------|-----|
-| Total Open | 40 | 100% |
-| Ready to Close | 4 | 10% |
-| Stale (21+ days) | 21 | 52.5% |
-| High Priority | 7 | 17.5% |
-| Strategic/Planning | 16 | 40% |
+| Metric             | Count | %     |
+| ------------------ | ----- | ----- |
+| Total Open         | 40    | 100%  |
+| Ready to Close     | 4     | 10%   |
+| Stale (21+ days)   | 21    | 52.5% |
+| High Priority      | 7     | 17.5% |
+| Strategic/Planning | 16    | 40%   |
 
 ---
 
@@ -67,6 +72,7 @@ gh issue comment 69 -b "Related issue status: Issue #70 (nightly routine) was co
 ## 📅 STALE ISSUE SOURCES
 
 **Batch of 25 created 2026-01-10** - Appears to be migration from internal system
+
 - Not updated since creation date
 - Mix of features, investigations, testing
 - Need triage and owner assignment
@@ -93,24 +99,24 @@ gh issue comment 69 -b "Related issue status: Issue #70 (nightly routine) was co
 
 ## ✨ EXPECTED OUTCOMES
 
-| Timeline | Target | Metric |
-|----------|--------|--------|
-| TODAY | -4 issues | 10% reduction |
-| THIS WEEK | -4-6 more | 20-25% reduction |
+| Timeline   | Target      | Metric                  |
+| ---------- | ----------- | ----------------------- |
+| TODAY      | -4 issues   | 10% reduction           |
+| THIS WEEK  | -4-6 more   | 20-25% reduction        |
 | THIS MONTH | -10-12 more | 30% reduction (40 → 28) |
 
 ---
 
 ## 📄 DOCUMENTS GENERATED
 
-| Document | Purpose | Read Time |
-|----------|---------|-----------|
-| **AUDIT-SUMMARY.txt** | Executive overview | 10 min |
-| **github-issues-audit.md** | Detailed analysis | 30-45 min |
-| **ISSUES-CLEANUP-ACTION-PLAN.md** | Step-by-step guide | 15-20 min |
-| **AUDIT-VERIFICATION-NOTES.md** | Evidence & deep dive | 25-35 min |
-| **AUDIT-README.md** | Navigation & guide | 10 min |
-| **QUICK-REFERENCE.md** | This file | 3 min |
+| Document                          | Purpose              | Read Time |
+| --------------------------------- | -------------------- | --------- |
+| **AUDIT-SUMMARY.txt**             | Executive overview   | 10 min    |
+| **github-issues-audit.md**        | Detailed analysis    | 30-45 min |
+| **ISSUES-CLEANUP-ACTION-PLAN.md** | Step-by-step guide   | 15-20 min |
+| **AUDIT-VERIFICATION-NOTES.md**   | Evidence & deep dive | 25-35 min |
+| **AUDIT-README.md**               | Navigation & guide   | 10 min    |
+| **QUICK-REFERENCE.md**            | This file            | 3 min     |
 
 ---
 
@@ -163,14 +169,14 @@ QUICK-REFERENCE.md (this file)
 
 ## ⏱️ TIME ESTIMATES
 
-| Task | Time | Complexity |
-|------|------|-----------|
-| Close 4 issues | 5 min | Trivial |
-| Comment on 6 HIGH items | 30 min | Minimal |
-| Clarify 3 scopes | 15 min | Minimal |
-| Review responses | 30 min | Minimal |
-| Decide closures | 20 min | Medium |
-| **TOTAL** | **~2 hours** | **Low** |
+| Task                    | Time         | Complexity |
+| ----------------------- | ------------ | ---------- |
+| Close 4 issues          | 5 min        | Trivial    |
+| Comment on 6 HIGH items | 30 min       | Minimal    |
+| Clarify 3 scopes        | 15 min       | Minimal    |
+| Review responses        | 30 min       | Minimal    |
+| Decide closures         | 20 min       | Medium     |
+| **TOTAL**               | **~2 hours** | **Low**    |
 
 ---
 

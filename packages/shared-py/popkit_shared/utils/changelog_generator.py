@@ -314,7 +314,7 @@ class ChangelogGenerator:
                 # For breaking changes, add migration note if present
                 if commit_type == "breaking" and body:
                     # Extract migration info from body
-                    migration_lines = [l.strip() for l in body.split("\n") if l.strip()]
+                    migration_lines = [ln.strip() for ln in body.split("\n") if ln.strip()]
                     for mline in migration_lines[:3]:  # Max 3 lines
                         lines.append(f"  - {mline}")
 
@@ -397,7 +397,7 @@ class ChangelogGenerator:
                 lines.append("")
                 if body:
                     lines.append("**Migration:**")
-                    migration_lines = [l.strip() for l in body.split("\n") if l.strip()]
+                    migration_lines = [ln.strip() for ln in body.split("\n") if ln.strip()]
                     for mline in migration_lines:
                         lines.append(f"- {mline}")
                     lines.append("")

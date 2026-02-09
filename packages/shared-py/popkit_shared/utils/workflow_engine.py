@@ -1179,7 +1179,7 @@ class UpstashWorkflowEngine:
         Returns:
             WorkflowStep for current phase, or None
         """
-        status = self.get_status()
+        self.get_status()
         current_phase = self._cached_status.get("currentPhase") if self._cached_status else None
 
         if not current_phase or not self.definition:

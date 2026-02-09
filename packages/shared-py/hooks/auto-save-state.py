@@ -75,7 +75,7 @@ def get_project_name(cwd):
             with open(package_json) as f:
                 data = json.load(f)
                 return data.get("name", cwd_path.name)
-        except:
+        except Exception:
             pass
 
     # Try pyproject.toml
@@ -86,8 +86,8 @@ def get_project_name(cwd):
                 for line in f:
                     if line.startswith("name"):
                         return line.split("=")[1].strip().strip('"').strip("'")
-        except:
-            pass
+        except Exception:
+            pass  # Graceful fallback: pyproject.toml parse failure shouldn't block project name detection
 
     # Fall back to directory name
     return cwd_path.name

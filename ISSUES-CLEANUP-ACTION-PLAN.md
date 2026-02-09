@@ -1,4 +1,5 @@
 # PopKit Issues Cleanup Action Plan
+
 **Prepared:** 2026-01-31 | **Priority:** High | **Effort:** 30 minutes
 
 ---
@@ -32,10 +33,12 @@ gh issue close 213 -c "Merged via PR #214. Official plugin integration guidance 
 These are HIGH priority but have no recent updates. Add status comments:
 
 **Issue #81: PopKit Workflow Benchmark Testing**
+
 - **Priority:** HIGH (explicit label)
 - **Created:** 2026-01-10
 - **Action:** Add comment requesting status update
 - **Command:**
+
 ```bash
 gh issue comment 81 -b "Status check: This HIGH-priority testing task hasn't been updated since creation. Please provide:
 1. Current completion percentage
@@ -49,9 +52,11 @@ Related: Issue #82 (benchmark suite) is now closed. Does #82 completion address 
 **Issue #18: User Acceptance Testing (UAT)**
 **Issue #11: Cross-Plugin Integration Testing**
 **Issue #10: Agent Routing Accuracy Testing**
+
 - **Priority:** HIGH (validation blockers)
 - **Action:** Same - request status update
 - **Command:**
+
 ```bash
 gh issue comment 18 -b "Validation milestone status: Please provide current progress, blockers, and target completion for UAT."
 gh issue comment 11 -b "Validation milestone status: Please provide current progress, blockers, and target completion for cross-plugin testing."
@@ -67,9 +72,11 @@ gh issue comment 10 -b "Validation milestone status: Please provide current prog
 These issues are partially implemented or have overlapping scope. Need clarification:
 
 **Issue #68: Agent Expertise System (/popkit:expertise)**
+
 - **Status:** Issue #80 (agent detection) completed and closed
 - **Question:** Is the full expertise system still needed beyond what #80 provides?
 - **Action:** Comment to clarify remaining scope
+
 ```bash
 gh issue comment 68 -b "Clarification needed: Issue #80 (agent detection via POPKIT_ACTIVE_AGENT) is now complete.
 Please clarify remaining scope for this issue:
@@ -80,9 +87,11 @@ Please clarify remaining scope for this issue:
 ```
 
 **Issue #67: Cache Management System (/popkit:cache)**
+
 - **Status:** Issue #216 (cache status inspection) just merged
 - **Question:** Is broader cache management system still needed?
 - **Action:** Comment to clarify scope vs. #216
+
 ```bash
 gh issue comment 67 -b "Scope clarification needed: Issue #216 (cache status inspection) just merged.
 This issue describes broader cache management. Please clarify:
@@ -93,8 +102,10 @@ This issue describes broader cache management. Please clarify:
 ```
 
 **Issue #69: Create Generic Workspace Routine Templates**
+
 - **Status:** Related to closed Issue #70 (nightly routine)
 - **Action:** Check if #70 addressed this
+
 ```bash
 gh issue comment 69 -b "Related issue status: Issue #70 (nightly routine) was completed and closed. Does that issue address this task's scope? If so, this can be closed. If additional morning routine templates are needed, please clarify scope."
 ```
@@ -110,11 +121,13 @@ gh issue comment 69 -b "Related issue status: Issue #70 (nightly routine) was co
 These are old (21+ days) with no sign of active work. Decision: Keep investigating or archive?
 
 **Candidates for closure if investigation is complete:**
+
 - #100: Code Commenting Standards Investigation
 - #92: Track Anthropic SDK Patterns for Future Migration
 - #102: Transcript Collection Automation
 
 **Action:** Check if findings are documented
+
 ```bash
 # Check if #100 findings are in codebase
 grep -r "code-commenting" apps/popkit/docs/
@@ -128,6 +141,7 @@ gh issue close 100 -c "Investigation findings documented in X. Closing as comple
 Issues #28 and #27 are vague epics. Clarify scope:
 
 **Issue #28: Task Master Complementary Feature Integration**
+
 ```bash
 gh issue edit 28 --body "# Task Master Integration Epic
 
@@ -145,6 +159,7 @@ BLOCKED: Requires scope clarification"
 ```
 
 **Issue #27: Auto Claude Competitive Feature Integration**
+
 ```bash
 gh issue edit 27 --body "# Auto Claude Feature Integration Epic
 
@@ -164,6 +179,7 @@ BLOCKED: Requires scope clarification"
 ### STEP 6: Consolidate Power Mode Infrastructure Issues
 
 Consider consolidating related issues into single epic:
+
 - #78: True Redis coordination
 - #76: Distributed agent coordination protocol
 - #77: Agent thinking process visibility
@@ -177,29 +193,32 @@ Consider consolidating related issues into single epic:
 
 To prevent this situation recurring:
 
-| Category | SLA |
-|----------|-----|
-| **Features (Merged PR)** | Close within 7 days |
-| **Bugs (Fixed)** | Close within 3 days |
-| **Investigations** | Close or update every 14 days |
-| **Epics** | Update status monthly |
-| **Stale Auto-Label** | 60+ days without activity |
+| Category                 | SLA                           |
+| ------------------------ | ----------------------------- |
+| **Features (Merged PR)** | Close within 7 days           |
+| **Bugs (Fixed)**         | Close within 3 days           |
+| **Investigations**       | Close or update every 14 days |
+| **Epics**                | Update status monthly         |
+| **Stale Auto-Label**     | 60+ days without activity     |
 
 ---
 
 ## Expected Outcomes
 
 ### Immediate (Today)
+
 - **4 issues closed** (merged features)
 - **6 issues commented** (status requests)
 - **3 issues clarified** (scope questions)
 
 ### This Week
+
 - **~2 additional closures** (if investigations documented)
 - **Better visibility** on validation testing blockers
 - **Clear scope** for #68, #67, #69
 
 ### This Month
+
 - **~6-8 issues archived** (stale investigations)
 - **Epics updated** with progress
 - **Cleanup audit** reduces open count from 40 to ~28
@@ -224,6 +243,7 @@ For future issue management:
 ## Success Metrics
 
 By end of this week:
+
 - [ ] 4 recently-completed issues closed
 - [ ] 6 high-priority issues with status comments
 - [ ] 3 scope-ambiguous issues clarified
@@ -235,8 +255,8 @@ By end of this week:
 ## Contact & Escalation
 
 If issues cannot be resolved during cleanup:
+
 1. Assign owner and add to project board
 2. Link to appropriate epic
 3. Add milestone for target release
 4. Mark with `awaiting-owner` label for follow-up
-

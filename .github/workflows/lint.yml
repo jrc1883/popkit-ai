@@ -27,8 +27,7 @@ jobs:
       - name: Run ruff check (shared-py)
         run: |
           cd packages/shared-py
-          ruff check . || echo "⚠️ Ruff linting found issues (non-blocking for now)"
-        continue-on-error: true
+          ruff check .
 
       - name: Run ruff check (hook scripts)
         run: ruff check packages/popkit-core/hooks/ packages/popkit-dev/hooks/ --config packages/shared-py/pyproject.toml
@@ -102,9 +101,7 @@ jobs:
         run: npm install
 
       - name: Check JSON formatting
-        run: npm run lint:json || echo "⚠️ Prettier found JSON formatting issues (non-blocking for now)"
-        continue-on-error: true
+        run: npm run lint:json
 
       - name: Check Markdown formatting
-        run: npm run lint:md || echo "⚠️ Prettier found Markdown formatting issues (non-blocking for now)"
-        continue-on-error: true
+        run: npm run lint:md
