@@ -347,6 +347,7 @@ PopKit Core provides several lifecycle hooks that enhance workflow quality and a
 - **Blocking**: Only blocks on unfixable errors
 
 **Behavior**:
+
 1. Detects staged Python files (`git diff --cached --name-only`)
 2. Runs `ruff check --fix` on staged files
 3. Runs `ruff format` on staged files
@@ -354,6 +355,7 @@ PopKit Core provides several lifecycle hooks that enhance workflow quality and a
 5. Blocks commit only on unfixable errors
 
 **Installation**:
+
 ```bash
 pip install ruff  # Required for pre-commit validation
 ```

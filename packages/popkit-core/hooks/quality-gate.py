@@ -28,15 +28,14 @@ Mitigations for long runtime:
 See Issue #195 for analysis.
 """
 
-import os
-import sys
 import json
-import subprocess
+import os
 import re
+import subprocess
+import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any
-
+from typing import Any, Dict, List, Optional
 
 # High-risk file patterns that trigger immediate validation
 HIGH_RISK_PATTERNS = [
@@ -732,7 +731,7 @@ class QualityGateHook:
                             f"Cleaned up old checkpoint: {cp['timestamp']}",
                             file=sys.stderr,
                         )
-            except:
+            except Exception:
                 remaining.append(cp)
 
         manifest["checkpoints"] = remaining
@@ -749,7 +748,7 @@ class QualityGateHook:
             try:
                 state = json.loads(power_state.read_text())
                 return state.get("active", False)
-            except:
+            except Exception:
                 pass
 
         # Check environment variable

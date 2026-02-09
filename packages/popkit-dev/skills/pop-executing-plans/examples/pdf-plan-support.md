@@ -30,6 +30,7 @@ User: Execute this plan: /path/to/implementation-plan.pdf
 Product Requirements Documents (PRDs) in PDF format can also be processed to understand requirements context before execution.
 
 Extract from PRDs:
+
 - Feature requirements
 - Success criteria
 - Technical constraints

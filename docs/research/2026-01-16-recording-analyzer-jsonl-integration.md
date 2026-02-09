@@ -12,6 +12,7 @@ Extended `RecordingAnalyzer` to support **both recording formats**:
 2. **Claude Code JSONL format** - Native transcript files from Claude Code
 
 This enables:
+
 - **WITH PopKit trials**: Use PopKit JSON recordings (hooks capture everything)
 - **WITHOUT PopKit baseline trials**: Use Claude Code JSONL transcripts (no hooks available)
 
@@ -274,6 +275,7 @@ def _collect_recordings(self, trial_type: str) -> List[Path]:
    - Affects: `get_file_modifications()` - works but less precise
 
 ### These limitations are acceptable for benchmarking because:
+
 - **Context usage (tokens)**: ✅ Fully accurate from TranscriptParser
 - **Tool call count**: ✅ Fully accurate from tool_use blocks
 - **Time to complete**: ✅ Session duration from timestamps

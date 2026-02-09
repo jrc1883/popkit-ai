@@ -332,7 +332,7 @@ class PrivacyManager:
 
     def set_anonymization_level(self, level: str) -> None:
         """Set anonymization level."""
-        if level in [l.value for l in AnonymizationLevel]:
+        if level in [lvl.value for lvl in AnonymizationLevel]:
             self.settings.anonymization_level = level
             self.save_settings()
 

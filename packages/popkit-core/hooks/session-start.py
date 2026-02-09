@@ -12,12 +12,12 @@ Responsibilities:
 6. Detect and optimize for agent_type when --agent flag is used (Claude Code 2.1.2+)
 """
 
-import sys
 import json
 import os
+import sys
 import threading
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 # Import version check utility
 try:
@@ -57,7 +57,7 @@ except ImportError:
 
 # Import XML context generation utilities (Phase 1: XML Integration)
 try:
-    from context_state import clear_context_state, save_context_state, compute_hash
+    from context_state import clear_context_state, compute_hash, save_context_state
     from xml_generator import generate_project_context_xml
 
     HAS_XML_CONTEXT = True
@@ -630,7 +630,7 @@ def detect_project_context():
 
 
 # Import agent type detection from helpers module
-from session_start_helpers import detect_agent_type_session
+from session_start_helpers import detect_agent_type_session  # noqa: E402
 
 
 def main():

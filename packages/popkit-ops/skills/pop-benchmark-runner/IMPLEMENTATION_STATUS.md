@@ -10,10 +10,12 @@
 ### Phase 1: Core Infrastructure (COMPLETE)
 
 **Architecture Decision:** Extended `popkit-ops` plugin (not new package)
+
 - Rationale: Benchmarking is operational tooling (industry standard pattern)
 - Benefits: Clean 4-plugin architecture, no user confusion, proper separation
 
 **Files Created:**
+
 1. ✅ `commands/benchmark.md` - `/popkit-ops:benchmark run|analyze|report` command
 2. ✅ `skills/pop-benchmark-runner/SKILL.md` - Comprehensive skill documentation
 3. ✅ `skills/pop-benchmark-runner/scripts/codebase_manager.py` (300 lines) - Git worktree isolation
@@ -34,6 +36,7 @@
 Users can define custom benchmark tasks in 3 steps:
 
 **Step 1:** Create YAML file
+
 ```yaml
 id: my-custom-task
 category: feature-addition
@@ -45,14 +48,16 @@ verification:
 ```
 
 **Step 2:** (Optional) Create responses file
+
 ```json
 {
-  "responses": {"Question": "Answer"},
+  "responses": { "Question": "Answer" },
   "standardAutoApprove": ["test.*"]
 }
 ```
 
 **Step 3:** Run benchmark
+
 ```bash
 /popkit-ops:benchmark run my-custom-task --trials 5
 ```
@@ -62,17 +67,20 @@ verification:
 **See:** `tasks/TASK_DEFINITION_SCHEMA.md` for complete reference
 
 **Core Fields:**
+
 - `id`, `category`, `description`, `user_prompt` (required)
 - `verification`, `expected_outcomes`, `dependencies` (recommended)
 - `environment`, `pre_setup_commands`, `codebase_constraints` (advanced)
 
 **Power User Features:**
+
 - Success criteria with performance/security/coverage thresholds
 - Related tasks and prerequisites
 - Tags for filtering/searching
 - Version tracking
 
 **Example - Complete Task:**
+
 ```yaml
 id: add-websocket-support
 category: feature-addition
@@ -112,11 +120,13 @@ success_criteria:
 **Location:** `docs/benchmark/results/`
 
 **Formats:**
+
 - `task-name-YYYY-MM-DD.md` - Markdown report with tables
 - `task-name-YYYY-MM-DD.html` - HTML dashboard with Chart.js visualizations
 - `task-name-YYYY-MM-DD.json` - Raw data for analysis
 
 **Features:**
+
 - Statistical tables (metrics, p-values, effect sizes)
 - Interactive charts (bar charts, improvement percentages)
 - Color-coded results (green = improvements, red = regressions)
@@ -125,6 +135,7 @@ success_criteria:
 ### Future (Phase 3+): PopKit Cloud Integration
 
 **Vision:**
+
 ```bash
 # Local execution (always works)
 /popkit-ops:benchmark run my-task
@@ -136,6 +147,7 @@ success_criteria:
 ```
 
 **PopKit Cloud Features (Planned):**
+
 1. **Historical Analysis**
    - Track benchmark trends over time
    - Compare across code versions
@@ -157,6 +169,7 @@ success_criteria:
    - Cached analysis results
 
 **Subscription Model:**
+
 - **Free:** Local files only (markdown + HTML)
 - **Cloud:** Historical data, embeddings, team features
 
@@ -165,6 +178,7 @@ success_criteria:
 **Goal:** Community-contributed benchmark tasks
 
 **Structure:**
+
 ```
 popkit-cloud.com/benchmarks/
 ├── official/          # PopKit team tasks
@@ -180,6 +194,7 @@ popkit-cloud.com/benchmarks/
 ```
 
 **Features:**
+
 - Browse/search tasks by language, framework, difficulty
 - Download YAML + responses files
 - Submit your own tasks (PR or web upload)
@@ -187,6 +202,7 @@ popkit-cloud.com/benchmarks/
 - Filter by: category, difficulty, duration, tags
 
 **Submission Process:**
+
 1. Create task YAML + responses JSON
 2. Test locally: `/popkit-ops:benchmark run your-task --trials 3`
 3. Submit PR to `packages/popkit-ops/tasks/` OR upload via web
@@ -198,6 +214,7 @@ popkit-cloud.com/benchmarks/
 ### Leveraged 80% Existing Infrastructure
 
 **Shared Utilities:**
+
 - ✅ `recording_analyzer.py` - Metrics extraction (tool calls, performance, errors)
 - ✅ `routine_measurement.py` - Token tracking and cost estimation
 - ✅ `benchmark_responses.py` - Automation without user interaction
@@ -205,6 +222,7 @@ popkit-cloud.com/benchmarks/
 - ✅ `efficiency_tracker.py` - PopKit-specific efficiency metrics
 
 **What We Added:**
+
 - Task definition format (YAML + responses JSON)
 - Git worktree management (isolated test environments)
 - Statistical analysis (t-tests, Cohen's d, confidence intervals)
@@ -223,16 +241,19 @@ popkit-cloud.com/benchmarks/
 ### Statistical Analysis
 
 **Significance Testing:**
+
 - Independent samples t-test (scipy.stats.ttest_ind)
 - p-value < 0.05 = statistically significant difference
 - Handles edge cases (NaN, zero variance, identical values)
 
 **Effect Size:**
+
 - Cohen's d formula: `d = |mean1 - mean2| / pooled_std`
 - Interpretation: <0.2 negligible, <0.5 small, <0.8 medium, ≥0.8 large
 - Measures practical significance (not just statistical)
 
 **Confidence Intervals:**
+
 - 95% CI using t-distribution
 - Formula: `mean ± (SEM × t_critical)`
 - Shows certainty of mean estimates
@@ -244,22 +265,27 @@ popkit-cloud.com/benchmarks/
 **Create 6 more tasks (total 8: 2 per category):**
 
 **Feature Addition:**
+
 - ✅ jwt-authentication
 - ✅ dark-mode-implementation
 
 **Bug Fixing:**
+
 - ✅ race-condition-fix
 - ✅ memory-leak-fix
 
 **Refactoring:**
+
 - ✅ async-await-conversion
 - ✅ extract-shared-utilities
 
 **Code Review:**
+
 - ✅ security-vulnerability-scan
 - ✅ performance-bottleneck-identification
 
 **Deliverables:**
+
 - ✅ 6 new YAML files created (total 8: 2 per category)
 - ✅ 6 new response JSON files created (total 8)
 - ✅ All task definitions validated (YAML syntax, required fields, JSON format)
@@ -267,6 +293,7 @@ popkit-cloud.com/benchmarks/
 ### Phase 3: CI/CD Automation (Days 9-11) - ✅ COMPLETE
 
 **GitHub Actions Workflow:**
+
 - ✅ File: `.github/workflows/benchmark.yml` (490 lines)
 - ✅ Trigger: Manual dispatch + PR label + scheduled (post-v1.0)
 - ✅ Setup: Two Claude Code instances (with/without PopKit)
@@ -276,6 +303,7 @@ popkit-cloud.com/benchmarks/
 - ✅ Workflow summaries and PR comments
 
 **Documentation:**
+
 - ✅ `docs/benchmark/CI_CD_WORKFLOW.md` (550+ lines)
 - ✅ Comprehensive workflow documentation
 
@@ -284,18 +312,21 @@ popkit-cloud.com/benchmarks/
 ### Phase 4: Testing & Validation (Days 12-13)
 
 **Unit Tests:**
+
 - `test_codebase_manager.py` - Git worktree operations
 - `test_benchmark_runner.py` - Execution orchestration
 - `test_benchmark_analyzer.py` - Statistical calculations
 - `test_report_generator.py` - Report formatting
 
 **Integration Tests:**
+
 - Single task execution (1 trial)
 - Full suite execution (8 tasks × 3 trials)
 - Verify statistical significance
 - Verify report generation
 
 **Success Criteria:**
+
 - PopKit shows 30%+ improvement in context usage
 - PopKit shows 20%+ improvement in tool calls
 - PopKit shows 50%+ improvement in backtracking
@@ -306,26 +337,31 @@ popkit-cloud.com/benchmarks/
 ## Key Decisions Made
 
 ### 1. Package Architecture
+
 **Decision:** Extend popkit-ops (not new package)
 **Rationale:** Benchmarking is operational tooling, fits alongside test/debug/deploy
 **Impact:** Clean architecture, no user confusion
 
 ### 2. YAML Format
+
 **Decision:** Use YAML for task definitions
 **Rationale:** User-friendly, powerful, familiar to developers
 **Impact:** Easy for users to create custom tasks
 
 ### 3. Leverage Existing Infrastructure
+
 **Decision:** Reuse 80% existing recording/measurement code
 **Rationale:** Avoid duplication, proven implementation
 **Impact:** Fast implementation, maintainable
 
 ### 4. Local-First Output
+
 **Decision:** Start with local files (markdown + HTML)
 **Rationale:** Always works, no dependencies, privacy-friendly
 **Impact:** Cloud integration is future enhancement
 
 ### 5. Statistical Rigor
+
 **Decision:** Implement proper t-tests, effect sizes, confidence intervals
 **Rationale:** Credible, scientific measurement of value
 **Impact:** Results defensible and publishable
@@ -350,6 +386,7 @@ popkit-cloud.com/benchmarks/
 ## Important Context (Pre-Compaction)
 
 **User Vision:**
+
 - YAML task definitions (✅ implemented with comprehensive schema)
 - Template gallery for community tasks (✅ documented, future implementation)
 - Local files + PopKit Cloud integration (✅ designed, local implemented)
@@ -357,6 +394,7 @@ popkit-cloud.com/benchmarks/
 - Interactive terminal for task creation (future enhancement idea)
 
 **Technical Notes:**
+
 - All code is Windows-compatible (tested)
 - Statistical analysis fully implemented (scipy, numpy)
 - Report generation complete (markdown + HTML + Chart.js)
@@ -364,6 +402,7 @@ popkit-cloud.com/benchmarks/
 - Benchmark runner has mock execution, ready for real integration
 
 **Next Session Priorities:**
+
 1. Create 6 more task definitions (Phase 2)
 2. Test end-to-end with real Claude Code instances
 3. Implement GitHub Actions workflow (Phase 3)
@@ -372,19 +411,23 @@ popkit-cloud.com/benchmarks/
 ## Files to Reference
 
 **Core Implementation:**
+
 - `packages/popkit-ops/commands/benchmark.md`
 - `packages/popkit-ops/skills/pop-benchmark-runner/SKILL.md`
 - `packages/popkit-ops/skills/pop-benchmark-runner/scripts/*.py` (4 files)
 
 **Documentation:**
+
 - `packages/popkit-ops/skills/pop-benchmark-runner/README.md`
 - `packages/popkit-ops/tasks/TASK_DEFINITION_SCHEMA.md` ← **YAML reference**
 
 **Examples:**
+
 - `packages/popkit-ops/tasks/feature-addition/jwt-authentication.yml`
 - `packages/popkit-ops/tasks/bug-fixing/race-condition-fix.yml`
 
 **Plan:**
+
 - `~/.claude/plans/modular-honking-pretzel.md`
 
 ---

@@ -46,7 +46,10 @@ def main():
             print(f"Error: Category '{category}' not found")
             sys.exit(1)
     else:
-        test_files = list(tests_dir.glob("**/*.json"))
+        # Glob all JSON test files but exclude cross-plugin (handled by run_all_tests.py)
+        test_files = [
+            f for f in tests_dir.glob("**/*.json") if "cross-plugin" not in f.parts
+        ]
         print("Running all tests...")
 
     print(f"Found {len(test_files)} test definition(s)")

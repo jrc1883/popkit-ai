@@ -67,6 +67,14 @@ class TestWorktreeWorkflow(unittest.TestCase):
             capture_output=True,
         )
 
+        # Rename branch to 'main' for consistent testing across git versions
+        subprocess.run(
+            ["git", "branch", "-M", "main"],
+            cwd=self.test_dir,
+            check=True,
+            capture_output=True,
+        )
+
         # Create .popkit directory for config
         popkit_dir = Path(self.test_dir) / ".popkit"
         popkit_dir.mkdir()
@@ -269,6 +277,14 @@ class TestStatusJsonIntegration(unittest.TestCase):
         )
         subprocess.run(
             ["git", "commit", "-m", "Initial commit"],
+            cwd=self.test_dir,
+            check=True,
+            capture_output=True,
+        )
+
+        # Rename branch to 'main' for consistent testing across git versions
+        subprocess.run(
+            ["git", "branch", "-M", "main"],
             cwd=self.test_dir,
             check=True,
             capture_output=True,

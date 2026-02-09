@@ -7,6 +7,7 @@ This document describes the implementation of Issue #80, which activates the dor
 ## Problem Statement
 
 The Agent Expertise System (Issue #201, #68) was 85% infrastructure complete with:
+
 - Pattern tracking with 3+ occurrence threshold
 - YAML-based per-agent expertise files
 - Pending patterns storage
@@ -131,17 +132,20 @@ The semantic router uses multiple methods with priority:
 All 4 integration tests pass:
 
 ### Test 1: Semantic Router Import
+
 ```
 [PASS] SemanticRouter imported successfully
 ```
 
 ### Test 2: Semantic Router Initialization
+
 ```
 [PASS] SemanticRouter initialized successfully
 Embedding store available: True
 ```
 
 ### Test 3: Agent Detection
+
 ```
 Test 1: Edit code issues
   Detected agent: refactoring-expert
@@ -165,6 +169,7 @@ Results: 3/3 tests set POPKIT_ACTIVE_AGENT
 ```
 
 ### Test 4: Expertise Manager Detection
+
 ```
 [PASS] ExpertiseManager initialized successfully
 Agent ID: code-reviewer
@@ -175,12 +180,14 @@ Env var: code-reviewer
 ## Impact
 
 ### Before Issue #80
+
 - Agent Expertise System: **DORMANT**
 - Expertise files generated: **0**
 - Pattern learning: **None**
 - POPKIT_ACTIVE_AGENT set: **Only with --agent flag (rare)**
 
 ### After Issue #80
+
 - Agent Expertise System: **ACTIVE**
 - Expertise files: **Auto-generated for detected agents**
 - Pattern learning: **Automatic for all tool executions**
@@ -244,6 +251,7 @@ python test_issue_80.py
 Expected output: `Tests passed: 4/4`
 
 To verify in production, check stderr for messages like:
+
 ```
 [Expertise] Active agent: refactoring-expert (confidence: 0.47)
 ```

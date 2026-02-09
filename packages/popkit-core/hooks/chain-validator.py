@@ -10,10 +10,10 @@ Features:
 - Warning-based approach (don't block, just warn)
 """
 
-import sys
 import json
+import sys
 from pathlib import Path
-from typing import Dict, Any, List, Set
+from typing import Any, Dict, List, Set
 
 # Path resolution
 HOOKS_DIR = Path(__file__).parent
@@ -220,7 +220,7 @@ def main():
     try:
         # Read input data from stdin
         input_data = sys.stdin.read()
-        data = json.loads(input_data) if input_data.strip() else {}
+        json.loads(input_data) if input_data.strip() else {}
 
         # Initialize validator
         validator = ChainValidator()

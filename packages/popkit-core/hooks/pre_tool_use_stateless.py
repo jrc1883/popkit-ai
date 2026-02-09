@@ -8,17 +8,17 @@ This is the stateless refactor of pre-tool-use.py following issue #22.
 All state is explicit - no SQLite or environment variable dependencies.
 """
 
-import os
-import sys
 import json
+import os
 import re
-from typing import Dict, List, Any
+import sys
+from typing import Any, Dict, List
 
 # Add utils to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'utils'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "utils"))
 
-from stateless_hook import StatelessHook
 from context_carrier import HookContext
+from stateless_hook import StatelessHook
 
 
 class PreToolUseStateless(StatelessHook):
@@ -34,26 +34,26 @@ class PreToolUseStateless(StatelessHook):
 
     # Safety rules as class constants (no external state)
     BLOCKED_COMMANDS = [
-        r"rm\s+-rf\s+/",           # rm -rf /
-        r"sudo\s+rm\s+-rf",        # sudo rm -rf anything
-        r"DROP\s+DATABASE",        # SQL DROP DATABASE
-        r"TRUNCATE\s+TABLE",       # SQL TRUNCATE TABLE
-        r">\s*/dev/sd[a-z]",       # Write to disk device
-        r"mkfs\.",                 # Format filesystem
-        r":(){:|:&};:",           # Fork bomb
+        r"rm\s+-rf\s+/",  # rm -rf /
+        r"sudo\s+rm\s+-rf",  # sudo rm -rf anything
+        r"DROP\s+DATABASE",  # SQL DROP DATABASE
+        r"TRUNCATE\s+TABLE",  # SQL TRUNCATE TABLE
+        r">\s*/dev/sd[a-z]",  # Write to disk device
+        r"mkfs\.",  # Format filesystem
+        r":(){:|:&};:",  # Fork bomb
     ]
 
     SENSITIVE_PATHS = [
-        r"\.env",                  # Environment files
-        r"\.ssh/",                 # SSH keys
-        r"\.aws/credentials",      # AWS credentials
-        r"\.gnupg/",              # GPG keys
-        r"id_rsa",                # SSH private keys
-        r"\.npmrc",               # NPM tokens
-        r"\.pypirc",              # PyPI tokens
+        r"\.env",  # Environment files
+        r"\.ssh/",  # SSH keys
+        r"\.aws/credentials",  # AWS credentials
+        r"\.gnupg/",  # GPG keys
+        r"id_rsa",  # SSH private keys
+        r"\.npmrc",  # NPM tokens
+        r"\.pypirc",  # PyPI tokens
     ]
 
-    CODE_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.py', '.go', '.rs', '.java']
+    CODE_EXTENSIONS = [".ts", ".tsx", ".js", ".jsx", ".py", ".go", ".rs", ".java"]
 
     def process(self, ctx: HookContext) -> HookContext:
         """Process pre-tool-use safety checks.
@@ -71,10 +71,7 @@ class PreToolUseStateless(StatelessHook):
         violations = self._check_safety_violations(tool_name, tool_input)
 
         # Build result
-        safety_check = {
-            "passed": len(violations) == 0,
-            "violations": violations
-        }
+        safety_check = {"passed": len(violations) == 0, "violations": violations}
 
         # Coordination suggestions
         recommendations = self._get_recommendations(tool_name, tool_input)
@@ -85,17 +82,18 @@ class PreToolUseStateless(StatelessHook):
         # Update context with results (immutable - returns new context)
         return self.update_context(
             ctx,
-            hook_output=("pre_tool_use", {
-                "action": action,
-                "safety_check": safety_check,
-                "recommendations": recommendations
-            })
+            hook_output=(
+                "pre_tool_use",
+                {
+                    "action": action,
+                    "safety_check": safety_check,
+                    "recommendations": recommendations,
+                },
+            ),
         )
 
     def _check_safety_violations(
-        self,
-        tool_name: str,
-        tool_input: Dict[str, Any]
+        self, tool_name: str, tool_input: Dict[str, Any]
     ) -> List[str]:
         """Check for safety violations (pure function).
 
@@ -125,9 +123,7 @@ class PreToolUseStateless(StatelessHook):
         return violations
 
     def _get_recommendations(
-        self,
-        tool_name: str,
-        tool_input: Dict[str, Any]
+        self, tool_name: str, tool_input: Dict[str, Any]
     ) -> List[str]:
         """Get recommendations for the tool use (pure function).
 
@@ -158,7 +154,7 @@ class PreToolUseStateless(StatelessHook):
                 )
 
             # Check if it's a config file
-            if file_path.endswith(('.json', '.yaml', '.yml', '.toml')):
+            if file_path.endswith((".json", ".yaml", ".yml", ".toml")):
                 recommendations.append(
                     "Config file modified - verify no secrets exposed"
                 )

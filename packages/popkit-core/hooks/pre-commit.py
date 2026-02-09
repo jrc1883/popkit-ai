@@ -14,9 +14,9 @@ Responsibilities:
 Issue #156: Automatic Ruff Pre-Commit Hook Integration
 """
 
-import sys
 import json
 import subprocess
+import sys
 
 
 def get_staged_python_files():

@@ -5,15 +5,22 @@ Logging, metrics collection, agent communication, and follow-up orchestration
 Analyzes tool results and coordinates next steps in multi-agent workflows
 """
 
-import os
-import sys
 import json
+import os
 import re
-import requests
 import sqlite3
+import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
+
+# Optional import for observability features (not required for core functionality)
+try:
+    import requests
+
+    HAS_REQUESTS = True
+except ImportError:
+    HAS_REQUESTS = False
 
 # Import error code system (Issue #104)
 try:
@@ -26,7 +33,7 @@ except ImportError:
 
 # Import project activity tracking
 try:
-    from popkit_shared.utils.project_client import ProjectClient, ProjectActivity
+    from popkit_shared.utils.project_client import ProjectActivity, ProjectClient
 
     HAS_PROJECT_CLIENT = True
 except ImportError:
@@ -53,14 +60,14 @@ except ImportError:
 
 # Import test telemetry for sandbox testing (Issue #226)
 try:
-    from popkit_shared.utils.test_telemetry import (
-        is_test_mode,
-        create_trace,
-        create_decision,
-    )
     from popkit_shared.utils.local_telemetry import (
-        log_trace_if_test_mode,
         log_decision_if_test_mode,
+        log_trace_if_test_mode,
+    )
+    from popkit_shared.utils.test_telemetry import (
+        create_decision,
+        create_trace,
+        is_test_mode,
     )
 
     TEST_TELEMETRY_AVAILABLE = True
@@ -99,8 +106,8 @@ except ImportError:
 # Import session recorder for --record flag support
 try:
     from popkit_shared.utils.session_recorder import (
-        is_recording_enabled,
         get_recorder,
+        is_recording_enabled,
     )
 
     HAS_SESSION_RECORDER = True
@@ -645,6 +652,8 @@ class PostToolUseHook:
         analysis: Dict[str, Any],
     ):
         """Log post-tool-use event to observability system"""
+        if not HAS_REQUESTS:
+            return
         try:
             event_data = {
                 "timestamp": datetime.now().isoformat(),
@@ -702,6 +711,8 @@ class PostToolUseHook:
         self, tool_name: str, analysis: Dict[str, Any], followup_agents: List[str]
     ) -> Optional[Dict]:
         """Request follow-up orchestration from orchestrator service"""
+        if not HAS_REQUESTS:
+            return None
         try:
             orchestration_data = {
                 "session_id": self.session_id,

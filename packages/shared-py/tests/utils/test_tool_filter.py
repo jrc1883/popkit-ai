@@ -31,7 +31,7 @@ class TestLoadAgentConfig:
             mock_open(
                 read_data='{"tool_choice": {"workflow_steps": {"git-commit": {"required_tools": ["Bash", "Read"]}}}}'
             ),
-        ) as mock_file:
+        ):
             with patch("json.load", return_value=mock_config):
                 result = load_agent_config()
                 assert isinstance(result, dict)

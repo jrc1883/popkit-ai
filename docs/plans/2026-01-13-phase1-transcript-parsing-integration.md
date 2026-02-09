@@ -15,6 +15,7 @@
 ## Task 1: Add `record_subagent_completion` Function to session_recorder.py
 
 **Files:**
+
 - Modify: `packages/shared-py/popkit_shared/utils/session_recorder.py` (end of SessionRecorder class ~line 390)
 - Test: `packages/shared-py/popkit_shared/utils/test_session_recorder.py` (if exists) or new test file
 
@@ -186,6 +187,7 @@ EOF
 ## Task 2: Integrate Transcript Parsing into subagent-stop.py
 
 **Files:**
+
 - Modify: `packages/popkit-core/hooks/subagent-stop.py:195`
 - Test: Manual integration test with Power Mode
 
@@ -267,6 +269,7 @@ EOF
 ## Task 3: Test Integration with Power Mode
 
 **Files:**
+
 - Test: Manual testing with `/popkit-core:power` command
 - Verify: `~/.claude/popkit/recordings/*.json` contains subagent data
 
@@ -289,6 +292,7 @@ export POPKIT_RECORD=true
 Run: `/popkit-core:power start`
 
 Expected output:
+
 ```
 Power Mode activated
 Agents: [list of available agents]
@@ -316,6 +320,7 @@ This should trigger at least one subagent (Explore agent).
 Run: `/popkit-core:power stop`
 
 Expected output:
+
 ```
 Power Mode deactivated
 Session summary: [details]
@@ -339,6 +344,7 @@ cat ~/.claude/popkit/recordings/20260113-*.json | jq '.events[] | select(.type =
 ```
 
 Expected output (example):
+
 ```json
 {
   "type": "subagent_completion",
@@ -359,6 +365,7 @@ Expected output (example):
 ```
 
 **Success Criteria:**
+
 - ✅ Recording file exists
 - ✅ Contains "subagent_completion" event
 - ✅ tool_count matches number of tools used
@@ -366,6 +373,7 @@ Expected output (example):
 - ✅ tool_details contains first N tools (up to 10)
 
 If verification fails, check:
+
 1. Was recording enabled? (`POPKIT_RECORD=true`)
 2. Did subagent actually run? (check Power Mode output)
 3. Does transcript file exist? (check `.claude/transcripts/`)
@@ -431,6 +439,7 @@ rm ~/.claude/popkit/recordings/20260113-test*.json
 ## Task 4: Final Commit and Documentation
 
 **Files:**
+
 - Create: `test-results-phase1.txt` (test summary)
 - Update: `CHANGELOG.md` (if exists)
 
@@ -464,6 +473,7 @@ If `CHANGELOG.md` exists in the repo root, add entry:
 ## [Unreleased]
 
 ### Added
+
 - Power Mode transcript parsing integration (Issue #110)
   - `record_subagent_completion` method in session_recorder.py
   - Automatic parsing of subagent JSONL transcripts
@@ -471,6 +481,7 @@ If `CHANGELOG.md` exists in the repo root, add entry:
   - Foundation for PopKit Observability Platform (Phase 1)
 
 ### Fixed
+
 - subagent-stop.py now extracts structured data from transcripts (was TODO)
 ```
 
@@ -526,6 +537,7 @@ Before marking Phase 1 complete, verify:
 **Symptoms:** Warning in hook output: "Transcript not found: [path]"
 
 **Solution:**
+
 1. Check if Power Mode is actually active: `/popkit-core:power status`
 2. Verify transcript location: `ls ~/.claude/transcripts/`
 3. Ensure subagent completed successfully (check Power Mode output)
@@ -535,6 +547,7 @@ Before marking Phase 1 complete, verify:
 **Symptoms:** `ModuleNotFoundError: No module named 'popkit_shared.utils.transcript_parser'`
 
 **Solution:**
+
 1. Ensure shared-py is installed: `cd packages/shared-py && pip install -e .`
 2. Verify Python path includes popkit-claude: `echo $PYTHONPATH`
 3. Add to PYTHONPATH if needed: `export PYTHONPATH="/path/to/popkit-claude/packages/shared-py:$PYTHONPATH"`
@@ -544,6 +557,7 @@ Before marking Phase 1 complete, verify:
 **Symptoms:** `total_tokens` in recording is 0
 
 **Solution:**
+
 1. Check if transcript has `usage` field: `cat [transcript-file] | jq '.usage'`
 2. Verify transcript_parser.py is correctly reading usage data
 3. Run unit test: `pytest popkit_shared/utils/test_transcript_parser.py::test_get_total_token_usage -v`
@@ -553,6 +567,7 @@ Before marking Phase 1 complete, verify:
 **Symptoms:** Recording exists but has no subagent events
 
 **Solution:**
+
 1. Verify recording was enabled: `echo $POPKIT_RECORD`
 2. Check if subagent actually ran: Look for "Spawning subagent" in Power Mode output
 3. Check subagent-stop.py was triggered: `cat ~/.claude/logs/subagent_stop.json`
@@ -572,6 +587,7 @@ Once Phase 1 is complete and all success criteria are met:
 **Estimated Time for Phase 1:** 1-2 days (mostly testing and verification)
 
 **Phase 2 Preview:** Create new `popkit-observe` plugin with:
+
 - `/popkit-observe:observe` command (5 subcommands)
 - `observability_client.py` for cloud streaming
 - Migration from `/popkit-core:record`

@@ -57,7 +57,7 @@ def run_git_command(cmd: str, timeout: int = 30) -> Tuple[str, bool]:
         timeout: Command timeout in seconds
 
     Returns:
-        Tuple of (output, success)
+        Tuple of (output, success) - output includes stderr on failure
     """
     try:
         # Use shlex.split to properly handle quoted strings
@@ -68,7 +68,12 @@ def run_git_command(cmd: str, timeout: int = 30) -> Tuple[str, bool]:
             timeout=timeout,
             check=False,
         )
-        return result.stdout.strip(), result.returncode == 0
+        # Return stdout on success, stderr (or both) on failure for better error messages
+        if result.returncode == 0:
+            return result.stdout.strip(), True
+        else:
+            error_output = result.stderr.strip() or result.stdout.strip()
+            return error_output, False
     except subprocess.TimeoutExpired:
         return "Command timed out", False
     except Exception as e:

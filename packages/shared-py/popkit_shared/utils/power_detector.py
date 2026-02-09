@@ -132,7 +132,7 @@ class PowerDetector:
         # Extract issue details
         title = issue_data.get("title", "").lower()
         body = issue_data.get("body", "") or ""
-        labels = [l.get("name", "").lower() for l in issue_data.get("labels", [])]
+        labels = [label.get("name", "").lower() for label in issue_data.get("labels", [])]
 
         # Check for power-mode labels
         matching_labels = self.power_labels & set(labels)

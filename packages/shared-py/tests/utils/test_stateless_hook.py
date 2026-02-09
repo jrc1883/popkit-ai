@@ -25,7 +25,7 @@ class TestStatelessHookAbstractBehavior:
         """Test that StatelessHook cannot be instantiated (abstract class)"""
         with pytest.raises(TypeError):
             # Should fail because process() is abstract
-            hook = StatelessHook()
+            StatelessHook()
 
     def test_must_implement_process_method(self):
         """Test that subclass must implement process() method"""
@@ -35,7 +35,7 @@ class TestStatelessHookAbstractBehavior:
             class IncompleteHook(StatelessHook):
                 pass
 
-            hook = IncompleteHook()
+            IncompleteHook()
 
 
 class TestConcreteHookImplementation:

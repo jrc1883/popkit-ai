@@ -18,8 +18,7 @@ Output: Suggestions for documentation updates (non-blocking)
 import json
 import sys
 from pathlib import Path
-from typing import Dict, Any, List, Optional
-
+from typing import Any, Dict, List, Optional
 
 # Files that impact documentation
 DOC_IMPACTING_PATTERNS = {

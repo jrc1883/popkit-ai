@@ -9,10 +9,10 @@ Responsibilities:
 3. Update STATUS.json with teammate state
 """
 
-import sys
 import json
-from pathlib import Path
+import sys
 from datetime import datetime
+from pathlib import Path
 
 
 def log_teammate_idle(data):

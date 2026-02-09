@@ -6,11 +6,11 @@ Tracks cumulative input tokens and warns before context window exhaustion.
 Part of PopKit plugin - Issue #16
 """
 
-import sys
 import json
-from pathlib import Path
+import sys
 from datetime import datetime
-from typing import Dict, Any
+from pathlib import Path
+from typing import Any, Dict
 
 # Context window limits by model (approximate)
 MODEL_CONTEXT_LIMITS = {

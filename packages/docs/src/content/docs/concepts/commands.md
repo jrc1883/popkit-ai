@@ -5,7 +5,7 @@ description: Slash commands for common workflows
 
 # Commands
 
-PopKit provides 24 slash commands for common development workflows. Commands are the primary interface for interacting with PopKit.
+PopKit provides 25 slash commands for common development workflows. Commands are the primary interface for interacting with PopKit.
 
 ## Core Commands
 
@@ -52,12 +52,12 @@ Examples:
 
 ## Command vs Skills
 
-| Commands | Skills |
-|----------|--------|
-| User-facing interface | Internal automation |
-| Slash command syntax | Invoked programmatically |
-| High-level workflows | Low-level operations |
-| Documentation focused | Implementation focused |
+| Commands              | Skills                   |
+| --------------------- | ------------------------ |
+| User-facing interface | Internal automation      |
+| Slash command syntax  | Invoked programmatically |
+| High-level workflows  | Low-level operations     |
+| Documentation focused | Implementation focused   |
 
 Commands often use multiple skills internally to accomplish their goals.
 

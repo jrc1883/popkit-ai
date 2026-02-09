@@ -34,7 +34,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 # Import workflow classes
 try:
-    from .workflow_engine import WorkflowDefinition, WorkflowStep
+    from .workflow_engine import WorkflowDefinition
 except ImportError:
     from workflow_engine import WorkflowDefinition
 

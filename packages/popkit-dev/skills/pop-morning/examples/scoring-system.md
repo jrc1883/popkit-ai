@@ -4,14 +4,14 @@ Comprehensive readiness check across 6 dimensions (0-100 points).
 
 ## Score Components
 
-| Check | Points | Criteria |
-|-------|--------|----------|
-| Session Restored | 20 | Previous session context restored from STATUS.json |
-| Services Healthy | 20 | All required dev services running |
-| Dependencies Updated | 15 | Package dependencies up to date |
-| Branches Synced | 15 | Local branch synced with remote |
-| PRs Reviewed | 15 | No PRs waiting for review |
-| Issues Triaged | 15 | All issues assigned/prioritized |
+| Check                | Points | Criteria                                           |
+| -------------------- | ------ | -------------------------------------------------- |
+| Session Restored     | 20     | Previous session context restored from STATUS.json |
+| Services Healthy     | 20     | All required dev services running                  |
+| Dependencies Updated | 15     | Package dependencies up to date                    |
+| Branches Synced      | 15     | Local branch synced with remote                    |
+| PRs Reviewed         | 15     | No PRs waiting for review                          |
+| Issues Triaged       | 15     | All issues assigned/prioritized                    |
 
 ## Branch Protection Penalty (Issue #142)
 

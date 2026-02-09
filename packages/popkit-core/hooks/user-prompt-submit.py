@@ -5,16 +5,17 @@ Handles keyword detection, agent routing, and security filtering
 Integrates with observability and orchestration systems
 """
 
-import os
-import sys
-import json
-import re
 import hashlib
+import json
+import os
+import re
 import sqlite3
-import requests
+import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
+
+import requests
 
 # Import thinking flags parser from shared package
 try:
@@ -28,19 +29,19 @@ except ImportError:
 
 # Import XML context generation utilities (Phase 1: XML Integration #515)
 try:
-    from popkit_shared.utils.context_state import (
-        load_context_state,
-        save_context_state,
-        compute_hash,
-    )
-    from popkit_shared.utils.xml_generator import (
-        generate_problem_xml,
-        generate_project_context_xml,
-    )
     from popkit_shared.utils.context_delta import (
         compute_context_delta,
         extract_new_context,
         should_send_full_context,
+    )
+    from popkit_shared.utils.context_state import (
+        compute_hash,
+        load_context_state,
+        save_context_state,
+    )
+    from popkit_shared.utils.xml_generator import (
+        generate_problem_xml,
+        generate_project_context_xml,
     )
 
     HAS_XML_CONTEXT = True
@@ -825,7 +826,7 @@ class UserPromptSubmitHook:
                 }
             else:
                 # Delta context
-                previous_context = state.get("context_sent", {}).get("project", {})
+                state.get("context_sent", {}).get("project", {})
 
                 # Compute delta
                 delta = compute_context_delta(project_context, merged_context)

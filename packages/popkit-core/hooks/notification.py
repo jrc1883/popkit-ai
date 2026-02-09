@@ -23,16 +23,15 @@ Features:
 Part of Issue #189: Slack notification idle UI fix adaptation for PopKit
 """
 
-import sys
 import json
-import re
 import os
+import re
 import subprocess
-from pathlib import Path
+import sys
 from datetime import datetime
-from typing import Dict, Any
 from enum import Enum
-
+from pathlib import Path
+from typing import Any, Dict
 
 # =============================================================================
 # EMOJI MAP & COLORS
@@ -378,7 +377,7 @@ def format_message(raw_msg: Dict[str, Any]) -> Dict[str, Any]:
         )
 
     # Sanitize sensitive data
-    sanitized_payload = sanitize_context(raw_msg.get("payload", {}))
+    sanitize_context(raw_msg.get("payload", {}))
 
     # Build output message
     output = {

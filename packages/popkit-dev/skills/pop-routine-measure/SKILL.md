@@ -87,6 +87,7 @@ if measurement:
 See [examples/metrics-reference.md](examples/metrics-reference.md) for complete metrics documentation.
 
 **Key metrics:**
+
 - Duration (total execution time)
 - Tool calls (count per tool type)
 - Token usage (input/output split with ~4 chars/token estimation)
@@ -100,6 +101,7 @@ See [examples/data-format.md](examples/data-format.md) for complete JSON schema.
 Measurements saved to `.claude/popkit/measurements/{routine_id}_{YYYYMMDD}_{HHMMSS}.json`
 
 **Key fields:**
+
 - `routine_id`, `routine_name`: Routine identification
 - `duration`, `start_time`, `end_time`: Timing data
 - `total_tokens`, `input_tokens`, `output_tokens`: Token counts
@@ -111,6 +113,7 @@ Measurements saved to `.claude/popkit/measurements/{routine_id}_{YYYYMMDD}_{HHMM
 See [examples/usage.md](examples/usage.md) for complete usage scenarios.
 
 **Quick examples:**
+
 ```bash
 # Measure default morning routine
 /popkit:routine morning --measure
@@ -127,6 +130,7 @@ show routine measurements
 See [examples/dashboard-implementation.md](examples/dashboard-implementation.md) for complete Python implementation.
 
 **Dashboard features:**
+
 - Summary metrics (duration, tokens, cost)
 - Token usage breakdown (input/output split with percentages)
 - Tool breakdown table (calls, tokens, duration per tool)
@@ -134,6 +138,7 @@ See [examples/dashboard-implementation.md](examples/dashboard-implementation.md)
 - Aggregate statistics across multiple runs
 
 **View dashboard:**
+
 ```bash
 python examples/dashboard-implementation.py
 python examples/dashboard-implementation.py --routine morning
@@ -145,12 +150,14 @@ python examples/dashboard-implementation.py --all
 See [examples/integration.md](examples/integration.md) for detailed integration documentation.
 
 **Hook integration:**
+
 - `post-tool-use.py` hook automatically tracks tool calls when `POPKIT_ROUTINE_MEASURE=true`
 - Tracks all tools: Bash, Read, Grep, Write, Edit, Skill, etc.
 - Estimates tokens using ~4 chars/token heuristic
 - Captures duration from hook execution time
 
 **Command integration:**
+
 - `/popkit:routine` command supports `--measure` flag
 - This skill wraps routine execution with measurement tracking
 - Results displayed after routine completion
@@ -160,6 +167,7 @@ See [examples/integration.md](examples/integration.md) for detailed integration 
 See [examples/roadmap.md](examples/roadmap.md) for complete roadmap.
 
 **Planned features:**
+
 - **Phase 2**: Comparison mode for side-by-side routine comparison
 - **Phase 3**: Trend analysis with visualization over time periods
 - **Phase 4**: Optimization suggestions based on measurement data
@@ -167,26 +175,27 @@ See [examples/roadmap.md](examples/roadmap.md) for complete roadmap.
 
 ## Related Skills
 
-| Skill | Purpose |
-|-------|---------|
-| `pop-morning-routine` | Execute morning routine |
-| `pop-nightly-routine` | Execute nightly routine |
-| `pop-routine-generator` | Create custom routines |
+| Skill                        | Purpose                     |
+| ---------------------------- | --------------------------- |
+| `pop-morning-routine`        | Execute morning routine     |
+| `pop-nightly-routine`        | Execute nightly routine     |
+| `pop-routine-generator`      | Create custom routines      |
 | `pop-assessment-performance` | Analyze performance metrics |
 
 ## Related Commands
 
-| Command | Purpose |
-|---------|---------|
-| `/popkit:routine` | Execute routines |
+| Command                      | Purpose                |
+| ---------------------------- | ---------------------- |
+| `/popkit:routine`            | Execute routines       |
 | `/popkit:assess performance` | Performance assessment |
-| `/popkit:stats` | Session statistics |
+| `/popkit:stats`              | Session statistics     |
 
 ## Testing
 
 See [examples/testing.md](examples/testing.md) for complete testing instructions.
 
 **Quick test:**
+
 ```bash
 # Enable measurement manually
 export POPKIT_ROUTINE_MEASURE=true
