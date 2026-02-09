@@ -216,9 +216,7 @@ def analyze_import_patterns(project_dir: Path) -> Dict[str, Any]:
         content = py_file.read_text(encoding="utf-8", errors="ignore")
 
         # Find internal imports
-        internal_imports = re.findall(
-            r"from\s+\.(\w+)\s+import|import\s+\.(\w+)", content
-        )
+        internal_imports = re.findall(r"from\s+\.(\w+)\s+import|import\s+\.(\w+)", content)
         flat_imports = [i[0] or i[1] for i in internal_imports if i[0] or i[1]]
 
         module_data = {
@@ -258,9 +256,7 @@ def analyze_import_patterns(project_dir: Path) -> Dict[str, Any]:
     }
 
 
-def calculate_loading_score(
-    tier_dist: Dict, startup: Dict, hooks: Dict, imports: Dict
-) -> float:
+def calculate_loading_score(tier_dist: Dict, startup: Dict, hooks: Dict, imports: Dict) -> float:
     """Calculate overall loading efficiency score."""
     score = 100
 

@@ -9,11 +9,11 @@ PopKit provides 23 specialized AI agents across 4 plugins. Agents are organized 
 
 ## Agent Tiers
 
-| Tier | Description | Activation |
-|------|-------------|------------|
-| **Tier 1: Always Active** | Core agents for common tasks | Automatically available in every session |
-| **Tier 2: On-Demand** | Specialized agents for specific needs | Activated when relevant tasks are detected |
-| **Feature Workflow** | Development phase agents | Used during feature development phases |
+| Tier                      | Description                           | Activation                                 |
+| ------------------------- | ------------------------------------- | ------------------------------------------ |
+| **Tier 1: Always Active** | Core agents for common tasks          | Automatically available in every session   |
+| **Tier 2: On-Demand**     | Specialized agents for specific needs | Activated when relevant tasks are detected |
+| **Feature Workflow**      | Development phase agents              | Used during feature development phases     |
 
 ---
 
@@ -241,13 +241,13 @@ Knowledge management agent for codebase analysis and agent discovery.
 
 ## Agent Summary
 
-| Plugin | Tier 1 | Tier 2 | Feature Workflow | Total |
-|--------|--------|--------|------------------|-------|
-| popkit-core | 4 | 5 | - | 9 |
-| popkit-dev | 2 | 3 | 2 | 7 |
-| popkit-ops | 4 | 2 | - | 6 |
-| popkit-research | - | 1 | - | 1 |
-| **Total** | **10** | **11** | **2** | **23** |
+| Plugin          | Tier 1 | Tier 2 | Feature Workflow | Total  |
+| --------------- | ------ | ------ | ---------------- | ------ |
+| popkit-core     | 4      | 5      | -                | 9      |
+| popkit-dev      | 2      | 3      | 2                | 7      |
+| popkit-ops      | 4      | 2      | -                | 6      |
+| popkit-research | -      | 1      | -                | 1      |
+| **Total**       | **10** | **11** | **2**            | **23** |
 
 ## Agent Memory (CC 2.1.33+)
 

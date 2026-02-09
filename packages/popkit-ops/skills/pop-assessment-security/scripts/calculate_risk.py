@@ -18,8 +18,8 @@ Output:
 import json
 import subprocess
 import sys
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 
 def find_plugin_root(start_path: Path = None) -> Path:
@@ -47,7 +47,7 @@ def run_scan_script(script_name: str, plugin_dir: Path) -> dict:
             "category": script_name.replace("scan_", "").replace(".py", ""),
             "score": 100,
             "error": f"Script not found: {script_path}",
-            "findings": []
+            "findings": [],
         }
 
     try:
@@ -55,7 +55,7 @@ def run_scan_script(script_name: str, plugin_dir: Path) -> dict:
             [sys.executable, str(script_path), str(plugin_dir)],
             capture_output=True,
             text=True,
-            timeout=120
+            timeout=120,
         )
         return json.loads(result.stdout)
     except subprocess.TimeoutExpired:
@@ -63,21 +63,21 @@ def run_scan_script(script_name: str, plugin_dir: Path) -> dict:
             "category": script_name.replace("scan_", "").replace(".py", ""),
             "score": 100,
             "error": "Script timeout",
-            "findings": []
+            "findings": [],
         }
     except json.JSONDecodeError:
         return {
             "category": script_name.replace("scan_", "").replace(".py", ""),
             "score": 100,
             "error": "Invalid JSON output",
-            "findings": []
+            "findings": [],
         }
     except Exception as e:
         return {
             "category": script_name.replace("scan_", "").replace(".py", ""),
             "score": 100,
             "error": str(e),
-            "findings": []
+            "findings": [],
         }
 
 
@@ -86,7 +86,7 @@ def get_version(plugin_dir: Path) -> str:
     plugin_json = plugin_dir / ".claude-plugin" / "plugin.json"
     if plugin_json.exists():
         try:
-            with open(plugin_json, 'r') as f:
+            with open(plugin_json, "r") as f:
                 data = json.load(f)
                 return data.get("version", "unknown")
         except:
@@ -100,7 +100,7 @@ def calculate_weighted_risk(results: list) -> dict:
         "secret-detection": 40,
         "injection-prevention": 40,
         "access-control": 10,
-        "input-validation": 10
+        "input-validation": 10,
     }
 
     total_weight = 0
@@ -121,7 +121,7 @@ def calculate_weighted_risk(results: list) -> dict:
             "risk_contribution": risk_contribution,
             "weight": weight,
             "weighted_risk": round(risk_contribution * weight / 100, 2),
-            "findings_count": len(result.get("findings", []))
+            "findings_count": len(result.get("findings", [])),
         }
 
         total_weight += weight
@@ -134,7 +134,7 @@ def calculate_weighted_risk(results: list) -> dict:
         "risk_score": overall_risk,
         "compliance_score": round(100 - overall_risk, 1),
         "categories": category_scores,
-        "total_weight": total_weight
+        "total_weight": total_weight,
     }
 
 
@@ -154,13 +154,7 @@ def get_risk_label(risk_score: float) -> str:
 
 def collect_all_findings(results: list) -> dict:
     """Collect and categorize all security findings."""
-    all_findings = {
-        "critical": [],
-        "high": [],
-        "medium": [],
-        "low": [],
-        "info": []
-    }
+    all_findings = {"critical": [], "high": [], "medium": [], "low": [], "info": []}
 
     for result in results:
         category = result.get("category", "unknown")
@@ -181,34 +175,42 @@ def generate_recommendations(findings: dict, risk_score: float) -> list:
     recommendations = []
 
     if findings["critical"]:
-        recommendations.append({
-            "priority": "CRITICAL",
-            "action": "IMMEDIATE",
-            "message": f"Fix {len(findings['critical'])} critical vulnerabilities before release",
-            "cwes": list(set(f.get("cwe", "unknown") for f in findings["critical"]))
-        })
+        recommendations.append(
+            {
+                "priority": "CRITICAL",
+                "action": "IMMEDIATE",
+                "message": f"Fix {len(findings['critical'])} critical vulnerabilities before release",
+                "cwes": list(set(f.get("cwe", "unknown") for f in findings["critical"])),
+            }
+        )
 
     if findings["high"]:
-        recommendations.append({
-            "priority": "HIGH",
-            "action": "REQUIRED",
-            "message": f"Address {len(findings['high'])} high-severity issues",
-            "cwes": list(set(f.get("cwe", "unknown") for f in findings["high"]))
-        })
+        recommendations.append(
+            {
+                "priority": "HIGH",
+                "action": "REQUIRED",
+                "message": f"Address {len(findings['high'])} high-severity issues",
+                "cwes": list(set(f.get("cwe", "unknown") for f in findings["high"])),
+            }
+        )
 
     if findings["medium"]:
-        recommendations.append({
-            "priority": "MEDIUM",
-            "action": "RECOMMENDED",
-            "message": f"Review {len(findings['medium'])} medium-severity findings"
-        })
+        recommendations.append(
+            {
+                "priority": "MEDIUM",
+                "action": "RECOMMENDED",
+                "message": f"Review {len(findings['medium'])} medium-severity findings",
+            }
+        )
 
     if risk_score < 10:
-        recommendations.append({
-            "priority": "INFO",
-            "action": "MAINTAIN",
-            "message": "Security posture is strong. Continue regular scanning."
-        })
+        recommendations.append(
+            {
+                "priority": "INFO",
+                "action": "MAINTAIN",
+                "message": "Security posture is strong. Continue regular scanning.",
+            }
+        )
 
     return recommendations
 
@@ -233,10 +235,7 @@ def main():
             plugin_dir = find_plugin_root()
 
         # Run all scan scripts
-        scripts = [
-            "scan_secrets.py",
-            "scan_injection.py"
-        ]
+        scripts = ["scan_secrets.py", "scan_injection.py"]
 
         results = []
         for script in scripts:
@@ -271,17 +270,41 @@ def main():
             "high_issues": len(all_findings["high"]),
             "medium_issues": len(all_findings["medium"]),
             "low_issues": len(all_findings["low"]),
-            "total_issues": sum(len(v) for v in all_findings.values())
+            "total_issues": sum(len(v) for v in all_findings.values()),
         },
         "category_results": results,
         "findings_by_severity": all_findings,
         "recommendations": recommendations,
         "owasp_mapping": {
-            "A01:2021-Broken Access Control": len([f for f in all_findings["critical"] + all_findings["high"] if f.get("cwe") in ["CWE-22", "CWE-23"]]),
-            "A02:2021-Cryptographic Failures": len([f for f in all_findings["critical"] + all_findings["high"] if f.get("cwe") in ["CWE-321", "CWE-798"]]),
-            "A03:2021-Injection": len([f for f in all_findings["critical"] + all_findings["high"] if f.get("cwe") in ["CWE-78", "CWE-89", "CWE-94"]]),
-            "A08:2021-Software and Data Integrity Failures": len([f for f in all_findings["critical"] + all_findings["high"] if f.get("cwe") in ["CWE-502"]])
-        }
+            "A01:2021-Broken Access Control": len(
+                [
+                    f
+                    for f in all_findings["critical"] + all_findings["high"]
+                    if f.get("cwe") in ["CWE-22", "CWE-23"]
+                ]
+            ),
+            "A02:2021-Cryptographic Failures": len(
+                [
+                    f
+                    for f in all_findings["critical"] + all_findings["high"]
+                    if f.get("cwe") in ["CWE-321", "CWE-798"]
+                ]
+            ),
+            "A03:2021-Injection": len(
+                [
+                    f
+                    for f in all_findings["critical"] + all_findings["high"]
+                    if f.get("cwe") in ["CWE-78", "CWE-89", "CWE-94"]
+                ]
+            ),
+            "A08:2021-Software and Data Integrity Failures": len(
+                [
+                    f
+                    for f in all_findings["critical"] + all_findings["high"]
+                    if f.get("cwe") in ["CWE-502"]
+                ]
+            ),
+        },
     }
 
     # Print report

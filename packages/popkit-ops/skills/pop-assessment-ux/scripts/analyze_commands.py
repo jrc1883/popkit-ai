@@ -286,9 +286,7 @@ def main():
     help_quality = analyze_help_quality(project_dir)
 
     # Calculate score
-    naming_score = calculate_naming_score(
-        naming, subcommands, discoverability, help_quality
-    )
+    naming_score = calculate_naming_score(naming, subcommands, discoverability, help_quality)
 
     # Determine status
     if naming_score >= 90:

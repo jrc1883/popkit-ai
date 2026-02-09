@@ -8,7 +8,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 # Add shared-py to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "shared-py"))
@@ -123,9 +123,7 @@ class ModularPluginTestRunner:
                 print(f"Warning: Invalid JSON in {test_file}: {e}", file=sys.stderr)
 
         # Run tests
-        runner = TestRunner(
-            plugin_root=plugin_dir, verbose=self.verbose, fail_fast=self.fail_fast
-        )
+        runner = TestRunner(plugin_root=plugin_dir, verbose=self.verbose, fail_fast=self.fail_fast)
 
         results = {
             "plugin": plugin_name,
@@ -252,9 +250,7 @@ class ModularPluginTestRunner:
             if proc.returncode == 0:
                 print(f"  [ok] pytest: {results['passed']} passed")
             else:
-                print(
-                    f"  [x] pytest: {results['failed']} failed, {results['passed']} passed"
-                )
+                print(f"  [x] pytest: {results['failed']} failed, {results['passed']} passed")
                 if not self.verbose:
                     # Show failure details even in non-verbose mode
                     for line in proc.stdout.splitlines():
@@ -302,21 +298,21 @@ class ModularPluginTestRunner:
 
         sys.path.insert(0, str(cross_plugin_tests_dir / "validators"))
         from ecosystem_validators import (
+            load_plugin_version,
+            scan_plugin_agents,
             scan_plugin_commands,
             scan_plugin_skills,
-            scan_plugin_agents,
-            load_plugin_version,
+            validate_agent_count_matches,
+            validate_namespace_consistent,
+            validate_no_circular_deps,
+            validate_semver_valid,
+            validate_shared_package_version,
+            validate_skill_naming_convention,
+            validate_total_agents,
+            validate_unique_agent_names,
             validate_unique_command_names,
             validate_unique_skill_names,
-            validate_unique_agent_names,
-            validate_namespace_consistent,
-            validate_skill_naming_convention,
-            validate_semver_valid,
             validate_version_compatibility,
-            validate_shared_package_version,
-            validate_no_circular_deps,
-            validate_agent_count_matches,
-            validate_total_agents,
         )
 
         # Scan all plugins to build ecosystem data
@@ -357,9 +353,7 @@ class ModularPluginTestRunner:
                     # Map assertion types to validator functions
                     try:
                         if assertion_type == "unique_command_names":
-                            passed, message = validate_unique_command_names(
-                                plugins_data
-                            )
+                            passed, message = validate_unique_command_names(plugins_data)
                         elif assertion_type == "unique_skill_names":
                             passed, message = validate_unique_skill_names(plugins_data)
                         elif assertion_type == "unique_agent_names":
@@ -376,9 +370,7 @@ class ModularPluginTestRunner:
                         elif assertion_type == "semver_valid":
                             passed, message = validate_semver_valid(plugins_data)
                         elif assertion_type == "version_compatibility":
-                            passed, message = validate_version_compatibility(
-                                plugins_data
-                            )
+                            passed, message = validate_version_compatibility(plugins_data)
                         elif assertion_type == "shared_package_version":
                             passed, message = validate_shared_package_version(
                                 plugins_data,
@@ -457,17 +449,13 @@ class ModularPluginTestRunner:
             if (self.verbose or results["failed"] > 0) and not results.get("skipped"):
                 for cat, cat_results in sorted(results.get("categories", {}).items()):
                     cat_status = "[ok]" if cat_results["failed"] == 0 else "[x]"
-                    print(
-                        f"  {cat_status} {cat}: {cat_results['passed']}/{cat_results['total']}"
-                    )
+                    print(f"  {cat_status} {cat}: {cat_results['passed']}/{cat_results['total']}")
 
         # Cross-plugin results
         cross = self.all_results.get("cross_plugin", {})
         if not cross.get("skipped"):
             status = "[PASS]" if cross["failed"] == 0 else "[FAIL]"
-            print(
-                f"\n{status} Cross-Plugin Validation: {cross['passed']}/{cross['total']}"
-            )
+            print(f"\n{status} Cross-Plugin Validation: {cross['passed']}/{cross['total']}")
 
         # Overall summary
         summary = self.all_results["summary"]
@@ -555,9 +543,7 @@ class ModularPluginTestRunner:
                 self.all_results["summary"]["total_tests"] += cross_results["total"]
                 self.all_results["summary"]["tests_passed"] += cross_results["passed"]
                 self.all_results["summary"]["tests_failed"] += cross_results["failed"]
-                self.all_results["summary"]["duration_ms"] += cross_results[
-                    "duration_ms"
-                ]
+                self.all_results["summary"]["duration_ms"] += cross_results["duration_ms"]
 
         # Print summary
         self.print_summary()
@@ -577,9 +563,7 @@ class ModularPluginTestRunner:
         json_failures += cross.get("failed", 0)
 
         if pytest_failures > 0:
-            print(
-                f"\nNote: {pytest_failures} pytest failure(s) reported (non-blocking)"
-            )
+            print(f"\nNote: {pytest_failures} pytest failure(s) reported (non-blocking)")
 
         sys.exit(0 if json_failures == 0 else 1)
 
@@ -594,9 +578,7 @@ def main():
     root_dir = Path(__file__).parent.parent.parent
 
     # Run tests
-    runner = ModularPluginTestRunner(
-        root_dir=root_dir, verbose=verbose, fail_fast=fail_fast
-    )
+    runner = ModularPluginTestRunner(root_dir=root_dir, verbose=verbose, fail_fast=fail_fast)
     runner.run()
 
 
