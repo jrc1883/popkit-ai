@@ -140,9 +140,7 @@ class ContextMonitor:
             result["warning"] = (
                 f"Context at {result['usage_percent']}% capacity ({total:,}/{limit:,} tokens)"
             )
-            result["suggestion"] = (
-                "Strongly recommend: /popkit:session-capture to save state now"
-            )
+            result["suggestion"] = "Strongly recommend: /popkit:session-capture to save state now"
         elif usage_ratio >= THRESHOLDS["warning"]:
             result["level"] = "warning"
             result["warning"] = (
@@ -191,9 +189,7 @@ class ContextMonitor:
         result["threshold_check"] = threshold_check
 
         # Generate display if warning needed
-        if threshold_check["level"] != "ok" and self.should_show_warning(
-            threshold_check["level"]
-        ):
+        if threshold_check["level"] != "ok" and self.should_show_warning(threshold_check["level"]):
             result["display"] = {
                 "level": threshold_check["level"],
                 "warning": threshold_check["warning"],
