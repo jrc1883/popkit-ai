@@ -90,9 +90,7 @@ class BenchmarkAnalyzer:
 
         # Import here to avoid circular dependencies
         try:
-            sys.path.insert(
-                0, str(Path(__file__).parent.parent.parent.parent.parent / "shared-py")
-            )
+            sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent / "shared-py"))
             from popkit_shared.utils.recording_analyzer import RecordingAnalyzer
 
             self.RecordingAnalyzer = RecordingAnalyzer
@@ -134,9 +132,7 @@ class BenchmarkAnalyzer:
             baseline_values = baseline_metrics[metric]
 
             # Calculate statistics
-            stats_result = self._calculate_statistics(
-                with_popkit_values, baseline_values
-            )
+            stats_result = self._calculate_statistics(with_popkit_values, baseline_values)
 
             # Calculate improvement percentage
             if np.mean(baseline_values) != 0:
@@ -231,9 +227,7 @@ class BenchmarkAnalyzer:
                 metrics["code_quality"].append(code_quality)
 
             except Exception as e:
-                print(
-                    f"[WARN] Failed to extract metrics from {recording_path.name}: {e}"
-                )
+                print(f"[WARN] Failed to extract metrics from {recording_path.name}: {e}")
                 continue
 
         # Validate we got at least some data
@@ -337,11 +331,7 @@ class BenchmarkAnalyzer:
             if results:
                 # Get result for this trial (by index)
                 trial_idx = len(
-                    [
-                        p
-                        for p in recording_path.parent.glob("*.json")
-                        if p < recording_path
-                    ]
+                    [p for p in recording_path.parent.glob("*.json") if p < recording_path]
                 )
                 if trial_idx < len(results):
                     return 1.0 if results[trial_idx] else 0.0
@@ -430,9 +420,7 @@ class BenchmarkAnalyzer:
         return d
 
     @staticmethod
-    def _confidence_interval(
-        data: np.ndarray, confidence: float = 0.95
-    ) -> Tuple[float, float]:
+    def _confidence_interval(data: np.ndarray, confidence: float = 0.95) -> Tuple[float, float]:
         """Calculate confidence interval for mean.
 
         Formula: mean ± (SEM × t_critical)
@@ -481,12 +469,8 @@ def generate_summary_report(results: Dict[str, Any]) -> str:
 
     lines.append("## Metrics Comparison")
     lines.append("")
-    lines.append(
-        "| Metric | With PopKit | Baseline | Improvement | p-value | Effect Size |"
-    )
-    lines.append(
-        "|--------|-------------|----------|-------------|---------|-------------|"
-    )
+    lines.append("| Metric | With PopKit | Baseline | Improvement | p-value | Effect Size |")
+    lines.append("|--------|-------------|----------|-------------|---------|-------------|")
 
     metrics = results["metrics"]
     for metric_name, data in metrics.items():

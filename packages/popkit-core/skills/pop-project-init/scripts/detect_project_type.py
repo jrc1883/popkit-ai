@@ -70,9 +70,7 @@ def detect_existing_project(project_dir: Path) -> Dict[str, Any]:
     category = None
     if any(f in frameworks for f in ["nextjs", "react", "vue"]):
         category = "web-frontend"
-    elif any(
-        f in frameworks for f in ["express", "fastify", "fastapi", "django", "flask"]
-    ):
+    elif any(f in frameworks for f in ["express", "fastify", "fastapi", "django", "flask"]):
         category = "web-backend"
     elif "cli-python" in frameworks or "typescript" in frameworks:
         category = "cli-or-library"

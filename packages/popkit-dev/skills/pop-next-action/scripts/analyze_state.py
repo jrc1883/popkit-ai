@@ -82,9 +82,7 @@ def analyze_git_state() -> Dict[str, Any]:
     if ok and "\t" in ahead_behind:
         parts = ahead_behind.split("\t")
         state["behind_count"] = int(parts[0]) if parts[0].isdigit() else 0
-        state["ahead_count"] = (
-            int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 0
-        )
+        state["ahead_count"] = int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 0
 
         if state["ahead_count"] > 0:
             state["urgency"] = max(state["urgency"], "MEDIUM")
@@ -112,9 +110,7 @@ def analyze_code_state() -> Dict[str, Any]:
         state["has_typescript"] = True
 
         # Run typecheck
-        output, ok = run_command(
-            "npx tsc --noEmit 2>&1 | grep -c 'error TS' || echo 0", timeout=60
-        )
+        output, ok = run_command("npx tsc --noEmit 2>&1 | grep -c 'error TS' || echo 0", timeout=60)
         try:
             state["typescript_errors"] = int(output.strip())
         except ValueError:
@@ -144,9 +140,7 @@ def analyze_issues() -> Dict[str, Any]:
         return state
 
     # Get open issues
-    output, ok = run_command(
-        "gh issue list --state open --limit 10 --json number,title,labels"
-    )
+    output, ok = run_command("gh issue list --state open --limit 10 --json number,title,labels")
     if ok and output:
         try:
             issues = json.loads(output)
@@ -189,9 +183,7 @@ def analyze_feature_branches() -> Dict[str, Any]:
             continue
 
         # Check if it's a feature/fix branch
-        is_feature_branch = any(
-            re.search(pattern, branch) for pattern in branch_patterns
-        )
+        is_feature_branch = any(re.search(pattern, branch) for pattern in branch_patterns)
         if not is_feature_branch:
             continue
 
@@ -205,9 +197,7 @@ def analyze_feature_branches() -> Dict[str, Any]:
 
         # Count commits ahead of main
         ahead_output, _ = run_command(["git", "rev-list", "--count", f"main..{branch}"])
-        commits_ahead = (
-            int(ahead_output.strip()) if ahead_output.strip().isdigit() else 0
-        )
+        commits_ahead = int(ahead_output.strip()) if ahead_output.strip().isdigit() else 0
 
         branch_info = {
             "name": branch,

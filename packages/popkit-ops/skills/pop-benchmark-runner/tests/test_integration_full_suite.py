@@ -6,20 +6,21 @@ Tests end-to-end workflow for running all 8 benchmark tasks.
 """
 
 import json
+import shutil
 import sys
+import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch, Mock
-import tempfile
-import shutil
+from unittest.mock import Mock, patch
+
 import yaml
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent / "shared-py"))
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
-from benchmark_runner import BenchmarkRunner
 from benchmark_analyzer import BenchmarkAnalyzer
+from benchmark_runner import BenchmarkRunner
 from report_generator import ReportGenerator
 
 
@@ -192,9 +193,7 @@ class TestIntegrationFullSuite(unittest.TestCase):
 
         # Run and analyze each task
         for task_def in self.task_defs:
-            runner = BenchmarkRunner(
-                task_def=task_def, trials=3, output_dir=self.output_dir
-            )
+            runner = BenchmarkRunner(task_def=task_def, trials=3, output_dir=self.output_dir)
 
             with_popkit_recordings = runner.run_with_popkit()
             baseline_recordings = runner.run_baseline()
@@ -210,12 +209,8 @@ class TestIntegrationFullSuite(unittest.TestCase):
                 mock_ra_instance.get_token_count.return_value = 1000
                 mock_ra_instance.get_tool_usage_breakdown.return_value = {"Read": 10}
                 mock_ra_instance.get_file_modifications.return_value = 2
-                mock_ra_instance.get_error_summary.return_value = {
-                    "failed_tool_calls": 1
-                }
-                mock_ra_instance.get_performance_metrics.return_value = {
-                    "duration_seconds": 120
-                }
+                mock_ra_instance.get_error_summary.return_value = {"failed_tool_calls": 1}
+                mock_ra_instance.get_performance_metrics.return_value = {"duration_seconds": 120}
                 mock_ra.return_value = mock_ra_instance
 
                 with patch("benchmark_analyzer.subprocess.run") as mock_subprocess:
@@ -259,9 +254,7 @@ class TestIntegrationFullSuite(unittest.TestCase):
 
         # Run all tasks and organize by category
         for task_def in self.task_defs:
-            runner = BenchmarkRunner(
-                task_def=task_def, trials=3, output_dir=self.output_dir
-            )
+            runner = BenchmarkRunner(task_def=task_def, trials=3, output_dir=self.output_dir)
 
             # Run trials (results not needed for this test)
             runner.run_with_popkit()
@@ -310,9 +303,7 @@ class TestIntegrationFullSuite(unittest.TestCase):
         # Run first 3 tasks (1 will have failures but still complete)
         for i, task_def in enumerate(self.task_defs[:3]):
             try:
-                runner = BenchmarkRunner(
-                    task_def=task_def, trials=3, output_dir=self.output_dir
-                )
+                runner = BenchmarkRunner(task_def=task_def, trials=3, output_dir=self.output_dir)
 
                 with_popkit_recordings = runner.run_with_popkit()
                 baseline_recordings = runner.run_baseline()
@@ -346,9 +337,7 @@ class TestIntegrationFullSuite(unittest.TestCase):
 
         # Run, analyze, and generate reports for all tasks
         for task_def in self.task_defs:
-            runner = BenchmarkRunner(
-                task_def=task_def, trials=3, output_dir=self.output_dir
-            )
+            runner = BenchmarkRunner(task_def=task_def, trials=3, output_dir=self.output_dir)
 
             with_popkit_recordings = runner.run_with_popkit()
             baseline_recordings = runner.run_baseline()
@@ -364,12 +353,8 @@ class TestIntegrationFullSuite(unittest.TestCase):
                 mock_ra_instance.get_token_count.return_value = 1000
                 mock_ra_instance.get_tool_usage_breakdown.return_value = {"Read": 10}
                 mock_ra_instance.get_file_modifications.return_value = 2
-                mock_ra_instance.get_error_summary.return_value = {
-                    "failed_tool_calls": 1
-                }
-                mock_ra_instance.get_performance_metrics.return_value = {
-                    "duration_seconds": 120
-                }
+                mock_ra_instance.get_error_summary.return_value = {"failed_tool_calls": 1}
+                mock_ra_instance.get_performance_metrics.return_value = {"duration_seconds": 120}
                 mock_ra.return_value = mock_ra_instance
 
                 with patch("benchmark_analyzer.subprocess.run") as mock_subprocess:
@@ -413,9 +398,7 @@ class TestIntegrationFullSuite(unittest.TestCase):
 
         # Run first 2 tasks (sample)
         for task_def in self.task_defs[:2]:
-            runner = BenchmarkRunner(
-                task_def=task_def, trials=3, output_dir=self.output_dir
-            )
+            runner = BenchmarkRunner(task_def=task_def, trials=3, output_dir=self.output_dir)
 
             runner.run_with_popkit()
             runner.run_baseline()
@@ -439,9 +422,7 @@ class TestIntegrationFullSuite(unittest.TestCase):
 
         # Run 2 tasks
         for task_def in self.task_defs[:2]:
-            runner = BenchmarkRunner(
-                task_def=task_def, trials=3, output_dir=self.output_dir
-            )
+            runner = BenchmarkRunner(task_def=task_def, trials=3, output_dir=self.output_dir)
 
             runner.run_with_popkit()
             runner.run_baseline()
@@ -475,9 +456,7 @@ class TestIntegrationFullSuite(unittest.TestCase):
 
         # Run all tasks and collect summaries
         for task_def in self.task_defs:
-            runner = BenchmarkRunner(
-                task_def=task_def, trials=3, output_dir=self.output_dir
-            )
+            runner = BenchmarkRunner(task_def=task_def, trials=3, output_dir=self.output_dir)
 
             runner.run_with_popkit()
             runner.run_baseline()
@@ -487,12 +466,8 @@ class TestIntegrationFullSuite(unittest.TestCase):
 
         # Calculate aggregate statistics
         total_trials_requested = sum(s["trials_requested"] for s in all_summaries)
-        total_with_popkit_successful = sum(
-            s["with_popkit"]["successful"] for s in all_summaries
-        )
-        total_baseline_successful = sum(
-            s["baseline"]["successful"] for s in all_summaries
-        )
+        total_with_popkit_successful = sum(s["with_popkit"]["successful"] for s in all_summaries)
+        total_baseline_successful = sum(s["baseline"]["successful"] for s in all_summaries)
 
         # Verify aggregate metrics
         self.assertEqual(total_trials_requested, 24)  # 8 tasks × 3 trials
@@ -514,9 +489,7 @@ class TestIntegrationFullSuite(unittest.TestCase):
 
         # Run 2 tasks
         for task_def in self.task_defs[:2]:
-            runner = BenchmarkRunner(
-                task_def=task_def, trials=3, output_dir=self.output_dir
-            )
+            runner = BenchmarkRunner(task_def=task_def, trials=3, output_dir=self.output_dir)
 
             # Cleanup after each task
             runner.cleanup_all_worktrees()

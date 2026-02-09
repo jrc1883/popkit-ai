@@ -14,7 +14,7 @@ Generates formatted markdown report for nightly routine with:
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
 # Try relative import (when used as package), fall back to direct import
 try:
@@ -25,9 +25,7 @@ except ImportError:
 # Import Bible verse utility (Issue #71)
 try:
     # Add shared-py to path
-    sys.path.insert(
-        0, str(Path.home() / ".claude" / "popkit" / "packages" / "shared-py")
-    )
+    sys.path.insert(0, str(Path.home() / ".claude" / "popkit" / "packages" / "shared-py"))
     from popkit_shared.utils.bible_verses import get_nightly_verse
 
     HAS_BIBLE_VERSES = True
@@ -64,9 +62,7 @@ def generate_nightly_report(
     report.append("")
 
     # Score interpretation
-    report.append(
-        f"**Grade**: {interpretation['grade']} - {interpretation['interpretation']}"
-    )
+    report.append(f"**Grade**: {interpretation['grade']} - {interpretation['interpretation']}")
     report.append("")
 
     # Score breakdown table
@@ -150,9 +146,7 @@ def generate_nightly_report(
     report.append("## 📋 Recommendations")
     report.append("")
 
-    recommendations_before = _generate_recommendations_before_leaving(
-        score, breakdown, state
-    )
+    recommendations_before = _generate_recommendations_before_leaving(score, breakdown, state)
 
     if recommendations_before:
         report.append("**Before Leaving:**")
@@ -160,9 +154,7 @@ def generate_nightly_report(
             report.append(f"- {rec}")
         report.append("")
 
-    recommendations_next = _generate_recommendations_next_session(
-        score, breakdown, state
-    )
+    recommendations_next = _generate_recommendations_next_session(score, breakdown, state)
 
     if recommendations_next:
         report.append("**Next Morning:**")
@@ -211,9 +203,7 @@ def _generate_recommendations_before_leaving(
     # Stashes
     stash_count = git_state.get("stashes", 0)
     if stash_count > 5:
-        recommendations.append(
-            f"Review {stash_count} stashes - consider cleaning up old ones"
-        )
+        recommendations.append(f"Review {stash_count} stashes - consider cleaning up old ones")
 
     # Services
     running_services = state.get("services", {}).get("running_services", [])

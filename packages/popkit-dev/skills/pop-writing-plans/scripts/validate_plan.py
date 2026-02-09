@@ -132,9 +132,7 @@ def _check_header(content: str, lines: List[str]) -> List[ValidationIssue]:
     # Check for title
     if not re.search(r"^#\s+.+Implementation Plan", content, re.MULTILINE):
         issues.append(
-            ValidationIssue(
-                "warning", "Plan title should include 'Implementation Plan'", line=1
-            )
+            ValidationIssue("warning", "Plan title should include 'Implementation Plan'", line=1)
         )
 
     # Check for required fields
@@ -142,17 +140,13 @@ def _check_header(content: str, lines: List[str]) -> List[ValidationIssue]:
     for field in required_fields:
         if field not in content:
             issues.append(
-                ValidationIssue(
-                    "error", f"Missing required header field: {field}", line=1
-                )
+                ValidationIssue("error", f"Missing required header field: {field}", line=1)
             )
 
     # Check for Claude instruction
     if "For Claude:" not in content and "executing-plans" not in content:
         issues.append(
-            ValidationIssue(
-                "info", "Consider adding Claude execution instruction in header"
-            )
+            ValidationIssue("info", "Consider adding Claude execution instruction in header")
         )
 
     return issues
@@ -169,9 +163,7 @@ def _check_tasks(content: str, lines: List[str]) -> tuple:
     stats["total_tasks"] = len(tasks)
 
     if len(tasks) == 0:
-        issues.append(
-            ValidationIssue("error", "No tasks found. Use '### Task N: Name' format")
-        )
+        issues.append(ValidationIssue("error", "No tasks found. Use '### Task N: Name' format"))
         return issues, stats
 
     # Check each task
@@ -191,9 +183,7 @@ def _check_tasks(content: str, lines: List[str]) -> tuple:
         # Check for Files section
         if "**Files:**" not in task_content and "Files:" not in task_content:
             issues.append(
-                ValidationIssue(
-                    "warning", f"Task {task_num} missing Files section", task=task_name
-                )
+                ValidationIssue("warning", f"Task {task_num} missing Files section", task=task_name)
             )
 
         # Check for steps
@@ -202,17 +192,13 @@ def _check_tasks(content: str, lines: List[str]) -> tuple:
 
         if len(steps) == 0:
             issues.append(
-                ValidationIssue(
-                    "warning", f"Task {task_num} has no numbered steps", task=task_name
-                )
+                ValidationIssue("warning", f"Task {task_num} has no numbered steps", task=task_name)
             )
 
         # Check for commit step
         if "commit" not in task_content.lower() and "Commit" not in task_content:
             issues.append(
-                ValidationIssue(
-                    "info", f"Task {task_num} missing commit step", task=task_name
-                )
+                ValidationIssue("info", f"Task {task_num} missing commit step", task=task_name)
             )
 
     # Check task numbering
@@ -220,9 +206,7 @@ def _check_tasks(content: str, lines: List[str]) -> tuple:
     actual_nums = [m.group(1) for m in tasks]
     if actual_nums != expected_nums:
         issues.append(
-            ValidationIssue(
-                "warning", f"Task numbering is not sequential: {actual_nums}"
-            )
+            ValidationIssue("warning", f"Task numbering is not sequential: {actual_nums}")
         )
 
     return issues, stats
@@ -263,20 +247,14 @@ def _check_file_paths(content: str, lines: List[str]) -> List[ValidationIssue]:
     for placeholder in placeholders:
         if re.search(placeholder, content, re.IGNORECASE):
             issues.append(
-                ValidationIssue(
-                    "error", f"Found placeholder in file path: '{placeholder}'"
-                )
+                ValidationIssue("error", f"Found placeholder in file path: '{placeholder}'")
             )
 
     # Check for missing file extensions in Create/Modify
     create_modify = re.findall(r"(?:Create|Modify):\s*`([^`]+)`", content)
     for path in create_modify:
         if not re.search(r"\.\w+$", path) and not re.search(r":\d+-\d+$", path):
-            issues.append(
-                ValidationIssue(
-                    "warning", f"File path may be missing extension: {path}"
-                )
-            )
+            issues.append(ValidationIssue("warning", f"File path may be missing extension: {path}"))
 
     return issues
 
@@ -291,11 +269,7 @@ def _check_run_commands(content: str, lines: List[str]) -> List[ValidationIssue]
     for match in run_commands:
         # Check if followed by Expected:
         after_run = content[match.end() : match.end() + 200]
-        if (
-            "Expected:" not in after_run
-            and "PASS" not in after_run
-            and "FAIL" not in after_run
-        ):
+        if "Expected:" not in after_run and "PASS" not in after_run and "FAIL" not in after_run:
             issues.append(
                 ValidationIssue(
                     "info",
@@ -332,9 +306,7 @@ def main():
         if result.issues:
             print(f"\nIssues ({len(result.issues)}):")
             for issue in result.issues:
-                prefix = {"error": "[ERROR]", "warning": "[WARN]", "info": "[INFO]"}[
-                    issue.severity
-                ]
+                prefix = {"error": "[ERROR]", "warning": "[WARN]", "info": "[INFO]"}[issue.severity]
                 location = f" (Task: {issue.task})" if issue.task else ""
                 location = f" (Line: {issue.line})" if issue.line else location
                 print(f"  {prefix} {issue.message}{location}")

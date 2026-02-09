@@ -12,8 +12,8 @@ from pathlib import Path
 # Add power-mode to path
 sys.path.insert(0, str(Path(__file__).parent))
 
+from protocol import MessageFactory, create_objective
 from upstash_adapter import get_redis_client, is_upstash_available
-from protocol import create_objective, MessageFactory
 
 
 def start_power_mode_session(objective_text: str, issues: list):

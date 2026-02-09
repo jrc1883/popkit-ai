@@ -167,9 +167,7 @@ def measure_bundle_impact(project_dir: Path) -> Dict[str, Any]:
     }
 
 
-def calculate_efficiency_score(
-    complexity: Dict, caching: Dict, bundle: Dict
-) -> Dict[str, Any]:
+def calculate_efficiency_score(complexity: Dict, caching: Dict, bundle: Dict) -> Dict[str, Any]:
     """Calculate overall efficiency score."""
     score = 100
     issues = []
@@ -208,31 +206,21 @@ def calculate_efficiency_score(
     return {"score": max(0, min(100, round(score))), "issues": issues}
 
 
-def get_recommendations(
-    complexity: Dict, caching: Dict, bundle: Dict, scoring: Dict
-) -> List[str]:
+def get_recommendations(complexity: Dict, caching: Dict, bundle: Dict, scoring: Dict) -> List[str]:
     """Generate actionable recommendations."""
     recommendations = []
 
     if len(complexity.get("large_files", [])) > 3:
-        recommendations.append(
-            "Consider splitting large files (>50KB) into smaller modules"
-        )
+        recommendations.append("Consider splitting large files (>50KB) into smaller modules")
 
     if len(complexity.get("deep_nesting", [])) > 0:
-        recommendations.append(
-            "Reduce nesting depth in complex functions (target: <5 levels)"
-        )
+        recommendations.append("Reduce nesting depth in complex functions (target: <5 levels)")
 
     if len(caching.get("opportunities", [])) > 0:
-        recommendations.append(
-            "Add caching for expensive operations (glob, JSON parsing)"
-        )
+        recommendations.append("Add caching for expensive operations (glob, JSON parsing)")
 
     if bundle.get("total_size_mb", 0) > 2:
-        recommendations.append(
-            "Review and remove unused files to reduce distribution size"
-        )
+        recommendations.append("Review and remove unused files to reduce distribution size")
 
     if not recommendations:
         recommendations.append("Plugin efficiency is good - maintain current practices")

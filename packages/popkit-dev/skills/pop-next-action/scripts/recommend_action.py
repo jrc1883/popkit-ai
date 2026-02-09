@@ -22,7 +22,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-
 # Base priority scores
 BASE_PRIORITIES = {
     "fix_build_errors": 90,
@@ -243,16 +242,12 @@ def rank_actions(actions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return sorted(actions, key=lambda x: x["score"], reverse=True)
 
 
-def generate_report(
-    ranked_actions: List[Dict[str, Any]], state: Dict[str, Any]
-) -> Dict[str, Any]:
+def generate_report(ranked_actions: List[Dict[str, Any]], state: Dict[str, Any]) -> Dict[str, Any]:
     """Generate recommendation report."""
     report = {
         "state_summary": {
             "uncommitted": state.get("git", {}).get("uncommitted_count", 0),
-            "branch_sync": "ahead"
-            if state.get("git", {}).get("ahead_count", 0) > 0
-            else "synced",
+            "branch_sync": "ahead" if state.get("git", {}).get("ahead_count", 0) > 0 else "synced",
             "typescript": "errors"
             if state.get("code", {}).get("typescript_errors", 0) > 0
             else "clean",
