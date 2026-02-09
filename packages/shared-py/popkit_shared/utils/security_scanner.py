@@ -488,7 +488,7 @@ def format_scan_report(result: ScanResult, existing_issues: List[ExistingIssue] 
 
 def format_github_issue_body(vuln: Vulnerability) -> str:
     """Format vulnerability as GitHub issue body."""
-    scanner = SecurityScanner()
+    SecurityScanner()
     # Reuse the create_issue logic but return body only
     # This is a simplified version
     return f"""## Security Vulnerability: {vuln.name}

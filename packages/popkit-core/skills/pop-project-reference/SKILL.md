@@ -16,6 +16,7 @@ Enables loading context from other projects in a monorepo workspace. Essential f
 ## When to Use
 
 Invoke when:
+
 - User asks to "load context from [project-name]"
 - Working on integration between multiple monorepo projects
 - User runs `/popkit:project reference` command
@@ -48,6 +49,7 @@ Shows all workspace projects with name, type, and path.
 ```
 
 Displays:
+
 - Project overview (from package.json)
 - CLAUDE.md instructions (if exists)
 - Dependencies (package.json)
@@ -61,6 +63,7 @@ Displays:
 See [examples/implementation.md](examples/implementation.md) for complete Python implementation.
 
 **Key utilities from** `packages/shared-py/popkit_shared/utils/workspace_config.py`:
+
 - `find_workspace_root()` - Detect workspace root
 - `get_workspace_projects()` - List all projects
 - `find_project_by_name()` - Find specific project
@@ -72,6 +75,7 @@ See [examples/implementation.md](examples/implementation.md) for complete Python
 See [examples/output-formats.md](examples/output-formats.md) for complete output examples.
 
 **Context display includes:**
+
 - Project header with path
 - Overview from package.json
 - Full CLAUDE.md content
@@ -119,6 +123,7 @@ Install shared-py package:
 See [examples/use-cases.md](examples/use-cases.md) for detailed scenarios.
 
 **Common patterns:**
+
 - **Cross-Project Integration**: Load context from another project for integration work
 - **API Discovery**: Check what APIs a service exposes
 - **Dependency Analysis**: See what packages a project depends on
@@ -144,6 +149,7 @@ See [examples/use-cases.md](examples/use-cases.md) for detailed scenarios.
 ## Testing
 
 Test cases in `tests/skill-test.json`:
+
 1. List all workspace projects
 2. Load context from named project
 3. Handle invalid project names

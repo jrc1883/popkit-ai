@@ -12,6 +12,7 @@ Power Mode enables parallel agent collaboration for complex tasks requiring mult
 Power Mode orchestrates multiple agents simultaneously to tackle complex workflows that would be too slow or cumbersome with a single agent.
 
 **Use Cases**:
+
 - Large-scale refactoring across many files
 - Comprehensive security audits
 - Multi-component feature development
@@ -24,11 +25,13 @@ Power Mode orchestrates multiple agents simultaneously to tackle complex workflo
 **Requirements**: Claude Code 2.0.64+
 
 **Features**:
+
 - Zero setup required
 - 5+ agents via Background Task tool
 - Best for most use cases
 
 **Activation**:
+
 ```bash
 /popkit-core:power start
 ```
@@ -38,11 +41,13 @@ Power Mode orchestrates multiple agents simultaneously to tackle complex workflo
 **Requirements**: Redis server, Claude Code 2.0.64+
 
 **Features**:
+
 - 10+ agents with persistent coordination
 - Best for very complex workflows
 - Requires Redis setup
 
 **Setup**:
+
 ```bash
 # Install Redis
 # Configure connection in .popkit/config.json
@@ -55,6 +60,7 @@ Power Mode orchestrates multiple agents simultaneously to tackle complex workflo
 **Requirements**: None
 
 **Features**:
+
 - 2 agents sequential
 - Fallback for older Claude Code versions
 - No external dependencies
@@ -70,6 +76,7 @@ Power Mode orchestrates multiple agents simultaneously to tackle complex workflo
 ```
 
 This shows:
+
 - Current mode (Native/Redis/File)
 - Active agents
 - Performance metrics
@@ -100,6 +107,7 @@ This shows:
 ```
 
 Shows:
+
 - Agents active
 - Tasks in progress
 - Completion status
@@ -112,11 +120,11 @@ Shows:
 
 ## Performance Comparison
 
-| Mode | Agents | Setup | Use Case |
-|------|--------|-------|----------|
-| **Native Async** | 5+ | None | Most workflows (recommended) |
-| **Redis** | 10+ | Redis | Very complex workflows |
-| **File-Based** | 2 | None | Simple workflows, legacy |
+| Mode             | Agents | Setup | Use Case                     |
+| ---------------- | ------ | ----- | ---------------------------- |
+| **Native Async** | 5+     | None  | Most workflows (recommended) |
+| **Redis**        | 10+    | Redis | Very complex workflows       |
+| **File-Based**   | 2      | None  | Simple workflows, legacy     |
 
 ## Best Practices
 
@@ -132,6 +140,7 @@ Shows:
 **Symptom**: `power start` fails
 
 **Solutions**:
+
 - Check Claude Code version (need 2.0.64+)
 - Verify Redis is running (for Redis mode)
 - Check logs: `/popkit-core:power status --verbose`
@@ -141,6 +150,7 @@ Shows:
 **Symptom**: Tasks stuck in progress
 
 **Solutions**:
+
 - Check individual agent logs
 - Restart Power Mode
 - Reduce agent count
@@ -150,6 +160,7 @@ Shows:
 **Symptom**: Slow responses
 
 **Solutions**:
+
 - Switch to Native Async mode
 - Reduce concurrent agents
 - Check system resources

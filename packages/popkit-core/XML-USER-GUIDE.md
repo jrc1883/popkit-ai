@@ -39,26 +39,29 @@ XML in PopKit is **not visible to you** - it's injected by hooks automatically. 
 
 ### Benefits
 
-| Benefit | Plain Text | XML-Structured |
-|---------|-----------|----------------|
-| **Agent Routing Accuracy** | ~80% | ~95% |
-| **Requirement Clarity** | Ambiguous | Explicit |
-| **Multi-Step Workflows** | Often missed | Tracked |
-| **Context Preservation** | Degraded | Maintained |
-| **Constraint Handling** | Implicit | Explicit |
+| Benefit                    | Plain Text   | XML-Structured |
+| -------------------------- | ------------ | -------------- |
+| **Agent Routing Accuracy** | ~80%         | ~95%           |
+| **Requirement Clarity**    | Ambiguous    | Explicit       |
+| **Multi-Step Workflows**   | Often missed | Tracked        |
+| **Context Preservation**   | Degraded     | Maintained     |
+| **Constraint Handling**    | Implicit     | Explicit       |
 
 ### Real-World Example
 
 **Plain Text Prompt:**
+
 > "The login is broken, fix it"
 
 **Issues:**
+
 - What kind of broken? (500 error? UI issue? Performance?)
 - Where is the code? (Which files?)
 - What's the urgency? (Production down? Minor bug?)
 - What are the constraints? (Can we change the DB schema?)
 
 **XML Prompt:**
+
 ```xml
 <investigation>
   <problem severity="high">
@@ -83,6 +86,7 @@ XML in PopKit is **not visible to you** - it's injected by hooks automatically. 
 ```
 
 **Result:** Claude immediately knows:
+
 - Severity: HIGH (production down)
 - Root cause area: Auth library upgrade
 - Constraints: Can't break existing sessions, urgent
@@ -486,11 +490,13 @@ XML in PopKit is **not visible to you** - it's injected by hooks automatically. 
 ### 1. Be Specific with Constraints
 
 ❌ **Vague:**
+
 ```xml
 <constraint>Fix it fast</constraint>
 ```
 
 ✅ **Specific:**
+
 ```xml
 <constraint type="timeline">Fix must deploy by 5pm today (production hotfix window)</constraint>
 ```
@@ -498,11 +504,13 @@ XML in PopKit is **not visible to you** - it's injected by hooks automatically. 
 ### 2. Include Success Criteria
 
 ❌ **Vague:**
+
 ```xml
 <objective>Make the app faster</objective>
 ```
 
 ✅ **Measurable:**
+
 ```xml
 <objective>Reduce page load time from 4.2s to under 1.5s (Lighthouse score 90+)</objective>
 <success_criteria>
@@ -514,16 +522,17 @@ XML in PopKit is **not visible to you** - it's injected by hooks automatically. 
 
 ### 3. Use Severity Appropriately
 
-| Severity | When to Use |
-|----------|-------------|
-| **critical** | Production down, data loss, security breach |
-| **high** | Degraded service, urgent fix needed, affects many users |
-| **medium** | Feature not working, workaround exists |
-| **low** | Minor bug, cosmetic issue, nice-to-have |
+| Severity     | When to Use                                             |
+| ------------ | ------------------------------------------------------- |
+| **critical** | Production down, data loss, security breach             |
+| **high**     | Degraded service, urgent fix needed, affects many users |
+| **medium**   | Feature not working, workaround exists                  |
+| **low**      | Minor bug, cosmetic issue, nice-to-have                 |
 
 ### 4. Keep Descriptions Concise
 
 ❌ **Too Verbose:**
+
 ```xml
 <symptom>
   So basically what happened is that yesterday when I was testing the new feature
@@ -533,6 +542,7 @@ XML in PopKit is **not visible to you** - it's injected by hooks automatically. 
 ```
 
 ✅ **Concise:**
+
 ```xml
 <symptom>
   Submit button occasionally non-responsive (50% of clicks have no effect)
@@ -572,12 +582,14 @@ XML in PopKit is **not visible to you** - it's injected by hooks automatically. 
 ### When should I use XML vs plain text?
 
 **Use XML when:**
+
 - Task has multiple steps or conditions
 - You need specific agent routing (security review, performance optimization)
 - There are important constraints or requirements
 - You want explicit priorities and success criteria
 
 **Use plain text when:**
+
 - Simple, single-action requests
 - Exploratory questions
 - Brainstorming or ideation
@@ -586,6 +598,7 @@ XML in PopKit is **not visible to you** - it's injected by hooks automatically. 
 ### Does XML slow down responses?
 
 No - XML processing adds ~50-100ms overhead (negligible). Benefits far outweigh cost:
+
 - Faster agent routing (correct specialist first time)
 - Fewer clarifying questions
 - Higher quality results
@@ -612,6 +625,7 @@ PopKit will extract and process the XML automatically.
 ### What if I make an XML syntax error?
 
 PopKit's XML parser is forgiving:
+
 - Missing tags are ignored
 - Invalid structure falls back to plain text processing
 - You'll still get results (just less optimal agent routing)
@@ -621,6 +635,7 @@ PopKit's XML parser is forgiving:
 ### How do I know if XML is working?
 
 Look for these signs:
+
 - Claude mentions specific agents ("Let me use the bug-whisperer agent...")
 - Faster time to solution
 - Fewer clarifying questions
@@ -631,6 +646,7 @@ You can also check PopKit's internal logs (`~/.popkit/logs/xml-processing.log`)
 ### Can I create my own XML templates?
 
 Yes! Follow the structure of existing templates and use standard XML elements:
+
 - `<problem>`, `<context>`, `<constraints>`, `<requirements>`
 - Always include `severity` or `priority` attributes
 - Use clear, descriptive tag names
@@ -663,4 +679,4 @@ Share your templates with the community: https://github.com/jrc1883/popkit-claud
 
 ---
 
-*Generated with Claude Sonnet 4.5 via PopKit v1.0.0-beta.5*
+_Generated with Claude Sonnet 4.5 via PopKit v1.0.0-beta.5_

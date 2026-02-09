@@ -149,7 +149,7 @@ class RecordingValidator:
                     out_of_order.append((i, event.get("type"), timestamp_str))
 
                 prev_timestamp = timestamp
-            except:
+            except Exception:
                 self.warnings.append(f"Invalid timestamp format at event {i}: {timestamp_str}")
 
         if out_of_order:

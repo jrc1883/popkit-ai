@@ -98,12 +98,14 @@ print(f"Updated issue counts for {updated_count} projects")
 ```
 
 **Cache Behavior:**
+
 - Issue counts cached for 15 minutes (TTL)
 - Dashboard displays cached counts when fresh (`< 15 min`)
 - Stale cache displays `'--'` until refreshed
 - Non-GitHub projects always show `'--'`
 
 **Performance:**
+
 - Dashboard loads instantly (uses cache, no network calls)
 - Refresh fetches sequentially (~0.5s per project)
 - 10 projects refresh in ~5-10 seconds

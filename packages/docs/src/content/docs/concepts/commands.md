@@ -52,12 +52,12 @@ Examples:
 
 ## Command vs Skills
 
-| Commands | Skills |
-|----------|--------|
-| User-facing interface | Internal automation |
-| Slash command syntax | Invoked programmatically |
-| High-level workflows | Low-level operations |
-| Documentation focused | Implementation focused |
+| Commands              | Skills                   |
+| --------------------- | ------------------------ |
+| User-facing interface | Internal automation      |
+| Slash command syntax  | Invoked programmatically |
+| High-level workflows  | Low-level operations     |
+| Documentation focused | Implementation focused   |
 
 Commands often use multiple skills internally to accomplish their goals.
 

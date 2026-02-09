@@ -33,6 +33,7 @@ Create worktree (dev or feature branch):
 ```
 
 Options:
+
 - `--base <branch>` - Base branch (default: current branch)
 - `--name <name>` - Worktree directory name (default: derived from branch)
 
@@ -46,6 +47,7 @@ Remove worktree with uncommitted change warnings:
 ```
 
 Options:
+
 - `--force` - Remove even with uncommitted changes
 
 ### switch
@@ -66,6 +68,7 @@ Pull latest in all worktrees:
 ```
 
 Options:
+
 - `--install` - Run npm install after updates
 
 ### prune
@@ -78,6 +81,7 @@ Remove stale references:
 ```
 
 Options:
+
 - `--dry-run` - Preview changes without executing
 
 ### init
@@ -90,6 +94,7 @@ Auto-branch with updates for dev branches:
 ```
 
 Options:
+
 - `--pattern <pattern>` - Filter branches by pattern
 
 ### analyze
@@ -117,6 +122,7 @@ This command delegates to the **pop-worktree-manager** skill which handles:
 **Next Action**: Recommends sync when worktree is behind base branch
 
 **STATUS.json Schema**:
+
 ```json
 {
   "git": {

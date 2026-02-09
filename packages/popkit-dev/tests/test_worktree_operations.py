@@ -52,8 +52,12 @@ class TestGitCommandExecution(unittest.TestCase):
 
     @patch("subprocess.run")
     def test_run_git_command_failure(self, mock_run):
-        """Test failed command execution."""
-        mock_run.return_value = MagicMock(stdout="error\n", returncode=1)
+        """Test failed command execution returns stderr on failure."""
+        mock_result = MagicMock()
+        mock_result.returncode = 1
+        mock_result.stdout = ""
+        mock_result.stderr = "error\n"
+        mock_run.return_value = mock_result
 
         output, ok = run_git_command("invalid")
 

@@ -9,8 +9,15 @@ import os
 import sys
 import json
 import re
-import requests
 import sqlite3
+
+# Optional import for observability features (not required for core functionality)
+try:
+    import requests
+
+    HAS_REQUESTS = True
+except ImportError:
+    HAS_REQUESTS = False
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Tuple
@@ -422,6 +429,8 @@ class PreToolUseHook:
         self, tool_name: str, tool_args: Dict[str, Any], safety_check: Dict[str, Any]
     ):
         """Log pre-tool-use event to observability system"""
+        if not HAS_REQUESTS:
+            return
         try:
             event_data = {
                 "timestamp": datetime.now().isoformat(),
@@ -456,6 +465,8 @@ class PreToolUseHook:
         self, tool_name: str, tool_args: Dict[str, Any], coordination: Dict[str, Any]
     ) -> Optional[Dict]:
         """Request orchestration guidance from orchestrator service"""
+        if not HAS_REQUESTS:
+            return None
         try:
             orchestration_data = {
                 "session_id": self.session_id,

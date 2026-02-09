@@ -50,21 +50,21 @@ project_config.py checks .popkit/project.json cache
     "formatter": "prettier"
   },
   "overrides": {
-    "expected_services": [
-      {"name": "dev server", "port": 4200, "description": "Angular"}
-    ]
+    "expected_services": [{ "name": "dev server", "port": 4200, "description": "Angular" }]
   },
   "auto_detect": true
 }
 ```
 
 **Cache Behavior**:
+
 - **Valid cache** (< 24 hours old): Use cached config immediately (fast!)
 - **Expired cache**: Re-detect and update cache
 - **Detection fails**: Fall back to cached config (graceful degradation)
 - **No cache**: Detect fresh and create cache
 
 **Performance Impact**:
+
 - First run: ~8-10 seconds (full detection + git checks)
 - Subsequent runs: ~4-5 seconds (cached detection)
 - **~50% faster** on cached runs
@@ -95,6 +95,7 @@ python -m popkit_shared.utils.configure_project clear-cache
 ### 4. Error Handling
 
 **Robust Fallback Chain**:
+
 1. Try cached config (if valid)
 2. Try fresh detection
 3. If detection fails → use expired cache
@@ -102,6 +103,7 @@ python -m popkit_shared.utils.configure_project clear-cache
 5. **Never crashes** the routine
 
 **Example Error Recovery**:
+
 ```python
 try:
     project_type = detector.detect()
@@ -118,15 +120,18 @@ except Exception as e:
 ### 5. Integration Points
 
 **Morning Routine**:
+
 - ✅ Removed hardcoded pnpm dependency check
 - ✅ Trusts generic_state_capture for dependency state
 - ✅ Keeps morning-specific checks (PRs, issues, worktrees, stale branches)
 
 **Nightly Routine**:
+
 - ✅ Uses generic_state_capture for all state gathering
 - ✅ Calculates Sleep Score based on generic state
 
 **State Capture Functions**:
+
 - `gather_git_state()` - Branch, commits, uncommitted files, stashes, remote sync
 - `gather_dependency_state(project_type)` - Package manager health, outdated packages
 - `gather_service_state(project_type)` - Running/missing services (configurable!)
@@ -136,31 +141,37 @@ except Exception as e:
 ## Fixed Issues
 
 ### ✅ 1. Duplicate Dependency Logic
+
 - **Before**: morning_workflow.py hardcoded pnpm check, overwrote generic state
 - **After**: Removed duplicate logic, trusts generic_state_capture
 - **Impact**: Consistent dependency detection across all package managers
 
 ### ✅ 2. Expensive Re-Detection
+
 - **Before**: Full detection on every routine run (8-10s)
 - **After**: Smart caching with 24-hour TTL (4-5s)
 - **Impact**: 50% faster routine execution
 
 ### ✅ 3. No Error Handling
+
 - **Before**: TechStackDetector crashes could kill routine
 - **After**: Try/except with fallback to cache
 - **Impact**: Graceful degradation, never crashes
 
 ### ✅ 4. Generic Expected Services
+
 - **Before**: Hardcoded ports per language (3000, 8000)
 - **After**: Configurable via .popkit/project.json overrides
 - **Impact**: Per-project customization
 
 ### ✅ 5. No Integration
+
 - **Before**: Only worked during routines
 - **After**: Config file persists, CLI for management
 - **Impact**: Centralized project configuration
 
 ### ✅ 6. No Override Mechanism
+
 - **Before**: Can't customize if detection wrong
 - **After**: `.popkit/project.json` overrides + CLI
 - **Impact**: User control over configuration
@@ -189,6 +200,7 @@ docs/
 ## Supported Languages
 
 ### Fully Supported
+
 - **Node.js/JavaScript/TypeScript**: npm, pnpm, yarn + jest + eslint + prettier
 - **Python**: pip, poetry + pytest + ruff
 - **Rust**: cargo + cargo test + clippy + rustfmt
@@ -198,6 +210,7 @@ docs/
 - **.NET**: dotnet + xUnit
 
 ### Fallback Support
+
 - Any language with package.json, requirements.txt, Cargo.toml, go.mod, etc.
 - Basic detection via file existence checks
 - Minimal state with git tracking
@@ -205,12 +218,14 @@ docs/
 ## Usage Examples
 
 ### Basic Usage (No Configuration Needed)
+
 ```bash
 # Just run the routine - detection happens automatically
 /popkit:routine morning
 ```
 
 ### Customizing Expected Services
+
 ```bash
 # Your project runs on custom ports
 python -m popkit_shared.utils.configure_project set-services 4200 3000
@@ -220,6 +235,7 @@ python -m popkit_shared.utils.configure_project set-services 4200 3000
 ```
 
 ### Overriding Package Manager
+
 ```bash
 # Detection chose npm but you use pnpm
 python -m popkit_shared.utils.configure_project set-package-manager pnpm
@@ -229,6 +245,7 @@ python -m popkit_shared.utils.configure_project set-package-manager pnpm
 ```
 
 ### Forcing Re-Detection
+
 ```bash
 # Force fresh detection (ignores cache)
 python -m popkit_shared.utils.configure_project detect
@@ -237,6 +254,7 @@ python -m popkit_shared.utils.configure_project detect
 ## Testing
 
 ### Verified Scenarios
+
 - [x] Morning routine with PopKit project (TypeScript/pnpm)
 - [x] Caching reduces execution time by ~50%
 - [x] Override expected services works
@@ -244,6 +262,7 @@ python -m popkit_shared.utils.configure_project detect
 - [x] Config persists across routine runs
 
 ### Remaining Testing
+
 - [ ] Python project detection
 - [ ] Rust project detection
 - [ ] Go project detection
@@ -274,11 +293,13 @@ python -m popkit_shared.utils.configure_project detect
 ## Migration Notes
 
 ### Upgrading from Pre-Cache Version
+
 - No breaking changes
 - First run will create .popkit/project.json automatically
 - Existing workflows continue to work
 
 ### If You Had Custom capture_state.py
+
 - Replace imports: `from .capture_state` → `from .generic_state_capture`
 - Function name changed: `capture_project_state()` remains the same
 

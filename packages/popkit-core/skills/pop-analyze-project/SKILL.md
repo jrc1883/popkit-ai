@@ -296,9 +296,7 @@ When `--json` flag is provided, saves to `.claude/analysis.json`:
   "project_name": "project-name",
   "project_type": "nextjs",
   "analyzed_at": "2026-01-30T00:00:00Z",
-  "frameworks": [
-    {"name": "nextjs", "confidence": 0.95, "version": "14.0.0"}
-  ],
+  "frameworks": [{ "name": "nextjs", "confidence": 0.95, "version": "14.0.0" }],
   "patterns": [
     {
       "name": "pattern-name",

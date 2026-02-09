@@ -2,15 +2,15 @@
 
 ## Collected Metrics
 
-| Metric | Description | Source |
-|--------|-------------|--------|
-| **Duration** | Total execution time in seconds | Tracker start/stop |
-| **Tool Calls** | Number of tools invoked | Hook tracking |
-| **Input Tokens** | Estimated input tokens (~20% of total) | Content length / 4 |
-| **Output Tokens** | Estimated output tokens (~80% of total) | Content length / 4 |
-| **Total Tokens** | Input + Output | Sum |
-| **Characters** | Raw character count | Content length |
-| **Cost** | Estimated API cost (Sonnet 4.5 pricing) | Token count × price |
+| Metric            | Description                             | Source              |
+| ----------------- | --------------------------------------- | ------------------- |
+| **Duration**      | Total execution time in seconds         | Tracker start/stop  |
+| **Tool Calls**    | Number of tools invoked                 | Hook tracking       |
+| **Input Tokens**  | Estimated input tokens (~20% of total)  | Content length / 4  |
+| **Output Tokens** | Estimated output tokens (~80% of total) | Content length / 4  |
+| **Total Tokens**  | Input + Output                          | Sum                 |
+| **Characters**    | Raw character count                     | Content length      |
+| **Cost**          | Estimated API cost (Sonnet 4.5 pricing) | Token count × price |
 
 ## Token Estimation
 

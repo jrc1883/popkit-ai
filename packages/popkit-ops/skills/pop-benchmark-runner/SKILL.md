@@ -158,11 +158,7 @@ Response files enable automation without user interaction (`<task-id>-responses.
     "Token expiry": "1 hour (3600 seconds)",
     "Error handling": "Standard HTTP status codes (401, 403, 500)"
   },
-  "standardAutoApprove": [
-    "install.*dependencies",
-    "run.*tests",
-    "commit.*changes"
-  ]
+  "standardAutoApprove": ["install.*dependencies", "run.*tests", "commit.*changes"]
 }
 ```
 

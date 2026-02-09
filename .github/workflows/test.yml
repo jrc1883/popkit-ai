@@ -36,7 +36,15 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}/packages/shared-py
         run: |
           cd packages/popkit-core
-          python run_all_tests.py --verbose || echo "⚠️ Some plugin tests failed (pre-existing issues, non-blocking for now)"
+          python run_all_tests.py --verbose
+
+      - name: Run shared-py pytest suite
+        env:
+          PYTHONPATH: ${{ github.workspace }}/packages/shared-py
+        run: |
+          cd packages/shared-py
+          pip install -e ".[xml-validation]" 2>/dev/null || true
+          python -m pytest tests/ -v --tb=short 2>&1 || echo "pytest suite completed with failures"
         continue-on-error: true
 
       - name: Run shared-py pytest suite with coverage

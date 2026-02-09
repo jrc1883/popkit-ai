@@ -42,20 +42,20 @@ Measurements are saved to `.claude/popkit/measurements/` as JSON files.
 
 ## Field Descriptions
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `routine_id` | string | Routine identifier (pk, p-1, rc-1) |
-| `routine_name` | string | Human-readable routine name |
-| `start_time` | float | Unix timestamp (seconds) when routine started |
-| `end_time` | float | Unix timestamp (seconds) when routine ended |
-| `duration` | float | Total execution time in seconds |
-| `total_tool_calls` | int | Number of tools invoked |
-| `total_tokens` | int | Total tokens (input + output) |
-| `input_tokens` | int | Estimated input tokens (~20% of total) |
-| `output_tokens` | int | Estimated output tokens (~80% of total) |
-| `total_chars` | int | Raw character count |
-| `tool_breakdown` | object | Per-tool statistics |
-| `cost_estimate` | object | Estimated API costs |
+| Field              | Type   | Description                                   |
+| ------------------ | ------ | --------------------------------------------- |
+| `routine_id`       | string | Routine identifier (pk, p-1, rc-1)            |
+| `routine_name`     | string | Human-readable routine name                   |
+| `start_time`       | float  | Unix timestamp (seconds) when routine started |
+| `end_time`         | float  | Unix timestamp (seconds) when routine ended   |
+| `duration`         | float  | Total execution time in seconds               |
+| `total_tool_calls` | int    | Number of tools invoked                       |
+| `total_tokens`     | int    | Total tokens (input + output)                 |
+| `input_tokens`     | int    | Estimated input tokens (~20% of total)        |
+| `output_tokens`    | int    | Estimated output tokens (~80% of total)       |
+| `total_chars`      | int    | Raw character count                           |
+| `tool_breakdown`   | object | Per-tool statistics                           |
+| `cost_estimate`    | object | Estimated API costs                           |
 
 ## File Naming Convention
 

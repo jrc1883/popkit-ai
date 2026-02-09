@@ -7,6 +7,7 @@ Benchmark tasks are defined in YAML format. This allows users to easily create c
 ## File Location
 
 Tasks are organized by category:
+
 ```
 packages/popkit-ops/tasks/
 ├── feature-addition/
@@ -16,6 +17,7 @@ packages/popkit-ops/tasks/
 ```
 
 Each task consists of two files:
+
 1. `<task-id>.yml` - Task definition
 2. `<task-id>-responses.json` - Automated responses for benchmark mode
 
@@ -26,18 +28,22 @@ Each task consists of two files:
 # REQUIRED FIELDS
 # ============================================================================
 
-id: string
+id:
+  string
   # Unique identifier for this task (lowercase, hyphens)
   # Example: jwt-authentication, race-condition-fix
 
-category: enum
+category:
+  enum
   # One of: feature-addition | bug-fixing | refactoring | code-review
 
-description: string
+description:
+  string
   # One-line summary of the task
   # Example: "Add JWT-based user authentication to Express API"
 
-user_prompt: string (multiline)
+user_prompt:
+  string (multiline)
   # Complete task instructions that will be given to Claude Code
   # Should be detailed, specific, and actionable
   # Include: requirements, expected behavior, edge cases, testing needs
@@ -47,22 +53,26 @@ user_prompt: string (multiline)
 # ============================================================================
 
 # --- Codebase Configuration ---
-codebase: string
+codebase:
+  string
   # Name of the demo codebase to use
   # Example: demo-app-express, demo-app-react, custom-repo-url
 
-initial_state: string
+initial_state:
+  string
   # Git ref to checkout before starting task
   # Options: branch name, tag, commit hash, "main", "HEAD"
   # Default: "main"
 
-difficulty: enum
+difficulty:
+  enum
   # Estimated difficulty level
   # Options: easy | medium | hard | expert
   # Used for: filtering, reporting, time estimation
 
 # --- File Tracking ---
-expected_files: list[string]
+expected_files:
+  list[string]
   # Files expected to be created or modified
   # Used for: verification, change detection
   # Example:
@@ -70,7 +80,8 @@ expected_files: list[string]
   #   - "src/middleware/authenticate.js"
 
 # --- Verification ---
-verification: list[string]
+verification:
+  list[string]
   # Commands to run after task completion
   # Exit code 0 = pass, non-zero = fail
   # Example:
@@ -80,7 +91,8 @@ verification: list[string]
   #   - python -m pytest
   #   - cargo test
 
-expected_outcomes: list[string]
+expected_outcomes:
+  list[string]
   # Human-readable outcomes to verify
   # Used for: documentation, validation
   # Example:
@@ -88,11 +100,13 @@ expected_outcomes: list[string]
   #   - "Tests pass for authentication flow"
 
 # --- Time & Dependencies ---
-estimated_duration_minutes: int
+estimated_duration_minutes:
+  int
   # Expected completion time in minutes
   # Used for: benchmarking, timeouts, reporting
 
-dependencies: list[string]
+dependencies:
+  list[string]
   # npm/pip/cargo packages that may need installation
   # Example:
   #   - jsonwebtoken
@@ -104,28 +118,32 @@ dependencies: list[string]
 # ============================================================================
 
 # --- Environment Configuration ---
-environment: object
+environment:
+  object
   # Environment variables needed for this task
   # Example:
   #   NODE_ENV: test
   #   DATABASE_URL: sqlite::memory:
   #   LOG_LEVEL: debug
 
-pre_setup_commands: list[string]
+pre_setup_commands:
+  list[string]
   # Commands to run before starting task
   # Example:
   #   - npm install
   #   - python -m venv venv
   #   - source venv/bin/activate
 
-post_setup_commands: list[string]
+post_setup_commands:
+  list[string]
   # Commands to run after task completion
   # Example:
   #   - npm run build
   #   - docker-compose down
 
 # --- Codebase Constraints ---
-codebase_constraints: object
+codebase_constraints:
+  object
   # Constraints for code changes
   # Example:
   #   max_files_changed: 10
@@ -137,7 +155,8 @@ codebase_constraints: object
   #     - "debugger"
 
 # --- Success Criteria ---
-success_criteria: object
+success_criteria:
+  object
   # Detailed success criteria beyond verification commands
   # Example:
   #   performance:
@@ -148,30 +167,36 @@ success_criteria: object
   #     min_line_coverage: 80
 
 # --- Metadata ---
-tags: list[string]
+tags:
+  list[string]
   # Tags for filtering/searching tasks
   # Example:
   #   - authentication
   #   - security
   #   - api
 
-author: string
+author:
+  string
   # Task creator (for template gallery)
 
-created_at: string (ISO 8601)
+created_at:
+  string (ISO 8601)
   # Creation timestamp
 
-version: string (semver)
+version:
+  string (semver)
   # Task definition version
 
 # --- Related Tasks ---
-related_tasks: list[string]
+related_tasks:
+  list[string]
   # IDs of related tasks
   # Example:
   #   - oauth-implementation
   #   - session-management
 
-prerequisites: list[string]
+prerequisites:
+  list[string]
   # Tasks that should be completed first
   # Example:
   #   - user-model-creation
@@ -254,11 +279,7 @@ Companion JSON file for automated responses during benchmark execution:
     "Auth method": "JWT (jsonwebtoken)",
     "Token storage": "HTTP-only cookies"
   },
-  "standardAutoApprove": [
-    "install.*dependencies",
-    "run.*tests",
-    "commit.*changes"
-  ],
+  "standardAutoApprove": ["install.*dependencies", "run.*tests", "commit.*changes"],
   "explicitDeclines": []
 }
 ```
@@ -320,6 +341,7 @@ popkit-cloud.com/benchmarks/
 ```
 
 Users will be able to:
+
 - Browse task templates
 - Download YAML definitions
 - Submit their own tasks
@@ -329,6 +351,7 @@ Users will be able to:
 ## Best Practices
 
 ### 1. Clear Instructions
+
 ```yaml
 user_prompt: |
   # Good: Specific and actionable
@@ -342,6 +365,7 @@ user_prompt: |
 ```
 
 ### 2. Verification Commands
+
 ```yaml
 # Good: Multiple verification layers
 verification:
@@ -356,6 +380,7 @@ verification:
 ```
 
 ### 3. Expected Outcomes
+
 ```yaml
 # Good: Specific, measurable
 expected_outcomes:
@@ -369,13 +394,14 @@ expected_outcomes:
 ```
 
 ### 4. Realistic Time Estimates
+
 ```yaml
 # Consider:
 # - Reading existing code
 # - Implementing feature
 # - Writing tests
 # - Debugging
-estimated_duration_minutes: 15  # Be generous!
+estimated_duration_minutes: 15 # Be generous!
 ```
 
 ## Validation
@@ -393,11 +419,13 @@ python -c "import yaml; yaml.safe_load(open('my-task.yml'))"
 ## Output Integration
 
 ### Local Output (Current)
+
 - Markdown: `docs/benchmark/results/my-task-YYYY-MM-DD.md`
 - HTML: `docs/benchmark/results/my-task-YYYY-MM-DD.html`
 - JSON: `docs/benchmark/results/my-task-YYYY-MM-DD.json`
 
 ### PopKit Cloud (Future)
+
 - Automatic upload if subscribed
 - Historical trend analysis
 - Embedding-based insights

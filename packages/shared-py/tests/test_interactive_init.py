@@ -23,7 +23,7 @@ SCRIPT_DIR = (
 )
 sys.path.insert(0, str(SCRIPT_DIR))
 
-from interactive_init import (
+from interactive_init import (  # noqa: E402
     detect_monorepo,
     detect_premium_features,
     detect_quality_gates,

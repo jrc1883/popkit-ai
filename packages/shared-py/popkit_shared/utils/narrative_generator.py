@@ -29,7 +29,7 @@ def build_timeline_summary(
             try:
                 dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
                 time_str = dt.strftime("%H:%M:%S")
-            except:
+            except Exception:
                 time_str = "N/A"
 
             item = {"time": time_str, "tool": tool_name, "parameters": event.get("parameters", {})}
@@ -88,7 +88,7 @@ def generate_narrative_with_api(
         start_dt = datetime.fromisoformat(start_time.replace("Z", "+00:00"))
         end_dt = datetime.fromisoformat(end_time.replace("Z", "+00:00"))
         duration_minutes = (end_dt - start_dt).total_seconds() / 60
-    except:
+    except Exception:
         duration_minutes = 0
 
     # Build prompt for Claude
@@ -174,7 +174,7 @@ def generate_template_narrative(
         start_dt = datetime.fromisoformat(start_time.replace("Z", "+00:00"))
         end_dt = datetime.fromisoformat(end_time.replace("Z", "+00:00"))
         duration_minutes = (end_dt - start_dt).total_seconds() / 60
-    except:
+    except Exception:
         duration_minutes = 0
 
     narrative = f"""This development session spanned {duration_minutes:.1f} minutes and involved {len(tool_calls)} tool calls across multiple operations.

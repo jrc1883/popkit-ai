@@ -78,8 +78,8 @@ def find_test_command(cwd):
                 package = json.load(f)
                 if "scripts" in package and "test" in package["scripts"]:
                     return ["npm", "test"], "npm test"
-        except:
-            pass
+        except Exception:
+            pass  # Graceful fallback: package.json parse failure shouldn't block test detection
 
     # Go projects
     if (cwd_path / "go.mod").exists():

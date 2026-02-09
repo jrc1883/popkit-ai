@@ -38,6 +38,7 @@ multiSelect: false
 ```
 
 Show:
+
 - What was implemented
 - Verification output
 - Any issues encountered
@@ -47,12 +48,14 @@ Show:
 **If "Continue"**: Execute next batch (repeat Step 2)
 
 **If "Revise"**:
+
 - Wait for user feedback
 - Apply changes to current batch
 - Re-run verifications
 - Then continue
 
 **If "Pause"**:
+
 - Stop execution
 - Save progress via pop-session-capture
 - Preserve current state for later resumption
