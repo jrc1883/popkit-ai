@@ -4,9 +4,10 @@ import json
 from datetime import datetime
 from pathlib import Path
 
+from embedding_project import auto_embed_item
+
 # No longer needed - install popkit-shared instead
 from voyage_client import VoyageClient
-from embedding_project import auto_embed_item
 
 
 def export_tool_embeddings(tools: list, output_path: str):

@@ -12,12 +12,12 @@ Coordinates all morning routine steps:
 6. Present report to user
 """
 
-import sys
-import json
 import io
-from pathlib import Path
+import json
+import sys
 from datetime import datetime
-from typing import Dict, Any
+from pathlib import Path
+from typing import Any, Dict
 
 # Fix Windows console encoding for Unicode characters
 if sys.platform == "win32":
@@ -28,15 +28,15 @@ if sys.platform == "win32":
 sys.path.insert(0, str(Path.home() / ".claude" / "popkit" / "packages" / "shared-py"))
 
 try:
+    from popkit_shared.utils.flag_profiles import ProfileManager
     from popkit_shared.utils.generic_state_capture import capture_project_state
-    from popkit_shared.utils.routine_measurement import RoutineMeasurement
     from popkit_shared.utils.routine_cache import RoutineCache
+    from popkit_shared.utils.routine_measurement import RoutineMeasurement
     from popkit_shared.utils.session_recorder import (
         get_recorder,
         record_reasoning,
         record_recommendation,
     )
-    from popkit_shared.utils.flag_profiles import ProfileManager
 
     HAS_UTILITIES = True
 except ImportError:
@@ -49,20 +49,20 @@ except ImportError:
 
 # Try relative import (when used as package), fall back to direct import
 try:
-    from .ready_to_code_score import (
-        calculate_ready_to_code_score,
-        get_score_interpretation,
-    )
     from .morning_report_generator import (
         generate_morning_report,
         generate_quick_summary,
     )
+    from .ready_to_code_score import (
+        calculate_ready_to_code_score,
+        get_score_interpretation,
+    )
 except ImportError:
+    from morning_report_generator import generate_morning_report, generate_quick_summary
     from ready_to_code_score import (
         calculate_ready_to_code_score,
         get_score_interpretation,
     )
-    from morning_report_generator import generate_morning_report, generate_quick_summary
 
 
 class MorningWorkflow:
@@ -187,9 +187,7 @@ class MorningWorkflow:
             self.measurement.finalize(
                 {
                     "ready_to_code_score": score,
-                    "services_running": len(
-                        state.get("services", {}).get("running_services", [])
-                    ),
+                    "services_running": len(state.get("services", {}).get("running_services", [])),
                     "commits_behind": state.get("git", {}).get("behind_remote", 0),
                 }
             )
@@ -223,8 +221,7 @@ class MorningWorkflow:
                     "restored": True,
                     "last_nightly_score": last_nightly.get("sleep_score", "unknown"),
                     "last_nightly_time": last_nightly.get("executed_at", "unknown"),
-                    "last_work_summary": git_status.get("action_required")
-                    or "Check git status",
+                    "last_work_summary": git_status.get("action_required") or "Check git status",
                     "previous_branch": git_status.get("current_branch", "unknown"),
                     "stashed_count": git_status.get("stashes", 0),
                 }
@@ -238,9 +235,7 @@ class MorningWorkflow:
                 print(f"[WARN] Could not restore session: {e}", file=sys.stderr)
                 session_data = {"restored": False}
         else:
-            print(
-                "[WARN] No STATUS.json found - cannot restore session", file=sys.stderr
-            )
+            print("[WARN] No STATUS.json found - cannot restore session", file=sys.stderr)
 
         return session_data
 
@@ -288,7 +283,7 @@ class MorningWorkflow:
         popkit_dev_root = Path(__file__).parents[3]  # packages/popkit-dev
         hooks_path = popkit_dev_root / "hooks"
         sys.path.insert(0, str(hooks_path))
-        from git_utils import git_fetch_prune, count_stale_branches
+        from git_utils import count_stale_branches, git_fetch_prune
 
         def run_command(cmd: list, stderr_redirect: bool = False) -> str:
             """
@@ -308,9 +303,7 @@ class MorningWorkflow:
                         stderr=subprocess.DEVNULL,
                     )
                 else:
-                    result = subprocess.run(
-                        cmd, capture_output=True, text=True, timeout=10
-                    )
+                    result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
                 return result.stdout.strip()
             except Exception:
                 return ""
@@ -327,9 +320,7 @@ class MorningWorkflow:
             print(f"[WARN] {prune_message}", file=sys.stderr)
 
         # Check commits behind - SECURE: branch is passed as a separate argument
-        behind_output = run_command(
-            ["git", "rev-list", "--count", f"HEAD..origin/{branch}"]
-        )
+        behind_output = run_command(["git", "rev-list", "--count", f"HEAD..origin/{branch}"])
         try:
             git_data["behind_remote"] = int(behind_output) if behind_output else 0
         except ValueError:
@@ -361,8 +352,7 @@ class MorningWorkflow:
                 github_data["prs_needing_review"] = [
                     pr
                     for pr in prs
-                    if pr.get("reviewDecision")
-                    in [None, "REVIEW_REQUIRED", "CHANGES_REQUESTED"]
+                    if pr.get("reviewDecision") in [None, "REVIEW_REQUIRED", "CHANGES_REQUESTED"]
                 ]
             else:
                 github_data["prs_needing_review"] = []
@@ -413,9 +403,7 @@ class MorningWorkflow:
 
                     # Check if behind base branch
                     base_ref = worktree_info.get("baseRef", "main")
-                    behind_output = run_command(
-                        ["git", "rev-list", "--count", f"HEAD..{base_ref}"]
-                    )
+                    behind_output = run_command(["git", "rev-list", "--count", f"HEAD..{base_ref}"])
                     try:
                         behind_count = int(behind_output) if behind_output else 0
                         git_data["worktree"]["behindBase"] = behind_count
@@ -440,8 +428,8 @@ class MorningWorkflow:
 
     def _collect_state_fallback(self) -> Dict[str, Any]:
         """Fallback state collection without utilities."""
-        import subprocess
         import shutil
+        import subprocess
 
         def run_command(cmd: list) -> str:
             """
@@ -462,9 +450,7 @@ class MorningWorkflow:
 
         branch = run_command(["git", "rev-parse", "--abbrev-ref", "HEAD"])
         # SECURE: branch is passed as separate argument, safe from injection
-        behind_output = run_command(
-            ["git", "rev-list", "--count", f"HEAD..origin/{branch}"]
-        )
+        behind_output = run_command(["git", "rev-list", "--count", f"HEAD..origin/{branch}"])
 
         try:
             behind_count = int(behind_output) if behind_output else 0
@@ -478,9 +464,7 @@ class MorningWorkflow:
         git_state = {
             "branch": branch,
             "behind_remote": behind_count,
-            "uncommitted_files": len(
-                run_command(["git", "status", "--porcelain"]).splitlines()
-            ),
+            "uncommitted_files": len(run_command(["git", "status", "--porcelain"]).splitlines()),
             "stashes": stash_count,
         }
 
@@ -503,9 +487,7 @@ class MorningWorkflow:
                 if prs_json:
                     prs = json.loads(prs_json)
                     github_state["prs_needing_review"] = [
-                        pr
-                        for pr in prs
-                        if pr.get("reviewDecision") in [None, "REVIEW_REQUIRED"]
+                        pr for pr in prs if pr.get("reviewDecision") in [None, "REVIEW_REQUIRED"]
                     ]
 
                 issues_json = run_command(
@@ -584,9 +566,7 @@ class MorningWorkflow:
             try:
                 existing_status = json.loads(status_file.read_text(encoding="utf-8"))
             except (json.JSONDecodeError, UnicodeDecodeError) as e:
-                print(
-                    f"[WARN] Could not parse existing STATUS.json: {e}", file=sys.stderr
-                )
+                print(f"[WARN] Could not parse existing STATUS.json: {e}", file=sys.stderr)
 
         # Update with morning routine data
         git_state = state.get("git", {})
@@ -650,9 +630,7 @@ class MorningWorkflow:
             )
 
         if score < 60:
-            recommendations.append(
-                "⚠️ Low Ready to Code Score - address setup issues first"
-            )
+            recommendations.append("⚠️ Low Ready to Code Score - address setup issues first")
 
         return recommendations if recommendations else ["All set! Ready to code."]
 
@@ -771,42 +749,24 @@ def main():
 
     # Individual flags (existing)
     parser.add_argument("--quick", action="store_true", help="Quick one-line summary")
-    parser.add_argument(
-        "--measure", action="store_true", help="Track performance metrics"
-    )
+    parser.add_argument("--measure", action="store_true", help="Track performance metrics")
     parser.add_argument("--optimized", action="store_true", help="Use caching")
     parser.add_argument("--no-cache", action="store_true", help="Force fresh execution")
 
     # New flags (documented but not yet fully implemented - Issue #105)
-    parser.add_argument(
-        "--simple", action="store_true", help="Markdown tables instead of ASCII"
-    )
+    parser.add_argument("--simple", action="store_true", help="Markdown tables instead of ASCII")
     parser.add_argument("--skip-tests", action="store_true", help="Skip test execution")
-    parser.add_argument(
-        "--skip-services", action="store_true", help="Skip service health checks"
-    )
-    parser.add_argument(
-        "--skip-deployments", action="store_true", help="Skip deployment status"
-    )
-    parser.add_argument(
-        "--full", action="store_true", help="Include all checks (slower)"
-    )
-    parser.add_argument(
-        "--no-nightly", action="store_true", help="Skip nightly comparison"
-    )
+    parser.add_argument("--skip-services", action="store_true", help="Skip service health checks")
+    parser.add_argument("--skip-deployments", action="store_true", help="Skip deployment status")
+    parser.add_argument("--full", action="store_true", help="Include all checks (slower)")
+    parser.add_argument("--no-nightly", action="store_true", help="Skip nightly comparison")
 
     # Help tiers (Issue #105)
-    parser.add_argument(
-        "--help-detailed", action="store_true", help="Show detailed examples"
-    )
-    parser.add_argument(
-        "--help-full", action="store_true", help="Show full documentation"
-    )
+    parser.add_argument("--help-detailed", action="store_true", help="Show detailed examples")
+    parser.add_argument("--help-full", action="store_true", help="Show full documentation")
 
     # List profiles (Issue #105)
-    parser.add_argument(
-        "--list-profiles", action="store_true", help="List available profiles"
-    )
+    parser.add_argument("--list-profiles", action="store_true", help="List available profiles")
 
     args = parser.parse_args()
 

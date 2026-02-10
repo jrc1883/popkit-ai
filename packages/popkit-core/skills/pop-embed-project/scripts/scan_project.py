@@ -226,9 +226,7 @@ def embed_items(items: List[Dict[str, Any]], force: bool = False) -> Dict[str, A
 
     # Batch items (50 per batch)
     batch_size = 50
-    batches = [
-        to_embed[i : i + batch_size] for i in range(0, len(to_embed), batch_size)
-    ]
+    batches = [to_embed[i : i + batch_size] for i in range(0, len(to_embed), batch_size)]
     result["timing"]["batches"] = len(batches)
 
     # Process batches

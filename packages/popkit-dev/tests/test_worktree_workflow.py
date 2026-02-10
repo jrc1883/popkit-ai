@@ -13,9 +13,7 @@ import unittest
 from pathlib import Path
 
 # Add parent directory to path for imports
-sys.path.insert(
-    0, str(Path(__file__).parents[1] / "skills" / "pop-worktree-manager" / "scripts")
-)
+sys.path.insert(0, str(Path(__file__).parents[1] / "skills" / "pop-worktree-manager" / "scripts"))
 
 from worktree_operations import (
     operation_analyze,
@@ -35,9 +33,7 @@ class TestWorktreeWorkflow(unittest.TestCase):
         self.original_cwd = Path.cwd()
 
         # Initialize git repository
-        subprocess.run(
-            ["git", "init"], cwd=self.test_dir, check=True, capture_output=True
-        )
+        subprocess.run(["git", "init"], cwd=self.test_dir, check=True, capture_output=True)
         subprocess.run(
             ["git", "config", "user.email", "test@example.com"],
             cwd=self.test_dir,
@@ -127,9 +123,7 @@ class TestWorktreeWorkflow(unittest.TestCase):
     def test_full_workflow_create_switch_remove(self):
         """Test: create worktree → switch → remove."""
         # Create worktree
-        create_result = operation_create(
-            "feature-test", base="main", name="test-worktree"
-        )
+        create_result = operation_create("feature-test", base="main", name="test-worktree")
         self.assertTrue(create_result["success"], f"Create failed: {create_result}")
         self.assertIn("path", create_result)
 
@@ -188,9 +182,7 @@ class TestWorktreeWorkflow(unittest.TestCase):
     def test_workflow_uncommitted_changes_protection(self):
         """Test: uncommitted changes safety check."""
         # Create worktree
-        create_result = operation_create(
-            "feature-test", base="main", name="test-worktree"
-        )
+        create_result = operation_create("feature-test", base="main", name="test-worktree")
         self.assertTrue(create_result["success"])
 
         worktree_path = Path(create_result["path"])
@@ -213,9 +205,7 @@ class TestWorktreeWorkflow(unittest.TestCase):
     def test_workflow_analyze_recommendations(self):
         """Test: analyze provides relevant recommendations."""
         # Create worktree
-        create_result = operation_create(
-            "feature-test", base="main", name="test-worktree"
-        )
+        create_result = operation_create("feature-test", base="main", name="test-worktree")
         self.assertTrue(create_result["success"])
 
         worktree_path = Path(create_result["path"])
@@ -232,9 +222,7 @@ class TestWorktreeWorkflow(unittest.TestCase):
 
         # Should recommend committing changes
         recommendations = analyze_result["recommendations"]
-        commit_rec = next(
-            (r for r in recommendations if r["id"] == "commit_changes"), None
-        )
+        commit_rec = next((r for r in recommendations if r["id"] == "commit_changes"), None)
         self.assertIsNotNone(commit_rec, "Should recommend committing changes")
 
         # Clean up
@@ -250,9 +238,7 @@ class TestStatusJsonIntegration(unittest.TestCase):
         self.original_cwd = Path.cwd()
 
         # Initialize git repository
-        subprocess.run(
-            ["git", "init"], cwd=self.test_dir, check=True, capture_output=True
-        )
+        subprocess.run(["git", "init"], cwd=self.test_dir, check=True, capture_output=True)
         subprocess.run(
             ["git", "config", "user.email", "test@example.com"],
             cwd=self.test_dir,
@@ -342,9 +328,7 @@ class TestStatusJsonIntegration(unittest.TestCase):
     def test_status_json_created_on_worktree_creation(self):
         """Test: STATUS.json is created/updated when worktree is created."""
         # Create worktree
-        create_result = operation_create(
-            "feature-test", base="main", name="test-worktree"
-        )
+        create_result = operation_create("feature-test", base="main", name="test-worktree")
         self.assertTrue(create_result["success"])
 
         # Check STATUS.json exists

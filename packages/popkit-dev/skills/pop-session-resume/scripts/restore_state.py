@@ -73,9 +73,7 @@ def calculate_session_type(last_update: str) -> Dict[str, Any]:
         now = datetime.now(last_dt.tzinfo) if last_dt.tzinfo else datetime.now()
 
         # Calculate hours since
-        delta = (
-            now - last_dt.replace(tzinfo=None) if not last_dt.tzinfo else now - last_dt
-        )
+        delta = now - last_dt.replace(tzinfo=None) if not last_dt.tzinfo else now - last_dt
         hours_since = delta.total_seconds() / 3600
 
         if hours_since < 0.5:
@@ -312,10 +310,7 @@ def main():
 
     # Verify git state
     verification = None
-    if (
-        args.mode in ["verify-git", "all"]
-        and session_info["session_type"] == "Fresh Start"
-    ):
+    if args.mode in ["verify-git", "all"] and session_info["session_type"] == "Fresh Start":
         verification = verify_git_state(status.get("git", {}))
         result["verification"] = verification
 

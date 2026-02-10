@@ -211,9 +211,7 @@ def find_conflicts(files: List[Path]) -> List[Dict[str, Any]]:
 
                     # Check for contradiction patterns
                     for pattern1, pattern2 in contradiction_pairs:
-                        if (
-                            re.search(pattern1, text1) and re.search(pattern2, text2)
-                        ) or (
+                        if (re.search(pattern1, text1) and re.search(pattern2, text2)) or (
                             re.search(pattern2, text1) and re.search(pattern1, text2)
                         ):
                             # Check if they're about the same topic

@@ -38,6 +38,4 @@ print("Now run your PopKit command in Claude Code...")
 print("All tool calls will be captured automatically.")
 print()
 print("After command completes, analyze with:")
-print(
-    f"  python packages/shared-py/popkit_shared/utils/recording_analyzer.py {recording_file}"
-)
+print(f"  python packages/shared-py/popkit_shared/utils/recording_analyzer.py {recording_file}")

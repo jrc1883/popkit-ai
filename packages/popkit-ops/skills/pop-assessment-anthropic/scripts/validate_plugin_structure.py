@@ -15,7 +15,7 @@ Output:
 import json
 import sys
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any, Dict, List
 
 
 def find_plugin_root(start_path: Path = None) -> Path:
@@ -40,7 +40,7 @@ def load_json_file(filepath: Path) -> tuple[Any, str]:
     if not filepath.exists():
         return None, f"File not found: {filepath}"
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
+        with open(filepath, "r", encoding="utf-8") as f:
             return json.load(f), None
     except json.JSONDecodeError as e:
         return None, f"Invalid JSON: {e}"
@@ -55,36 +55,42 @@ def check_plugin_json(plugin_dir: Path) -> List[Dict]:
 
     # Check file exists
     if not filepath.exists():
-        findings.append({
-            "id": "PS-001",
-            "check": "plugin.json exists",
-            "status": "FAIL",
-            "severity": "critical",
-            "message": f"File not found: {filepath}",
-            "deduction": 20
-        })
+        findings.append(
+            {
+                "id": "PS-001",
+                "check": "plugin.json exists",
+                "status": "FAIL",
+                "severity": "critical",
+                "message": f"File not found: {filepath}",
+                "deduction": 20,
+            }
+        )
         return findings
 
-    findings.append({
-        "id": "PS-001",
-        "check": "plugin.json exists",
-        "status": "PASS",
-        "severity": "critical",
-        "message": "File exists",
-        "deduction": 0
-    })
+    findings.append(
+        {
+            "id": "PS-001",
+            "check": "plugin.json exists",
+            "status": "PASS",
+            "severity": "critical",
+            "message": "File exists",
+            "deduction": 0,
+        }
+    )
 
     # Load and validate
     data, error = load_json_file(filepath)
     if error:
-        findings.append({
-            "id": "PS-001b",
-            "check": "plugin.json valid JSON",
-            "status": "FAIL",
-            "severity": "critical",
-            "message": error,
-            "deduction": 20
-        })
+        findings.append(
+            {
+                "id": "PS-001b",
+                "check": "plugin.json valid JSON",
+                "status": "FAIL",
+                "severity": "critical",
+                "message": error,
+                "deduction": 20,
+            }
+        )
         return findings
 
     # Check required fields
@@ -97,23 +103,27 @@ def check_plugin_json(plugin_dir: Path) -> List[Dict]:
 
     for field, check_id, severity, deduction in required_fields:
         if field in data and data[field]:
-            findings.append({
-                "id": check_id,
-                "check": f"plugin.json has {field}",
-                "status": "PASS",
-                "severity": severity,
-                "message": f"{field}: {data[field]}",
-                "deduction": 0
-            })
+            findings.append(
+                {
+                    "id": check_id,
+                    "check": f"plugin.json has {field}",
+                    "status": "PASS",
+                    "severity": severity,
+                    "message": f"{field}: {data[field]}",
+                    "deduction": 0,
+                }
+            )
         else:
-            findings.append({
-                "id": check_id,
-                "check": f"plugin.json has {field}",
-                "status": "FAIL",
-                "severity": severity,
-                "message": f"Missing {field} field",
-                "deduction": deduction
-            })
+            findings.append(
+                {
+                    "id": check_id,
+                    "check": f"plugin.json has {field}",
+                    "status": "FAIL",
+                    "severity": severity,
+                    "message": f"Missing {field} field",
+                    "deduction": deduction,
+                }
+            )
 
     return findings
 
@@ -124,51 +134,66 @@ def check_hooks_json(plugin_dir: Path) -> List[Dict]:
     filepath = plugin_dir / "hooks" / "hooks.json"
 
     if not filepath.exists():
-        findings.append({
-            "id": "PS-006",
-            "check": "hooks.json exists",
-            "status": "SKIP",
-            "severity": "info",
-            "message": "No hooks.json (hooks may not be used)",
-            "deduction": 0
-        })
+        findings.append(
+            {
+                "id": "PS-006",
+                "check": "hooks.json exists",
+                "status": "SKIP",
+                "severity": "info",
+                "message": "No hooks.json (hooks may not be used)",
+                "deduction": 0,
+            }
+        )
         return findings
 
     data, error = load_json_file(filepath)
     if error:
-        findings.append({
-            "id": "PS-006",
-            "check": "hooks.json valid JSON",
-            "status": "FAIL",
-            "severity": "critical",
-            "message": error,
-            "deduction": 20
-        })
+        findings.append(
+            {
+                "id": "PS-006",
+                "check": "hooks.json valid JSON",
+                "status": "FAIL",
+                "severity": "critical",
+                "message": error,
+                "deduction": 20,
+            }
+        )
         return findings
 
     # Check for schema
     if "$schema" in data:
-        findings.append({
-            "id": "PS-008",
-            "check": "hooks.json has $schema",
-            "status": "PASS",
-            "severity": "low",
-            "message": "Schema reference included",
-            "deduction": 0
-        })
+        findings.append(
+            {
+                "id": "PS-008",
+                "check": "hooks.json has $schema",
+                "status": "PASS",
+                "severity": "low",
+                "message": "Schema reference included",
+                "deduction": 0,
+            }
+        )
     else:
-        findings.append({
-            "id": "PS-008",
-            "check": "hooks.json has $schema",
-            "status": "WARN",
-            "severity": "low",
-            "message": "No $schema reference",
-            "deduction": 2
-        })
+        findings.append(
+            {
+                "id": "PS-008",
+                "check": "hooks.json has $schema",
+                "status": "WARN",
+                "severity": "low",
+                "message": "No $schema reference",
+                "deduction": 2,
+            }
+        )
 
     # Check valid event types
-    valid_events = {"PreToolUse", "PostToolUse", "SessionStart", "Stop",
-                    "SubagentStop", "Notification", "UserPromptSubmit"}
+    valid_events = {
+        "PreToolUse",
+        "PostToolUse",
+        "SessionStart",
+        "Stop",
+        "SubagentStop",
+        "Notification",
+        "UserPromptSubmit",
+    }
 
     hooks = data.get("hooks", [])
     invalid_events = []
@@ -178,23 +203,27 @@ def check_hooks_json(plugin_dir: Path) -> List[Dict]:
             invalid_events.append(event)
 
     if invalid_events:
-        findings.append({
-            "id": "PS-006",
-            "check": "hooks.json valid events",
-            "status": "FAIL",
-            "severity": "critical",
-            "message": f"Invalid events: {invalid_events}",
-            "deduction": 20
-        })
+        findings.append(
+            {
+                "id": "PS-006",
+                "check": "hooks.json valid events",
+                "status": "FAIL",
+                "severity": "critical",
+                "message": f"Invalid events: {invalid_events}",
+                "deduction": 20,
+            }
+        )
     else:
-        findings.append({
-            "id": "PS-006",
-            "check": "hooks.json valid events",
-            "status": "PASS",
-            "severity": "critical",
-            "message": f"All {len(hooks)} hooks have valid events",
-            "deduction": 0
-        })
+        findings.append(
+            {
+                "id": "PS-006",
+                "check": "hooks.json valid events",
+                "status": "PASS",
+                "severity": "critical",
+                "message": f"All {len(hooks)} hooks have valid events",
+                "deduction": 0,
+            }
+        )
 
     # Check referenced scripts exist
     missing_scripts = []
@@ -207,23 +236,27 @@ def check_hooks_json(plugin_dir: Path) -> List[Dict]:
                 missing_scripts.append(command)
 
     if missing_scripts:
-        findings.append({
-            "id": "PS-007",
-            "check": "Referenced scripts exist",
-            "status": "FAIL",
-            "severity": "critical",
-            "message": f"Missing: {missing_scripts}",
-            "deduction": 20
-        })
+        findings.append(
+            {
+                "id": "PS-007",
+                "check": "Referenced scripts exist",
+                "status": "FAIL",
+                "severity": "critical",
+                "message": f"Missing: {missing_scripts}",
+                "deduction": 20,
+            }
+        )
     else:
-        findings.append({
-            "id": "PS-007",
-            "check": "Referenced scripts exist",
-            "status": "PASS",
-            "severity": "critical",
-            "message": f"All {len(hooks)} scripts found",
-            "deduction": 0
-        })
+        findings.append(
+            {
+                "id": "PS-007",
+                "check": "Referenced scripts exist",
+                "status": "PASS",
+                "severity": "critical",
+                "message": f"All {len(hooks)} scripts found",
+                "deduction": 0,
+            }
+        )
 
     return findings
 
@@ -234,47 +267,55 @@ def check_mcp_json(plugin_dir: Path) -> List[Dict]:
     filepath = plugin_dir / ".mcp.json"
 
     if not filepath.exists():
-        findings.append({
-            "id": "PS-009",
-            "check": ".mcp.json exists",
-            "status": "SKIP",
-            "severity": "info",
-            "message": "No .mcp.json (MCP may not be used)",
-            "deduction": 0
-        })
+        findings.append(
+            {
+                "id": "PS-009",
+                "check": ".mcp.json exists",
+                "status": "SKIP",
+                "severity": "info",
+                "message": "No .mcp.json (MCP may not be used)",
+                "deduction": 0,
+            }
+        )
         return findings
 
     data, error = load_json_file(filepath)
     if error:
-        findings.append({
-            "id": "PS-009",
-            "check": ".mcp.json valid JSON",
-            "status": "FAIL",
-            "severity": "high",
-            "message": error,
-            "deduction": 10
-        })
+        findings.append(
+            {
+                "id": "PS-009",
+                "check": ".mcp.json valid JSON",
+                "status": "FAIL",
+                "severity": "high",
+                "message": error,
+                "deduction": 10,
+            }
+        )
         return findings
 
     # Check for schema
     if "$schema" in data:
-        findings.append({
-            "id": "PS-009",
-            "check": ".mcp.json has $schema",
-            "status": "PASS",
-            "severity": "low",
-            "message": "Schema reference included",
-            "deduction": 0
-        })
+        findings.append(
+            {
+                "id": "PS-009",
+                "check": ".mcp.json has $schema",
+                "status": "PASS",
+                "severity": "low",
+                "message": "Schema reference included",
+                "deduction": 0,
+            }
+        )
     else:
-        findings.append({
-            "id": "PS-009",
-            "check": ".mcp.json has $schema",
-            "status": "WARN",
-            "severity": "low",
-            "message": "No $schema reference",
-            "deduction": 2
-        })
+        findings.append(
+            {
+                "id": "PS-009",
+                "check": ".mcp.json has $schema",
+                "status": "WARN",
+                "severity": "low",
+                "message": "No $schema reference",
+                "deduction": 2,
+            }
+        )
 
     return findings
 
@@ -285,36 +326,42 @@ def check_config_json(plugin_dir: Path) -> List[Dict]:
     filepath = plugin_dir / "agents" / "config.json"
 
     if not filepath.exists():
-        findings.append({
-            "id": "PS-010",
-            "check": "config.json exists",
-            "status": "SKIP",
-            "severity": "info",
-            "message": "No agents/config.json",
-            "deduction": 0
-        })
+        findings.append(
+            {
+                "id": "PS-010",
+                "check": "config.json exists",
+                "status": "SKIP",
+                "severity": "info",
+                "message": "No agents/config.json",
+                "deduction": 0,
+            }
+        )
         return findings
 
     data, error = load_json_file(filepath)
     if error:
-        findings.append({
-            "id": "PS-010",
-            "check": "config.json valid JSON",
-            "status": "FAIL",
-            "severity": "high",
-            "message": error,
-            "deduction": 10
-        })
+        findings.append(
+            {
+                "id": "PS-010",
+                "check": "config.json valid JSON",
+                "status": "FAIL",
+                "severity": "high",
+                "message": error,
+                "deduction": 10,
+            }
+        )
         return findings
 
-    findings.append({
-        "id": "PS-010",
-        "check": "config.json valid JSON",
-        "status": "PASS",
-        "severity": "high",
-        "message": "Valid configuration",
-        "deduction": 0
-    })
+    findings.append(
+        {
+            "id": "PS-010",
+            "check": "config.json valid JSON",
+            "status": "PASS",
+            "severity": "high",
+            "message": "Valid configuration",
+            "deduction": 0,
+        }
+    )
 
     return findings
 
@@ -351,9 +398,9 @@ def main():
             "passes": passes,
             "fails": fails,
             "warnings": warns,
-            "total_deduction": total_deduction
+            "total_deduction": total_deduction,
         },
-        "findings": all_findings
+        "findings": all_findings,
     }
 
     print(json.dumps(result, indent=2))

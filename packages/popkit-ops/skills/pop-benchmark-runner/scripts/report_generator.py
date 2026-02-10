@@ -52,12 +52,8 @@ class ReportGenerator:
         md += "|--------|----------|-------------|-------------|---------|-------------|\n"
 
         for metric_name, metric_data in metrics.items():
-            baseline = self._format_metric(
-                metric_data.get("baseline_mean", 0), metric_name
-            )
-            with_popkit = self._format_metric(
-                metric_data.get("popkit_mean", 0), metric_name
-            )
+            baseline = self._format_metric(metric_data.get("baseline_mean", 0), metric_name)
+            with_popkit = self._format_metric(metric_data.get("popkit_mean", 0), metric_name)
             improvement = metric_data.get("improvement_pct", 0)
             improvement_str = f"{improvement:+.1f}%"
             p_value = metric_data.get("p_value", 1.0)
@@ -70,15 +66,11 @@ class ReportGenerator:
 
         # Statistical significance summary
         md += "\n## Statistical Significance\n\n"
-        significant_count = sum(
-            1 for m in metrics.values() if m.get("p_value", 1.0) < 0.05
-        )
+        significant_count = sum(1 for m in metrics.values() if m.get("p_value", 1.0) < 0.05)
         total_count = len(metrics)
         md += f"- **Metrics with significant improvement**: {significant_count}/{total_count} (p < 0.05)\n"
 
-        large_effect_count = sum(
-            1 for m in metrics.values() if abs(m.get("effect_size", 0)) > 0.8
-        )
+        large_effect_count = sum(1 for m in metrics.values() if abs(m.get("effect_size", 0)) > 0.8)
         md += f"- **Metrics with large effect size**: {large_effect_count}/{total_count} (|d| > 0.8)\n"
 
         overall_effect = summary.get("overall_effect_size", 0)
@@ -141,9 +133,7 @@ class ReportGenerator:
         improvements = [m.get("improvement_pct", 0) for m in metrics.values()]
 
         # Color code improvements
-        improvement_colors = [
-            "#10b981" if imp > 0 else "#ef4444" for imp in improvements
-        ]
+        improvement_colors = ["#10b981" if imp > 0 else "#ef4444" for imp in improvements]
 
         html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -307,12 +297,8 @@ class ReportGenerator:
 
         # Table rows
         for metric_name, metric_data in metrics.items():
-            baseline = self._format_metric(
-                metric_data.get("baseline_mean", 0), metric_name
-            )
-            with_popkit = self._format_metric(
-                metric_data.get("popkit_mean", 0), metric_name
-            )
+            baseline = self._format_metric(metric_data.get("baseline_mean", 0), metric_name)
+            with_popkit = self._format_metric(metric_data.get("popkit_mean", 0), metric_name)
             improvement = metric_data.get("improvement_pct", 0)
             improvement_class = (
                 "improvement-positive" if improvement > 0 else "improvement-negative"
@@ -343,13 +329,9 @@ class ReportGenerator:
             <ul>
 """
 
-        significant_count = sum(
-            1 for m in metrics.values() if m.get("p_value", 1.0) < 0.05
-        )
+        significant_count = sum(1 for m in metrics.values() if m.get("p_value", 1.0) < 0.05)
         total_count = len(metrics)
-        large_effect_count = sum(
-            1 for m in metrics.values() if abs(m.get("effect_size", 0)) > 0.8
-        )
+        large_effect_count = sum(1 for m in metrics.values() if abs(m.get("effect_size", 0)) > 0.8)
         overall_effect = summary.get("overall_effect_size", 0)
         overall_interpretation = self._interpret_effect_size(overall_effect)
 

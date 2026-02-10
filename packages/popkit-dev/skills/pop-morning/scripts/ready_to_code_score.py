@@ -7,7 +7,7 @@ Based on 6 dimensions: session restored, services healthy, dependencies updated,
 branches synced, PRs reviewed, and issues triaged.
 """
 
-from typing import Dict, Any, Tuple
+from typing import Any, Dict, Tuple
 
 
 def calculate_ready_to_code_score(
@@ -142,9 +142,7 @@ def calculate_ready_to_code_score(
     if stale_branches > 0:
         penalty = min(stale_branches, 5)
         branch_score = max(0, branch_score - penalty)
-        sync_reason += (
-            f"; {stale_branches} stale branch{'es' if stale_branches != 1 else ''}"
-        )
+        sync_reason += f"; {stale_branches} stale branch{'es' if stale_branches != 1 else ''}"
         if sync_status == "✅":
             sync_status = "⚠️"
 

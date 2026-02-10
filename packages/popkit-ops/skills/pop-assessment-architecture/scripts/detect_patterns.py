@@ -150,9 +150,7 @@ def detect_anti_patterns(project_dir: Path) -> List[Dict[str, Any]]:
         {
             "name": "circular_dependency",
             "description": "Files importing each other",
-            "patterns": [
-                r"from\s+\.\w+\s+import|import\s+\{\s*\w+\s*\}\s+from\s+['\"]\."
-            ],
+            "patterns": [r"from\s+\.\w+\s+import|import\s+\{\s*\w+\s*\}\s+from\s+['\"]\."],
             "severity": "high",
         },
         {

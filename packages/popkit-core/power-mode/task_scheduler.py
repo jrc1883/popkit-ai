@@ -16,14 +16,14 @@ Architecture:
 - Thread-safe task queue with priority sorting
 """
 
+import heapq
 import json
 import time
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from enum import IntEnum
-from typing import List, Optional, Dict, Any
-from pathlib import Path
-import heapq
 from functools import total_ordering
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 
 class TaskPriority(IntEnum):
@@ -103,9 +103,7 @@ class Task:
         """
         if self.priority != other.priority:
             return self.priority > other.priority  # Higher priority first
-        return (
-            self.created_at < other.created_at
-        )  # Older first (FIFO for same priority)
+        return self.created_at < other.created_at  # Older first (FIFO for same priority)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert task to dictionary for serialization."""
@@ -178,9 +176,7 @@ class PriorityAssigner:
             }
         }
 
-    def assign_priority(
-        self, task: Task, explicit_priority: Optional[str] = None
-    ) -> TaskPriority:
+    def assign_priority(self, task: Task, explicit_priority: Optional[str] = None) -> TaskPriority:
         """
         Assign priority to a task based on its characteristics.
 
@@ -468,9 +464,7 @@ if __name__ == "__main__":
         for agent in agents:
             task = scheduler.get_next_task(agent)
             if task:
-                print(
-                    f"{agent}: [{task.priority.to_string().upper():8}] {task.description}"
-                )
+                print(f"{agent}: [{task.priority.to_string().upper():8}] {task.description}")
 
         print("\n" + "=" * 60)
         stats = scheduler.get_task_stats()

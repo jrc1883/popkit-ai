@@ -60,12 +60,14 @@ def find_error_messages(project_dir: Path) -> List[Dict[str, Any]]:
                 for pattern, error_type in patterns:
                     for match in re.finditer(pattern, content, re.IGNORECASE):
                         message = match.group(1) if match.groups() else match.group(0)
-                        errors.append({
-                            "file": rel_path,
-                            "type": error_type,
-                            "message": message[:100],
-                            "line": content[:match.start()].count("\n") + 1
-                        })
+                        errors.append(
+                            {
+                                "file": rel_path,
+                                "type": error_type,
+                                "message": message[:100],
+                                "line": content[: match.start()].count("\n") + 1,
+                            }
+                        )
             except:
                 pass
 
@@ -93,12 +95,14 @@ def analyze_error_quality(errors: List[Dict]) -> Dict[str, Any]:
 
         for vague in vague_patterns:
             if vague.lower() in message.lower() and len(message) < 30:
-                issues.append({
-                    "file": error["file"],
-                    "message": message,
-                    "issue": f"Vague error message: '{vague}'",
-                    "severity": "medium"
-                })
+                issues.append(
+                    {
+                        "file": error["file"],
+                        "message": message,
+                        "issue": f"Vague error message: '{vague}'",
+                        "severity": "medium",
+                    }
+                )
                 score -= 20
                 break
 
@@ -106,12 +110,14 @@ def analyze_error_quality(errors: List[Dict]) -> Dict[str, Any]:
         jargon = ["ENOENT", "EACCES", "EPERM", "null", "undefined", "NaN"]
         for term in jargon:
             if term in message and ":" not in message:
-                issues.append({
-                    "file": error["file"],
-                    "message": message,
-                    "issue": f"Technical jargon '{term}' without explanation",
-                    "severity": "low"
-                })
+                issues.append(
+                    {
+                        "file": error["file"],
+                        "message": message,
+                        "issue": f"Technical jargon '{term}' without explanation",
+                        "severity": "low",
+                    }
+                )
                 score -= 10
                 break
 
@@ -125,12 +131,14 @@ def analyze_error_quality(errors: List[Dict]) -> Dict[str, Any]:
         harsh_words = ["stupid", "wrong", "idiot", "dumb", "fail"]
         for word in harsh_words:
             if word in message.lower():
-                issues.append({
-                    "file": error["file"],
-                    "message": message,
-                    "issue": f"Harsh language in error: '{word}'",
-                    "severity": "high"
-                })
+                issues.append(
+                    {
+                        "file": error["file"],
+                        "message": message,
+                        "issue": f"Harsh language in error: '{word}'",
+                        "severity": "high",
+                    }
+                )
                 score -= 25
                 break
 
@@ -141,24 +149,19 @@ def analyze_error_quality(errors: List[Dict]) -> Dict[str, Any]:
     return {
         "total_errors": len(errors),
         "average_quality": round(avg_quality, 1),
-        "issues": issues[:20]
+        "issues": issues[:20],
     }
 
 
 def analyze_error_patterns(errors: List[Dict]) -> Dict[str, Any]:
     """Analyze error message patterns for consistency."""
-    patterns = {
-        "has_context": 0,
-        "has_suggestion": 0,
-        "has_code": 0,
-        "is_templated": 0
-    }
+    patterns = {"has_context": 0, "has_suggestion": 0, "has_code": 0, "is_templated": 0}
 
     for error in errors:
         message = error.get("message", "")
 
         # Check for context (file path, variable name, etc.)
-        if re.search(r"'[^']+'" , message) or re.search(r'"[^"]+"', message):
+        if re.search(r"'[^']+'", message) or re.search(r'"[^"]+"', message):
             patterns["has_context"] += 1
 
         # Check for suggestions
@@ -176,10 +179,7 @@ def analyze_error_patterns(errors: List[Dict]) -> Dict[str, Any]:
     total = len(errors) if errors else 1
     percentages = {k: round(v / total * 100, 1) for k, v in patterns.items()}
 
-    return {
-        "counts": patterns,
-        "percentages": percentages
-    }
+    return {"counts": patterns, "percentages": percentages}
 
 
 def analyze_error_consistency(project_dir: Path) -> Dict[str, Any]:
@@ -200,23 +200,18 @@ def analyze_error_consistency(project_dir: Path) -> Dict[str, Any]:
 
     # Check if custom errors are used consistently
     if len(custom_errors) > 5:
-        issues.append({
-            "type": "too_many_error_classes",
-            "message": f"Found {len(custom_errors)} custom error classes - consider consolidating",
-            "severity": "low"
-        })
+        issues.append(
+            {
+                "type": "too_many_error_classes",
+                "message": f"Found {len(custom_errors)} custom error classes - consider consolidating",
+                "severity": "low",
+            }
+        )
 
-    return {
-        "custom_error_classes": list(custom_errors),
-        "issues": issues
-    }
+    return {"custom_error_classes": list(custom_errors), "issues": issues}
 
 
-def calculate_error_score(
-    quality: Dict,
-    patterns: Dict,
-    consistency: Dict
-) -> float:
+def calculate_error_score(quality: Dict, patterns: Dict, consistency: Dict) -> float:
     """Calculate overall error message score."""
     score = quality.get("average_quality", 100)
 
@@ -272,7 +267,7 @@ def main():
         "quality_analysis": quality,
         "pattern_analysis": patterns,
         "consistency_analysis": consistency,
-        "sample_errors": errors[:10]
+        "sample_errors": errors[:10],
     }
 
     print(json.dumps(report, indent=2))
