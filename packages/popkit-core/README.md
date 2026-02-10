@@ -199,6 +199,7 @@ Power Mode enables parallel multi-agent workflows through intelligent mode selec
 **Configuration:**
 
 Add to `~/.claude/settings.json`:
+
 ```json
 {
   "experimental": {

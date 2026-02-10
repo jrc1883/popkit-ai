@@ -162,6 +162,8 @@ def main():
         print(
             json.dumps(
                 {
+                    "status": "success",
+                    "timestamp": datetime.utcnow().isoformat(),
                     "role": "system",
                     "content": "You appear to be idle. Continue with your assigned task or ask the user for next steps.",
                 }
@@ -175,9 +177,18 @@ def main():
     # 5. Log the event (optional)
     log_idle_event(input_data, role)
 
-    # 6. Output the instruction as system message
+    # 6. Output the instruction as system message with required fields
     # This gets injected into the idle agent's context
-    print(json.dumps({"role": "system", "content": instruction}))
+    print(
+        json.dumps(
+            {
+                "status": "success",
+                "timestamp": datetime.utcnow().isoformat(),
+                "role": "system",
+                "content": instruction,
+            }
+        )
+    )
 
 
 if __name__ == "__main__":
