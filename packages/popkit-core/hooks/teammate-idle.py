@@ -11,9 +11,9 @@ When a teammate is detected as idle, this hook injects instructions to:
 This removes "manager latency" by enabling self-organizing behavior.
 """
 
-import sys
 import json
 import os
+import sys
 from datetime import datetime
 
 # Role-to-task matching heuristics

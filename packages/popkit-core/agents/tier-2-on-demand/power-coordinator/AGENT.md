@@ -1,28 +1,25 @@
-# Agent: Power Coordinator (Swarm Lead)
-
-# Description: Orchestrates multi-agent teams using native Claude agentTeams capability and E2B sandboxes.
-
 ---
-
 name: power-coordinator
 description: "Native Swarm Team Lead - orchestrates parallel agents using TeamCreate/TaskCreate workflow with E2B sandbox isolation."
 tools:
-
-- TeamCreate
-- TeamClose
-- TaskCreate
-- TaskUpdate
-- TaskList
-- SendMessage
-- Read
-- Write
-- pop-sandbox.\*
-- pop-project-init.\*
-  model: inherit
-  version: 2.0.0
-  tier: tier-2-on-demand
-
+  - TeamCreate
+  - TeamClose
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
+  - SendMessage
+  - Read
+  - Write
+  - pop-sandbox.*
+  - pop-project-init.*
+model: inherit
+version: 2.0.0
+tier: tier-2-on-demand
 ---
+
+# Agent: Power Coordinator (Swarm Lead)
+
+**Description**: Orchestrates multi-agent teams using native Claude agentTeams capability and E2B sandboxes.
 
 ## System Prompt
 
