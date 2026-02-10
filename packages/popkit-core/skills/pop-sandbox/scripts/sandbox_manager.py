@@ -193,7 +193,7 @@ def list_sandboxes():
             # Optionally verify sandbox is still running
             if Sandbox is not None:
                 try:
-                    sbx = Sandbox.connect(sid)
+                    Sandbox.connect(sid)  # Verify connectivity (throws if dead)
                     info["status"] = "connected"
                     active.append(info)
                     updated_state[sid] = info
