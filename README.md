@@ -162,12 +162,12 @@ Tomorrow's morning routine will restore this context automatically.
 
 PopKit tries to be **programmatic where possible, AI where needed**.
 
-| Approach | What it means |
-|----------|---------------|
-| **Programmatic git** | Status checks are scripts, not AI guesses |
-| **Rule-based validation** | TypeScript errors come from `tsc`, not prompts |
-| **Explicit state** | Session context is JSON, not memory |
-| **AI for judgment** | Architecture decisions, code review, prioritization |
+| Approach                  | What it means                                       |
+| ------------------------- | --------------------------------------------------- |
+| **Programmatic git**      | Status checks are scripts, not AI guesses           |
+| **Rule-based validation** | TypeScript errors come from `tsc`, not prompts      |
+| **Explicit state**        | Session context is JSON, not memory                 |
+| **AI for judgment**       | Architecture decisions, code review, prioritization |
 
 This reduces token usage, makes workflows reproducible, and keeps AI focused on what it's actually good at.
 
@@ -177,12 +177,12 @@ This reduces token usage, makes workflows reproducible, and keeps AI focused on 
 
 PopKit is modular. Install what you need:
 
-| Plugin | What it adds |
-|--------|-------------|
-| **popkit-core** | Project setup, Power Mode (multi-agent), session management |
-| **popkit-dev** | Git workflows, morning/nightly routines, `/next` recommendations |
-| **popkit-ops** | Quality assessments, security scanning, debugging workflows |
-| **popkit-research** | Knowledge capture, research notes, documentation sync |
+| Plugin              | What it adds                                                     |
+| ------------------- | ---------------------------------------------------------------- |
+| **popkit-core**     | Project setup, Power Mode (multi-agent), session management      |
+| **popkit-dev**      | Git workflows, morning/nightly routines, `/next` recommendations |
+| **popkit-ops**      | Quality assessments, security scanning, debugging workflows      |
+| **popkit-research** | Knowledge capture, research notes, documentation sync            |
 
 ```bash
 /plugin install popkit-ops@popkit-claude      # Quality & security
