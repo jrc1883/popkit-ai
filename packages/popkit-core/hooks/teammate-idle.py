@@ -1,127 +1,192 @@
 #!/usr/bin/env python3
 """
-TeammateIdle Hook (Claude Code 2.1.33+)
-Fires when an Agent Teams teammate becomes idle (waiting for work).
+NATIVE SWARM AUTO-DRIVE HOOK
 
-Responsibilities:
-1. Log idle events for observability and utilization tracking
-2. Record teammate metrics (duration active, tools used)
-3. Update STATUS.json with teammate state
+This hook implements automatic task claiming for idle teammates in a Native Swarm.
+When a teammate is detected as idle, this hook injects instructions to:
+1. Check TaskList for unassigned tasks
+2. Claim tasks matching their role
+3. Report status to the Team Lead if no tasks available
+
+This removes "manager latency" by enabling self-organizing behavior.
 """
 
 import json
+import os
 import sys
 from datetime import datetime
-from pathlib import Path
+
+# Role-to-task matching heuristics
+ROLE_KEYWORDS = {
+    "Engineer": [
+        "implement",
+        "code",
+        "build",
+        "fix",
+        "develop",
+        "create",
+        "write code",
+    ],
+    "Researcher": ["research", "investigate", "analyze", "explore", "find", "discover"],
+    "Architect": ["design", "architect", "structure", "plan", "system"],
+    "Tester": ["test", "verify", "validate", "check", "qa", "quality"],
+    "Security Auditor": [
+        "security",
+        "audit",
+        "vulnerability",
+        "scan",
+        "review security",
+    ],
+    "Documentation": ["document", "docs", "readme", "write doc", "update doc"],
+}
 
 
-def log_teammate_idle(data):
-    """Log teammate idle event to observability file."""
-    logs_dir = Path(".claude", "popkit", "logs")
-    logs_dir.mkdir(parents=True, exist_ok=True)
+def detect_role_from_context(input_data):
+    """
+    Attempt to detect the teammate's role from context.
+    Returns the most likely role or 'General' if unknown.
+    """
+    teammate_id = input_data.get("teammateId", "")
+    teammate_name = input_data.get("teammateName", "")
+    agent_type = input_data.get("agentType", "")
 
-    log_file = logs_dir / "teammate-events.json"
+    # Check if role is explicitly provided
+    if "role" in input_data:
+        return input_data["role"]
 
-    entry = {
-        "event": "teammate_idle",
-        "teammate": data.get("teammate", data.get("agent", "unknown")),
-        "reason": data.get("reason", "completed_work"),
-        "duration_ms": data.get("duration_ms", 0),
-        "tools_used": data.get("tools_used", 0),
-        "tokens_used": data.get("tokens_used", 0),
-        "timestamp": datetime.now().isoformat(),
-    }
+    # Infer from agent type or name
+    combined = f"{teammate_id} {teammate_name} {agent_type}".lower()
 
-    # Append to log file
-    events = []
-    if log_file.exists():
-        try:
-            with open(log_file, "r", encoding="utf-8") as f:
-                events = json.load(f)
-        except (json.JSONDecodeError, OSError):
-            events = []
+    for role, keywords in ROLE_KEYWORDS.items():
+        for keyword in keywords:
+            if keyword.lower() in combined:
+                return role
 
-    events.append(entry)
+    return "General"
 
-    # Keep last 100 events to prevent unbounded growth
-    if len(events) > 100:
-        events = events[-100:]
 
+def build_auto_claim_instruction(role, teammate_id):
+    """
+    Build the instruction prompt that will be injected into the idle agent's context.
+    This prompt guides the agent to self-organize by claiming appropriate tasks.
+    """
+    instruction_parts = [
+        f"🔔 AUTO-DRIVE ACTIVATED | Teammate: {teammate_id} | Role: {role}",
+        "",
+        "You are currently IDLE in a Native Swarm team session.",
+        "",
+        "IMMEDIATE ACTIONS REQUIRED:",
+        "",
+        "1. **Check Task Board**: Call `TaskList` to see all available tasks.",
+        "",
+        "2. **Claim Matching Task**: Look for tasks that match your role:",
+    ]
+
+    # Add role-specific guidance
+    if role in ROLE_KEYWORDS:
+        keywords = ROLE_KEYWORDS[role]
+        instruction_parts.append(f"   - Keywords to look for: {', '.join(keywords[:3])}")
+
+    instruction_parts.extend(
+        [
+            "",
+            "3. **Claim Process**:",
+            "   ```",
+            f'   TaskUpdate(task_id="<id>", status="IN_PROGRESS", notes="Claimed by {role}")',
+            "   ```",
+            "",
+            "4. **If No Tasks Available**:",
+            "   - Report to Team Lead: `SendMessage(recipient='TeamLead', message='No matching tasks. Awaiting assignment.')`",
+            "",
+            "5. **If Task Requires Sandbox**:",
+            "   - Check if sandbox_id is mentioned in task description",
+            "   - Use provided sandbox for file operations",
+            "   - Request sandbox from Team Lead if needed but not provided",
+            "",
+            "PRIORITY: Claim the FIRST matching task to maximize throughput.",
+            "",
+            f"Timestamp: {datetime.utcnow().isoformat()}Z",
+        ]
+    )
+
+    return "\n".join(instruction_parts)
+
+
+def log_idle_event(input_data, role):
+    """
+    Log idle events for observability (optional).
+    Writes to .claude/popkit/swarm-events.jsonl if the directory exists.
+    """
     try:
-        with open(log_file, "w", encoding="utf-8") as f:
-            json.dump(events, f, indent=2)
-    except OSError as e:
-        print(f"  Warning: failed to write teammate log: {e}", file=sys.stderr)
-
-
-def update_status(data):
-    """Update STATUS.json with teammate idle state."""
-    status_file = Path(".claude", "STATUS.json")
-
-    status = {}
-    if status_file.exists():
-        try:
-            with open(status_file, "r", encoding="utf-8") as f:
-                status = json.load(f)
-        except (json.JSONDecodeError, OSError):
-            status = {}
-
-    # Update teammates section
-    teammates = status.get("teammates", {})
-    teammate_name = data.get("teammate", data.get("agent", "unknown"))
-    teammates[teammate_name] = {
-        "state": "idle",
-        "last_active": datetime.now().isoformat(),
-        "tools_used": data.get("tools_used", 0),
-        "tokens_used": data.get("tokens_used", 0),
-    }
-    status["teammates"] = teammates
-
-    try:
-        with open(status_file, "w", encoding="utf-8") as f:
-            json.dump(status, f, indent=2)
-    except OSError as e:
-        print(f"  Warning: failed to update STATUS.json: {e}", file=sys.stderr)
+        log_dir = os.path.expanduser("~/.claude/popkit")
+        if os.path.exists(log_dir):
+            log_file = os.path.join(log_dir, "swarm-events.jsonl")
+            event = {
+                "event": "teammate_idle",
+                "teammate_id": input_data.get("teammateId"),
+                "role": role,
+                "timestamp": datetime.utcnow().isoformat(),
+                "action": "auto_drive_triggered",
+            }
+            with open(log_file, "a") as f:
+                f.write(json.dumps(event) + "\n")
+    except Exception:
+        pass  # Logging is optional, don't fail the hook
 
 
 def main():
-    """Main entry point - JSON stdin/stdout protocol."""
+    """
+    Main hook handler for TeammateIdle event.
+
+    Reads context from stdin (JSON), determines appropriate action,
+    and outputs instruction to be injected into the idle agent's context.
+    """
+    # 1. Read context passed by Claude
     try:
-        input_data = sys.stdin.read()
-        data = json.loads(input_data) if input_data.strip() else {}
+        input_data = json.load(sys.stdin)
+    except (json.JSONDecodeError, Exception):
+        input_data = {}
 
-        # Log the idle event
-        log_teammate_idle(data)
+    # 2. Detect teammate role
+    teammate_id = input_data.get("teammateId", "unknown")
+    role = detect_role_from_context(input_data)
 
-        # Update STATUS.json
-        update_status(data)
+    # 3. Check if we're in swarm mode (optional check)
+    # If not in swarm mode, we could skip or provide minimal instruction
+    in_swarm = input_data.get("inSwarmMode", True)  # Default to True for Native Swarm
 
-        teammate = data.get("teammate", data.get("agent", "unknown"))
-        print(f"  Teammate {teammate} is now idle", file=sys.stderr)
+    if not in_swarm:
+        # Not in swarm mode, provide minimal guidance
+        print(
+            json.dumps(
+                {
+                    "status": "success",
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "role": "system",
+                    "content": "You appear to be idle. Continue with your assigned task or ask the user for next steps.",
+                }
+            )
+        )
+        return
 
-        response = {
-            "status": "success",
-            "message": f"Teammate idle event logged for {teammate}",
-            "timestamp": datetime.now().isoformat(),
-        }
-        print(json.dumps(response))
+    # 4. Build and output the auto-claim instruction
+    instruction = build_auto_claim_instruction(role, teammate_id)
 
-    except json.JSONDecodeError:
-        response = {
-            "status": "success",
-            "message": "TeammateIdle hook completed (no input)",
-            "timestamp": datetime.now().isoformat(),
-        }
-        print(json.dumps(response))
-    except Exception as e:
-        response = {
-            "status": "error",
-            "error": str(e),
-            "timestamp": datetime.now().isoformat(),
-        }
-        print(json.dumps(response))
-        print(f"Error in teammate-idle hook: {e}", file=sys.stderr)
-        sys.exit(0)  # Never block on errors
+    # 5. Log the event (optional)
+    log_idle_event(input_data, role)
+
+    # 6. Output the instruction as system message with required fields
+    # This gets injected into the idle agent's context
+    print(
+        json.dumps(
+            {
+                "status": "success",
+                "timestamp": datetime.utcnow().isoformat(),
+                "role": "system",
+                "content": instruction,
+            }
+        )
+    )
 
 
 if __name__ == "__main__":

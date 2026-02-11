@@ -358,8 +358,8 @@ Claude: I'm using the pop-worktree-manager skill to list git worktrees.
 [Runs: python scripts/worktree_operations.py --operation list]
 
 Worktrees:
-  main (default)          /Users/josep/popkit-claude
-  feat/worktree-mgmt      /Users/josep/popkit-worktrees/feat-worktree-mgmt
+  main (default)          /path/to/project
+  feat/worktree-mgmt      /path/to/.worktrees/feat-worktree-mgmt
 ```
 
 ## Quick Reference
