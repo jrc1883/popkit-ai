@@ -15,7 +15,9 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 # Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parents[1] / "skills" / "pop-worktree-manager" / "scripts"))
+sys.path.insert(
+    0, str(Path(__file__).parents[1] / "skills" / "pop-worktree-manager" / "scripts")
+)
 
 from worktree_operations import (
     DEFAULT_CONFIG,
@@ -230,7 +232,9 @@ class TestOperationCreate(unittest.TestCase):
     @patch("worktree_operations.enable_windows_longpaths")
     @patch("worktree_operations.run_git_command")
     @patch("worktree_operations.resolve_worktree_path")
-    def test_create_success(self, mock_resolve, mock_git, mock_enable, mock_load, mock_save):
+    def test_create_success(
+        self, mock_resolve, mock_git, mock_enable, mock_load, mock_save
+    ):
         """Test successful worktree creation."""
         with tempfile.TemporaryDirectory() as tmpdir:
             worktree_path = Path(tmpdir) / "nonexistent"
@@ -264,7 +268,9 @@ class TestOperationRemove(unittest.TestCase):
         """Test removing worktree with uncommitted changes."""
         mock_list.return_value = {
             "success": True,
-            "worktrees": [{"path": "/test/path", "branch": "test", "uncommittedChanges": True}],
+            "worktrees": [
+                {"path": "/test/path", "branch": "test", "uncommittedChanges": True}
+            ],
         }
 
         result = operation_remove("test", force=False)
@@ -278,7 +284,9 @@ class TestOperationRemove(unittest.TestCase):
         """Test successful worktree removal."""
         mock_list.return_value = {
             "success": True,
-            "worktrees": [{"path": "/test/path", "branch": "test", "uncommittedChanges": False}],
+            "worktrees": [
+                {"path": "/test/path", "branch": "test", "uncommittedChanges": False}
+            ],
         }
         mock_git.return_value = ("", True)
 
@@ -343,6 +351,29 @@ class TestOperationUpdateAll(unittest.TestCase):
         self.assertTrue(result["success"])
         self.assertEqual(result["totalWorktrees"], 1)
         self.assertEqual(result["successCount"], 1)
+
+    @patch("worktree_operations.subprocess.run")
+    @patch("worktree_operations.run_git_command")
+    @patch("worktree_operations.operation_list")
+    def test_update_all_install_uses_list_args(self, mock_list, mock_git, mock_run):
+        """Test npm install uses list args without shell=True."""
+        mock_list.return_value = {
+            "success": True,
+            "worktrees": [{"path": "/test/path", "branch": "test"}],
+        }
+        mock_git.return_value = ("Already up to date", True)
+        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+
+        with patch("pathlib.Path.exists", return_value=True):
+            result = operation_update_all(install=True)
+
+        self.assertTrue(result["success"])
+        mock_run.assert_called_with(
+            ["npm", "install"],
+            cwd="/test/path",
+            capture_output=True,
+            text=True,
+        )
 
 
 class TestOperationPrune(unittest.TestCase):
