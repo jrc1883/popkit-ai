@@ -216,7 +216,7 @@ class TestAnonymizeContent:
 
     def test_minimal_anonymization(self):
         """Test minimal anonymization only removes critical data"""
-        content = 'const key = "apikey_live_5555555555666666666677777777778888888888"; const path = "/Users/me/app"'
+        content = 'const apiKey = "apikey_live_5555555555666666666677777777778888888888"; const path = "/Users/me/app"'
         anonymized, removed = anonymize_content(content, AnonymizationLevel.MINIMAL)
 
         # API key should be removed (always)
@@ -530,7 +530,7 @@ class TestPrivacyManager:
         """Test anonymizing content through manager"""
         with tempfile.TemporaryDirectory() as tmpdir:
             manager = PrivacyManager(tmpdir)
-            content = 'const key = "apikey_live_5555555555666666666677777777778888888888"; const email = "user@example.com";'
+            content = 'const apiKey = "apikey_live_5555555555666666666677777777778888888888"; const email = "user@example.com";'
 
             anonymized, metadata = manager.anonymize(content)
 
@@ -567,7 +567,7 @@ class TestEdgeCases:
 
     def test_anonymize_unicode_content(self):
         """Test anonymizing Unicode content"""
-        content = "const message = '你好 World'; const key = 'apikey_live_5555555555666666666677777777778888888888';"
+        content = "const message = '你好 World'; const apiKey = 'apikey_live_5555555555666666666677777777778888888888';"
         anonymized, removed = anonymize_content(content, AnonymizationLevel.MODERATE)
 
         assert "你好" in anonymized  # Non-sensitive Unicode preserved

@@ -14,11 +14,11 @@ Output:
 import json
 import re
 import sys
+import urllib.error
+import urllib.request
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-import urllib.request
-import urllib.error
 
 
 def fetch_url_content(url: str) -> Optional[str]:
@@ -70,9 +70,7 @@ def extract_links(content: str) -> List[Dict[str, str]]:
         links.append({"text": text, "url": url})
 
     # HTML links
-    html_links = re.findall(
-        r'<a[^>]+href="([^"]+)"[^>]*>([^<]+)</a>', content, re.IGNORECASE
-    )
+    html_links = re.findall(r'<a[^>]+href="([^"]+)"[^>]*>([^<]+)</a>', content, re.IGNORECASE)
     for url, text in html_links:
         links.append({"text": text, "url": url})
 
@@ -179,9 +177,7 @@ def main():
     parser.add_argument(
         "--format", choices=["json", "markdown"], default="json", help="Output format"
     )
-    parser.add_argument(
-        "--assess", action="store_true", help="Include quality assessment"
-    )
+    parser.add_argument("--assess", action="store_true", help="Include quality assessment")
     args = parser.parse_args()
 
     content = None
@@ -231,11 +227,7 @@ def main():
         output = generate_markdown(findings)
         print(output)
     else:
-        print(
-            json.dumps(
-                {"operation": "extract_findings", "success": True, **findings}, indent=2
-            )
-        )
+        print(json.dumps({"operation": "extract_findings", "success": True, **findings}, indent=2))
 
     return 0
 

@@ -9,6 +9,7 @@ tools:
 output_style: agent-handoff
 model: inherit
 version: 1.0.0
+memory: project
 ---
 
 # Code Architect Agent

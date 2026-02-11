@@ -39,9 +39,9 @@ The hook automatically tracks tool calls when measurement is enabled:
 
 ## Architecture Files
 
-| File | Purpose |
-|------|---------|
+| File                                 | Purpose                      |
+| ------------------------------------ | ---------------------------- |
 | `hooks/utils/routine_measurement.py` | Measurement tracking classes |
-| `hooks/post-tool-use.py` | Tool call capture hook |
-| `commands/routine.md` | Command specification |
-| `.claude/popkit/measurements/` | Measurement data storage |
+| `hooks/post-tool-use.py`             | Tool call capture hook       |
+| `commands/routine.md`                | Command specification        |
+| `.claude/popkit/measurements/`       | Measurement data storage     |

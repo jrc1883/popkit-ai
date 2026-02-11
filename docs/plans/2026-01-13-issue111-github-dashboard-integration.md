@@ -15,6 +15,7 @@
 ## Task 1: Modify Dashboard Command to Auto-Refresh Issue Counts
 
 **Files:**
+
 - Modify: `packages/popkit-core/commands/dashboard.md:40-60`
 - Test: Manual testing with `/popkit-core:dashboard`
 
@@ -24,7 +25,7 @@ Open `packages/popkit-core/commands/dashboard.md` and find the "Default: Show Da
 
 Replace the "Load the project registry" instruction with:
 
-```markdown
+````markdown
 1. **Load the project registry and refresh issue counts:**
 
    ```python
@@ -43,7 +44,9 @@ Replace the "Load the project registry" instruction with:
    projects = list_projects()
    print(format_dashboard(projects))
    ```
-```
+````
+
+````
 
 ### Step 2: Verify the change
 
@@ -75,13 +78,14 @@ Resolves: #111
 Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
 EOF
 )"
-```
+````
 
 ---
 
 ## Task 2: Add Error Handling for GitHub CLI Missing
 
 **Files:**
+
 - Modify: `packages/shared-py/popkit_shared/utils/project_registry.py:722-750`
 - Test: `pytest popkit_shared/utils/test_project_registry.py -v` (if exists)
 
@@ -176,6 +180,7 @@ EOF
 ## Task 3: Test Dashboard with Real GitHub Data
 
 **Files:**
+
 - Test: Manual testing with `/popkit-core:dashboard`
 - Verify: Issue counts display correctly
 
@@ -184,6 +189,7 @@ EOF
 Run: `gh auth status`
 
 Expected output:
+
 ```
 ✓ Logged in to github.com as [username]
 ✓ Git operations for github.com configured to use https protocol.
@@ -215,6 +221,7 @@ Expected: Should see popkit-claude in the list
 Run: `/popkit-core:dashboard`
 
 Expected output (example):
+
 ```
 +===============================================================+
 |                       PopKit Dashboard                        |
@@ -230,6 +237,7 @@ Expected output (example):
 ```
 
 **Success Criteria:**
+
 - ✅ Issues column shows number (e.g., '15'), NOT '--'
 - ✅ Number matches actual open issues in GitHub
 - ✅ Dashboard displays in <2 seconds (cache working)
@@ -249,6 +257,7 @@ time /popkit-core:dashboard
 ```
 
 Expected:
+
 - First call: ~1-2 seconds (fetches from GitHub)
 - Second call: <0.5 seconds (uses cache)
 
@@ -321,6 +330,7 @@ Test scenarios:
 ## Task 4: Update Documentation
 
 **Files:**
+
 - Update: `packages/popkit-core/commands/dashboard.md:235-240` (Performance Notes)
 - Create: `test-results-issue111.txt`
 
@@ -329,6 +339,7 @@ Test scenarios:
 Open `packages/popkit-core/commands/dashboard.md` and update the Performance Notes section (around line 235):
 
 Replace:
+
 ```markdown
 **Performance Notes:**
 
@@ -338,6 +349,7 @@ Replace:
 ```
 
 With:
+
 ```markdown
 **Performance Notes:**
 
@@ -354,7 +366,7 @@ With:
 
 Add new section at the end of `dashboard.md`:
 
-```markdown
+````markdown
 ---
 
 ## Troubleshooting
@@ -370,14 +382,17 @@ Add new section at the end of `dashboard.md`:
    gh --version
    # If not found, install: https://cli.github.com/
    ```
+````
 
 2. **Check GitHub authentication:**
+
    ```bash
    gh auth status
    # If not authenticated: gh auth login
    ```
 
 3. **Check if repository has GitHub remote:**
+
    ```bash
    cd /path/to/project
    git remote -v | grep github
@@ -401,6 +416,7 @@ Add new section at the end of `dashboard.md`:
    - Subsequent displays are cached (~0.5s)
 
 2. **Use quick mode for health only:**
+
    ```bash
    /popkit-core:dashboard refresh --quick
    ```
@@ -408,7 +424,8 @@ Add new section at the end of `dashboard.md`:
 3. **Reduce project count:**
    - Dashboard shows top 10 projects
    - Remove inactive projects to improve performance
-```
+
+````
 
 ### Step 3: Commit documentation
 
@@ -426,13 +443,14 @@ Added troubleshooting section for common issues:
 Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
 EOF
 )"
-```
+````
 
 ---
 
 ## Task 5: Final Verification and Cleanup
 
 **Files:**
+
 - Verify: All changes committed
 - Update: `CHANGELOG.md` (if exists)
 
@@ -461,6 +479,7 @@ If `CHANGELOG.md` exists, add entry:
 ## [Unreleased]
 
 ### Added
+
 - **Dashboard:** GitHub issue counts now display automatically (Issue #111)
   - Auto-fetches issue counts when dashboard displayed
   - 15-minute cache prevents API rate limiting
@@ -468,6 +487,7 @@ If `CHANGELOG.md` exists, add entry:
   - Performance: ~1-2s first fetch, <0.5s cached
 
 ### Fixed
+
 - Dashboard no longer shows '--' for issue counts (now shows actual count)
 ```
 
@@ -545,6 +565,7 @@ Before marking Issue #111 complete, verify:
 **Symptoms:** Warning "GitHub CLI (gh) not found. Issue counts unavailable."
 
 **Solution:**
+
 1. Install GitHub CLI: https://cli.github.com/
 2. Authenticate: `gh auth login`
 3. Verify: `gh auth status`
@@ -554,6 +575,7 @@ Before marking Issue #111 complete, verify:
 **Symptoms:** All projects show '--' despite gh CLI being installed
 
 **Solution:**
+
 1. Check authentication: `gh auth status`
 2. Re-authenticate: `gh auth login`
 3. Test manually: `gh issue list --state open`
@@ -563,6 +585,7 @@ Before marking Issue #111 complete, verify:
 **Symptoms:** Old issue counts persist even after creating new issues
 
 **Solution:**
+
 1. Manually refresh: `/popkit-core:dashboard refresh`
 2. Check cache timestamp: `python -m popkit_shared.utils.project_registry list --json | jq '.projects[0].github_issues.cached_at'`
 3. Cache TTL is 15 minutes - wait or force refresh
@@ -572,6 +595,7 @@ Before marking Issue #111 complete, verify:
 **Symptoms:** Issue counts not displaying even with gh CLI
 
 **Solution:**
+
 1. Verify projects have GitHub remotes: `git remote -v`
 2. Check if repositories are accessible: `gh repo view`
 3. Run refresh explicitly: `/popkit-core:dashboard refresh`
@@ -584,6 +608,7 @@ Before marking Issue #111 complete, verify:
 **Total:** 2-3 hours (implementation + testing + documentation)
 
 **Breakdown:**
+
 - Task 1: 30 minutes (update command)
 - Task 2: 30 minutes (error handling)
 - Task 3: 60 minutes (comprehensive testing)

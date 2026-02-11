@@ -227,9 +227,7 @@ def main():
         default="markdown",
         help="Output format",
     )
-    parser.add_argument(
-        "--dry-run", action="store_true", help="Show what would be merged"
-    )
+    parser.add_argument("--dry-run", action="store_true", help="Show what would be merged")
     args = parser.parse_args()
 
     files = [Path(f) for f in args.files]

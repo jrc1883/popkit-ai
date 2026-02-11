@@ -26,13 +26,12 @@ import json
 import os
 import time
 from typing import Any, Dict, List, Optional, Set
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
-from urllib.error import URLError, HTTPError
 
 # Import Redis interface abstractions from shared package
 # Extracted from this file to packages/shared-py during Epic #580 cleanup (2025-12-29)
-from popkit_shared.storage import BaseRedisClient, BasePubSub
-
+from popkit_shared.storage import BasePubSub, BaseRedisClient
 
 # =============================================================================
 # CONFIGURATION
@@ -450,9 +449,7 @@ if __name__ == "__main__":
             secure_print(f"URL: {UPSTASH_REST_URL[:40]}...")
         else:
             secure_print("URL: Not configured")
-        secure_print(
-            f"Token: {'Configured' if UPSTASH_REST_TOKEN else 'Not configured'}"
-        )
+        secure_print(f"Token: {'Configured' if UPSTASH_REST_TOKEN else 'Not configured'}")
         secure_print(f"Available: {is_upstash_available()}")
 
     elif args.ping:

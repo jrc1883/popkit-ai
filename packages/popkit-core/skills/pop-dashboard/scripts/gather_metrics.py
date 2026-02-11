@@ -59,9 +59,7 @@ def save_registry(registry: Dict[str, Any]) -> None:
     registry_path.write_text(json.dumps(registry, indent=2))
 
 
-def run_command(
-    cmd: str, cwd: Optional[str] = None, timeout: int = 30
-) -> Tuple[str, bool]:
+def run_command(cmd: str, cwd: Optional[str] = None, timeout: int = 30) -> Tuple[str, bool]:
     """Run a shell command and return output and success status."""
     try:
         result = subprocess.run(
@@ -177,18 +175,14 @@ def calculate_health_score(path: str) -> Dict[str, Any]:
 
     # Issue health (20 points) - check via gh CLI
     issue_score = 20
-    issues, ok = run_command(
-        "gh issue list --state open --limit 20 --json createdAt", cwd=path
-    )
+    issues, ok = run_command("gh issue list --state open --limit 20 --json createdAt", cwd=path)
     if ok and issues:
         try:
             issue_list = json.loads(issues)
             stale_count = 0
             now = datetime.now()
             for issue in issue_list:
-                created = datetime.fromisoformat(
-                    issue["createdAt"].replace("Z", "+00:00")
-                )
+                created = datetime.fromisoformat(issue["createdAt"].replace("Z", "+00:00"))
                 age_days = (now - created.replace(tzinfo=None)).days
                 if age_days > 30:
                     stale_count += 1
@@ -265,9 +259,7 @@ def calculate_quick_health(path: str) -> int:
     return score
 
 
-def get_recent_activity(
-    projects: List[Dict[str, Any]], limit: int = 10
-) -> List[Dict[str, Any]]:
+def get_recent_activity(projects: List[Dict[str, Any]], limit: int = 10) -> List[Dict[str, Any]]:
     """Get recent activity across all projects."""
     activities = []
 
@@ -277,9 +269,7 @@ def get_recent_activity(
             continue
 
         # Get recent commits
-        commits, ok = run_command(
-            "git log -3 --format='%h|%s|%ar' 2>/dev/null", cwd=path
-        )
+        commits, ok = run_command("git log -3 --format='%h|%s|%ar' 2>/dev/null", cwd=path)
         if ok and commits:
             for line in commits.split("\n")[:3]:
                 if "|" in line:

@@ -27,9 +27,7 @@ def find_plugin_root(start_path: Path = None) -> Path:
     for _ in range(5):
         if (current / ".claude-plugin" / "plugin.json").exists():
             return current
-        if (
-            current / "packages" / "plugin" / ".claude-plugin" / "plugin.json"
-        ).exists():
+        if (current / "packages" / "plugin" / ".claude-plugin" / "plugin.json").exists():
             return current / "packages" / "plugin"
         current = current.parent
 
@@ -300,9 +298,7 @@ def main():
         return 0
 
     # Find all Python hook files (excluding utils/)
-    hook_files = [
-        f for f in hooks_dir.glob("*.py") if f.is_file() and not f.name.startswith("__")
-    ]
+    hook_files = [f for f in hooks_dir.glob("*.py") if f.is_file() and not f.name.startswith("__")]
 
     all_findings = []
     total_deduction = 0

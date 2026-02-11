@@ -31,7 +31,7 @@ PopKit Core provides the foundational meta-features and utilities for the PopKit
 
 ## Skills
 
-PopKit Core provides 14 specialized skills:
+PopKit Core provides 15 specialized skills:
 
 ### Project Management (5)
 
@@ -48,11 +48,12 @@ PopKit Core provides 14 specialized skills:
 - `pop-plugin-test` - Plugin integrity testing
 - `pop-validation-engine` - Configuration validation
 
-### Meta Features (5)
+### Meta Features (6)
 
 - `pop-bug-reporter` - Bug capture and reporting
 - `pop-dashboard` - Multi-project dashboard
 - `pop-power-mode` - Multi-agent orchestration
+- `pop-sandbox` - E2B sandbox management for safe remote execution
 - `pop-mcp-generator` - MCP server generation
 - `pop-skill-generator` - Skill template generation
 
@@ -163,29 +164,58 @@ PopKit's routing reduces context usage by **40.5%**:
 
 ## Power Mode
 
-Power Mode enables parallel multi-agent workflows through intelligent mode selection:
+Power Mode enables parallel multi-agent workflows through intelligent mode selection.
 
-### Native Async Mode (Recommended)
+### Native Swarm Mode (New in v1.0.0-beta.9)
 
-**Zero setup** - uses Claude Code 2.0.64+'s native background Task tool for true parallelism:
+**Team-based orchestration** using Claude's native `agentTeams` capability with E2B sandbox isolation:
 
 ```
-Main Agent (Coordinator)
-      ↓
-┌─────┼─────┐
-↓     ↓     ↓
-Agent1 Agent2 Agent3 (parallel background tasks)
-↓     ↓     ↓
-Share via .claude/popkit/insights.json
-↓     ↓     ↓
-TaskOutput polling → Aggregated Results
+┌─────────────────────────────────────────────────────────┐
+│                    NATIVE SWARM MODE                     │
+├─────────────────────────────────────────────────────────┤
+│   Team Lead (power-coordinator)                         │
+│        ↓ TeamCreate                                     │
+│   ┌────┴────┬────────┬────────┐                        │
+│   ↓         ↓        ↓        ↓                        │
+│ Engineer Researcher Tester  Architect                  │
+│   ↓         ↓        ↓        ↓                        │
+│   └─────────┴────────┴────────┘                        │
+│              ↓                                          │
+│        E2B Sandboxes (isolated execution)               │
+│              ↓                                          │
+│        TeamClose → Results                              │
+└─────────────────────────────────────────────────────────┘
 ```
 
 **Key Features:**
 
-- **No external dependencies**: No Docker, no Redis required
+- **E2B Sandbox Integration**: Safe, isolated code execution for conflict-free parallel work
+- **Auto-Drive Teammates**: Idle agents automatically claim matching tasks (reduces manager latency)
+- **Role-Based Assignment**: Engineer, Researcher, Architect, Tester, Security Auditor, Documentation
 - **True parallelism**: 5 agents (Premium) or 10 agents (Pro)
 - **Cross-platform**: Windows/macOS/Linux
+
+**Configuration:**
+
+Add to `~/.claude/settings.json`:
+
+```json
+{
+  "experimental": {
+    "agentTeams": true,
+    "backgroundAgents": true
+  }
+}
+```
+
+Set `E2B_API_KEY` environment variable (or add to settings.json `env` section).
+
+### Native Async Mode
+
+**Zero setup** - uses Claude Code's native background Task tool for simpler parallelism:
+
+- **No external dependencies**: No Docker, no Redis required
 - **File-based communication**: Agents share insights via JSON
 - **Sync barriers**: Phase-aware coordination between agents
 
@@ -195,8 +225,6 @@ TaskOutput polling → Aggregated Results
 
 - **Upstash Redis Mode** (Pro tier, optional): 10+ agents, advanced coordination via Upstash cloud
 - **File-Based Mode** (Free tier): 2-3 agents sequential, automatic fallback
-
-**No Docker or local Redis installation required.** Native Async mode works out of the box.
 
 ### Usage
 
@@ -347,6 +375,7 @@ PopKit Core provides several lifecycle hooks that enhance workflow quality and a
 - **Blocking**: Only blocks on unfixable errors
 
 **Behavior**:
+
 1. Detects staged Python files (`git diff --cached --name-only`)
 2. Runs `ruff check --fix` on staged files
 3. Runs `ruff format` on staged files
@@ -354,6 +383,7 @@ PopKit Core provides several lifecycle hooks that enhance workflow quality and a
 5. Blocks commit only on unfixable errors
 
 **Installation**:
+
 ```bash
 pip install ruff  # Required for pre-commit validation
 ```
@@ -387,17 +417,20 @@ Privacy levels:
 ## Dependencies
 
 - `popkit-shared>=1.0.0` - Shared utilities package
-- Optional: Redis for Power Mode orchestration
+- `e2b-code-interpreter>=1.0.0` - E2B sandbox for Native Swarm mode
+- `python-dotenv>=1.0.0` - Environment management
+- Optional: Redis for Power Mode orchestration (Upstash mode)
 - Optional: Voyage AI API key for semantic embeddings
 
 **Minimum Requirements**:
 
 - Claude Code 2.0.67+ (for extended thinking and plan mode)
 - Python 3.8+
+- E2B API key (for Native Swarm sandbox features)
 
 ## Development Status
 
-**Version**: 1.0.0-beta.4
+**Version**: 1.0.0-beta.9
 **Status**: Ready for marketplace publication
 **Epic #580**: Complete - Plugin modularization finished
 

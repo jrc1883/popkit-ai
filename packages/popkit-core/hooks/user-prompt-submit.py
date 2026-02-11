@@ -5,16 +5,17 @@ Handles keyword detection, agent routing, and security filtering
 Integrates with observability and orchestration systems
 """
 
-import os
-import sys
-import json
-import re
 import hashlib
+import json
+import os
+import re
 import sqlite3
-import requests
+import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
+
+import requests
 
 # Import thinking flags parser from shared package
 try:
@@ -28,19 +29,19 @@ except ImportError:
 
 # Import XML context generation utilities (Phase 1: XML Integration #515)
 try:
-    from popkit_shared.utils.context_state import (
-        load_context_state,
-        save_context_state,
-        compute_hash,
-    )
-    from popkit_shared.utils.xml_generator import (
-        generate_problem_xml,
-        generate_project_context_xml,
-    )
     from popkit_shared.utils.context_delta import (
         compute_context_delta,
         extract_new_context,
         should_send_full_context,
+    )
+    from popkit_shared.utils.context_state import (
+        compute_hash,
+        load_context_state,
+        save_context_state,
+    )
+    from popkit_shared.utils.xml_generator import (
+        generate_problem_xml,
+        generate_project_context_xml,
     )
 
     HAS_XML_CONTEXT = True
@@ -716,18 +717,14 @@ class UserPromptSubmitHook:
     def log_event(self, event_data: Dict[str, Any]):
         """Log event to observability system"""
         try:
-            response = requests.post(
-                self.observability_endpoint, json=event_data, timeout=2
-            )
+            response = requests.post(self.observability_endpoint, json=event_data, timeout=2)
             if response.status_code != 200:
                 print(
                     f"Warning: Observability logging failed: {response.status_code}",
                     file=sys.stderr,
                 )
         except Exception as e:
-            print(
-                f"Warning: Could not log to observability system: {e}", file=sys.stderr
-            )
+            print(f"Warning: Could not log to observability system: {e}", file=sys.stderr)
 
     def route_to_orchestrator(
         self, prompt: str, detected_agents: Dict, project_context: Dict
@@ -742,9 +739,7 @@ class UserPromptSubmitHook:
                 "timestamp": datetime.now().isoformat(),
             }
 
-            response = requests.post(
-                self.orchestrator_endpoint, json=routing_data, timeout=5
-            )
+            response = requests.post(self.orchestrator_endpoint, json=routing_data, timeout=5)
 
             if response.status_code == 200:
                 return response.json()
@@ -759,9 +754,7 @@ class UserPromptSubmitHook:
 
         return None
 
-    def generate_xml_context(
-        self, prompt: str, project_context: Dict[str, Any]
-    ) -> Optional[str]:
+    def generate_xml_context(self, prompt: str, project_context: Dict[str, Any]) -> Optional[str]:
         """Generate XML context (full or delta) for the current message.
 
         Args:
@@ -801,9 +794,7 @@ class UserPromptSubmitHook:
                     merged_context[key] = value
 
             # Determine full vs delta
-            send_full = should_send_full_context(
-                message_number, state["last_full_context_message"]
-            )
+            send_full = should_send_full_context(message_number, state["last_full_context_message"])
 
             xml_parts = []
 
@@ -825,7 +816,7 @@ class UserPromptSubmitHook:
                 }
             else:
                 # Delta context
-                previous_context = state.get("context_sent", {}).get("project", {})
+                state.get("context_sent", {}).get("project", {})
 
                 # Compute delta
                 delta = compute_context_delta(project_context, merged_context)
@@ -833,15 +824,11 @@ class UserPromptSubmitHook:
                 if delta:
                     # Generate delta XML (simplified - just include changed fields)
                     delta_context = {
-                        k: v.get("value", None)
-                        for k, v in delta.items()
-                        if v["type"] != "removed"
+                        k: v.get("value", None) for k, v in delta.items() if v["type"] != "removed"
                     }
                     if delta_context:
                         project_xml = generate_project_context_xml(delta_context)
-                        xml_parts.append(
-                            f"<!-- Context Update: {len(delta)} fields changed -->"
-                        )
+                        xml_parts.append(f"<!-- Context Update: {len(delta)} fields changed -->")
                         xml_parts.append(project_xml)
 
                     # Update state with new hashes
@@ -925,9 +912,7 @@ class UserPromptSubmitHook:
         self.log_event(event_data)
 
         # Route to orchestrator
-        orchestration_result = self.route_to_orchestrator(
-            prompt, detected_agents, project_context
-        )
+        orchestration_result = self.route_to_orchestrator(prompt, detected_agents, project_context)
 
         return {
             "action": "continue",
@@ -966,14 +951,10 @@ class UserPromptSubmitHook:
         # Handle extended thinking flag
         if thinking_flags.get("force_thinking") is True:
             budget = thinking_flags.get("budget_tokens", 10000)
-            enhancements.append(
-                f"Extended thinking mode enabled (budget: {budget} tokens)"
-            )
+            enhancements.append(f"Extended thinking mode enabled (budget: {budget} tokens)")
 
         # Check for uncertainty/meta triggers
-        if "meta" in detected_agents and "next-action" in detected_agents.get(
-            "meta", {}
-        ):
+        if "meta" in detected_agents and "next-action" in detected_agents.get("meta", {}):
             suggestions.append("Try `/popkit:next` for context-aware recommendations")
 
         # Add skill reminders based on detected skills
@@ -1085,9 +1066,7 @@ def main():
                 agent_summary = []
                 for category, agents in result["detected_agents"].items():
                     agent_summary.append(f"{category}: {', '.join(agents.keys())}")
-                print(
-                    f"🎯 Agents activated: {' | '.join(agent_summary)}", file=sys.stderr
-                )
+                print(f"🎯 Agents activated: {' | '.join(agent_summary)}", file=sys.stderr)
 
         # Output JSON response to stdout
         print(json.dumps(response))

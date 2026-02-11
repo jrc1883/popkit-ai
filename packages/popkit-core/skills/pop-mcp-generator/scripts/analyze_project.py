@@ -261,9 +261,7 @@ def suggest_mcp_tools(analysis: Dict[str, Any]) -> List[Dict[str, Any]]:
 
     # Health checks
     if framework.get("dev_server_command"):
-        tools.append(
-            {"name": "dev_server_health", "category": "health", "recommended": True}
-        )
+        tools.append({"name": "dev_server_health", "category": "health", "recommended": True})
 
     # Database tools
     database = analysis.get("database", {})
@@ -273,9 +271,7 @@ def suggest_mcp_tools(analysis: Dict[str, Any]) -> List[Dict[str, Any]]:
     # Service-specific tools
     for service in analysis.get("services", []):
         if service["name"] == "redis":
-            tools.append(
-                {"name": "redis_health", "category": "health", "recommended": True}
-            )
+            tools.append({"name": "redis_health", "category": "health", "recommended": True})
 
     return tools
 

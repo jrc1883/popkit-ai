@@ -36,12 +36,12 @@ Quantitatively measures PopKit's value by comparing AI-assisted development with
 
 ### 2. Core Modules
 
-| Module | Purpose | Lines | Status |
-|--------|---------|-------|--------|
-| `codebase_manager.py` | Git worktree management | 300 | ✅ Complete |
-| `benchmark_runner.py` | Execution orchestration | 618 | ✅ Complete |
-| `benchmark_analyzer.py` | Statistical analysis | 535 | ✅ Complete |
-| `report_generator.py` | Markdown/HTML reports | 350 | ✅ Complete |
+| Module                  | Purpose                 | Lines | Status      |
+| ----------------------- | ----------------------- | ----- | ----------- |
+| `codebase_manager.py`   | Git worktree management | 300   | ✅ Complete |
+| `benchmark_runner.py`   | Execution orchestration | 618   | ✅ Complete |
+| `benchmark_analyzer.py` | Statistical analysis    | 535   | ✅ Complete |
+| `report_generator.py`   | Markdown/HTML reports   | 350   | ✅ Complete |
 
 ### 3. Task Definitions
 
@@ -51,6 +51,7 @@ Tasks are defined in YAML format in `packages/popkit-ops/tasks/<category>/`:
 - `bug-fixing/race-condition-fix.yml` - Fix concurrent file processing
 
 **Format:**
+
 ```yaml
 id: task-id
 category: feature-addition | bug-fixing | refactoring | code-review
@@ -148,6 +149,7 @@ TEST_MODE=true                              # Mock execution for testing
 ### Recording Format
 
 Uses existing session recording infrastructure:
+
 - Command: `/popkit-core:record start|stop|status`
 - Storage: `~/.claude/popkit/recordings/*.json`
 - Format: JSONL events with tool calls, durations, errors
@@ -179,17 +181,20 @@ Uses existing session recording infrastructure:
 ## Next Steps (Phase 2-4)
 
 ### Phase 2: Task Definitions (Days 6-8)
+
 - [ ] Define 6 more task YAML files (total 8: 2 per category)
 - [ ] Create benchmark response files for each task
 - [ ] Test task definitions with manual execution
 
 ### Phase 3: CI/CD Automation (Days 9-11)
+
 - [ ] Create `.github/workflows/benchmark.yml`
 - [ ] Setup two Claude Code instances (with/without PopKit)
 - [ ] Configure weekly automated runs
 - [ ] Upload results as GitHub artifacts
 
 ### Phase 4: Testing & Validation (Days 12-13)
+
 - [ ] Create unit tests for all 4 core modules
 - [ ] Run full benchmark suite (8 tasks × 5 trials)
 - [ ] Verify statistical significance
@@ -220,6 +225,7 @@ pytest packages/popkit-ops/skills/pop-benchmark-runner/tests/test_report_generat
 ## Success Criteria
 
 For Phase 1 completion:
+
 - ✅ All 4 core modules implemented
 - ✅ Command file created
 - ✅ Skill documentation complete
@@ -230,6 +236,7 @@ For Phase 1 completion:
 - ✅ Report generator tested with sample data
 
 For full benchmark validation:
+
 - [ ] All 8 tasks complete successfully
 - [ ] Statistical significance (p < 0.05) for 4+ metrics
 - [ ] Large effect size (Cohen's d > 0.8) for 3+ metrics

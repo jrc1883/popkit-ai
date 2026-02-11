@@ -334,7 +334,7 @@ class SemanticRouter:
 
             if result.error:
                 # Log but don't fail - will fall back to local
-                print(f"Cloud search warning: {result.error}")
+                print(f"Cloud search warning: {result.error}", file=sys.stderr)
                 return []
 
             # Convert to RoutingResult
@@ -355,7 +355,7 @@ class SemanticRouter:
             return routing_results
 
         except Exception as e:
-            print(f"Cloud routing error: {e}")
+            print(f"Cloud routing error: {e}", file=sys.stderr)
             return []
 
     def _semantic_route(self, query: str, top_k: int, min_confidence: float) -> List[RoutingResult]:
@@ -418,7 +418,7 @@ class SemanticRouter:
             return routing_results[:top_k]
 
         except Exception as e:
-            print(f"Semantic routing error: {e}")
+            print(f"Semantic routing error: {e}", file=sys.stderr)
             return []
 
     def _keyword_route(self, query: str, top_k: int) -> List[RoutingResult]:

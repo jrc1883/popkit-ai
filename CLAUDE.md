@@ -123,6 +123,7 @@ Example hook command:
 PopKit Core includes an automatic **Ruff pre-commit hook** that validates Python code quality:
 
 **Features:**
+
 - Runs `ruff check --fix` and `ruff format` on staged Python files
 - Auto-fixes formatting and linting issues transparently
 - Re-stages files automatically after fixes
@@ -131,12 +132,14 @@ PopKit Core includes an automatic **Ruff pre-commit hook** that validates Python
 - Performance: <5s for typical commits
 
 **Behavior:**
+
 1. Detects staged Python files: `git diff --cached --name-only --diff-filter=ACM`
 2. Runs Ruff validation with auto-fix enabled
 3. Re-stages files if auto-fixes were applied
 4. Exits 0 (allow commit) or 1 (block commit)
 
 **Edge Cases:**
+
 - No Python files staged → Skip hook immediately
 - Ruff not installed → Fail open with warning message
 - Auto-fixes applied → Re-stage files and allow commit
@@ -315,6 +318,209 @@ PopKit Core includes an automatic **Ruff pre-commit hook** that validates Python
 - Fixed text styling (bold, colors) getting progressively misaligned
 - Removed ability to @-mention MCP servers (use `/mcp enable <name>` instead)
 
+### New in Claude Code 2.1.7
+
+**Wildcard Permission Security:**
+
+- Fixed security vulnerability where wildcard permission rules could match compound commands containing shell operators
+- `Bash(git log*)` no longer matches `git log && rm -rf /` - this is the correct, intended behavior
+- Validates PopKit's wildcard permission design in AGENT.md files
+
+**MCP Tool Search Auto Mode:**
+
+- MCP tool search auto mode enabled by default for all users
+- When MCP tool descriptions exceed 10% of context window, they are deferred and discovered via MCPSearch
+- Users can disable by adding `MCPSearch` to `disallowedTools`
+- Agents with MCP wildcard permissions (`mcp__server__*`) may find tools deferred; use MCPSearch to discover first
+
+**Windows Fixes:**
+
+- Fixed false "file modified" errors from cloud sync tools, antivirus, or Git touching timestamps
+- Fixed bash commands failing when temp directory paths contained characters misinterpreted as escape sequences
+
+### New in Claude Code 2.1.9
+
+**PreToolUse `additionalContext` (Critical):**
+
+- PreToolUse hooks can now return `additionalContext` to inject context directly into model reasoning
+- PopKit's `pre-tool-use.py` can return safety warnings, agent suggestions, and coordination recommendations visible to the model
+- Example: `{"decision": "approve", "additionalContext": "POPKIT: This file is in production path. Create backup first."}`
+- This is the single most impactful hook protocol change for PopKit
+
+**Skill Session ID:**
+
+- Skills can access `${CLAUDE_SESSION_ID}` via string substitution
+- Enables session-specific output paths and tracking in skill definitions
+
+**Plans Directory:**
+
+- `plansDirectory` setting customizes where plan files are stored
+- PopKit should not hardcode plan file paths
+
+**AskUserQuestion Editor:**
+
+- External editor support (Ctrl+G) in AskUserQuestion "Other" input field
+- Useful for detailed responses in The PopKit Way interaction pattern
+
+### New in Claude Code 2.1.10
+
+**Setup Hook Event (Critical):**
+
+- New `Setup` hook event triggered via `--init`, `--init-only`, or `--maintenance` CLI flags
+- `claude --init` can trigger PopKit's `pop-project-init` workflow
+- `claude --maintenance` can trigger PopKit health checks and cleanup routines
+- `--init-only` is perfect for CI/CD pipelines needing setup without an interactive session
+- PopKit should add a `Setup` hook entry in `hooks.json`
+
+### New in Claude Code 2.1.14
+
+**Plugin SHA Pinning:**
+
+- Plugins can be pinned to specific git commit SHAs
+- Marketplace entries can install exact versions: `/plugin install popkit-core@popkit-claude#<sha>`
+- Teams can pin to known-good PopKit versions while testing updates
+- CI/CD pipelines benefit from deterministic plugin installations
+
+**Stability Fixes:**
+
+- Fixed context window blocking at ~65% instead of intended ~98% (regression fix)
+- Fixed memory crashes when running parallel subagents (Power Mode reliability)
+- Fixed memory leak in long-running sessions from uncleaned stream resources
+
+### New in Claude Code 2.1.16
+
+**Native Task Management:**
+
+- New task management system with dependency tracking
+- PopKit's Power Mode could leverage native dependency tracking for subagent coordination
+- Skills generating TODOs should consider native tasks
+- `CLAUDE_CODE_ENABLE_TASKS=false` temporarily reverts to old system (2.1.19)
+
+### New in Claude Code 2.1.19
+
+**Command Argument Syntax:**
+
+- Shorthand `$0`, `$1` for accessing individual arguments in custom commands
+- Bracket syntax `$ARGUMENTS[0]` replaces dot syntax `$ARGUMENTS.0`
+- Audit PopKit commands for old dot syntax
+
+**Skill Auto-Approval:**
+
+- Skills without additional permissions or hooks are allowed without user approval
+- Many PopKit informational/orchestration skills now execute without prompts
+
+**Background Hook Fix:**
+
+- Backgrounded hook commands with `"blocking": false` now correctly return early
+- Enables more PopKit hooks to run non-blocking without session delays
+
+### New in Claude Code 2.1.20
+
+**PR Status Footer:**
+
+- Native PR review status indicator in the prompt footer
+- PopKit can reduce redundant PR status queries in workflows
+- `--add-dir` flag and `CLAUDE_ADD_DIR` env var load CLAUDE.md from additional directories
+
+**Background Agent Permissions:**
+
+- Background agents now prompt for permissions before launch (not after)
+- `Bash(*)` is equivalent to `Bash` (validates PopKit's wildcard permission approach)
+- `TaskUpdate` gains `delete` capability for cleaner task cleanup
+
+### New in Claude Code 2.1.21
+
+**File Tool Preference:**
+
+- Model now prefers Read/Edit/Write tools over bash equivalents (cat/sed/awk)
+- Validates PopKit's agent permission model (agents don't need `Bash(cat *)`)
+- VSCode auto-activates Python venv for hook execution
+
+### New in Claude Code 2.1.27
+
+**PR Workflow Improvements:**
+
+- `--from-pr` flag links sessions to specific pull requests
+- Auto PR linking via `gh pr create` for better traceability
+- Tool denials now appear in debug logs (helps debug agent permissions)
+
+**Windows Compatibility:**
+
+- Fixed .bashrc compatibility for Windows environments
+- Important for Windows PopKit hook execution reliability
+
+### New in Claude Code 2.1.30
+
+**PDF and Research:**
+
+- `pages` parameter on Read tool for large PDFs (e.g., `pages: "1-5"`)
+- PDFs >10 pages return `@` reference instead of inline content
+- PopKit research workflows should use `pages` parameter for large documents
+
+**Task Tool Metrics:**
+
+- Task results now include token count, tool uses, and duration
+- PopKit's `chain-metrics.py` can consume native metrics instead of computing manually
+- New `/debug` command for session troubleshooting
+
+### New in Claude Code 2.1.32
+
+**Claude Opus 4.6:**
+
+- New frontier model available for all agents
+- Agents with `model: inherit` automatically use Opus 4.6 when user selects it
+- May have different response patterns affecting structured output expectations
+
+**Agent Teams (Research Preview):**
+
+- Native multi-agent collaboration built into Claude Code
+- Uses tmux-based inter-agent messaging (vs PopKit Power Mode's Redis pub/sub)
+- Strategic consideration: PopKit Power Mode differentiates with phase management, drift detection, sync barriers, pattern learning
+- Research preview - API may change before GA
+
+**Agent Memory:**
+
+- Automatic memory recording and recall during operations
+- Overlaps with PopKit's `knowledge-sync.py` hook and `pop-knowledge-lookup` skill
+- PopKit should focus on structured, domain-specific knowledge management
+
+**Other Notable Changes:**
+
+- `--resume` reuses previous `--agent` value (better agent session continuity)
+- Skill character budget now scales at 2% of context window size
+- "Summarize from here" for partial conversation summarization
+
+### New in Claude Code 2.1.33
+
+**New Hook Events:**
+
+- `TeammateIdle`: Fires when a teammate agent becomes idle in multi-agent teams
+  - PopKit can reassign idle agents, track utilization, trigger phase transitions
+- `TaskCompleted`: Fires when a task completes
+  - PopKit can track metrics, trigger dependent tasks, route completion insights
+
+**`Task(agent_type)` Restriction Syntax:**
+
+- Agents can restrict which sub-agent types they spawn: `Task(code-reviewer)`
+- PopKit's `power-coordinator` can be restricted to known agent types only
+- Enhances security and predictability of multi-agent workflows
+
+**Agent `memory` Frontmatter Field:**
+
+- Agents declare memory persistence scope in frontmatter:
+  ```yaml
+  memory: user      # Persists across all projects
+  memory: project   # Persists within this project
+  memory: local     # Persists within this directory
+  ```
+- All 22 PopKit agents should declare appropriate memory scopes
+- Example: `researcher` → `memory: project`, `accessibility-guardian` → `memory: user`
+
+**Skill Discoverability:**
+
+- Plugin names now shown in skill descriptions and `/skills` menu
+- PopKit skills appear with their plugin prefix (popkit-core, popkit-dev, etc.)
+
 ---
 
 ## Integration with Official Claude Plugins
@@ -339,6 +545,7 @@ PopKit provides a two-tier code review strategy:
 **Purpose**: Internal quality check before creating PR
 **Usage**: During implementation phase
 **Features**:
+
 - Confidence-based filtering (80+ threshold)
 - Reviews staged changes, branches, or specific files
 - Focus areas: simplicity, correctness, conventions
@@ -362,6 +569,7 @@ PopKit provides a two-tier code review strategy:
 **Purpose**: Post-PR automated review with GitHub integration
 **Usage**: After PR creation
 **Features**:
+
 - 4 parallel agents (2× CLAUDE.md compliance, bugs, git history)
 - Native GitHub comment posting with code links
 - Confidence threshold filtering (80+)
@@ -370,6 +578,7 @@ PopKit provides a two-tier code review strategy:
 **Integration Point**: Automatically invoked after PR creation in workflows
 
 **Installation**:
+
 ```bash
 claude plugin install code-review@claude-plugins-official
 ```
@@ -379,6 +588,7 @@ claude plugin install code-review@claude-plugins-official
 The official code-review plugin is integrated into:
 
 1. **`pop-finish-branch` skill**: After PR creation step
+
    ```
    create_pr → automated_pr_review → issue_close_decision
    ```
@@ -390,6 +600,7 @@ The official code-review plugin is integrated into:
    ```
 
 **Usage**: Automatically triggered, or manually via:
+
 ```bash
 # Review current PR
 /code-review
@@ -404,14 +615,14 @@ PopKit uses `gh` CLI with intelligent caching instead of MCP for GitHub operatio
 
 **Technical Approach**:
 
-| Aspect | PopKit Implementation |
-|--------|----------------------|
-| **Method** | `gh` CLI via subprocess + smart caching |
-| **Cache Layer** | Two-tier: Local JSON + optional Redis |
-| **TTL** | 60min (labels/milestones), 24hr (team members) |
-| **Features** | Fuzzy label matching, typo detection, validation |
-| **Offline** | ✅ Yes (cached data remains available) |
-| **Token Cost** | 0 upfront (no tool descriptions in context) |
+| Aspect          | PopKit Implementation                            |
+| --------------- | ------------------------------------------------ |
+| **Method**      | `gh` CLI via subprocess + smart caching          |
+| **Cache Layer** | Two-tier: Local JSON + optional Redis            |
+| **TTL**         | 60min (labels/milestones), 24hr (team members)   |
+| **Features**    | Fuzzy label matching, typo detection, validation |
+| **Offline**     | ✅ Yes (cached data remains available)           |
+| **Token Cost**  | 0 upfront (no tool descriptions in context)      |
 
 **Why CLI over MCP**:
 
@@ -422,6 +633,7 @@ PopKit uses `gh` CLI with intelligent caching instead of MCP for GitHub operatio
 5. **Simplicity**: Direct command execution, no server required
 
 **Cache Implementation** (Issue #96):
+
 ```python
 from popkit_shared.utils.github_cache import GitHubCache
 
@@ -431,6 +643,7 @@ valid, invalid, suggestions = validate_labels(requested_labels, cache)
 ```
 
 **JSON Output**: PopKit uses `--json` flag by default for structured, type-safe responses:
+
 ```bash
 gh pr list --json number,title,state,labels
 gh issue view 123 --json body,assignees,milestone
@@ -441,26 +654,49 @@ gh run list --json status,conclusion,name
 
 ### When to Use Official Plugins vs PopKit
 
-| Use Case | Recommendation |
-|----------|---------------|
-| **Complete workflows** | PopKit (e.g., `/popkit-dev:dev`, `/popkit-dev:routine`) |
-| **PR code review with GitHub comments** | Official code-review plugin |
-| **Feature development** | PopKit `/dev` (includes code-explorer/code-architect) |
-| **GitHub operations** | PopKit CLI + cache (simpler, cached) |
-| **Frontend design** | PopKit document-skills (already included) |
-| **Multi-agent coordination** | PopKit Power Mode (unique capability) |
-| **Morning/nightly routines** | PopKit (unique capability) |
+| Use Case                                | Recommendation                                                           |
+| --------------------------------------- | ------------------------------------------------------------------------ |
+| **Complete workflows**                  | PopKit (e.g., `/popkit-dev:dev`, `/popkit-dev:routine`)                  |
+| **PR code review with GitHub comments** | Official code-review plugin                                              |
+| **Feature development**                 | PopKit `/dev` (includes code-explorer/code-architect)                    |
+| **GitHub operations**                   | PopKit CLI + cache (simpler, cached)                                     |
+| **Frontend design**                     | Official `frontend-design` plugin, orchestrated via PopKit brainstorming |
+| **Multi-agent coordination**            | PopKit Power Mode (complex) or Agent Teams (simple, 2.1.32+)             |
+| **Morning/nightly routines**            | PopKit (unique capability)                                               |
 
 ### Complementary Official Plugins
 
 These official plugins work well alongside PopKit:
 
+- **frontend-design**: Production-grade UI design (orchestrated via PopKit brainstorming workflow)
 - **code-review**: Automated PR reviews with GitHub integration
 - **github** (MCP): Alternative to CLI approach (optional)
 - **pubmed**: Life sciences research integration
 - **playwright**: Browser automation and testing
 
-PopKit includes frontend-design, code-simplifier (refactoring-expert), and workflow orchestration capabilities, so those official plugins are redundant.
+PopKit includes code-simplifier (refactoring-expert) and workflow orchestration capabilities. For frontend design, use the official `frontend-design` plugin which PopKit can orchestrate through brainstorming and UX assessment workflows.
+
+### Frontend Design Integration Strategy
+
+PopKit does not include its own UI/design agents. Instead, it orchestrates official and community tools:
+
+**Recommended Workflow for Frontend Tasks:**
+
+1. **Ideation**: `pop-brainstorming` skill for design specification and decision exploration
+2. **Implementation**: Official `frontend-design` plugin for production-grade UI code
+3. **Validation**: `pop-assessment-ux` skill for UX heuristic evaluation
+4. **Accessibility**: `accessibility-guardian` agent for WCAG compliance audits
+
+**Official Plugin**: Install `frontend-design` from `claude-plugins-official` for:
+
+- Distinctive typography, color palettes, and animations
+- Context-aware design that avoids generic AI aesthetics
+- Component architecture and design system creation
+
+**Community Options**:
+
+- `frontend-dev` plugin: AI vision-based visual testing (closed-loop test/fix/validate)
+- Figma MCP connector: Design-to-code pipeline from Figma files
 
 ---
 
@@ -554,6 +790,7 @@ chore: Maintenance tasks
 - **Agents**: AGENT.md with purpose, triggers, capabilities
 - **Hooks**: Python scripts with JSON stdin/stdout, proper error handling
 - **No build required**: Configuration-only plugin (no TypeScript/compilation)
+- **Code Comments**: Follow [COMMENTING-STANDARD.md](docs/standards/COMMENTING-STANDARD.md) - comments explain _why_ not _what_. Target Level 2 (Moderate) for most Python modules. Always document magic numbers and design decisions.
 
 ---
 
@@ -561,53 +798,82 @@ chore: Maintenance tasks
 
 PopKit requires specific Claude Code versions for full functionality:
 
-| Feature                         | Minimum Version | Description                                    |
-| ------------------------------- | --------------- | ---------------------------------------------- |
-| **Extended Thinking**           | 2.0.67          | Default enabled (10k tokens)                   |
-| **Native Async Mode**           | 2.0.64          | Background Task tool (5+ agents)               |
-| **MCP Wildcard Permissions**    | 2.0.70          | `mcp__server__*` syntax for tool permissions   |
-| **Plan Mode**                   | 2.0.70          | Agent approval workflow                        |
-| **Configuration Management**    | 2.0.71          | `/config` toggle                               |
-| **MCP Permissions**             | 2.0.71          | Fixed permissions for MCP servers              |
-| **Skill Hot-Reload**            | 2.1.0           | Skills reload without restart                  |
-| **Forked Skill Contexts**       | 2.1.0           | Isolated execution contexts                    |
-| **YAML List Format**            | 2.1.0           | Clean agent tools syntax                       |
-| **SessionStart agent_type**     | 2.1.2           | `--agent` flag detection in hooks              |
-| **Plugin Auto-Update Control**  | 2.1.2           | `FORCE_AUTOUPDATE_PLUGINS` env var             |
-| **Large Output Persistence**    | 2.1.2           | Tool outputs saved to disk (not truncated)     |
-| **Unified Commands/Skills UX**  | 2.1.3           | Mental model simplification (no code changes)  |
-| **Release Channel Toggle**      | 2.1.3           | `stable` vs `latest` in `/config`              |
-| **Permission Rule Validation**  | 2.1.3           | Unreachable rule detection in `/doctor`        |
-| **Background Task Disable**     | 2.1.4           | `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` env var |
-| **Temp Directory Override**     | 2.1.5           | `CLAUDE_CODE_TMPDIR` env var                   |
-| **Settings Search**             | 2.1.6           | Keyword filtering in `/config`                 |
-| **Nested Skills Discovery**     | 2.1.6           | Auto-detect `.claude/skills` subdirectories    |
-| **Shell Continuation Security** | 2.1.6           | Permission bypass fix                          |
+| Feature                          | Minimum Version | Description                                     |
+| -------------------------------- | --------------- | ----------------------------------------------- |
+| **Extended Thinking**            | 2.0.67          | Default enabled (10k tokens)                    |
+| **Native Async Mode**            | 2.0.64          | Background Task tool (5+ agents)                |
+| **MCP Wildcard Permissions**     | 2.0.70          | `mcp__server__*` syntax for tool permissions    |
+| **Plan Mode**                    | 2.0.70          | Agent approval workflow                         |
+| **Configuration Management**     | 2.0.71          | `/config` toggle                                |
+| **MCP Permissions**              | 2.0.71          | Fixed permissions for MCP servers               |
+| **Skill Hot-Reload**             | 2.1.0           | Skills reload without restart                   |
+| **Forked Skill Contexts**        | 2.1.0           | Isolated execution contexts                     |
+| **YAML List Format**             | 2.1.0           | Clean agent tools syntax                        |
+| **SessionStart agent_type**      | 2.1.2           | `--agent` flag detection in hooks               |
+| **Plugin Auto-Update Control**   | 2.1.2           | `FORCE_AUTOUPDATE_PLUGINS` env var              |
+| **Large Output Persistence**     | 2.1.2           | Tool outputs saved to disk (not truncated)      |
+| **Unified Commands/Skills UX**   | 2.1.3           | Mental model simplification (no code changes)   |
+| **Release Channel Toggle**       | 2.1.3           | `stable` vs `latest` in `/config`               |
+| **Permission Rule Validation**   | 2.1.3           | Unreachable rule detection in `/doctor`         |
+| **Background Task Disable**      | 2.1.4           | `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` env var  |
+| **Temp Directory Override**      | 2.1.5           | `CLAUDE_CODE_TMPDIR` env var                    |
+| **Settings Search**              | 2.1.6           | Keyword filtering in `/config`                  |
+| **Nested Skills Discovery**      | 2.1.6           | Auto-detect `.claude/skills` subdirectories     |
+| **Shell Continuation Security**  | 2.1.6           | Permission bypass fix                           |
+| **Wildcard Permission Security** | 2.1.7           | Shell operator matching fix for compound cmds   |
+| **MCP Auto Search Default**      | 2.1.7           | MCP tools deferred when >10% context window     |
+| **PreToolUse additionalContext** | 2.1.9           | Hooks can inject context into model reasoning   |
+| **Skill Session ID Access**      | 2.1.9           | `${CLAUDE_SESSION_ID}` substitution in skills   |
+| **Plans Directory Config**       | 2.1.9           | `plansDirectory` setting for plan file location |
+| **Setup Hook Event**             | 2.1.10          | `--init`, `--init-only`, `--maintenance` flags  |
+| **Plugin SHA Pinning**           | 2.1.14          | Pin plugins to specific git commit SHAs         |
+| **Native Task Management**       | 2.1.16          | Task system with dependency tracking            |
+| **Customizable Keybindings**     | 2.1.18          | `/keybindings` for personalized shortcuts       |
+| **Argument Bracket Syntax**      | 2.1.19          | `$ARGUMENTS[0]` replaces `$ARGUMENTS.0`         |
+| **Auto-Approved Simple Skills**  | 2.1.19          | Skills without hooks/permissions skip approval  |
+| **Background Hook Fix**          | 2.1.19          | Non-blocking hooks return early correctly       |
+| **PR Status Footer**             | 2.1.20          | Native PR review status in prompt footer        |
+| **Additional Dir CLAUDE.md**     | 2.1.20          | `--add-dir` loads CLAUDE.md from extra dirs     |
+| **Bash(\*) = Bash Equivalence**  | 2.1.20          | Validates wildcard permission design            |
+| **File Tool Preference**         | 2.1.21          | Model prefers Read/Edit/Write over bash equiv   |
+| **Async Hook Cancellation**      | 2.1.23          | Pending hooks cancelled on session end          |
+| **PR Session Linking**           | 2.1.27          | `--from-pr` flag and auto-linking via `gh pr`   |
+| **Windows Bash Fix**             | 2.1.27          | .bashrc compatibility for Windows hooks         |
+| **PDF Page Ranges**              | 2.1.30          | `pages` parameter on Read tool for PDFs         |
+| **Task Tool Metrics**            | 2.1.30          | Token count, tool uses, duration in results     |
+| **Debug Command**                | 2.1.30          | `/debug` for session troubleshooting            |
+| **Claude Opus 4.6**              | 2.1.32          | New frontier model available                    |
+| **Agent Teams (Preview)**        | 2.1.32          | Native multi-agent collaboration                |
+| **Agent Memory**                 | 2.1.32          | Automatic memory recording and recall           |
+| **Session Resume Agent Reuse**   | 2.1.32          | `--resume` reuses previous `--agent` value      |
+| **Skill Budget Scaling**         | 2.1.32          | Skill character budget = 2% of context window   |
+| **TeammateIdle Hook**            | 2.1.33          | New hook event for idle teammate agents         |
+| **TaskCompleted Hook**           | 2.1.33          | New hook event for completed tasks              |
+| **Task(agent_type) Syntax**      | 2.1.33          | Restrict sub-agent spawning in frontmatter      |
+| **Agent Memory Frontmatter**     | 2.1.33          | `memory: user\|project\|local` in AGENT.md      |
 
-**Recommended**: Claude Code 2.1.6+ for full feature support and latest security fixes.
+**Recommended**: Claude Code 2.1.33+ for full feature support including Agent Teams, Agent Memory, and latest hook events.
 
 ---
 
 ## Current Status
 
-**Version**: 1.0.0-beta.7
+**Version**: 1.0.0-beta.8
 **Status**: Beta release
 **Plugins**: 4 modular plugins
-**Commands**: 23 workflow commands
-**Skills**: 38 reusable skills
-**Agents**: 22 specialized agents
+**Commands**: 25 workflow commands
+**Skills**: 43 reusable skills
+**Agents**: 23 specialized agents
 
 ### Recent Updates
 
+- **2026-02-06**: TeammateIdle + TaskCompleted hooks, CC 2.1.7-2.1.33 full changelog audit, version table expanded (42 entries)
+- **2026-02-06**: CC 2.1.33 integration, agent memory, interactive init, routing accuracy (v1.0.0-beta.8)
+- **2026-02-05**: Issue triage and cleanup (17 issues closed), commenting standards, design integration strategy
 - **2026-01-31**: GitHub cache, priority scheduling, agent expertise system (v1.0.0-beta.7)
 - **2026-01-13**: CI/CD pipeline complete, all tests passing (v1.0.0-beta.5)
 - **2026-01-12**: Claude Code 2.1.6 compatibility verified, hook import paths fixed (v1.0.0-rc.1)
 - **2026-01-09**: Claude Code 2.1.2 integration complete (v1.0.0-beta.4)
-- **2026-01-06**: Repository field format fix (all plugin.json files)
-- **2025-12-29**: Core cleanup and account consolidation (v1.0.0-beta.3)
-- **2025-12-28**: Version alignment at v1.0.0-beta.1
-- **2025-12-21**: Testing & validation complete (96.3% pass rate)
-- **2025-12-20**: Plugin modularization complete
 
 See [CHANGELOG.md](CHANGELOG.md) for full version history.
 
@@ -832,21 +1098,22 @@ When using `actions/first-interaction` in workflows, the `with:` section require
 
 ### Common Actions and Their Parameters
 
-| Action | Parameter | Correct Format |
-|--------|-----------|----------------|
-| `actions/first-interaction@v3` | Token | `repo_token` |
+| Action                         | Parameter     | Correct Format  |
+| ------------------------------ | ------------- | --------------- |
+| `actions/first-interaction@v3` | Token         | `repo_token`    |
 | `actions/first-interaction@v3` | Issue message | `issue_message` |
-| `actions/first-interaction@v3` | PR message | `pr_message` |
+| `actions/first-interaction@v3` | PR message    | `pr_message`    |
 
 ### Historical Context (Lesson Learned)
 
 - **PR #154**: Changed underscores → hyphens (broke workflow) ❌
 - **PR #159**: Reverted hyphens → underscores (fixed workflow) ✅
 - **PR #161**: Changed underscores → hyphens again (broke workflow) ❌
-  *This PR was created due to confusion about the correct format*
+  _This PR was created due to confusion about the correct format_
 - **Current PR**: Changed hyphens → underscores (correct fix) ✅
 
 **Root Cause**: The error message from `actions/first-interaction@v3` explicitly states:
+
 ```
 Unexpected input(s) 'repo-token', 'pr-message'
 valid inputs are ['issue_message', 'pr_message', 'repo_token']

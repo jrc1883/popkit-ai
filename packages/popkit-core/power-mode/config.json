@@ -224,7 +224,15 @@
       }
     },
     "priority_rules": {
-      "critical_keywords": ["security", "vulnerability", "production", "crash", "blocking", "emergency", "urgent"],
+      "critical_keywords": [
+        "security",
+        "vulnerability",
+        "production",
+        "crash",
+        "blocking",
+        "emergency",
+        "urgent"
+      ],
       "high_keywords": ["important", "bug", "deadline", "critical", "asap"],
       "low_keywords": ["documentation", "cleanup", "refactor", "nice-to-have", "optional"],
       "critical_tags": ["security", "production", "p0"],

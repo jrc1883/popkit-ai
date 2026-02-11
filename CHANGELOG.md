@@ -6,42 +6,62 @@ All notable changes to PopKit are documented in this file.
 
 ## [Unreleased]
 
+---
+
+## [1.0.0-beta.8] - 2026-02-06
+
 ### Added
 
-- **Anthropic Upstream Tracking System** (#215): "Dependabot for Claude Code" - track Anthropic repository updates
-  - New `/popkit-core:upstream` command with 5 subcommands: check, list, research, synthesize, stats
-  - Monitors 4 repositories: claude-code, claude-plugins-official, anthropic-sdk-python, anthropic-sdk-typescript
-  - Status lifecycle: pending_research → researched → synthesized
-  - Impact assessment system: critical/high/medium/low/none/alignment
-  - Link research to PopKit issues/PRs with synthesize command
-  - Research velocity metrics and statistics dashboard
-  - Data storage: `.claude/popkit/upstream-tracking.json`
-  - Morning routine integration with `--no-upstream` flag
-  - Utility module: `popkit_shared.utils.upstream_tracker`
-  - Prevents duplicate research and maintains historical context
+- **Claude Code 2.1.33 Integration**: Comprehensive compatibility update
+  - Agent Memory frontmatter (`memory: user|project|local`) added to all 23 agents (#238)
+  - Task(agent_type) restrictions for scoped sub-agent spawning on 3 operational agents (#239)
+  - PreToolUse `additionalContext` output for model reasoning injection (CC 2.1.9) (#240)
+  - Setup hook for `claude --init` / `claude --maintenance` modes (CC 2.1.10) (#241)
+  - Version compatibility table updated with 28 new entries (2.1.7-2.1.33) (#236)
 
-- **GitHub Cache Status Inspection** (#216): Show cache state and freshness
+- **Interactive Project Init** (#232, Issue #65): Guided setup experience
+  - 7-question interactive workflow for project configuration
+  - Auto-detects tech stack, team size, and quality preferences
+  - Generates tailored PopKit configuration based on answers
+
+- **Agent Routing Accuracy** (#233, Issue #10): Smarter agent selection
+  - File pattern routing maps file extensions to relevant agents
+  - Error pattern routing matches error types to debugging specialists
+  - Routing config stored in `routing_config.json` for easy customization
+
+- **Frontend Design Integration Strategy** (#234, Issue #72): Design workflow
+  - Architecture for integrating frontend design agents with development workflow
+  - Pattern library and component-driven design approach
+
+- **Code Commenting Standards** (#235, Issue #100): Consistent documentation
+  - Code commenting standard v1.0 with clear guidelines
+  - When to comment, style conventions, anti-patterns
+
+- **Consolidated Project Roadmap** (#237): Single source of truth
+  - 5-phase roadmap: Foundation → CC Integration → Quality → UX → Cloud
+  - All 17 open issues triaged and categorized
+
+- **Anthropic Upstream Tracking System** (#215): "Dependabot for Claude Code"
+  - New `/popkit-core:upstream` command with 5 subcommands
+  - Monitors 4 Anthropic repositories for updates
+  - Impact assessment and research velocity metrics
+
+- **GitHub Cache Status Inspection** (#216): Cache health monitoring
   - New `status` command for `github_cache.py` CLI
-  - Displays count, last updated timestamp, TTL, and fresh/expired status for each cache type
-  - Shows overall cache health (All entries fresh / Some entries expired)
-  - Makes cache "programmatically useful and realistically useful for the user"
+  - Displays freshness, TTL, and overall cache health
 
-- **GitHub CLI Detection and Graceful Handling** (#217): Better UX when `gh` CLI not installed
-  - New `is_gh_cli_available()` function checks for gh CLI and authentication
-  - New `ensure_gh_cli()` raises helpful RuntimeError with platform-specific installation instructions
-  - GitHubCache methods now check for gh CLI before fetching from API
-  - Clear error messages for macOS (brew), Windows (winget), Linux users
-  - Prevents silent failures when gh CLI not available
+- **GitHub CLI Detection** (#217): Graceful handling when `gh` not installed
+  - Platform-specific installation instructions
+  - Prevents silent failures
 
 ### Fixed
 
-- **Documentation Cleanup** (#[TBD]): Fixed broken links and version misalignments
-  - Updated command count from 23 to 25 in README.md
-  - Fixed broken links to deprecated plugins (popkit-github, popkit-quality, popkit-deploy, popkit-meta)
-  - Updated plugin documentation links to current 4-plugin architecture
-  - Aligned all plugin CHANGELOG versions to beta.7
+- **Codebase Audit & Cleanup** (#225): Comprehensive quality sweep
+- **Documentation Cleanup**: Fixed broken links, updated command counts to 25
 
 ### Changed
+
+- Recommended minimum Claude Code version: 2.1.33+ (was 2.1.6+)
 
 ---
 
@@ -52,12 +72,14 @@ All notable changes to PopKit are documented in this file.
 **Plugin Consolidation** - Streamlined from 6 plugins to 4 focused plugins:
 
 **Current Architecture (v1.0.0-beta.7):**
+
 - `popkit-core` - Foundation & Power Mode orchestration
 - `popkit-dev` - Complete development workflows (merged from popkit-github)
 - `popkit-ops` - Operations & quality (consolidated from popkit-quality + popkit-deploy)
 - `popkit-research` - Knowledge management
 
 **Deprecated Plugins (merged in beta.7):**
+
 - `popkit-github` → Merged into `popkit-dev` (Issue #583)
   - GitHub functionality (issues, PRs, milestones) now integrated with dev workflows
   - Unified workflow: Issues → Dev → PR → Merge → Close (all in one plugin)
@@ -68,6 +90,7 @@ All notable changes to PopKit are documented in this file.
 - `popkit-meta` → Removed (functionality distributed to core and shared-py)
 
 **Migration Notes:**
+
 - Existing users: Uninstall old plugins and install updated 4-plugin suite
 - All commands remain available - just grouped more logically
 - No functionality lost - only architectural simplification

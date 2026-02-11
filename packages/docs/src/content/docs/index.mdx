@@ -14,7 +14,7 @@ hero:
       icon: external
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Card, CardGrid } from "@astrojs/starlight/components";
 
 ## What is PopKit?
 
@@ -22,10 +22,11 @@ PopKit is an AI-powered development workflow system that orchestrates Claude Cod
 
 <CardGrid stagger>
   <Card title="Multi-Agent Orchestration" icon="seti:config">
-    Power Mode enables parallel agent coordination via Redis pub-sub, handling complex workflows with multiple specialized agents.
+    Power Mode enables parallel agent coordination via Redis pub-sub, handling complex workflows
+    with multiple specialized agents.
   </Card>
   <Card title="Tiered Agent System" icon="puzzle">
-    68 skills, 24 commands, and 31 agents across 3 tiers - from always-active core tools to on-demand specialists.
+    43 skills, 25 commands, and 23 agents across 3 tiers - from always-active core tools to on-demand specialists.
   </Card>
   <Card title="7-Phase Feature Development" icon="pencil">
     Structured workflow from discovery through architecture to implementation and review.
@@ -38,26 +39,31 @@ PopKit is an AI-powered development workflow system that orchestrates Claude Cod
 ## Key Features
 
 ### Power Mode
+
 Parallel agent collaboration for complex tasks. Choose from:
+
 - **Native Async Mode**: Zero setup, 5+ agents via background Task tool
 - **Redis Mode**: Full power, 10+ agents with persistent coordination
 - **File-Based Mode**: Zero setup, 2 agents sequential
 
 ### Feature Development Workflow
+
 Guided 7-phase process: Discovery → Exploration → Questions → Architecture → Implementation → Review → Summary
 
 ### Git Workflows
+
 Unified commands for commits, PRs, and publishing to public repos with automatic context gathering.
 
 ### Morning/Nightly Routines
+
 Day-bracketing workflow with health checks and cleanup, providing "Ready to Code" and "Sleep Scores".
 
 ## Architecture
 
 PopKit is a configuration-only plugin leveraging:
-- **Agents**: 31 specialized agents with tiered activation
-- **Skills**: 68 reusable skills in SKILL.md format
-- **Commands**: 24 slash commands for common workflows
+- **Agents**: 23 specialized agents with tiered activation
+- **Skills**: 43 reusable skills in SKILL.md format
+- **Commands**: 25 slash commands for common workflows
 - **Hooks**: 23 Python hooks with JSON stdin/stdout protocol
 - **Output Styles**: 15+ templates for PRs, issues, reviews
 

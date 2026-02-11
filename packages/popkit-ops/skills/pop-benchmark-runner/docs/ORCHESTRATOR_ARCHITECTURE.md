@@ -59,6 +59,7 @@ Claude (orchestrator session):
 **Location**: `scripts/benchmark_orchestrator.py`
 
 **Responsibilities**:
+
 - Parse command arguments (task_id, trials, verbose)
 - Load task definition and responses
 - Spawn trial windows in parallel
@@ -68,6 +69,7 @@ Claude (orchestrator session):
 - Open HTML report in browser
 
 **Flow**:
+
 ```python
 def run_orchestrator(task_id: str, trials: int):
     # 1. Load task
@@ -216,23 +218,27 @@ class ProgressDisplay:
 
 **File**: `packages/popkit-ops/commands/benchmark.md`
 
-```markdown
+````markdown
 ## run
 
 Run benchmark trials with orchestration.
 
 Usage:
+
 ```bash
 /popkit-ops:benchmark run <task-id> [--trials N] [--parallel]
 ```
+````
 
 Options:
+
 - `--trials N`: Number of trials per configuration (default: 3)
 - `--parallel`: Run WITH PopKit and BASELINE in parallel (default: true)
 - `--sequential`: Run trials one at a time
 - `--verbose`: Show detailed progress
 
 Examples:
+
 ```bash
 /popkit-ops:benchmark run jwt-authentication
 /popkit-ops:benchmark run jwt-authentication --trials 5
@@ -240,11 +246,13 @@ Examples:
 ```
 
 This will:
+
 1. Load task definition and responses
 2. Spawn separate Claude Code windows for each trial
 3. Monitor progress in orchestrator window
 4. Generate and open HTML report when complete
-```
+
+````
 
 ### Skill Hook
 
@@ -263,7 +271,7 @@ The benchmark runner uses an orchestrator pattern for side-by-side trial viewing
 4. **Results** automatically analyzed and displayed
 
 This allows you to see WITH PopKit vs BASELINE working side-by-side in real-time.
-```
+````
 
 ## Implementation Files
 

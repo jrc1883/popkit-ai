@@ -14,12 +14,15 @@ tools:
   - Bash(git stash*)
   - Bash(npm test*)
   - Bash(npm run test*)
-  - Task
+  # Sub-agent spawning (scoped to relevant types)
+  - Task(code-explorer)
+  - Task(test-writer-fixer)
   - TodoWrite
   - AskUserQuestion
 output_style: conflict-resolution-report
 model: inherit
 version: 1.0.0
+memory: local
 triggers:
   - "merge conflict"
   - "resolve conflicts"

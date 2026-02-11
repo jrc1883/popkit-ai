@@ -59,6 +59,7 @@ packages/popkit-ops/tasks/
 ## Example Task
 
 ### task.yml
+
 ```yaml
 id: jwt-authentication
 category: feature-addition
@@ -82,6 +83,7 @@ verification:
 ```
 
 ### responses.json
+
 ```json
 {
   "responses": {
@@ -89,15 +91,8 @@ verification:
     "Token expiration": "24 hours",
     "Run tests": true
   },
-  "standardAutoApprove": [
-    "test.*",
-    "build.*",
-    "install.*"
-  ],
-  "explicitDeclines": [
-    "deploy.*production",
-    "delete.*"
-  ]
+  "standardAutoApprove": ["test.*", "build.*", "install.*"],
+  "explicitDeclines": ["deploy.*production", "delete.*"]
 }
 ```
 
@@ -110,6 +105,7 @@ verification:
 ```
 
 **What happens**:
+
 1. `benchmark_runner.py` loads `task.yml` and `responses.json`
 2. Sets `POPKIT_BENCHMARK_MODE=true` and `POPKIT_BENCHMARK_RESPONSES` env vars
 3. For WITH PopKit trials:
@@ -183,14 +179,8 @@ See **PROMPT_GUIDELINES.md** for examples.
     "Expected Question 1": "Answer 1",
     "Expected Question 2": "Answer 2"
   },
-  "standardAutoApprove": [
-    "test.*",
-    "build.*"
-  ],
-  "explicitDeclines": [
-    "deploy.*",
-    "delete.*"
-  ]
+  "standardAutoApprove": ["test.*", "build.*"],
+  "explicitDeclines": ["deploy.*", "delete.*"]
 }
 ```
 
@@ -212,12 +202,14 @@ claude -p "$(cat tasks/my-task/task.yml | yq .user_prompt)"
 ### Step 4: Validate
 
 **Questions to ask**:
+
 - ✅ Did WITH PopKit trial complete without blocking?
 - ✅ Did WITHOUT PopKit trial complete without blocking?
 - ✅ Were any questions logged by `benchmark_responses.py`?
 - ✅ Is the prompt detailed enough?
 
 **If any question was asked**:
+
 1. Add more detail to prompt (preferred)
 2. OR add response to `responses.json` (fallback)
 
@@ -228,6 +220,7 @@ claude -p "$(cat tasks/my-task/task.yml | yq .user_prompt)"
 **Symptoms**: Claude session waiting for user input
 
 **Diagnosis**:
+
 ```bash
 # Check if benchmark mode is enabled
 echo $POPKIT_BENCHMARK_MODE  # Should be "true"
@@ -240,6 +233,7 @@ ls -l $POPKIT_BENCHMARK_RESPONSES
 ```
 
 **Solutions**:
+
 1. **For WITH PopKit**: Add response to `responses.json`
 2. **For WITHOUT PopKit**: Make prompt more detailed
 3. **Both**: Use `standardAutoApprove` patterns for common questions
@@ -249,6 +243,7 @@ ls -l $POPKIT_BENCHMARK_RESPONSES
 **Symptoms**: Wrong option selected automatically
 
 **Diagnosis**:
+
 ```bash
 # Enable verbose logging
 export POPKIT_BENCHMARK_VERBOSE=true
@@ -259,6 +254,7 @@ export POPKIT_BENCHMARK_VERBOSE=true
 ```
 
 **Solutions**:
+
 1. Check `standardAutoApprove` patterns - are they too broad?
 2. Add explicit response for fine-grained control
 3. Review prompt - can you eliminate the question?
@@ -270,6 +266,7 @@ export POPKIT_BENCHMARK_VERBOSE=true
 **Root cause**: PopKit code not available for baseline, only JSONL recording
 
 **Solutions**:
+
 1. **Best**: Rewrite prompt to be more detailed (eliminates question)
 2. **Acceptable**: Document expected questions in test guide
 3. **Workaround**: Have someone monitor baseline trials and answer questions
@@ -296,11 +293,11 @@ export POPKIT_BENCHMARK_VERBOSE=true
 
 ### Environment Variables
 
-| Variable | Value | Purpose |
-|----------|-------|---------|
-| `POPKIT_BENCHMARK_MODE` | `true` | Enable automated responses |
-| `POPKIT_BENCHMARK_RESPONSES` | `/path/to/responses.json` | Response definitions |
-| `POPKIT_BENCHMARK_VERBOSE` | `true` | Log auto-responses (debugging) |
+| Variable                     | Value                     | Purpose                        |
+| ---------------------------- | ------------------------- | ------------------------------ |
+| `POPKIT_BENCHMARK_MODE`      | `true`                    | Enable automated responses     |
+| `POPKIT_BENCHMARK_RESPONSES` | `/path/to/responses.json` | Response definitions           |
+| `POPKIT_BENCHMARK_VERBOSE`   | `true`                    | Log auto-responses (debugging) |
 
 ### Response File Format
 
@@ -316,6 +313,7 @@ export POPKIT_BENCHMARK_VERBOSE=true
 ```
 
 **Matching priority**:
+
 1. `explicitDeclines` (safety first)
 2. `responses[header]` (exact match)
 3. `standardAutoApprove` (pattern match)

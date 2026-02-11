@@ -10,6 +10,7 @@ Complete guide for deploying PopKit documentation to Cloudflare Pages with custo
 ## Overview
 
 This setup uses:
+
 - **GitHub Actions** for CI/CD automation
 - **Cloudflare Pages** for hosting
 - **Custom domain**: `popkit.unjoe.me`
@@ -42,6 +43,7 @@ This setup uses:
 ### 1.2 Note Your Project Details
 
 After creation, you'll see:
+
 - Project name: `popkit-docs`
 - Project URL: `https://popkit-docs.pages.dev`
 
@@ -95,11 +97,13 @@ Keep this tab open for the next step.
 **Add these two secrets**:
 
 #### Secret 1: CLOUDFLARE_API_TOKEN
+
 - **Name**: `CLOUDFLARE_API_TOKEN`
 - **Value**: Paste the API token from Step 2.2
 - Click **Add secret**
 
 #### Secret 2: CLOUDFLARE_ACCOUNT_ID
+
 - **Name**: `CLOUDFLARE_ACCOUNT_ID`
 - **Value**: Paste the Account ID from Step 2.1
 - Click **Add secret**
@@ -107,6 +111,7 @@ Keep this tab open for the next step.
 ### 3.2 Verify Secrets
 
 After adding, you should see:
+
 - ✅ `CLOUDFLARE_API_TOKEN`
 - ✅ `CLOUDFLARE_ACCOUNT_ID`
 - ✅ `GITHUB_TOKEN` (automatically available, no setup needed)
@@ -133,6 +138,7 @@ Since `unjoe.me` is already in your Cloudflare account, the DNS record will be c
 **Proxy status**: Proxied (orange cloud)
 
 Cloudflare will automatically:
+
 - Create the DNS record
 - Provision SSL certificate (takes ~1-2 minutes)
 - Enable HTTPS
@@ -140,6 +146,7 @@ Cloudflare will automatically:
 ### 4.3 Verify Domain Works
 
 After SSL provisioning completes (~1-2 minutes):
+
 1. Visit: https://popkit.unjoe.me
 2. You should see: "Waiting for content" or a 404 page (normal - no content deployed yet)
 3. Verify SSL works: 🔒 in browser address bar
@@ -153,8 +160,9 @@ After SSL provisioning completes (~1-2 minutes):
 The workflow is already in your repository (`.github/workflows/deploy-docs.yml`).
 
 **Option A: Push to Main** (triggers production deployment)
+
 ```bash
-cd C:/Users/Josep/popkit-claude
+cd /path/to/popkit-claude
 git checkout main
 git pull
 
@@ -166,6 +174,7 @@ git push
 ```
 
 **Option B: Create a Pull Request** (triggers preview deployment)
+
 ```bash
 git checkout -b test/docs-deployment
 echo "# Test" >> packages/docs/README.md
@@ -182,6 +191,7 @@ gh pr create --title "test: trigger preview deployment" --body "Testing Cloudfla
 3. Watch the build and deployment progress
 
 **Expected output**:
+
 ```
 ✓ Build Documentation (2-3 minutes)
   - Install dependencies
@@ -203,6 +213,7 @@ After workflow completes:
 2. **Cloudflare Pages URL**: https://popkit-docs.pages.dev
 
 Both should show the PopKit documentation site with:
+
 - ✅ Homepage loads
 - ✅ Navigation sidebar
 - ✅ Search functionality
@@ -217,6 +228,7 @@ Both should show the PopKit documentation site with:
 ### 6.1 Test Production Deployment
 
 1. Make a change to documentation:
+
    ```bash
    # Edit any doc file
    echo "# Test update" >> packages/docs/src/content/docs/index.mdx
@@ -243,6 +255,7 @@ Both should show the PopKit documentation site with:
 ### Triggers
 
 **Production Deployment** (to popkit.unjoe.me):
+
 - Push to `main` branch
 - Only when these paths change:
   - `packages/docs/**`
@@ -251,6 +264,7 @@ Both should show the PopKit documentation site with:
   - `.github/workflows/deploy-docs.yml`
 
 **Preview Deployment** (temporary URL):
+
 - Pull requests to `main`
 - Same path filters as production
 
@@ -289,6 +303,7 @@ Both should show the PopKit documentation site with:
 ### Error: "Domain already exists"
 
 **Solution**:
+
 1. Check if `popkit.unjoe.me` is configured for another project
 2. In Cloudflare Dashboard → DNS, remove existing `popkit` CNAME record
 3. Re-add in Step 4
@@ -296,6 +311,7 @@ Both should show the PopKit documentation site with:
 ### Build fails with "Module not found"
 
 **Solution**:
+
 1. Verify `package.json` workspaces configuration
 2. Try local build: `npm ci && npm run docs:build`
 3. Check for missing dependencies
@@ -303,6 +319,7 @@ Both should show the PopKit documentation site with:
 ### Deployment succeeds but site shows 404
 
 **Solution**:
+
 1. Verify build output: Check workflow logs for `packages/docs/dist` contents
 2. Ensure `index.html` exists in build artifact
 3. Check Cloudflare Pages project → Deployments → View deployment
@@ -310,6 +327,7 @@ Both should show the PopKit documentation site with:
 ### Custom domain not working
 
 **Solution**:
+
 1. Verify DNS: Check Cloudflare → DNS → Records for `popkit` CNAME
 2. Wait for SSL: Certificate provisioning takes 1-2 minutes
 3. Clear browser cache: Hard refresh (Ctrl+Shift+R)
@@ -320,6 +338,7 @@ Both should show the PopKit documentation site with:
 ## Commands Reference
 
 ### Local Development
+
 ```bash
 # Run development server
 npm run docs:dev
@@ -332,6 +351,7 @@ npm run docs:preview
 ```
 
 ### Manual Deployment (if workflow fails)
+
 ```bash
 # Install Wrangler CLI (Cloudflare's deployment tool)
 npm install -g wrangler
@@ -348,6 +368,7 @@ wrangler pages publish dist --project-name=popkit-docs
 ```
 
 ### Workflow Management
+
 ```bash
 # View workflow runs
 gh run list --workflow=deploy-docs.yml
@@ -369,6 +390,7 @@ gh run cancel <run-id>
 ### Cloudflare Pages Dashboard
 
 View deployment history and analytics:
+
 1. Cloudflare Dashboard → Workers & Pages → popkit-docs
 2. **Deployments** tab: View all deployments
 3. **Analytics** tab: Traffic, requests, bandwidth
@@ -378,6 +400,7 @@ View deployment history and analytics:
 ### GitHub Actions
 
 View workflow runs:
+
 1. GitHub → Actions → Deploy Docs workflow
 2. Click on specific run for detailed logs
 3. View deployment summary in workflow output
@@ -411,6 +434,7 @@ View workflow runs:
 ### Update Workflow
 
 To modify the deployment workflow:
+
 1. Edit `.github/workflows/deploy-docs.yml`
 2. Test changes in a PR (triggers preview deployment)
 3. Merge to `main` after verification
@@ -418,6 +442,7 @@ To modify the deployment workflow:
 ### Update Dependencies
 
 Periodically update Astro and Starlight:
+
 ```bash
 cd packages/docs
 npm update @astrojs/starlight astro
@@ -428,6 +453,7 @@ npm run docs:build  # Test build
 ### Rotate API Token
 
 Every 90 days:
+
 1. Create new API token (Step 2.2)
 2. Update GitHub secret `CLOUDFLARE_API_TOKEN`
 3. Revoke old token in Cloudflare Dashboard

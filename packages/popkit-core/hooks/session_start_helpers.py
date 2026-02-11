@@ -6,7 +6,7 @@ Extracted for testability and maintainability.
 """
 
 import sys
-from typing import Dict, Optional, Any
+from typing import Any, Dict, Optional
 
 
 def detect_agent_type_session(data: Dict[str, Any]) -> Optional[Dict[str, Any]]:

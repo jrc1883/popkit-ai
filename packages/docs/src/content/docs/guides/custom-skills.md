@@ -56,13 +56,13 @@ Organize skills into categories:
 
 ```yaml
 ---
-name: skill-name                # Required: Unique identifier
-description: Short description  # Required: One-line summary
-category: custom                # Required: Category name
-version: 1.0.0                 # Required: Semantic version
-author: Your Name              # Optional: Creator name
-context: fork                  # Optional: Run in isolated context
-tools:                         # Optional: Tool permissions
+name: skill-name # Required: Unique identifier
+description: Short description # Required: One-line summary
+category: custom # Required: Category name
+version: 1.0.0 # Required: Semantic version
+author: Your Name # Optional: Creator name
+context: fork # Optional: Run in isolated context
+tools: # Optional: Tool permissions
   - Read
   - Write
   - Bash(npm test*)
@@ -75,13 +75,13 @@ Control what the skill can do:
 
 ```yaml
 tools:
-  - Read                    # Read files
-  - Write                   # Write files
-  - Grep                    # Search files
-  - Glob                    # Find files
-  - Bash(git status)        # Exact command
-  - Bash(npm test*)         # Command with args
-  - Bash(pytest *)          # Any pytest command
+  - Read # Read files
+  - Write # Write files
+  - Grep # Search files
+  - Glob # Find files
+  - Bash(git status) # Exact command
+  - Bash(npm test*) # Command with args
+  - Bash(pytest *) # Any pytest command
 ```
 
 ## Forked Context Skills
@@ -92,11 +92,12 @@ For expensive operations, use forked context:
 ---
 name: expensive-analysis
 description: Deep code analysis
-context: fork                # Runs in isolated context
+context: fork # Runs in isolated context
 ---
 ```
 
 **When to use fork**:
+
 - Embedding generation
 - Large-scale analysis
 - Web research
@@ -206,10 +207,13 @@ Invoke this skill when reviewing code for security issues:
 ## Examples
 
 \`\`\`bash
+
 # Review current changes
+
 /skill invoke review-security
 
 # Review specific file
+
 /skill invoke review-security src/auth.js
 \`\`\`
 ```
@@ -227,6 +231,7 @@ Invoke this skill when reviewing code for security issues:
 **Symptom**: `/skill invoke` says skill doesn't exist
 
 **Solution**:
+
 - Check file name is `SKILL.md`
 - Verify frontmatter `name` field
 - Ensure in `.claude/skills/` or plugin `skills/` directory
@@ -237,6 +242,7 @@ Invoke this skill when reviewing code for security issues:
 **Symptom**: Skill can't access tools
 
 **Solution**:
+
 - Add required tools to `tools` field
 - Use wildcard patterns: `Bash(command *)`
 - Check tool names match exactly
@@ -246,6 +252,7 @@ Invoke this skill when reviewing code for security issues:
 **Symptom**: Skill loses context or runs slowly
 
 **Solution**:
+
 - Consider using `context: fork`
 - Reduce tool permissions
 - Optimize implementation steps

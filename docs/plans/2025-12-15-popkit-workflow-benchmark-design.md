@@ -84,10 +84,10 @@ interface Task {
   // ... existing fields ...
 
   // New fields for PopKit workflows
-  workflowType?: 'vanilla' | 'popkit-workflow';
-  workflowCommand?: string;  // e.g., '/popkit:dev full "Add user auth"'
+  workflowType?: "vanilla" | "popkit-workflow";
+  workflowCommand?: string; // e.g., '/popkit:dev full "Add user auth"'
   benchmarkResponses?: {
-    [questionId: string]: string | string[];  // Pre-defined answers
+    [questionId: string]: string | string[]; // Pre-defined answers
   };
 }
 ```
@@ -114,27 +114,27 @@ interface Task {
 **Changes:**
 
 1. **Set environment variable:**
+
    ```typescript
-   if (task.workflowType === 'popkit-workflow') {
-     process.env.POPKIT_BENCHMARK_MODE = 'true';
+   if (task.workflowType === "popkit-workflow") {
+     process.env.POPKIT_BENCHMARK_MODE = "true";
    }
    ```
 
 2. **Create response file:**
+
    ```typescript
-   const responsePath = path.join(workingDir, '.benchmark-responses.json');
+   const responsePath = path.join(workingDir, ".benchmark-responses.json");
    if (task.benchmarkResponses) {
-     fs.writeFileSync(
-       responsePath,
-       JSON.stringify(task.benchmarkResponses, null, 2)
-     );
+     fs.writeFileSync(responsePath, JSON.stringify(task.benchmarkResponses, null, 2));
    }
    ```
 
 3. **Build prompt with workflow command:**
+
    ```typescript
-   if (task.workflowType === 'popkit-workflow') {
-     prompt = task.workflowCommand + '\n\n' + task.instruction;
+   if (task.workflowType === "popkit-workflow") {
+     prompt = task.workflowCommand + "\n\n" + task.instruction;
    }
    ```
 
@@ -240,12 +240,13 @@ Each skill that uses `AskUserQuestion` needs benchmark mode support.
 
 Add to skill instructions:
 
-```markdown
+````markdown
 ## Benchmark Mode Support
 
 When `POPKIT_BENCHMARK_MODE=true`:
 
 1. Check for benchmark mode:
+
    ```python
    from benchmark_responses import is_benchmark_mode, get_response
 
@@ -255,6 +256,7 @@ When `POPKIT_BENCHMARK_MODE=true`:
            # Use pre-defined response instead of AskUserQuestion
            proceed_with_design(response)
    ```
+````
 
 2. Question IDs used in this skill:
    - `brainstorm_approach`: Design approach selection
@@ -265,7 +267,8 @@ When `POPKIT_BENCHMARK_MODE=true`:
    - Do NOT create issues
    - Do NOT create branches
    - Do NOT push commits
-```
+
+````
 
 **Skills to Update:**
 1. `pop-brainstorming` - Design approach questions
@@ -300,9 +303,10 @@ Create task files in `packages/benchmarks/tasks/popkit/`
     "No GitHub side effects"
   ]
 }
-```
+````
 
 #### Task 2: Project Initialization
+
 **File:** `popkit-project-init.json`
 
 ```json
@@ -318,15 +322,12 @@ Create task files in `packages/benchmarks/tasks/popkit/`
     "testing_framework": "Jest",
     "enable_power_mode": "No"
   },
-  "success_criteria": [
-    "CLAUDE.md created",
-    "Project config initialized",
-    "No network calls"
-  ]
+  "success_criteria": ["CLAUDE.md created", "Project config initialized", "No network calls"]
 }
 ```
 
 #### Task 3: Quick Fix Workflow
+
 **File:** `popkit-quick-fix.json`
 
 ```json
@@ -341,11 +342,7 @@ Create task files in `packages/benchmarks/tasks/popkit/`
     "test_fix": "Manual testing only",
     "create_pr": "No"
   },
-  "success_criteria": [
-    "CSS fix applied",
-    "No test failures",
-    "No GitHub operations"
-  ]
+  "success_criteria": ["CSS fix applied", "No test failures", "No GitHub operations"]
 }
 ```
 
@@ -396,21 +393,25 @@ def handle_ask_user_question(tool_input: dict) -> dict:
 ## Implementation Plan
 
 ### Phase 1: Foundation (Day 1-2)
+
 1. Create `benchmark_responses.py` utility
 2. Update task schema in `types.ts`
 3. Update benchmark runner with env variable and response file handling
 
 ### Phase 2: Integration (Day 3-4)
+
 4. Add benchmark mode check to pre-tool-use hook
 5. Update skill templates with benchmark instructions
 6. Test with mock responses
 
 ### Phase 3: Tasks (Day 5-6)
+
 7. Create PopKit benchmark task definitions
 8. Implement response mappings
 9. Test each workflow end-to-end
 
 ### Phase 4: Validation (Day 7)
+
 10. Run full benchmark suite
 11. Verify no GitHub side effects
 12. Document results and update README
@@ -420,16 +421,19 @@ def handle_ask_user_question(tool_input: dict) -> dict:
 ## Testing Strategy
 
 ### Unit Tests
+
 - `benchmark_responses.py` functions
 - Response file parsing
 - Environment variable detection
 
 ### Integration Tests
+
 - Run benchmarks with pre-defined responses
 - Verify skills use responses correctly
 - Confirm no network/GitHub operations
 
 ### End-to-End Tests
+
 ```bash
 # Test full workflow
 npx tsx run-benchmark.ts popkit-dev-auth popkit
@@ -444,18 +448,22 @@ npx tsx run-benchmark.ts popkit-dev-auth popkit
 ## Edge Cases & Error Handling
 
 ### Missing Response File
+
 - **Scenario:** `.benchmark-responses.json` not found
 - **Handling:** `load_responses()` returns empty dict, questions proceed normally
 
 ### Malformed Response File
+
 - **Scenario:** Invalid JSON in response file
 - **Handling:** Catch `JSONDecodeError`, return empty dict, log warning
 
 ### Missing Response for Question
+
 - **Scenario:** Question ID not in responses
 - **Handling:** Fall through to normal AskUserQuestion flow
 
 ### GitHub Operations
+
 - **Scenario:** Skill attempts PR creation in benchmark mode
 - **Handling:** Skills check `is_benchmark_mode()` and skip GitHub operations
 

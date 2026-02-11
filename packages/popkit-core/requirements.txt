@@ -3,6 +3,11 @@
 # Shared utilities package (required)
 popkit-shared>=1.0.0
 
+# E2B Sandbox for safe remote code execution (Native Swarm feature)
+e2b-code-interpreter>=1.0.0
+python-dotenv>=1.0.0
+
 # Optional dependencies for enhanced features:
 # - Redis for Upstash mode (optional): pip install redis (cloud-based, no Docker required)
 # - Voyage AI for semantic embeddings: Set VOYAGE_API_KEY env var
+# - Tmux for visual concurrency dashboard: Install via package manager (apt/brew install tmux)

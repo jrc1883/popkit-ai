@@ -24,10 +24,13 @@ tools:
   - Bash(curl --head*)
   - Bash(curl -f*)
   - WebFetch
-  - Task
+  # Sub-agent spawning (scoped to relevant types)
+  - Task(deployment-validator)
+  - Task(test-writer-fixer)
 output_style: rollback-report
 model: inherit
 version: 1.0.0
+memory: local
 ---
 
 # Rollback Specialist Agent

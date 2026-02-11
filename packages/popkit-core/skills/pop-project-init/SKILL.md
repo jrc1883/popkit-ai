@@ -23,7 +23,11 @@ Initialize project with Claude Code configuration. **Never destroys user content
 | Step | When                      | Decision ID        |
 | ---- | ------------------------- | ------------------ |
 | 0    | Plugin conflicts detected | `plugin_conflict`  |
+| 1b   | Monorepo detected         | `monorepo_config`  |
+| 1c   | Stack/framework selection | `stack_selection`  |
+| 5b   | Quality gate level        | `quality_gates`    |
 | 6    | After directory creation  | `power_mode_setup` |
+| 6b   | If authenticated          | `premium_features` |
 | 8    | After init complete       | `next_action`      |
 
 **Skipping these violates PopKit UX standard.**
@@ -39,10 +43,46 @@ if result["total"] > 0:
     # Use AskUserQuestion: "View details" | "Continue anyway" | "Cancel"
 ```
 
-### Step 1-2: Detect Type & Create Structure
+### Step 1: Run Interactive Detection
 
 ```bash
-# Detect: package.json→node, Cargo.toml→rust, pyproject.toml→python, go.mod→go
+python scripts/interactive_init.py --dir .
+```
+
+This runs all 4 detections (monorepo, stack, quality, premium) and outputs JSON with detection results and question configurations.
+
+### Step 1b: Monorepo Configuration (if detected)
+
+Only shown if `interactive_init.py` detects a monorepo workspace.
+
+```
+Use AskUserQuestion:
+- question: "Monorepo detected ({type}, {N} packages). How should PopKit be configured?"
+- header: "Workspace"
+- options:
+  - "App-specific config (Recommended)" - Configure PopKit for this app only
+  - "Shared workspace config" - Single config at workspace root
+  - "Both (hybrid)" - Workspace config with app-specific overrides
+```
+
+### Step 1c: Stack Selection (MANDATORY)
+
+Uses detection results to pre-select the most likely option.
+
+```
+Use AskUserQuestion:
+- question: "Detected {stack}. Confirm or change project type?" (or "What type of project?" if no detection)
+- header: "Stack"
+- options: (top 4 from detection, detected stack marked as "(Detected)")
+  - "Next.js Application" / "Python FastAPI" / "Cloudflare Workers" / "React SPA"
+```
+
+The selected stack determines: config templates, quality tool defaults, and CLAUDE.md content.
+
+### Step 2: Create Structure
+
+```bash
+# Create directories based on stack selection
 mkdir -p .claude/{agents,commands,hooks,skills,scripts,logs,plans}
 mkdir -p .claude/popkit/routines/{morning,nightly}
 ```
@@ -92,6 +132,24 @@ See `examples/claude-md-update.py` for full implementation.
 
 Only if missing. See `examples/` for schemas.
 
+### Step 5b: Quality Gates Selection (MANDATORY)
+
+Uses detection to recommend a level based on existing tools.
+
+```
+Use AskUserQuestion:
+- question: "What quality gate level? (eslint, prettier detected)" (tools vary)
+- header: "Quality"
+- options:
+  - "Basic" - Formatting only (Prettier/Ruff). Fast, minimal overhead.
+  - "Standard (Recommended)" - Formatting + linting + type checking.
+  - "Strict" - All of Standard + pre-commit hooks + test requirements.
+  - "Enterprise" - All of Strict + security scanning + audit logging.
+```
+
+Configure pre-commit hooks, linting, and type checking based on selection.
+Map to `/popkit:project setup` levels: basic, standard, strict, enterprise.
+
 ### Step 6: Power Mode Setup (MANDATORY)
 
 ```
@@ -105,6 +163,23 @@ Use AskUserQuestion:
 ```
 
 Update CLAUDE.md with selected mode.
+
+### Step 6b: Premium Features (if authenticated)
+
+Only shown if `POPKIT_API_KEY` or `VOYAGE_API_KEY` environment variables are set.
+
+```
+Use AskUserQuestion:
+- question: "Which premium features would you like to enable?"
+- header: "Features"
+- multiSelect: true
+- options:
+  - "Power Mode (Recommended)" - Multi-agent orchestration for parallel task execution
+  - "Semantic Search" - Natural language search for skills, agents, and commands
+  - "Cloud Sync" - Cross-session state and analytics via PopKit Cloud
+```
+
+Update `.claude/popkit/config.json` with selected features.
 
 ### Step 7: Update .gitignore
 
@@ -134,14 +209,18 @@ Use AskUserQuestion:
 ```
 PopKit Project Initialization
 ═════════════════════════════
-[1/5] Checking conflicts... ✓ No conflicts
-[2/5] Detecting type... ✓ Node.js (Next.js 14)
-[3/5] Creating structure... ✓ .claude/popkit/config.json
-[4/5] Updating CLAUDE.md... ✓ Section appended with markers
-[5/5] Power Mode... ✓ [Based on selection]
+[1/7] Checking conflicts... ✓ No conflicts
+[2/7] Detecting environment... ✓ Monorepo (pnpm, 6 packages) | Next.js
+[3/7] Creating structure... ✓ .claude/popkit/config.json
+[4/7] Updating CLAUDE.md... ✓ Section appended with markers
+[5/7] Quality gates... ✓ Standard (ESLint + TypeScript + Ruff)
+[6/7] Power Mode... ✓ [Based on selection]
+[7/7] Premium features... ✓ Power Mode + Semantic Search
 
 Summary:
+  Stack: Next.js Application
   Config: .claude/popkit/config.json
+  Quality: Standard (3 tools configured)
   CLAUDE.md: <!-- POPKIT:START/END --> markers
   Power Mode: [status]
   Ready: /popkit:routine morning

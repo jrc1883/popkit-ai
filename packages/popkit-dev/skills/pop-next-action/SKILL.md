@@ -35,16 +35,16 @@ Invoke this skill when:
 
 ## Context Detection
 
-| Indicator | What It Means | Weight |
-|-----------|---------------|--------|
-| **On protected branch** | **Requires feature branch** | **CRITICAL** |
-| Uncommitted changes | Active work in progress | HIGH |
-| TypeScript errors | Build broken | HIGH |
-| **Research branches** | Web session findings to process | HIGH |
-| Ahead of remote | Ready to push/PR | MEDIUM |
-| Open issues | Known work items | MEDIUM |
-| **Issue votes** | Community priority (👍=1pt, ❤️=2pt, 🚀=3pt) | MEDIUM |
-| TECHNICAL_DEBT.md | Documented debt | MEDIUM |
+| Indicator               | What It Means                               | Weight       |
+| ----------------------- | ------------------------------------------- | ------------ |
+| **On protected branch** | **Requires feature branch**                 | **CRITICAL** |
+| Uncommitted changes     | Active work in progress                     | HIGH         |
+| TypeScript errors       | Build broken                                | HIGH         |
+| **Research branches**   | Web session findings to process             | HIGH         |
+| Ahead of remote         | Ready to push/PR                            | MEDIUM       |
+| Open issues             | Known work items                            | MEDIUM       |
+| **Issue votes**         | Community priority (👍=1pt, ❤️=2pt, 🚀=3pt) | MEDIUM       |
+| TECHNICAL_DEBT.md       | Documented debt                             | MEDIUM       |
 
 ## Scoring Algorithm
 
@@ -75,11 +75,13 @@ Context Multipliers:
 Detects research branches from Claude Code Web sessions:
 
 **Patterns:**
+
 - `origin/claude/research-*` - Explicit research branches
 - `origin/claude/*-research-*` - Topic-specific research
 - Branches with `docs/research/*.md` or `RESEARCH*.md` files
 
 **Integration:**
+
 ```python
 from popkit_shared.utils.research_branch_detector import (
     get_research_branches,
@@ -116,6 +118,7 @@ Returns top 3-5 recommendations with:
 - **Score** - Calculated relevance score
 
 Example:
+
 ```
 1. [CRITICAL] Create feature branch (Score: 150)
    Command: /popkit:git branch create feature/fix-build-errors

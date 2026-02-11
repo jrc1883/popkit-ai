@@ -4,11 +4,12 @@ OPTIMUS Agent Observability Hook
 Sends agent telemetry data to OPTIMUS Command Center
 """
 
+import json
 import os
 import sys
-import json
-import requests
 from datetime import datetime
+
+import requests
 
 # OPTIMUS WebSocket server endpoint
 OPTIMUS_WS_URL = "http://localhost:3051"

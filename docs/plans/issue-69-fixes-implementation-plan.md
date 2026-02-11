@@ -34,8 +34,8 @@ The initial implementation of generic workspace routine templates has several cr
   },
   "overrides": {
     "expected_services": [
-      {"name": "dev server", "port": 4200, "description": "Angular dev server"},
-      {"name": "api", "port": 3000, "description": "NestJS API"}
+      { "name": "dev server", "port": 4200, "description": "Angular dev server" },
+      { "name": "api", "port": 3000, "description": "NestJS API" }
     ],
     "package_manager": "pnpm",
     "check_outdated": "pnpm outdated --format json"
@@ -80,9 +80,11 @@ except Exception as e:
 ### Phase 1: Core Infrastructure (30 min)
 
 **Files to Create:**
+
 - `packages/shared-py/popkit_shared/utils/project_config.py`
 
 **Key Functions:**
+
 - `load_project_config(project_path)` - Load from .popkit/project.json
 - `save_project_config(config, project_path)` - Save to .popkit/project.json
 - `get_cached_project_type(project_path)` - Get with cache validation
@@ -91,9 +93,11 @@ except Exception as e:
 ### Phase 2: Update Detection Logic (20 min)
 
 **Files to Modify:**
+
 - `packages/shared-py/popkit_shared/utils/generic_project_detector.py`
 
 **Changes:**
+
 - Add error handling to `detect()` method
 - Add caching support via `project_config.py`
 - Add `force_refresh` parameter
@@ -101,9 +105,11 @@ except Exception as e:
 ### Phase 3: Fix Morning Workflow (15 min)
 
 **Files to Modify:**
+
 - `packages/popkit-dev/skills/pop-morning/scripts/morning_workflow.py`
 
 **Changes:**
+
 - Remove hardcoded pnpm dependency check (lines 341-362)
 - Trust generic_state_capture dependency state
 - Keep morning-specific checks (PRs, issues, worktrees)
@@ -111,6 +117,7 @@ except Exception as e:
 ### Phase 4: Service Detection Enhancement (20 min)
 
 **Changes:**
+
 - Read expected_services from config overrides first
 - Fall back to language defaults
 - Add process detection as alternative (scan for dev server processes)
@@ -118,9 +125,11 @@ except Exception as e:
 ### Phase 5: Project Initialization (30 min)
 
 **Files to Create:**
+
 - `packages/popkit-dev/commands/project-configure.py`
 
 **Features:**
+
 - `/popkit:project init` - Initialize .popkit/project.json
 - `/popkit:project configure` - Update overrides
 - `/popkit:project detect` - Force re-detection

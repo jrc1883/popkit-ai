@@ -17,7 +17,6 @@ import sys
 from pathlib import Path
 from typing import Dict, List
 
-
 # Injection patterns with CWE mappings
 INJECTION_PATTERNS = {
     "IP-001": {
@@ -121,9 +120,7 @@ def find_plugin_root(start_path: Path = None) -> Path:
     for _ in range(5):
         if (current / ".claude-plugin" / "plugin.json").exists():
             return current
-        if (
-            current / "packages" / "plugin" / ".claude-plugin" / "plugin.json"
-        ).exists():
+        if (current / "packages" / "plugin" / ".claude-plugin" / "plugin.json").exists():
             return current / "packages" / "plugin"
         current = current.parent
 

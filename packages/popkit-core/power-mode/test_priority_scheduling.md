@@ -340,6 +340,7 @@ python task_scheduler.py --test --tasks 1000
 ```
 
 Expected performance:
+
 - Add 1000 tasks: < 100ms
 - Get next task: < 5ms (O(log n) with heapq)
 - Complete task: < 1ms
@@ -387,6 +388,7 @@ assert task3.priority.value == 1  # LOW
 ### Issue: Tasks not assigned in priority order
 
 **Check:**
+
 1. Verify priority assignment: `task.priority.value`
 2. Check task timestamps: `task.created_at`
 3. Verify heapq is working: `print(scheduler.task_queue)`
@@ -394,13 +396,15 @@ assert task3.priority.value == 1  # LOW
 ### Issue: Same-priority tasks not following FIFO
 
 **Check:**
+
 1. Timestamps are different: `task.created_at`
-2. Task.__lt__() comparison logic
+2. Task.**lt**() comparison logic
 3. Time precision (use time.time() not datetime)
 
 ### Issue: Priority rules not working
 
 **Check:**
+
 1. Config loaded correctly: `scheduler.priority_assigner.config`
 2. Keywords in description: case-insensitive matching
 3. Tags in task: exact match required
