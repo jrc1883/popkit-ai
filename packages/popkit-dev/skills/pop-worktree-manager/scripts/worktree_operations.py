@@ -132,7 +132,9 @@ def get_project_name() -> str:
     return "project"
 
 
-def resolve_worktree_path(branch: str, config: Dict[str, Any], name: Optional[str] = None) -> Path:
+def resolve_worktree_path(
+    branch: str, config: Dict[str, Any], name: Optional[str] = None
+) -> Path:
     """
     Resolve worktree path from config template.
 
@@ -225,7 +227,9 @@ def operation_list(json_output: bool = False) -> Dict[str, Any]:
 
         # Check for uncommitted changes
         if Path(wt["path"]).exists():
-            status_output, status_ok = run_git_command(f'-C "{wt["path"]}" status --porcelain')
+            status_output, status_ok = run_git_command(
+                f'-C "{wt["path"]}" status --porcelain'
+            )
             wt["uncommittedChanges"] = bool(status_output) if status_ok else False
 
     if json_output:
@@ -394,7 +398,7 @@ def operation_update_all(install: bool = False) -> Dict[str, Any]:
         # Install dependencies if requested
         if install and Path(wt_path, "package.json").exists():
             install_result = subprocess.run(
-                "npm install", cwd=wt_path, capture_output=True, text=True, shell=True
+                ["npm", "install"], cwd=wt_path, capture_output=True, text=True
             )
             result["installSuccess"] = install_result.returncode == 0
             result["installOutput"] = install_result.stdout.strip()
@@ -499,7 +503,9 @@ def operation_analyze() -> Dict[str, Any]:
         branch = wt.get("branch", "detached")
 
         # Check if behind base branch (assume main)
-        behind_output, behind_ok = run_git_command(f'-C "{wt_path}" rev-list HEAD..main --count')
+        behind_output, behind_ok = run_git_command(
+            f'-C "{wt_path}" rev-list HEAD..main --count'
+        )
 
         if behind_ok and behind_output and int(behind_output) > 0:
             recommendations.append(
@@ -567,10 +573,14 @@ def main():
     parser.add_argument("--force", action="store_true", help="Force removal")
 
     # update-all options
-    parser.add_argument("--install", action="store_true", help="Run npm install after update")
+    parser.add_argument(
+        "--install", action="store_true", help="Run npm install after update"
+    )
 
     # prune options
-    parser.add_argument("--dry-run", action="store_true", help="Preview without executing")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Preview without executing"
+    )
 
     # init options
     parser.add_argument("--pattern", default="dev-*", help="Branch pattern for init")
