@@ -5,6 +5,41 @@ All notable changes to the PopKit Core plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-beta.9] - 2025-02-10
+
+### Added
+
+- **Native Swarm Orchestration** - Multi-agent teams with E2B sandbox isolation
+  - `TeamCreate`/`TeamClose` workflow for parallel agent coordination
+  - E2B sandbox integration for safe remote code execution
+  - Auto-drive hook for self-organizing teammates (reduces "manager latency")
+  - Role-based task claiming: Engineer, Researcher, Architect, Tester, Security Auditor, Documentation
+  - Cross-platform sandbox state management (Windows + Unix)
+
+- **`pop-sandbox` Skill** - Full E2B sandbox management
+  - `sandbox_create` - Provision ephemeral environments
+  - `sandbox_run_command` - Execute commands (with background mode)
+  - `sandbox_write_file` / `sandbox_read_file` - File operations
+  - `sandbox_list` - List active sandboxes
+  - `sandbox_kill` - Terminate sandboxes
+
+### Changed
+
+- **`power-coordinator` Agent** - Upgraded to v2.0.0
+  - Now uses native `agentTeams` capability instead of manual loop
+  - Integrated sandbox provisioning for conflict-free parallel execution
+  - Enhanced progress reporting format
+
+- **`teammate-idle` Hook** - Enhanced with auto-claiming logic
+  - Role detection from context
+  - Role-to-task keyword matching
+  - Swarm event logging for observability
+
+### Dependencies
+
+- Added `e2b-code-interpreter>=1.0.0` for sandbox functionality
+- Added `python-dotenv>=1.0.0` for environment management
+
 ## [Unreleased]
 
 ### Added
@@ -71,5 +106,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Multi-Project Dashboard**: Centralized project management
 - **Dependencies**: popkit-shared>=0.1.0
 
-[Unreleased]: https://github.com/jrc1883/popkit/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/jrc1883/popkit/releases/tag/v0.1.0
+[Unreleased]: https://github.com/jrc1883/popkit-claude/compare/v1.0.0-beta.9...HEAD
+[1.0.0-beta.9]: https://github.com/jrc1883/popkit-claude/compare/v1.0.0-beta.8...v1.0.0-beta.9
+[0.1.0]: https://github.com/jrc1883/popkit-claude/releases/tag/v0.1.0
