@@ -162,7 +162,7 @@ The workflow is already in your repository (`.github/workflows/deploy-docs.yml`)
 **Option A: Push to Main** (triggers production deployment)
 
 ```bash
-cd C:/Users/Josep/popkit-claude
+cd /path/to/popkit-claude
 git checkout main
 git pull
 
