@@ -31,6 +31,7 @@ See Issue #195 for analysis.
 import json
 import os
 import re
+import shlex
 import subprocess
 import sys
 from datetime import datetime
@@ -310,8 +311,11 @@ class QualityGateHook:
 
         start = datetime.now()
         try:
+            command = self.build_command(gate.get("command", ""))
+            if not command:
+                raise ValueError(f"Empty command for gate '{gate.get('name', 'unknown')}'")
             proc = subprocess.run(
-                gate["command"],
+                command,
                 capture_output=True,
                 text=True,
                 timeout=gate.get("timeout", 60),
@@ -333,6 +337,14 @@ class QualityGateHook:
 
         result["duration"] = (datetime.now() - start).total_seconds()
         return result
+
+    def build_command(self, command: Any) -> List[str]:
+        """Normalize gate command to a list for subprocess.run."""
+        if isinstance(command, list):
+            return [str(part) for part in command if str(part)]
+        if isinstance(command, str):
+            return [part for part in shlex.split(command) if part]
+        return []
 
     def run_all_gates(self) -> Dict[str, Any]:
         """Execute all enabled quality gates."""
