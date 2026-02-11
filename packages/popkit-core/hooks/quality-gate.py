@@ -625,6 +625,14 @@ class QualityGateHook:
     # Rollback Mechanism
     # =========================================================================
 
+    def destructive_ops_allowed(self) -> bool:
+        """Return True only if destructive rollback is explicitly enabled."""
+        if os.environ.get("POPKIT_ALLOW_DESTRUCTIVE_ROLLBACK") == "1":
+            return True
+        if self.config:
+            return self.config.get("options", {}).get("allow_destructive_rollback", False) is True
+        return False
+
     def create_checkpoint(self) -> str:
         """Create a checkpoint of current changes."""
         timestamp = datetime.now().strftime("%Y-%m-%d-%H%M%S")
@@ -652,6 +660,14 @@ class QualityGateHook:
 
     def rollback(self) -> bool:
         """Rollback to clean state, saving current changes to patch."""
+        if not self.destructive_ops_allowed():
+            print(
+                "Rollback blocked: destructive operations are disabled. "
+                "Set POPKIT_ALLOW_DESTRUCTIVE_ROLLBACK=1 or enable "
+                "'options.allow_destructive_rollback' in .claude/quality-gates.json.",
+                file=sys.stderr,
+            )
+            return False
         patch_path = self.create_checkpoint()
 
         if not patch_path:
