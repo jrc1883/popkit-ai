@@ -179,9 +179,7 @@ class QualityGateHook:
 
         # Python projects
         if (self.cwd / "pyproject.toml").exists() or (self.cwd / "setup.py").exists():
-            if (self.cwd / "mypy.ini").exists() or (
-                self.cwd / "pyproject.toml"
-            ).exists():
+            if (self.cwd / "mypy.ini").exists() or (self.cwd / "pyproject.toml").exists():
                 gates.append(
                     {
                         "name": "mypy",
@@ -315,9 +313,7 @@ class QualityGateHook:
         try:
             command = self.build_command(gate.get("command", ""))
             if not command:
-                raise ValueError(
-                    f"Empty command for gate '{gate.get('name', 'unknown')}'"
-                )
+                raise ValueError(f"Empty command for gate '{gate.get('name', 'unknown')}'")
             proc = subprocess.run(
                 command,
                 capture_output=True,
@@ -333,9 +329,7 @@ class QualityGateHook:
                 result["errors"] = self.parse_errors(gate["name"], result["output"])
 
         except subprocess.TimeoutExpired:
-            result["output"] = (
-                f"Gate '{gate['name']}' timed out after {gate.get('timeout', 60)}s"
-            )
+            result["output"] = f"Gate '{gate['name']}' timed out after {gate.get('timeout', 60)}s"
             result["errors"] = [{"message": result["output"]}]
         except Exception as e:
             result["output"] = str(e)
@@ -369,9 +363,7 @@ class QualityGateHook:
 
         for gate in gates:
             # Skip optional gates unless explicitly enabled
-            if gate.get("optional") and not (self.config or {}).get("options", {}).get(
-                "run_tests"
-            ):
+            if gate.get("optional") and not (self.config or {}).get("options", {}).get("run_tests"):
                 continue
 
             print(f"Running quality gate: {gate['name']}...", file=sys.stderr)
@@ -409,9 +401,7 @@ class QualityGateHook:
 
         if gate_name in ["typescript", "typecheck"]:
             # TypeScript errors: file(line,col): error TS####: message
-            for match in re.finditer(
-                r"(.+?)\((\d+),(\d+)\): error (TS\d+): (.+)", output
-            ):
+            for match in re.finditer(r"(.+?)\((\d+),(\d+)\): error (TS\d+): (.+)", output):
                 errors.append(
                     {
                         "file": match.group(1),
@@ -422,9 +412,7 @@ class QualityGateHook:
                     }
                 )
             # Also try: file:line:col - error TS####: message
-            for match in re.finditer(
-                r"(.+?):(\d+):(\d+) - error (TS\d+): (.+)", output
-            ):
+            for match in re.finditer(r"(.+?):(\d+):(\d+) - error (TS\d+): (.+)", output):
                 errors.append(
                     {
                         "file": match.group(1),
@@ -586,16 +574,12 @@ class QualityGateHook:
             if not gate["success"]:
                 for error in gate["errors"][:5]:
                     if "file" in error:
-                        output_lines.append(
-                            f"  {error['file']}:{error.get('line', '?')}"
-                        )
+                        output_lines.append(f"  {error['file']}:{error.get('line', '?')}")
                         output_lines.append(f"    {error['message']}")
                     else:
                         output_lines.append(f"  {error['message']}")
                 if len(gate["errors"]) > 5:
-                    output_lines.append(
-                        f"  ... and {len(gate['errors']) - 5} more errors"
-                    )
+                    output_lines.append(f"  ... and {len(gate['errors']) - 5} more errors")
 
         output_lines.extend(
             [
@@ -731,9 +715,7 @@ class QualityGateHook:
         remaining = []
         for cp in manifest.get("checkpoints", []):
             try:
-                cp_time = datetime.strptime(
-                    cp["timestamp"], "%Y-%m-%d-%H%M%S"
-                ).timestamp()
+                cp_time = datetime.strptime(cp["timestamp"], "%Y-%m-%d-%H%M%S").timestamp()
                 if cp_time > cutoff:
                     remaining.append(cp)
                 else:
