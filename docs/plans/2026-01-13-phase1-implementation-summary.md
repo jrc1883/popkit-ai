@@ -12,16 +12,19 @@
 **Status:** ✅ Complete and Committed (commit: 937ebe0)
 
 **What was done:**
+
 - Added `record_subagent_completion()` method to SessionRecorder class (line 399-432)
 - Added module-level convenience function (line 543-571)
 - Created comprehensive test: `test_session_recorder.py`
 - Test passes: `test_record_subagent_completion` ✅
 
 **Files modified:**
+
 - `packages/shared-py/popkit_shared/utils/session_recorder.py`
 - `packages/shared-py/popkit_shared/utils/test_session_recorder.py` (new file)
 
 **Test coverage:**
+
 - 1 test for record_subagent_completion method
 - Verifies event structure, tool_count, token_usage, tool_details
 
@@ -32,6 +35,7 @@
 **Status:** ✅ Complete and Committed (commit: 2713a50)
 
 **What was done:**
+
 - Added `TranscriptParser` import to subagent-stop.py (line 13)
 - Replaced TODO at line 195 with full parsing logic (lines 196-221)
 - Extracts tool uses and token usage from transcripts
@@ -39,9 +43,11 @@
 - Graceful error handling (parsing failures don't block hook)
 
 **Files modified:**
+
 - `packages/popkit-core/hooks/subagent-stop.py`
 
 **Syntax validation:**
+
 - ✅ Python compilation check passed (py_compile)
 
 ---
@@ -49,10 +55,12 @@
 #### Additional Fixes
 
 **Import Path Fix for Test File** (commit: 747ab5b)
+
 - Fixed `test_transcript_parser.py` import from relative to absolute path
 - All 7 transcript_parser tests now pass ✅
 
 **CHANGELOG Update** (commit: f18cb2a)
+
 - Documented Issue #110 implementation in CHANGELOG.md
 - Added to [Unreleased] section under "Added"
 
@@ -65,6 +73,7 @@
 **Status:** Implementation complete, manual testing required
 
 **Remaining steps:**
+
 1. Enable recording: `export POPKIT_RECORD=true`
 2. Start Power Mode: `/popkit-core:power start`
 3. Run task that spawns subagents (e.g., `/popkit-dev:next`)
@@ -75,6 +84,7 @@
 8. Document test results in `test-results-phase1.txt`
 
 **Success criteria:**
+
 - ✅ Recording file exists at `~/.claude/popkit/recordings/*.json`
 - ✅ Contains "subagent_completion" event type
 - ✅ tool_count matches number of tools used by subagent
@@ -82,6 +92,7 @@
 - ✅ tool_details contains first N tools (up to 10)
 
 **Why manual testing required:**
+
 - Requires actual Power Mode session with subagent spawning
 - Need to verify end-to-end recording pipeline
 - Must test multiple scenarios (single subagent, multiple subagents, no subagents)
@@ -93,6 +104,7 @@
 **Status:** Pending (depends on Task 3 completion)
 
 **Remaining steps:**
+
 1. Create `test-results-phase1.txt` with test summary
 2. Commit test results to repo
 3. Final CHANGELOG update (if needed after testing)
@@ -160,6 +172,7 @@ if transcript_path and Path(transcript_path).exists():
 ### Unit Tests ✅
 
 **transcript_parser tests (7 tests):**
+
 - test_parser_creation: ✅ PASSED
 - test_get_all_tool_uses: ✅ PASSED
 - test_get_total_token_usage: ✅ PASSED
@@ -169,6 +182,7 @@ if transcript_path and Path(transcript_path).exists():
 - test_timestamp_filtering: ✅ PASSED
 
 **session_recorder tests (1 test):**
+
 - test_record_subagent_completion: ✅ PASSED
 
 **Total:** 8/8 tests passing (100%)
@@ -178,14 +192,17 @@ if transcript_path and Path(transcript_path).exists():
 ## Impact
 
 ### User-Facing Changes
+
 - **None** - This is an internal enhancement with zero user-facing changes
 
 ### Developer Benefits
+
 - Enhanced observability for Power Mode subagent executions
 - Structured data in recording.json for analysis and debugging
 - Foundation for Phase 2 cloud observability (popkit-observe plugin)
 
 ### Technical Improvements
+
 - Resolved TODO at subagent-stop.py:195
 - Clean separation of concerns (parsing logic in TranscriptParser, recording in SessionRecorder)
 - Graceful error handling (parsing failures don't break hooks)

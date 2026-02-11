@@ -6,12 +6,12 @@ Tests benchmark orchestration and trial execution.
 """
 
 import json
+import shutil
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
-import tempfile
-import shutil
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent / "shared-py"))
@@ -196,9 +196,7 @@ class TestBenchmarkRunner(unittest.TestCase):
     @patch.object(BenchmarkRunner, "_setup_environment")
     @patch.object(BenchmarkRunner, "_execute_task")
     @patch("benchmark_runner.CodebaseManager")
-    def test_execute_trial_execution_failure(
-        self, mock_cm_class, mock_execute, mock_setup
-    ):
+    def test_execute_trial_execution_failure(self, mock_cm_class, mock_execute, mock_setup):
         """Test trial failure during task execution"""
         mock_cm = Mock()
         mock_cm.create_worktree.return_value = self.temp_dir / "worktree"
@@ -264,9 +262,7 @@ class TestBenchmarkRunner(unittest.TestCase):
         """Test task execution in mock mode"""
         # Mock mode (TEST_MODE env var set)
         with patch.dict("os.environ", {"TEST_MODE": "true"}):
-            success = self.runner._execute_task(
-                worktree_path=Path("/worktree"), env_vars={}
-            )
+            success = self.runner._execute_task(worktree_path=Path("/worktree"), env_vars={})
 
             # Should not actually run subprocess
             mock_run.assert_not_called()
@@ -289,9 +285,7 @@ class TestBenchmarkRunner(unittest.TestCase):
         recordings_dir = Path.home() / ".claude" / "popkit" / "recordings"
         # Find the recording file (has timestamp prefix)
         recording_files = list(recordings_dir.glob(f"*{session_id}.json"))
-        self.assertTrue(
-            len(recording_files) > 0, f"No recording found in {recordings_dir}"
-        )
+        self.assertTrue(len(recording_files) > 0, f"No recording found in {recordings_dir}")
 
         recording_path = recording_files[0]
         self.assertTrue(recording_path.exists())
@@ -314,9 +308,7 @@ class TestBenchmarkRunner(unittest.TestCase):
         recording_path.write_text('{"session_id": "test-session-123", "test": "data"}')
 
         try:
-            collected_path = self.runner._collect_recording(
-                session_id, with_popkit=True
-            )
+            collected_path = self.runner._collect_recording(session_id, with_popkit=True)
 
             # Should return path to recording
             self.assertIsNotNone(collected_path)

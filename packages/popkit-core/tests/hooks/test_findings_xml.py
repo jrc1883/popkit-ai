@@ -144,7 +144,7 @@ def test_xml_structure_validity():
     print(f"Generated XML:\n{xml}")
 
     # Verify structure
-    assert xml.startswith("<findings>"), "Should start with <findings>"
+    assert xml.startswith("<findings"), "Should start with <findings tag"
     assert xml.endswith("</findings>"), "Should end with </findings>"
     assert xml.count("<tool>") == 1, "Should have one tool element"
     assert xml.count("<status>") == 1, "Should have one status element"

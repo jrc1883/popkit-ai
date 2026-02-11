@@ -26,6 +26,7 @@
 ## Field Descriptions
 
 ### `responses` (Required)
+
 **Type**: `Object<string, string | boolean | string[] | object>`
 
 Map of question headers to their responses.
@@ -33,6 +34,7 @@ Map of question headers to their responses.
 **Key**: The `header` field from `AskUserQuestion` (e.g., "Auth method", "Database", "Deploy target")
 
 **Value types**:
+
 - **String**: Single selection (matches option label exactly)
 - **Boolean**:
   - `true` = Auto-approve (select first/recommended option)
@@ -41,20 +43,22 @@ Map of question headers to their responses.
 - **Object with `other` key**: Free-text response for "Other" option
 
 **Examples**:
+
 ```json
 {
   "responses": {
-    "Auth method": "JWT",                              // Single select
-    "Database": "PostgreSQL",                          // Single select
-    "Features": ["caching", "rate-limiting"],          // Multi-select
-    "Custom config": {"other": "port=8080,ssl=true"},  // Free text
-    "Run tests": true,                                 // Auto-approve
-    "Deploy to production": false                      // Decline
+    "Auth method": "JWT", // Single select
+    "Database": "PostgreSQL", // Single select
+    "Features": ["caching", "rate-limiting"], // Multi-select
+    "Custom config": { "other": "port=8080,ssl=true" }, // Free text
+    "Run tests": true, // Auto-approve
+    "Deploy to production": false // Decline
   }
 }
 ```
 
 ### `standardAutoApprove` (Optional)
+
 **Type**: `Array<string>`
 
 Regex patterns for questions that should be auto-approved without explicit responses.
@@ -62,24 +66,27 @@ Regex patterns for questions that should be auto-approved without explicit respo
 **Behavior**: When a question text matches any pattern, automatically select the first/recommended option.
 
 **Use cases**:
+
 - Common operations: tests, builds, linting
 - Safe actions that should always proceed
 - Developer workflow steps
 
 **Examples**:
+
 ```json
 {
   "standardAutoApprove": [
-    "test.*",           // "run tests?", "test coverage?", etc.
-    "build.*",          // "build project?", "build docker image?", etc.
-    "lint.*",           // "run linter?", "lint --fix?", etc.
-    "install.*",        // "install dependencies?", etc.
-    "format.*"          // "format code?", etc.
+    "test.*", // "run tests?", "test coverage?", etc.
+    "build.*", // "build project?", "build docker image?", etc.
+    "lint.*", // "run linter?", "lint --fix?", etc.
+    "install.*", // "install dependencies?", etc.
+    "format.*" // "format code?", etc.
   ]
 }
 ```
 
 ### `explicitDeclines` (Optional)
+
 **Type**: `Array<string>`
 
 Regex patterns for questions that should ALWAYS be declined.
@@ -87,11 +94,13 @@ Regex patterns for questions that should ALWAYS be declined.
 **Behavior**: When a question text matches any pattern, automatically select "no" or the last option.
 
 **Use cases**:
+
 - Dangerous operations: production deploys, data deletion
 - Operations that would break automation
 - Actions requiring manual verification
 
 **Examples**:
+
 ```json
 {
   "explicitDeclines": [
@@ -123,7 +132,7 @@ Responses are evaluated in this order:
     "Database": "PostgreSQL",
     "Enable caching": true,
     "Features to enable": ["rate-limiting", "logging", "metrics"],
-    "Custom middleware": {"other": "cors,helmet,compression"}
+    "Custom middleware": { "other": "cors,helmet,compression" }
   },
   "standardAutoApprove": [
     "run tests",
@@ -146,6 +155,7 @@ Responses are evaluated in this order:
 ## Task Definition Integration
 
 ### Directory Structure
+
 ```
 tasks/
 ├── jwt-authentication/
@@ -158,6 +168,7 @@ tasks/
 ```
 
 ### Task Definition (YAML)
+
 ```yaml
 id: jwt-authentication
 category: feature-addition
@@ -179,19 +190,15 @@ verification:
 ```
 
 ### Response File (`responses.json`)
+
 ```json
 {
   "responses": {
     "Auth method": "JWT",
     "Token expiration": "24 hours"
   },
-  "standardAutoApprove": [
-    "test.*",
-    "build.*"
-  ],
-  "explicitDeclines": [
-    "deploy.*"
-  ]
+  "standardAutoApprove": ["test.*", "build.*"],
+  "explicitDeclines": ["deploy.*"]
 }
 ```
 
@@ -233,11 +240,13 @@ else:
 ### 1. Minimize Questions in Prompts
 
 **Bad prompt** (will ask many questions):
+
 ```yaml
 user_prompt: "Add JWT authentication"
 ```
 
 **Good prompt** (provides all context):
+
 ```yaml
 user_prompt: |
   Add JWT authentication using jsonwebtoken library.
@@ -256,13 +265,14 @@ user_prompt: |
 ### 2. Provide Responses for All Expected Questions
 
 If Claude might ask a question, define a response:
+
 ```json
 {
   "responses": {
     "Database type": "PostgreSQL",
     "Port number": "5432",
     "Use connection pooling": true,
-    "Max connections": {"other": "20"}
+    "Max connections": { "other": "20" }
   }
 }
 ```
@@ -270,6 +280,7 @@ If Claude might ask a question, define a response:
 ### 3. Use Patterns for Repetitive Questions
 
 Instead of:
+
 ```json
 {
   "responses": {
@@ -282,6 +293,7 @@ Instead of:
 ```
 
 Use:
+
 ```json
 {
   "standardAutoApprove": ["test.*", "run.*test.*"]
@@ -291,15 +303,10 @@ Use:
 ### 4. Safety First with Explicit Declines
 
 Always decline dangerous operations:
+
 ```json
 {
-  "explicitDeclines": [
-    "deploy to production",
-    "delete.*",
-    "drop.*",
-    "force.*push",
-    "publish.*npm"
-  ]
+  "explicitDeclines": ["deploy to production", "delete.*", "drop.*", "force.*push", "publish.*npm"]
 }
 ```
 
@@ -308,6 +315,7 @@ Always decline dangerous operations:
 ### Question Still Blocking Benchmark?
 
 **Check**:
+
 1. Is `POPKIT_BENCHMARK_MODE=true` set?
 2. Is `POPKIT_BENCHMARK_RESPONSES` pointing to correct file?
 3. Does response file have valid JSON?
@@ -315,6 +323,7 @@ Always decline dangerous operations:
 5. Does question header match exactly (case-sensitive)?
 
 **Debug**:
+
 ```bash
 export POPKIT_BENCHMARK_VERBOSE=true
 # Now benchmark_responses.py logs all auto-responses
@@ -323,6 +332,7 @@ export POPKIT_BENCHMARK_VERBOSE=true
 ### Unexpected Auto-Responses?
 
 **Check**:
+
 1. Review `standardAutoApprove` patterns - are they too broad?
 2. Check default behavior (auto-selects first option if no match)
 3. Add explicit responses for fine-grained control
@@ -330,6 +340,7 @@ export POPKIT_BENCHMARK_VERBOSE=true
 ### Response Not Applied?
 
 **Common issues**:
+
 - Header mismatch: `"auth method"` vs `"Auth method"` (case matters!)
 - Pattern syntax: Use regex, not glob (`test.*` not `test*`)
 - JSON syntax: Trailing commas break JSON
@@ -350,6 +361,7 @@ export POPKIT_BENCHMARK_RESPONSES="$(pwd)/tasks/my-task/responses.json"
 ## Examples by Category
 
 ### Feature Addition
+
 ```json
 {
   "responses": {
@@ -362,6 +374,7 @@ export POPKIT_BENCHMARK_RESPONSES="$(pwd)/tasks/my-task/responses.json"
 ```
 
 ### Bug Fixing
+
 ```json
 {
   "responses": {
@@ -373,6 +386,7 @@ export POPKIT_BENCHMARK_RESPONSES="$(pwd)/tasks/my-task/responses.json"
 ```
 
 ### Refactoring
+
 ```json
 {
   "responses": {
@@ -385,6 +399,7 @@ export POPKIT_BENCHMARK_RESPONSES="$(pwd)/tasks/my-task/responses.json"
 ```
 
 ### Performance Optimization
+
 ```json
 {
   "responses": {

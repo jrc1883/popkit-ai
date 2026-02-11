@@ -8,9 +8,9 @@ Tests naming uniqueness, version compatibility, and ecosystem health.
 
 import json
 import re
+from collections import defaultdict
 from pathlib import Path
 from typing import Dict, List, Tuple
-from collections import defaultdict
 
 
 def scan_plugin_commands(plugin_path: Path) -> List[str]:
@@ -87,9 +87,7 @@ def validate_unique_command_names(plugins_data: Dict[str, Dict]) -> Tuple[bool, 
             command_to_plugins[command].append(plugin_name)
 
     # Find duplicates
-    duplicates = {
-        cmd: plugins for cmd, plugins in command_to_plugins.items() if len(plugins) > 1
-    }
+    duplicates = {cmd: plugins for cmd, plugins in command_to_plugins.items() if len(plugins) > 1}
 
     if duplicates:
         conflicts = ", ".join(
@@ -109,11 +107,7 @@ def validate_unique_skill_names(plugins_data: Dict[str, Dict]) -> Tuple[bool, st
             skill_to_plugins[skill].append(plugin_name)
 
     # Find duplicates
-    duplicates = {
-        skill: plugins
-        for skill, plugins in skill_to_plugins.items()
-        if len(plugins) > 1
-    }
+    duplicates = {skill: plugins for skill, plugins in skill_to_plugins.items() if len(plugins) > 1}
 
     if duplicates:
         conflicts = ", ".join(
@@ -133,11 +127,7 @@ def validate_unique_agent_names(plugins_data: Dict[str, Dict]) -> Tuple[bool, st
             agent_to_plugins[agent].append(plugin_name)
 
     # Find duplicates
-    duplicates = {
-        agent: plugins
-        for agent, plugins in agent_to_plugins.items()
-        if len(plugins) > 1
-    }
+    duplicates = {agent: plugins for agent, plugins in agent_to_plugins.items() if len(plugins) > 1}
 
     if duplicates:
         conflicts = ", ".join(
@@ -213,9 +203,7 @@ def validate_version_compatibility(plugins_data: Dict[str, Dict]) -> Tuple[bool,
     major_versions = set(v[1] for v in versions.values())
 
     if len(major_versions) > 1:
-        version_list = ", ".join(
-            [f"{name}={ver}" for name, (ver, _) in versions.items()]
-        )
+        version_list = ", ".join([f"{name}={ver}" for name, (ver, _) in versions.items()])
         return False, f"Version mismatch: {version_list}"
 
     return True, f"All plugins on major version {list(major_versions)[0]}"
@@ -249,9 +237,7 @@ def validate_agent_count_matches(
         actual_count = len(plugins_data.get(plugin_name, {}).get("agents", []))
 
         if actual_count != expected_count:
-            mismatches.append(
-                f"{plugin_name}: expected {expected_count}, got {actual_count}"
-            )
+            mismatches.append(f"{plugin_name}: expected {expected_count}, got {actual_count}")
 
     if mismatches:
         return False, f"Agent count mismatches: {'; '.join(mismatches)}"
@@ -259,9 +245,7 @@ def validate_agent_count_matches(
     return True, "Agent counts match expected distribution"
 
 
-def validate_total_agents(
-    plugins_data: Dict[str, Dict], expected: int
-) -> Tuple[bool, str]:
+def validate_total_agents(plugins_data: Dict[str, Dict], expected: int) -> Tuple[bool, str]:
     """Validate total agent count across all plugins."""
     total = sum(len(data.get("agents", [])) for data in plugins_data.values())
 

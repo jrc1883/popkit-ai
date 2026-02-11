@@ -10,6 +10,7 @@
 ## Problem Statement
 
 PopKit currently has fragmented initialization:
+
 - Session-start hook auto-creates directories but not STATUS.json
 - No clear "initialization ceremony" for new projects
 - STATUS.json only created by explicit skills (morning/nightly/capture)
@@ -18,6 +19,7 @@ PopKit currently has fragmented initialization:
 - No support for worktree-based workflows (El Shaddai style)
 
 **User Pain Points**:
+
 1. "I have PopKit installed but not initialized, and I'm confused"
 2. "STATUS.json doesn't exist, morning routine fails"
 3. "I don't know what project type to choose - none fit my use case"
@@ -106,17 +108,14 @@ PopKit currently has fragmented initialization:
   },
 
   "tasks": {
-    "inProgress": [
-      "Design initialization script",
-      "Update STATUS.json schema"
-    ],
+    "inProgress": ["Design initialization script", "Update STATUS.json schema"],
     "completed": ["Create orchestrator PR"],
     "blocked": []
   },
 
   "services": {
-    "devServer": {"running": true, "port": 3000},
-    "redis": {"running": false, "port": 6379}
+    "devServer": { "running": true, "port": 3000 },
+    "redis": { "running": false, "port": 6379 }
   },
 
   "context": {
@@ -150,6 +149,7 @@ PopKit currently has fragmented initialization:
 ```
 
 **Key Changes**:
+
 1. **Added `git.worktree` object**: Tracks worktree path, name, whether it's main worktree, base ref
 2. **Added `popkit` top-level section**: PopKit-specific metadata (initialized flag, version, tier, features)
 3. **Backward compatible**: All existing fields preserved
@@ -273,6 +273,7 @@ def read_claude_md_smart():
 #### Phase 3: Interactive Questions (NEW DESIGN)
 
 **Progressive Disclosure Strategy**:
+
 - **Confidence > 85%**: Skip all questions, show confirmation
 - **Confidence 60-85%**: Ask 1-2 questions for clarification
 - **Confidence < 60%**: Full question flow
@@ -426,7 +427,7 @@ Which PopKit tier are you using?
   "git": {
     "branch": "main",
     "worktree": {
-      "path": "/Users/josep/popkit-claude",
+      "path": "/path/to/project",
       "name": "main",
       "isMainWorktree": true,
       "baseRef": null
@@ -476,6 +477,7 @@ Offer to surgically insert PopKit config section at beginning of CLAUDE.md:
 # CLAUDE.md
 
 <!-- PopKit Configuration -->
+
 ## PopKit Setup
 
 **Project Type**: Node.js Monorepo (TypeScript + React + Next.js)
@@ -484,6 +486,7 @@ Offer to surgically insert PopKit config section at beginning of CLAUDE.md:
 **Initialized**: 2026-01-16
 
 **PopKit Features Enabled**:
+
 - Morning/Nightly routines
 - Worktree management
 - Project analysis
@@ -491,10 +494,12 @@ Offer to surgically insert PopKit config section at beginning of CLAUDE.md:
 <!-- End PopKit Configuration -->
 
 ## Overview
+
 [rest of existing CLAUDE.md content...]
 ```
 
 **Benefits**:
+
 - Fast context loading (top of file)
 - Human-readable metadata
 - No need to read entire file
@@ -693,6 +698,7 @@ ORGANIZATION_DETECTORS = {
 **Total**: 100+ file type detectors across 7 major categories.
 
 **Community Extensibility** (Future):
+
 - Allow `.claude/detectors/` directory for custom detectors
 - Simple Python module API
 - Submit PRs to add new detectors to core
@@ -706,6 +712,7 @@ ORGANIZATION_DETECTORS = {
 **Library**: Python Textual (https://textual.textualize.io/)
 
 **Features**:
+
 - Rich terminal UI with arrow navigation
 - Multi-select checkboxes
 - Live search/filter
@@ -746,6 +753,7 @@ class ProjectTypeSelector(App):
 **Strategy**: Show top 3 detected types + "Other" option
 
 **Example**:
+
 ```
 Question: What type of project is this?
 - Node.js Monorepo (detected)
@@ -809,6 +817,7 @@ def session_start_hook(data):
 ```
 
 **Status Line Integration**:
+
 - Display: `[feat-init-overhaul | init-overhaul worktree | Free]`
 - Live updates: Poll git status every 30s, update status line
 - Indicator: Show 🔵 when PopKit skill is running
@@ -845,6 +854,7 @@ def select_personas(project_type):
 ```
 
 **During Init**:
+
 1. Detect project type
 2. Look up recommended personas
 3. Ask user: "Enable recommended personas? [Researcher, Writer]"
@@ -855,6 +865,7 @@ def select_personas(project_type):
 ## Implementation Phases
 
 ### Phase 1: Core Infrastructure (Week 1)
+
 - [ ] Update session-start.py: Add STATUS.json checking (read-only)
 - [ ] Create /popkit:init command skeleton
 - [ ] Implement file type detector registry (100+ types)
@@ -862,6 +873,7 @@ def select_personas(project_type):
 - [ ] Write unit tests for detectors
 
 ### Phase 2: Smart Detection (Week 2)
+
 - [ ] Implement three-tier detection (file scan → drill-down → CLAUDE.md)
 - [ ] Smart CLAUDE.md reader (iterative, early-exit)
 - [ ] Confidence calculation logic
@@ -869,6 +881,7 @@ def select_personas(project_type):
 - [ ] Test with real projects (code, research, CAD, etc.)
 
 ### Phase 3: Interactive UI (Week 3)
+
 - [ ] Implement Textual TUI for project type selection
 - [ ] Multi-select checkboxes, arrow navigation
 - [ ] Fallback to AskUserQuestion
@@ -876,13 +889,15 @@ def select_personas(project_type):
 - [ ] Progressive disclosure based on confidence
 
 ### Phase 4: Config Generation (Week 4)
+
 - [ ] Generate config.json from detection + answers
 - [ ] Initialize STATUS.json with proper schema
-- [ ] Create directory structure (.claude/popkit/*)
+- [ ] Create directory structure (.claude/popkit/\*)
 - [ ] Optional CLAUDE.md enhancement (surgical insert)
 - [ ] Success summary display
 
 ### Phase 5: Testing & Polish (Week 5)
+
 - [ ] Integration tests: code projects, research, CAD, office
 - [ ] Test reinit scenarios (already initialized)
 - [ ] Test low confidence scenarios (full questions)

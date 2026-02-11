@@ -792,7 +792,7 @@ class TestFixFunctionality:
         with patch("subprocess.run", return_value=mock_proc) as mock_run:
             # Mock re-scan
             with patch.object(SecurityScanner, "scan", return_value=ScanResult()):
-                result = scanner.run_fix(force=True)
+                scanner.run_fix(force=True)
 
             # Verify --force was passed
             assert any("--force" in str(call) for call in mock_run.call_args_list)

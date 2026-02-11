@@ -21,20 +21,22 @@ See [examples/scoring-system.md](examples/scoring-system.md) for complete scorin
 
 Comprehensive health check across 6 dimensions:
 
-| Check | Points | Criteria |
-|-------|--------|----------|
-| Uncommitted work saved | 25 | No uncommitted changes OR committed |
-| Branches cleaned | 20 | No stale merged branches |
-| Issues updated | 20 | Today's issues have status updates |
-| CI passing | 15 | Latest CI run successful |
-| Services stopped | 10 | No dev services running |
-| Logs archived | 10 | Session logs saved |
+| Check                  | Points | Criteria                            |
+| ---------------------- | ------ | ----------------------------------- |
+| Uncommitted work saved | 25     | No uncommitted changes OR committed |
+| Branches cleaned       | 20     | No stale merged branches            |
+| Issues updated         | 20     | Today's issues have status updates  |
+| CI passing             | 15     | Latest CI run successful            |
+| Services stopped       | 10     | No dev services running             |
+| Logs archived          | 10     | Session logs saved                  |
 
 **Branch Protection Impact (Issue #142):**
+
 - **Warning:** ⚠️ PROTECTED indicator if on protected branch with uncommitted work
 - **Recommendation:** Create feature branch before committing
 
 **Score Interpretation:**
+
 - **90-100**: Perfect shutdown - ready for tomorrow
 - **70-89**: Good - minor cleanup needed
 - **50-69**: Fair - some uncommitted work or failed CI
@@ -53,6 +55,7 @@ Comprehensive health check across 6 dimensions:
 ## Data Collection
 
 **Consolidated commands:**
+
 - **Git**: Branch, last commit, status, stashes, merged branches
 - **GitHub**: Open issues (last 5), latest CI run
 - **Services**: Running processes, session logs
@@ -62,11 +65,13 @@ All wrapped in `capture_state.py` for consistent error handling.
 ## Integration
 
 **Key utilities:**
+
 - `capture_state.py` - Complete project state capture
 - `routine_measurement.py` - Performance tracking (when using `--measure`)
 - `routine_cache.py` - GitHub data caching (when using `--optimized`)
 
 **Performance:**
+
 - **Tool call reduction**: 64% (11 → 4 calls)
 - **Execution time**: 75-83% faster (60s → 10-15s)
 - **Token reduction**: 40-96% (with `--optimized`)
@@ -74,10 +79,12 @@ All wrapped in `capture_state.py` for consistent error handling.
 ## Output Format
 
 **Report includes:**
+
 - Sleep Score (0-100) with visual indicator
 - Score breakdown table
 - Uncommitted changes list (if any)
 - Recommendations before leaving
+- Encouraging Bible verse (Issue #71)
 - Next morning actions
 
 ## Next Actions (The PopKit Way)
@@ -85,6 +92,7 @@ All wrapped in `capture_state.py` for consistent error handling.
 **CRITICAL**: Always end with AskUserQuestion to keep PopKit in control.
 
 **Context-aware options based on score:**
+
 - **Score < 70**: Commit and push (Recommended), stash changes, or review files
 - **Score >= 70**: Review tomorrow's priorities, check CI, or end session
 - **Services running**: Stop all services (Recommended) or leave running
@@ -95,6 +103,7 @@ Never just show a report and end the session!
 ## Error Handling
 
 **Graceful degradation:**
+
 - Git not available → Skip git checks, continue with partial score
 - GitHub CLI not available → Skip GitHub checks, continue with partial score
 - Service check failures → Assume services stopped (safe default)

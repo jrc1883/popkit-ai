@@ -4,9 +4,9 @@ Test script for XML parsing and agent routing (Issue #516)
 Tests parse_xml_context() and suggest_agent_from_context() functions
 """
 
-import sys
 import re
-from typing import Dict, List, Optional, Any
+import sys
+from typing import Any, Dict, List, Optional
 
 
 def parse_xml_context(conversation_history: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
@@ -32,7 +32,7 @@ def parse_xml_context(conversation_history: List[Dict[str, Any]]) -> Optional[Di
             xml_content = content[xml_start:xml_end]
 
             # Parse problem context
-            problem_match = re.search(r'<problem>(.*?)</problem>', xml_content, re.DOTALL)
+            problem_match = re.search(r"<problem>(.*?)</problem>", xml_content, re.DOTALL)
             if not problem_match:
                 continue
 
@@ -42,42 +42,57 @@ def parse_xml_context(conversation_history: List[Dict[str, Any]]) -> Optional[Di
             parsed_context = {}
 
             # Category (required)
-            category_match = re.search(r'<category>(.*?)</category>', problem_xml)
+            category_match = re.search(r"<category>(.*?)</category>", problem_xml)
             if category_match:
                 parsed_context["category"] = category_match.group(1).strip()
 
             # Severity (optional)
-            severity_match = re.search(r'<severity>(.*?)</severity>', problem_xml)
+            severity_match = re.search(r"<severity>(.*?)</severity>", problem_xml)
             if severity_match:
                 parsed_context["severity"] = severity_match.group(1).strip()
 
             # Workflow (optional)
-            workflow_match = re.search(r'<workflow>(.*?)</workflow>', problem_xml, re.DOTALL)
+            workflow_match = re.search(r"<workflow>(.*?)</workflow>", problem_xml, re.DOTALL)
             if workflow_match:
                 parsed_context["workflow"] = workflow_match.group(1).strip()
 
             # Parse project context for stack and infrastructure
-            project_match = re.search(r'<project-context>(.*?)</project-context>', xml_content, re.DOTALL)
+            project_match = re.search(
+                r"<project-context>(.*?)</project-context>", xml_content, re.DOTALL
+            )
             if project_match:
                 project_xml = project_match.group(1)
 
                 # Extract stack
-                stack_items = re.findall(r'<item>(.*?)</item>', project_xml)
+                stack_items = re.findall(r"<item>(.*?)</item>", project_xml)
                 if stack_items:
                     parsed_context["stack"] = stack_items
 
                 # Extract infrastructure
-                infra_match = re.search(r'<infrastructure>(.*?)</infrastructure>', project_xml, re.DOTALL)
+                infra_match = re.search(
+                    r"<infrastructure>(.*?)</infrastructure>", project_xml, re.DOTALL
+                )
                 if infra_match:
                     infra_xml = infra_match.group(1)
                     infrastructure = {}
 
                     # Parse each infrastructure item
-                    for service in ['redis', 'postgres', 'mongodb', 'mysql', 'elasticsearch',
-                                    'rabbitmq', 'kafka', 'docker', 'kubernetes']:
-                        service_match = re.search(f'<{service}>(.*?)</{service}>', infra_xml)
+                    for service in [
+                        "redis",
+                        "postgres",
+                        "mongodb",
+                        "mysql",
+                        "elasticsearch",
+                        "rabbitmq",
+                        "kafka",
+                        "docker",
+                        "kubernetes",
+                    ]:
+                        service_match = re.search(f"<{service}>(.*?)</{service}>", infra_xml)
                         if service_match:
-                            infrastructure[service] = service_match.group(1).strip().lower() == 'true'
+                            infrastructure[service] = (
+                                service_match.group(1).strip().lower() == "true"
+                            )
 
                     parsed_context["infrastructure"] = infrastructure
 
@@ -114,7 +129,7 @@ def suggest_agent_from_context(xml_context: Dict[str, Any]) -> Optional[str]:
         "docs": "documentation-maintainer",
         "documentation": "documentation-maintainer",
         "investigation": "code-reviewer",
-        "task": None
+        "task": None,
     }
 
     suggested_agent = agent_map.get(category)
@@ -123,7 +138,9 @@ def suggest_agent_from_context(xml_context: Dict[str, Any]) -> Optional[str]:
     infrastructure = xml_context.get("infrastructure", {})
 
     # If database-heavy task, consider query-optimizer
-    if category == "optimization" and any(db in infrastructure for db in ["postgres", "mysql", "mongodb"]):
+    if category == "optimization" and any(
+        db in infrastructure for db in ["postgres", "mysql", "mongodb"]
+    ):
         suggested_agent = "query-optimizer"
 
     return suggested_agent
@@ -166,7 +183,7 @@ def test_bug_high_severity():
 </infrastructure>
 </project>
 </project-context>
-<!-- End XML Context -->"""
+<!-- End XML Context -->""",
         }
     ]
 
@@ -180,9 +197,11 @@ def test_bug_high_severity():
         # Verify
         assert xml_context["category"] == "bug", "Category should be 'bug'"
         assert xml_context["severity"] == "high", "Severity should be 'high'"
-        assert suggested_agent == "bug-whisperer", f"Expected 'bug-whisperer', got '{suggested_agent}'"
+        assert suggested_agent == "bug-whisperer", (
+            f"Expected 'bug-whisperer', got '{suggested_agent}'"
+        )
         assert "Next.js" in xml_context["stack"], "Stack should include Next.js"
-        assert xml_context["infrastructure"]["redis"] == True, "Redis should be detected"
+        assert xml_context["infrastructure"]["redis"], "Redis should be detected"
 
         print("[PASS] Test 1 PASSED")
     else:
@@ -213,7 +232,7 @@ def test_feature_category():
 </stack>
 </project>
 </project-context>
-<!-- End XML Context -->"""
+<!-- End XML Context -->""",
         }
     ]
 
@@ -226,7 +245,9 @@ def test_feature_category():
 
         # Verify
         assert xml_context["category"] == "feature", "Category should be 'feature'"
-        assert suggested_agent == "refactoring-expert", f"Expected 'refactoring-expert', got '{suggested_agent}'"
+        assert suggested_agent == "refactoring-expert", (
+            f"Expected 'refactoring-expert', got '{suggested_agent}'"
+        )
 
         print("[PASS] Test 2 PASSED")
     else:
@@ -257,7 +278,7 @@ def test_optimization_with_database():
 </infrastructure>
 </project>
 </project-context>
-<!-- End XML Context -->"""
+<!-- End XML Context -->""",
         }
     ]
 
@@ -270,7 +291,9 @@ def test_optimization_with_database():
 
         # Verify
         assert xml_context["category"] == "optimization", "Category should be 'optimization'"
-        assert suggested_agent == "query-optimizer", f"Expected 'query-optimizer', got '{suggested_agent}'"
+        assert suggested_agent == "query-optimizer", (
+            f"Expected 'query-optimizer', got '{suggested_agent}'"
+        )
 
         print("[PASS] Test 3 PASSED")
     else:
@@ -281,12 +304,7 @@ def test_no_xml_context():
     """Test graceful fallback when no XML context is present"""
     print("\n=== Test 4: No XML Context (Graceful Fallback) ===")
 
-    conversation = [
-        {
-            "role": "user",
-            "content": "Fix the login bug"
-        }
-    ]
+    conversation = [{"role": "user", "content": "Fix the login bug"}]
 
     xml_context = parse_xml_context(conversation)
     print(f"Parsed Context: {xml_context}")
@@ -312,7 +330,7 @@ def test_security_category():
 <severity>critical</severity>
 <description>XSS in user input</description>
 </problem>
-<!-- End XML Context -->"""
+<!-- End XML Context -->""",
         }
     ]
 
@@ -325,7 +343,9 @@ def test_security_category():
 
         # Verify
         assert xml_context["category"] == "security", "Category should be 'security'"
-        assert suggested_agent == "security-auditor", f"Expected 'security-auditor', got '{suggested_agent}'"
+        assert suggested_agent == "security-auditor", (
+            f"Expected 'security-auditor', got '{suggested_agent}'"
+        )
 
         print("[PASS] Test 5 PASSED")
     else:

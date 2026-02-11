@@ -149,9 +149,7 @@ def tokenize(text: str) -> Set[str]:
     return set(words) - stop_words
 
 
-def keyword_search(
-    query: str, content: Dict[str, str], top_k: int = 5
-) -> List[Dict[str, Any]]:
+def keyword_search(query: str, content: Dict[str, str], top_k: int = 5) -> List[Dict[str, Any]]:
     """Perform keyword-based search."""
     query_tokens = tokenize(query)
     results = []
@@ -227,14 +225,9 @@ def identify_sources(query: str, sources: List[Dict[str, Any]]) -> List[Dict[str
         for pattern_key, keywords in source_patterns.items():
             for keyword in keywords:
                 if keyword in query_lower:
-                    if (
-                        pattern_key in source_id.lower()
-                        or pattern_key in source_name.lower()
-                    ):
+                    if pattern_key in source_id.lower() or pattern_key in source_name.lower():
                         relevance += 0.3
-                        reasons.append(
-                            f"Query matches '{keyword}' → source '{pattern_key}'"
-                        )
+                        reasons.append(f"Query matches '{keyword}' → source '{pattern_key}'")
 
         # Check source description
         description = source.get("description", "")
@@ -261,9 +254,7 @@ def identify_sources(query: str, sources: List[Dict[str, Any]]) -> List[Dict[str
     return relevant
 
 
-def semantic_search(
-    query: str, content: Dict[str, str], top_k: int = 5
-) -> List[Dict[str, Any]]:
+def semantic_search(query: str, content: Dict[str, str], top_k: int = 5) -> List[Dict[str, Any]]:
     """Perform semantic search using embeddings (if available)."""
     results = []
 
@@ -299,9 +290,7 @@ def semantic_search(
         )
 
     except Exception as e:
-        results.append(
-            {"status": "error", "error": str(e), "fallback": "keyword_search"}
-        )
+        results.append({"status": "error", "error": str(e), "fallback": "keyword_search"})
 
     return results
 
@@ -349,8 +338,7 @@ def hybrid_search(
             {
                 "source_id": source_id,
                 "combined_score": round(score, 4),
-                "in_keyword_results": source_id
-                in [r["source_id"] for r in keyword_results],
+                "in_keyword_results": source_id in [r["source_id"] for r in keyword_results],
                 "in_semantic_results": False,  # Would be True if semantic search worked
             }
         )
@@ -402,12 +390,8 @@ def main():
         help="Search mode",
     )
     parser.add_argument("--top-k", type=int, default=5, help="Number of results")
-    parser.add_argument(
-        "--semantic-weight", type=float, default=0.7, help="Semantic score weight"
-    )
-    parser.add_argument(
-        "--keyword-weight", type=float, default=0.3, help="Keyword score weight"
-    )
+    parser.add_argument("--semantic-weight", type=float, default=0.7, help="Semantic score weight")
+    parser.add_argument("--keyword-weight", type=float, default=0.3, help="Keyword score weight")
     args = parser.parse_args()
 
     result = {
@@ -422,11 +406,7 @@ def main():
         return 0
 
     if not args.query:
-        print(
-            json.dumps(
-                {"success": False, "error": "Query required for search modes"}, indent=2
-            )
-        )
+        print(json.dumps({"success": False, "error": "Query required for search modes"}, indent=2))
         return 1
 
     result["query"] = args.query

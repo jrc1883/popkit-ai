@@ -5,7 +5,7 @@ description: Reusable automation workflows in PopKit
 
 # Skills
 
-Skills are reusable automation workflows that encapsulate common development tasks. PopKit includes 68 skills across various categories.
+Skills are reusable automation workflows that encapsulate common development tasks. PopKit includes 43 skills across various categories.
 
 ## What are Skills?
 

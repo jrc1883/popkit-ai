@@ -174,9 +174,7 @@ def chunk_content(content: str, item_type: str) -> List[Dict[str, Any]]:
     return chunks
 
 
-def generate_embedding_description(
-    item: Dict[str, Any], chunks: List[Dict[str, Any]]
-) -> str:
+def generate_embedding_description(item: Dict[str, Any], chunks: List[Dict[str, Any]]) -> str:
     """Generate an embedding-friendly description for an item."""
     parts = []
 
@@ -232,9 +230,7 @@ def check_embedding_status(items: List[Dict[str, Any]]) -> Dict[str, Any]:
     return status
 
 
-def prepare_for_embedding(
-    items: List[Dict[str, Any]], project_root: Path
-) -> List[Dict[str, Any]]:
+def prepare_for_embedding(items: List[Dict[str, Any]], project_root: Path) -> List[Dict[str, Any]]:
     """Prepare items for embedding by chunking and generating descriptions."""
     prepared = []
 

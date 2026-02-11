@@ -6,11 +6,11 @@ Tracks cumulative input tokens and warns before context window exhaustion.
 Part of PopKit plugin - Issue #16
 """
 
-import sys
 import json
-from pathlib import Path
+import sys
 from datetime import datetime
-from typing import Dict, Any
+from pathlib import Path
+from typing import Any, Dict
 
 # Context window limits by model (approximate)
 MODEL_CONTEXT_LIMITS = {
@@ -140,9 +140,7 @@ class ContextMonitor:
             result["warning"] = (
                 f"Context at {result['usage_percent']}% capacity ({total:,}/{limit:,} tokens)"
             )
-            result["suggestion"] = (
-                "Strongly recommend: /popkit:session-capture to save state now"
-            )
+            result["suggestion"] = "Strongly recommend: /popkit:session-capture to save state now"
         elif usage_ratio >= THRESHOLDS["warning"]:
             result["level"] = "warning"
             result["warning"] = (
@@ -191,9 +189,7 @@ class ContextMonitor:
         result["threshold_check"] = threshold_check
 
         # Generate display if warning needed
-        if threshold_check["level"] != "ok" and self.should_show_warning(
-            threshold_check["level"]
-        ):
+        if threshold_check["level"] != "ok" and self.should_show_warning(threshold_check["level"]):
             result["display"] = {
                 "level": threshold_check["level"],
                 "warning": threshold_check["warning"],

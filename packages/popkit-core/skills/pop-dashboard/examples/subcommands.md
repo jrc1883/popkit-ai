@@ -9,6 +9,7 @@
 Display full dashboard with all projects, health scores, and quick actions.
 
 **Output format:**
+
 ```
 +===============================================================+
 |                      PopKit Dashboard                          |

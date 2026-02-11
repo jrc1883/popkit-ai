@@ -6,8 +6,8 @@ Generates formatted morning routine reports with Ready to Code Score,
 setup recommendations, and today's action items.
 """
 
-from typing import Dict, Any, List
 from datetime import datetime
+from typing import Any, Dict, List
 
 # Try relative import (when used as package), fall back to direct import
 try:
@@ -72,9 +72,7 @@ def generate_morning_report(
 
     # Add recommendations
     report_lines.extend(["## 📋 Recommendations", "", "**Before Starting Work:**"])
-    report_lines.extend(
-        [f"- {rec}" for rec in _generate_setup_recommendations(score, state)]
-    )
+    report_lines.extend([f"- {rec}" for rec in _generate_setup_recommendations(score, state)])
 
     report_lines.extend(["", "**Today's Focus:**"])
     report_lines.extend([f"- {rec}" for rec in _generate_today_recommendations(state)])
@@ -259,35 +257,27 @@ def _generate_setup_recommendations(score: int, state: Dict[str, Any]) -> List[s
     missing = [s for s in required if s not in running]
 
     if missing:
-        recommendations.append(
-            f"Start {len(missing)} dev services: {', '.join(missing)}"
-        )
+        recommendations.append(f"Start {len(missing)} dev services: {', '.join(missing)}")
 
     # Sync recommendations
     git_data = state.get("git", {})
     behind = git_data.get("behind_remote", 0)
 
     if behind > 0:
-        recommendations.append(
-            f"Sync with remote: git pull (behind by {behind} commits)"
-        )
+        recommendations.append(f"Sync with remote: git pull (behind by {behind} commits)")
 
     # Dependency recommendations
     deps_data = state.get("dependencies", {})
     outdated_count = deps_data.get("outdated_count", 0)
 
     if outdated_count > 10:
-        recommendations.append(
-            f"Update {outdated_count} outdated dependencies: pnpm update"
-        )
+        recommendations.append(f"Update {outdated_count} outdated dependencies: pnpm update")
     elif outdated_count > 0:
         recommendations.append(f"Review {outdated_count} dependency updates (optional)")
 
     # Low score warning
     if score < 60:
-        recommendations.append(
-            "⚠️ Low Ready to Code Score - address critical issues first"
-        )
+        recommendations.append("⚠️ Low Ready to Code Score - address critical issues first")
 
     if not recommendations:
         recommendations.append("All set! Start coding immediately.")

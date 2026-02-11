@@ -12,7 +12,7 @@ Calculates a 0-100 score based on 6 project health dimensions:
 """
 
 from datetime import datetime
-from typing import Dict, Any, Tuple
+from typing import Any, Dict, Tuple
 
 
 def calculate_sleep_score(

@@ -46,7 +46,8 @@ def main():
             print(f"Error: Category '{category}' not found")
             sys.exit(1)
     else:
-        test_files = list(tests_dir.glob("**/*.json"))
+        # Glob all JSON test files but exclude cross-plugin (handled by run_all_tests.py)
+        test_files = [f for f in tests_dir.glob("**/*.json") if "cross-plugin" not in f.parts]
         print("Running all tests...")
 
     print(f"Found {len(test_files)} test definition(s)")
@@ -149,9 +150,7 @@ def main():
 
         for cat, cat_results in sorted(results["categories"].items()):
             status = "[PASS]" if cat_results["failed"] == 0 else "[FAIL]"
-            print(
-                f"{status} {cat}: {cat_results['passed']}/{cat_results['total']} passed"
-            )
+            print(f"{status} {cat}: {cat_results['passed']}/{cat_results['total']} passed")
 
             if verbose or cat_results["failed"] > 0:
                 for test in cat_results["tests"]:

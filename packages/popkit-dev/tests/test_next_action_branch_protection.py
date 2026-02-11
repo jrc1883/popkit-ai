@@ -8,7 +8,6 @@ on protected branches and recommend feature branch creation instead of direct pu
 
 import pytest
 
-
 # Test data
 PROTECTED_BRANCHES = ["main", "master", "develop", "production"]
 FEATURE_BRANCHES = ["feat/my-feature", "fix/bug-123", "chore/cleanup"]
@@ -99,7 +98,7 @@ def test_branch_creation_recommendation_format():
         "git push -u origin feat/your-feature-name",
         "gh pr create",
         "git checkout main",
-        "git reset --hard origin/main"
+        "git reset --hard origin/main",
     ]
 
     # Verify command format
@@ -145,7 +144,7 @@ def test_context_indicator_weight():
         "Open issues": "MEDIUM",
         "Issue votes": "MEDIUM",
         "TECHNICAL_DEBT.md": "MEDIUM",
-        "Recent commits": "LOW"
+        "Recent commits": "LOW",
     }
 
     assert context_weights["On protected branch"] == "CRITICAL"

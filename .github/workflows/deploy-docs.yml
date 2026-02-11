@@ -103,11 +103,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+
       - name: Download build artifact
         uses: actions/download-artifact@v7
         with:
           name: docs-build
           path: packages/docs/dist
+
+      - name: Disable npm workspaces to prevent symlink errors during wrangler install
+        run: |
+          rm -rf node_modules
+          node -e "const p=JSON.parse(require('fs').readFileSync('package.json','utf8'));delete p.workspaces;require('fs').writeFileSync('package.json',JSON.stringify(p,null,2))"
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
@@ -152,11 +162,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+
       - name: Download build artifact
         uses: actions/download-artifact@v7
         with:
           name: docs-build
           path: packages/docs/dist
+
+      - name: Disable npm workspaces to prevent symlink errors during wrangler install
+        run: |
+          rm -rf node_modules
+          node -e "const p=JSON.parse(require('fs').readFileSync('package.json','utf8'));delete p.workspaces;require('fs').writeFileSync('package.json',JSON.stringify(p,null,2))"
 
       - name: Deploy preview to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3

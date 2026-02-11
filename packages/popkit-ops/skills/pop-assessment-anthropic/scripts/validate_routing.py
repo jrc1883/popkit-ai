@@ -26,9 +26,7 @@ def find_plugin_root(start_path: Path = None) -> Path:
     for _ in range(5):
         if (current / ".claude-plugin" / "plugin.json").exists():
             return current
-        if (
-            current / "packages" / "plugin" / ".claude-plugin" / "plugin.json"
-        ).exists():
+        if (current / "packages" / "plugin" / ".claude-plugin" / "plugin.json").exists():
             return current / "packages" / "plugin"
         current = current.parent
 
@@ -83,9 +81,7 @@ def check_keyword_routing(config: Dict, all_agents: Dict) -> List[Dict]:
     keywords = routing.get("keywords", {})
 
     # Get all tier-1 agents
-    tier1_agents = all_agents.get("tier-1", set()) | all_agents.get(
-        "tier-1-always-active", set()
-    )
+    tier1_agents = all_agents.get("tier-1", set()) | all_agents.get("tier-1-always-active", set())
 
     # Find agents with keywords
     agents_with_keywords = set()
@@ -97,9 +93,7 @@ def check_keyword_routing(config: Dict, all_agents: Dict) -> List[Dict]:
     tier1_missing = tier1_agents - agents_with_keywords
 
     if tier1_missing:
-        coverage = (
-            (len(tier1_agents) - len(tier1_missing)) / max(len(tier1_agents), 1)
-        ) * 100
+        coverage = ((len(tier1_agents) - len(tier1_missing)) / max(len(tier1_agents), 1)) * 100
         findings.append(
             {
                 "id": "AR-001",
@@ -188,8 +182,7 @@ def check_file_patterns(config: Dict) -> List[Dict]:
 
     if missing_patterns:
         coverage = (
-            (len(recommended_patterns) - len(missing_patterns))
-            / len(recommended_patterns)
+            (len(recommended_patterns) - len(missing_patterns)) / len(recommended_patterns)
         ) * 100
         findings.append(
             {
@@ -239,9 +232,7 @@ def check_error_patterns(config: Dict) -> List[Dict]:
     missing_errors = set(recommended_errors.keys()) - existing_errors
 
     if missing_errors:
-        coverage = (
-            (len(recommended_errors) - len(missing_errors)) / len(recommended_errors)
-        ) * 100
+        coverage = ((len(recommended_errors) - len(missing_errors)) / len(recommended_errors)) * 100
         findings.append(
             {
                 "id": "AR-008",
@@ -372,9 +363,7 @@ def main():
 
     # Calculate average coverage
     coverage_checks = [f for f in all_findings if "coverage" in f]
-    avg_coverage = sum(f["coverage"] for f in coverage_checks) / max(
-        len(coverage_checks), 1
-    )
+    avg_coverage = sum(f["coverage"] for f in coverage_checks) / max(len(coverage_checks), 1)
 
     result = {
         "category": "agent-routing",

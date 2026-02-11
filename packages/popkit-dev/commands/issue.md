@@ -255,6 +255,7 @@ Creating issue with labels: bug, priority:high
 ```
 
 **Benefits:**
+
 - ✅ Prevents "label does not exist" errors
 - ✅ Catches typos with fuzzy matching
 - ✅ Suggests correct alternatives
@@ -587,22 +588,22 @@ gh issue comment 45 --body "..."
 
 ## Architecture Integration
 
-| Component              | Integration                                                |
-| ---------------------- | ---------------------------------------------------------- |
-| Issue Listing          | `hooks/utils/issue_list.py`                                |
-| Issue Fetching         | `gh issue view/list` via GitHub CLI                        |
-| PopKit Guidance Parser | `hooks/utils/github_issues.py`                             |
-| Vote Fetching          | `hooks/utils/vote_fetcher.py`                              |
-| Priority Scoring       | `hooks/utils/priority_scorer.py`                           |
-| Flag Parsing           | `hooks/utils/flag_parser.py`                               |
-| Issue Templates        | `.github/ISSUE_TEMPLATE/*.md`                              |
-| Phase Tracking         | `STATUS.json` integration                                  |
-| Power Mode             | `power-mode/coordinator.py`                                |
-| Status Line            | `power-mode/statusline.py`                                 |
-| State                  | `.claude/popkit/power-mode-state.json`                     |
-| **GitHub Cache**       | `popkit_shared.utils.github_cache` **(Issue #96)**         |
-| **Label Validation**   | `popkit_shared.utils.github_validator` **(Issue #96)**     |
-| Cache Storage          | `.claude/popkit/github-cache.json` (60 min TTL)            |
+| Component              | Integration                                            |
+| ---------------------- | ------------------------------------------------------ |
+| Issue Listing          | `hooks/utils/issue_list.py`                            |
+| Issue Fetching         | `gh issue view/list` via GitHub CLI                    |
+| PopKit Guidance Parser | `hooks/utils/github_issues.py`                         |
+| Vote Fetching          | `hooks/utils/vote_fetcher.py`                          |
+| Priority Scoring       | `hooks/utils/priority_scorer.py`                       |
+| Flag Parsing           | `hooks/utils/flag_parser.py`                           |
+| Issue Templates        | `.github/ISSUE_TEMPLATE/*.md`                          |
+| Phase Tracking         | `STATUS.json` integration                              |
+| Power Mode             | `power-mode/coordinator.py`                            |
+| Status Line            | `power-mode/statusline.py`                             |
+| State                  | `.claude/popkit/power-mode-state.json`                 |
+| **GitHub Cache**       | `popkit_shared.utils.github_cache` **(Issue #96)**     |
+| **Label Validation**   | `popkit_shared.utils.github_validator` **(Issue #96)** |
+| Cache Storage          | `.claude/popkit/github-cache.json` (60 min TTL)        |
 
 ## Related Commands
 

@@ -4,14 +4,14 @@ Comprehensive health check across 6 dimensions (0-100 points).
 
 ## Score Components
 
-| Check | Points | Criteria |
-|-------|--------|----------|
-| Uncommitted work saved | 25 | No uncommitted changes OR committed |
-| Branches cleaned | 20 | No stale merged branches |
-| Issues updated | 20 | Today's issues have status updates |
-| CI passing | 15 | Latest CI run successful |
-| Services stopped | 10 | No dev services running |
-| Logs archived | 10 | Session logs saved |
+| Check                  | Points | Criteria                            |
+| ---------------------- | ------ | ----------------------------------- |
+| Uncommitted work saved | 25     | No uncommitted changes OR committed |
+| Branches cleaned       | 20     | No stale merged branches            |
+| Issues updated         | 20     | Today's issues have status updates  |
+| CI passing             | 15     | Latest CI run successful            |
+| Services stopped       | 10     | No dev services running             |
+| Logs archived          | 10     | Session logs saved                  |
 
 ## Branch Protection Impact (Issue #142)
 

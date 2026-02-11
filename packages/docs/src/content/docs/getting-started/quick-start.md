@@ -43,24 +43,26 @@ Guided 7-phase feature development workflow from discovery to implementation.
 
 ## Key Commands
 
-| Command | Description |
-|---------|-------------|
-| `/popkit-dev:next` | Get context-aware next actions |
-| `/popkit-dev:git commit` | Smart git commit with auto-generated messages |
-| `/popkit-dev:git pr` | Create pull request with comprehensive summary |
-| `/popkit-dev:routine morning` | Morning health check and setup |
-| `/popkit-dev:routine nightly` | End-of-day cleanup and summary |
+| Command                       | Description                                    |
+| ----------------------------- | ---------------------------------------------- |
+| `/popkit-dev:next`            | Get context-aware next actions                 |
+| `/popkit-dev:git commit`      | Smart git commit with auto-generated messages  |
+| `/popkit-dev:git pr`          | Create pull request with comprehensive summary |
+| `/popkit-dev:routine morning` | Morning health check and setup                 |
+| `/popkit-dev:routine nightly` | End-of-day cleanup and summary                 |
 
 ## Power Mode
 
 For complex tasks requiring multiple agents:
 
 1. Check if Power Mode is available:
+
    ```bash
    /popkit-core:power status
    ```
 
 2. Start Power Mode:
+
    ```bash
    /popkit-core:power start
    ```

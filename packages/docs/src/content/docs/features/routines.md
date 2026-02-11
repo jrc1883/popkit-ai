@@ -36,6 +36,7 @@ PopKit provides day-bracketing workflows that check project health at the start 
    - Red (<70): Critical issues
 
 **Output**:
+
 ```
 ☀️ Morning Routine Report
 
@@ -85,6 +86,7 @@ Ready to Code Score: 92/100 ✅
    - Red (<70): Incomplete work
 
 **Output**:
+
 ```
 🌙 Nightly Routine Report
 
@@ -179,6 +181,7 @@ Configure routine behavior in `.popkit/config.json`:
 **Symptom**: Low Ready to Code score
 
 **Solutions**:
+
 - Fix test failures
 - Update dependencies
 - Address security issues
@@ -189,6 +192,7 @@ Configure routine behavior in `.popkit/config.json`:
 **Symptom**: Low Sleep score
 
 **Solutions**:
+
 - Commit or stash changes
 - Push completed work
 - Close or save work-in-progress
@@ -199,6 +203,7 @@ Configure routine behavior in `.popkit/config.json`:
 **Symptom**: Morning routine doesn't restore previous work
 
 **Solution**:
+
 - Ensure nightly routine ran successfully
 - Check `.popkit/state/` directory exists
 - Manually run: `/popkit-core:project restore`

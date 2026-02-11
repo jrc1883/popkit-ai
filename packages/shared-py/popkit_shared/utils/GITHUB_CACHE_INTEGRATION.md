@@ -7,6 +7,7 @@ This guide explains how to integrate the GitHub cache into commands and skills t
 ## Overview
 
 The GitHub cache provides two-tier caching (Local JSON / Redis) for repository metadata:
+
 - **Labels** - Cached for 60 minutes
 - **Milestones** - Cached for 60 minutes
 - **Team Members** - Cached for 24 hours
@@ -39,11 +40,13 @@ else:
 **When:** User creates issue with `--label` flag or template selection
 
 **Before:**
+
 ```bash
 gh issue create --title "..." --body "..." --label bug,priority:high
 ```
 
 **After (with validation):**
+
 ```python
 # Parse labels from user input
 requested_labels = ["bug", "priority:high"]
@@ -72,11 +75,13 @@ else:
 **When:** User creates PR with `--label` flag
 
 **Before:**
+
 ```bash
 gh pr create --title "..." --body "..." --label enhancement,needs-review
 ```
 
 **After (with validation):**
+
 ```python
 # Same pattern as issue creation
 requested_labels = ["enhancement", "needs-review"]
@@ -96,11 +101,13 @@ else:
 **When:** User reports bug with `--issue` flag
 
 **Before:**
+
 ```bash
 gh issue create --title "Bug: ..." --body "..." --label bug,needs-triage
 ```
 
 **After (with validation):**
+
 ```python
 # Bug reports always use "bug" label
 default_labels = ["bug", "needs-triage"]
@@ -116,11 +123,13 @@ valid, invalid, suggestions = validate_labels(default_labels, cache)
 **When:** User chooses "Create PR" option
 
 **Before:**
+
 ```bash
 gh pr create --title "..." --body "..." --label feature,ready-for-review
 ```
 
 **After (with validation):**
+
 ```python
 # Determine labels based on branch prefix
 branch_name = get_current_branch()

@@ -24,6 +24,7 @@
 ### Core Design Principles
 
 **1. Cloud-Native First**
+
 - Cloudflare Workers for edge computing (global, low-latency)
 - Upstash Redis for real-time session state
 - Upstash Vector for AI-powered query/search
@@ -31,13 +32,14 @@
 
 **2. Three-Tier Value Proposition**
 
-| Tier | Features | Infrastructure |
-|------|----------|----------------|
-| **Free** | Static HTML reports (existing), Local transcript parsing, Basic tool call timeline | Plugin-only, no cloud |
-| **Pro** | Real-time dashboard, Live agent monitoring, Token/cost tracking, Session replay | Cloudflare + Upstash Redis |
-| **Team** | Shared observability, Team analytics, Pattern library, Cross-session learning | + Upstash Vector, shared workspace |
+| Tier     | Features                                                                           | Infrastructure                     |
+| -------- | ---------------------------------------------------------------------------------- | ---------------------------------- |
+| **Free** | Static HTML reports (existing), Local transcript parsing, Basic tool call timeline | Plugin-only, no cloud              |
+| **Pro**  | Real-time dashboard, Live agent monitoring, Token/cost tracking, Session replay    | Cloudflare + Upstash Redis         |
+| **Team** | Shared observability, Team analytics, Pattern library, Cross-session learning      | + Upstash Vector, shared workspace |
 
 **3. Integration Strategy**
+
 - **Issue #110 scope**: Integrate `transcript_parser.py` into `subagent-stop.py` hook
 - **Beyond #110**: Stream parsed data to Cloudflare Workers API
 - **Existing `/record` command**: Enhanced with optional cloud sync
@@ -96,12 +98,14 @@ Transcript Parser (extracts tool calls, reasoning, tokens)
 ### Decision: New `popkit-observe` Plugin
 
 **Rationale:**
+
 - Observability is a distinct concern (not dev, ops, or research)
 - Deserves dedicated namespace: `/popkit-observe:observe`
 - Allows independent versioning and optional installation
 - Follows PopKit modular plugin pattern
 
 **Structure:**
+
 ```
 packages/
 ├── popkit-observe/          # NEW PLUGIN
@@ -129,6 +133,7 @@ packages/
 ### Streaming Strategy: Adaptive Hybrid
 
 **User Control via Commands:**
+
 ```bash
 /popkit-observe:observe start --mode=realtime    # Stream every tool immediately
 /popkit-observe:observe start --mode=batch       # Batch 50 tools (default)
@@ -136,6 +141,7 @@ packages/
 ```
 
 **Implementation Logic:**
+
 ```python
 # Adaptive batching with event-driven critical path
 class ObservabilityClient:
@@ -171,12 +177,14 @@ class ObservabilityClient:
 ```
 
 **Offline Resilience:**
+
 - Events persist locally in `.claude/popkit/queue/{session_id}.jsonl`
 - Background sync when cloud reconnects
 - User sees full history even during outages
 - Uses existing `upstash_telemetry.py` patterns (queue, rate limiting)
 
 **Privacy Controls:**
+
 - Leverage existing `privacy.py` settings (strict/moderate/minimal)
 - Use `pattern_anonymizer.py` to redact credentials, paths, emails
 - User consent required before cloud streaming
@@ -272,7 +280,7 @@ Following PopKit command patterns from `/popkit-core:record` and `/popkit-core:p
 
 **File:** `packages/popkit-observe/commands/observe.md`
 
-```markdown
+````markdown
 ---
 description: "start | stop | status | dashboard | sync [--mode realtime|batch|smart]"
 argument-hint: "<subcommand> [options]"
@@ -299,16 +307,17 @@ Real-time observability and analytics for PopKit sessions with optional cloud st
 /popkit-observe:observe dashboard                # Open web dashboard (Pro tier)
 /popkit-observe:observe sync                     # Sync offline queue to cloud
 ```
+````
 
 ## Subcommands
 
-| Subcommand | Description | Tier |
-|------------|-------------|------|
+| Subcommand      | Description                            | Tier     |
+| --------------- | -------------------------------------- | -------- |
 | start (default) | Enable observability with mode control | Free/Pro |
-| stop | Stop recording and generate report | Free/Pro |
-| status | Check recording state and sync status | Free/Pro |
-| dashboard | Open real-time web dashboard | Pro/Team |
-| sync | Manually sync offline queue to cloud | Pro |
+| stop            | Stop recording and generate report     | Free/Pro |
+| status          | Check recording state and sync status  | Free/Pro |
+| dashboard       | Open real-time web dashboard           | Pro/Team |
+| sync            | Manually sync offline queue to cloud   | Pro      |
 
 ---
 
@@ -766,7 +775,8 @@ else:
 - **Cloud Client**: `packages/shared-py/popkit_shared/utils/observability_client.py`
 - **Privacy Controls**: `packages/shared-py/popkit_shared/utils/privacy.py`
 - **HTML Reports**: `packages/shared-py/popkit_shared/utils/html_report_generator_v10.py`
-```
+
+````
 
 ### Plugin Manifest
 
@@ -784,7 +794,7 @@ else:
   "license": "MIT",
   "repository": "https://github.com/jrc1883/popkit-claude"
 }
-```
+````
 
 ---
 
@@ -807,6 +817,7 @@ Redis      Vector
 ```
 
 **Benefits:**
+
 - **Global Edge Network**: <50ms latency worldwide
 - **Auto-scaling**: Handles spikes automatically
 - **Zero-ops**: No servers to manage
@@ -816,16 +827,16 @@ Redis      Vector
 
 **Base URL**: `https://api.popkit.ai/observe/v1`
 
-| Endpoint | Method | Purpose | Tier |
-|----------|--------|---------|------|
-| `/session/start` | POST | Initialize new session | Pro/Team |
-| `/session/stream` | POST | Stream tool events (batch or single) | Pro/Team |
-| `/session/stop` | POST | Finalize session | Pro/Team |
-| `/session/{id}` | GET | Retrieve session data | Pro/Team |
-| `/session/{id}/events` | GET | Get session events with pagination | Pro/Team |
-| `/dashboard/live/{id}` | GET | Server-Sent Events stream | Pro/Team |
-| `/search/query` | POST | Semantic search across sessions | Team |
-| `/team/workspace` | GET | Team workspace data | Team |
+| Endpoint               | Method | Purpose                              | Tier     |
+| ---------------------- | ------ | ------------------------------------ | -------- |
+| `/session/start`       | POST   | Initialize new session               | Pro/Team |
+| `/session/stream`      | POST   | Stream tool events (batch or single) | Pro/Team |
+| `/session/stop`        | POST   | Finalize session                     | Pro/Team |
+| `/session/{id}`        | GET    | Retrieve session data                | Pro/Team |
+| `/session/{id}/events` | GET    | Get session events with pagination   | Pro/Team |
+| `/dashboard/live/{id}` | GET    | Server-Sent Events stream            | Pro/Team |
+| `/search/query`        | POST   | Semantic search across sessions      | Team     |
+| `/team/workspace`      | GET    | Team workspace data                  | Team     |
 
 ### Authentication
 
@@ -842,16 +853,19 @@ Redis      Vector
 ```
 
 **API Key Format:**
+
 - Pro tier: `pk_live_xxx` (32 chars)
 - Team tier: `tk_live_xxx` (32 chars)
 - Dev/Test: `pk_test_xxx` (32 chars)
 
 **Key Management:**
+
 - Stored in `~/.claude/popkit/credentials.json`
 - Retrieved via `/popkit-core:account keys`
 - Auto-included by `observability_client.py`
 
 **Rate Limits:**
+
 - **Pro**: 100 requests/minute, 10,000 events/hour
 - **Team**: 500 requests/minute, 50,000 events/hour
 - **Burst**: 2x normal rate for 60 seconds
@@ -863,6 +877,7 @@ Redis      Vector
 Initialize a new observability session.
 
 **Request:**
+
 ```json
 {
   "session_id": "20260113-142530-a1b2c3d4",
@@ -877,6 +892,7 @@ Initialize a new observability session.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -888,23 +904,18 @@ Initialize a new observability session.
 ```
 
 **Implementation (Cloudflare Worker):**
+
 ```typescript
 // src/routes/session/start.ts
-import { Env } from '../../types';
-import { Redis } from '@upstash/redis/cloudflare';
+import { Env } from "../../types";
+import { Redis } from "@upstash/redis/cloudflare";
 
-export async function handleSessionStart(
-  request: Request,
-  env: Env
-): Promise<Response> {
+export async function handleSessionStart(request: Request, env: Env): Promise<Response> {
   const { session_id, mode, metadata } = await request.json();
 
   // Validate session_id format
   if (!session_id.match(/^\d{8}-\d{6}-[a-f0-9]{8}$/)) {
-    return new Response(
-      JSON.stringify({ error: 'Invalid session ID format' }),
-      { status: 400 }
-    );
+    return new Response(JSON.stringify({ error: "Invalid session ID format" }), { status: 400 });
   }
 
   // Initialize Redis client
@@ -918,7 +929,7 @@ export async function handleSessionStart(
   await redis.hset(sessionKey, {
     mode,
     started_at: new Date().toISOString(),
-    status: 'active',
+    status: "active",
     event_count: 0,
     metadata: JSON.stringify(metadata),
   });
@@ -928,8 +939,8 @@ export async function handleSessionStart(
 
   // Initialize event stream
   const eventsKey = `popkit:observe:events:${session_id}`;
-  await redis.xadd(eventsKey, '*', {
-    type: 'session_start',
+  await redis.xadd(eventsKey, "*", {
+    type: "session_start",
     timestamp: new Date().toISOString(),
   });
 
@@ -943,8 +954,8 @@ export async function handleSessionStart(
     }),
     {
       headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
       },
     }
   );
@@ -958,6 +969,7 @@ export async function handleSessionStart(
 Stream tool call events (single or batch).
 
 **Request (Single Event):**
+
 ```json
 {
   "session_id": "20260113-142530-a1b2c3d4",
@@ -980,18 +992,24 @@ Stream tool call events (single or batch).
 ```
 
 **Request (Batch):**
+
 ```json
 {
   "session_id": "20260113-142530-a1b2c3d4",
   "events": [
-    { /* event 1 */ },
-    { /* event 2 */ },
+    {
+      /* event 1 */
+    },
+    {
+      /* event 2 */
+    }
     // ... up to 50 events
   ]
 }
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -1005,11 +1023,12 @@ Stream tool call events (single or batch).
 ```
 
 **Implementation:**
+
 ```typescript
 // src/routes/session/stream.ts
-import { Redis } from '@upstash/redis/cloudflare';
-import { anonymizeEvent } from '../../utils/privacy';
-import { checkRateLimit } from '../../utils/rateLimit';
+import { Redis } from "@upstash/redis/cloudflare";
+import { anonymizeEvent } from "../../utils/privacy";
+import { checkRateLimit } from "../../utils/rateLimit";
 
 export async function handleSessionStream(
   request: Request,
@@ -1023,7 +1042,7 @@ export async function handleSessionStream(
   if (!rateLimitResult.allowed) {
     return new Response(
       JSON.stringify({
-        error: 'Rate limit exceeded',
+        error: "Rate limit exceeded",
         retry_after: rateLimitResult.retry_after,
       }),
       { status: 429 }
@@ -1046,7 +1065,7 @@ export async function handleSessionStream(
   const pipeline = redis.pipeline();
 
   for (const evt of anonymizedEvents) {
-    pipeline.xadd(eventsKey, '*', {
+    pipeline.xadd(eventsKey, "*", {
       type: evt.type,
       data: JSON.stringify(evt),
       timestamp: evt.timestamp,
@@ -1055,14 +1074,12 @@ export async function handleSessionStream(
 
   // Update session event count
   const sessionKey = `popkit:observe:session:${session_id}`;
-  pipeline.hincrby(sessionKey, 'event_count', eventList.length);
+  pipeline.hincrby(sessionKey, "event_count", eventList.length);
 
   await pipeline.exec();
 
   // Broadcast to SSE listeners (non-blocking)
-  ctx.waitUntil(
-    broadcastToSSE(session_id, anonymizedEvents, env)
-  );
+  ctx.waitUntil(broadcastToSSE(session_id, anonymizedEvents, env));
 
   return new Response(
     JSON.stringify({
@@ -1074,16 +1091,12 @@ export async function handleSessionStream(
   );
 }
 
-async function broadcastToSSE(
-  session_id: string,
-  events: any[],
-  env: Env
-): Promise<void> {
+async function broadcastToSSE(session_id: string, events: any[], env: Env): Promise<void> {
   // Publish to Durable Object for SSE distribution
   const id = env.SSE_BROADCASTER.idFromName(session_id);
   const stub = env.SSE_BROADCASTER.get(id);
-  await stub.fetch('https://internal/broadcast', {
-    method: 'POST',
+  await stub.fetch("https://internal/broadcast", {
+    method: "POST",
     body: JSON.stringify({ events }),
   });
 }
@@ -1096,6 +1109,7 @@ async function broadcastToSSE(
 Server-Sent Events (SSE) stream for real-time dashboard updates.
 
 **Response (SSE Stream):**
+
 ```
 HTTP/1.1 200 OK
 Content-Type: text/event-stream
@@ -1113,6 +1127,7 @@ data: {"timestamp":"2026-01-13T14:25:45Z"}
 ```
 
 **Implementation (Durable Object):**
+
 ```typescript
 // src/durable-objects/SSEBroadcaster.ts
 export class SSEBroadcaster {
@@ -1128,18 +1143,18 @@ export class SSEBroadcaster {
     const url = new URL(request.url);
 
     // Internal broadcast endpoint
-    if (url.pathname === '/broadcast') {
+    if (url.pathname === "/broadcast") {
       const { events } = await request.json();
       this.broadcast(events);
-      return new Response('OK');
+      return new Response("OK");
     }
 
     // SSE endpoint for clients
-    if (request.headers.get('Accept') === 'text/event-stream') {
+    if (request.headers.get("Accept") === "text/event-stream") {
       return this.handleSSE(request);
     }
 
-    return new Response('Not Found', { status: 404 });
+    return new Response("Not Found", { status: 404 });
   }
 
   async handleSSE(request: Request): Promise<Response> {
@@ -1153,10 +1168,7 @@ export class SSEBroadcaster {
 
     // Send initial connection event
     await writer.write(
-      encoder.encode(
-        'event: connected\n' +
-        `data: {"timestamp":"${new Date().toISOString()}"}\n\n`
-      )
+      encoder.encode("event: connected\n" + `data: {"timestamp":"${new Date().toISOString()}"}\n\n`)
     );
 
     // Heartbeat every 30 seconds
@@ -1169,8 +1181,7 @@ export class SSEBroadcaster {
       try {
         await writer.write(
           encoder.encode(
-            'event: heartbeat\n' +
-            `data: {"timestamp":"${new Date().toISOString()}"}\n\n`
+            "event: heartbeat\n" + `data: {"timestamp":"${new Date().toISOString()}"}\n\n`
           )
         );
       } catch {
@@ -1182,10 +1193,10 @@ export class SSEBroadcaster {
 
     return new Response(readable, {
       headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-        'Access-Control-Allow-Origin': '*',
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+        "Access-Control-Allow-Origin": "*",
       },
     });
   }
@@ -1194,9 +1205,7 @@ export class SSEBroadcaster {
     const encoder = new TextEncoder();
 
     for (const event of events) {
-      const message =
-        `event: tool_call\n` +
-        `data: ${JSON.stringify(event)}\n\n`;
+      const message = `event: tool_call\n` + `data: ${JSON.stringify(event)}\n\n`;
 
       const encoded = encoder.encode(message);
 
@@ -1220,6 +1229,7 @@ export class SSEBroadcaster {
 Semantic search across team sessions using Upstash Vector.
 
 **Request:**
+
 ```json
 {
   "query": "sessions where error rate > 5%",
@@ -1236,6 +1246,7 @@ Semantic search across team sessions using Upstash Vector.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -1256,14 +1267,12 @@ Semantic search across team sessions using Upstash Vector.
 ```
 
 **Implementation:**
+
 ```typescript
 // src/routes/search/query.ts
-import { Index } from '@upstash/vector';
+import { Index } from "@upstash/vector";
 
-export async function handleSearchQuery(
-  request: Request,
-  env: Env
-): Promise<Response> {
+export async function handleSearchQuery(request: Request, env: Env): Promise<Response> {
   const { query, workspace_id, filters, limit } = await request.json();
 
   // Initialize Upstash Vector
@@ -1286,7 +1295,7 @@ export async function handleSearchQuery(
   return new Response(
     JSON.stringify({
       success: true,
-      results: results.map(r => ({
+      results: results.map((r) => ({
         session_id: r.id,
         score: r.score,
         metadata: r.metadata,
@@ -1376,21 +1385,21 @@ function redactSensitiveData(obj: any): any {
 
   // API keys, tokens
   const redacted = str
-    .replace(/sk[-_][a-zA-Z0-9]{32,}/g, '[REDACTED_API_KEY]')
-    .replace(/pk[-_][a-zA-Z0-9]{32,}/g, '[REDACTED_API_KEY]')
+    .replace(/sk[-_][a-zA-Z0-9]{32,}/g, "[REDACTED_API_KEY]")
+    .replace(/pk[-_][a-zA-Z0-9]{32,}/g, "[REDACTED_API_KEY]")
     // Email addresses
-    .replace(/[\w\.-]+@[\w\.-]+\.\w+/g, '[REDACTED_EMAIL]')
+    .replace(/[\w\.-]+@[\w\.-]+\.\w+/g, "[REDACTED_EMAIL]")
     // IP addresses
-    .replace(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g, '[REDACTED_IP]');
+    .replace(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g, "[REDACTED_IP]");
 
   return JSON.parse(redacted);
 }
 
 function anonymizePath(path: string): string {
   return path
-    .replace(/C:\\Users\\[^\\]+/, 'C:\\Users\\[USER]')
-    .replace(/\/Users\/[^\/]+/, '/Users/[USER]')
-    .replace(/\/home\/[^\/]+/, '/home/[USER]');
+    .replace(/C:\\Users\\[^\\]+/, "C:\\Users\\[USER]")
+    .replace(/\/Users\/[^\/]+/, "/Users/[USER]")
+    .replace(/\/home\/[^\/]+/, "/home/[USER]");
 }
 ```
 
@@ -1400,13 +1409,13 @@ function anonymizePath(path: string): string {
 
 ```typescript
 // src/utils/rateLimit.ts
-import { Redis } from '@upstash/redis/cloudflare';
+import { Redis } from "@upstash/redis/cloudflare";
 
 export async function checkRateLimit(
   request: Request,
   env: Env
 ): Promise<{ allowed: boolean; limit_info: any; retry_after?: number }> {
-  const apiKey = request.headers.get('Authorization')?.replace('Bearer ', '');
+  const apiKey = request.headers.get("Authorization")?.replace("Bearer ", "");
   const tier = getTierFromKey(apiKey);
 
   const limits = {
@@ -1448,16 +1457,20 @@ export async function checkRateLimit(
 ### Error Handling
 
 **Standard Error Response:**
+
 ```json
 {
   "error": "Error message",
   "code": "ERROR_CODE",
-  "details": { /* optional */ },
+  "details": {
+    /* optional */
+  },
   "timestamp": "2026-01-13T14:25:30Z"
 }
 ```
 
 **Error Codes:**
+
 - `INVALID_SESSION_ID` (400)
 - `SESSION_NOT_FOUND` (404)
 - `RATE_LIMIT_EXCEEDED` (429)
@@ -1499,6 +1512,7 @@ ENVIRONMENT = "production"
 ### Testing
 
 **Local Development:**
+
 ```bash
 cd packages/popkit-cloud
 npm install
@@ -1512,19 +1526,20 @@ curl -X POST http://localhost:8787/observe/v1/session/start \
 ```
 
 **Integration Tests:**
+
 ```typescript
 // tests/api.test.ts
-describe('Observability API', () => {
-  test('POST /session/start creates session', async () => {
+describe("Observability API", () => {
+  test("POST /session/start creates session", async () => {
     const response = await fetch(`${API_BASE}/session/start`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${TEST_API_KEY}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${TEST_API_KEY}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        session_id: '20260113-142530-test',
-        mode: 'batch',
+        session_id: "20260113-142530-test",
+        mode: "batch",
       }),
     });
 
@@ -1545,6 +1560,7 @@ describe('Observability API', () => {
 The PopKit Observability Dashboard is a Next.js 14+ application hosted at `observe.popkit.ai` that provides real-time visualization of Claude Code sessions. It integrates with the Cloudflare Workers API via SSE (Server-Sent Events) for live updates and supports three tiers: Free (local HTML reports), Pro (cloud streaming + dashboard), and Team (shared workspace + semantic search).
 
 **Key Features:**
+
 - Real-time session monitoring with SSE
 - Interactive tool call timeline
 - Cost tracking and token usage visualization
@@ -1557,6 +1573,7 @@ The PopKit Observability Dashboard is a Next.js 14+ application hosted at `obser
 ### Architecture
 
 **Tech Stack:**
+
 - **Framework**: Next.js 14 (App Router)
 - **UI Library**: React 18
 - **Styling**: Tailwind CSS + shadcn/ui components
@@ -1566,6 +1583,7 @@ The PopKit Observability Dashboard is a Next.js 14+ application hosted at `obser
 - **Authentication**: NextAuth.js with API key validation
 
 **Project Structure:**
+
 ```
 packages/popkit-dashboard/
 ├── src/
@@ -1608,9 +1626,10 @@ packages/popkit-dashboard/
 ### Real-Time Updates (SSE Integration)
 
 **SSE Client Manager:**
+
 ```typescript
 // src/lib/sse-client.ts
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 
 export interface SSEClientOptions {
   apiKey: string;
@@ -1622,26 +1641,19 @@ export interface SSEClientOptions {
 }
 
 export function useSSEClient(options: SSEClientOptions) {
-  const {
-    apiKey,
-    sessionId,
-    onConnect,
-    onEvent,
-    onError,
-    reconnectInterval = 3000,
-  } = options;
+  const { apiKey, sessionId, onConnect, onEvent, onError, reconnectInterval = 3000 } = options;
 
   const eventSourceRef = useRef<EventSource | null>(null);
   const [connectionState, setConnectionState] = useState<
-    'connecting' | 'connected' | 'disconnected' | 'error'
-  >('disconnected');
+    "connecting" | "connected" | "disconnected" | "error"
+  >("disconnected");
 
   useEffect(() => {
     let reconnectTimeout: NodeJS.Timeout;
     let shouldReconnect = true;
 
     const connect = () => {
-      setConnectionState('connecting');
+      setConnectionState("connecting");
 
       const url = `https://api.popkit.ai/observe/v1/dashboard/live/${sessionId}`;
       const eventSource = new EventSource(url, {
@@ -1653,39 +1665,39 @@ export function useSSEClient(options: SSEClientOptions) {
       const urlWithAuth = `${url}?key=${apiKey}`;
       const es = new EventSource(urlWithAuth);
 
-      es.addEventListener('connected', () => {
-        setConnectionState('connected');
+      es.addEventListener("connected", () => {
+        setConnectionState("connected");
         onConnect?.();
       });
 
-      es.addEventListener('tool_call', (e) => {
+      es.addEventListener("tool_call", (e) => {
         try {
           const data = JSON.parse(e.data);
           onEvent?.(data);
         } catch (err) {
-          console.error('Failed to parse SSE event:', err);
+          console.error("Failed to parse SSE event:", err);
         }
       });
 
-      es.addEventListener('session_complete', (e) => {
+      es.addEventListener("session_complete", (e) => {
         try {
           const data = JSON.parse(e.data);
           onEvent?.(data);
           es.close();
-          setConnectionState('disconnected');
+          setConnectionState("disconnected");
         } catch (err) {
-          console.error('Failed to parse session_complete:', err);
+          console.error("Failed to parse session_complete:", err);
         }
       });
 
-      es.addEventListener('heartbeat', () => {
+      es.addEventListener("heartbeat", () => {
         // Keep connection alive
       });
 
       es.onerror = (error) => {
-        console.error('SSE error:', error);
-        setConnectionState('error');
-        onError?.(new Error('SSE connection failed'));
+        console.error("SSE error:", error);
+        setConnectionState("error");
+        onError?.(new Error("SSE connection failed"));
         es.close();
 
         // Auto-reconnect
@@ -1711,6 +1723,7 @@ export function useSSEClient(options: SSEClientOptions) {
 ```
 
 **SSE Provider Component:**
+
 ```typescript
 // src/components/realtime/SSEProvider.tsx
 'use client';
@@ -1779,10 +1792,11 @@ export const useSSE = () => useContext(SSEContext);
 ### State Management (Zustand Store)
 
 **Session Store:**
+
 ```typescript
 // src/lib/store.ts
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 interface ToolCallEvent {
   tool_use_id: string;
@@ -1796,7 +1810,7 @@ interface ToolCallEvent {
 
 interface Session {
   session_id: string;
-  status: 'active' | 'completed';
+  status: "active" | "completed";
   started_at: string;
   completed_at?: string;
   events: ToolCallEvent[];
@@ -1843,10 +1857,7 @@ export const useSessionStore = create<SessionStore>()(
           if (!session) return state;
 
           const newEvents = [...session.events, event];
-          const totalTokens = newEvents.reduce(
-            (sum, e) => sum + e.tokens_used,
-            0
-          );
+          const totalTokens = newEvents.reduce((sum, e) => sum + e.tokens_used, 0);
           const totalCost = newEvents.reduce((sum, e) => sum + e.cost_usd, 0);
           const errorCount = newEvents.filter((e) => e.error).length;
 
@@ -1867,7 +1878,7 @@ export const useSessionStore = create<SessionStore>()(
       getSession: (sessionId) => get().sessions[sessionId],
     }),
     {
-      name: 'popkit-observe-sessions',
+      name: "popkit-observe-sessions",
     }
   )
 );
@@ -2430,68 +2441,70 @@ function getApiKey(): string {
 ### Responsive Design
 
 **Tailwind Configuration:**
+
 ```typescript
 // tailwind.config.ts
-import type { Config } from 'tailwindcss';
+import type { Config } from "tailwindcss";
 
 const config: Config = {
-  darkMode: ['class'],
+  darkMode: ["class"],
   content: [
-    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
       colors: {
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--primary-foreground))',
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: 'hsl(var(--secondary))',
-          foreground: 'hsl(var(--secondary-foreground))',
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
         },
         destructive: {
-          DEFAULT: 'hsl(var(--destructive))',
-          foreground: 'hsl(var(--destructive-foreground))',
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
         },
         muted: {
-          DEFAULT: 'hsl(var(--muted))',
-          foreground: 'hsl(var(--muted-foreground))',
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
-          DEFAULT: 'hsl(var(--accent))',
-          foreground: 'hsl(var(--accent-foreground))',
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
         },
         popover: {
-          DEFAULT: 'hsl(var(--popover))',
-          foreground: 'hsl(var(--popover-foreground))',
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
         },
         card: {
-          DEFAULT: 'hsl(var(--card))',
-          foreground: 'hsl(var(--card-foreground))',
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
         },
       },
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [require("tailwindcss-animate")],
 };
 
 export default config;
 ```
 
 **Mobile-First Approach:**
+
 - All components use `grid-cols-1` by default
 - Breakpoint progression: `md:grid-cols-2 lg:grid-cols-3`
 - Touch-friendly interactive elements (min 44px tap targets)
@@ -2503,9 +2516,10 @@ export default config;
 ### Tier-Specific Features
 
 **Feature Gates:**
+
 ```typescript
 // src/lib/tier-gate.ts
-export type Tier = 'free' | 'pro' | 'team';
+export type Tier = "free" | "pro" | "team";
 
 export interface TierFeatures {
   cloudSync: boolean;
@@ -2549,6 +2563,7 @@ export function hasFeature(tier: Tier, feature: keyof TierFeatures): boolean {
 ```
 
 **Feature Gate Component:**
+
 ```typescript
 // src/components/TierGate.tsx
 'use client';
@@ -2603,6 +2618,7 @@ function getFeatureName(feature: keyof TierFeatures): string {
 ```
 
 **Usage Example:**
+
 ```typescript
 // In a page or component
 <TierGate feature="semanticSearch" userTier={userTier}>
@@ -2615,6 +2631,7 @@ function getFeatureName(feature: keyof TierFeatures): string {
 ### Deployment
 
 **Environment Variables:**
+
 ```bash
 # .env.production
 NEXT_PUBLIC_API_BASE_URL=https://api.popkit.ai/observe/v1
@@ -2624,11 +2641,12 @@ NEXTAUTH_SECRET=your-secret-key
 ```
 
 **Next.js Configuration:**
+
 ```typescript
 // next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone', // Optimized for Cloudflare Pages
+  output: "standalone", // Optimized for Cloudflare Pages
   images: {
     unoptimized: true, // Cloudflare Images handles optimization
   },
@@ -2641,6 +2659,7 @@ module.exports = nextConfig;
 ```
 
 **Build & Deploy (Cloudflare Pages):**
+
 ```bash
 # Build
 npm run build
@@ -2653,6 +2672,7 @@ npx wrangler pages dev .next/standalone
 ```
 
 **Continuous Deployment:**
+
 ```yaml
 # .github/workflows/deploy-dashboard.yml
 name: Deploy Dashboard
@@ -2661,7 +2681,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'packages/popkit-dashboard/**'
+      - "packages/popkit-dashboard/**"
 
 jobs:
   deploy:
@@ -2694,23 +2714,21 @@ jobs:
 ### Performance Optimizations
 
 **1. React Server Components:**
+
 - Use RSC for static content (session history, workspace data)
 - Client components only for interactive features (SSE, charts)
 
 **2. Data Caching with SWR:**
+
 ```typescript
 // src/lib/api-client.ts
-import useSWR from 'swr';
+import useSWR from "swr";
 
 export function useSession(sessionId: string) {
-  const { data, error, isLoading } = useSWR(
-    `/api/session/${sessionId}`,
-    fetcher,
-    {
-      refreshInterval: 0, // Don't poll, rely on SSE
-      revalidateOnFocus: false,
-    }
-  );
+  const { data, error, isLoading } = useSWR(`/api/session/${sessionId}`, fetcher, {
+    refreshInterval: 0, // Don't poll, rely on SSE
+    revalidateOnFocus: false,
+  });
 
   return { session: data, error, isLoading };
 }
@@ -2718,6 +2736,7 @@ export function useSession(sessionId: string) {
 
 **3. Virtualized Lists:**
 For sessions with 1000+ tool calls, use `react-window`:
+
 ```typescript
 import { FixedSizeList } from 'react-window';
 
@@ -2736,6 +2755,7 @@ import { FixedSizeList } from 'react-window';
 ```
 
 **4. Image Optimization:**
+
 - Use Next.js `<Image>` component for logos/avatars
 - Lazy load charts with `loading="lazy"`
 
@@ -2744,6 +2764,7 @@ import { FixedSizeList } from 'react-window';
 ### Testing
 
 **Unit Tests (Vitest):**
+
 ```typescript
 // src/components/session/__tests__/ToolCallCard.test.tsx
 import { render, screen } from '@testing-library/react';
@@ -2778,17 +2799,16 @@ describe('ToolCallCard', () => {
 ```
 
 **Integration Tests (Playwright):**
+
 ```typescript
 // tests/e2e/session-view.spec.ts
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test('session page displays real-time updates', async ({ page }) => {
-  await page.goto('/session/20260113-142530-test');
+test("session page displays real-time updates", async ({ page }) => {
+  await page.goto("/session/20260113-142530-test");
 
   // Wait for SSE connection
-  await expect(page.locator('[data-testid="sse-status"]')).toHaveText(
-    'Connected'
-  );
+  await expect(page.locator('[data-testid="sse-status"]')).toHaveText("Connected");
 
   // Verify initial tool calls loaded
   const toolCards = page.locator('[data-testid="tool-call-card"]');
@@ -2826,6 +2846,7 @@ Section 5 defines a comprehensive Next.js dashboard with:
 This section outlines the phased migration from the existing `/popkit-core:record` system to the new `/popkit-observe:observe` architecture. The migration prioritizes backwards compatibility, minimal disruption, and incremental value delivery.
 
 **Migration Goals:**
+
 1. ✅ Preserve existing recording functionality during transition
 2. ✅ Enable Pro/Team users to adopt cloud features incrementally
 3. ✅ Maintain Free tier local HTML reports
@@ -2836,6 +2857,7 @@ This section outlines the phased migration from the existing `/popkit-core:recor
 ### Current State Analysis
 
 **Existing Components:**
+
 ```
 packages/popkit-core/
 ├── commands/record.md           # /popkit-core:record command
@@ -2854,6 +2876,7 @@ packages/shared-py/popkit_shared/utils/
 ```
 
 **Key Findings:**
+
 1. ✅ **transcript_parser.py** exists and is complete with tests
 2. ❌ **Not yet integrated** into `subagent-stop.py:195` (Issue #110 scope)
 3. ✅ **session_recorder.py** handles local recording
@@ -2904,6 +2927,7 @@ Phase 5: Deprecation & Cleanup
 **Objective:** Integrate `transcript_parser.py` into `subagent-stop.py` to extract structured data from Power Mode transcripts.
 
 **Scope:**
+
 - File: `packages/popkit-core/hooks/subagent-stop.py:195`
 - Status: Complete parsing logic exists, just needs integration
 - Impact: Zero user-facing changes (internal enhancement)
@@ -2949,6 +2973,7 @@ def parse_and_record_transcript(transcript_path: str, subagent_id: str):
 ```
 
 **Testing:**
+
 ```bash
 # Run existing transcript_parser tests
 cd packages/shared-py
@@ -2965,6 +2990,7 @@ cat ~/.claude/popkit/recording.json | jq '.subagents[0]'
 ```
 
 **Success Criteria:**
+
 - ✅ `subagent-stop.py` parses JSONL transcripts successfully
 - ✅ Tool count and token usage recorded in `recording.json`
 - ✅ No errors in hook execution
@@ -2979,6 +3005,7 @@ cat ~/.claude/popkit/recording.json | jq '.subagents[0]'
 **Objective:** Create `popkit-observe` plugin with cloud-ready command structure.
 
 **File Structure:**
+
 ```
 packages/popkit-observe/
 ├── .claude-plugin/
@@ -2994,6 +3021,7 @@ packages/popkit-observe/
 ```
 
 **Plugin Manifest:**
+
 ```json
 {
   "name": "popkit-observe",
@@ -3014,7 +3042,7 @@ packages/popkit-observe/
 **Command Implementation:**
 Copy from Section 3 (`observe.md`), but add deprecation notice for `/popkit-core:record`:
 
-```markdown
+````markdown
 ---
 description: "start | stop | status | dashboard | sync - Real-time session observability"
 argument-hint: "<subcommand> [mode]"
@@ -3031,13 +3059,16 @@ Real-time observability for Claude Code sessions. Stream tool calls, track costs
 If you were using `/popkit-core:record`, the migration is seamless:
 
 **Before (deprecated):**
+
 ```bash
 /popkit-core:record start
 # ... work ...
 /popkit-core:record stop
 ```
+````
 
 **After (new):**
+
 ```bash
 /popkit-observe:observe start
 # ... work ...
@@ -3045,13 +3076,15 @@ If you were using `/popkit-core:record`, the migration is seamless:
 ```
 
 **What's Different:**
+
 - ✅ Same local HTML reports (Free tier)
 - ✅ NEW: Real-time cloud streaming (Pro/Team tier)
 - ✅ NEW: Cost tracking and visualization
 - ✅ NEW: Team workspace and semantic search
 
 [Rest of command documentation from Section 3...]
-```
+
+````
 
 **Backwards Compatibility:**
 
@@ -3081,9 +3114,10 @@ All `/popkit-core:record` commands now redirect to `/popkit-observe:observe` wit
 - v1.4.0: Command removed (ETA: 6 months)
 
 [Show migration instructions...]
-```
+````
 
 Option 2: **Hook-Based Redirect** (add to `popkit-core/hooks/command-intercept.py`):
+
 ```python
 # Intercept /popkit-core:record and redirect to /popkit-observe:observe
 import sys
@@ -3110,6 +3144,7 @@ def intercept_deprecated_command(command: str):
 **Shared Utilities:**
 
 Update `shared-py` with new observability client:
+
 ```
 packages/shared-py/popkit_shared/utils/
 ├── observability_client.py       # NEW - Cloud streaming client
@@ -3119,6 +3154,7 @@ packages/shared-py/popkit_shared/utils/
 ```
 
 **Testing:**
+
 ```bash
 # Install new plugin
 /plugin install ./packages/popkit-observe
@@ -3142,6 +3178,7 @@ export POPKIT_API_KEY="pk_test_abc123"
 ```
 
 **Success Criteria:**
+
 - ✅ New plugin installs without errors
 - ✅ `/popkit-observe:observe start/stop` functional
 - ✅ Free tier HTML reports still work
@@ -3159,6 +3196,7 @@ export POPKIT_API_KEY="pk_test_abc123"
 **Infrastructure Setup:**
 
 1. **Upstash Redis:**
+
 ```bash
 # Create Upstash Redis database
 # Via Upstash dashboard: https://console.upstash.com
@@ -3169,6 +3207,7 @@ UPSTASH_REDIS_REST_TOKEN=AY...
 ```
 
 2. **Upstash Vector (Team tier):**
+
 ```bash
 # Create Upstash Vector index
 # Dimension: 1536 (Voyage AI embeddings)
@@ -3179,6 +3218,7 @@ UPSTASH_VECTOR_REST_TOKEN=AY...
 ```
 
 3. **Cloudflare Workers:**
+
 ```bash
 cd packages/popkit-cloud/workers
 npm install
@@ -3217,6 +3257,7 @@ def generate_api_key(tier: str, user_id: str) -> str:
 **Client Integration:**
 
 Update `observability_client.py` to use Cloudflare API:
+
 ```python
 # packages/shared-py/popkit_shared/utils/observability_client.py
 
@@ -3286,6 +3327,7 @@ redis-cli -u $UPSTASH_REDIS_REST_URL
 ```
 
 **Success Criteria:**
+
 - ✅ Cloudflare Workers API deployed and responding
 - ✅ Upstash Redis storing session data
 - ✅ Rate limiting functional (Pro: 100 req/min, Team: 500 req/min)
@@ -3327,24 +3369,21 @@ npx wrangler pages deploy .next/standalone --project-name=popkit-observe-dashboa
 
 ```typescript
 // src/app/api/auth/[...nextauth]/route.ts
-import NextAuth from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
+import NextAuth from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
 
 export const authOptions = {
   providers: [
     CredentialsProvider({
-      name: 'API Key',
+      name: "API Key",
       credentials: {
-        apiKey: { label: 'API Key', type: 'password' },
+        apiKey: { label: "API Key", type: "password" },
       },
       async authorize(credentials) {
         // Validate API key against Upstash Redis
-        const response = await fetch(
-          'https://api.popkit.ai/observe/v1/auth/verify',
-          {
-            headers: { Authorization: `Bearer ${credentials?.apiKey}` },
-          }
-        );
+        const response = await fetch("https://api.popkit.ai/observe/v1/auth/verify", {
+          headers: { Authorization: `Bearer ${credentials?.apiKey}` },
+        });
 
         if (response.ok) {
           const user = await response.json();
@@ -3407,6 +3446,7 @@ Sentry.init({
 ```
 
 **Success Criteria:**
+
 - ✅ Dashboard deployed at observe.popkit.ai
 - ✅ Authentication via API key functional
 - ✅ SSE live updates working
@@ -3426,12 +3466,12 @@ Sentry.init({
 
 **Deprecation Timeline:**
 
-| Date | Version | Action |
-|------|---------|--------|
-| 2026-01-20 | v1.1.0 | Deprecation notice added to `/popkit-core:record` |
-| 2026-03-01 | v1.2.0 | Warning shown on every use |
-| 2026-05-01 | v1.3.0 | Error shown, command no longer functional |
-| 2026-07-01 | v1.4.0 | Command removed entirely |
+| Date       | Version | Action                                            |
+| ---------- | ------- | ------------------------------------------------- |
+| 2026-01-20 | v1.1.0  | Deprecation notice added to `/popkit-core:record` |
+| 2026-03-01 | v1.2.0  | Warning shown on every use                        |
+| 2026-05-01 | v1.3.0  | Error shown, command no longer functional         |
+| 2026-07-01 | v1.4.0  | Command removed entirely                          |
 
 **Migration Notifications:**
 
@@ -3460,6 +3500,7 @@ def show_deprecation_notice(phase: int):
 **Data Migration (Optional):**
 
 For users with existing local HTML reports:
+
 ```python
 # packages/popkit-observe/scripts/migrate-reports.py
 
@@ -3501,20 +3542,24 @@ rm packages/popkit-core/hooks/recording-*.py
 ## v1.4.0 (2026-07-01)
 
 ### Breaking Changes
+
 - **REMOVED:** `/popkit-core:record` command (deprecated since v1.1.0)
 - **Migration:** Use `/popkit-observe:observe` instead
 - **Impact:** No impact if you migrated to `popkit-observe` plugin
 
 ### Migration Guide
+
 See: https://popkit.ai/docs/migration-guide
 
 ## v1.1.0 (2026-01-20)
 
 ### Deprecated
+
 - `/popkit-core:record` - Use `/popkit-observe:observe` instead
 - Automatic redirect added, no immediate action required
 
 ### Added
+
 - **NEW PLUGIN:** `popkit-observe` - Real-time observability
 - Cloud streaming for Pro/Team tiers
 - Cost tracking and visualization
@@ -3522,6 +3567,7 @@ See: https://popkit.ai/docs/migration-guide
 ```
 
 **Success Criteria:**
+
 - ✅ 90%+ users migrated before hard removal
 - ✅ No user complaints about unexpected breakage
 - ✅ Documentation updated across all channels
@@ -3568,18 +3614,21 @@ echo "⚠️  Cloud observability temporarily disabled. Local recording still fu
 ### Success Metrics
 
 **Technical Metrics:**
+
 - API uptime: >99.9%
 - SSE connection success rate: >98%
 - Average latency: <100ms (session/stream)
 - Dashboard page load: <2s (75th percentile)
 
 **User Metrics:**
+
 - Migration rate: >90% within 3 months
 - Cloud adoption (Pro tier): >60%
 - Error rate: <0.1%
 - Support tickets: <10/week
 
 **Business Metrics:**
+
 - Pro tier conversion: Track uplift from observability
 - Team tier adoption: Monitor workspace usage
 - Cost savings: Measure efficiency gains from cost tracking
@@ -3588,20 +3637,21 @@ echo "⚠️  Cloud observability temporarily disabled. Local recording still fu
 
 ### Risk Mitigation
 
-| Risk | Impact | Probability | Mitigation |
-|------|--------|-------------|------------|
-| API downtime | High | Low | Offline queue, graceful fallback to local |
-| SSE connection failures | Medium | Medium | Auto-reconnect, poll fallback |
-| Privacy concerns | High | Low | Clear consent flow, anonymization by default |
-| Performance degradation | Medium | Medium | Adaptive batching, smart mode |
-| Migration friction | Low | High | Automatic redirect, extensive docs |
-| Data loss | High | Very Low | Redundant storage, regular backups |
+| Risk                    | Impact | Probability | Mitigation                                   |
+| ----------------------- | ------ | ----------- | -------------------------------------------- |
+| API downtime            | High   | Low         | Offline queue, graceful fallback to local    |
+| SSE connection failures | Medium | Medium      | Auto-reconnect, poll fallback                |
+| Privacy concerns        | High   | Low         | Clear consent flow, anonymization by default |
+| Performance degradation | Medium | Medium      | Adaptive batching, smart mode                |
+| Migration friction      | Low    | High        | Automatic redirect, extensive docs           |
+| Data loss               | High   | Very Low    | Redundant storage, regular backups           |
 
 ---
 
 ### Summary
 
 **Complete Migration Path:**
+
 1. ✅ **Phase 1 (1-2 days):** Integrate transcript parsing (Issue #110)
 2. ✅ **Phase 2 (1-2 weeks):** Create popkit-observe plugin
 3. ✅ **Phase 3 (2-3 weeks):** Deploy Cloudflare Workers API
@@ -3611,6 +3661,7 @@ echo "⚠️  Cloud observability temporarily disabled. Local recording still fu
 **Total Timeline:** ~2 months development + 6 months deprecation = 8 months
 
 **Key Principles:**
+
 - ✅ Zero breaking changes during migration
 - ✅ Backwards compatibility maintained
 - ✅ Gradual rollout with feature flags
@@ -3655,6 +3706,7 @@ echo "⚠️  Cloud observability temporarily disabled. Local recording still fu
 **See Section 6 for complete phase-by-phase implementation plan.**
 
 **Quick Reference:**
+
 - **Phase 1 (1-2 days):** Issue #110 - Integrate transcript parsing
 - **Phase 2 (1-2 weeks):** Create popkit-observe plugin
 - **Phase 3 (2-3 weeks):** Deploy Cloudflare Workers API
@@ -3716,22 +3768,26 @@ This comprehensive design document covers the complete PopKit Observability Plat
 ### Key Design Decisions
 
 ✅ **Architecture:**
+
 - Cloud-native with Cloudflare Workers + Upstash
 - SSE (not WebSocket) for real-time updates
 - Adaptive streaming with three modes (realtime/batch/smart)
 - Offline queue for resilience
 
 ✅ **Monetization:**
+
 - Free: Local HTML reports (no cloud)
 - Pro: Cloud streaming + dashboard + cost tracking
 - Team: + Shared workspace + semantic search
 
 ✅ **Privacy:**
+
 - Consent-based opt-in for cloud features
 - Three anonymization levels (strict/moderate/minimal)
 - Existing privacy infrastructure reused
 
 ✅ **Migration:**
+
 - Zero breaking changes
 - Backwards compatibility via redirects
 - 6-month deprecation period
@@ -3740,6 +3796,7 @@ This comprehensive design document covers the complete PopKit Observability Plat
 ### What's Ready to Implement
 
 **This design document provides:**
+
 - ✅ Complete file structures
 - ✅ Full code implementations (Python + TypeScript)
 - ✅ API endpoint specifications
@@ -3751,12 +3808,14 @@ This comprehensive design document covers the complete PopKit Observability Plat
 - ✅ Success criteria for each phase
 
 **Next Steps:**
+
 1. **Review & Approve:** User reviews complete design
 2. **Create Implementation Plan:** Use `/popkit:dev plan` to generate detailed task breakdown
 3. **Phase 1 Start:** Integrate transcript parsing (Issue #110) - 1-2 days
 4. **Iterate:** Build, test, and refine each phase
 
 **Design Philosophy:**
+
 - ✅ **DRY:** Reuse existing utilities (transcript_parser, privacy, session_recorder)
 - ✅ **YAGNI:** Only build what's needed for three tiers (no over-engineering)
 - ✅ **TDD:** Tests defined for all phases
@@ -3774,6 +3833,7 @@ This comprehensive design document covers the complete PopKit Observability Plat
 **Related OPTIMUS:** Decided to start fresh (not harvest)
 
 **Files Referenced:**
+
 - `packages/popkit-core/commands/record.md` - Existing recording command
 - `packages/popkit-core/hooks/subagent-stop.py` - Line 195 TODO (Issue #110)
 - `packages/shared-py/popkit_shared/utils/transcript_parser.py` - Complete, needs integration
@@ -3782,6 +3842,7 @@ This comprehensive design document covers the complete PopKit Observability Plat
 - `packages/shared-py/popkit_shared/utils/pattern_anonymizer.py` - Redaction
 
 **Technologies:**
+
 - **Plugin:** Python (hooks, utilities)
 - **API:** TypeScript (Cloudflare Workers)
 - **Dashboard:** Next.js 14, React 18, Tailwind CSS

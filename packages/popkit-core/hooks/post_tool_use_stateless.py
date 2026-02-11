@@ -8,16 +8,16 @@ This is the stateless refactor of post-tool-use.py following issue #22.
 All state is explicit - no SQLite or environment variable dependencies.
 """
 
+import json
 import os
 import sys
-import json
 from typing import List, Optional
 
 # Add utils to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "utils"))
 
-from stateless_hook import StatelessHook
 from context_carrier import HookContext
+from stateless_hook import StatelessHook
 
 
 class PostToolUseStateless(StatelessHook):

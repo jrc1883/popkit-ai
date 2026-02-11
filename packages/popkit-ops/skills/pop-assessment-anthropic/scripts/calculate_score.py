@@ -17,8 +17,8 @@ Output:
 import json
 import subprocess
 import sys
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 
 def find_plugin_root(start_path: Path = None) -> Path:
@@ -45,7 +45,7 @@ def run_validation_script(script_name: str, plugin_dir: Path) -> dict:
         return {
             "category": script_name.replace("validate_", "").replace(".py", ""),
             "score": 0,
-            "error": f"Script not found: {script_path}"
+            "error": f"Script not found: {script_path}",
         }
 
     try:
@@ -53,26 +53,26 @@ def run_validation_script(script_name: str, plugin_dir: Path) -> dict:
             [sys.executable, str(script_path), str(plugin_dir)],
             capture_output=True,
             text=True,
-            timeout=60
+            timeout=60,
         )
         return json.loads(result.stdout)
     except subprocess.TimeoutExpired:
         return {
             "category": script_name.replace("validate_", "").replace(".py", ""),
             "score": 0,
-            "error": "Script timeout"
+            "error": "Script timeout",
         }
     except json.JSONDecodeError:
         return {
             "category": script_name.replace("validate_", "").replace(".py", ""),
             "score": 0,
-            "error": "Invalid JSON output"
+            "error": "Invalid JSON output",
         }
     except Exception as e:
         return {
             "category": script_name.replace("validate_", "").replace(".py", ""),
             "score": 0,
-            "error": str(e)
+            "error": str(e),
         }
 
 
@@ -81,7 +81,7 @@ def get_version(plugin_dir: Path) -> str:
     plugin_json = plugin_dir / ".claude-plugin" / "plugin.json"
     if plugin_json.exists():
         try:
-            with open(plugin_json, 'r') as f:
+            with open(plugin_json, "r") as f:
                 data = json.load(f)
                 return data.get("version", "unknown")
         except:
@@ -95,7 +95,7 @@ def calculate_weighted_score(results: list) -> dict:
         "plugin-structure": 25,
         "hook-protocol": 30,
         "agent-routing": 25,
-        "progressive-disclosure": 20
+        "progressive-disclosure": 20,
     }
 
     total_weight = 0
@@ -110,7 +110,7 @@ def calculate_weighted_score(results: list) -> dict:
         category_scores[category] = {
             "score": score,
             "weight": weight,
-            "weighted": round(score * weight / 100, 2)
+            "weighted": round(score * weight / 100, 2),
         }
 
         total_weight += weight
@@ -118,11 +118,7 @@ def calculate_weighted_score(results: list) -> dict:
 
     overall = round(weighted_score / max(total_weight, 1), 1)
 
-    return {
-        "overall": overall,
-        "categories": category_scores,
-        "total_weight": total_weight
-    }
+    return {"overall": overall, "categories": category_scores, "total_weight": total_weight}
 
 
 def get_status_label(score: float) -> str:
@@ -141,13 +137,7 @@ def get_status_label(score: float) -> str:
 
 def collect_all_findings(results: list) -> dict:
     """Collect and categorize all findings."""
-    all_findings = {
-        "critical": [],
-        "high": [],
-        "medium": [],
-        "low": [],
-        "info": []
-    }
+    all_findings = {"critical": [], "high": [], "medium": [], "low": [], "info": []}
 
     for result in results:
         category = result.get("category", "unknown")
@@ -193,11 +183,7 @@ def main():
             plugin_dir = find_plugin_root()
 
         # Run all validation scripts
-        scripts = [
-            "validate_plugin_structure.py",
-            "validate_hooks.py",
-            "validate_routing.py"
-        ]
+        scripts = ["validate_plugin_structure.py", "validate_hooks.py", "validate_routing.py"]
 
         results = []
         for script in scripts:
@@ -213,7 +199,7 @@ def main():
     all_findings = collect_all_findings(results)
 
     # Get version
-    version = get_version(plugin_dir) if 'plugin_dir' in dir() else "unknown"
+    version = get_version(plugin_dir) if "plugin_dir" in dir() else "unknown"
 
     # Build final report
     report = {
@@ -227,25 +213,29 @@ def main():
             "critical_issues": len(all_findings["critical"]),
             "high_issues": len(all_findings["high"]),
             "medium_issues": len(all_findings["medium"]),
-            "low_issues": len(all_findings["low"])
+            "low_issues": len(all_findings["low"]),
         },
         "category_results": results,
         "findings_by_severity": all_findings,
-        "recommendations": []
+        "recommendations": [],
     }
 
     # Add recommendations based on findings
     if all_findings["critical"]:
-        report["recommendations"].append({
-            "priority": "CRITICAL",
-            "message": f"Fix {len(all_findings['critical'])} critical issues before release"
-        })
+        report["recommendations"].append(
+            {
+                "priority": "CRITICAL",
+                "message": f"Fix {len(all_findings['critical'])} critical issues before release",
+            }
+        )
 
     if all_findings["high"]:
-        report["recommendations"].append({
-            "priority": "HIGH",
-            "message": f"Address {len(all_findings['high'])} high priority issues"
-        })
+        report["recommendations"].append(
+            {
+                "priority": "HIGH",
+                "message": f"Address {len(all_findings['high'])} high priority issues",
+            }
+        )
 
     # Print report
     print(json.dumps(report, indent=2))

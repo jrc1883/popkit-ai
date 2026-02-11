@@ -22,11 +22,11 @@ if str(shared_py_path) not in sys.path:
     sys.path.insert(0, str(shared_py_path))
 
 try:
+    from popkit_shared.utils.complexity_scoring import analyze_complexity
     from popkit_shared.utils.conflict_analyzer import (
         Conflict,
         ConflictResolver,
     )
-    from popkit_shared.utils.complexity_scoring import analyze_complexity
 except ImportError as e:
     print(f"[ERROR] Import failed: {e}")
     print(f"Shared-py path: {shared_py_path}")
@@ -197,9 +197,7 @@ def test_file_importance():
         importance = resolver._assess_file_importance(file_path)
         print(f"[PASS] {file_path}: {importance}/10 ({description})")
 
-        assert importance >= expected_min - 2, (
-            f"Importance {importance} too low for {description}"
-        )
+        assert importance >= expected_min - 2, f"Importance {importance} too low for {description}"
 
 
 def test_architectural_detection():

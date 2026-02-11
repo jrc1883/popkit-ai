@@ -52,8 +52,12 @@ class TestGitCommandExecution(unittest.TestCase):
 
     @patch("subprocess.run")
     def test_run_git_command_failure(self, mock_run):
-        """Test failed command execution."""
-        mock_run.return_value = MagicMock(stdout="error\n", returncode=1)
+        """Test failed command execution returns stderr on failure."""
+        mock_result = MagicMock()
+        mock_result.returncode = 1
+        mock_result.stdout = ""
+        mock_result.stderr = "error\n"
+        mock_run.return_value = mock_result
 
         output, ok = run_git_command("invalid")
 
@@ -347,6 +351,29 @@ class TestOperationUpdateAll(unittest.TestCase):
         self.assertTrue(result["success"])
         self.assertEqual(result["totalWorktrees"], 1)
         self.assertEqual(result["successCount"], 1)
+
+    @patch("worktree_operations.subprocess.run")
+    @patch("worktree_operations.run_git_command")
+    @patch("worktree_operations.operation_list")
+    def test_update_all_install_uses_list_args(self, mock_list, mock_git, mock_run):
+        """Test npm install uses list args without shell=True."""
+        mock_list.return_value = {
+            "success": True,
+            "worktrees": [{"path": "/test/path", "branch": "test"}],
+        }
+        mock_git.return_value = ("Already up to date", True)
+        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+
+        with patch("pathlib.Path.exists", return_value=True):
+            result = operation_update_all(install=True)
+
+        self.assertTrue(result["success"])
+        mock_run.assert_called_with(
+            ["npm", "install"],
+            cwd="/test/path",
+            capture_output=True,
+            text=True,
+        )
 
 
 class TestOperationPrune(unittest.TestCase):

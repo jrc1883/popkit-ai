@@ -20,7 +20,7 @@ if str(utils_dir) not in sys.path:
     sys.path.insert(0, str(utils_dir))
 
 # Import from same module that will be used elsewhere
-from utils.bug_store import ConsentLevel, ShareStatus, get_bug_store
+from utils.bug_store import ConsentLevel, ShareStatus, get_bug_store  # noqa: E402
 
 
 class ConsentAction(Enum):

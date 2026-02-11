@@ -1,366 +1,229 @@
 # PopKit
 
-<!-- Badge Section -->
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-1.0.0--beta.7-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
-![Build Status](https://img.shields.io/github/actions/workflow/status/jrc1883/popkit-claude/ci.yml?branch=main)
-![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
-![TypeScript](https://img.shields.io/badge/typescript-5.0+-blue.svg)
-![GitHub Stars](https://img.shields.io/github/stars/jrc1883/popkit-claude?style=social)
-![GitHub Forks](https://img.shields.io/github/forks/jrc1883/popkit-claude?style=social)
-![Claude Code](https://img.shields.io/badge/Claude%20Code-2.1.2%2B-purple.svg)
+**Development workflows that actually work**
 
-**Get 10x the work done in Claude Code—without the learning curve.**
+Start each day knowing your project is healthy.
+End each day with context saved for tomorrow.
+Know exactly what to do next.
 
-Transforms Claude Code into a complete development workflow system with intelligent agents that coordinate automatically, handle tasks in parallel, and get smarter over time. One subscription, zero installation friction.
-
-**Version:** 1.0.0-beta.7 | **Plugins:** 4 | **Commands:** 25 | **Skills:** 38 | **Agents:** 22
-
-[Quick Start](#-quick-start) • [Features](#-what-is-popkit) • [Documentation](#-documentation) • [Contributing](#-contributing)
+[Get Started](#get-started) · [Morning Routine](#morning-routine) · [What's Next](#whats-next) · [Docs](https://popkit.unjoe.me)
 
 </div>
 
 ---
 
-## 📑 Table of Contents
+## What is PopKit?
 
-- [What is PopKit?](#-what-is-popkit)
-- [See It In Action](#-see-it-in-action)
-- [Modular Architecture](#-modular-architecture)
-- [Quick Start](#-quick-start)
-- [Core Workflows](#-core-workflows)
-  - [Feature Development](#feature-development)
-  - [Git Operations](#git-operations)
-  - [Quality Assurance](#quality-assurance)
-  - [Deployment](#deployment)
-- [Repository Structure](#️-repository-structure)
-- [API Key Enhancement Model](#-api-key-enhancement-model)
-- [Documentation](#-documentation)
-- [Current Status](#-current-status)
-- [Contributing](#-contributing)
-- [Contributors](#-contributors)
-- [Star History](#-star-history)
-- [License](#-license)
-- [Author](#-author)
+PopKit organizes your Claude Code sessions around **workflows, not tools**.
+
+Most AI coding assistants give you a prompt and say "figure it out." PopKit gives you:
+
+- **Morning routines** that check your project health before you write code
+- **"What's next?"** recommendations based on your actual git status, failing tests, and open issues
+- **Guided development** that walks you through feature implementation phase by phase
+- **Session capture** so you can pick up exactly where you left off
+
+It's the difference between "here's an AI" and "here's how to use AI to build software."
 
 ---
 
-## 🎯 What is PopKit?
-
-PopKit transforms Claude Code into a complete development workflow system with intelligent orchestration that makes you more productive without adding complexity.
-
-### Why PopKit?
-
-- **12x Cheaper at Scale** - Run coordinated multi-agent workflows with a single Claude subscription ($20/month), not 12 parallel subscriptions ($240/month). PopKit's intelligent orchestration means you pay once and work on unlimited tasks.
-
-- **Zero Installation Friction** - No new IDE to learn, no Docker containers to manage, no separate tools to install. PopKit lives inside Claude Code as a plugin—install in 30 seconds and start building immediately.
-
-- **Smarter Over Time, Not Just Faster** - Our embedding-based agent routing has already reduced context baseline by 40.5% (25.7k → 15.3k tokens). The more you use PopKit, the cheaper and more precise your AI assistance becomes.
-
-- **Parallel AI Workers Without the Complexity** - Power Mode coordinates multiple specialized agents working on different aspects of your task simultaneously. You get the benefits of parallel execution without managing multiple Claude instances or terminals.
-
-- **GitHub-First Workflows That Actually Work** - Issues automatically become tasks, tasks become PRs, and PRs get reviewed with quality gates. PopKit handles the entire workflow from ideation to deployment without leaving Claude Code.
-
-- **Quality Gates You Can Trust** - Every workflow includes automated testing, security scanning, code review, and deployment validation. Six specialized assessors (Anthropic, Security, Performance, UX, Architecture, Documentation) ensure production-ready code.
-
-### What's Included
-
-- **5 Focused Plugins**: Install only what you need (core, dev, ops, research, or complete suite)
-- **25 Workflow Commands**: From morning routines to deployment automation
-- **38 Reusable Skills**: Battle-tested workflows from planning to production
-- **22 Specialized Agents**: Context-aware AI assistance that routes automatically
-- **FREE Local Execution**: All features work without cloud API keys
-- **Optional Enhancements**: Semantic intelligence with Voyage AI embeddings
-
----
-
-## 🎬 See It In Action
-
-### Quick Start Demo
-
-![PopKit Quick Start](packages/popkit-core/assets/images/quick-start.gif)
-
-_Watch how PopKit gets you up and running in seconds with `/plugin install` and intelligent project setup._
-
-### Morning Routine Workflow
-
-![Morning Routine](packages/popkit-core/assets/images/morning-routine.gif)
-
-_See the `/popkit-dev:routine morning` command in action - automated health checks, dependency updates, and your personalized "Ready to Code" score._
-
-### Feature Development Workflow
-
-![Feature Workflow](packages/popkit-core/assets/images/feature-workflow.gif)
-
-_Complete feature development cycle: brainstorm → plan → implement → review → PR creation, all orchestrated by `/popkit-dev:dev`._
-
-### Power Mode Multi-Agent Orchestration
-
-![Power Mode](packages/popkit-core/assets/images/power-mode.gif)
-
-_Experience Power Mode's intelligent agent orchestration handling complex tasks with multiple specialized agents working in parallel._
-
----
-
-## 📦 Modular Architecture
-
-PopKit is split into 5 focused workflow plugins:
-
-| Plugin                                           | Purpose                 | Commands | When to Use                                     |
-| ------------------------------------------------ | ----------------------- | -------- | ----------------------------------------------- |
-| **[popkit-core](packages/popkit-core/)**         | Foundation & Power Mode | 11       | Project setup, plugin management, orchestration |
-| **[popkit-dev](packages/popkit-dev/)**           | Development workflows   | 7        | Daily dev, git, GitHub, routines                |
-| **[popkit-ops](packages/popkit-ops/)**           | Operations & quality    | 5        | Testing, debugging, security, deployment        |
-| **[popkit-research](packages/popkit-research/)** | Knowledge management    | 2        | Research capture, knowledge base                |
-
-**Foundation**: `popkit-shared` (v1.0.0) - 70 shared Python utility modules
-
----
-
-## ⚡ Quick Start
-
-**Step 1: Add the PopKit marketplace (one-time setup)**
+## Get Started
 
 ```bash
+# Add the PopKit marketplace
 /plugin marketplace add jrc1883/popkit-claude
+
+# Install the plugins you need
+/plugin install popkit-core@popkit-claude   # Foundation
+/plugin install popkit-dev@popkit-claude    # Development workflows
+
+# Restart Claude Code, then run your first morning routine:
+/popkit-dev:routine morning
 ```
 
-**Step 2: Install PopKit plugins**
+---
+
+## Morning Routine
+
+Every morning, PopKit checks your project's vital signs:
+
+```
+/popkit-dev:routine morning
+```
+
+```
+■ Session Restored
+  Last: Fixed authentication flow (2h ago)
+
+■ Ready to Code Score: 87/100
+
+  ✓ Git status clean
+  ✓ Tests passing (142/142)
+  ✓ CI green on main
+  ⚠ 2 dependencies outdated
+  ✓ No TypeScript errors
+
+■ Context Loaded
+  Active issue: #47 Add password reset flow
+  Branch: feat/password-reset (3 commits ahead of main)
+
+Ready to continue.
+```
+
+The "Ready to Code" score tells you if something needs attention before you start coding. 87 means you're good to go. 45 means something's broken.
+
+---
+
+## What's Next
+
+When you're not sure what to work on:
+
+```
+/popkit-dev:next
+```
+
+PopKit analyzes your git status, test results, GitHub issues, and TypeScript errors to recommend prioritized actions:
+
+```
+Recommended Actions:
+
+1. Merge main into branch (Score: 85)
+   Branch is 5 commits behind main
+
+2. Fix TypeScript error in src/auth.ts:47 (Score: 78)
+   Type 'string | undefined' is not assignable to type 'string'
+
+3. Continue issue #47 (Score: 72)
+   Password reset flow - implementation started
+
+4. Review PR #51 (Score: 65)
+   Dependency update, waiting 2 days
+```
+
+No more staring at your terminal wondering what to do.
+
+---
+
+## Guided Development
+
+Start a feature with `/popkit-dev:dev`:
+
+```
+/popkit-dev:dev "Add password reset via email"
+```
+
+PopKit walks you through seven phases:
+
+1. **Discovery** — What exactly are we building?
+2. **Exploration** — What patterns exist in this codebase?
+3. **Questions** — What do we need to clarify before coding?
+4. **Architecture** — How should we structure this?
+5. **Implementation** — Write the code, phase by phase
+6. **Review** — Check what we built
+7. **Summary** — Document what changed
+
+Each phase has checkpoints. You approve before moving forward.
+
+---
+
+## Nightly Routine
+
+End your day with context saved:
+
+```
+/popkit-dev:routine nightly
+```
+
+```
+■ Sleep Score: 92/100
+
+  ✓ All changes committed
+  ✓ Branch pushed to origin
+  ✓ Tests passing
+  ✓ No uncommitted stashes
+
+■ Session Captured
+  Work: Implemented password reset email flow
+  Next: Add reset token validation endpoint
+
+■ Dependencies
+  2 security updates available (non-breaking)
+
+Sweet dreams.
+```
+
+Tomorrow's morning routine will restore this context automatically.
+
+---
+
+## The Philosophy
+
+PopKit tries to be **programmatic where possible, AI where needed**.
+
+| Approach                  | What it means                                       |
+| ------------------------- | --------------------------------------------------- |
+| **Programmatic git**      | Status checks are scripts, not AI guesses           |
+| **Rule-based validation** | TypeScript errors come from `tsc`, not prompts      |
+| **Explicit state**        | Session context is JSON, not memory                 |
+| **AI for judgment**       | Architecture decisions, code review, prioritization |
+
+This reduces token usage, makes workflows reproducible, and keeps AI focused on what it's actually good at.
+
+---
+
+## More Plugins
+
+PopKit is modular. Install what you need:
+
+| Plugin              | What it adds                                                     |
+| ------------------- | ---------------------------------------------------------------- |
+| **popkit-core**     | Project setup, Power Mode (multi-agent), session management      |
+| **popkit-dev**      | Git workflows, morning/nightly routines, `/next` recommendations |
+| **popkit-ops**      | Quality assessments, security scanning, debugging workflows      |
+| **popkit-research** | Knowledge capture, research notes, documentation sync            |
 
 ```bash
-# Install all plugins for full functionality
-/plugin install popkit-core@popkit-claude
-/plugin install popkit-dev@popkit-claude
-/plugin install popkit-ops@popkit-claude
-/plugin install popkit-research@popkit-claude
-
-# Restart Claude Code
-```
-
-**Or install selectively:**
-
-- `popkit-core` - Foundation (account, stats, Power Mode) - 11 commands
-- `popkit-dev` - Development workflows (git, GitHub, routines) - 7 commands
-- `popkit-ops` - Operations & quality (testing, security, deploy) - 5 commands
-- `popkit-research` - Knowledge management (research, notes) - 2 commands
-
-**Minimum**: popkit-core (11 commands)
-**Recommended**: popkit-core + popkit-dev (18 commands)
-**Complete**: All 4 plugins (25 commands)
-
----
-
-## 🚀 Core Workflows
-
-### Feature Development
-
-```bash
-# Start development workflow
-/popkit-dev:dev "Add user authentication"
-  → Brainstorm → Plan → Implement → Review → PR
-
-# Daily routines
-/popkit-dev:routine morning    # Health check + "Ready to Code" score
-/popkit-dev:routine nightly    # Cleanup + "Sleep Score"
-
-# Context-aware help
-/popkit-dev:next              # What should I do next?
-```
-
-### Git Operations
-
-```bash
-# Smart commits
-/popkit-dev:git commit        # Auto-generates conventional commit message
-
-# Pull requests
-/popkit-dev:git pr            # Creates PR with summary + checklist
-
-# Code review
-/popkit-dev:git review        # In-depth code review with suggestions
-```
-
-### Quality Assurance
-
-```bash
-# Multi-perspective assessment
-/popkit-ops:assess all        # Run 6 specialized assessors
-
-# Systematic debugging
-/popkit-ops:debug "login fails on mobile"
-
-# Security scanning
-/popkit-ops:security scan     # Find vulnerabilities + create issues
-```
-
-### Deployment
-
-```bash
-# Universal deployment
-/popkit-ops:deploy init       # Configure deployment targets
-/popkit-ops:deploy execute    # Ship to Docker/npm/Vercel/etc.
+/plugin install popkit-ops@popkit-claude      # Quality & security
+/plugin install popkit-research@popkit-claude # Knowledge management
 ```
 
 ---
 
-## 🏗️ Repository Structure
+## Requirements
 
-```
-popkit/
-├── packages/
-│   ├── popkit-core/        # Foundation plugin (Power Mode, config)
-│   ├── popkit-dev/         # Development workflows (git, GitHub, routines)
-│   ├── popkit-ops/         # Operations & quality (test, debug, deploy)
-│   ├── popkit-research/    # Knowledge management (research, notes)
-│   ├── shared-py/          # Shared Python utilities (70 modules)
-│   └── docs/               # Documentation site (Astro + Starlight)
-├── docs/                   # Technical guides and documentation
-├── CLAUDE.md               # Claude Code development instructions
-├── CHANGELOG.md            # Version history
-└── README.md               # This file
-```
+- Claude Code 2.1.33+
+- Python 3.11+
+- Git
+- GitHub CLI (`gh`) for GitHub integration
 
 ---
 
-## 🔑 API Key Enhancement Model
+## Documentation
 
-**Everything works FREE locally.** An API key adds:
-
-- ✨ **Semantic Search**: Find skills/agents using natural language
-- 🌐 **Cloud Knowledge**: Cross-project learning and patterns
-- 🤝 **Community Intelligence**: Benefit from collective insights
-- 🎯 **Enhanced Routing**: Better agent selection with embeddings
-
-**No feature gating** - only intelligence amplification.
+- **[Documentation Site](https://popkit.unjoe.me)** — Guides and references
+- **[CLAUDE.md](CLAUDE.md)** — AI-readable project instructions
+- **[CHANGELOG.md](CHANGELOG.md)** — Version history
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** — How to contribute
 
 ---
 
-## 📚 Documentation
+## Status
 
-### Plugin Documentation
-
-- [popkit-core README](packages/popkit-core/README.md) - Foundation & Power Mode
-- [popkit-dev README](packages/popkit-dev/README.md) - Development workflows & GitHub integration
-- [popkit-ops README](packages/popkit-ops/README.md) - Operations, quality & deployment
-- [popkit-research README](packages/popkit-research/README.md) - Knowledge management
-- [shared-py Migration Guide](packages/shared-py/MIGRATION.md) - Shared utilities migration
-
-### Architecture
-
-- [Plugin Modularization Design](docs/plans/2025-12-20-plugin-modularization-design.md)
-- [Testing & Validation Plan](docs/plans/2025-12-21-phase5-testing-validation-plan.md)
-- [CLAUDE.md](CLAUDE.md) - Full development guide
+**Version:** 1.0.0-beta.8
+**Status:** Public beta — core features stable, actively improving
 
 ---
 
-## 🎯 Current Status
+## License
 
-**Epic #580**: Plugin Modularization
-**Phase**: 5 of 6 (Testing & Validation)
-**Progress**: 75% Complete
-
-**Recent Milestones**:
-
-- ✅ All 6 plugins extracted and tested (Phases 1-4)
-- ✅ 96.3% test pass rate (155/161 tests)
-- ✅ Zero functionality regression
-- 🔄 Manual command testing (in progress)
-- 📋 Documentation & marketplace release (next)
-
-See [CLAUDE.md](CLAUDE.md) for detailed roadmap.
-
----
-
-## 🤝 Contributing
-
-PopKit is in active development. We welcome contributions!
-
-### How to Contribute
-
-1. **Fork the repository**
-2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
-3. **Commit your changes** (`git commit -m 'feat: add amazing feature'`)
-4. **Push to the branch** (`git push origin feature/amazing-feature`)
-5. **Open a Pull Request**
-
-### Development Resources
-
-- [GitHub Issues](https://github.com/jrc1883/popkit-claude/issues)
-- [CLAUDE.md](CLAUDE.md) - Development guide
-- [Contributing Guidelines](CONTRIBUTING.md)
-
----
-
-## 👥 Contributors
-
-Thanks to all the amazing people who have contributed to PopKit!
-
-<!-- ALL-CONTRIBUTORS-LIST:START -->
-<table>
-  <tr>
-    <td align="center">
-      <a href="https://github.com/jrc1883">
-        <img src="https://github.com/jrc1883.png" width="100px;" alt="Joseph Cannon"/>
-        <br />
-        <sub><b>Joseph Cannon</b></sub>
-      </a>
-      <br />
-      <sub>Creator & Maintainer</sub>
-    </td>
-  </tr>
-</table>
-<!-- ALL-CONTRIBUTORS-LIST:END -->
-
-_Want to see your name here? Check out our [contributing guidelines](#-contributing)!_
-
----
-
-## 📈 Star History
-
-<a href="https://star-history.com/#jrc1883/popkit-claude&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=jrc1883/popkit-claude&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=jrc1883/popkit-claude&type=Date" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=jrc1883/popkit-claude&type=Date" />
-  </picture>
-</a>
-
----
-
-## 📜 License
-
-MIT License - see [LICENSE](LICENSE) for details.
-
----
-
-## 👤 Author
-
-**Joseph Cannon**
-📧 <joseph@thehouseofdeals.com>
-🐙 [GitHub](https://github.com/jrc1883)
+MIT — see [LICENSE](LICENSE)
 
 ---
 
 <div align="center">
 
-**Ready to supercharge your development workflow?**
-
-```bash
-# Add marketplace (one-time)
-/plugin marketplace add jrc1883/popkit-claude
-
-# Install all PopKit plugins
-/plugin install popkit-core@popkit-claude
-/plugin install popkit-dev@popkit-claude
-/plugin install popkit-ops@popkit-claude
-/plugin install popkit-research@popkit-claude
-```
-
-Then restart Claude Code and run `/popkit-dev:next` to get started!
-
-**[⬆ Back to Top](#popkit)**
+**[Back to Top](#popkit)**
 
 </div>
-# Trigger deployment test

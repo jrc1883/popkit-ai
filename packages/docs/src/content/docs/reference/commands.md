@@ -5,7 +5,7 @@ description: Complete reference for all PopKit commands
 
 # Commands Reference
 
-PopKit provides 24 slash commands across 4 plugins for managing development workflows.
+PopKit provides 25 slash commands across 4 plugins for managing development workflows.
 
 ## popkit-core
 
@@ -16,6 +16,7 @@ Core foundation commands for project management and orchestration.
 **Description:** Multi-agent orchestration control
 
 **Subcommands:**
+
 - `start` - Start Power Mode (Redis or Native Async)
 - `stop` - Stop Power Mode and cleanup
 - `status` - Check Power Mode state
@@ -27,6 +28,7 @@ Core foundation commands for project management and orchestration.
 **Options:** `--consensus`, `--agents N`
 
 **Example:**
+
 ```bash
 /popkit-core:power start
 /popkit-core:power status
@@ -39,6 +41,7 @@ Core foundation commands for project management and orchestration.
 **Description:** Project initialization and analysis
 
 **Subcommands:**
+
 - `init` - Initialize PopKit in project
 - `analyze` - Analyze project structure
 - `board` - View project kanban board
@@ -53,6 +56,7 @@ Core foundation commands for project management and orchestration.
 **Options:** `--power`, `--json`
 
 **Example:**
+
 ```bash
 /popkit-core:project init
 /popkit-core:project analyze --json
@@ -65,6 +69,7 @@ Core foundation commands for project management and orchestration.
 **Description:** Plugin development and testing
 
 **Subcommands:**
+
 - `test` - Run plugin validation tests
 - `docs` - Generate plugin documentation
 - `sync` - Sync plugin metadata
@@ -74,6 +79,7 @@ Core foundation commands for project management and orchestration.
 **Options:** `--verbose`, `--json`
 
 **Example:**
+
 ```bash
 /popkit-core:plugin test agents
 /popkit-core:plugin docs --verbose
@@ -86,6 +92,7 @@ Core foundation commands for project management and orchestration.
 **Description:** PopKit Cloud account management
 
 **Subcommands:**
+
 - `status` - Check account status
 - `signup` - Create new account
 - `login` - Authenticate
@@ -94,6 +101,7 @@ Core foundation commands for project management and orchestration.
 - `logout` - Sign out
 
 **Example:**
+
 ```bash
 /popkit-core:account status
 /popkit-core:account usage
@@ -106,6 +114,7 @@ Core foundation commands for project management and orchestration.
 **Description:** Development efficiency metrics
 
 **Subcommands:**
+
 - `session` - Current session stats
 - `today` - Today's metrics
 - `week` - Weekly summary
@@ -113,6 +122,7 @@ Core foundation commands for project management and orchestration.
 - `reset` - Reset statistics
 
 **Example:**
+
 ```bash
 /popkit-core:stats today
 /popkit-core:stats week
@@ -125,12 +135,14 @@ Core foundation commands for project management and orchestration.
 **Description:** Multi-project management
 
 **Subcommands:**
+
 - `add` - Register project
 - `remove` - Unregister project
 - `refresh` - Update project data
 - `discover` - Find projects
 
 **Example:**
+
 ```bash
 /popkit-core:dashboard add
 /popkit-core:dashboard refresh
@@ -143,6 +155,7 @@ Core foundation commands for project management and orchestration.
 **Description:** Bug reporting and tracking
 
 **Subcommands:**
+
 - `report` - Report bug to GitHub
 - `search` - Search existing bugs
 - `share` - Share bug pattern
@@ -150,6 +163,7 @@ Core foundation commands for project management and orchestration.
 **Options:** `--issue`, `--share`
 
 **Example:**
+
 ```bash
 /popkit-core:bug report
 /popkit-core:bug search "login error"
@@ -162,6 +176,7 @@ Core foundation commands for project management and orchestration.
 **Description:** Privacy settings management
 
 **Subcommands:**
+
 - `status` - View privacy settings
 - `consent` - Manage consent
 - `export` - Export data
@@ -171,6 +186,7 @@ Core foundation commands for project management and orchestration.
 **Options:** `strict|moderate|minimal`
 
 **Example:**
+
 ```bash
 /popkit-core:privacy status
 /popkit-core:privacy level strict
@@ -183,11 +199,13 @@ Core foundation commands for project management and orchestration.
 **Description:** Session recording control
 
 **Subcommands:**
+
 - `start` - Begin recording
 - `stop` - End recording
 - `status` - Check recording state
 
 **Example:**
+
 ```bash
 /popkit-core:record start
 /popkit-core:record status
@@ -204,6 +222,7 @@ Development workflow commands for git, issues, and routines.
 **Description:** Git workflow management with smart commits, PRs, and releases
 
 **Subcommands:**
+
 - `commit` - Smart commit with auto-generated message (default)
 - `push` - Push with branch protection checks
 - `pr` - Pull request management
@@ -218,6 +237,7 @@ Development workflow commands for git, issues, and routines.
 **Options:** `--draft`, `--squash`, `--force-with-lease`, `--amend`
 
 **Example:**
+
 ```bash
 /popkit-dev:git commit
 /popkit-dev:git pr create --draft
@@ -234,6 +254,7 @@ Development workflow commands for git, issues, and routines.
 **Usage:** `/popkit-dev:dev "feature description"`
 
 **Phases:**
+
 1. Discovery - Understand requirements
 2. Exploration - Explore codebase
 3. Questions - Clarify ambiguities
@@ -245,6 +266,7 @@ Development workflow commands for git, issues, and routines.
 **Options:** `--mode quick|full`, `-T`, `--power`
 
 **Example:**
+
 ```bash
 /popkit-dev:dev "Add dark mode toggle"
 /popkit-dev:dev "OAuth2 authentication" --power
@@ -257,6 +279,7 @@ Development workflow commands for git, issues, and routines.
 **Description:** Context-aware next action recommendations
 
 **Features:**
+
 - Analyzes project state (git, tests, deps, docs)
 - Scores recommendations by priority
 - Detects branch protection issues
@@ -265,6 +288,7 @@ Development workflow commands for git, issues, and routines.
 **Options:** `quick|verbose`
 
 **Example:**
+
 ```bash
 /popkit-dev:next
 /popkit-dev:next verbose
@@ -277,12 +301,14 @@ Development workflow commands for git, issues, and routines.
 **Description:** Morning and nightly development routines
 
 **Subcommands:**
+
 - `morning` - Day start health check
 - `nightly` - End-of-day cleanup
 
 **Options:** `run|quick|generate|list|set|edit|delete`
 
 **Morning Routine:**
+
 - Git status check
 - Dependency updates
 - Test verification
@@ -290,6 +316,7 @@ Development workflow commands for git, issues, and routines.
 - "Ready to Code" score
 
 **Nightly Routine:**
+
 - Uncommitted changes check
 - Test status
 - Branch cleanup
@@ -297,6 +324,7 @@ Development workflow commands for git, issues, and routines.
 - "Sleep Score"
 
 **Example:**
+
 ```bash
 /popkit-dev:routine morning
 /popkit-dev:routine nightly quick
@@ -309,6 +337,7 @@ Development workflow commands for git, issues, and routines.
 **Description:** GitHub issue management
 
 **Subcommands:**
+
 - `create` - Create issue
 - `list` - List issues
 - `view` - View issue details
@@ -320,6 +349,7 @@ Development workflow commands for git, issues, and routines.
 **Options:** `--state`, `--label`
 
 **Example:**
+
 ```bash
 /popkit-dev:issue list --label bug
 /popkit-dev:issue create
@@ -333,6 +363,7 @@ Development workflow commands for git, issues, and routines.
 **Description:** Milestone tracking and health reports
 
 **Subcommands:**
+
 - `list` - List milestones
 - `create` - Create milestone
 - `close` - Close milestone
@@ -342,6 +373,7 @@ Development workflow commands for git, issues, and routines.
 **Options:** `--json`, `--verbose`
 
 **Example:**
+
 ```bash
 /popkit-dev:milestone list
 /popkit-dev:milestone health v1.0.0
@@ -354,6 +386,7 @@ Development workflow commands for git, issues, and routines.
 **Description:** Git worktree management for parallel development
 
 **Subcommands:**
+
 - `create <branch>` - Create worktree
 - `list` - List worktrees
 - `analyze` - Analyze worktree usage
@@ -362,6 +395,7 @@ Development workflow commands for git, issues, and routines.
 **Options:** `--force`
 
 **Example:**
+
 ```bash
 /popkit-dev:worktree create feat/new-feature
 /popkit-dev:worktree list
@@ -379,6 +413,7 @@ Operations and quality commands for testing, debugging, and deployment.
 **Description:** AI-powered code quality assessments
 
 **Subcommands:**
+
 - `anthropic` - Anthropic best practices
 - `security` - Security vulnerabilities
 - `performance` - Performance bottlenecks
@@ -390,6 +425,7 @@ Operations and quality commands for testing, debugging, and deployment.
 **Options:** `--fix`, `--json`
 
 **Example:**
+
 ```bash
 /popkit-ops:assess security
 /popkit-ops:assess all --fix
@@ -402,6 +438,7 @@ Operations and quality commands for testing, debugging, and deployment.
 **Description:** Project health audits
 
 **Subcommands:**
+
 - `quarterly` - Quarterly review
 - `yearly` - Yearly review
 - `stale` - Find stale code
@@ -412,6 +449,7 @@ Operations and quality commands for testing, debugging, and deployment.
 **Options:** `--verbose`, `--fix`
 
 **Example:**
+
 ```bash
 /popkit-ops:audit health
 /popkit-ops:audit ip-leak --verbose
@@ -424,12 +462,14 @@ Operations and quality commands for testing, debugging, and deployment.
 **Description:** Debugging assistance
 
 **Subcommands:**
+
 - `code` - Debug code issues
 - `routing` - Debug agent routing
 
 **Options:** `--trace`, `--verbose`
 
 **Example:**
+
 ```bash
 /popkit-ops:debug code src/auth.js
 /popkit-ops:debug routing --trace
@@ -442,6 +482,7 @@ Operations and quality commands for testing, debugging, and deployment.
 **Description:** Deployment management
 
 **Subcommands:**
+
 - `init` - Initialize deployment
 - `setup` - Configure deployment
 - `validate` - Validate deployment config
@@ -451,6 +492,7 @@ Operations and quality commands for testing, debugging, and deployment.
 **Options:** `--target`, `--all`, `--dry-run`
 
 **Example:**
+
 ```bash
 /popkit-ops:deploy validate
 /popkit-ops:deploy execute --target production
@@ -464,6 +506,7 @@ Operations and quality commands for testing, debugging, and deployment.
 **Description:** Security scanning and fixes
 
 **Subcommands:**
+
 - `scan` - Scan for vulnerabilities
 - `list` - List findings
 - `fix` - Auto-fix issues
@@ -472,6 +515,7 @@ Operations and quality commands for testing, debugging, and deployment.
 **Options:** `--dry-run`, `--severity`, `--fix`
 
 **Example:**
+
 ```bash
 /popkit-ops:security scan
 /popkit-ops:security fix --severity high
@@ -484,11 +528,13 @@ Operations and quality commands for testing, debugging, and deployment.
 **Description:** Performance benchmarking
 
 **Subcommands:**
+
 - `run` - Run benchmarks
 - `compare` - Compare results
 - `report` - Generate report
 
 **Example:**
+
 ```bash
 /popkit-ops:benchmark run
 /popkit-ops:benchmark compare main feat/optimization
@@ -505,6 +551,7 @@ Knowledge management commands for research and notes.
 **Description:** Research capture and organization
 
 **Subcommands:**
+
 - `list` - List research items
 - `search` - Search research
 - `add` - Add research item
@@ -516,6 +563,7 @@ Knowledge management commands for research and notes.
 **Options:** `--type`, `--project`
 
 **Example:**
+
 ```bash
 /popkit-research:research add "API Design Patterns"
 /popkit-research:research search "authentication"
@@ -529,6 +577,7 @@ Knowledge management commands for research and notes.
 **Description:** Knowledge base management
 
 **Subcommands:**
+
 - `list` - List knowledge items
 - `add` - Add knowledge
 - `remove` - Remove knowledge
@@ -538,6 +587,7 @@ Knowledge management commands for research and notes.
 **Usage:** `/popkit-research:knowledge search <query>`
 
 **Example:**
+
 ```bash
 /popkit-research:knowledge add docs/architecture.md
 /popkit-research:knowledge search "JWT tokens"
@@ -565,6 +615,7 @@ Knowledge management commands for research and notes.
 ### Output Formats
 
 Commands use consistent output formatting:
+
 - **Success:** Green checkmark with message
 - **Warning:** Yellow warning icon with details
 - **Error:** Red X with error description

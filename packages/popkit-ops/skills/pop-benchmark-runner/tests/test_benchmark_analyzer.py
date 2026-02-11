@@ -6,12 +6,13 @@ Tests statistical analysis of benchmark results.
 """
 
 import json
+import shutil
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
-import tempfile
-import shutil
+
 import numpy as np
 
 # Add parent directory to path for imports
@@ -134,12 +135,8 @@ class TestBenchmarkAnalyzer(unittest.TestCase):
         # Mock metric values
         with patch.object(self.analyzer, "_extract_context_usage", return_value=100.0):
             with patch.object(self.analyzer, "_extract_tool_calls", return_value=20.0):
-                with patch.object(
-                    self.analyzer, "_extract_backtracking", return_value=2.0
-                ):
-                    with patch.object(
-                        self.analyzer, "_extract_error_recovery", return_value=1.0
-                    ):
+                with patch.object(self.analyzer, "_extract_backtracking", return_value=2.0):
+                    with patch.object(self.analyzer, "_extract_error_recovery", return_value=1.0):
                         with patch.object(
                             self.analyzer,
                             "_extract_time_to_complete",

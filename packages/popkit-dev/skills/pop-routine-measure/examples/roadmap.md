@@ -9,6 +9,7 @@ Compare multiple routines side-by-side in a single invocation:
 ```
 
 Output:
+
 ```
 Routine Comparison
 ------------------
@@ -27,6 +28,7 @@ Analyze measurements over time periods:
 ```
 
 Output:
+
 - Average metrics over past 7 days
 - Peak and low measurements
 - Trend line visualization
@@ -50,5 +52,5 @@ Set token budgets and receive alerts:
 ```yaml
 budget:
   daily_tokens: 50000
-  cost_alert: 1.00  # Alert if daily cost exceeds $1
+  cost_alert: 1.00 # Alert if daily cost exceeds $1
 ```

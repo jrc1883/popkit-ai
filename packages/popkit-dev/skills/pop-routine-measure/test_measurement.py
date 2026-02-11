@@ -12,11 +12,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / "hooks" / "utils"))
 
 from routine_measurement import (
     RoutineMeasurementTracker,
-    enable_measurement,
+    check_measure_flag,
     disable_measurement,
+    enable_measurement,
     format_measurement_report,
     save_measurement,
-    check_measure_flag,
 )
 
 
@@ -31,9 +31,7 @@ def test_basic_tracking():
     tracker.start("test-1", "Test Routine")
 
     # Simulate some tool calls
-    tracker.track_tool_call(
-        "Bash", "git status\nOn branch master\nnothing to commit", 0.5
-    )
+    tracker.track_tool_call("Bash", "git status\nOn branch master\nnothing to commit", 0.5)
     tracker.track_tool_call("Read", "File content here...\n" * 100, 0.2)
     tracker.track_tool_call("Grep", "Search results...\n" * 50, 0.3)
 

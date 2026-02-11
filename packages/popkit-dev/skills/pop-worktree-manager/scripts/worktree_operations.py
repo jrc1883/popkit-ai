@@ -24,8 +24,7 @@ import shlex
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, Any, Tuple, Optional
-
+from typing import Any, Dict, Optional, Tuple
 
 # ============================================================================
 # Configuration
@@ -57,7 +56,7 @@ def run_git_command(cmd: str, timeout: int = 30) -> Tuple[str, bool]:
         timeout: Command timeout in seconds
 
     Returns:
-        Tuple of (output, success)
+        Tuple of (output, success) - output includes stderr on failure
     """
     try:
         # Use shlex.split to properly handle quoted strings
@@ -68,7 +67,12 @@ def run_git_command(cmd: str, timeout: int = 30) -> Tuple[str, bool]:
             timeout=timeout,
             check=False,
         )
-        return result.stdout.strip(), result.returncode == 0
+        # Return stdout on success, stderr (or both) on failure for better error messages
+        if result.returncode == 0:
+            return result.stdout.strip(), True
+        else:
+            error_output = result.stderr.strip() or result.stdout.strip()
+            return error_output, False
     except subprocess.TimeoutExpired:
         return "Command timed out", False
     except Exception as e:
@@ -394,7 +398,7 @@ def operation_update_all(install: bool = False) -> Dict[str, Any]:
         # Install dependencies if requested
         if install and Path(wt_path, "package.json").exists():
             install_result = subprocess.run(
-                "npm install", cwd=wt_path, capture_output=True, text=True, shell=True
+                ["npm", "install"], cwd=wt_path, capture_output=True, text=True
             )
             result["installSuccess"] = install_result.returncode == 0
             result["installOutput"] = install_result.stdout.strip()

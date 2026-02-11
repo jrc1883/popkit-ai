@@ -9,18 +9,18 @@ Git operations with smart commits, PRs, code review, CI/CD, releases, publishing
 
 ## Subcommands
 
-| Subcommand | Description                                             |
-| ---------- | ------------------------------------------------------- |
-| commit     | Smart commit with auto-generated message (default)      |
-| push       | Push current branch to remote                           |
-| pr         | Pull request management (create, list, view, merge)     |
-| review     | Code review with confidence-based filtering             |
-| ci         | GitHub Actions workflow runs (list, view, rerun, watch) |
-| release    | GitHub releases (create, list, view, changelog)         |
-| publish    | Publish plugin to public repo (monorepo → open source)  |
-| prune      | Remove stale local branches after PR merge              |
-| finish     | Complete development with 4-option flow                 |
-| analyze-strategy | Analyze repository branching strategy              |
+| Subcommand       | Description                                             |
+| ---------------- | ------------------------------------------------------- |
+| commit           | Smart commit with auto-generated message (default)      |
+| push             | Push current branch to remote                           |
+| pr               | Pull request management (create, list, view, merge)     |
+| review           | Code review with confidence-based filtering             |
+| ci               | GitHub Actions workflow runs (list, view, rerun, watch) |
+| release          | GitHub releases (create, list, view, changelog)         |
+| publish          | Publish plugin to public repo (monorepo → open source)  |
+| prune            | Remove stale local branches after PR merge              |
+| finish           | Complete development with 4-option flow                 |
+| analyze-strategy | Analyze repository branching strategy                   |
 
 ---
 
@@ -269,20 +269,23 @@ Analyze repository branching strategy and provide recommendations.
 **Phase 1 Implementation (Issue #151):**
 
 Detects current branching strategy by analyzing:
-- Branch naming patterns (feat/*, fix/*, release/*, hotfix/*)
+
+- Branch naming patterns (feat/_, fix/_, release/_, hotfix/_)
 - Long-lived vs ephemeral branches
 - Merge patterns (direct to main, via develop, etc.)
 - GitHub branch protection rules
 - Average branch lifetime
 
 **Supported Strategies:**
+
 - **Trunk-based Development**: Direct merges to main, short-lived feature branches
 - **GitHub Flow**: Feature branches + main, continuous deployment
-- **Git Flow**: Multiple long-lived branches (main, develop, release/*, hotfix/*)
+- **Git Flow**: Multiple long-lived branches (main, develop, release/_, hotfix/_)
 - **GitLab Flow**: Environment-based branches (main, staging, production)
 - **Custom/Unknown**: Non-standard patterns
 
 **Output:**
+
 ```
 # Git Branch Strategy Analysis
 
@@ -307,6 +310,7 @@ Detects current branching strategy by analyzing:
 ```
 
 **Technical Implementation:**
+
 - Uses `popkit_shared.utils.git_strategy.GitStrategyDetector`
 - Analyzes all local and remote branches
 - Queries GitHub API for protection rules (via `gh` CLI)
@@ -315,6 +319,7 @@ Detects current branching strategy by analyzing:
 **Options:** --json (output JSON format), --verbose (detailed branch info)
 
 **Related Commands:**
+
 - Phase 2: `/popkit-dev:git recommend-strategy` (interactive questionnaire)
 - Phase 3: `/popkit-dev:git migrate-to <strategy>` (automated migration)
 - Phase 4: Hooks for branch naming validation
