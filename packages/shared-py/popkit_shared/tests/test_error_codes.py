@@ -81,7 +81,7 @@ class TestErrorResponse:
         assert "help_url" in error
         # Use startswith() for secure URL validation (CodeQL security check)
         assert error["help_url"].startswith("https://github.com/")
-        assert "/errors/E001_JSON_PARSE.md" in error["help_url"]
+        assert "/docs/errors/README.md" in error["help_url"]
 
     def test_create_error_response_includes_recovery(self):
         """Test that error response includes recovery suggestions."""
