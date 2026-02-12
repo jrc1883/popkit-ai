@@ -4,12 +4,12 @@ This document defines the required structure and conventions for implementation 
 
 ## File Naming
 
-Plans MUST be saved to: `docs/plans/YYYY-MM-DD-<feature-name>.md`
+Plans MUST be saved to: `.claude/plans/YYYY-MM-DD-<feature-name>.md`
 
 Examples:
 
-- `docs/plans/2025-12-12-user-authentication.md`
-- `docs/plans/2025-12-12-api-rate-limiting.md`
+- `.claude/plans/2025-12-12-user-authentication.md`
+- `.claude/plans/2025-12-12-api-rate-limiting.md`
 
 ## Required Header
 
@@ -200,7 +200,7 @@ Expected: PASS
 Plans can be validated using the validator script:
 
 ```bash
-python scripts/validate_plan.py docs/plans/YYYY-MM-DD-feature.md
+python scripts/validate_plan.py .claude/plans/YYYY-MM-DD-feature.md
 ```
 
 ### Validation Checks

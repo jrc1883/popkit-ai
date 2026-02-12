@@ -37,11 +37,11 @@ save_skill_context(SkillOutput(
     skill_name="pop-writing-plans",
     status="completed",
     output={
-        "plan_file": "docs/plans/YYYY-MM-DD-<feature>.md",
+        "plan_file": ".claude/plans/YYYY-MM-DD-<feature>.md",
         "task_count": <number of tasks>,
         "github_issue": <issue number if created>
     },
-    artifacts=["docs/plans/YYYY-MM-DD-<feature>.md"],
+    artifacts=[".claude/plans/YYYY-MM-DD-<feature>.md"],
     next_suggested="pop-executing-plans",
     decisions_made=[<list of AskUserQuestion results>]
 ))
@@ -63,7 +63,7 @@ gh issue create --title "[Feature] <topic>" --body "$(cat <<'EOF'
 <brief description>
 
 ## Implementation Plan
-See: `docs/plans/YYYY-MM-DD-<feature>.md`
+See: `.claude/plans/YYYY-MM-DD-<feature>.md`
 
 ## Tasks
 - [ ] Task 1
