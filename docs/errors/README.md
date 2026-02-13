@@ -1,207 +1,74 @@
-# PopKit Error Codes Reference
+# PopKit Error Codes
 
-This directory contains documentation for all PopKit error codes. Each error has a dedicated page with detailed explanations, common causes, and resolution steps.
+This file is generated from `packages/shared-py/popkit_shared/utils/error_codes.py`.
 
 ## Quick Reference
 
-| Code                                     | Description                                  | Severity | Category           |
-| ---------------------------------------- | -------------------------------------------- | -------- | ------------------ |
-| [E001](E001_JSON_PARSE.md)               | Invalid JSON syntax in input                 | Critical | JSON/Input Parsing |
-| [E002](E002_INVALID_SCHEMA.md)           | JSON structure doesn't match expected schema | High     | JSON/Input Parsing |
-| [E003](E003_MALFORMED_INPUT.md)          | Input data is malformed or corrupted         | High     | JSON/Input Parsing |
-| [E004](E004_ENCODING_ERROR.md)           | Input encoding error (invalid UTF-8)         | High     | JSON/Input Parsing |
-| [W005](W005_DEPRECATED_FORMAT.md)        | Input uses deprecated format                 | Medium   | JSON/Input Parsing |
-| [E101](E101_FILE_NOT_FOUND.md)           | Required file not found                      | High     | File I/O           |
-| [E102](E102_PERMISSION_DENIED.md)        | Permission denied accessing file             | High     | File I/O           |
-| [E103](E103_FILE_READ_ERROR.md)          | Failed to read file contents                 | High     | File I/O           |
-| [E104](E104_FILE_WRITE_ERROR.md)         | Failed to write to file                      | High     | File I/O           |
-| [W105](W105_FILE_TOO_LARGE.md)           | File size exceeds recommended limits         | Medium   | File I/O           |
-| [E106](E106_DIRECTORY_NOT_FOUND.md)      | Required directory not found                 | High     | File I/O           |
-| [W107](W107_DISK_SPACE_LOW.md)           | Low disk space detected                      | Medium   | File I/O           |
-| [E108](E108_FILE_LOCKED.md)              | File is locked by another process            | High     | File I/O           |
-| [W201](W201_NETWORK_TIMEOUT.md)          | Network request timed out                    | Medium   | Network/API        |
-| [E202](E202_CONNECTION_REFUSED.md)       | Connection refused by remote server          | High     | Network/API        |
-| [E203](E203_API_ERROR.md)                | API request failed with error response       | High     | Network/API        |
-| [W204](W204_RATE_LIMIT.md)               | API rate limit exceeded                      | Medium   | Network/API        |
-| [E205](E205_DNS_RESOLUTION_FAILED.md)    | Failed to resolve hostname                   | High     | Network/API        |
-| [W206](W206_SSL_CERTIFICATE_WARNING.md)  | SSL certificate verification issue           | Medium   | Network/API        |
-| [E301](E301_REPO_NOT_FOUND.md)           | Git repository not found                     | High     | Git Operations     |
-| [E302](E302_MERGE_CONFLICT.md)           | Git merge conflict detected                  | High     | Git Operations     |
-| [E303](E303_DETACHED_HEAD.md)            | Git repository in detached HEAD state        | High     | Git Operations     |
-| [W304](W304_UNCOMMITTED_CHANGES.md)      | Uncommitted changes detected                 | Medium   | Git Operations     |
-| [E305](E305_BRANCH_NOT_FOUND.md)         | Git branch not found                         | High     | Git Operations     |
-| [W306](W306_BEHIND_REMOTE.md)            | Local branch is behind remote                | Medium   | Git Operations     |
-| [E307](E307_PUSH_REJECTED.md)            | Git push rejected by remote                  | High     | Git Operations     |
-| [S401](S401_DESTRUCTIVE_CMD.md)          | Potentially destructive command blocked      | Critical | Safety/Security    |
-| [S402](S402_CREDENTIAL_LEAK.md)          | Potential credential or secret detected      | Critical | Safety/Security    |
-| [S403](S403_INSECURE_OPERATION.md)       | Operation uses insecure method               | High     | Safety/Security    |
-| [W404](W404_SECURITY_WARNING.md)         | Potential security concern detected          | Medium   | Safety/Security    |
-| [S405](S405_UNVERIFIED_SOURCE.md)        | Unverified or untrusted source               | High     | Safety/Security    |
-| [W406](W406_DEPRECATED_SECURITY.md)      | Using deprecated security method             | Medium   | Safety/Security    |
-| [E501](E501_DB_CONNECTION_FAILED.md)     | Failed to connect to database                | Critical | Database           |
-| [E502](E502_QUERY_ERROR.md)              | Database query execution failed              | High     | Database           |
-| [E503](E503_TRANSACTION_FAILED.md)       | Database transaction failed                  | High     | Database           |
-| [W504](W504_SLOW_QUERY.md)               | Database query running slowly                | Medium   | Database           |
-| [E505](E505_SCHEMA_MISMATCH.md)          | Database schema mismatch                     | Critical | Database           |
-| [E601](E601_TOOL_FAILED.md)              | Tool execution failed                        | High     | Tool Execution     |
-| [W602](W602_TOOL_TIMEOUT.md)             | Tool execution timed out                     | Medium   | Tool Execution     |
-| [E603](E603_INVALID_ARGS.md)             | Invalid arguments provided to tool           | High     | Tool Execution     |
-| [E604](E604_TOOL_NOT_FOUND.md)           | Required tool or command not found           | High     | Tool Execution     |
-| [W605](W605_TOOL_VERSION_OLD.md)         | Tool version is outdated                     | Medium   | Tool Execution     |
-| [E606](E606_TOOL_CRASHED.md)             | Tool crashed unexpectedly                    | High     | Tool Execution     |
-| [E701](E701_INVALID_CONFIG.md)           | Invalid configuration                        | High     | Configuration      |
-| [W702](W702_MISSING_FIELD.md)            | Optional configuration field missing         | Medium   | Configuration      |
-| [E702](E702_CONFIG_NOT_FOUND.md)         | Configuration file not found                 | High     | Configuration      |
-| [E703](E703_CONFIG_PARSE_ERROR.md)       | Failed to parse configuration file           | High     | Configuration      |
-| [W704](W704_CONFIG_OVERRIDE.md)          | Config overridden by environment variable    | Low      | Configuration      |
-| [E705](E705_CONFIG_VALIDATION_FAILED.md) | Configuration validation failed              | High     | Configuration      |
-| [E801](E801_PLUGIN_LOAD_FAILED.md)       | Failed to load plugin                        | High     | Plugin/Extension   |
-| [W802](W802_VERSION_MISMATCH.md)         | Plugin version incompatibility               | Medium   | Plugin/Extension   |
-| [E803](E803_PLUGIN_CONFLICT.md)          | Plugin conflict detected                     | High     | Plugin/Extension   |
-| [W804](W804_PLUGIN_DEPRECATED.md)        | Plugin is deprecated                         | Medium   | Plugin/Extension   |
-| [E805](E805_PLUGIN_INIT_FAILED.md)       | Plugin initialization failed                 | High     | Plugin/Extension   |
-| [E901](E901_ASSERTION_FAILED.md)         | Internal assertion failed                    | Critical | System/Internal    |
-| [E902](E902_UNEXPECTED_STATE.md)         | System reached unexpected state              | Critical | System/Internal    |
-| [W903](W903_RESOURCE_WARNING.md)         | System resource usage warning                | Medium   | System/Internal    |
-| [E904](E904_RESOURCE_EXHAUSTED.md)       | System resources exhausted                   | Critical | System/Internal    |
-| [I905](I905_MAINTENANCE_MODE.md)         | System is in maintenance mode                | Info     | System/Internal    |
+| Code                            | Severity | Category           | Message                                                |
+| ------------------------------- | -------- | ------------------ | ------------------------------------------------------ |
+| `E001_JSON_PARSE`               | critical | JSON/Input Parsing | Invalid JSON syntax in input                           |
+| `E002_INVALID_SCHEMA`           | high     | JSON/Input Parsing | JSON structure doesn't match expected schema           |
+| `E003_MALFORMED_INPUT`          | high     | JSON/Input Parsing | Input data is malformed or corrupted                   |
+| `E004_ENCODING_ERROR`           | high     | JSON/Input Parsing | Input encoding error (invalid UTF-8 or character set)  |
+| `E101_FILE_NOT_FOUND`           | high     | File I/O           | Required file not found                                |
+| `E102_PERMISSION_DENIED`        | high     | File I/O           | Permission denied accessing file or directory          |
+| `E103_FILE_READ_ERROR`          | high     | File I/O           | Failed to read file contents                           |
+| `E104_FILE_WRITE_ERROR`         | high     | File I/O           | Failed to write to file                                |
+| `E106_DIRECTORY_NOT_FOUND`      | high     | File I/O           | Required directory not found                           |
+| `E108_FILE_LOCKED`              | high     | File I/O           | File is locked by another process                      |
+| `E202_CONNECTION_REFUSED`       | high     | Network/API        | Connection refused by remote server                    |
+| `E203_API_ERROR`                | high     | Network/API        | API request failed with error response                 |
+| `E205_DNS_RESOLUTION_FAILED`    | high     | Network/API        | Failed to resolve hostname                             |
+| `E301_REPO_NOT_FOUND`           | high     | Git Operations     | Git repository not found                               |
+| `E302_MERGE_CONFLICT`           | high     | Git Operations     | Git merge conflict detected                            |
+| `E303_DETACHED_HEAD`            | high     | Git Operations     | Git repository is in detached HEAD state               |
+| `E305_BRANCH_NOT_FOUND`         | high     | Git Operations     | Git branch not found                                   |
+| `E307_PUSH_REJECTED`            | high     | Git Operations     | Git push rejected by remote                            |
+| `E501_DB_CONNECTION_FAILED`     | critical | Database           | Failed to connect to database                          |
+| `E502_QUERY_ERROR`              | high     | Database           | Database query execution failed                        |
+| `E503_TRANSACTION_FAILED`       | high     | Database           | Database transaction failed or rolled back             |
+| `E505_SCHEMA_MISMATCH`          | critical | Database           | Database schema doesn't match expected structure       |
+| `E601_TOOL_FAILED`              | high     | Tool Execution     | Tool execution failed                                  |
+| `E603_INVALID_ARGS`             | high     | Tool Execution     | Invalid arguments provided to tool                     |
+| `E604_TOOL_NOT_FOUND`           | high     | Tool Execution     | Required tool or command not found                     |
+| `E606_TOOL_CRASHED`             | high     | Tool Execution     | Tool crashed or terminated unexpectedly                |
+| `E701_INVALID_CONFIG`           | high     | Configuration      | Invalid configuration                                  |
+| `E702_CONFIG_NOT_FOUND`         | high     | Configuration      | Configuration file not found                           |
+| `E703_CONFIG_PARSE_ERROR`       | high     | Configuration      | Failed to parse configuration file                     |
+| `E705_CONFIG_VALIDATION_FAILED` | high     | Configuration      | Configuration validation failed                        |
+| `E801_PLUGIN_LOAD_FAILED`       | high     | Plugin/Extension   | Failed to load plugin or extension                     |
+| `E803_PLUGIN_CONFLICT`          | high     | Plugin/Extension   | Plugin conflict detected                               |
+| `E805_PLUGIN_INIT_FAILED`       | high     | Plugin/Extension   | Plugin initialization failed                           |
+| `E901_ASSERTION_FAILED`         | critical | System/Internal    | Internal assertion failed                              |
+| `E902_UNEXPECTED_STATE`         | critical | System/Internal    | System reached unexpected state                        |
+| `E904_RESOURCE_EXHAUSTED`       | critical | System/Internal    | System resources exhausted                             |
+| `I905_MAINTENANCE_MODE`         | info     | System/Internal    | System is in maintenance mode                          |
+| `S401_DESTRUCTIVE_CMD`          | critical | Safety/Security    | Potentially destructive command blocked                |
+| `S402_CREDENTIAL_LEAK`          | critical | Safety/Security    | Potential credential or secret detected                |
+| `S403_INSECURE_OPERATION`       | high     | Safety/Security    | Operation uses insecure method or protocol             |
+| `S405_UNVERIFIED_SOURCE`        | high     | Safety/Security    | Operation involves unverified or untrusted source      |
+| `W005_DEPRECATED_FORMAT`        | medium   | JSON/Input Parsing | Input uses deprecated format                           |
+| `W105_FILE_TOO_LARGE`           | medium   | File I/O           | File size exceeds recommended limits                   |
+| `W107_DISK_SPACE_LOW`           | medium   | File I/O           | Low disk space detected                                |
+| `W201_NETWORK_TIMEOUT`          | medium   | Network/API        | Network request timed out                              |
+| `W204_RATE_LIMIT`               | medium   | Network/API        | API rate limit exceeded                                |
+| `W206_SSL_CERTIFICATE_WARNING`  | medium   | Network/API        | SSL certificate verification issue                     |
+| `W304_UNCOMMITTED_CHANGES`      | medium   | Git Operations     | Uncommitted changes detected                           |
+| `W306_BEHIND_REMOTE`            | medium   | Git Operations     | Local branch is behind remote                          |
+| `W404_SECURITY_WARNING`         | medium   | Safety/Security    | Potential security concern detected                    |
+| `W406_DEPRECATED_SECURITY`      | medium   | Safety/Security    | Using deprecated security method                       |
+| `W504_SLOW_QUERY`               | medium   | Database           | Database query is running slowly                       |
+| `W602_TOOL_TIMEOUT`             | medium   | Tool Execution     | Tool execution timed out                               |
+| `W605_TOOL_VERSION_OLD`         | medium   | Tool Execution     | Tool version is outdated                               |
+| `W702_MISSING_FIELD`            | medium   | Configuration      | Optional configuration field missing                   |
+| `W704_CONFIG_OVERRIDE`          | low      | Configuration      | Configuration value overridden by environment variable |
+| `W802_VERSION_MISMATCH`         | medium   | Plugin/Extension   | Plugin version incompatibility detected                |
+| `W804_PLUGIN_DEPRECATED`        | medium   | Plugin/Extension   | Plugin is deprecated                                   |
+| `W903_RESOURCE_WARNING`         | medium   | System/Internal    | System resource usage warning                          |
 
-## Error Categories
+## Notes
 
-### Critical (Blocking)
-
-Errors that block execution and require immediate attention.
-
-- [E001](E001_JSON_PARSE.md) - JSON parsing error
-- [S401](S401_DESTRUCTIVE_CMD.md) - Destructive command blocked
-- [S402](S402_CREDENTIAL_LEAK.md) - Credential leak detected
-- [E501](E501_DB_CONNECTION_FAILED.md) - Database connection failed
-- [E505](E505_SCHEMA_MISMATCH.md) - Database schema mismatch
-- [E901](E901_ASSERTION_FAILED.md) - Internal assertion failed
-- [E902](E902_UNEXPECTED_STATE.md) - Unexpected system state
-- [E904](E904_RESOURCE_EXHAUSTED.md) - Resources exhausted
-
-### High Severity (Blocking)
-
-Issues that block execution but may have workarounds.
-
-- [E002](E002_INVALID_SCHEMA.md) - Invalid JSON schema
-- [E003](E003_MALFORMED_INPUT.md) - Malformed input data
-- [E004](E004_ENCODING_ERROR.md) - Encoding error
-- [E101-E108](E101_FILE_NOT_FOUND.md) - File I/O errors
-- [E202-E205](E202_CONNECTION_REFUSED.md) - Network errors
-- [E301-E307](E301_REPO_NOT_FOUND.md) - Git operation errors
-- [S403-S405](S403_INSECURE_OPERATION.md) - Security issues
-- [E502-E503](E502_QUERY_ERROR.md) - Database errors
-- [E601-E606](E601_TOOL_FAILED.md) - Tool execution errors
-- [E701-E705](E701_INVALID_CONFIG.md) - Configuration errors
-- [E801-E805](E801_PLUGIN_LOAD_FAILED.md) - Plugin errors
-
-### Warnings (Non-blocking)
-
-Issues that don't block execution but should be addressed.
-
-- [W005](W005_DEPRECATED_FORMAT.md) - Deprecated format
-- [W105](W105_FILE_TOO_LARGE.md) - File too large
-- [W107](W107_DISK_SPACE_LOW.md) - Low disk space
-- [W201](W201_NETWORK_TIMEOUT.md) - Network timeout
-- [W204](W204_RATE_LIMIT.md) - Rate limit exceeded
-- [W206](W206_SSL_CERTIFICATE_WARNING.md) - SSL warning
-- [W304](W304_UNCOMMITTED_CHANGES.md) - Uncommitted changes
-- [W306](W306_BEHIND_REMOTE.md) - Behind remote
-- [W404](W404_SECURITY_WARNING.md) - Security warning
-- [W406](W406_DEPRECATED_SECURITY.md) - Deprecated security
-- [W504](W504_SLOW_QUERY.md) - Slow database query
-- [W602](W602_TOOL_TIMEOUT.md) - Tool timeout
-- [W605](W605_TOOL_VERSION_OLD.md) - Old tool version
-- [W702-W704](W702_MISSING_FIELD.md) - Configuration warnings
-- [W802-W804](W802_VERSION_MISMATCH.md) - Plugin warnings
-- [W903](W903_RESOURCE_WARNING.md) - Resource warning
-
-### Informational
-
-Status updates and non-critical information.
-
-- [I905](I905_MAINTENANCE_MODE.md) - Maintenance mode
-- [W704](W704_CONFIG_OVERRIDE.md) - Config override info
-
-## By Hook Type
-
-### Session Hooks
-
-- [E001](E001_JSON_PARSE.md) - JSON parsing
-- [W201](W201_NETWORK_TIMEOUT.md) - Network timeout
-- [E701](E701_INVALID_CONFIG.md) - Invalid configuration
-- [E801](E801_PLUGIN_LOAD_FAILED.md) - Plugin load failure
-
-### Pre-Tool-Use
-
-- [S401](S401_DESTRUCTIVE_CMD.md) - Destructive command
-- [S402](S402_CREDENTIAL_LEAK.md) - Credential leak
-- [S403](S403_INSECURE_OPERATION.md) - Insecure operation
-- [E002](E002_INVALID_SCHEMA.md) - Invalid schema
-- [E603](E603_INVALID_ARGS.md) - Invalid tool arguments
-
-### Post-Tool-Use
-
-- [E601](E601_TOOL_FAILED.md) - Tool execution failure
-- [W602](W602_TOOL_TIMEOUT.md) - Tool timeout
-- [E606](E606_TOOL_CRASHED.md) - Tool crash
-
-### Git Hooks
-
-- [E301-E307](E301_REPO_NOT_FOUND.md) - All git operation errors
-- [W304](W304_UNCOMMITTED_CHANGES.md) - Uncommitted changes warning
-- [W306](W306_BEHIND_REMOTE.md) - Behind remote warning
-
-## Searching Errors
-
-**By code:** Search for the exact error code (e.g., E001, W201, S401)
-**By keyword:** Search error descriptions in this directory
-**By category:** Use the category filters above
-**By severity:** Filter by Critical, High, Medium, Low, Info
-
-## Contributing Error Codes
-
-When adding new error codes:
-
-1. Add code to `ErrorRegistry` in `packages/shared-py/popkit_shared/utils/error_codes.py`
-2. Run `python packages/shared-py/scripts/generate_error_docs.py` to create markdown file
-3. Fill in detailed description, causes, and examples in the generated file
-4. Update this README with new code (run script again to regenerate)
-
-## Error Code Format
-
-Error codes follow the format: `[PREFIX][NUMBER]_[NAME]`
-
-**Prefixes:**
-
-- `E` - Error (blocking)
-- `W` - Warning (non-blocking)
-- `S` - Safety violation (blocking)
-- `I` - Info (informational)
-
-**Number Ranges:**
-
-- 001-099: JSON/Input Parsing
-- 100-199: File I/O
-- 200-299: Network/API
-- 300-399: Git Operations
-- 400-499: Safety/Security
-- 500-599: Database
-- 600-699: Tool Execution
-- 700-799: Configuration
-- 800-899: Plugin/Extension
-- 900-999: System/Internal
-
-## Related Documentation
-
-- [PopKit Error Code System (Issue #104)](https://github.com/jrc1883/popkit-claude/issues/104)
-- [Hook Standards](../../CLAUDE.md#hook-standards)
-- [Error Code Implementation](../../packages/shared-py/popkit_shared/utils/error_codes.py)
-- [Error Code Tests](../../packages/shared-py/popkit_shared/tests/test_error_codes.py)
-
----
-
-**Total Error Codes**: 59
-**Last Updated**: 2026-01-14 (Phase 3 - Issue #104)
+- `E`: blocking error
+- `W`: non-blocking warning
+- `S`: safety/security violation
+- `I`: informational status

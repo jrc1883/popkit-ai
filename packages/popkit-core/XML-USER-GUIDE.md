@@ -669,7 +669,6 @@ Share your templates with the community: https://github.com/jrc1883/popkit-claud
 - **Hook Source Code:** `packages/popkit-core/hooks/`
 - **XML Utilities:** `packages/shared-py/popkit_shared/utils/xml_*.py`
 - **Tests:** `packages/shared-py/tests/utils/test_xml_*.py`
-- **Analysis:** `docs/research/2026-01-09-xml-comprehensive-analysis.md`
 
 ---
 

@@ -477,7 +477,7 @@ Knowledge management skills for research capture and retrieval.
 
 ### pop-research-merge
 
-**Description:** Process research branches from Claude Code Web sessions - merges content, moves docs to docs/research/, and creates GitHub issues.
+**Description:** Process research branches from Claude Code Web sessions - merges content, moves docs to .claude/research/, and creates GitHub issues.
 
 **Use when:** `/popkit-dev:next` detects research branches or when manually processing research from mobile sessions.
 

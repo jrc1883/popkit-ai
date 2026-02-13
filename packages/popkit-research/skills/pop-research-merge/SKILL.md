@@ -1,6 +1,6 @@
 ---
 name: research-merge
-description: "Processes research branches from Claude Code Web sessions - merges content, moves docs to docs/research/, and creates GitHub issues. Use when /popkit:next detects research branches or when manually processing research from mobile sessions. Do NOT use for regular feature branches - only for branches matching claude/research-* or containing research documentation."
+description: "Processes research branches from Claude Code Web sessions, merges content, moves docs to .claude/research/, and creates GitHub issues. Use when /popkit:next detects research branches or when manually processing research from mobile sessions. Do NOT use for regular feature branches, only for branches matching claude/research-* or containing research documentation."
 ---
 
 # Research Branch Merge
@@ -170,11 +170,11 @@ git status --porcelain
 # 2. Squash merge the research branch
 git merge --squash origin/claude/research-[topic]-[session-id]
 
-# 3. Organize docs (if not already in docs/research/)
-mkdir -p docs/research
+# 3. Organize docs (if not already in .claude/research/)
+mkdir -p .claude/research
 # Move any root-level research docs
-git mv RESEARCH*.md docs/research/ 2>/dev/null || true
-git mv *_RESEARCH.md docs/research/ 2>/dev/null || true
+git mv RESEARCH*.md .claude/research/ 2>/dev/null || true
+git mv *_RESEARCH.md .claude/research/ 2>/dev/null || true
 
 # 4. Commit with standard message
 git commit -m "docs(research): merge [topic] research from web session
@@ -269,7 +269,7 @@ Examples:
 
 ## Documentation
 
-- `docs/research/{doc_name}.md`
+- `.claude/research/{doc_name}.md`
 
 ## Implementation Tasks
 

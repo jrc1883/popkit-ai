@@ -304,8 +304,8 @@ popkit-cloud.com/benchmarks/
 
 **Documentation:**
 
-- ✅ `docs/benchmark/CI_CD_WORKFLOW.md` (550+ lines)
-- ✅ Comprehensive workflow documentation
+- ✅ Workflow documentation retained in this implementation status file
+- ✅ CI workflow source of truth: `.github/workflows/benchmark.yml`
 
 **Status:** Phase 3 complete (2026-01-16)
 

@@ -92,3 +92,10 @@ issue-audit-report.md
 
 # Runtime status files (generated during morning routine)
 STATUS.json
+
+# Internal planning/research artifacts (keep out of public repo)
+docs/plans/
+docs/research/
+docs/security/
+docs/benchmark/
+codebase-health-report.md

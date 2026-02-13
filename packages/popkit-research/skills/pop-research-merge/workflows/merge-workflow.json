@@ -13,7 +13,7 @@
           "name": "Select Research Sources",
           "prompt": "Which research notes should be merged?",
           "type": "multiselect",
-          "data_source": "docs/research/*.md"
+          "data_source": ".claude/research/*.md"
         },
         {
           "id": "load_content",
@@ -128,7 +128,7 @@
           "id": "save_merged",
           "name": "Save Merged Research",
           "type": "automated",
-          "action": "Write merged document to docs/research/"
+          "action": "Write merged document to .claude/research/"
         }
       ]
     }
@@ -138,6 +138,6 @@
     "manual": ["Invoke pop-research-merge skill", "Combine multiple research notes"]
   },
   "output": {
-    "primary": "docs/research/YYYY-MM-DD-<topic>-merged.md"
+    "primary": ".claude/research/YYYY-MM-DD-<topic>-merged.md"
   }
 }

@@ -78,7 +78,7 @@ Detects research branches from Claude Code Web sessions:
 
 - `origin/claude/research-*` - Explicit research branches
 - `origin/claude/*-research-*` - Topic-specific research
-- Branches with `docs/research/*.md` or `RESEARCH*.md` files
+- Branches with `.claude/research/*.md`, legacy `docs/research/*.md`, or `RESEARCH*.md` files
 
 **Integration:**
 

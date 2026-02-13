@@ -18,8 +18,8 @@ Usage:
     save_skill_context(SkillOutput(
         skill_name="pop-writing-plans",
         status="completed",
-        output={"plan_file": "docs/plans/..."},
-        artifacts=["docs/plans/feature-plan.md"],
+        output={"plan_file": ".claude/plans/..."},
+        artifacts=[".claude/plans/feature-plan.md"],
         next_suggested="pop-executing-plans"
     ))
 """
@@ -161,7 +161,7 @@ def save_skill_context(output: SkillOutput) -> None:
             skill_name="pop-brainstorming",
             status="completed",
             output={"topic": "auth system"},
-            artifacts=["docs/plans/auth-design.md"],
+            artifacts=[".claude/plans/auth-design.md"],
             next_suggested="pop-writing-plans"
         ))
     """
@@ -383,7 +383,7 @@ if __name__ == "__main__":
             skill_name="pop-brainstorming",
             status="completed",
             output={"topic": "authentication", "approach": "JWT"},
-            artifacts=["docs/plans/auth-design.md"],
+            artifacts=[".claude/plans/auth-design.md"],
             next_suggested="pop-writing-plans",
             decisions_made=[{"id": "auth_method", "answer": "JWT"}],
         )
@@ -394,7 +394,7 @@ if __name__ == "__main__":
     ctx = load_skill_context()
     assert ctx is not None
     assert ctx.previous_skill == "pop-brainstorming"
-    assert ctx.artifacts.get("auth-design.md") == "docs/plans/auth-design.md"
+    assert ctx.artifacts.get("auth-design.md") == ".claude/plans/auth-design.md"
     print(f"Loaded context: previous={ctx.previous_skill}, artifacts={list(ctx.artifacts.keys())}")
 
     # Test decision caching
@@ -404,8 +404,8 @@ if __name__ == "__main__":
     print("Decision caching works")
 
     # Test artifact registry
-    register_artifact("design_doc", "docs/plans/auth-design.md", "markdown")
-    assert get_artifact("design_doc") == "docs/plans/auth-design.md"
+    register_artifact("design_doc", ".claude/plans/auth-design.md", "markdown")
+    assert get_artifact("design_doc") == ".claude/plans/auth-design.md"
     print("Artifact registry works")
 
     # Test workflow summary
