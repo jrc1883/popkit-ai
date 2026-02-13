@@ -106,8 +106,8 @@
           "type": "selection",
           "options": [
             {
-              "label": "docs/research/",
-              "value": "docs/research/",
+              "label": ".claude/research/",
+              "value": ".claude/research/",
               "description": "Project research directory"
             },
             {
@@ -139,7 +139,7 @@
     "manual": ["Invoke pop-research-capture skill", "Research a topic"]
   },
   "output": {
-    "primary": "docs/research/YYYY-MM-DD-<topic>.md",
+    "primary": ".claude/research/YYYY-MM-DD-<topic>.md",
     "secondary": "Embeddings stored in vector database"
   }
 }

@@ -203,7 +203,7 @@ PopKit Core includes an automatic **Ruff pre-commit hook** that validates Python
   - `Bash(command subcommand*)` - Subcommand with any arguments
 - **Security Principle:** Be conservative. Only list allowed patterns; everything else is blocked.
 - **Blocked by Omission:** Commands not listed are automatically blocked (e.g., `git push --force`, `rm -rf`, `sudo`)
-- See [Wildcard Permission Design](docs/research/2026-01-08-wildcard-permission-design.md) for detailed patterns and examples
+- See [MCP Wildcard Permissions Guide](docs/MCP_WILDCARD_PERMISSIONS.md) for detailed patterns and examples
 
 ### New in Claude Code 2.1.2
 
@@ -790,7 +790,7 @@ chore: Maintenance tasks
 - **Agents**: AGENT.md with purpose, triggers, capabilities
 - **Hooks**: Python scripts with JSON stdin/stdout, proper error handling
 - **No build required**: Configuration-only plugin (no TypeScript/compilation)
-- **Code Comments**: Follow [COMMENTING-STANDARD.md](docs/standards/COMMENTING-STANDARD.md) - comments explain _why_ not _what_. Target Level 2 (Moderate) for most Python modules. Always document magic numbers and design decisions.
+- **Code Comments**: Comments should explain _why_ not _what_. Target moderate comment density for Python modules and document non-obvious design decisions.
 
 ---
 
@@ -1152,9 +1152,8 @@ Before modifying GitHub Actions workflows:
 
 ### Architecture Documentation
 
-- [Plugin Modularization Design](docs/plans/2025-12-20-plugin-modularization-design.md)
-- [Testing & Validation Plan](docs/plans/2025-12-21-phase5-testing-validation-plan.md)
-- [Hook Portability Audit](docs/HOOK_PORTABILITY_AUDIT.md)
+- [Agent Routing Guide](docs/AGENT_ROUTING_GUIDE.md)
+- [Power Mode Async Deep Dive](docs/POWER_MODE_ASYNC.md)
 - [MCP Wildcard Permissions Guide](docs/MCP_WILDCARD_PERMISSIONS.md) - Claude Code 2.0.70+ wildcard syntax
 
 ### For Claude Code

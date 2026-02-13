@@ -33,7 +33,7 @@ class ErrorCode:
     category: str  # "JSON/Input Parsing"
     message: str  # Human-readable description
     severity: ErrorSeverity
-    help_doc: str  # Relative path to docs/errors/E001.md
+    help_doc: str  # Legacy per-code doc path (kept for compatibility)
     recovery: List[str]  # Recovery suggestions
 
 
@@ -46,7 +46,7 @@ class ErrorRegistry:
         category="JSON/Input Parsing",
         message="Invalid JSON syntax in input",
         severity=ErrorSeverity.CRITICAL,
-        help_doc="errors/E001_JSON_PARSE.md",
+        help_doc="errors/README.md",
         recovery=[
             "Validate JSON with 'jq' or online validator",
             "Check for trailing commas (not allowed in JSON)",
@@ -59,7 +59,7 @@ class ErrorRegistry:
         category="JSON/Input Parsing",
         message="JSON structure doesn't match expected schema",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E002_INVALID_SCHEMA.md",
+        help_doc="errors/README.md",
         recovery=[
             "Check required fields are present",
             "Verify field types match schema",
@@ -73,7 +73,7 @@ class ErrorRegistry:
         category="File I/O",
         message="Required file not found",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E101_FILE_NOT_FOUND.md",
+        help_doc="errors/README.md",
         recovery=[
             "Check file path is correct",
             "Verify file exists with 'ls' or 'find'",
@@ -86,7 +86,7 @@ class ErrorRegistry:
         category="File I/O",
         message="Permission denied accessing file or directory",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E102_PERMISSION_DENIED.md",
+        help_doc="errors/README.md",
         recovery=[
             "Check file permissions with 'ls -la'",
             "Ensure you have read/write access",
@@ -100,7 +100,7 @@ class ErrorRegistry:
         category="Network/API",
         message="Network request timed out",
         severity=ErrorSeverity.MEDIUM,
-        help_doc="errors/W201_NETWORK_TIMEOUT.md",
+        help_doc="errors/README.md",
         recovery=[
             "Check internet connection",
             "Retry with increased timeout",
@@ -114,7 +114,7 @@ class ErrorRegistry:
         category="Git Operations",
         message="Git repository not found",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E301_REPO_NOT_FOUND.md",
+        help_doc="errors/README.md",
         recovery=[
             "Verify you're in a git repository with 'git status'",
             "Initialize repository with 'git init' if needed",
@@ -128,7 +128,7 @@ class ErrorRegistry:
         category="Safety/Security",
         message="Potentially destructive command blocked",
         severity=ErrorSeverity.CRITICAL,
-        help_doc="errors/S401_DESTRUCTIVE_CMD.md",
+        help_doc="errors/README.md",
         recovery=[
             "Review command for unintended consequences",
             "Use safer alternative if available",
@@ -142,7 +142,7 @@ class ErrorRegistry:
         category="Tool Execution",
         message="Tool execution failed",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E601_TOOL_FAILED.md",
+        help_doc="errors/README.md",
         recovery=[
             "Check tool output for specific error messages",
             "Verify tool is installed and accessible",
@@ -156,7 +156,7 @@ class ErrorRegistry:
         category="Configuration",
         message="Invalid configuration",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E701_INVALID_CONFIG.md",
+        help_doc="errors/README.md",
         recovery=[
             "Check configuration file syntax",
             "Verify all required fields are present",
@@ -169,7 +169,7 @@ class ErrorRegistry:
         category="Configuration",
         message="Optional configuration field missing",
         severity=ErrorSeverity.MEDIUM,
-        help_doc="errors/W702_MISSING_FIELD.md",
+        help_doc="errors/README.md",
         recovery=[
             "Add missing field to configuration",
             "Feature will use default value (graceful degradation)",
@@ -183,7 +183,7 @@ class ErrorRegistry:
         category="JSON/Input Parsing",
         message="Input data is malformed or corrupted",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E003_MALFORMED_INPUT.md",
+        help_doc="errors/README.md",
         recovery=[
             "Verify input format matches expected structure",
             "Check for encoding issues (UTF-8 expected)",
@@ -197,7 +197,7 @@ class ErrorRegistry:
         category="File I/O",
         message="Failed to read file contents",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E103_FILE_READ_ERROR.md",
+        help_doc="errors/README.md",
         recovery=[
             "Check file is not locked by another process",
             "Verify file is not corrupted",
@@ -210,7 +210,7 @@ class ErrorRegistry:
         category="File I/O",
         message="Failed to write to file",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E104_FILE_WRITE_ERROR.md",
+        help_doc="errors/README.md",
         recovery=[
             "Check available disk space",
             "Verify write permissions on target directory",
@@ -223,7 +223,7 @@ class ErrorRegistry:
         category="File I/O",
         message="File size exceeds recommended limits",
         severity=ErrorSeverity.MEDIUM,
-        help_doc="errors/W105_FILE_TOO_LARGE.md",
+        help_doc="errors/README.md",
         recovery=[
             "Consider processing file in chunks",
             "Use streaming approach for large files",
@@ -237,7 +237,7 @@ class ErrorRegistry:
         category="Network/API",
         message="Connection refused by remote server",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E202_CONNECTION_REFUSED.md",
+        help_doc="errors/README.md",
         recovery=[
             "Verify server is running and accessible",
             "Check firewall and network settings",
@@ -250,7 +250,7 @@ class ErrorRegistry:
         category="Network/API",
         message="API request failed with error response",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E203_API_ERROR.md",
+        help_doc="errors/README.md",
         recovery=[
             "Check API error message for details",
             "Verify API credentials and permissions",
@@ -263,7 +263,7 @@ class ErrorRegistry:
         category="Network/API",
         message="API rate limit exceeded",
         severity=ErrorSeverity.MEDIUM,
-        help_doc="errors/W204_RATE_LIMIT.md",
+        help_doc="errors/README.md",
         recovery=[
             "Wait before retrying (check Retry-After header)",
             "Reduce request frequency",
@@ -277,7 +277,7 @@ class ErrorRegistry:
         category="Git Operations",
         message="Git merge conflict detected",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E302_MERGE_CONFLICT.md",
+        help_doc="errors/README.md",
         recovery=[
             "Resolve conflicts manually in affected files",
             "Use 'git status' to see conflicted files",
@@ -290,7 +290,7 @@ class ErrorRegistry:
         category="Git Operations",
         message="Git repository is in detached HEAD state",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E303_DETACHED_HEAD.md",
+        help_doc="errors/README.md",
         recovery=[
             "Create a new branch with 'git checkout -b <branch-name>'",
             "Return to branch with 'git checkout <branch-name>'",
@@ -303,7 +303,7 @@ class ErrorRegistry:
         category="Git Operations",
         message="Uncommitted changes detected",
         severity=ErrorSeverity.MEDIUM,
-        help_doc="errors/W304_UNCOMMITTED_CHANGES.md",
+        help_doc="errors/README.md",
         recovery=[
             "Commit changes with 'git commit'",
             "Stash changes with 'git stash'",
@@ -317,7 +317,7 @@ class ErrorRegistry:
         category="Safety/Security",
         message="Potential credential or secret detected",
         severity=ErrorSeverity.CRITICAL,
-        help_doc="errors/S402_CREDENTIAL_LEAK.md",
+        help_doc="errors/README.md",
         recovery=[
             "Remove credentials from code immediately",
             "Use environment variables or secure vault",
@@ -330,7 +330,7 @@ class ErrorRegistry:
         category="Safety/Security",
         message="Operation uses insecure method or protocol",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/S403_INSECURE_OPERATION.md",
+        help_doc="errors/README.md",
         recovery=[
             "Use secure alternative (HTTPS instead of HTTP)",
             "Enable encryption for sensitive data",
@@ -343,7 +343,7 @@ class ErrorRegistry:
         category="Safety/Security",
         message="Potential security concern detected",
         severity=ErrorSeverity.MEDIUM,
-        help_doc="errors/W404_SECURITY_WARNING.md",
+        help_doc="errors/README.md",
         recovery=[
             "Review security implications",
             "Consider safer alternative approach",
@@ -357,7 +357,7 @@ class ErrorRegistry:
         category="Database",
         message="Failed to connect to database",
         severity=ErrorSeverity.CRITICAL,
-        help_doc="errors/E501_DB_CONNECTION_FAILED.md",
+        help_doc="errors/README.md",
         recovery=[
             "Check database server is running",
             "Verify connection string and credentials",
@@ -370,7 +370,7 @@ class ErrorRegistry:
         category="Database",
         message="Database query execution failed",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E502_QUERY_ERROR.md",
+        help_doc="errors/README.md",
         recovery=[
             "Check query syntax",
             "Verify table and column names exist",
@@ -384,7 +384,7 @@ class ErrorRegistry:
         category="Tool Execution",
         message="Tool execution timed out",
         severity=ErrorSeverity.MEDIUM,
-        help_doc="errors/W602_TOOL_TIMEOUT.md",
+        help_doc="errors/README.md",
         recovery=[
             "Increase timeout value if appropriate",
             "Check if operation is stuck or hanging",
@@ -397,7 +397,7 @@ class ErrorRegistry:
         category="Tool Execution",
         message="Invalid arguments provided to tool",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E603_INVALID_ARGS.md",
+        help_doc="errors/README.md",
         recovery=[
             "Review tool documentation for correct argument format",
             "Check argument types and values",
@@ -411,7 +411,7 @@ class ErrorRegistry:
         category="Configuration",
         message="Configuration file not found",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E702_CONFIG_NOT_FOUND.md",
+        help_doc="errors/README.md",
         recovery=[
             "Create configuration file with required settings",
             "Check configuration file path",
@@ -425,7 +425,7 @@ class ErrorRegistry:
         category="Plugin/Extension",
         message="Failed to load plugin or extension",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E801_PLUGIN_LOAD_FAILED.md",
+        help_doc="errors/README.md",
         recovery=[
             "Verify plugin is installed correctly",
             "Check plugin compatibility with current version",
@@ -438,7 +438,7 @@ class ErrorRegistry:
         category="Plugin/Extension",
         message="Plugin version incompatibility detected",
         severity=ErrorSeverity.MEDIUM,
-        help_doc="errors/W802_VERSION_MISMATCH.md",
+        help_doc="errors/README.md",
         recovery=[
             "Update plugin to compatible version",
             "Check plugin documentation for version requirements",
@@ -452,7 +452,7 @@ class ErrorRegistry:
         category="JSON/Input Parsing",
         message="Input encoding error (invalid UTF-8 or character set)",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E004_ENCODING_ERROR.md",
+        help_doc="errors/README.md",
         recovery=[
             "Verify input is valid UTF-8 encoding",
             "Check for byte order marks (BOM)",
@@ -465,7 +465,7 @@ class ErrorRegistry:
         category="JSON/Input Parsing",
         message="Input uses deprecated format",
         severity=ErrorSeverity.MEDIUM,
-        help_doc="errors/W005_DEPRECATED_FORMAT.md",
+        help_doc="errors/README.md",
         recovery=[
             "Update to current format specification",
             "See migration guide in documentation",
@@ -479,7 +479,7 @@ class ErrorRegistry:
         category="File I/O",
         message="Required directory not found",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E106_DIRECTORY_NOT_FOUND.md",
+        help_doc="errors/README.md",
         recovery=[
             "Create directory with 'mkdir -p <path>'",
             "Verify directory path is correct",
@@ -492,7 +492,7 @@ class ErrorRegistry:
         category="File I/O",
         message="Low disk space detected",
         severity=ErrorSeverity.MEDIUM,
-        help_doc="errors/W107_DISK_SPACE_LOW.md",
+        help_doc="errors/README.md",
         recovery=[
             "Free up disk space",
             "Check with 'df -h' command",
@@ -505,7 +505,7 @@ class ErrorRegistry:
         category="File I/O",
         message="File is locked by another process",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E108_FILE_LOCKED.md",
+        help_doc="errors/README.md",
         recovery=[
             "Close other applications using the file",
             "Wait for other processes to release the file",
@@ -519,7 +519,7 @@ class ErrorRegistry:
         category="Network/API",
         message="Failed to resolve hostname",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E205_DNS_RESOLUTION_FAILED.md",
+        help_doc="errors/README.md",
         recovery=[
             "Check DNS server configuration",
             "Verify hostname is correct",
@@ -532,7 +532,7 @@ class ErrorRegistry:
         category="Network/API",
         message="SSL certificate verification issue",
         severity=ErrorSeverity.MEDIUM,
-        help_doc="errors/W206_SSL_CERTIFICATE_WARNING.md",
+        help_doc="errors/README.md",
         recovery=[
             "Verify certificate is valid and not expired",
             "Check system time is correct",
@@ -546,7 +546,7 @@ class ErrorRegistry:
         category="Git Operations",
         message="Git branch not found",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E305_BRANCH_NOT_FOUND.md",
+        help_doc="errors/README.md",
         recovery=[
             "List branches with 'git branch -a'",
             "Create branch with 'git checkout -b <branch-name>'",
@@ -559,7 +559,7 @@ class ErrorRegistry:
         category="Git Operations",
         message="Local branch is behind remote",
         severity=ErrorSeverity.MEDIUM,
-        help_doc="errors/W306_BEHIND_REMOTE.md",
+        help_doc="errors/README.md",
         recovery=[
             "Pull latest changes with 'git pull'",
             "Check commits with 'git log origin/<branch>..<branch>'",
@@ -572,7 +572,7 @@ class ErrorRegistry:
         category="Git Operations",
         message="Git push rejected by remote",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E307_PUSH_REJECTED.md",
+        help_doc="errors/README.md",
         recovery=[
             "Pull latest changes first with 'git pull'",
             "Resolve any conflicts",
@@ -586,7 +586,7 @@ class ErrorRegistry:
         category="Safety/Security",
         message="Operation involves unverified or untrusted source",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/S405_UNVERIFIED_SOURCE.md",
+        help_doc="errors/README.md",
         recovery=[
             "Verify source is trusted and legitimate",
             "Check signatures and checksums",
@@ -599,7 +599,7 @@ class ErrorRegistry:
         category="Safety/Security",
         message="Using deprecated security method",
         severity=ErrorSeverity.MEDIUM,
-        help_doc="errors/W406_DEPRECATED_SECURITY.md",
+        help_doc="errors/README.md",
         recovery=[
             "Update to modern security practices",
             "See security documentation for alternatives",
@@ -613,7 +613,7 @@ class ErrorRegistry:
         category="Database",
         message="Database transaction failed or rolled back",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E503_TRANSACTION_FAILED.md",
+        help_doc="errors/README.md",
         recovery=[
             "Check transaction logs for details",
             "Verify data constraints are satisfied",
@@ -626,7 +626,7 @@ class ErrorRegistry:
         category="Database",
         message="Database query is running slowly",
         severity=ErrorSeverity.MEDIUM,
-        help_doc="errors/W504_SLOW_QUERY.md",
+        help_doc="errors/README.md",
         recovery=[
             "Add database indexes for frequently queried fields",
             "Optimize query structure",
@@ -639,7 +639,7 @@ class ErrorRegistry:
         category="Database",
         message="Database schema doesn't match expected structure",
         severity=ErrorSeverity.CRITICAL,
-        help_doc="errors/E505_SCHEMA_MISMATCH.md",
+        help_doc="errors/README.md",
         recovery=[
             "Run database migrations",
             "Verify database version matches application",
@@ -653,7 +653,7 @@ class ErrorRegistry:
         category="Tool Execution",
         message="Required tool or command not found",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E604_TOOL_NOT_FOUND.md",
+        help_doc="errors/README.md",
         recovery=[
             "Install required tool",
             "Add tool to system PATH",
@@ -666,7 +666,7 @@ class ErrorRegistry:
         category="Tool Execution",
         message="Tool version is outdated",
         severity=ErrorSeverity.MEDIUM,
-        help_doc="errors/W605_TOOL_VERSION_OLD.md",
+        help_doc="errors/README.md",
         recovery=[
             "Update tool to latest version",
             "Check compatibility requirements",
@@ -679,7 +679,7 @@ class ErrorRegistry:
         category="Tool Execution",
         message="Tool crashed or terminated unexpectedly",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E606_TOOL_CRASHED.md",
+        help_doc="errors/README.md",
         recovery=[
             "Check tool logs for crash details",
             "Verify system resources are sufficient",
@@ -693,7 +693,7 @@ class ErrorRegistry:
         category="Configuration",
         message="Failed to parse configuration file",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E703_CONFIG_PARSE_ERROR.md",
+        help_doc="errors/README.md",
         recovery=[
             "Check configuration file syntax (YAML/JSON/TOML)",
             "Validate with appropriate linter",
@@ -706,7 +706,7 @@ class ErrorRegistry:
         category="Configuration",
         message="Configuration value overridden by environment variable",
         severity=ErrorSeverity.LOW,
-        help_doc="errors/W704_CONFIG_OVERRIDE.md",
+        help_doc="errors/README.md",
         recovery=[
             "This is informational - environment variables take precedence",
             "Unset environment variable to use config file value",
@@ -719,7 +719,7 @@ class ErrorRegistry:
         category="Configuration",
         message="Configuration validation failed",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E705_CONFIG_VALIDATION_FAILED.md",
+        help_doc="errors/README.md",
         recovery=[
             "Review validation error details",
             "Ensure all required fields have valid values",
@@ -733,7 +733,7 @@ class ErrorRegistry:
         category="Plugin/Extension",
         message="Plugin conflict detected",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E803_PLUGIN_CONFLICT.md",
+        help_doc="errors/README.md",
         recovery=[
             "Disable conflicting plugins",
             "Check plugin compatibility matrix",
@@ -746,7 +746,7 @@ class ErrorRegistry:
         category="Plugin/Extension",
         message="Plugin is deprecated",
         severity=ErrorSeverity.MEDIUM,
-        help_doc="errors/W804_PLUGIN_DEPRECATED.md",
+        help_doc="errors/README.md",
         recovery=[
             "Migrate to recommended alternative",
             "See deprecation notice for timeline",
@@ -759,7 +759,7 @@ class ErrorRegistry:
         category="Plugin/Extension",
         message="Plugin initialization failed",
         severity=ErrorSeverity.HIGH,
-        help_doc="errors/E805_PLUGIN_INIT_FAILED.md",
+        help_doc="errors/README.md",
         recovery=[
             "Check plugin configuration",
             "Verify dependencies are installed",
@@ -773,7 +773,7 @@ class ErrorRegistry:
         category="System/Internal",
         message="Internal assertion failed",
         severity=ErrorSeverity.CRITICAL,
-        help_doc="errors/E901_ASSERTION_FAILED.md",
+        help_doc="errors/README.md",
         recovery=[
             "This indicates an internal error",
             "Please report this issue with full context",
@@ -786,7 +786,7 @@ class ErrorRegistry:
         category="System/Internal",
         message="System reached unexpected state",
         severity=ErrorSeverity.CRITICAL,
-        help_doc="errors/E902_UNEXPECTED_STATE.md",
+        help_doc="errors/README.md",
         recovery=[
             "Restart the application",
             "Check system logs for details",
@@ -799,7 +799,7 @@ class ErrorRegistry:
         category="System/Internal",
         message="System resource usage warning",
         severity=ErrorSeverity.MEDIUM,
-        help_doc="errors/W903_RESOURCE_WARNING.md",
+        help_doc="errors/README.md",
         recovery=[
             "Monitor resource usage (CPU/memory/disk)",
             "Close unnecessary applications",
@@ -812,7 +812,7 @@ class ErrorRegistry:
         category="System/Internal",
         message="System resources exhausted",
         severity=ErrorSeverity.CRITICAL,
-        help_doc="errors/E904_RESOURCE_EXHAUSTED.md",
+        help_doc="errors/README.md",
         recovery=[
             "Free up system resources (memory/disk/file handles)",
             "Restart application",
@@ -825,7 +825,7 @@ class ErrorRegistry:
         category="System/Internal",
         message="System is in maintenance mode",
         severity=ErrorSeverity.INFO,
-        help_doc="errors/I905_MAINTENANCE_MODE.md",
+        help_doc="errors/README.md",
         recovery=[
             "Wait for maintenance to complete",
             "Check status page for updates",
@@ -909,20 +909,20 @@ class ErrorResponse:
             >>> print(error["code"])
             E001_JSON_PARSE
             >>> print(error["help_url"])
-            https://github.com/jrc1883/popkit-claude/blob/main/docs/errors/E001_JSON_PARSE.md
+            https://github.com/jrc1883/popkit-claude/blob/main/docs/errors/README.md
         """
         recovery = error_code.recovery.copy()
         if additional_recovery:
             recovery.extend(additional_recovery)
 
-        base_url = "https://github.com/jrc1883/popkit-claude/blob/main/docs"
+        base_url = "https://github.com/jrc1883/popkit-claude/blob/main/docs/errors/README.md"
 
         response = {
             "status": "error",
             "code": error_code.code,
             "message": error_code.message,
             "severity": error_code.severity.value,
-            "help_url": f"{base_url}/{error_code.help_doc}",
+            "help_url": base_url,
             "recovery": recovery,
             "context": {
                 "timestamp": datetime.now().isoformat(),

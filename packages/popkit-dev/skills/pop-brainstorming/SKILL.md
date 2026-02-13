@@ -220,7 +220,7 @@ Use AskUserQuestion tool with:
 
 **Documentation:**
 
-- Write the validated design to `docs/plans/YYYY-MM-DD-<topic>-design.md`
+- Write the validated design to `.claude/plans/YYYY-MM-DD-<topic>-design.md`
 - Commit the design document to git
 
 **Context Handoff (for downstream skills):**
@@ -238,7 +238,7 @@ save_skill_context(SkillOutput(
         "approach": "<chosen approach>",
         "design_summary": "<brief summary>"
     },
-    artifacts=["docs/plans/YYYY-MM-DD-<topic>-design.md"],
+    artifacts=[".claude/plans/YYYY-MM-DD-<topic>-design.md"],
     next_suggested="pop-writing-plans",
     decisions_made=[<list of AskUserQuestion results>]
 ))
@@ -252,7 +252,7 @@ if issue_number:
 
 ```bash
 # If no issue exists, offer to create one
-gh issue create --title "[Design] <topic>" --body "Design document: docs/plans/..."
+gh issue create --title "[Design] <topic>" --body "Design document: .claude/plans/..."
 ```
 
 **Implementation (if continuing):**

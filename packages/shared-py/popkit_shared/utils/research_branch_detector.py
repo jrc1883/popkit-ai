@@ -8,7 +8,7 @@ Part of issue #181: Auto-Process Research Branches in /popkit:next
 Patterns detected:
 - origin/claude/research-*
 - origin/claude/*-research-*
-- Branches with research docs (*.md in root or docs/research/)
+- Branches with research docs (*.md in root, .claude/research/, or legacy docs/research/)
 """
 
 import json
@@ -58,7 +58,7 @@ def get_research_branches() -> List[ResearchBranch]:
     Patterns:
     1. origin/claude/research-*
     2. origin/claude/*-research-*
-    3. Any branch with docs/research/*.md or RESEARCH*.md
+    3. Any branch with .claude/research/*.md, legacy docs/research/*.md, or RESEARCH*.md
     """
     branches: List[ResearchBranch] = []
 
@@ -120,6 +120,7 @@ def _analyze_branch(full_name: str, match: re.Match) -> Optional[ResearchBranch]
 
     # Detect doc files
     doc_patterns = [
+        r"\.claude/research/.*\.md",
         r"docs/research/.*\.md",
         r"docs/.*RESEARCH.*\.md",
         r"RESEARCH.*\.md",
