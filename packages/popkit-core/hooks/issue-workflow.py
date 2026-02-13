@@ -19,6 +19,7 @@ Part of Issue #11 - Unified Orchestration System
 """
 
 import json
+import os
 import subprocess
 import sys
 from datetime import datetime
@@ -658,7 +659,8 @@ class IssueWorkflowHook:
         print("\nOptions:", file=sys.stderr)
         print("  1. Fix the errors and retry phase completion", file=sys.stderr)
         print(
-            "  2. Use '/popkit:issue phase rollback' to restore checkpoint",
+            "  2. Use '/popkit:issue phase rollback' to restore checkpoint "
+            "(requires POPKIT_ALLOW_DESTRUCTIVE_ROLLBACK=1 or config)",
             file=sys.stderr,
         )
         print(
@@ -667,6 +669,17 @@ class IssueWorkflowHook:
         )
 
         return result
+
+    def destructive_ops_allowed(self) -> bool:
+        """Return True only if destructive rollback is explicitly enabled."""
+        if os.environ.get("POPKIT_ALLOW_DESTRUCTIVE_ROLLBACK") == "1":
+            return True
+        if self.quality_gate and self.quality_gate.config:
+            return (
+                self.quality_gate.config.get("options", {}).get("allow_destructive_rollback", False)
+                is True
+            )
+        return False
 
     def rollback_to_phase_start(self, phase_name: str) -> Dict[str, Any]:
         """Rollback to the checkpoint at the start of a phase.
@@ -685,6 +698,14 @@ class IssueWorkflowHook:
             "checkpoint": None,
             "message": "",
         }
+
+        if not self.destructive_ops_allowed():
+            result["message"] = (
+                "Rollback blocked: destructive operations are disabled. "
+                "Set POPKIT_ALLOW_DESTRUCTIVE_ROLLBACK=1 or enable "
+                "'options.allow_destructive_rollback' in .claude/quality-gates.json."
+            )
+            return result
 
         # Find most recent checkpoint for this phase
         issue_num = self.state.get("active_issue", "unknown")
