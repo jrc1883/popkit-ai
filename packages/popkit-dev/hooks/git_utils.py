@@ -11,7 +11,9 @@ from typing import List, Optional, Tuple
 def run_git_command(cmd: List[str], cwd: Optional[str] = None) -> Tuple[int, str, str]:
     """Run a git command and return exit code, stdout, stderr."""
     try:
-        result = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, timeout=30)
+        result = subprocess.run(
+            cmd, cwd=cwd, capture_output=True, text=True, timeout=30
+        )
         return result.returncode, result.stdout, result.stderr
     except subprocess.TimeoutExpired:
         return 1, "", "Git command timed out after 30 seconds"
@@ -74,7 +76,9 @@ def format_stale_branches_report(
         return "✓ No stale local branches found"
 
     count = len(stale_branches)
-    lines = [f"⚠️  Found {count} stale local branch{'es' if count != 1 else ''} (remote deleted):"]
+    lines = [
+        f"⚠️  Found {count} stale local branch{'es' if count != 1 else ''} (remote deleted):"
+    ]
 
     for branch_name, _ in stale_branches[:max_display]:
         lines.append(f"   - {branch_name}")

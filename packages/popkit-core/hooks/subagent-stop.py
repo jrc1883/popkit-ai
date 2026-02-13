@@ -196,7 +196,9 @@ def record_subagent_completion(data: dict):
                 "timestamp": datetime.now().isoformat(),
                 "agent_id": agent_id,
                 "session_id": incoming_session_id,
-                "transcript_available": bool(transcript_path and Path(transcript_path).exists()),
+                "transcript_available": bool(
+                    transcript_path and Path(transcript_path).exists()
+                ),
             }
         )
 

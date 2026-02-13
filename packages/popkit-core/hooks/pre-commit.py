@@ -285,7 +285,9 @@ def main():
             sys.exit(1)  # Block commit
 
         # Re-stage files if auto-fixes were applied
-        all_modified = list(set(check_result["fixed_files"] + format_result["formatted_files"]))
+        all_modified = list(
+            set(check_result["fixed_files"] + format_result["formatted_files"])
+        )
 
         if all_modified:
             print(
@@ -295,9 +297,7 @@ def main():
 
             if not restage_files(all_modified):
                 # Re-stage failed - warn but allow commit
-                warning_msg = (
-                    "⚠️  Could not re-stage auto-fixed files. Please review and stage manually."
-                )
+                warning_msg = "⚠️  Could not re-stage auto-fixed files. Please review and stage manually."
                 print(warning_msg, file=sys.stderr)
 
                 response = {

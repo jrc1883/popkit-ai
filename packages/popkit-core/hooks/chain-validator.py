@@ -59,7 +59,9 @@ class ChainValidator:
 
         return styles
 
-    def validate_workflow(self, workflow_id: str, workflow: Dict[str, Any]) -> Dict[str, Any]:
+    def validate_workflow(
+        self, workflow_id: str, workflow: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Validate a single workflow definition.
 
         Returns:
@@ -94,7 +96,9 @@ class ChainValidator:
                 stats["agents_used"].add(agent)
 
                 if agent not in self.available_agents:
-                    warnings.append(f"Workflow '{workflow_id}': Agent '{agent}' not found")
+                    warnings.append(
+                        f"Workflow '{workflow_id}': Agent '{agent}' not found"
+                    )
                     stats["missing_agents"].add(agent)
 
         # Convert sets to lists for JSON serialization
@@ -134,11 +138,15 @@ class ChainValidator:
             results["summary"]["total_errors"] += len(result["errors"])
             results["summary"]["total_warnings"] += len(result["warnings"])
             results["summary"]["all_agents"].update(result["stats"]["agents_used"])
-            results["summary"]["missing_agents"].update(result["stats"]["missing_agents"])
+            results["summary"]["missing_agents"].update(
+                result["stats"]["missing_agents"]
+            )
 
         # Convert sets to lists
         results["summary"]["all_agents"] = list(results["summary"]["all_agents"])
-        results["summary"]["missing_agents"] = list(results["summary"]["missing_agents"])
+        results["summary"]["missing_agents"] = list(
+            results["summary"]["missing_agents"]
+        )
 
         return results
 
@@ -230,7 +238,9 @@ def main():
         # Output JSON response (PreToolUse hook format)
         response = {
             "decision": "approve",  # Chain validator never blocks tool execution
-            "warnings": [f"{results['summary']['total_warnings']} workflow validation warnings"]
+            "warnings": [
+                f"{results['summary']['total_warnings']} workflow validation warnings"
+            ]
             if results["summary"]["total_warnings"] > 0
             else [],
             "chain_validation": results,
