@@ -85,9 +85,7 @@ def build_auto_claim_instruction(role, teammate_id):
     # Add role-specific guidance
     if role in ROLE_KEYWORDS:
         keywords = ROLE_KEYWORDS[role]
-        instruction_parts.append(
-            f"   - Keywords to look for: {', '.join(keywords[:3])}"
-        )
+        instruction_parts.append(f"   - Keywords to look for: {', '.join(keywords[:3])}")
 
     instruction_parts.extend(
         [

@@ -92,9 +92,7 @@ class PreToolUseStateless(StatelessHook):
             ),
         )
 
-    def _check_safety_violations(
-        self, tool_name: str, tool_input: Dict[str, Any]
-    ) -> List[str]:
+    def _check_safety_violations(self, tool_name: str, tool_input: Dict[str, Any]) -> List[str]:
         """Check for safety violations (pure function).
 
         Args:
@@ -122,9 +120,7 @@ class PreToolUseStateless(StatelessHook):
 
         return violations
 
-    def _get_recommendations(
-        self, tool_name: str, tool_input: Dict[str, Any]
-    ) -> List[str]:
+    def _get_recommendations(self, tool_name: str, tool_input: Dict[str, Any]) -> List[str]:
         """Get recommendations for the tool use (pure function).
 
         Args:
@@ -149,15 +145,11 @@ class PreToolUseStateless(StatelessHook):
 
             # Check if it's a test file
             if "test" in file_path.lower() or "spec" in file_path.lower():
-                recommendations.append(
-                    "Consider running test-writer-fixer for test modifications"
-                )
+                recommendations.append("Consider running test-writer-fixer for test modifications")
 
             # Check if it's a config file
             if file_path.endswith((".json", ".yaml", ".yml", ".toml")):
-                recommendations.append(
-                    "Config file modified - verify no secrets exposed"
-                )
+                recommendations.append("Config file modified - verify no secrets exposed")
 
         return recommendations
 
