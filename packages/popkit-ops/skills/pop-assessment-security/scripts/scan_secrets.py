@@ -220,10 +220,31 @@ def scan_file(filepath: Path, plugin_dir: Path) -> List[Dict]:
     return findings
 
 
+def build_console_result(result: Dict) -> Dict:
+    """Build safe console output that omits detailed findings."""
+    return {
+        "category": result["category"],
+        "plugin_dir": result["plugin_dir"],
+        "score": result["score"],
+        "max_score": result["max_score"],
+        "summary": result["summary"],
+    }
+
+
 def main():
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Scan files for hardcoded secrets")
+    parser.add_argument("plugin_dir", nargs="?", help="Plugin directory to scan")
+    parser.add_argument(
+        "--output-json",
+        help="Write full scan result (including findings) to this JSON file",
+    )
+    args = parser.parse_args()
+
     # Get plugin directory
-    if len(sys.argv) > 1:
-        plugin_dir = Path(sys.argv[1])
+    if args.plugin_dir:
+        plugin_dir = Path(args.plugin_dir)
     else:
         plugin_dir = find_plugin_root()
 
@@ -236,7 +257,12 @@ def main():
             "error": "Plugin directory not found",
             "findings": [],
         }
-        print(json.dumps(result, indent=2))
+        if args.output_json:
+            output_path = Path(args.output_json)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_text(json.dumps(result, indent=2), encoding="utf-8")
+
+        print(json.dumps(build_console_result(result), indent=2))
         return 1
 
     # Collect all files to scan
@@ -280,7 +306,12 @@ def main():
     }
 
     # Output only metadata fields, never matched secret values.
-    print(json.dumps(result, indent=2))
+    if args.output_json:
+        output_path = Path(args.output_json)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(json.dumps(result, indent=2), encoding="utf-8")
+
+    print(json.dumps(build_console_result(result), indent=2))
     return 0 if len(all_findings) == 0 else 1
 
 

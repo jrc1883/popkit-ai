@@ -373,7 +373,6 @@ def prepare_batch_for_sharing(
 # =============================================================================
 
 if __name__ == "__main__":
-    import json
     import sys
 
     if len(sys.argv) < 2:

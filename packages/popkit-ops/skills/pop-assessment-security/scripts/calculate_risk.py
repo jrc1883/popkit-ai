@@ -18,6 +18,7 @@ Output:
 import json
 import subprocess
 import sys
+import tempfile
 from datetime import datetime
 from pathlib import Path
 
@@ -52,13 +53,28 @@ def run_scan_script(script_name: str, plugin_dir: Path) -> dict:
             "findings": [],
         }
 
+    output_file = None
+    cmd = [sys.executable, str(script_path), str(plugin_dir)]
+
+    # For secret scanning, write detailed findings to a file and keep console output redacted.
+    if script_name == "scan_secrets.py":
+        with tempfile.NamedTemporaryFile(
+            prefix="popkit-secrets-", suffix=".json", delete=False
+        ) as tmp:
+            output_file = Path(tmp.name)
+        cmd.extend(["--output-json", str(output_file)])
+
     try:
         result = subprocess.run(
-            [sys.executable, str(script_path), str(plugin_dir)],
+            cmd,
             capture_output=True,
             text=True,
             timeout=120,
         )
+
+        if output_file and output_file.exists():
+            return json.loads(output_file.read_text(encoding="utf-8"))
+
         return json.loads(result.stdout)
     except subprocess.TimeoutExpired:
         return {
@@ -81,6 +97,9 @@ def run_scan_script(script_name: str, plugin_dir: Path) -> dict:
             "error": str(e),
             "findings": [],
         }
+    finally:
+        if output_file and output_file.exists():
+            output_file.unlink(missing_ok=True)
 
 
 def get_version(plugin_dir: Path) -> str:
