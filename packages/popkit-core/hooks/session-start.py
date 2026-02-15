@@ -242,7 +242,6 @@ def _register_project_sync():
 
     except Exception:
         record_cloud_registration_failure()  # Track failure
-        pass  # Silent failure - never block session start
 
     return None
 
@@ -515,7 +514,9 @@ def load_relevant_agents_for_session(data):
 
         # Output debug info to stderr
         agent_ids = [a["agent_id"] for a in relevant_agents]
-        print(f"Agent filtering: loaded {len(agent_ids)} relevant agents", file=sys.stderr)
+        print(
+            f"Agent filtering: loaded {len(agent_ids)} relevant agents", file=sys.stderr
+        )
         print(
             f"  Agents: {', '.join(agent_ids[:5])}{'...' if len(agent_ids) > 5 else ''}",
             file=sys.stderr,
@@ -674,7 +675,9 @@ def main():
                     parts.append(f"directories: {len(dirs)}")
                 if index:
                     parts.append("research index")
-                print(f"Learning systems initialized: {', '.join(parts)}", file=sys.stderr)
+                print(
+                    f"Learning systems initialized: {', '.join(parts)}", file=sys.stderr
+                )
 
         # Load agent expertise files (Issue #201, Phase 2, non-blocking)
         expertise_loading = load_agent_expertise()

@@ -136,7 +136,9 @@ def find_plugin_root(start_path: Path = None) -> Path:
     for _ in range(5):
         if (current / ".claude-plugin" / "plugin.json").exists():
             return current
-        if (current / "packages" / "plugin" / ".claude-plugin" / "plugin.json").exists():
+        if (
+            current / "packages" / "plugin" / ".claude-plugin" / "plugin.json"
+        ).exists():
             return current / "packages" / "plugin"
         current = current.parent
 
@@ -272,7 +274,7 @@ def main():
         "max_score": 100,
         "summary": {
             "files_scanned": len(files_to_scan),
-            "secrets_found": len(all_findings),
+            "matches_found": len(all_findings),
             "critical": by_severity.get("critical", 0),
             "high": by_severity.get("high", 0),
             "medium": by_severity.get("medium", 0),

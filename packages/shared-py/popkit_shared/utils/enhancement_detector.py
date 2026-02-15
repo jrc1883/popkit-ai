@@ -410,7 +410,8 @@ if __name__ == "__main__":
         enhancement = sys.argv[2] if len(sys.argv) > 2 else "agent-routing"
         result = check_enhancement(enhancement)
         print(f"Enhancement: {result.enhancement_name}")
-        print(f"Has API key: {result.has_api_key}")
+        status = "API-backed mode available" if result.has_api_key else "Standard mode"
+        print(f"Enhancement status: {status}")
         print(f"Current mode: {result.current_mode}")
         print(f"Enhanced mode: {result.enhanced_mode}")
         if result.message:
