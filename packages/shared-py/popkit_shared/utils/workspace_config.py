@@ -50,6 +50,7 @@ def find_workspace_root(start_path: str) -> Optional[str]:
                     if "workspaces" in data:
                         return current
             except (json.JSONDecodeError, IOError):
+                # Ignore malformed package.json and continue walking up.
                 pass
 
         # Move up one directory
@@ -91,6 +92,7 @@ def detect_workspace_type(workspace_root: str) -> Optional[str]:
                     else:
                         return "npm"
         except (json.JSONDecodeError, IOError):
+            # Workspace detection should continue if package.json is malformed.
             pass
 
     return None
@@ -325,6 +327,7 @@ def get_workspace_projects(workspace_root: Optional[str] = None) -> List[Dict[st
                     name = data.get("name", name)
                     description = data.get("description", "")
             except (json.JSONDecodeError, IOError):
+                # Keep inferred defaults when project metadata is unavailable.
                 pass
 
         projects.append(
@@ -382,6 +385,7 @@ def load_project_context(project_path: str) -> Dict[str, Optional[str]]:
             with open(claude_md_path, "r", encoding="utf-8") as f:
                 context["claude_md"] = f.read()
         except IOError:
+            # Optional context file; ignore read failures.
             pass
 
     # Load package.json
@@ -391,6 +395,7 @@ def load_project_context(project_path: str) -> Dict[str, Optional[str]]:
             with open(package_json_path, "r", encoding="utf-8") as f:
                 context["package_json"] = f.read()
         except IOError:
+            # Optional context file; ignore read failures.
             pass
 
     # Load README.md
@@ -400,6 +405,7 @@ def load_project_context(project_path: str) -> Dict[str, Optional[str]]:
             with open(readme_path, "r", encoding="utf-8") as f:
                 context["readme"] = f.read()
         except IOError:
+            # Optional context file; ignore read failures.
             pass
 
     # Load .claude/STATUS.json
@@ -409,6 +415,7 @@ def load_project_context(project_path: str) -> Dict[str, Optional[str]]:
             with open(status_path, "r", encoding="utf-8") as f:
                 context["status"] = f.read()
         except IOError:
+            # Optional context file; ignore read failures.
             pass
 
     return context

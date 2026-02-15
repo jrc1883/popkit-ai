@@ -77,6 +77,7 @@ class SessionRecorder:
                 state = json.loads(state_file.read_text())
                 return state.get("active", False)
             except (json.JSONDecodeError, IOError):
+                # Treat malformed state as disabled recording.
                 pass
 
         return False
@@ -135,6 +136,7 @@ class SessionRecorder:
                         )
                     return
             except (json.JSONDecodeError, IOError):
+                # Fall back to session manager or legacy initialization.
                 pass
 
         if HAS_SESSION_MANAGER:
@@ -243,6 +245,7 @@ class SessionRecorder:
                             data = json.load(f)
                             current_events = data.get("events", [])
                     except (json.JSONDecodeError, FileNotFoundError):
+                        # Start from an empty event list when existing file is invalid.
                         pass
 
                 # Merge with deduplication by sequence number
@@ -262,6 +265,7 @@ class SessionRecorder:
                         if "stopped_at" in state:
                             recording_data["stopped_at"] = state["stopped_at"]
                     except (json.JSONDecodeError, IOError):
+                        # Ignore optional state metadata if unreadable.
                         pass
 
                 # Write atomically
@@ -296,6 +300,7 @@ class SessionRecorder:
                 if "stopped_at" in state:
                     recording_data["stopped_at"] = state["stopped_at"]
             except (json.JSONDecodeError, IOError):
+                # Ignore optional state metadata if unreadable.
                 pass
 
         with open(self.recording_file, "w") as f:
@@ -514,6 +519,7 @@ def is_recording_enabled() -> bool:
             if state.get("active", False):
                 return True
         except (json.JSONDecodeError, IOError):
+            # Ignore malformed state and fall back to environment variable.
             pass
 
     # Fallback to environment variable

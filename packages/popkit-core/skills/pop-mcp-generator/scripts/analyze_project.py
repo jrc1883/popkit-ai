@@ -35,7 +35,8 @@ def detect_package_manager(project_dir: Path) -> Dict[str, Any]:
             result["scripts"] = list(pkg.get("scripts", {}).keys())
             deps = {**pkg.get("dependencies", {}), **pkg.get("devDependencies", {})}
             result["dependencies"] = list(deps.keys())
-        except:
+        except (json.JSONDecodeError, OSError):
+            # Optional package metadata parse failure should not block analysis.
             pass
 
     # Check for Python
@@ -46,7 +47,8 @@ def detect_package_manager(project_dir: Path) -> Dict[str, Any]:
             # Extract scripts from pyproject.toml
             if "[project.scripts]" in content:
                 result["scripts"].append("cli entry points")
-        except:
+        except OSError:
+            # Optional pyproject read failure should not block analysis.
             pass
 
     return result
@@ -91,7 +93,8 @@ def detect_framework(project_dir: Path) -> Dict[str, Any]:
                 result["build_command"] = "npm run build"
             if "typecheck" in scripts:
                 result["typecheck_command"] = "npm run typecheck"
-        except:
+        except (json.JSONDecodeError, OSError):
+            # Keep defaults if package metadata is unavailable or malformed.
             pass
 
     pyproject = project_dir / "pyproject.toml"
@@ -111,7 +114,8 @@ def detect_framework(project_dir: Path) -> Dict[str, Any]:
             result["test_command"] = "pytest"
             result["lint_command"] = "ruff check ."
             result["typecheck_command"] = "mypy ."
-        except:
+        except OSError:
+            # Keep defaults if pyproject metadata cannot be read.
             pass
 
     return result
@@ -157,7 +161,8 @@ def detect_database(project_dir: Path) -> Dict[str, Any]:
                         result["database"] = "mysql"
                     elif "sqlite" in content.lower():
                         result["database"] = "sqlite"
-            except:
+            except OSError:
+                # Environment file may be unreadable; continue checking others.
                 pass
 
     return result
@@ -175,13 +180,15 @@ def detect_services(project_dir: Path) -> List[Dict[str, Any]]:
         try:
             pkg = json.loads(pkg_json.read_text())
             deps_content = json.dumps(pkg.get("dependencies", {})).lower()
-        except:
+        except (json.JSONDecodeError, OSError):
+            # Dependency detection is optional; continue with an empty dependency list.
             pass
 
     if pyproject.exists():
         try:
             deps_content += pyproject.read_text().lower()
-        except:
+        except OSError:
+            # Optional dependency source could not be read; continue with available data.
             pass
 
     # Check for common services
@@ -261,7 +268,9 @@ def suggest_mcp_tools(analysis: Dict[str, Any]) -> List[Dict[str, Any]]:
 
     # Health checks
     if framework.get("dev_server_command"):
-        tools.append({"name": "dev_server_health", "category": "health", "recommended": True})
+        tools.append(
+            {"name": "dev_server_health", "category": "health", "recommended": True}
+        )
 
     # Database tools
     database = analysis.get("database", {})
@@ -271,7 +280,9 @@ def suggest_mcp_tools(analysis: Dict[str, Any]) -> List[Dict[str, Any]]:
     # Service-specific tools
     for service in analysis.get("services", []):
         if service["name"] == "redis":
-            tools.append({"name": "redis_health", "category": "health", "recommended": True})
+            tools.append(
+                {"name": "redis_health", "category": "health", "recommended": True}
+            )
 
     return tools
 
