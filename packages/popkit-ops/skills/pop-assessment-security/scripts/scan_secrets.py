@@ -303,9 +303,16 @@ def main():
         print(json.dumps(console_result, indent=2))
         return 1
 
-    # Console output intentionally excludes detailed findings.
+    # Keep CLI output constant-safe; detailed findings are consumed in-process
+    # by calculate_risk.py to avoid any secret-tainted logging/storage path.
     result = scan_plugin(plugin_dir, include_findings=False)
-    print(json.dumps(result, indent=2))
+    console_result = {
+        "category": "secret-detection",
+        "plugin_dir": str(plugin_dir),
+        "status": "completed",
+        "message": "Use calculate_risk.py for detailed risk reporting.",
+    }
+    print(json.dumps(console_result, indent=2))
     return 0 if result["summary"]["matches_found"] == 0 else 1
 
 
