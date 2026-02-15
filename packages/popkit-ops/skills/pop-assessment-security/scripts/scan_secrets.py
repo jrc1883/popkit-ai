@@ -220,25 +220,8 @@ def scan_file(filepath: Path, plugin_dir: Path) -> List[Dict]:
     return findings
 
 
-def main():
-    # Get plugin directory
-    if len(sys.argv) > 1:
-        plugin_dir = Path(sys.argv[1])
-    else:
-        plugin_dir = find_plugin_root()
-
-    if not plugin_dir.exists():
-        result = {
-            "category": "secret-detection",
-            "plugin_dir": str(plugin_dir),
-            "score": 0,
-            "max_score": 100,
-            "error": "Plugin directory not found",
-            "findings": [],
-        }
-        print(json.dumps(result, indent=2))
-        return 1
-
+def scan_plugin(plugin_dir: Path, include_findings: bool = False) -> Dict:
+    """Scan plugin directory for secrets and return structured results."""
     # Collect all files to scan
     files_to_scan = []
     for pattern in SCAN_PATTERNS:
@@ -246,21 +229,25 @@ def main():
             if filepath.is_file() and not should_exclude(filepath, plugin_dir):
                 files_to_scan.append(filepath)
 
+    findings = [] if include_findings else None
+    total_deduction = 0
+    by_severity: Dict[str, int] = {}
+    matches_found = 0
+
     # Scan all files
-    all_findings = []
     for filepath in files_to_scan:
-        findings = scan_file(filepath, plugin_dir)
-        all_findings.extend(findings)
+        file_findings = scan_file(filepath, plugin_dir)
+        matches_found += len(file_findings)
 
-    # Calculate score
-    total_deduction = sum(f["deduction"] for f in all_findings)
+        for finding in file_findings:
+            severity = finding["severity"]
+            by_severity[severity] = by_severity.get(severity, 0) + 1
+            total_deduction += finding["deduction"]
+
+        if include_findings and findings is not None:
+            findings.extend(file_findings)
+
     score = max(0, 100 - min(total_deduction, 100))
-
-    # Summary
-    by_severity = {}
-    for f in all_findings:
-        sev = f["severity"]
-        by_severity[sev] = by_severity.get(sev, 0) + 1
 
     result = {
         "category": "secret-detection",
@@ -269,19 +256,57 @@ def main():
         "max_score": 100,
         "summary": {
             "files_scanned": len(files_to_scan),
-            "matches_found": len(all_findings),
+            "matches_found": matches_found,
             "critical": by_severity.get("critical", 0),
             "high": by_severity.get("high", 0),
             "medium": by_severity.get("medium", 0),
             "total_deduction": total_deduction,
         },
         "patterns_checked": list(SECRET_PATTERNS.keys()),
-        "findings": all_findings,
     }
 
-    # Output only metadata fields, never matched secret values.
+    if include_findings and findings is not None:
+        result["findings"] = findings
+
+    return result
+
+
+def main():
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Scan files for hardcoded secrets")
+    parser.add_argument("plugin_dir", nargs="?", help="Plugin directory to scan")
+    args = parser.parse_args()
+
+    # Get plugin directory
+    if args.plugin_dir:
+        plugin_dir = Path(args.plugin_dir)
+    else:
+        plugin_dir = find_plugin_root()
+
+    if not plugin_dir.exists():
+        console_result = {
+            "category": "secret-detection",
+            "plugin_dir": str(plugin_dir),
+            "score": 0,
+            "max_score": 100,
+            "summary": {
+                "files_scanned": 0,
+                "matches_found": 0,
+                "critical": 0,
+                "high": 0,
+                "medium": 0,
+                "total_deduction": 0,
+                "error": "Plugin directory not found",
+            },
+        }
+        print(json.dumps(console_result, indent=2))
+        return 1
+
+    # Console output intentionally excludes detailed findings.
+    result = scan_plugin(plugin_dir, include_findings=False)
     print(json.dumps(result, indent=2))
-    return 0 if len(all_findings) == 0 else 1
+    return 0 if result["summary"]["matches_found"] == 0 else 1
 
 
 if __name__ == "__main__":

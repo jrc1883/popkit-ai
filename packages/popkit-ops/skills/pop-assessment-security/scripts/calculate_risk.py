@@ -16,6 +16,7 @@ Output:
 """
 
 import json
+import importlib.util
 import subprocess
 import sys
 from datetime import datetime
@@ -52,6 +53,20 @@ def run_scan_script(script_name: str, plugin_dir: Path) -> dict:
             "findings": [],
         }
 
+    # For secret scanning, call in-process to avoid serializing findings to stdout/files.
+    if script_name == "scan_secrets.py":
+        try:
+            module_name = "popkit_scan_secrets_module"
+            spec = importlib.util.spec_from_file_location(module_name, script_path)
+            if spec and spec.loader:
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                if hasattr(module, "scan_plugin"):
+                    return module.scan_plugin(plugin_dir, include_findings=True)
+        except Exception:
+            # Fallback to subprocess path below.
+            pass
+
     try:
         result = subprocess.run(
             [sys.executable, str(script_path), str(plugin_dir)],
@@ -59,6 +74,7 @@ def run_scan_script(script_name: str, plugin_dir: Path) -> dict:
             text=True,
             timeout=120,
         )
+
         return json.loads(result.stdout)
     except subprocess.TimeoutExpired:
         return {
