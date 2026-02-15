@@ -352,7 +352,6 @@ class IssueWorkflowHook:
 
         # Determine Power Mode activation (flag priority)
         should_activate_power = False
-        power_source = "none"
 
         if flags.get("force_power"):
             # Flag -p or --power takes highest priority

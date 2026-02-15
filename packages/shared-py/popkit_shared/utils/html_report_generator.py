@@ -242,7 +242,6 @@ def compute_session_token_usage(
             # Converted local time to UTC for comparison with transcript timestamps
         except Exception as e:
             print(f"Warning: Failed to parse recording_start: {e}")
-            pass
     if recording_end:
         try:
             end_local = datetime.fromisoformat(recording_end.replace("Z", "+00:00"))
@@ -259,7 +258,6 @@ def compute_session_token_usage(
             # Converted local time to UTC for comparison with transcript timestamps
         except Exception as e:
             print(f"Warning: Failed to parse recording_end: {e}")
-            pass
 
     # Track per-agent usage
     per_agent = {}
@@ -880,7 +878,6 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
             "cache_read_input_tokens": total_cache_read,
             "total_tokens": total_input + total_output + total_cache_write + total_cache_read,
         }
-        total_cost = sum(v["cost"] for v in reasoning_lookup.values())
 
     # Generate AI narrative summary
     narrative_html = None
@@ -1255,10 +1252,10 @@ def generate_html_report(recording_file: Path, output_file: Path) -> None:
 
         # Calculate percentages for visual bar
         if total_cost > 0:
-            input_pct = (input_cost / total_cost * 100) if total_cost > 0 else 0
-            output_pct = (output_cost / total_cost * 100) if total_cost > 0 else 0
-            cache_write_pct = (cache_write_cost / total_cost * 100) if total_cost > 0 else 0
-            cache_read_pct = (cache_read_cost / total_cost * 100) if total_cost > 0 else 0
+            input_pct = input_cost / total_cost * 100
+            output_pct = output_cost / total_cost * 100
+            cache_write_pct = cache_write_cost / total_cost * 100
+            cache_read_pct = cache_read_cost / total_cost * 100
         else:
             input_pct = output_pct = cache_write_pct = cache_read_pct = 0
 

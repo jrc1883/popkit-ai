@@ -242,7 +242,6 @@ def _register_project_sync():
 
     except Exception:
         record_cloud_registration_failure()  # Track failure
-        pass  # Silent failure - never block session start
 
     return None
 

@@ -415,7 +415,8 @@ class UpstashTelemetryClient:
                         if self.stream_trace(session_id, trace):
                             counts["traces"] += 1
                     except (json.JSONDecodeError, TypeError):
-                        pass
+                        # Skip malformed trace lines during best-effort sync.
+                        continue
 
         # Sync decisions
         decisions_file = session_dir / "decisions.jsonl"
@@ -428,7 +429,8 @@ class UpstashTelemetryClient:
                         if self.stream_decision(session_id, decision):
                             counts["decisions"] += 1
                     except (json.JSONDecodeError, TypeError):
-                        pass
+                        # Skip malformed decision lines during best-effort sync.
+                        continue
 
         # Sync events
         events_file = session_dir / "events.jsonl"
@@ -441,7 +443,8 @@ class UpstashTelemetryClient:
                         if self.stream_event(session_id, event):
                             counts["events"] += 1
                     except (json.JSONDecodeError, TypeError):
-                        pass
+                        # Skip malformed event lines during best-effort sync.
+                        continue
 
         # Sync metadata
         meta_file = session_dir / "meta.json"
@@ -452,6 +455,7 @@ class UpstashTelemetryClient:
                 if session and self.stream_session_meta(session):
                     counts["meta"] = 1
             except (json.JSONDecodeError, TypeError):
+                # Ignore malformed metadata and continue with partial sync results.
                 pass
 
         return counts
@@ -495,7 +499,8 @@ class UpstashTelemetryClient:
             except queue.Empty:
                 continue
             except Exception:
-                pass
+                # Keep worker alive even if a queued item fails unexpectedly.
+                continue
 
     def queue_trace(self, session_id: str, trace: "ToolTrace") -> bool:
         """Queue trace for async streaming."""
@@ -553,6 +558,7 @@ class UpstashTelemetryClient:
                     try:
                         trace_data["tool_input"] = json.loads(trace_data["tool_input"])
                     except json.JSONDecodeError:
+                        # Keep raw serialized payload if JSON decoding fails.
                         pass
 
                 trace_data["sequence"] = int(trace_data.get("sequence", 0))
@@ -582,6 +588,7 @@ class UpstashTelemetryClient:
                     try:
                         event_data["data"] = json.loads(event_data["data"])
                     except json.JSONDecodeError:
+                        # Keep raw serialized payload if JSON decoding fails.
                         pass
 
                 events.append(event_data)

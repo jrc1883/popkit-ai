@@ -74,6 +74,19 @@ class SemanticVersion:
             return self.minor > other.minor
         return self.patch > other.patch
 
+    def __ge__(self, other: "SemanticVersion") -> bool:
+        return self > other or self == other
+
+    def __le__(self, other: "SemanticVersion") -> bool:
+        return self < other or self == other
+
+    def __lt__(self, other: "SemanticVersion") -> bool:
+        if self.major != other.major:
+            return self.major < other.major
+        if self.minor != other.minor:
+            return self.minor < other.minor
+        return self.patch < other.patch
+
     def __eq__(self, other: "SemanticVersion") -> bool:
         return (self.major, self.minor, self.patch) == (other.major, other.minor, other.patch)
 
