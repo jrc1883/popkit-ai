@@ -858,7 +858,7 @@ PopKit requires specific Claude Code versions for full functionality:
 
 ## Current Status
 
-**Version**: 1.0.0-beta.8
+**Version**: 1.0.0-beta.10
 **Status**: Beta release
 **Plugins**: 4 modular plugins
 **Commands**: 25 workflow commands
@@ -1184,3 +1184,4 @@ MIT
 
 **Repository**: https://github.com/jrc1883/popkit-claude
 **Issues**: https://github.com/jrc1883/popkit-claude/issues
+

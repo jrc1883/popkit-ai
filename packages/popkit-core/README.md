@@ -430,7 +430,7 @@ Privacy levels:
 
 ## Development Status
 
-**Version**: 1.0.0-beta.9
+**Version**: 1.0.0-beta.10
 **Status**: Ready for marketplace publication
 **Epic #580**: Complete - Plugin modularization finished
 
@@ -441,3 +441,5 @@ MIT
 ## Author
 
 Joseph Cannon <joseph@thehouseofdeals.com>
+
+

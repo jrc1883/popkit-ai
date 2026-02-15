@@ -211,7 +211,7 @@ PopKit is modular. Install what you need:
 
 ## Status
 
-**Version:** 1.0.0-beta.8
+**Version:** 1.0.0-beta.10
 **Status:** Public beta — core features stable, actively improving
 
 ---
@@ -227,3 +227,4 @@ MIT — see [LICENSE](LICENSE)
 **[Back to Top](#popkit)**
 
 </div>
+
