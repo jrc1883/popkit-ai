@@ -450,7 +450,7 @@ class UpstashTelemetryClient:
         meta_file = session_dir / "meta.json"
         if meta_file.exists():
             try:
-                data = json.loads(meta_file.read_text())
+                json.loads(meta_file.read_text())
                 session = storage.get_session(session_id)
                 if session and self.stream_session_meta(session):
                     counts["meta"] = 1

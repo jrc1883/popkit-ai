@@ -70,7 +70,9 @@ def gather_git_state() -> Dict[str, Any]:
     # Count uncommitted changes
     status, ok = run_command("git status --porcelain")
     if ok:
-        lines = [l for l in status.split("\n") if l.strip()]
+        lines = [
+            status_line for status_line in status.split("\n") if status_line.strip()
+        ]
         state["uncommittedFiles"] = len(lines)
 
         for line in lines:
@@ -106,7 +108,9 @@ def gather_service_state() -> Dict[str, Any]:
         if sys.platform == "win32":
             cmd = f"netstat -an | findstr :{port}"
         else:
-            cmd = f"lsof -i :{port} -t 2>/dev/null || ss -tlnp 2>/dev/null | grep :{port}"
+            cmd = (
+                f"lsof -i :{port} -t 2>/dev/null || ss -tlnp 2>/dev/null | grep :{port}"
+            )
 
         output, ok = run_command(cmd)
         services[name] = {
@@ -134,14 +138,18 @@ def gather_project_checks() -> Dict[str, Any]:
             checks["testStatus"] = test_output[-100:] if test_output else "no tests"
 
     # Check build
-    build_output, ok = run_command("npm run build --if-present 2>&1 | tail -1", timeout=120)
+    build_output, ok = run_command(
+        "npm run build --if-present 2>&1 | tail -1", timeout=120
+    )
     if ok:
         checks["buildStatus"] = "passing"
     else:
         checks["buildStatus"] = "failing" if build_output else "not configured"
 
     # Run lint
-    lint_output, ok = run_command("npm run lint --if-present 2>&1 | tail -5", timeout=60)
+    lint_output, ok = run_command(
+        "npm run lint --if-present 2>&1 | tail -5", timeout=60
+    )
     if ok:
         checks["lintErrors"] = 0
     else:
@@ -263,11 +271,13 @@ def main():
         try:
             context = json.loads(args.context_json)
         except json.JSONDecodeError:
+            # Best-effort fallback: ignore optional failure.
             pass
     if args.tasks_json:
         try:
             tasks = json.loads(args.tasks_json)
         except json.JSONDecodeError:
+            # Best-effort fallback: ignore optional failure.
             pass
 
     if args.mode in ["gather", "all"]:

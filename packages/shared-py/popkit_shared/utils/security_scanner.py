@@ -391,6 +391,7 @@ npm update {vuln.name}
                 if "/issues/" in output:
                     return int(output.split("/issues/")[-1])
         except Exception:
+            # Best-effort fallback: ignore optional failure.
             pass
 
         return None
@@ -449,6 +450,9 @@ def format_scan_report(result: ScanResult, existing_issues: List[ExistingIssue] 
     if result.error:
         lines.append(f"Error: {result.error}")
         return "\n".join(lines)
+
+    if existing_issues:
+        lines.extend([f"Existing Security Issues: {len(existing_issues)}", ""])
 
     # Summary
     counts = result.counts

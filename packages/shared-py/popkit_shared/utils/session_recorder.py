@@ -72,8 +72,6 @@ class SessionRecorder:
         state_file = Path.home() / ".claude" / "popkit" / "recording-state.json"
         if state_file.exists():
             try:
-                import json
-
                 state = json.loads(state_file.read_text())
                 return state.get("active", False)
             except (json.JSONDecodeError, IOError):
@@ -90,8 +88,6 @@ class SessionRecorder:
         state_file = Path.home() / ".claude" / "popkit" / "recording-state.json"
         if state_file.exists():
             try:
-                import json
-
                 state = json.loads(state_file.read_text())
                 if state.get("active"):
                     # Use session from state file

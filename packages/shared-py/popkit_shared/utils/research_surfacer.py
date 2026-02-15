@@ -299,6 +299,7 @@ class ResearchSurfacer:
                 return surfaced
 
         except Exception:
+            # Best-effort fallback: ignore optional failure.
             pass
 
         return []

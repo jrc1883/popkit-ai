@@ -197,6 +197,7 @@ def scan_plugin_hooks(plugin_path: str) -> List[Dict[str, Any]]:
             )
 
     except (json.JSONDecodeError, IOError):
+        # Best-effort fallback: ignore optional failure.
         pass
 
     return hooks
@@ -234,6 +235,7 @@ def scan_plugin_agents(plugin_path: str) -> List[Dict[str, Any]]:
             )
 
     except (json.JSONDecodeError, IOError):
+        # Best-effort fallback: ignore optional failure.
         pass
 
     return agents

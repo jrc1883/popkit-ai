@@ -43,6 +43,7 @@ def _load_dotenv():
                                 os.environ[key] = value
                 break  # Use first .env found
             except Exception:
+                # Best-effort fallback: ignore optional failure.
                 pass
 
 

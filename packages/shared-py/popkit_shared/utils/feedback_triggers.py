@@ -325,6 +325,7 @@ class FeedbackTriggerManager:
             if 0 <= rating <= 3:
                 return rating, None
         except (ValueError, IndexError):
+            # Best-effort fallback: ignore optional failure.
             pass
 
         # Try to match keywords

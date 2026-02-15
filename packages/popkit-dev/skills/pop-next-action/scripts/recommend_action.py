@@ -17,6 +17,7 @@ Output:
 """
 
 import json
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -42,6 +43,198 @@ MULTIPLIERS = {
     "many_open_issues": 10,
     "high_priority_issue": 15,
 }
+
+HIGH_PRIORITY_LABELS = {
+    "p0-critical",
+    "p1-high",
+    "priority:critical",
+    "priority:high",
+}
+
+
+def _normalize_labels(labels: List[Dict[str, Any]]) -> List[str]:
+    """Normalize issue label names for case-insensitive matching."""
+    return [str(label.get("name", "")).strip().lower() for label in labels]
+
+
+def _resolve_repo_root(
+    state: Dict[str, Any], repo_root_arg: Optional[str] = None
+) -> Path:
+    """Resolve repository root for command translation."""
+    if repo_root_arg:
+        return Path(repo_root_arg).expanduser().resolve()
+
+    candidate = state.get("repo_root")
+    if candidate:
+        return Path(str(candidate)).expanduser().resolve()
+
+    cwd = Path.cwd()
+    if (cwd / ".git").exists():
+        return cwd
+
+    # Fallback to the popkit-claude repository this script lives in.
+    try:
+        return Path(__file__).resolve().parents[5]
+    except IndexError:
+        return cwd
+
+
+def _translate_popkit_command(command: str, repo_root: Path) -> Dict[str, str]:
+    """Translate PopKit slash commands into Codex-runnable equivalents."""
+    cmd = command.strip()
+    if not cmd:
+        return {"codex_command": "", "codex_note": ""}
+
+    repo_str = str(repo_root)
+    validate_commit_py = (
+        repo_root
+        / "packages"
+        / "shared-py"
+        / "popkit_shared"
+        / "utils"
+        / "validate_commit.py"
+    )
+    morning_py = (
+        repo_root
+        / "packages"
+        / "popkit-dev"
+        / "skills"
+        / "pop-morning"
+        / "scripts"
+        / "morning_workflow.py"
+    )
+    analyze_state_py = (
+        repo_root
+        / "packages"
+        / "popkit-dev"
+        / "skills"
+        / "pop-next-action"
+        / "scripts"
+        / "analyze_state.py"
+    )
+    merge_conflicts_py = (
+        repo_root
+        / "packages"
+        / "popkit-research"
+        / "skills"
+        / "pop-research-merge"
+        / "scripts"
+        / "detect_conflicts.py"
+    )
+
+    match = re.match(r"^/popkit:dev work #(\d+)$", cmd)
+    if match:
+        issue_num = match.group(1)
+        return {
+            "codex_command": (
+                f"gh issue view {issue_num} -R jrc1883/popkit-claude && "
+                f'git -C "{repo_str}" checkout -b feat/issue-{issue_num}'
+            ),
+            "codex_note": "Creates a local feature branch after loading issue context.",
+        }
+
+    match = re.match(r"^/popkit-dev:git merge (.+)$", cmd)
+    if match:
+        base_ref = match.group(1).strip()
+        return {
+            "codex_command": (
+                f'git -C "{repo_str}" fetch origin {base_ref} && '
+                f'git -C "{repo_str}" merge origin/{base_ref}'
+            ),
+            "codex_note": "Merges latest base branch into the current branch.",
+        }
+
+    slash_map = {
+        "/popkit:git commit": {
+            "codex_command": (
+                f'git -C "{repo_str}" add -A && '
+                f'python "{str(validate_commit_py)}" '
+                '"chore(wip): checkpoint current changes" && '
+                f'git -C "{repo_str}" commit -m "chore(wip): checkpoint current changes"'
+            ),
+            "codex_note": (
+                "Replace the default message with your preferred "
+                "type(scope): description before running."
+            ),
+        },
+        "/popkit:git push": {
+            "codex_command": f'git -C "{repo_str}" push',
+            "codex_note": "",
+        },
+        "/popkit:git review": {
+            "codex_command": f'git -C "{repo_str}" diff --stat && git -C "{repo_str}" diff',
+            "codex_note": "",
+        },
+        "/popkit:routine morning": {
+            "codex_command": (f'python "{str(morning_py)}" --profile standard --quick'),
+            "codex_note": "",
+        },
+        "/popkit:debug": {
+            "codex_command": (f'python "{str(analyze_state_py)}" --section code'),
+            "codex_note": "Runs code-health diagnostics to guide debugging next steps.",
+        },
+        "/popkit:dev brainstorm": {
+            "codex_command": (
+                'echo "Use skill: pop-writing-plans-codex for structured brainstorming/planning"'
+            ),
+            "codex_note": "",
+        },
+    }
+    if cmd in slash_map:
+        return slash_map[cmd]
+
+    if cmd.startswith("/popkit:research merge"):
+        return {
+            "codex_command": (
+                f'git -C "{repo_str}" fetch --all --prune && '
+                f'git -C "{repo_str}" branch -r | rg "research"'
+            ),
+            "codex_note": "Lists research branches to process with research merge scripts.",
+        }
+
+    if cmd.lower().startswith("invoke pop-research-merge skill"):
+        return {
+            "codex_command": f'python "{str(merge_conflicts_py)}" --help',
+            "codex_note": "Use merge scripts after selecting concrete research files/branches.",
+        }
+
+    return {
+        "codex_command": cmd,
+        "codex_note": "No explicit translation rule; using original command text.",
+    }
+
+
+def _annotate_actions_for_runtime(
+    actions: List[Dict[str, Any]],
+    runtime: str,
+    repo_root: Path,
+) -> List[Dict[str, Any]]:
+    """Attach Codex command translations and optionally switch command output."""
+    annotated: List[Dict[str, Any]] = []
+    for action in actions:
+        row = dict(action)
+        translated = _translate_popkit_command(str(row.get("command", "")), repo_root)
+        row["codex_command"] = translated.get("codex_command", "")
+        if translated.get("codex_note"):
+            row["codex_note"] = translated["codex_note"]
+
+        if runtime == "codex" and row.get("codex_command"):
+            row["command"] = row["codex_command"]
+
+        annotated.append(row)
+    return annotated
+
+
+def _build_quick_reference(runtime: str, repo_root: Path) -> List[Dict[str, Any]]:
+    """Build quick-reference rows with Codex translations."""
+    rows = [
+        {"goal": "Commit changes", "command": "/popkit:git commit"},
+        {"goal": "Review code", "command": "/popkit:git review"},
+        {"goal": "Project health", "command": "/popkit:routine morning"},
+        {"goal": "Plan a feature", "command": "/popkit:dev brainstorm"},
+        {"goal": "Debug an issue", "command": "/popkit:debug"},
+    ]
+    return _annotate_actions_for_runtime(rows, runtime, repo_root)
 
 
 def load_state(state_file: Optional[str] = None) -> Dict[str, Any]:
@@ -79,6 +272,18 @@ def calculate_action_scores(state: Dict[str, Any]) -> List[Dict[str, Any]]:
                 "why": f"TypeScript has {code['typescript_errors']} errors blocking build",
                 "what": "Systematic debugging with root cause analysis",
                 "benefit": "Unblocked development, passing CI",
+            }
+        )
+    elif code.get("typescript_errors", 0) < 0:
+        actions.append(
+            {
+                "id": "diagnose_typescript",
+                "name": "Diagnose TypeScript Tooling",
+                "command": "/popkit:debug",
+                "score": 65,
+                "why": "TypeScript diagnostics returned unknown status",
+                "what": "Check TypeScript configuration and project-level toolchain",
+                "benefit": "Restore reliable error detection before feature work",
             }
         )
 
@@ -199,8 +404,9 @@ def calculate_action_scores(state: Dict[str, Any]) -> List[Dict[str, Any]]:
         score = BASE_PRIORITIES["work_on_issue"]
 
         # Boost for priority labels
-        labels = [l.get("name", "") for l in top_issue.get("labels", [])]
-        if "P0-critical" in labels or "P1-high" in labels:
+        labels = set(_normalize_labels(top_issue.get("labels", [])))
+        is_high_priority = bool(labels & HIGH_PRIORITY_LABELS)
+        if is_high_priority:
             score += MULTIPLIERS["high_priority_issue"]
 
         if issues["open_count"] >= 5:
@@ -212,7 +418,11 @@ def calculate_action_scores(state: Dict[str, Any]) -> List[Dict[str, Any]]:
                 "name": "Work on Open Issue",
                 "command": f"/popkit:dev work #{top_issue['number']}",
                 "score": score,
-                "why": f'Issue #{top_issue["number"]} "{top_issue["title"]}" is high priority',
+                "why": (
+                    f'Issue #{top_issue["number"]} "{top_issue["title"]}" is high priority'
+                    if is_high_priority
+                    else f'Issue #{top_issue["number"]} "{top_issue["title"]}" is ready to pick up'
+                ),
                 "what": "Issue-driven development workflow",
                 "benefit": "Structured progress on prioritized work",
                 "issue": top_issue,
@@ -242,26 +452,39 @@ def rank_actions(actions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return sorted(actions, key=lambda x: x["score"], reverse=True)
 
 
-def generate_report(ranked_actions: List[Dict[str, Any]], state: Dict[str, Any]) -> Dict[str, Any]:
+def generate_report(
+    ranked_actions: List[Dict[str, Any]],
+    state: Dict[str, Any],
+    runtime: str = "both",
+    repo_root: Optional[Path] = None,
+) -> Dict[str, Any]:
     """Generate recommendation report."""
+    repo_root = repo_root or _resolve_repo_root(state)
+    recommendations = _annotate_actions_for_runtime(
+        ranked_actions[:5], runtime, repo_root
+    )
     report = {
+        "runtime": runtime,
+        "repo_root": str(repo_root),
         "state_summary": {
             "uncommitted": state.get("git", {}).get("uncommitted_count", 0),
-            "branch_sync": "ahead" if state.get("git", {}).get("ahead_count", 0) > 0 else "synced",
-            "typescript": "errors"
-            if state.get("code", {}).get("typescript_errors", 0) > 0
-            else "clean",
+            "branch_sync": "ahead"
+            if state.get("git", {}).get("ahead_count", 0) > 0
+            else "synced",
+            "typescript": (
+                "errors"
+                if state.get("code", {}).get("typescript_errors", 0) > 0
+                else (
+                    "unknown"
+                    if state.get("code", {}).get("typescript_errors", 0) < 0
+                    else "clean"
+                )
+            ),
             "open_issues": state.get("issues", {}).get("open_count", 0),
             "research_branches": len(state.get("research", {}).get("branches", [])),
         },
-        "recommendations": ranked_actions[:5],  # Top 5
-        "quick_reference": [
-            {"goal": "Commit changes", "command": "/popkit:git commit"},
-            {"goal": "Review code", "command": "/popkit:git review"},
-            {"goal": "Project health", "command": "/popkit:routine morning"},
-            {"goal": "Plan a feature", "command": "/popkit:dev brainstorm"},
-            {"goal": "Debug an issue", "command": "/popkit:debug"},
-        ],
+        "recommendations": recommendations,  # Top 5
+        "quick_reference": _build_quick_reference(runtime, repo_root),
     }
 
     return report
@@ -282,7 +505,7 @@ def format_report_display(report: Dict[str, Any]) -> str:
         f"| Branch Sync | {state['branch_sync']} | {'MEDIUM' if state['branch_sync'] == 'ahead' else 'OK'} |"
     )
     lines.append(
-        f"| TypeScript | {state['typescript']} | {'HIGH' if state['typescript'] == 'errors' else 'OK'} |"
+        f"| TypeScript | {state['typescript']} | {'HIGH' if state['typescript'] == 'errors' else ('MEDIUM' if state['typescript'] == 'unknown' else 'OK')} |"
     )
     lines.append(
         f"| Open Issues | {state['open_issues']} | {'MEDIUM' if state['open_issues'] > 3 else 'LOW'} |"
@@ -295,16 +518,31 @@ def format_report_display(report: Dict[str, Any]) -> str:
     for i, action in enumerate(report["recommendations"][:3], 1):
         lines.append(f"### {i}. {action['name']} (Score: {action['score']})")
         lines.append(f"**Command:** `{action['command']}`")
+        if action.get("codex_command") and action["codex_command"] != action["command"]:
+            lines.append(f"**Codex Equivalent:** `{action['codex_command']}`")
+        if action.get("codex_note"):
+            lines.append(f"**Codex Note:** {action['codex_note']}")
         lines.append(f"**Why:** {action['why']}")
         lines.append(f"**What it does:** {action['what']}")
         lines.append(f"**Benefit:** {action['benefit']}")
         lines.append("")
 
     lines.append("## Quick Reference\n")
-    lines.append("| If you want to... | Use this command |")
-    lines.append("|-------------------|------------------|")
-    for item in report["quick_reference"]:
-        lines.append(f"| {item['goal']} | `{item['command']}` |")
+    has_codex_column = any(
+        item.get("codex_command") and item["codex_command"] != item["command"]
+        for item in report["quick_reference"]
+    )
+    if has_codex_column:
+        lines.append("| If you want to... | PopKit Command | Codex Equivalent |")
+        lines.append("|-------------------|----------------|------------------|")
+        for item in report["quick_reference"]:
+            codex_value = item.get("codex_command", item["command"])
+            lines.append(f"| {item['goal']} | `{item['command']}` | `{codex_value}` |")
+    else:
+        lines.append("| If you want to... | Use this command |")
+        lines.append("|-------------------|------------------|")
+        for item in report["quick_reference"]:
+            lines.append(f"| {item['goal']} | `{item['command']}` |")
 
     return "\n".join(lines)
 
@@ -323,6 +561,16 @@ def main():
     parser.add_argument(
         "--format", choices=["json", "display"], default="json", help="Output format"
     )
+    parser.add_argument(
+        "--runtime",
+        choices=["claude", "codex", "both"],
+        default="both",
+        help="Command style for recommendations",
+    )
+    parser.add_argument(
+        "--repo-root",
+        help="Repository root path to translate commands against",
+    )
     args = parser.parse_args()
 
     result = {
@@ -332,7 +580,11 @@ def main():
 
     # Load state
     state = load_state(args.state_file)
+    if args.repo_root:
+        state["repo_root"] = str(Path(args.repo_root).expanduser().resolve())
+    repo_root = _resolve_repo_root(state, args.repo_root)
     result["state"] = state
+    result["repo_root"] = str(repo_root)
 
     # Calculate scores
     actions = calculate_action_scores(state)
@@ -342,10 +594,14 @@ def main():
 
     elif args.mode in ["rank", "report"]:
         ranked = rank_actions(actions)
-        result["ranked_actions"] = ranked
+        result["ranked_actions"] = _annotate_actions_for_runtime(
+            ranked, args.runtime, repo_root
+        )
 
         if args.mode == "report":
-            report = generate_report(ranked, state)
+            report = generate_report(
+                ranked, state, runtime=args.runtime, repo_root=repo_root
+            )
             result["report"] = report
 
             if args.format == "display":

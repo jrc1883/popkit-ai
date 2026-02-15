@@ -98,6 +98,7 @@ class IssueWorkflowHook:
                 try:
                     existing_state = json.loads(self.power_mode_state.read_text())
                 except (json.JSONDecodeError, IOError):
+                    # Best-effort fallback: ignore optional failure.
                     pass
 
             phases = config.get("suggested_phases", [])
@@ -151,6 +152,7 @@ class IssueWorkflowHook:
                 power_state["deactivated_at"] = datetime.now().isoformat()
                 self.power_mode_state.write_text(json.dumps(power_state, indent=2))
         except Exception:
+            # Best-effort fallback: ignore optional failure.
             pass
 
     def generate_todo_list(self, config: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -278,14 +280,18 @@ class IssueWorkflowHook:
                 }
             )
             self.activate_power_mode({"issue_number": issue_number, **workflow})
-            result["messages"].append("Power Mode activated for parallel agent coordination")
+            result["messages"].append(
+                "Power Mode activated for parallel agent coordination"
+            )
 
         # Generate todos from phases
         result["todos"] = self.generate_todo_list(workflow)
 
         # Update state
         self.state["active_issue"] = issue_number
-        self.state["current_phase"] = workflow.get("suggested_phases", ["implementation"])[0]
+        self.state["current_phase"] = workflow.get(
+            "suggested_phases", ["implementation"]
+        )[0]
         self.state["phases_completed"] = []
         self.state["activated_at"] = datetime.now().isoformat()
         self.save_state()
@@ -340,7 +346,9 @@ class IssueWorkflowHook:
         # Override phases if specified
         if flags.get("phases"):
             workflow["suggested_phases"] = flags["phases"]
-            result["messages"].append(f"Using custom phases: {', '.join(flags['phases'])}")
+            result["messages"].append(
+                f"Using custom phases: {', '.join(flags['phases'])}"
+            )
 
         # Override agents if specified
         if flags.get("agents"):
@@ -348,7 +356,9 @@ class IssueWorkflowHook:
                 "primary": flags["agents"][:1] if flags["agents"] else [],
                 "supporting": flags["agents"][1:] if len(flags["agents"]) > 1 else [],
             }
-            result["messages"].append(f"Using custom agents: {', '.join(flags['agents'])}")
+            result["messages"].append(
+                f"Using custom agents: {', '.join(flags['agents'])}"
+            )
 
         # Determine Power Mode activation (flag priority)
         should_activate_power = False
@@ -386,7 +396,9 @@ class IssueWorkflowHook:
             result["messages"].append("Brainstorming recommended before implementation")
 
         if should_activate_power:
-            result["actions"].append({"type": "activate_power_mode", "reason": power_source})
+            result["actions"].append(
+                {"type": "activate_power_mode", "reason": power_source}
+            )
             self.activate_power_mode({"issue_number": issue_number, **workflow})
             result["messages"].append(f"Power Mode activated ({power_source})")
         else:
@@ -397,7 +409,9 @@ class IssueWorkflowHook:
 
         # Update state
         self.state["active_issue"] = issue_number
-        self.state["current_phase"] = workflow.get("suggested_phases", ["implementation"])[0]
+        self.state["current_phase"] = workflow.get(
+            "suggested_phases", ["implementation"]
+        )[0]
         self.state["phases_completed"] = []
         self.state["activated_at"] = datetime.now().isoformat()
         self.state["power_mode"] = should_activate_power
@@ -438,7 +452,9 @@ class IssueWorkflowHook:
         # Determine next phase first (before gates)
         workflow = get_workflow_config(self.state["active_issue"])
         if workflow.get("error"):
-            result["messages"].append(f"Warning: Could not fetch issue: {workflow['error']}")
+            result["messages"].append(
+                f"Warning: Could not fetch issue: {workflow['error']}"
+            )
             return result
 
         phases = workflow.get("suggested_phases", [])
@@ -467,7 +483,9 @@ class IssueWorkflowHook:
                 return result
 
             if not gate_results["passed"] and force:
-                result["messages"].append("WARNING: Proceeding despite gate failures (force=True)")
+                result["messages"].append(
+                    "WARNING: Proceeding despite gate failures (force=True)"
+                )
 
         # Mark phase complete
         if phase_name not in self.state.get("phases_completed", []):
@@ -528,7 +546,9 @@ class IssueWorkflowHook:
                     power_state["phases_completed"] = phases_completed
                     # Calculate progress as percentage of phases complete
                     power_state["progress"] = (
-                        len(phases_completed) / total_phases if total_phases > 0 else 0.0
+                        len(phases_completed) / total_phases
+                        if total_phases > 0
+                        else 0.0
                     )
                     self.power_mode_state.write_text(json.dumps(power_state, indent=2))
         except Exception:
@@ -576,7 +596,9 @@ class IssueWorkflowHook:
             print(f"Warning: Could not create phase checkpoint: {e}", file=sys.stderr)
             return None
 
-    def run_phase_transition_gates(self, from_phase: str, to_phase: str) -> Dict[str, Any]:
+    def run_phase_transition_gates(
+        self, from_phase: str, to_phase: str
+    ) -> Dict[str, Any]:
         """Run quality gates before allowing phase transition.
 
         Executes configured quality gates (tsc, build, lint, etc.) and
@@ -675,7 +697,9 @@ class IssueWorkflowHook:
             return True
         if self.quality_gate and self.quality_gate.config:
             return (
-                self.quality_gate.config.get("options", {}).get("allow_destructive_rollback", False)
+                self.quality_gate.config.get("options", {}).get(
+                    "allow_destructive_rollback", False
+                )
                 is True
             )
         return False
@@ -883,18 +907,26 @@ if __name__ == "__main__":
 
         else:
             print("Usage:")
-            print("  python issue-workflow.py start <issue_number>  # Start working on issue")
+            print(
+                "  python issue-workflow.py start <issue_number>  # Start working on issue"
+            )
             print(
                 "  python issue-workflow.py work #4 -p            # Start with flags (Power Mode)"
             )
-            print("  python issue-workflow.py work #4 --solo        # Start without Power Mode")
-            print("  python issue-workflow.py status                # Get current status")
+            print(
+                "  python issue-workflow.py work #4 --solo        # Start without Power Mode"
+            )
+            print(
+                "  python issue-workflow.py status                # Get current status"
+            )
             print(
                 "  python issue-workflow.py complete <phase>      # Complete a phase (runs quality gates)"
             )
             print(
                 "  python issue-workflow.py complete <phase> -f   # Complete phase, ignore gate failures"
             )
-            print("  python issue-workflow.py rollback <phase>      # Rollback to phase checkpoint")
+            print(
+                "  python issue-workflow.py rollback <phase>      # Rollback to phase checkpoint"
+            )
     else:
         main()

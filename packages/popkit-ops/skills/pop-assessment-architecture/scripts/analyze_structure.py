@@ -60,7 +60,9 @@ def analyze_directory_structure(project_dir: Path) -> Dict[str, Any]:
 
             # Check for hidden directories
             if item.name.startswith(".") and item.name not in [".git", ".github"]:
-                structure["hidden_directories"].append(str(item.relative_to(project_dir)))
+                structure["hidden_directories"].append(
+                    str(item.relative_to(project_dir))
+                )
 
             # Track depth
             depth = len(item.relative_to(project_dir).parts)
@@ -68,7 +70,9 @@ def analyze_directory_structure(project_dir: Path) -> Dict[str, Any]:
 
             # Check for empty directories
             if not any(item.iterdir()):
-                structure["empty_directories"].append(str(item.relative_to(project_dir)))
+                structure["empty_directories"].append(
+                    str(item.relative_to(project_dir))
+                )
 
         elif item.is_file():
             structure["total_files"] += 1
@@ -87,7 +91,9 @@ def analyze_directory_structure(project_dir: Path) -> Dict[str, Any]:
     # Find directories with many files (potential organization issues)
     for dir_path, count in file_count_by_dir.items():
         if count > 20:  # Threshold for "large" directory
-            structure["large_directories"].append({"path": dir_path, "file_count": count})
+            structure["large_directories"].append(
+                {"path": dir_path, "file_count": count}
+            )
 
     return structure
 
@@ -216,7 +222,8 @@ def analyze_module_boundaries(project_dir: Path) -> Dict[str, Any]:
                         }
                     )
                     break
-        except:
+        except Exception:
+            # Best-effort fallback: ignore optional failure.
             pass
 
     for ts_file in project_dir.rglob("*.ts"):
@@ -232,7 +239,8 @@ def analyze_module_boundaries(project_dir: Path) -> Dict[str, Any]:
                         }
                     )
                     break
-        except:
+        except Exception:
+            # Best-effort fallback: ignore optional failure.
             pass
 
     # Identify cross-cutting concerns
@@ -240,7 +248,9 @@ def analyze_module_boundaries(project_dir: Path) -> Dict[str, Any]:
     for dir_name in cross_cutting_dirs:
         for found_dir in project_dir.rglob(dir_name):
             if found_dir.is_dir():
-                boundaries["cross_cutting_concerns"].append(str(found_dir.relative_to(project_dir)))
+                boundaries["cross_cutting_concerns"].append(
+                    str(found_dir.relative_to(project_dir))
+                )
 
     return boundaries
 
@@ -296,7 +306,9 @@ def calculate_structure_score(
     if empty_count > 3:
         deduct = min(5, empty_count - 3)
         score -= deduct
-        deductions.append({"reason": f"{empty_count} empty directories", "points": deduct})
+        deductions.append(
+            {"reason": f"{empty_count} empty directories", "points": deduct}
+        )
 
     return {"score": max(0, score), "grade": get_grade(score), "deductions": deductions}
 

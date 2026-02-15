@@ -17,7 +17,6 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-import popkit_shared.utils.voyage_client as voyage_client_module
 from popkit_shared.utils.voyage_client import (
     BATCH_SIZE,
     MAX_REQUESTS_PER_MINUTE,
@@ -567,7 +566,7 @@ class TestModuleFunctions:
     def test_get_client_singleton(self):
         """Test get_client returns singleton"""
         # Reset singleton in the voyage_client module
-        voyage_client_module._client = None
+        sys.modules["popkit_shared.utils.voyage_client"]._client = None
 
         client1 = get_client()
         client2 = get_client()

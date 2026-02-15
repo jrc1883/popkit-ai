@@ -102,6 +102,7 @@ def get_current_version() -> Optional[str]:
                 data = json.load(f)
                 return data.get("version")
     except (json.JSONDecodeError, IOError):
+        # Best-effort fallback: ignore optional failure.
         pass
     return None
 
@@ -113,6 +114,7 @@ def load_cache() -> Dict[str, Any]:
             with open(SETTINGS_PATH, "r", encoding="utf-8") as f:
                 return json.load(f)
     except (json.JSONDecodeError, IOError):
+        # Best-effort fallback: ignore optional failure.
         pass
     return {}
 
@@ -201,6 +203,7 @@ def check_for_updates() -> Tuple[bool, Optional[Dict[str, Any]]]:
                         "url": cached_info.get("release_url", ""),
                     }
             except ValueError:
+                # Best-effort fallback: ignore optional failure.
                 pass
 
         return False, None
@@ -228,6 +231,7 @@ def check_for_updates() -> Tuple[bool, Optional[Dict[str, Any]]]:
             if latest_ver > current_ver:
                 return True, release_info
         except ValueError:
+            # Best-effort fallback: ignore optional failure.
             pass
 
     return False, None

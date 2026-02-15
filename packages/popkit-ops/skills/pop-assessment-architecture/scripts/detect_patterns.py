@@ -111,7 +111,8 @@ def detect_design_patterns(project_dir: Path) -> Dict[str, List[Dict[str, Any]]]
                                 }
                             )
                             break  # One match per pattern per file
-            except:
+            except Exception:
+                # Best-effort fallback: ignore optional failure.
                 pass
 
     return patterns
@@ -150,7 +151,9 @@ def detect_anti_patterns(project_dir: Path) -> List[Dict[str, Any]]:
         {
             "name": "circular_dependency",
             "description": "Files importing each other",
-            "patterns": [r"from\s+\.\w+\s+import|import\s+\{\s*\w+\s*\}\s+from\s+['\"]\."],
+            "patterns": [
+                r"from\s+\.\w+\s+import|import\s+\{\s*\w+\s*\}\s+from\s+['\"]\."
+            ],
             "severity": "high",
         },
         {
@@ -216,7 +219,8 @@ def detect_anti_patterns(project_dir: Path) -> List[Dict[str, Any]]:
                                     }
                                 )
                             break
-            except:
+            except Exception:
+                # Best-effort fallback: ignore optional failure.
                 pass
 
     return anti_patterns

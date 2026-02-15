@@ -31,7 +31,9 @@ def find_plugin_root(start_path: Path = None) -> Path:
     for _ in range(5):
         if (current / ".claude-plugin" / "plugin.json").exists():
             return current
-        if (current / "packages" / "plugin" / ".claude-plugin" / "plugin.json").exists():
+        if (
+            current / "packages" / "plugin" / ".claude-plugin" / "plugin.json"
+        ).exists():
             return current / "packages" / "plugin"
         current = current.parent
 
@@ -89,7 +91,7 @@ def get_version(plugin_dir: Path) -> str:
             with open(plugin_json, "r") as f:
                 data = json.load(f)
                 return data.get("version", "unknown")
-        except:
+        except Exception:
             pass
     return "unknown"
 
@@ -180,7 +182,9 @@ def generate_recommendations(findings: dict, risk_score: float) -> list:
                 "priority": "CRITICAL",
                 "action": "IMMEDIATE",
                 "message": f"Fix {len(findings['critical'])} critical vulnerabilities before release",
-                "cwes": list(set(f.get("cwe", "unknown") for f in findings["critical"])),
+                "cwes": list(
+                    set(f.get("cwe", "unknown") for f in findings["critical"])
+                ),
             }
         )
 

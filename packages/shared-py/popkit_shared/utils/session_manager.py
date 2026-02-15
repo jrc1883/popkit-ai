@@ -178,6 +178,7 @@ class SessionManager:
                     session_file.unlink()
                     removed += 1
                 except OSError:
+                    # Best-effort fallback: ignore optional failure.
                     pass
 
         return removed

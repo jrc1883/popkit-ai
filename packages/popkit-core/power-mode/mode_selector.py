@@ -163,6 +163,7 @@ class ModeSelector:
                 if match:
                     return match.group(1)
         except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+            # Best-effort fallback: ignore optional failure.
             pass
 
         return None
@@ -228,7 +229,9 @@ class ModeSelector:
             upstash_url = os.environ.get("UPSTASH_REDIS_REST_URL", "")
             status_lines.extend(
                 [
-                    f"Upstash: {upstash_url[:40]}..." if upstash_url else "Upstash: configured",
+                    f"Upstash: {upstash_url[:40]}..."
+                    if upstash_url
+                    else "Upstash: configured",
                     "Setup: Set env vars (Pro tier)",
                     "Max Agents: 6+ (parallel)",
                 ]
@@ -284,7 +287,9 @@ if __name__ == "__main__":
         choices=["native", "upstash", "file"],
         help="Check specific mode",
     )
-    parser.add_argument("--tier", type=str, default="free", help="User tier (free, premium, pro)")
+    parser.add_argument(
+        "--tier", type=str, default="free", help="User tier (free, premium, pro)"
+    )
 
     args = parser.parse_args()
 

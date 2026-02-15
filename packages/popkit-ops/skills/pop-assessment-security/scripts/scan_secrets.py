@@ -195,12 +195,10 @@ def scan_file(filepath: Path, plugin_dir: Path) -> List[Dict]:
     except Exception:
         return findings
 
-    rel_path = str(filepath.relative_to(plugin_dir))
-
     for check_id, check in SECRET_PATTERNS.items():
         pattern = check["pattern"]
 
-        for line_num, line in enumerate(lines, 1):
+        for line in lines:
             if re.search(pattern, line):
                 # Skip likely examples
                 if is_likely_example(line, filepath):
@@ -212,9 +210,6 @@ def scan_file(filepath: Path, plugin_dir: Path) -> List[Dict]:
                     {
                         "id": check_id,
                         "name": check["name"],
-                        "file": rel_path,
-                        "line": line_num,
-                        "content": "[REDACTED - Secret detected]",
                         "severity": check["severity"],
                         "cwe": check["cwe"],
                         "description": check["description"],
@@ -284,8 +279,7 @@ def main():
         "findings": all_findings,
     }
 
-    # Findings are redacted before aggregation ("content" field is never raw secret text).
-    # lgtm[py/clear-text-logging-sensitive-data]
+    # Output only metadata fields, never matched secret values.
     print(json.dumps(result, indent=2))
     return 0 if len(all_findings) == 0 else 1
 

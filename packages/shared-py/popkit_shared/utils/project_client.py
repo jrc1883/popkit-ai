@@ -322,6 +322,7 @@ class ProjectClient:
                         pkg = json.load(f)
                         name = pkg.get("name", "")
                 except Exception:
+                    # Best-effort fallback: ignore optional failure.
                     pass
 
             # Fallback to directory name
