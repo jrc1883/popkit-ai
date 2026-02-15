@@ -109,6 +109,7 @@ class ChainMetrics:
                     end = datetime.fromisoformat(run["ended_at"])
                     run["total_duration_ms"] = int((end - start).total_seconds() * 1000)
                 except ValueError:
+                    # Best-effort fallback: ignore optional failure.
                     pass
 
                 self._update_aggregates(run)

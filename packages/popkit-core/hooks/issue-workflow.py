@@ -98,6 +98,7 @@ class IssueWorkflowHook:
                 try:
                     existing_state = json.loads(self.power_mode_state.read_text())
                 except (json.JSONDecodeError, IOError):
+                    # Best-effort fallback: ignore optional failure.
                     pass
 
             phases = config.get("suggested_phases", [])
@@ -151,6 +152,7 @@ class IssueWorkflowHook:
                 power_state["deactivated_at"] = datetime.now().isoformat()
                 self.power_mode_state.write_text(json.dumps(power_state, indent=2))
         except Exception:
+            # Best-effort fallback: ignore optional failure.
             pass
 
     def generate_todo_list(self, config: Dict[str, Any]) -> List[Dict[str, Any]]:

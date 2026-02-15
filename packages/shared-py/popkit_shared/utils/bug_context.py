@@ -415,6 +415,7 @@ class BugContextCapture:
                 if "redis" in deps or "ioredis" in deps:
                     ctx.services.append("Redis")
             except (json.JSONDecodeError, FileNotFoundError):
+                # Best-effort fallback: ignore optional failure.
                 pass
 
         elif (project_dir / "requirements.txt").exists() or (
@@ -471,6 +472,7 @@ class BugContextCapture:
                 ][:3]
 
         except (subprocess.SubprocessError, FileNotFoundError):
+            # Best-effort fallback: ignore optional failure.
             pass
 
         return ctx

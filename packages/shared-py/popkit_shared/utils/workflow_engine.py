@@ -432,6 +432,7 @@ class FileWorkflowEngine:
             if workflow_id:
                 return cls.load_workflow(workflow_id)
         except (json.JSONDecodeError, KeyError):
+            # Best-effort fallback: ignore optional failure.
             pass
 
         return None
@@ -801,6 +802,7 @@ class FileWorkflowEngine:
                 if data.get("workflow_id") == self.workflow_id:
                     active_file.unlink()
             except (json.JSONDecodeError, KeyError):
+                # Best-effort fallback: ignore optional failure.
                 pass
 
     def delete(self) -> None:
@@ -1160,6 +1162,7 @@ class UpstashWorkflowEngine:
                 status = self._request("GET", f"/status/{self.workflow_id}")
                 self._cached_status = status
         except Exception:
+            # Best-effort fallback: ignore optional failure.
             pass
 
         return WorkflowState(
@@ -1273,6 +1276,7 @@ class UpstashWorkflowEngine:
                 "POST", f"/update/{self.workflow_id}", {"phase": "error", "result": error_message}
             )
         except Exception:
+            # Best-effort fallback: ignore optional failure.
             pass
 
     def cancel(self) -> None:

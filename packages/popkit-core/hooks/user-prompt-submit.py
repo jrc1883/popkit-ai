@@ -638,6 +638,7 @@ class UserPromptSubmitHook:
                 with open(claude_md_path, "r", encoding="utf-8") as f:
                     context["claude_md_content"] = f.read()[:1000]  # First 1000 chars
             except Exception:
+                # Best-effort fallback: ignore optional failure.
                 pass
 
         return context

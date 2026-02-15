@@ -126,6 +126,7 @@ class DocSyncChecker:
                 else:
                     active += 1
             except IOError:
+                # Best-effort fallback: ignore optional failure.
                 pass
 
         return {"active": active, "deprecated": deprecated}
@@ -161,6 +162,7 @@ class DocSyncChecker:
                     counts["feature_workflow"] = len(tiers.get("feature-workflow", []))
                     counts["total"] = counts["tier1"] + counts["tier2"] + counts["feature_workflow"]
             except (json.JSONDecodeError, IOError):
+                # Best-effort fallback: ignore optional failure.
                 pass
 
         return counts

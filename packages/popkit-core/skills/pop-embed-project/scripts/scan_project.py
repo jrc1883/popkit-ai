@@ -195,6 +195,7 @@ def embed_items(items: List[Dict[str, Any]], force: bool = False) -> Dict[str, A
             "started": datetime.now().isoformat(),
             "completed": None,
             "batches": 0,
+            "texts_generated": 0,
             "total_delay": 0,
         },
     }
@@ -226,13 +227,16 @@ def embed_items(items: List[Dict[str, Any]], force: bool = False) -> Dict[str, A
 
     # Batch items (50 per batch)
     batch_size = 50
-    batches = [to_embed[i : i + batch_size] for i in range(0, len(to_embed), batch_size)]
+    batches = [
+        to_embed[i : i + batch_size] for i in range(0, len(to_embed), batch_size)
+    ]
     result["timing"]["batches"] = len(batches)
 
     # Process batches
     for batch_idx, batch in enumerate(batches):
         # Generate embedding texts
         texts = [generate_embedding_text(item) for item in batch]
+        result["timing"]["texts_generated"] += len(texts)
 
         # Would call Voyage API here
         # from hooks.utils.voyage_client import embed_batch

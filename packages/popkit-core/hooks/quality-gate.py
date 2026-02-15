@@ -175,6 +175,7 @@ class QualityGateHook:
                         }
                     )
             except json.JSONDecodeError:
+                # Best-effort fallback: ignore optional failure.
                 pass
 
         # Python projects

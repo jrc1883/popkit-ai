@@ -178,6 +178,7 @@ class CheckpointManager:
                         files.append(file_path)
                 return files
         except Exception:
+            # Best-effort fallback: ignore optional failure.
             pass
         return []
 
@@ -216,6 +217,7 @@ class CheckpointManager:
                     return stash_ref
 
         except Exception:
+            # Best-effort fallback: ignore optional failure.
             pass
         return None
 
@@ -232,6 +234,7 @@ class CheckpointManager:
                     content = full_path.read_bytes()
                     snapshots[file_path] = hashlib.sha256(content).hexdigest()[:12]
                 except Exception:
+                    # Best-effort fallback: ignore optional failure.
                     pass
 
         return snapshots
@@ -279,6 +282,7 @@ class CheckpointManager:
                     data = json.load(f)
                     checkpoints.append(CheckpointMetadata(**data["metadata"]))
             except Exception:
+                # Best-effort fallback: ignore optional failure.
                 pass
 
         # Sort by creation time, newest first

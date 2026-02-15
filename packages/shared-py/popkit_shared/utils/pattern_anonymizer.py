@@ -9,6 +9,7 @@ Part of the popkit plugin system.
 """
 
 import hashlib
+import json
 import os
 import re
 from typing import Any, Dict, List, Optional, Set
@@ -154,8 +155,6 @@ def extract_project_context(project_root: str) -> Dict[str, Any]:
     Returns:
         Dict with project context
     """
-    import json
-
     context = {
         "project_names": set(),
         "custom_paths": set(),
@@ -173,6 +172,7 @@ def extract_project_context(project_root: str) -> Dict[str, Any]:
                     if isinstance(pkg["author"], str):
                         context["project_names"].add(pkg["author"].split("<")[0].strip())
         except (json.JSONDecodeError, IOError):
+            # Best-effort fallback: ignore optional failure.
             pass
 
     # Get project name from pyproject.toml
@@ -185,6 +185,7 @@ def extract_project_context(project_root: str) -> Dict[str, Any]:
                 if match:
                     context["project_names"].add(match.group(1))
         except IOError:
+            # Best-effort fallback: ignore optional failure.
             pass
 
     # Add directory name

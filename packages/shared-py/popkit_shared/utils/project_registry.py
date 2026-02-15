@@ -135,6 +135,7 @@ def detect_project_info(path: str) -> Optional[Dict[str, Any]]:
                 if "name" in pkg:
                     name = pkg["name"]
         except (json.JSONDecodeError, IOError):
+            # Best-effort fallback: ignore optional failure.
             pass
 
     # Try to get repo from git remote
@@ -156,6 +157,7 @@ def detect_project_info(path: str) -> Optional[Dict[str, Any]]:
                 if match:
                     repo = match.group(1)
         except Exception:
+            # Best-effort fallback: ignore optional failure.
             pass
 
     now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")

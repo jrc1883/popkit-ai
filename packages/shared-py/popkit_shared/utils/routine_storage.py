@@ -166,6 +166,7 @@ def get_project_name(project_root: Optional[str] = None) -> str:
                 if "name" in data:
                     return data["name"]
         except (json.JSONDecodeError, IOError):
+            # Best-effort fallback: ignore optional failure.
             pass
 
     # Try pyproject.toml
@@ -178,6 +179,7 @@ def get_project_name(project_root: Optional[str] = None) -> str:
                 if match:
                     return match.group(1)
         except IOError:
+            # Best-effort fallback: ignore optional failure.
             pass
 
     # Fall back to directory name

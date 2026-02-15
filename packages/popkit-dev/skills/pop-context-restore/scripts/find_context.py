@@ -158,6 +158,7 @@ def gather_git_context() -> Dict[str, Any]:
         try:
             context["stash_count"] = int(stash_output.strip())
         except ValueError:
+            # Best-effort fallback: ignore optional failure.
             pass
 
     return context
@@ -172,7 +173,9 @@ def get_project_state() -> Dict[str, Any]:
     }
 
     # Quick test check (just see if command exists)
-    test_check, ok = run_command("npm run test --if-present 2>&1 | head -20", timeout=60)
+    test_check, ok = run_command(
+        "npm run test --if-present 2>&1 | head -20", timeout=60
+    )
     if ok:
         if "passing" in test_check.lower():
             state["tests"]["status"] = "passing"
@@ -181,7 +184,9 @@ def get_project_state() -> Dict[str, Any]:
         state["tests"]["output"] = test_check[:500]
 
     # Build check
-    build_check, ok = run_command("npm run build --if-present 2>&1 | tail -5", timeout=120)
+    build_check, ok = run_command(
+        "npm run build --if-present 2>&1 | tail -5", timeout=120
+    )
     if ok:
         state["build"]["status"] = "passing"
     else:
@@ -189,7 +194,9 @@ def get_project_state() -> Dict[str, Any]:
     state["build"]["output"] = build_check[:500] if build_check else ""
 
     # Lint check
-    lint_check, ok = run_command("npm run lint --if-present 2>&1 | tail -10", timeout=60)
+    lint_check, ok = run_command(
+        "npm run lint --if-present 2>&1 | tail -10", timeout=60
+    )
     if ok:
         state["lint"]["status"] = "passing"
         state["lint"]["errors"] = 0
@@ -271,7 +278,9 @@ def main():
         help="Context source to gather",
     )
     parser.add_argument("--focus", help="Focus area to filter relevant files")
-    parser.add_argument("--hours", type=int, default=24, help="Hours to look back for recent files")
+    parser.add_argument(
+        "--hours", type=int, default=24, help="Hours to look back for recent files"
+    )
     parser.add_argument(
         "--build-model", action="store_true", help="Build mental model from all sources"
     )

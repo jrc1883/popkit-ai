@@ -180,6 +180,7 @@ class VoteFetcher:
             if result.returncode == 0:
                 return result.stdout.strip()
         except Exception:
+            # Best-effort fallback: ignore optional failure.
             pass
         return None
 

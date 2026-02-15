@@ -386,6 +386,7 @@ def find_orphaned_files(plugin_root: Path) -> Dict[str, List[str]]:
                 )
 
             except json.JSONDecodeError:
+                # Best-effort fallback: ignore optional failure.
                 pass
 
     return orphaned

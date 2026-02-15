@@ -57,6 +57,7 @@ def detect_mcp_sdk(project_dir: str) -> Dict[str, Any]:
                 return result
 
     except (json.JSONDecodeError, IOError):
+        # Best-effort fallback: ignore optional failure.
         pass
 
     return result
@@ -123,6 +124,7 @@ def detect_mcp_config(project_dir: str) -> Dict[str, Any]:
             result["servers"] = config["mcpServers"]
 
     except (json.JSONDecodeError, IOError):
+        # Best-effort fallback: ignore optional failure.
         pass
 
     return result

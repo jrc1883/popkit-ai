@@ -37,6 +37,7 @@ def emit_event(event: Dict[str, Any]) -> None:
     try:
         print(f"TELEMETRY:{json.dumps(event)}", file=sys.stdout, flush=True)
     except Exception:
+        # Best-effort fallback: ignore optional failure.
         pass
 
 

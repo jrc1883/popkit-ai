@@ -192,6 +192,7 @@ class PatternLearner:
                     (pattern, ptype, desc, suggestion),
                 )
             except sqlite3.IntegrityError:
+                # Best-effort fallback: ignore optional failure.
                 pass
 
     def _hash_command(self, command: str) -> str:

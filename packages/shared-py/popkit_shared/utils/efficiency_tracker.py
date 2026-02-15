@@ -141,6 +141,7 @@ class EfficiencyTracker:
                     if data.get("session_id") == self.session_id:
                         self.metrics = EfficiencyMetrics.from_dict(data)
             except (json.JSONDecodeError, IOError):
+                # Best-effort fallback: ignore optional failure.
                 pass
 
     def _save_state(self):
@@ -150,6 +151,7 @@ class EfficiencyTracker:
             with open(self.state_file, "w") as f:
                 json.dump(self.metrics.to_dict(), f, indent=2)
         except IOError:
+            # Best-effort fallback: ignore optional failure.
             pass
 
     # =========================================================================

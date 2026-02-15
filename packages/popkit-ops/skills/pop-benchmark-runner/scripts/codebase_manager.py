@@ -138,7 +138,8 @@ class CodebaseManager:
             if not force:
                 # Retry with force
                 print("[WARN] Failed to remove worktree, retrying with --force")
-                return self.cleanup_worktree(worktree_path, force=True)
+                self.cleanup_worktree(worktree_path, force=True)
+                return
             raise GitError(f"Failed to remove worktree: {stderr}")
 
         # Delete branch if it exists

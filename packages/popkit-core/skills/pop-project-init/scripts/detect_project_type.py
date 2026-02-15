@@ -49,7 +49,8 @@ def detect_existing_project(project_dir: Path) -> Dict[str, Any]:
                 frameworks.append("fastify")
             if "typescript" in deps:
                 frameworks.append("typescript")
-        except:
+        except Exception:
+            # Best-effort fallback: ignore optional failure.
             pass
 
     if indicators["has_pyproject"]:
@@ -63,14 +64,17 @@ def detect_existing_project(project_dir: Path) -> Dict[str, Any]:
                 frameworks.append("flask")
             if "click" in content.lower():
                 frameworks.append("cli-python")
-        except:
+        except Exception:
+            # Best-effort fallback: ignore optional failure.
             pass
 
     # Detect project category
     category = None
     if any(f in frameworks for f in ["nextjs", "react", "vue"]):
         category = "web-frontend"
-    elif any(f in frameworks for f in ["express", "fastify", "fastapi", "django", "flask"]):
+    elif any(
+        f in frameworks for f in ["express", "fastify", "fastapi", "django", "flask"]
+    ):
         category = "web-backend"
     elif "cli-python" in frameworks or "typescript" in frameworks:
         category = "cli-or-library"

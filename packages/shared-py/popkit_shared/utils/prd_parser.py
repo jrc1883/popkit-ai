@@ -174,10 +174,11 @@ class PRDParser:
                 except ImportError:
                     try:
                         # Last resort: direct import from same directory
-                        import complexity_scoring
+                        from complexity_scoring import get_complexity_analyzer
 
-                        self._complexity_analyzer = complexity_scoring.get_complexity_analyzer()
+                        self._complexity_analyzer = get_complexity_analyzer()
                     except ImportError:
+                        # Best-effort fallback: ignore optional failure.
                         pass
         return self._complexity_analyzer
 
@@ -367,6 +368,7 @@ class PRDParser:
                 if major >= 15:  # e.g., Next.js 15, React 19
                     return True
             except (ValueError, IndexError):
+                # Best-effort fallback: ignore optional failure.
                 pass
 
         # Research newer frameworks

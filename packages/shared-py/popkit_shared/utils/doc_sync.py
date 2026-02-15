@@ -52,6 +52,7 @@ class DocSyncChecker:
                     if plugins and "version" in plugins[0]:
                         return plugins[0]["version"]
             except (json.JSONDecodeError, IOError, IndexError, KeyError):
+                # Best-effort fallback: ignore optional failure.
                 pass
         return None
 
@@ -70,6 +71,7 @@ class DocSyncChecker:
                     counts["feature"] = len(tiers.get("feature-workflow", {}).get("agents", []))
                     counts["total"] = counts["tier1"] + counts["tier2"] + counts["feature"]
             except (json.JSONDecodeError, IOError):
+                # Best-effort fallback: ignore optional failure.
                 pass
 
         return counts
@@ -116,6 +118,7 @@ class DocSyncChecker:
                 if "deprecated" in content.lower() or "DEPRECATED" in content:
                     deprecated += 1
             except IOError:
+                # Best-effort fallback: ignore optional failure.
                 pass
 
         return {"total": total, "active": total - deprecated, "deprecated": deprecated}

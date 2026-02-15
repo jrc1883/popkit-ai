@@ -68,7 +68,8 @@ def find_error_messages(project_dir: Path) -> List[Dict[str, Any]]:
                                 "line": content[: match.start()].count("\n") + 1,
                             }
                         )
-            except:
+            except Exception:
+                # Best-effort fallback: ignore optional failure.
                 pass
 
     return errors[:50]  # Limit to 50
@@ -122,7 +123,16 @@ def analyze_error_quality(errors: List[Dict]) -> Dict[str, Any]:
                 break
 
         # Check for actionable guidance
-        action_words = ["try", "check", "ensure", "verify", "run", "install", "update", "see"]
+        action_words = [
+            "try",
+            "check",
+            "ensure",
+            "verify",
+            "run",
+            "install",
+            "update",
+            "see",
+        ]
         has_action = any(word in message.lower() for word in action_words)
         if not has_action and len(message) > 20:
             score -= 5
@@ -165,7 +175,9 @@ def analyze_error_patterns(errors: List[Dict]) -> Dict[str, Any]:
             patterns["has_context"] += 1
 
         # Check for suggestions
-        if any(word in message.lower() for word in ["try", "check", "ensure", "should"]):
+        if any(
+            word in message.lower() for word in ["try", "check", "ensure", "should"]
+        ):
             patterns["has_suggestion"] += 1
 
         # Check for error codes

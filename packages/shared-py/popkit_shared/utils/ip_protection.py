@@ -312,9 +312,11 @@ def scan_git_history(directory: Path, depth: int = 100) -> List[LeakFinding]:
                         )
                         findings.extend(content_findings)
                 except Exception:
+                    # Best-effort fallback: ignore optional failure.
                     pass
 
     except Exception:
+        # Best-effort fallback: ignore optional failure.
         pass
 
     return findings

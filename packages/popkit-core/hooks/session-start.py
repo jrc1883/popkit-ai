@@ -578,6 +578,7 @@ def detect_project_context():
                         context["stack"].append("FastAPI")
 
             except (json.JSONDecodeError, IOError):
+                # Best-effort fallback: ignore optional failure.
                 pass
 
         # Detect Python stack from requirements.txt

@@ -151,6 +151,7 @@ class PostToolUseHook:
                         session_id = result[0]
                     conn.close()
             except Exception:
+                # Best-effort fallback: ignore optional failure.
                 pass
         return session_id or "unknown"
 
@@ -264,6 +265,7 @@ class PostToolUseHook:
             if db_path.exists():
                 return sqlite3.connect(str(db_path))
         except Exception:
+            # Best-effort fallback: ignore optional failure.
             pass
         return None
 

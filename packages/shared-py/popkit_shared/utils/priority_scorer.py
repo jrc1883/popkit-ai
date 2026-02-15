@@ -418,6 +418,7 @@ def fetch_open_issues(limit: int = 20) -> List[Dict]:
         if result.returncode == 0:
             return json.loads(result.stdout)
     except Exception:
+        # Best-effort fallback: ignore optional failure.
         pass
     return []
 

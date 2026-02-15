@@ -30,7 +30,9 @@ def find_plugin_root(start_path: Path = None) -> Path:
     for _ in range(5):
         if (current / ".claude-plugin" / "plugin.json").exists():
             return current
-        if (current / "packages" / "plugin" / ".claude-plugin" / "plugin.json").exists():
+        if (
+            current / "packages" / "plugin" / ".claude-plugin" / "plugin.json"
+        ).exists():
             return current / "packages" / "plugin"
         current = current.parent
 
@@ -84,7 +86,7 @@ def get_version(plugin_dir: Path) -> str:
             with open(plugin_json, "r") as f:
                 data = json.load(f)
                 return data.get("version", "unknown")
-        except:
+        except Exception:
             pass
     return "unknown"
 
@@ -118,7 +120,11 @@ def calculate_weighted_score(results: list) -> dict:
 
     overall = round(weighted_score / max(total_weight, 1), 1)
 
-    return {"overall": overall, "categories": category_scores, "total_weight": total_weight}
+    return {
+        "overall": overall,
+        "categories": category_scores,
+        "total_weight": total_weight,
+    }
 
 
 def get_status_label(score: float) -> str:
@@ -153,7 +159,10 @@ def collect_all_findings(results: list) -> dict:
                 # Also check nested checks
                 checks = finding.get("checks", [])
                 for check in checks:
-                    if isinstance(check, dict) and check.get("status") in ("FAIL", "WARN"):
+                    if isinstance(check, dict) and check.get("status") in (
+                        "FAIL",
+                        "WARN",
+                    ):
                         check_severity = check.get("severity", "info")
                         if check_severity in all_findings:
                             check["category"] = category
@@ -183,7 +192,11 @@ def main():
             plugin_dir = find_plugin_root()
 
         # Run all validation scripts
-        scripts = ["validate_plugin_structure.py", "validate_hooks.py", "validate_routing.py"]
+        scripts = [
+            "validate_plugin_structure.py",
+            "validate_hooks.py",
+            "validate_routing.py",
+        ]
 
         results = []
         for script in scripts:
