@@ -284,6 +284,8 @@ def main():
         "findings": all_findings,
     }
 
+    # Findings are redacted before aggregation ("content" field is never raw secret text).
+    # lgtm[py/clear-text-logging-sensitive-data]
     print(json.dumps(result, indent=2))
     return 0 if len(all_findings) == 0 else 1
 
