@@ -20,6 +20,8 @@ Output:
 """
 
 import json
+import shlex
+import shutil
 import subprocess
 import sys
 from datetime import datetime
@@ -40,15 +42,49 @@ MEDIUM_PRIORITY_LABELS = {
 }
 
 
+def _normalize_command(cmd: Union[str, List[str]]) -> List[str]:
+    """Normalize command input into an argv list without shell parsing."""
+    if isinstance(cmd, str):
+        return shlex.split(cmd, posix=False)
+    return list(cmd)
+
+
+def _resolve_executable(argv: List[str]) -> List[str]:
+    """Resolve command executable path for reliable Windows process spawning."""
+    if not argv:
+        return argv
+
+    executable = argv[0]
+    if not executable:
+        return argv
+
+    # Keep explicit paths untouched.
+    if Path(executable).is_absolute() or "\\" in executable or "/" in executable:
+        return argv
+
+    resolved = shutil.which(executable)
+    if (
+        not resolved
+        and sys.platform.startswith("win")
+        and not executable.lower().endswith(".cmd")
+    ):
+        resolved = shutil.which(f"{executable}.cmd")
+
+    if resolved:
+        argv[0] = resolved
+
+    return argv
+
+
 def run_command(
     cmd: Union[str, List[str]],
     timeout: int = 30,
     preserve_leading_ws: bool = False,
     cwd: Optional[str] = None,
 ) -> Tuple[str, bool]:
-    """Run a shell command and return output and success status."""
+    """Run a command and return output and success status."""
     try:
-        argv = cmd.split() if isinstance(cmd, str) else cmd
+        argv = _resolve_executable(_normalize_command(cmd))
         result = subprocess.run(
             argv,
             capture_output=True,
@@ -56,10 +92,16 @@ def run_command(
             timeout=timeout,
             cwd=cwd,
         )
+
+        output_text = result.stdout or ""
+        if result.returncode != 0 and result.stderr:
+            if output_text.strip():
+                output_text = f"{output_text.rstrip()}\n{result.stderr}"
+            else:
+                output_text = result.stderr
+
         output = (
-            result.stdout.rstrip("\r\n")
-            if preserve_leading_ws
-            else result.stdout.strip()
+            output_text.rstrip("\r\n") if preserve_leading_ws else output_text.strip()
         )
         return output, result.returncode == 0
     except subprocess.TimeoutExpired:
