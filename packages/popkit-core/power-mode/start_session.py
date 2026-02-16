@@ -12,6 +12,7 @@ from pathlib import Path
 # Add power-mode to path
 sys.path.insert(0, str(Path(__file__).parent))
 
+from lifecycle import AgentLifecycle, AgentState
 from protocol import MessageFactory, create_objective
 from upstash_adapter import get_redis_client, is_upstash_available
 
@@ -44,6 +45,11 @@ def start_power_mode_session(objective_text: str, issues: list):
     # Create session ID
     session_id = f"power-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
 
+    # Initialize lifecycle state for coordinator
+    lifecycle = AgentLifecycle()
+    lifecycle.set_state("coordinator", AgentState.SPAWNED, session_id=session_id)
+    lifecycle.set_state("coordinator", AgentState.RUNNING, session_id=session_id)
+
     # Create objective
     objective = create_objective(
         description=objective_text,
@@ -69,6 +75,7 @@ def start_power_mode_session(objective_text: str, issues: list):
         "agents": [],
         "insights": [],
         "phase": "initializing",
+        "lifecycle": lifecycle.snapshot(),
     }
 
     # Store session in Redis
@@ -122,6 +129,7 @@ def start_power_mode_session(objective_text: str, issues: list):
         "agents": [],
         "upstash_url": os.getenv("UPSTASH_REDIS_REST_URL"),
         "last_updated": datetime.now().isoformat(),
+        "lifecycle": lifecycle.snapshot(),
     }
 
     with open(state_file, "w") as f:
@@ -144,6 +152,7 @@ def start_power_mode_session(objective_text: str, issues: list):
         "session_id": session_id,
         "redis_client": redis_client,
         "channels": channels,
+        "lifecycle": lifecycle.snapshot(),
     }
 
 
