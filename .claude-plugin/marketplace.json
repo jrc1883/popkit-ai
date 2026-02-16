@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "PopKit modular plugin suite - official marketplace",
-    "version": "1.0.0-beta.5"
+    "version": "1.0.0-beta.10"
   },
   "plugins": [
     {
       "name": "popkit-core",
       "source": "./packages/popkit-core",
       "description": "PopKit foundation plugin - account management, stats, privacy, Power Mode, and system features",
-      "version": "1.0.0-beta.5",
+      "version": "1.0.0-beta.10",
       "author": {
         "name": "Joseph Cannon",
         "email": "joseph@thehouseofdeals.com"
@@ -28,7 +28,7 @@
       "name": "popkit-dev",
       "source": "./packages/popkit-dev",
       "description": "Complete development workflow plugin - feature development, git operations, GitHub management, and daily routines",
-      "version": "1.0.0-beta.5",
+      "version": "1.0.0-beta.10",
       "author": {
         "name": "Joseph Cannon",
         "email": "joseph@thehouseofdeals.com"
@@ -43,7 +43,7 @@
       "name": "popkit-ops",
       "source": "./packages/popkit-ops",
       "description": "PopKit operations plugin - quality assurance, deployment, debugging, and security workflows",
-      "version": "1.0.0-beta.5",
+      "version": "1.0.0-beta.10",
       "author": {
         "name": "Joseph Cannon",
         "email": "joseph@thehouseofdeals.com"
@@ -58,7 +58,7 @@
       "name": "popkit-research",
       "source": "./packages/popkit-research",
       "description": "PopKit research plugin - knowledge management and research workflows",
-      "version": "1.0.0-beta.5",
+      "version": "1.0.0-beta.10",
       "author": {
         "name": "Joseph Cannon",
         "email": "joseph@thehouseofdeals.com"
