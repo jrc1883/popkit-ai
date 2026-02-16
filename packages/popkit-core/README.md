@@ -441,5 +441,3 @@ MIT
 ## Author
 
 Joseph Cannon <joseph@thehouseofdeals.com>
-
-

@@ -1184,4 +1184,3 @@ MIT
 
 **Repository**: https://github.com/jrc1883/popkit-claude
 **Issues**: https://github.com/jrc1883/popkit-claude/issues
-
