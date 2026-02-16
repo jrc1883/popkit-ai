@@ -58,12 +58,7 @@ def start_power_mode_session(objective_text: str, issues: list):
     )
 
     # Initialize session in Redis
-    # Convert objective to JSON-serializable dict
-    objective_dict = {
-        "description": objective.description,
-        "success_criteria": objective.success_criteria,
-        "phases": objective.phases,
-    }
+    objective_dict = objective.to_dict()
 
     session_data = {
         "session_id": session_id,
