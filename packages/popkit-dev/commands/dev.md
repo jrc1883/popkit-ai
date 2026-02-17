@@ -77,6 +77,11 @@ Use explicit overrides for experimentation:
 - `--provider popkit` - force native PopKit orchestration
 - `--provider feature-dev` - force upstream workflow (fallback to PopKit if unavailable)
 
+Implementation references:
+
+- `packages/shared-py/popkit_shared/utils/dev_provider_resolver.py`
+- `packages/shared-py/popkit_shared/utils/dev_workflow_router.py`
+
 ---
 
 ## Mode: full
