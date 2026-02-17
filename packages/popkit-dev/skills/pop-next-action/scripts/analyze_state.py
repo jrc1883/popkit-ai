@@ -372,7 +372,12 @@ def analyze_feature_branches(repo_root: Path) -> Dict[str, Any]:
     """Analyze feature/fix branches with work in progress."""
     import re
 
-    state = {"has_feature_branches": False, "branches": [], "urgency": "LOW"}
+    state = {
+        "has_feature_branches": False,
+        "branches": [],
+        "stale_branches": [],
+        "urgency": "LOW",
+    }
 
     # Get all local branches
     branches, ok = run_command(["git", "branch"], cwd=str(repo_root))
@@ -399,6 +404,39 @@ def analyze_feature_branches(repo_root: Path) -> Dict[str, Any]:
         issue_match = re.search(issue_pattern, branch)
         issue_number = int(issue_match.group(1)) if issue_match else None
 
+        # Skip branches that track a deleted upstream (usually merged/abandoned).
+        upstream_ref, _ = run_command(
+            [
+                "git",
+                "for-each-ref",
+                "--format=%(upstream:short)",
+                f"refs/heads/{branch}",
+            ],
+            cwd=str(repo_root),
+        )
+        upstream_track, _ = run_command(
+            [
+                "git",
+                "for-each-ref",
+                "--format=%(upstream:track)",
+                f"refs/heads/{branch}",
+            ],
+            cwd=str(repo_root),
+        )
+        upstream_ref = upstream_ref.strip()
+        upstream_track = upstream_track.strip()
+
+        if "gone" in upstream_track.lower():
+            state["stale_branches"].append(
+                {
+                    "name": branch,
+                    "upstream": upstream_ref,
+                    "upstream_status": upstream_track,
+                    "issue_number": issue_number,
+                }
+            )
+            continue
+
         # Get last commit date and message
         date_output, _ = run_command(
             ["git", "log", "-1", "--format=%ar", branch], cwd=str(repo_root)
@@ -421,6 +459,8 @@ def analyze_feature_branches(repo_root: Path) -> Dict[str, Any]:
             "last_commit": msg_output or "",
             "commits_ahead": commits_ahead,
             "issue_number": issue_number,
+            "upstream": upstream_ref,
+            "upstream_status": upstream_track,
         }
 
         state["branches"].append(branch_info)
