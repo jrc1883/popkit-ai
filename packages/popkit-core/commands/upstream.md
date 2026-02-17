@@ -50,7 +50,7 @@ Check all monitored repositories for new updates since last check.
 
 1. Load tracking state from `.claude/popkit/upstream-tracking.json`
 2. For each monitored repo:
-   - Fetch releases via `gh api repos/{owner}/{repo}/releases`
+   - Fetch releases via `gh api repos/{owner}/{repo}/releases` (when available)
    - Fetch recent commits via `gh api repos/{owner}/{repo}/commits` (main branch, since last check)
    - Compare with tracked items
    - Add new items with status `pending_research`
@@ -107,7 +107,7 @@ List tracked changelog items filtered by status.
 
 ```bash
 /popkit-core:upstream list               # All items
-/popkit-core:upstream list pending       # Need research
+/popkit-core:upstream list pending       # Need research (alias: pending_research)
 /popkit-core:upstream list researched    # Researched
 /popkit-core:upstream list synthesized   # Integrated
 ```
@@ -397,7 +397,7 @@ User can disable with:
 | Component           | Location                              | Purpose             |
 | ------------------- | ------------------------------------- | ------------------- |
 | Command Definition  | commands/upstream.md                  | This file           |
-| Tracking Utility    | hooks/utils/upstream_tracker.py       | Core tracking logic |
+| Tracking Utility    | packages/shared-py/popkit_shared/utils/upstream_tracker.py | Core tracking logic |
 | Data Storage        | .claude/popkit/upstream-tracking.json | Persistent state    |
 | Morning Integration | commands/routine.md                   | Auto-check support  |
 

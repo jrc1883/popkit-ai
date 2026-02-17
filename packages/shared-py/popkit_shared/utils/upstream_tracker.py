@@ -17,25 +17,63 @@ Part of Issue #215 - /popkit-core:upstream command
 
 import json
 import subprocess
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+from urllib.parse import quote
 
 # =============================================================================
 # Constants
 # =============================================================================
 
-MONITORED_REPOS = [
-    "anthropics/claude-code",
-    "anthropics/claude-plugins-official",
-    "anthropics/anthropic-sdk-python",
-    "anthropics/anthropic-sdk-typescript",
-]
+REPO_SPECS: Dict[str, Dict[str, Any]] = {
+    "anthropics/claude-code": {
+        "track_releases": True,
+        "track_commits": True,
+        "max_releases": 10,
+        "max_commits": 15,
+        "bootstrap_commits": 1,
+    },
+    "anthropics/claude-plugins-official": {
+        "track_releases": False,
+        "track_commits": True,
+        "max_releases": 0,
+        "max_commits": 20,
+        "bootstrap_commits": 1,
+    },
+    "anthropics/anthropic-sdk-python": {
+        "track_releases": True,
+        "track_commits": False,
+        "max_releases": 10,
+        "max_commits": 0,
+        "bootstrap_commits": 0,
+    },
+    "anthropics/anthropic-sdk-typescript": {
+        "track_releases": True,
+        "track_commits": False,
+        "max_releases": 15,
+        "max_commits": 0,
+        "bootstrap_commits": 0,
+        # Keep the signal focused on the primary TypeScript SDK track.
+        "release_tag_prefixes": ["sdk-v"],
+    },
+}
+MONITORED_REPOS = list(REPO_SPECS.keys())
 
 STATUS_PENDING = "pending_research"
 STATUS_RESEARCHED = "researched"
 STATUS_SYNTHESIZED = "synthesized"
 STATUS_ARCHIVED = "archived"
+STATUS_ALIASES = {
+    "pending": STATUS_PENDING,
+    "pending_research": STATUS_PENDING,
+    "research": STATUS_RESEARCHED,
+    "researched": STATUS_RESEARCHED,
+    "synthesized": STATUS_SYNTHESIZED,
+    "synthesize": STATUS_SYNTHESIZED,
+    "done": STATUS_SYNTHESIZED,
+    "archived": STATUS_ARCHIVED,
+}
 
 IMPACT_CRITICAL = "critical"
 IMPACT_HIGH = "high"
@@ -130,11 +168,13 @@ class RepositoryTracking:
         repo: str,
         last_checked: Optional[str] = None,
         latest_release: Optional[str] = None,
+        latest_commit: Optional[str] = None,
         changelog_items: Optional[List[ChangelogItem]] = None,
     ):
         self.repo = repo
         self.last_checked = last_checked
         self.latest_release = latest_release
+        self.latest_commit = latest_commit
         self.changelog_items = changelog_items or []
 
     def to_dict(self) -> Dict[str, Any]:
@@ -142,6 +182,7 @@ class RepositoryTracking:
         return {
             "last_checked": self.last_checked,
             "latest_release": self.latest_release,
+            "latest_commit": self.latest_commit,
             "changelog_items": [item.to_dict() for item in self.changelog_items],
         }
 
@@ -152,6 +193,7 @@ class RepositoryTracking:
             repo=repo,
             last_checked=data.get("last_checked"),
             latest_release=data.get("latest_release"),
+            latest_commit=data.get("latest_commit"),
             changelog_items=[
                 ChangelogItem.from_dict(item) for item in data.get("changelog_items", [])
             ],
@@ -228,6 +270,7 @@ class UpstreamTracker:
             tracking["repositories"][repo] = {
                 "last_checked": None,
                 "latest_release": None,
+                "latest_commit": None,
                 "changelog_items": [],
             }
 
@@ -301,6 +344,13 @@ class UpstreamTracker:
     # Public API Methods
     # =============================================================================
 
+    @staticmethod
+    def normalize_status(status: Optional[str]) -> Optional[str]:
+        """Normalize status aliases to canonical values."""
+        if status is None:
+            return None
+        return STATUS_ALIASES.get(status.strip().lower(), status.strip().lower())
+
     def check_updates(self, force: bool = False) -> Tuple[int, List[str]]:
         """Check all monitored repositories for new updates.
 
@@ -321,7 +371,10 @@ class UpstreamTracker:
             if not force and repo_tracking.last_checked:
                 try:
                     last_check = datetime.fromisoformat(repo_tracking.last_checked)
-                    if datetime.now() - last_check < timedelta(hours=CHECK_FREQUENCY_HOURS):
+                    now_ref = (
+                        datetime.now(last_check.tzinfo) if last_check.tzinfo else datetime.now()
+                    )
+                    if now_ref - last_check < timedelta(hours=CHECK_FREQUENCY_HOURS):
                         continue
                 except ValueError:
                     # Invalid date format in last_checked - treat as never checked
@@ -359,48 +412,83 @@ class UpstreamTracker:
             List of new ChangelogItem objects
         """
         new_items = []
+        spec = REPO_SPECS.get(repo, {})
+        existing_urls = {item.url for item in repo_tracking.changelog_items}
 
-        # Fetch releases
-        releases = self._fetch_releases(repo)
-        for release in releases:
-            # Check if already tracked
-            if any(item.url == release["url"] for item in repo_tracking.changelog_items):
-                continue
-
-            item = ChangelogItem(
-                id=f"{repo.replace('/', '-')}-{release['tag_name']}",
-                type="release",
-                title=f"{repo.split('/')[-1]} {release['tag_name']}",
-                url=release["url"],
-                published_date=release["published_at"],
-                discovered_date=datetime.now().isoformat(),
+        if spec.get("track_releases", True):
+            releases = self._fetch_releases(
+                repo=repo,
+                max_releases=spec.get("max_releases", 10),
+                release_tag_prefixes=spec.get("release_tag_prefixes"),
             )
-            new_items.append(item)
+            for release in releases:
+                if release["url"] in existing_urls:
+                    continue
 
-            # Update latest release
-            if (
-                repo_tracking.latest_release is None
-                or release["tag_name"] > repo_tracking.latest_release
-            ):
-                repo_tracking.latest_release = release["tag_name"]
+                item = ChangelogItem(
+                    id=f"{repo.replace('/', '-')}-{release['tag_name']}",
+                    type="release",
+                    title=f"{repo.split('/')[-1]} {release['tag_name']}",
+                    url=release["url"],
+                    published_date=release["published_at"],
+                    discovered_date=datetime.now().isoformat(),
+                )
+                new_items.append(item)
+                existing_urls.add(release["url"])
 
-        # Fetch recent commits (if no recent check)
-        # TODO: Implement commit tracking (Phase 2)
+            if releases:
+                repo_tracking.latest_release = releases[0]["tag_name"]
+
+        if spec.get("track_commits", False):
+            commits = self._fetch_commits(
+                repo=repo,
+                since=repo_tracking.last_checked,
+                max_commits=spec.get("max_commits", 20),
+            )
+
+            if commits:
+                repo_tracking.latest_commit = commits[0]["sha"]
+
+            if repo_tracking.last_checked is None:
+                # Bootstrap without flooding initial backlogs.
+                commits = commits[: spec.get("bootstrap_commits", 0)]
+
+            for commit in commits:
+                if commit["url"] in existing_urls:
+                    continue
+
+                item = ChangelogItem(
+                    id=f"{repo.replace('/', '-')}-commit-{commit['sha'][:10]}",
+                    type="commit",
+                    title=commit["title"],
+                    url=commit["url"],
+                    published_date=commit["published_at"],
+                    discovered_date=datetime.now().isoformat(),
+                )
+                new_items.append(item)
+                existing_urls.add(commit["url"])
 
         return new_items
 
-    def _fetch_releases(self, repo: str) -> List[Dict[str, Any]]:
+    def _fetch_releases(
+        self,
+        repo: str,
+        max_releases: int = 10,
+        release_tag_prefixes: Optional[List[str]] = None,
+    ) -> List[Dict[str, Any]]:
         """Fetch releases from GitHub API.
 
         Args:
             repo: Repository name (owner/repo)
+            max_releases: Maximum number of releases to fetch
+            release_tag_prefixes: Optional list of allowed tag prefixes
 
         Returns:
             List of release dicts
         """
         try:
             result = subprocess.run(
-                ["gh", "api", f"/repos/{repo}/releases", "--jq", ".[0:10]"],
+                ["gh", "api", f"/repos/{repo}/releases", "--jq", f".[0:{max_releases}]"],
                 capture_output=True,
                 text=True,
                 timeout=30,
@@ -409,20 +497,105 @@ class UpstreamTracker:
             if result.returncode == 0:
                 releases = json.loads(result.stdout)
                 # Filter to essential fields
-                return [
-                    {
-                        "tag_name": r.get("tag_name", ""),
-                        "name": r.get("name", ""),
-                        "published_at": r.get("published_at", ""),
-                        "url": r.get("html_url", ""),
-                        "body": r.get("body", ""),
-                    }
-                    for r in releases
-                ]
+                filtered = []
+                for release in releases:
+                    tag_name = release.get("tag_name", "")
+                    if release_tag_prefixes and not any(
+                        tag_name.startswith(prefix) for prefix in release_tag_prefixes
+                    ):
+                        continue
+
+                    filtered.append(
+                        {
+                            "tag_name": tag_name,
+                            "name": release.get("name", ""),
+                            "published_at": release.get("published_at", ""),
+                            "url": release.get("html_url", ""),
+                            "body": release.get("body", ""),
+                        }
+                    )
+                return filtered
             else:
                 return []
         except Exception:
             return []
+
+    def _fetch_commits(
+        self,
+        repo: str,
+        since: Optional[str] = None,
+        max_commits: int = 20,
+    ) -> List[Dict[str, Any]]:
+        """Fetch commits from GitHub API.
+
+        Args:
+            repo: Repository name (owner/repo)
+            since: Optional ISO timestamp for incremental checks
+            max_commits: Maximum number of commits to fetch
+
+        Returns:
+            List of commit dicts
+        """
+        endpoint = f"/repos/{repo}/commits?sha=main&per_page={max_commits}"
+        normalized_since = self._format_since_for_github(since)
+        if normalized_since:
+            endpoint = f"{endpoint}&since={quote(normalized_since, safe='')}"
+
+        try:
+            result = subprocess.run(
+                ["gh", "api", endpoint, "--jq", f".[0:{max_commits}]"],
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            if result.returncode != 0:
+                return []
+
+            commits = json.loads(result.stdout)
+            formatted: List[Dict[str, Any]] = []
+            for commit in commits:
+                sha = commit.get("sha", "")
+                message = (commit.get("commit", {}).get("message") or "").strip()
+                if not sha or not message:
+                    continue
+
+                title = message.splitlines()[0]
+                published_at = (
+                    commit.get("commit", {}).get("author", {}).get("date")
+                    or commit.get("commit", {}).get("committer", {}).get("date")
+                    or ""
+                )
+                url = commit.get("html_url", "")
+                if not url:
+                    continue
+
+                formatted.append(
+                    {
+                        "sha": sha,
+                        "title": f"{repo.split('/')[-1]} commit: {title}",
+                        "published_at": published_at,
+                        "url": url,
+                    }
+                )
+
+            return formatted
+        except Exception:
+            return []
+
+    @staticmethod
+    def _format_since_for_github(since: Optional[str]) -> Optional[str]:
+        """Convert local ISO timestamp to GitHub API-compatible UTC timestamp."""
+        if not since:
+            return None
+        try:
+            parsed = datetime.fromisoformat(since)
+            if parsed.tzinfo is None:
+                parsed = parsed.replace(tzinfo=timezone.utc)
+            else:
+                parsed = parsed.astimezone(timezone.utc)
+            return parsed.isoformat(timespec="seconds").replace("+00:00", "Z")
+        except ValueError:
+            return None
 
     def list_items(
         self, status_filter: Optional[str] = None, repo_filter: Optional[str] = None
@@ -430,7 +603,7 @@ class UpstreamTracker:
         """List tracked changelog items.
 
         Args:
-            status_filter: Filter by status (pending_research, researched, synthesized)
+            status_filter: Filter by status (supports aliases like "pending")
             repo_filter: Filter by repository name
 
         Returns:
@@ -438,6 +611,7 @@ class UpstreamTracker:
         """
         tracking = self._load_tracking()
         items = []
+        normalized_filter = self.normalize_status(status_filter)
 
         for repo, repo_data in tracking["repositories"].items():
             if repo_filter and repo != repo_filter:
@@ -446,7 +620,7 @@ class UpstreamTracker:
             repo_tracking = RepositoryTracking.from_dict(repo, repo_data)
 
             for item in repo_tracking.changelog_items:
-                if status_filter and item.status != status_filter:
+                if normalized_filter and item.status != normalized_filter:
                     continue
 
                 items.append(item)
@@ -507,10 +681,12 @@ class UpstreamTracker:
                 if item_data["id"] == item_id:
                     # Update fields
                     if status is not None:
-                        item_data["status"] = status
+                        item_data["status"] = self.normalize_status(status)
 
                         # Set research date when status changes to researched
-                        if status == STATUS_RESEARCHED and not item_data.get("research_date"):
+                        if item_data["status"] == STATUS_RESEARCHED and not item_data.get(
+                            "research_date"
+                        ):
                             item_data["research_date"] = datetime.now().isoformat()
 
                     if research_summary is not None:

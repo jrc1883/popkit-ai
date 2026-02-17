@@ -1,5 +1,5 @@
 ---
-description: 'work #N | brainstorm | plan | execute | prd | suite | "description" [--mode quick|full] [-T, --power]'
+description: 'work #N | brainstorm | plan | execute | prd | suite | "description" [--mode quick|full] [--provider auto|popkit|feature-dev] [-T, --power]'
 argument-hint: "[subcommand|description] [flags]"
 ---
 
@@ -18,6 +18,7 @@ Unified entry point for development workflows.
 /popkit-dev:dev plan "feature"           # Write plan
 /popkit-dev:dev execute                  # Run plan
 /popkit-dev:dev "task" --mode quick      # Override
+/popkit-dev:dev "task" --provider feature-dev
 ```
 
 ## Subcommands
@@ -45,6 +46,7 @@ Unified entry point for development workflows.
 | Flag               | Short | Description          |
 | ------------------ | ----- | -------------------- |
 | `--mode`           |       | `quick` or `full`    |
+| `--provider`       |       | `auto`, `popkit`, `feature-dev` |
 | `--thinking`       | `-T`  | Extended thinking    |
 | `--think-budget N` |       | Token budget (10000) |
 | `--from FILE`      |       | From design/plan     |
@@ -60,6 +62,20 @@ Unified entry point for development workflows.
 **Full:** Complex, architecture, multi-domain
 
 Details: `commands/examples/dev/routing-examples.md`
+
+### Provider Strategy (Issue #218)
+
+`--provider auto` (default) uses first-principles resolution:
+
+1. Choose the simplest provider that satisfies required capabilities.
+2. Prefer official upstream for commodity flows.
+3. Require PopKit when workflow needs PopKit-only orchestration.
+4. Reassess when failure rate or cycle time regresses.
+
+Use explicit overrides for experimentation:
+
+- `--provider popkit` - force native PopKit orchestration
+- `--provider feature-dev` - force upstream workflow (fallback to PopKit if unavailable)
 
 ---
 
