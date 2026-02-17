@@ -82,6 +82,25 @@ Implementation references:
 - `packages/shared-py/popkit_shared/utils/dev_provider_resolver.py`
 - `packages/shared-py/popkit_shared/utils/dev_workflow_router.py`
 
+### Provider Preflight (Required for `quick|full|work`)
+
+Before executing implementation steps, run the provider preflight:
+
+```bash
+python packages/shared-py/popkit_shared/utils/dev_workflow_router.py \
+  --task "<description>" \
+  --mode <quick|full> \
+  --provider <auto|popkit|feature-dev> \
+  [--issue N] \
+  --format display
+```
+
+Then route execution using preflight output:
+
+1. If selected provider is `feature-dev`, run `/popkit:feature-dev` and keep the printed `fallback_command` ready.
+2. If selected provider is `popkit`, continue native `/popkit-dev:dev ... --provider popkit` flow.
+3. Always preserve rationale in the final summary to support reassessment.
+
 ---
 
 ## Mode: full
@@ -198,6 +217,9 @@ Generate complete docs:
 ## Executables
 
 ```bash
+# Provider preflight (Issue #218)
+python packages/shared-py/popkit_shared/utils/dev_workflow_router.py --task "<description>" --mode <quick|full> --provider <auto|popkit|feature-dev> --format display
+
 # Full
 Use Task tool (Explore|Plan|code-reviewer)
 git worktree add .worktrees/feature-<name> -b feature/<name>
