@@ -394,12 +394,12 @@ User can disable with:
 
 ## Architecture
 
-| Component           | Location                              | Purpose             |
-| ------------------- | ------------------------------------- | ------------------- |
-| Command Definition  | commands/upstream.md                  | This file           |
+| Component           | Location                                                   | Purpose             |
+| ------------------- | ---------------------------------------------------------- | ------------------- |
+| Command Definition  | commands/upstream.md                                       | This file           |
 | Tracking Utility    | packages/shared-py/popkit_shared/utils/upstream_tracker.py | Core tracking logic |
-| Data Storage        | .claude/popkit/upstream-tracking.json | Persistent state    |
-| Morning Integration | commands/routine.md                   | Auto-check support  |
+| Data Storage        | .claude/popkit/upstream-tracking.json                      | Persistent state    |
+| Morning Integration | commands/routine.md                                        | Auto-check support  |
 
 **Related:**
 

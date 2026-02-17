@@ -43,16 +43,16 @@ Unified entry point for development workflows.
 
 ## Flags
 
-| Flag               | Short | Description          |
-| ------------------ | ----- | -------------------- |
-| `--mode`           |       | `quick` or `full`    |
+| Flag               | Short | Description                     |
+| ------------------ | ----- | ------------------------------- |
+| `--mode`           |       | `quick` or `full`               |
 | `--provider`       |       | `auto`, `popkit`, `feature-dev` |
-| `--thinking`       | `-T`  | Extended thinking    |
-| `--think-budget N` |       | Token budget (10000) |
-| `--from FILE`      |       | From design/plan     |
-| `--issue N`        |       | Reference issue      |
-| `--power`          | `-p`  | Power Mode           |
-| `--solo`           | `-s`  | Sequential           |
+| `--thinking`       | `-T`  | Extended thinking               |
+| `--think-budget N` |       | Token budget (10000)            |
+| `--from FILE`      |       | From design/plan                |
+| `--issue N`        |       | Reference issue                 |
+| `--power`          | `-p`  | Power Mode                      |
+| `--solo`           | `-s`  | Sequential                      |
 
 ---
 
