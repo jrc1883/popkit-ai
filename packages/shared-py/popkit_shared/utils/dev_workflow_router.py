@@ -7,17 +7,35 @@ Builds an executable plan from provider resolution:
 - delegated feature-dev path with PopKit fallback
 """
 
+import argparse
+import json
+import sys
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, List, Optional
 
-from .dev_provider_resolver import (
-    DevProvider,
-    DevProviderResolver,
-    ProviderAvailability,
-    ProviderContext,
-    ProviderDecision,
-    detect_feature_dev_plugin,
-)
+try:
+    from .dev_provider_resolver import (
+        DevProvider,
+        DevProviderResolver,
+        ProviderAvailability,
+        ProviderContext,
+        ProviderDecision,
+        detect_feature_dev_plugin,
+    )
+except ImportError:
+    # Support direct script execution via `python path/to/dev_workflow_router.py`.
+    shared_py_root = Path(__file__).resolve().parents[2]
+    if str(shared_py_root) not in sys.path:
+        sys.path.insert(0, str(shared_py_root))
+    from popkit_shared.utils.dev_provider_resolver import (  # type: ignore[no-redef]
+        DevProvider,
+        DevProviderResolver,
+        ProviderAvailability,
+        ProviderContext,
+        ProviderDecision,
+        detect_feature_dev_plugin,
+    )
 
 VALID_MODES = {"quick", "full"}
 
@@ -31,6 +49,15 @@ def _normalize_mode(mode: str) -> str:
 
 def _escape_for_double_quotes(value: str) -> str:
     return value.replace('"', '\\"')
+
+
+def _normalize_requested_provider(value: str) -> DevProvider:
+    normalized = (value or "").strip().lower().replace("_", "-")
+    if normalized in {"featuredev", "feature-dev"}:
+        return DevProvider.FEATURE_DEV
+    if normalized == DevProvider.POPKIT.value:
+        return DevProvider.POPKIT
+    return DevProvider.AUTO
 
 
 @dataclass(frozen=True)
@@ -134,3 +161,123 @@ class DevWorkflowRouter:
             target = f'"{task_text}"'
 
         return f"/popkit-dev:dev {target} --mode {mode} --provider popkit"
+
+
+def format_plan_display(plan: DevWorkflowPlan) -> str:
+    """Format a plan for human-readable command preflight output."""
+    lines = [
+        "## Provider Preflight",
+        f"Selected provider: {plan.decision.selected_provider.value}",
+        f"Execution mode: {plan.execution_mode}",
+        f"Primary command: {plan.primary_command}",
+    ]
+    if plan.fallback_command:
+        lines.append(f"Fallback command: {plan.fallback_command}")
+    if plan.notes:
+        lines.append("")
+        lines.append("Notes:")
+        lines.extend(f"- {note}" for note in plan.notes)
+    if plan.decision.rationale:
+        lines.append("")
+        lines.append("Rationale:")
+        lines.extend(f"- {reason}" for reason in plan.decision.rationale)
+    return "\n".join(lines)
+
+
+def _load_plugins_json(path: Optional[str]) -> Optional[Any]:
+    if not path:
+        return None
+
+    raw = Path(path).read_text(encoding="utf-8")
+    payload = json.loads(raw)
+    if isinstance(payload, dict) and isinstance(payload.get("plugins"), list):
+        return payload["plugins"]
+    return payload
+
+
+def main(argv: Optional[List[str]] = None) -> int:
+    parser = argparse.ArgumentParser(
+        description="Resolve and plan hybrid PopKit/feature-dev workflow execution."
+    )
+    parser.add_argument("--task", default="", help="Task description for dev workflow.")
+    parser.add_argument(
+        "--issue",
+        dest="issue_number",
+        type=int,
+        help="Issue number for `work #N` routing.",
+    )
+    parser.add_argument(
+        "--mode",
+        default="full",
+        help="Workflow mode: quick|full (invalid values normalize to full).",
+    )
+    parser.add_argument(
+        "--provider",
+        default=DevProvider.AUTO.value,
+        help="Requested provider: auto|popkit|feature-dev.",
+    )
+    parser.add_argument(
+        "--allow-upstream",
+        dest="allow_upstream",
+        action="store_true",
+        default=True,
+        help="Allow delegated upstream provider usage.",
+    )
+    parser.add_argument(
+        "--no-allow-upstream",
+        dest="allow_upstream",
+        action="store_false",
+        help="Force PopKit-only execution for this invocation.",
+    )
+    parser.add_argument(
+        "--requires-popkit-orchestration",
+        action="store_true",
+        help="Mark task as requiring PopKit-specific orchestration capabilities.",
+    )
+    parser.add_argument(
+        "--requires-github-cache",
+        action="store_true",
+        help="Mark task as requiring PopKit GitHub cache guidance capabilities.",
+    )
+    parser.add_argument(
+        "--plugins-json",
+        help="Optional plugin scan JSON path for deterministic availability checks.",
+    )
+    parser.add_argument(
+        "--format",
+        choices=["display", "json"],
+        default="display",
+        help="Output format.",
+    )
+
+    args = parser.parse_args(argv)
+
+    try:
+        plugin_scan_data = _load_plugins_json(args.plugins_json)
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"Failed to load plugins JSON: {exc}", file=sys.stderr)
+        return 2
+
+    router = DevWorkflowRouter()
+    request = DevWorkflowRequest(
+        task=args.task or "",
+        mode=args.mode,
+        issue_number=args.issue_number,
+        requested_provider=_normalize_requested_provider(args.provider),
+        allow_upstream=args.allow_upstream,
+        requires_popkit_orchestration=args.requires_popkit_orchestration,
+        requires_github_cache=args.requires_github_cache,
+    )
+
+    plan = router.build_plan(request, plugin_scan_data=plugin_scan_data)
+
+    if args.format == "json":
+        print(json.dumps(plan.to_dict(), indent=2))
+    else:
+        print(format_plan_display(plan))
+
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

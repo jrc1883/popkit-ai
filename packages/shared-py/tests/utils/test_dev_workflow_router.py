@@ -1,7 +1,14 @@
 """Tests for dev_workflow_router.py (Issue #218)."""
 
+import json
+
 from popkit_shared.utils.dev_provider_resolver import DevProvider
-from popkit_shared.utils.dev_workflow_router import DevWorkflowRequest, DevWorkflowRouter
+from popkit_shared.utils.dev_workflow_router import (
+    DevWorkflowRequest,
+    DevWorkflowRouter,
+    format_plan_display,
+    main,
+)
 
 
 def test_build_plan_auto_prefers_feature_dev_for_commodity_paths():
@@ -83,3 +90,49 @@ def test_build_plan_normalizes_invalid_mode_to_full():
     plan = router.build_plan(request, plugin_scan_data=[])
 
     assert "--mode full" in plan.primary_command
+
+
+def test_format_plan_display_includes_fallback_for_delegated_plan():
+    router = DevWorkflowRouter()
+    request = DevWorkflowRequest(task="add auth", requested_provider=DevProvider.AUTO)
+    plan = router.build_plan(request, plugin_scan_data=[{"name": "feature-dev"}])
+
+    output = format_plan_display(plan)
+
+    assert "Selected provider: feature-dev" in output
+    assert "Primary command: /popkit:feature-dev" in output
+    assert "Fallback command:" in output
+
+
+def test_main_json_output_uses_plugins_json_file(tmp_path, capsys):
+    plugins_file = tmp_path / "plugins.json"
+    plugins_file.write_text('[{"name":"feature-dev"}]', encoding="utf-8")
+
+    exit_code = main(
+        [
+            "--task",
+            "add telemetry",
+            "--provider",
+            "auto",
+            "--plugins-json",
+            str(plugins_file),
+            "--format",
+            "json",
+        ]
+    )
+
+    assert exit_code == 0
+    captured = capsys.readouterr()
+    data = json.loads(captured.out)
+    assert data["decision"]["selected_provider"] == "feature-dev"
+
+
+def test_main_returns_error_for_invalid_plugins_json(tmp_path, capsys):
+    plugins_file = tmp_path / "bad-plugins.json"
+    plugins_file.write_text("{", encoding="utf-8")
+
+    exit_code = main(["--task", "fix auth", "--plugins-json", str(plugins_file)])
+
+    assert exit_code == 2
+    captured = capsys.readouterr()
+    assert "Failed to load plugins JSON" in captured.err
