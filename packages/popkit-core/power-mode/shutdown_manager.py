@@ -119,7 +119,7 @@ class GracefulShutdownManager:
         if self.message_dispatcher:
             dispatch_result = self.message_dispatcher(agent, message)
             if inspect.isawaitable(dispatch_result):
-                await dispatch_result
+                _ = await dispatch_result
 
         return message
 
@@ -286,7 +286,7 @@ class GracefulShutdownManager:
 
         cleanup_result = self.cleanup_callback()
         if inspect.isawaitable(cleanup_result):
-            await cleanup_result
+            _ = await cleanup_result
 
         summary.cleanup_called = True
         summary.events.append("cleanup:callback")
