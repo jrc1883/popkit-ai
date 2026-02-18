@@ -60,6 +60,7 @@ Trial Success Criteria:
 
 import json
 import os
+import subprocess
 import sys
 import uuid
 from datetime import datetime, timezone
@@ -170,7 +171,9 @@ class BenchmarkRunner:
 
         # Validate success rate
         success_rate = len(recordings) / self.trials
-        self._log(f"\n[INFO] Completed {len(recordings)}/{self.trials} trials successfully")
+        self._log(
+            f"\n[INFO] Completed {len(recordings)}/{self.trials} trials successfully"
+        )
         self._log(f"[INFO] Success rate: {success_rate:.1%}")
 
         if success_rate < 0.5:
@@ -225,7 +228,9 @@ class BenchmarkRunner:
 
         # Validate success rate
         success_rate = len(recordings) / self.trials
-        self._log(f"\n[INFO] Completed {len(recordings)}/{self.trials} trials successfully")
+        self._log(
+            f"\n[INFO] Completed {len(recordings)}/{self.trials} trials successfully"
+        )
         self._log(f"[INFO] Success rate: {success_rate:.1%}")
 
         if success_rate < 0.5:
@@ -236,7 +241,9 @@ class BenchmarkRunner:
         self.baseline_recordings = recordings
         return recordings
 
-    def _execute_trial(self, trial_num: int, with_popkit: bool, baseline: bool) -> Optional[Path]:
+    def _execute_trial(
+        self, trial_num: int, with_popkit: bool, baseline: bool
+    ) -> Optional[Path]:
         """
         Execute a single benchmark trial.
 
@@ -287,7 +294,9 @@ class BenchmarkRunner:
 
             # Step 4: Collect recording
             self._log("[4/5] Collecting recording...")
-            recording_path = self._collect_recording(session_id, with_popkit=with_popkit)
+            recording_path = self._collect_recording(
+                session_id, with_popkit=with_popkit
+            )
 
             if not recording_path:
                 self._log(f"[WARN] Recording not found for session {session_id}")
@@ -375,7 +384,9 @@ class BenchmarkRunner:
         # PopKit configuration
         if not with_popkit:
             # Disable PopKit plugins for baseline
-            env["CLAUDE_DISABLE_PLUGINS"] = "popkit-core,popkit-dev,popkit-ops,popkit-research"
+            env["CLAUDE_DISABLE_PLUGINS"] = (
+                "popkit-core,popkit-dev,popkit-ops,popkit-research"
+            )
             self._log("[INFO] PopKit plugins disabled (baseline mode)")
 
         self._log(f"[INFO] Session ID: {session_id}")
@@ -383,7 +394,9 @@ class BenchmarkRunner:
 
         return env
 
-    def _execute_task(self, worktree_path: Path, env: Dict[str, str], session_id: str) -> bool:
+    def _execute_task(
+        self, worktree_path: Path, env: Dict[str, str], session_id: str
+    ) -> bool:
         """
         Execute the benchmark task in the worktree.
 
@@ -443,14 +456,18 @@ class BenchmarkRunner:
                 self._log("[SUCCESS] Claude Code completed (exit code 0)")
                 return True
             else:
-                self._log(f"[WARN] Claude Code failed with exit code {result.returncode}")
+                self._log(
+                    f"[WARN] Claude Code failed with exit code {result.returncode}"
+                )
                 return False
 
         except subprocess.TimeoutExpired:
             self._log(f"[ERROR] Claude Code execution timed out after {timeout}s")
             return False
         except FileNotFoundError:
-            self._log("[ERROR] 'claude' command not found. Is Claude Code installed and in PATH?")
+            self._log(
+                "[ERROR] 'claude' command not found. Is Claude Code installed and in PATH?"
+            )
             return False
         except Exception as e:
             self._log(f"[ERROR] Failed to execute Claude Code: {e}")
@@ -499,7 +516,9 @@ class BenchmarkRunner:
 
         self._log(f"[MOCK] Created recording: {recording_path}")
 
-    def _collect_recording(self, session_id: str, with_popkit: bool = True) -> Optional[Path]:
+    def _collect_recording(
+        self, session_id: str, with_popkit: bool = True
+    ) -> Optional[Path]:
         """
         Collect recording file for the given session.
 
@@ -513,6 +532,18 @@ class BenchmarkRunner:
         Returns:
             Path to recording file, or None if not found
         """
+        # In TEST_MODE, both configurations write mock PopKit-style JSON recordings.
+        if os.getenv("TEST_MODE") == "true":
+            for recording_file in self.recordings_dir.glob("*.json"):
+                try:
+                    with open(recording_file, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                        if data.get("session_id") == session_id:
+                            self._log(f"[INFO] Found mock recording: {recording_file}")
+                            return recording_file
+                except (json.JSONDecodeError, IOError):
+                    continue
+
         if with_popkit:
             # WITH PopKit: Look in PopKit recordings directory
             for recording_file in self.recordings_dir.glob("*.json"):
@@ -520,7 +551,9 @@ class BenchmarkRunner:
                     with open(recording_file, "r", encoding="utf-8") as f:
                         data = json.load(f)
                         if data.get("session_id") == session_id:
-                            self._log(f"[INFO] Found PopKit recording: {recording_file}")
+                            self._log(
+                                f"[INFO] Found PopKit recording: {recording_file}"
+                            )
                             return recording_file
                 except (json.JSONDecodeError, IOError):
                     continue
@@ -545,7 +578,9 @@ class BenchmarkRunner:
                         # Claude Code JSONL files don't have a session_id field like PopKit,
                         # so we check the filename or first entry
                         if session_id in jsonl_file.stem:
-                            self._log(f"[INFO] Found Claude JSONL transcript: {jsonl_file}")
+                            self._log(
+                                f"[INFO] Found Claude JSONL transcript: {jsonl_file}"
+                            )
                             return jsonl_file
 
                         # Alternative: Check first line for session info
@@ -554,7 +589,9 @@ class BenchmarkRunner:
                             if first_line.strip():
                                 entry = json.loads(first_line)
                                 if session_id in entry.get("sessionId", ""):
-                                    self._log(f"[INFO] Found Claude JSONL transcript: {jsonl_file}")
+                                    self._log(
+                                        f"[INFO] Found Claude JSONL transcript: {jsonl_file}"
+                                    )
                                     return jsonl_file
                     except (json.JSONDecodeError, IOError):
                         continue
@@ -619,7 +656,9 @@ class BenchmarkRunner:
                     self._log("[WARN] Missing session_end event")
                     return False
 
-                self._log(f"[INFO] PopKit JSON verification passed ({len(data['events'])} events)")
+                self._log(
+                    f"[INFO] PopKit JSON verification passed ({len(data['events'])} events)"
+                )
                 return True
 
         except (json.JSONDecodeError, IOError) as e:
@@ -669,9 +708,15 @@ def main():
 
     parser = argparse.ArgumentParser(description="Benchmark Runner")
     parser.add_argument("task_file", help="Path to task YAML file")
-    parser.add_argument("--trials", type=int, default=3, help="Number of trials (default: 3)")
-    parser.add_argument("--config", choices=["all", "popkit", "baseline"], default="all")
-    parser.add_argument("--cleanup", action="store_true", help="Cleanup worktrees after run")
+    parser.add_argument(
+        "--trials", type=int, default=3, help="Number of trials (default: 3)"
+    )
+    parser.add_argument(
+        "--config", choices=["all", "popkit", "baseline"], default="all"
+    )
+    parser.add_argument(
+        "--cleanup", action="store_true", help="Cleanup worktrees after run"
+    )
     parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
     parser.add_argument(
         "--test-mode", action="store_true", help="Enable test mode (mock execution)"

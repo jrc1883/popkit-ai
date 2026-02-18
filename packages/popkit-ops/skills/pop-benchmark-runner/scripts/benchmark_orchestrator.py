@@ -46,6 +46,14 @@ from report_generator import ReportGenerator
 class BenchmarkOrchestrator:
     """Orchestrates parallel benchmark trials in separate windows."""
 
+    TASK_CATEGORIES = (
+        "feature-addition",
+        "bug-fixing",
+        "refactoring",
+        "code-review",
+        "performance",
+    )
+
     def __init__(
         self,
         task_id: str,
@@ -78,6 +86,7 @@ class BenchmarkOrchestrator:
         self.claude_projects_dir = Path.home() / ".claude" / "projects"
 
         # Task definition
+        self.task_definition_path: Optional[Path] = None
         self.task_def = self._load_task_definition()
 
         # Response file
@@ -91,40 +100,82 @@ class BenchmarkOrchestrator:
         self.completed_sessions: List[str] = []
         self.failed_sessions: List[str] = []
 
+    def _candidate_task_paths(self) -> List[Path]:
+        """Build candidate task definition paths for both flat and nested layouts."""
+        task_paths: List[Path] = []
+        tasks_root = Path("packages/popkit-ops/tasks")
+
+        for category in self.TASK_CATEGORIES:
+            category_dir = tasks_root / category
+            task_paths.append(category_dir / f"{self.task_id}.yml")
+            task_paths.append(category_dir / self.task_id / "task.yml")
+
+        # Backward-compatible local tasks layout.
+        task_paths.append(Path("tasks") / f"{self.task_id}.yml")
+        task_paths.append(Path("tasks") / self.task_id / "task.yml")
+        return task_paths
+
+    def _candidate_response_paths(self) -> List[Path]:
+        """Build candidate response file paths, preferring alongside loaded task definition."""
+        response_paths: List[Path] = []
+
+        if self.task_definition_path:
+            if self.task_definition_path.name == "task.yml":
+                response_paths.append(
+                    self.task_definition_path.parent / "responses.json"
+                )
+            else:
+                response_paths.append(
+                    self.task_definition_path.with_name(
+                        f"{self.task_id}-responses.json"
+                    )
+                )
+
+        tasks_root = Path("packages/popkit-ops/tasks")
+        for category in self.TASK_CATEGORIES:
+            category_dir = tasks_root / category
+            response_paths.append(category_dir / f"{self.task_id}-responses.json")
+            response_paths.append(category_dir / self.task_id / "responses.json")
+
+        # Backward-compatible local tasks layout.
+        response_paths.append(Path("tasks") / f"{self.task_id}-responses.json")
+        response_paths.append(Path("tasks") / self.task_id / "responses.json")
+
+        # Preserve order, remove duplicates.
+        unique_paths: List[Path] = []
+        seen = set()
+        for path in response_paths:
+            normalized = str(path)
+            if normalized in seen:
+                continue
+            seen.add(normalized)
+            unique_paths.append(path)
+
+        return unique_paths
+
     def _load_task_definition(self) -> dict:
         """Load task definition from YAML file."""
-        # Try multiple locations
-        task_paths = [
-            Path("packages/popkit-ops/tasks/feature-addition") / self.task_id / "task.yml",
-            Path("packages/popkit-ops/tasks/bug-fixing") / self.task_id / "task.yml",
-            Path("packages/popkit-ops/tasks/refactoring") / self.task_id / "task.yml",
-            Path("packages/popkit-ops/tasks/performance") / self.task_id / "task.yml",
-            Path("tasks") / self.task_id / "task.yml",
-        ]
+        import yaml
 
-        for path in task_paths:
-            if path.exists():
-                import yaml
+        for path in self._candidate_task_paths():
+            if not path.exists():
+                continue
 
-                with open(path) as f:
-                    return yaml.safe_load(f)
+            with open(path, encoding="utf-8") as f:
+                task_def = yaml.safe_load(f)
+
+            self.task_definition_path = path
+            if isinstance(task_def, dict):
+                task_def["__task_path__"] = str(path)
+            return task_def
 
         raise FileNotFoundError(f"Task definition not found for: {self.task_id}")
 
     def _find_response_file(self) -> Optional[Path]:
         """Find response file for task."""
-        response_paths = [
-            Path("packages/popkit-ops/tasks/feature-addition") / self.task_id / "responses.json",
-            Path("packages/popkit-ops/tasks/bug-fixing") / self.task_id / "responses.json",
-            Path("packages/popkit-ops/tasks/refactoring") / self.task_id / "responses.json",
-            Path("packages/popkit-ops/tasks/performance") / self.task_id / "responses.json",
-            Path("tasks") / self.task_id / "responses.json",
-        ]
-
-        for path in response_paths:
+        for path in self._candidate_response_paths():
             if path.exists():
                 return path
-
         return None
 
     def run(self) -> Path:
@@ -198,7 +249,9 @@ class BenchmarkOrchestrator:
         config_label = "with" if with_popkit else "base"
         session_id = f"{self.task_id}-{config_label}-{trial_num}"
 
-        self._print(f"▶ Trial {trial_num} {'WITH PopKit' if with_popkit else 'BASELINE'}")
+        self._print(
+            f"▶ Trial {trial_num} {'WITH PopKit' if with_popkit else 'BASELINE'}"
+        )
         self._print(f"  Session ID: {session_id}")
 
         # Create worktree
@@ -286,11 +339,15 @@ Work efficiently and complete the task without human intervention.
 
         # Disable PopKit for baseline
         if not with_popkit:
-            env["CLAUDE_DISABLE_PLUGINS"] = "popkit-core,popkit-dev,popkit-ops,popkit-research"
+            env["CLAUDE_DISABLE_PLUGINS"] = (
+                "popkit-core,popkit-dev,popkit-ops,popkit-research"
+            )
 
         return env
 
-    def _spawn_window(self, prompt: str, env: Dict[str, str], worktree_path: Path, session_id: str):
+    def _spawn_window(
+        self, prompt: str, env: Dict[str, str], worktree_path: Path, session_id: str
+    ):
         """Spawn new Claude Code window (platform-specific)."""
         # Escape prompt for shell
         escaped_prompt = prompt.replace('"', '\\"').replace("'", "\\'")
@@ -378,7 +435,9 @@ Work efficiently and complete the task without human intervention.
                 # Check for recording
                 recording_path = self._find_recording(session_id)
                 if recording_path and self._is_complete(recording_path):
-                    duration = time.time() - self.active_sessions[session_id]["started_at"]
+                    duration = (
+                        time.time() - self.active_sessions[session_id]["started_at"]
+                    )
                     self._print(f"  ✓ {session_id} completed ({duration:.0f}s)")
                     completed.add(session_id)
                     self.completed_sessions.append(session_id)
@@ -496,7 +555,8 @@ Work efficiently and complete the task without human intervention.
     def _print(self, message: str):
         """Print message if verbose or always for important messages."""
         if self.verbose or any(
-            x in message for x in ["▶", "✓", "✅", "🚀", "🎉", "📊", "[ERROR]", "[WARN]"]
+            x in message
+            for x in ["▶", "✓", "✅", "🚀", "🎉", "📊", "[ERROR]", "[WARN]"]
         ):
             print(message)
             sys.stdout.flush()
@@ -508,7 +568,9 @@ def main():
 
     parser = argparse.ArgumentParser(description="PopKit Benchmark Orchestrator")
     parser.add_argument("task_id", help="Task identifier (e.g., jwt-authentication)")
-    parser.add_argument("--trials", type=int, default=3, help="Trials per configuration")
+    parser.add_argument(
+        "--trials", type=int, default=3, help="Trials per configuration"
+    )
     parser.add_argument(
         "--sequential",
         action="store_true",

@@ -1,0 +1,30 @@
+id: todo-app-vibe
+category: feature-addition
+description: Implement a todo app from an intentionally vague prompt
+codebase: demo-app-react
+initial_state: main
+difficulty: medium
+
+user_prompt: |
+  make a todo app. it should let you add and remove todos and save them.
+
+expected_files:
+  - "src/App.tsx"
+  - "src/components/TodoList.tsx"
+  - "src/components/TodoItem.tsx"
+  - "src/utils/todoStorage.ts"
+  - "tests/todo-app.test.tsx"
+
+verification:
+  - npm test
+  - npm run lint
+  - npx tsc --noEmit
+
+expected_outcomes:
+  - "Users can add todos"
+  - "Users can remove todos"
+  - "Todos persist across reloads"
+  - "All tests pass"
+  - "No linting errors"
+
+estimated_duration_minutes: 8

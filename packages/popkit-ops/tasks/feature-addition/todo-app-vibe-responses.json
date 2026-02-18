@@ -1,0 +1,17 @@
+{
+  "responses": {
+    "Preferred stack": "React with TypeScript",
+    "Persistence method": "localStorage",
+    "Todo model": "Each todo has id, text, and completed fields",
+    "UI scope": "Keep UI minimal and functional",
+    "Testing approach": "Use Jest and React Testing Library"
+  },
+  "standardAutoApprove": [
+    "install.*dependencies",
+    "npm.*install",
+    "run.*tests",
+    "lint.*fix",
+    "format.*code"
+  ],
+  "explicitDeclines": []
+}
