@@ -1,0 +1,32 @@
+id: bug-fix-vibe
+category: bug-fixing
+description: Fix an ambiguous shopping cart bug from sparse error context
+codebase: demo-app-node
+initial_state: main
+difficulty: medium
+
+user_prompt: |
+  shopping cart is broken. getting this error:
+
+  Error: Should still have 1 item
+
+  fix it plz
+
+expected_files:
+  - "src/cart/cart.service.ts"
+  - "src/cart/cart.reducer.ts"
+  - "tests/cart/cart.service.test.ts"
+
+verification:
+  - npm test
+  - npm run lint
+  - npx tsc --noEmit
+
+expected_outcomes:
+  - "Failing cart test is fixed"
+  - "Cart item count updates correctly"
+  - "No regressions in cart behavior"
+  - "All tests pass"
+  - "No linting errors"
+
+estimated_duration_minutes: 8

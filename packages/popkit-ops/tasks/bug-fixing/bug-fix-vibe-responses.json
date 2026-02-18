@@ -1,0 +1,17 @@
+{
+  "responses": {
+    "Priority": "Fix the failing shopping cart behavior first",
+    "Likely root cause": "Incorrect state update when removing cart items",
+    "Fix strategy": "Use immutable updates and validate quantity math",
+    "Regression scope": "Run full cart test suite after fix",
+    "Assumption policy": "If details are missing, choose smallest safe fix"
+  },
+  "standardAutoApprove": [
+    "install.*dependencies",
+    "npm.*install",
+    "run.*tests",
+    "lint.*fix",
+    "format.*code"
+  ],
+  "explicitDeclines": []
+}

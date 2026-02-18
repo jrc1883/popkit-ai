@@ -78,7 +78,8 @@ This command invokes the `pop-benchmark-runner` skill to execute the benchmark w
 
 2. **The skill will orchestrate trials in separate windows:**
    - Load task definition from `packages/popkit-ops/tasks/<category>/<task-id>.yml`
-   - Load response file from `packages/popkit-ops/tasks/<category>/<task-id>/responses.json`
+   - Load response file from `packages/popkit-ops/tasks/<category>/<task-id>-responses.json`
+     (or legacy `packages/popkit-ops/tasks/<category>/<task-id>/responses.json`)
    - For each trial (1 to N):
      - Create fresh git worktrees for isolated test environments
      - Spawn new Claude Code window for WITH PopKit trial
