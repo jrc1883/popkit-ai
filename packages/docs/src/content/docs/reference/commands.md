@@ -7,6 +7,8 @@ description: Complete reference for all PopKit commands
 
 PopKit provides 25 slash commands across 4 plugins for managing development workflows.
 
+These `/popkit-*` commands are the recommended entry points. For direct primitive invocation, see [Skills Reference](/reference/skills/) (`/pop-*` layer).
+
 ## popkit-core
 
 Core foundation commands for project management and orchestration.

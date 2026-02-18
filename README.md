@@ -29,6 +29,19 @@ It's the difference between "here's an AI" and "here's how to use AI to build so
 
 ---
 
+## Command Tiers
+
+PopKit intentionally exposes two layers:
+
+| Layer             | Prefix     | Purpose                                                      | Default  |
+| ----------------- | ---------- | ------------------------------------------------------------ | -------- |
+| Workflow commands | `/popkit-` | User-facing orchestration across commands, skills, and hooks | Yes      |
+| Direct skills     | `/pop-`    | Low-level primitives for targeted/advanced invocation        | Advanced |
+
+Example: `/popkit-dev:next` uses `pop-next-action` internally, then adds mode handling, reporting, and command-level guidance.
+
+---
+
 ## Get Started
 
 ```bash

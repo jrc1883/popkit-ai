@@ -7,6 +7,17 @@ description: Slash commands for common workflows
 
 PopKit provides 25 slash commands for common development workflows. Commands are the primary interface for interacting with PopKit.
 
+## Two-Tier Model
+
+PopKit intentionally exposes both orchestration commands and direct skills:
+
+| Tier              | Prefix     | Purpose                                                      | Recommended |
+| ----------------- | ---------- | ------------------------------------------------------------ | ----------- |
+| Workflow commands | `/popkit-` | High-level flows that orchestrate skills, hooks, and scripts | Yes         |
+| Direct skills     | `/pop-`    | Low-level primitives for targeted/advanced usage             | Advanced    |
+
+Most users should start with `/popkit-*` commands and drop to `/pop-*` when they want precise, direct control.
+
 ## Core Commands
 
 ### Project Management
@@ -24,7 +35,7 @@ PopKit provides 25 slash commands for common development workflows. Commands are
 ### Development
 
 - `/popkit-dev:dev` - 7-phase feature development workflow
-- `/popkit-dev:work` - Work on specific GitHub issue
+- `/popkit-dev:issue` - GitHub issue management and execution flows
 - `/popkit-ops:debug` - Debug code or routing issues
 
 ### Routines
@@ -52,12 +63,12 @@ Examples:
 
 ## Command vs Skills
 
-| Commands              | Skills                   |
-| --------------------- | ------------------------ |
-| User-facing interface | Internal automation      |
-| Slash command syntax  | Invoked programmatically |
-| High-level workflows  | Low-level operations     |
-| Documentation focused | Implementation focused   |
+| Commands                                | Skills                                        |
+| --------------------------------------- | --------------------------------------------- |
+| User-facing workflows                   | Reusable primitives                           |
+| Usually `/popkit-*`                     | Usually `/pop-*` (or `/skill invoke <name>`)  |
+| Can orchestrate multiple skills + hooks | Focused on one domain capability              |
+| Stable entry points for daily usage     | Advanced/direct execution and building blocks |
 
 Commands often use multiple skills internally to accomplish their goals.
 
@@ -65,4 +76,4 @@ Commands often use multiple skills internally to accomplish their goals.
 
 - Learn about [Hooks](/concepts/hooks/)
 - Explore [Power Mode](/features/power-mode/)
-- Review command reference (coming in Phase 3)
+- Review [Commands Reference](/reference/commands/)
