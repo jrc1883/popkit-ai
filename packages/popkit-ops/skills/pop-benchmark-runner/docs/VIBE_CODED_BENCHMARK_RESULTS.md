@@ -24,10 +24,10 @@ Issue `#84` referenced `packages/benchmarks/*` and `docs/research/*`, but active
 Date run: 2026-02-17 (local)
 Mode: `benchmark_runner.py --test-mode --trials 1 --config all`
 
-| Task ID | With PopKit | Baseline | Result |
-|---------|-------------|----------|--------|
-| `todo-app-vibe` | 1/1 success | 1/1 success | pass |
-| `bug-fix-vibe` | 1/1 success | 1/1 success | pass |
+| Task ID         | With PopKit | Baseline    | Result |
+| --------------- | ----------- | ----------- | ------ |
+| `todo-app-vibe` | 1/1 success | 1/1 success | pass   |
+| `bug-fix-vibe`  | 1/1 success | 1/1 success | pass   |
 
 Notes:
 
@@ -43,14 +43,14 @@ python packages/popkit-ops/skills/pop-benchmark-runner/scripts/benchmark_orchest
 
 ## Comparison template for real runs
 
-| Metric | Structured Baseline | Vibe Baseline | Structured PopKit | Vibe PopKit | Notes |
-|--------|---------------------|---------------|-------------------|-------------|-------|
-| Quality score (1-10) | TBD | TBD | TBD | TBD | Manual rubric |
-| Questions asked | TBD | TBD | TBD | TBD | Clarification count |
-| Assumptions made | TBD | TBD | TBD | TBD | Explicit assumption count |
-| Brainstorming usage | TBD | TBD | TBD | TBD | Presence + usefulness |
-| Time to complete | TBD | TBD | TBD | TBD | Analyzer output |
-| Error recovery events | TBD | TBD | TBD | TBD | Analyzer output |
+| Metric                | Structured Baseline | Vibe Baseline | Structured PopKit | Vibe PopKit | Notes                     |
+| --------------------- | ------------------- | ------------- | ----------------- | ----------- | ------------------------- |
+| Quality score (1-10)  | TBD                 | TBD           | TBD               | TBD         | Manual rubric             |
+| Questions asked       | TBD                 | TBD           | TBD               | TBD         | Clarification count       |
+| Assumptions made      | TBD                 | TBD           | TBD               | TBD         | Explicit assumption count |
+| Brainstorming usage   | TBD                 | TBD           | TBD               | TBD         | Presence + usefulness     |
+| Time to complete      | TBD                 | TBD           | TBD               | TBD         | Analyzer output           |
+| Error recovery events | TBD                 | TBD           | TBD               | TBD         | Analyzer output           |
 
 ## Recommendations
 
