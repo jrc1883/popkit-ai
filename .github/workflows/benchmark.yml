@@ -500,7 +500,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Comment on PR (if applicable)
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false
         uses: actions/github-script@v8
         with:
           script: |
@@ -538,18 +538,22 @@ jobs:
               (comment) => comment.body && comment.body.includes(marker),
             );
 
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner,
-                repo,
-                comment_id: existing.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner,
-                repo,
-                issue_number,
-                body,
-              });
+            try {
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  owner,
+                  repo,
+                  comment_id: existing.id,
+                  body,
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number,
+                  body,
+                });
+              }
+            } catch (error) {
+              core.warning(`Skipping benchmark PR comment: ${error.message}`);
             }
