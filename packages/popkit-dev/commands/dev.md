@@ -1,5 +1,5 @@
 ---
-description: 'work #N | brainstorm | plan | execute | prd | suite | "description" [--mode quick|full] [-T, --power]'
+description: 'work #N | brainstorm | plan | execute | prd | suite | "description" [--mode quick|full] [--provider auto|popkit|feature-dev] [-T, --power]'
 argument-hint: "[subcommand|description] [flags]"
 ---
 
@@ -18,6 +18,7 @@ Unified entry point for development workflows.
 /popkit-dev:dev plan "feature"           # Write plan
 /popkit-dev:dev execute                  # Run plan
 /popkit-dev:dev "task" --mode quick      # Override
+/popkit-dev:dev "task" --provider feature-dev
 ```
 
 ## Subcommands
@@ -42,15 +43,16 @@ Unified entry point for development workflows.
 
 ## Flags
 
-| Flag               | Short | Description          |
-| ------------------ | ----- | -------------------- |
-| `--mode`           |       | `quick` or `full`    |
-| `--thinking`       | `-T`  | Extended thinking    |
-| `--think-budget N` |       | Token budget (10000) |
-| `--from FILE`      |       | From design/plan     |
-| `--issue N`        |       | Reference issue      |
-| `--power`          | `-p`  | Power Mode           |
-| `--solo`           | `-s`  | Sequential           |
+| Flag               | Short | Description                     |
+| ------------------ | ----- | ------------------------------- |
+| `--mode`           |       | `quick` or `full`               |
+| `--provider`       |       | `auto`, `popkit`, `feature-dev` |
+| `--thinking`       | `-T`  | Extended thinking               |
+| `--think-budget N` |       | Token budget (10000)            |
+| `--from FILE`      |       | From design/plan                |
+| `--issue N`        |       | Reference issue                 |
+| `--power`          | `-p`  | Power Mode                      |
+| `--solo`           | `-s`  | Sequential                      |
 
 ---
 
@@ -60,6 +62,44 @@ Unified entry point for development workflows.
 **Full:** Complex, architecture, multi-domain
 
 Details: `commands/examples/dev/routing-examples.md`
+
+### Provider Strategy (Issue #218)
+
+`--provider auto` (default) uses first-principles resolution:
+
+1. Choose the simplest provider that satisfies required capabilities.
+2. Prefer official upstream for commodity flows.
+3. Require PopKit when workflow needs PopKit-only orchestration.
+4. Reassess when failure rate or cycle time regresses.
+
+Use explicit overrides for experimentation:
+
+- `--provider popkit` - force native PopKit orchestration
+- `--provider feature-dev` - force upstream workflow (fallback to PopKit if unavailable)
+
+Implementation references:
+
+- `packages/shared-py/popkit_shared/utils/dev_provider_resolver.py`
+- `packages/shared-py/popkit_shared/utils/dev_workflow_router.py`
+
+### Provider Preflight (Required for `quick|full|work`)
+
+Before executing implementation steps, run the provider preflight:
+
+```bash
+python packages/shared-py/popkit_shared/utils/dev_workflow_router.py \
+  --task "<description>" \
+  --mode <quick|full> \
+  --provider <auto|popkit|feature-dev> \
+  [--issue N] \
+  --format display
+```
+
+Then route execution using preflight output:
+
+1. If selected provider is `feature-dev`, run `/popkit:feature-dev` and keep the printed `fallback_command` ready.
+2. If selected provider is `popkit`, continue native `/popkit-dev:dev ... --provider popkit` flow.
+3. Always preserve rationale in the final summary to support reassessment.
 
 ---
 
@@ -177,6 +217,9 @@ Generate complete docs:
 ## Executables
 
 ```bash
+# Provider preflight (Issue #218)
+python packages/shared-py/popkit_shared/utils/dev_workflow_router.py --task "<description>" --mode <quick|full> --provider <auto|popkit|feature-dev> --format display
+
 # Full
 Use Task tool (Explore|Plan|code-reviewer)
 git worktree add .worktrees/feature-<name> -b feature/<name>

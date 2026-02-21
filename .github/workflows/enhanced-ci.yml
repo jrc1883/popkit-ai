@@ -12,14 +12,36 @@
 name: Enhanced CI
 
 on:
+  workflow_dispatch:
+
   push:
     branches:
       - master
       - main
+    paths:
+      - '.github/scripts/comprehensive-validation.py'
+      - '.github/workflows/enhanced-ci.yml'
+      - '.claude-plugin/**'
+      - 'packages/**/.claude-plugin/**'
+      - '.claude-plugin/marketplace.json'
+      - 'packages/**/hooks/**'
+      - 'packages/**/agents/**'
+
   pull_request:
     branches:
       - master
       - main
+    paths:
+      - '.github/scripts/comprehensive-validation.py'
+      - '.github/workflows/enhanced-ci.yml'
+      - '.claude-plugin/**'
+      - 'packages/**/.claude-plugin/**'
+      - '.claude-plugin/marketplace.json'
+      - 'packages/**/hooks/**'
+      - 'packages/**/agents/**'
+
+permissions:
+  contents: read
 
 concurrency:
   group: enhanced-ci-${{ github.ref }}

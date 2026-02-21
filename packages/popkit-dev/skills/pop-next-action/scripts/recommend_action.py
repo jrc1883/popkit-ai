@@ -28,6 +28,7 @@ BASE_PRIORITIES = {
     "fix_build_errors": 90,
     "process_research": 85,
     "commit_work": 80,
+    "cleanup_stale_branches": 55,
     "push_changes": 60,
     "work_on_issue": 50,
     "tackle_tech_debt": 40,
@@ -306,6 +307,30 @@ def calculate_action_scores(state: Dict[str, Any]) -> List[Dict[str, Any]]:
 
     # Continue work on feature branches
     branches = state.get("branches", {})
+    stale_branches = branches.get("stale_branches", [])
+
+    if stale_branches:
+        score = BASE_PRIORITIES["cleanup_stale_branches"]
+        if branches.get("has_feature_branches"):
+            score -= 10
+
+        actions.append(
+            {
+                "id": "review_stale_branches",
+                "name": "Review Stale Local Branches",
+                "command": "git branch -vv",
+                "score": score,
+                "why": (
+                    f"{len(stale_branches)} feature/fix branch(es) track deleted upstreams"
+                ),
+                "what": (
+                    "Confirm merged status and delete stale local branches that are no longer needed"
+                ),
+                "benefit": "Cleaner local context and better next-action recommendations",
+                "stale_branches": stale_branches,
+            }
+        )
+
     if branches.get("has_feature_branches") and branches.get("branches"):
         # Sort by commits ahead (most work = highest priority)
         sorted_branches = sorted(

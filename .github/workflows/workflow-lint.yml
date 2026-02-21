@@ -29,7 +29,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Check greetings.yml parameter naming
         id: check-greetings
@@ -99,10 +99,13 @@ jobs:
 
       - name: Install actionlint
         run: |
-          # Download and install actionlint binary
+          # Download actionlint into runner temp and add to PATH (no sudo needed)
           ACTIONLINT_VERSION="1.7.4"
-          curl -fsSL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" | tar -xz -C /tmp
-          sudo mv /tmp/actionlint /usr/local/bin/
+          INSTALL_DIR="${RUNNER_TEMP}/actionlint-bin"
+          mkdir -p "$INSTALL_DIR"
+          curl -fsSL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" | tar -xz -C "$INSTALL_DIR"
+          chmod +x "${INSTALL_DIR}/actionlint"
+          echo "$INSTALL_DIR" >> "$GITHUB_PATH"
           actionlint -version
 
       - name: Validate workflow syntax with actionlint
