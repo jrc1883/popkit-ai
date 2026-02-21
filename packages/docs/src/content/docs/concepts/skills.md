@@ -5,42 +5,47 @@ description: Reusable automation workflows in PopKit
 
 # Skills
 
-Skills are reusable automation workflows that encapsulate common development tasks. PopKit includes 43 skills across various categories.
+Skills are reusable automation workflows that encapsulate common development tasks. PopKit currently includes 44 skills across 4 plugins.
 
 ## What are Skills?
 
-Skills in PopKit:
+Skills in PopKit are:
 
 - **Reusable**: Can be invoked from multiple contexts
 - **Composable**: Can call other skills
 - **Documented**: Include usage examples and parameters
 - **Testable**: Have defined input/output contracts
+- **Tiered**: Exposed directly (`/pop-*`) and through workflow commands (`/popkit-*`)
 
 ## Skill Categories
 
-### Development Workflows
+### Planning & Execution
 
-- `pop-feature-dev`: 7-phase feature development
-- `pop-brainstorming`: Design exploration and planning
-- `pop-work-on-issue`: GitHub issue workflow
+- `pop-brainstorming`: Design exploration and specification refinement
+- `pop-writing-plans`: Structured implementation plan generation
+- `pop-executing-plans`: Controlled batch execution with checkpoints
+- `pop-finish-branch`: End-of-work branch finalization flow
 
-### Git Operations
+### Routines & Context
 
-- `pop-git-commit`: Smart commit message generation
-- `pop-git-pr`: Pull request creation with context
-- `pop-git-publish`: Public repository publishing
+- `pop-morning`: Start-of-day health and readiness workflow
+- `pop-nightly`: End-of-day cleanup and session capture workflow
+- `pop-session-capture`: Persist working context for next session
+- `pop-session-resume`: Restore previous context
 
-### Project Management
+### Quality & Operations
 
-- `pop-next-action`: Context-aware next steps
-- `pop-morning`: Morning routine and health check
-- `pop-nightly`: End-of-day cleanup and summary
+- `pop-assessment-security`: Security posture assessment
+- `pop-code-review`: Risk-focused code review
+- `pop-systematic-debugging`: Structured debugging methodology
+- `pop-benchmark-runner`: Controlled benchmark and analysis runs
 
-### Analysis & Quality
+### Project & Platform
 
-- `pop-code-review`: Comprehensive code review
-- `pop-security-scan`: Security vulnerability detection
-- `pop-performance-audit`: Performance profiling
+- `pop-analyze-project`: Architecture and pattern analysis
+- `pop-project-init`: Project bootstrap and Claude config setup
+- `pop-project-reference`: Cross-project context loading
+- `pop-power-mode`: Multi-agent orchestration
 
 ## Using Skills
 
@@ -49,8 +54,8 @@ Skills can be invoked in several ways:
 ### From Commands
 
 ```bash
-/popkit-dev:git commit
-# Internally uses pop-git-commit skill
+/popkit-dev:next
+# Internally uses pop-next-action plus command-layer formatting/flow
 ```
 
 ### From Agents
@@ -60,8 +65,12 @@ Agents can invoke skills as part of their workflows.
 ### Directly (Advanced)
 
 ```bash
+/pop-next-action
+/pop-assessment-security
 /skill invoke pop-next-action
 ```
+
+Depending on Claude Code client version and settings, direct-skill entries may appear as bare `/pop-*` aliases or only via `/skill invoke`.
 
 ## Creating Custom Skills
 

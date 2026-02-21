@@ -1,11 +1,27 @@
 ---
 title: Skills Reference
-description: Complete reference for all 43 PopKit skills
+description: Complete reference for all 44 PopKit skills
 ---
 
 # Skills Reference
 
-PopKit provides 43 reusable skills across 4 plugins. Skills are invoked via slash commands and provide specialized automation for common development tasks.
+PopKit provides 44 reusable skills across 4 plugins. Skills provide specialized automation for common development tasks.
+
+## Invocation Modes
+
+PopKit intentionally exposes skills in both direct and orchestrated forms:
+
+| Mode                    | Typical syntax                        | Use case                |
+| ----------------------- | ------------------------------------- | ----------------------- |
+| Workflow command        | `/popkit-<plugin>:<command>`          | Daily/default usage     |
+| Direct skill invocation | `/pop-...` or `/skill invoke pop-...` | Advanced/targeted usage |
+
+Examples:
+
+- `/popkit-dev:next` wraps `pop-next-action` with command-level parsing and formatted output.
+- `/popkit-ops:assess security` routes into the `pop-assessment-security` skill.
+
+Note: depending on client/version, you may see direct-skill entries as bare `/pop-*` aliases.
 
 ## popkit-core (15 skills)
 

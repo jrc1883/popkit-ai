@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main, develop]
 
+permissions:
+  contents: read
+
 jobs:
   python-tests:
     name: Python Tests (Python ${{ matrix.python-version }})
@@ -39,15 +42,16 @@ jobs:
           python run_all_tests.py --verbose
 
       - name: Run shared-py pytest suite
+        if: matrix.python-version != '3.13'
         env:
           PYTHONPATH: ${{ github.workspace }}/packages/shared-py
         run: |
           cd packages/shared-py
-          pip install -e ".[xml-validation]" 2>/dev/null || true
           python -m pytest tests/ -v --tb=short 2>&1 || echo "pytest suite completed with failures"
         continue-on-error: true
 
       - name: Run shared-py pytest suite with coverage
+        if: matrix.python-version == '3.13'
         env:
           PYTHONPATH: ${{ github.workspace }}/packages/shared-py
         run: |

@@ -68,11 +68,9 @@ concurrency:
   group: benchmark-${{ github.ref }}
   cancel-in-progress: true
 
-# Set permissions for GitHub Pages deployment
+# Default to least privilege; elevate per job when needed.
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 jobs:
   # ===========================================================================
@@ -89,6 +87,7 @@ jobs:
 
     outputs:
       task_ids: ${{ steps.config.outputs.task_ids }}
+      task_ids_json: ${{ steps.config.outputs.task_ids_json }}
       trials: ${{ steps.config.outputs.trials }}
       report_format: ${{ steps.config.outputs.report_format }}
       reason: ${{ steps.config.outputs.reason }}
@@ -113,22 +112,65 @@ jobs:
       - name: Configure benchmark parameters
         id: config
         run: |
+          KNOWN_TASK_IDS="jwt-authentication,dark-mode-implementation,race-condition-fix,memory-leak-fix,async-await-conversion,extract-shared-utilities,security-vulnerability-scan,performance-bottleneck-identification"
+
           # Determine task IDs based on trigger
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            TASK_IDS="${{ github.event.inputs.task_ids }}"
+            TASK_IDS_INPUT="${{ github.event.inputs.task_ids }}"
             TRIALS="${{ github.event.inputs.trials }}"
             FORMAT="${{ github.event.inputs.report_format }}"
             REASON="${{ github.event.inputs.reason }}"
           else
             # PR-triggered: quick run (2 sample tasks, 3 trials)
-            TASK_IDS="jwt-authentication,race-condition-fix"
+            TASK_IDS_INPUT="jwt-authentication,race-condition-fix"
             TRIALS="3"
             FORMAT="markdown"
             REASON="PR validation (label: benchmark)"
           fi
 
+          export TASK_IDS_INPUT
+          export KNOWN_TASK_IDS
+
+          TASK_IDS_NORMALIZED=$(python3 - <<'PY'
+          import json
+          import os
+          import sys
+
+          known = [task.strip() for task in os.environ["KNOWN_TASK_IDS"].split(",") if task.strip()]
+          raw_input = os.environ.get("TASK_IDS_INPUT", "").strip()
+
+          requested = [task.strip() for task in raw_input.split(",") if task.strip()]
+          if not requested:
+              requested = ["jwt-authentication", "race-condition-fix"]
+
+          if any(task.lower() == "all" for task in requested):
+              selected = known
+          else:
+              invalid = [task for task in requested if task not in known]
+              if invalid:
+                  print(
+                      f"Invalid task IDs requested: {', '.join(invalid)}\n"
+                      f"Valid task IDs: {', '.join(known)}",
+                      file=sys.stderr,
+                  )
+                  sys.exit(1)
+
+              selected = []
+              seen = set()
+              for task in requested:
+                  if task in seen:
+                      continue
+                  seen.add(task)
+                  selected.append(task)
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+              out.write(f"task_ids={','.join(selected)}\n")
+              out.write(f"task_ids_json={json.dumps(selected)}\n")
+          print(",".join(selected))
+          PY
+          )
+
           {
-            echo "task_ids=$TASK_IDS"
             echo "trials=$TRIALS"
             echo "report_format=$FORMAT"
             echo "reason=$REASON"
@@ -136,7 +178,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
           echo "📊 Benchmark Configuration:"
-          echo "  Task IDs: $TASK_IDS"
+          echo "  Task IDs: $TASK_IDS_NORMALIZED"
           echo "  Trials: $TRIALS"
           echo "  Format: $FORMAT"
           echo "  Reason: $REASON"
@@ -172,16 +214,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Task matrix (expand from comma-separated list)
-        task_id:
-          - jwt-authentication
-          - dark-mode-implementation
-          - race-condition-fix
-          - memory-leak-fix
-          - async-await-conversion
-          - extract-shared-utilities
-          - security-vulnerability-scan
-          - performance-bottleneck-identification
+        # Task matrix (selected by setup job)
+        task_id: ${{ fromJson(needs.setup.outputs.task_ids_json) }}
         # PopKit enabled/disabled matrix
         popkit_enabled: [true, false]
 
@@ -402,6 +436,11 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
@@ -421,6 +460,11 @@ jobs:
     runs-on: self-hosted
     needs: [setup, benchmark-matrix, analyze, report]
     if: always() && needs.setup.outputs.should_run == 'true'
+
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
 
     steps:
       - name: Generate workflow summary
@@ -456,28 +500,60 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Comment on PR (if applicable)
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false
         uses: actions/github-script@v8
         with:
           script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## 📊 Benchmark Results
+            const marker = "<!-- popkit-benchmark-suite -->";
+            const body = `${marker}
+            ## 📊 Benchmark Results
 
-              Benchmark suite execution completed for this PR.
+            Benchmark suite execution completed for this PR.
 
-              **Configuration:**
-              - Tasks: ${{ needs.setup.outputs.task_ids }}
-              - Trials: ${{ needs.setup.outputs.trials }}
+            **Configuration:**
+            - Tasks: ${{ needs.setup.outputs.task_ids }}
+            - Trials: ${{ needs.setup.outputs.trials }}
 
-              **Status:**
-              - Benchmark Execution: ${{ needs.benchmark-matrix.result }}
-              - Analysis: ${{ needs.analyze.result }}
-              - Report Generation: ${{ needs.report.result }}
+            **Status:**
+            - Benchmark Execution: ${{ needs.benchmark-matrix.result }}
+            - Analysis: ${{ needs.analyze.result }}
+            - Report Generation: ${{ needs.report.result }}
 
-              **Note:** This is a simulated run. Full execution will be available after Phase 4 completion.
+            **Note:** This is a simulated run. Full execution will be available after Phase 4 completion.
 
-              View detailed results in the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).`
-            })
+            View detailed results in the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).`;
+
+            const issue_number = context.issue.number;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            });
+
+            const existing = comments.find(
+              (comment) => comment.body && comment.body.includes(marker),
+            );
+
+            try {
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  owner,
+                  repo,
+                  comment_id: existing.id,
+                  body,
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number,
+                  body,
+                });
+              }
+            } catch (error) {
+              core.warning(`Skipping benchmark PR comment: ${error.message}`);
+            }
