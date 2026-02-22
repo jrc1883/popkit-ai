@@ -249,7 +249,7 @@ Knowledge management agent for codebase analysis and agent discovery.
 | popkit-research | -      | 1      | -                | 1      |
 | **Total**       | **10** | **11** | **2**            | **23** |
 
-## Agent Memory (CC 2.1.33+)
+## Agent Memory
 
 Agents support persistent memory through expertise files stored in `.claude/expertise/<agent-id>/`. Memory includes:
 
@@ -259,6 +259,31 @@ Agents support persistent memory through expertise files stored in `.claude/expe
 - **Project Context**: Framework, architecture, and dependency information
 
 Memory is loaded automatically when an agent starts and updated after significant interactions.
+
+### Memory Scopes
+
+Agents can declare memory persistence scope in their frontmatter:
+
+| Scope | Behavior | Use Case |
+|-------|----------|----------|
+| `memory: user` | Persists across all projects | General preferences, coding style |
+| `memory: project` | Persists within this project | Project-specific patterns |
+| `memory: local` | Persists within this directory | Directory-specific context |
+
+Example in agent frontmatter:
+```yaml
+memory: project
+```
+
+### Agent Isolation
+
+For parallel agent workflows, agents can run in isolated worktrees:
+
+```yaml
+isolation: worktree
+```
+
+This prevents file conflicts when multiple agents work simultaneously. The worktree is automatically cleaned up when the agent completes.
 
 ## Next Steps
 
