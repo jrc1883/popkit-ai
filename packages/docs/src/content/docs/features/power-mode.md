@@ -22,12 +22,15 @@ Power Mode orchestrates multiple agents simultaneously to tackle complex workflo
 
 ### Native Async Mode (Recommended)
 
-**Requirements**: Claude Code 2.0.64+
+**Requirements**: Claude Code 2.1.33+
 
 **Features**:
 
 - Zero setup required
 - 5+ agents via Background Task tool
+- Event-driven agent lifecycle management
+- Graceful shutdown with configurable timeout
+- Action tracking for dashboard state
 - Best for most use cases
 
 **Activation**:
@@ -38,7 +41,7 @@ Power Mode orchestrates multiple agents simultaneously to tackle complex workflo
 
 ### Redis Mode (Advanced)
 
-**Requirements**: Redis server, Claude Code 2.0.64+
+**Requirements**: Redis server, Claude Code 2.1.33+
 
 **Features**:
 
@@ -141,7 +144,7 @@ Shows:
 
 **Solutions**:
 
-- Check Claude Code version (need 2.0.64+)
+- Check Claude Code version (need 2.1.33+)
 - Verify Redis is running (for Redis mode)
 - Check logs: `/popkit-core:power status --verbose`
 
