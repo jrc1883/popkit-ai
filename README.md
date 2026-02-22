@@ -186,16 +186,34 @@ This reduces token usage, makes workflows reproducible, and keeps AI focused on 
 
 ---
 
+## Parallel Development
+
+Work on multiple features simultaneously with worktree management:
+
+```
+/popkit-dev:worktree list
+```
+
+PopKit adds batch operations and health analysis on top of git worktrees:
+
+- **`update-all`** — Pull latest changes across all worktrees at once
+- **`analyze`** — Get recommendations for stale worktrees, uncommitted changes
+- **`init`** — Auto-create worktrees from branch patterns
+
+No more manual worktree juggling when you're working on multiple features.
+
+---
+
 ## More Plugins
 
 PopKit is modular. Install what you need:
 
-| Plugin              | What it adds                                                     |
-| ------------------- | ---------------------------------------------------------------- |
-| **popkit-core**     | Project setup, Power Mode (multi-agent), session management      |
-| **popkit-dev**      | Git workflows, morning/nightly routines, `/next` recommendations |
-| **popkit-ops**      | Quality assessments, security scanning, debugging workflows      |
-| **popkit-research** | Knowledge capture, research notes, documentation sync            |
+| Plugin              | What it adds                                                |
+| ------------------- | ----------------------------------------------------------- |
+| **popkit-core**     | Project setup, Power Mode (multi-agent), session management |
+| **popkit-dev**      | Git workflows, worktrees, routines, `/next` recommendations |
+| **popkit-ops**      | Quality assessments, security scanning, debugging workflows |
+| **popkit-research** | Knowledge capture, research notes, documentation sync       |
 
 ```bash
 /plugin install popkit-ops@popkit-claude      # Quality & security

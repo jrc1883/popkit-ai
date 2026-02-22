@@ -385,23 +385,34 @@ Development workflow commands for git, issues, and routines.
 
 ### /popkit-dev:worktree
 
-**Description:** Git worktree management for parallel development
+**Description:** Worktree batch operations and health analysis
+
+PopKit enhances git worktree workflows with batch operations and intelligent recommendations.
 
 **Subcommands:**
 
-- `create <branch>` - Create worktree
-- `list` - List worktrees
-- `analyze` - Analyze worktree usage
-- `remove` - Remove worktree
+- `list` - List all worktrees with status (uncommitted changes, commits behind)
+- `update-all` - Pull latest changes in all worktrees simultaneously
+- `analyze` - Health analysis with cleanup recommendations
+- `init` - Auto-create worktrees from branch patterns
+- `prune` - Remove stale worktree references
 
-**Options:** `--force`
+**Options:** `--install` (run npm install after update), `--dry-run`, `--force`
 
 **Example:**
 
 ```bash
-/popkit-dev:worktree create feat/new-feature
+# See all worktrees and their status
 /popkit-dev:worktree list
-/popkit-dev:worktree remove feat/old-feature
+
+# Update all worktrees at once
+/popkit-dev:worktree update-all --install
+
+# Get health recommendations
+/popkit-dev:worktree analyze
+
+# Auto-create worktrees for dev branches
+/popkit-dev:worktree init --pattern "dev-*"
 ```
 
 ---
