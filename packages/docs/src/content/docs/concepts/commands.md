@@ -72,6 +72,38 @@ Examples:
 
 Commands often use multiple skills internally to accomplish their goals.
 
+## What Commands Add
+
+When a `/popkit-*` command wraps a `/pop-*` skill, it typically adds:
+
+### Mode Handling
+
+Commands detect your current context and adjust behavior:
+
+- **Plan mode**: Commands may gather more information before acting
+- **Quick mode**: Commands skip exploratory steps for faster execution
+- **Power mode**: Commands can delegate to multiple agents in parallel
+
+Example: `/popkit-dev:next` in quick mode skips detailed analysis; in verbose mode it provides full recommendations with reasoning.
+
+### Reporting
+
+Commands produce structured output that includes:
+
+- **Scores**: Numerical health indicators (Ready to Code Score, Sleep Score)
+- **Summaries**: What was analyzed or accomplished
+- **Next steps**: Recommended follow-up actions with `AskUserQuestion`
+
+### Command-Level Guidance
+
+Commands provide context-aware suggestions:
+
+- What to do next based on results
+- Which related commands might help
+- When to escalate to Power Mode for complex tasks
+
+This guidance follows "The PopKit Way" — every command ends with actionable options, not just a report dump.
+
 ## Next Steps
 
 - Learn about [Hooks](/concepts/hooks/)
