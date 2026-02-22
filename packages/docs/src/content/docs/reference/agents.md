@@ -264,14 +264,13 @@ Memory is loaded automatically when an agent starts and updated after significan
 
 Agents can declare memory persistence scope in their frontmatter:
 
-| Scope             | Behavior                       | Use Case                          |
-| ----------------- | ------------------------------ | --------------------------------- |
-| `memory: user`    | Persists across all projects   | General preferences, coding style |
-| `memory: project` | Persists within this project   | Project-specific patterns         |
-| `memory: local`   | Persists within this directory | Directory-specific context        |
+| Scope | Behavior | Use Case |
+|-------|----------|----------|
+| `memory: user` | Persists across all projects | General preferences, coding style |
+| `memory: project` | Persists within this project | Project-specific patterns |
+| `memory: local` | Persists within this directory | Directory-specific context |
 
 Example in agent frontmatter:
-
 ```yaml
 memory: project
 ```
