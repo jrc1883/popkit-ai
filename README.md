@@ -208,12 +208,12 @@ No more manual worktree juggling when you're working on multiple features.
 
 PopKit is modular. Install what you need:
 
-| Plugin              | What it adds                                                     |
-| ------------------- | ---------------------------------------------------------------- |
-| **popkit-core**     | Project setup, Power Mode (multi-agent), session management      |
-| **popkit-dev**      | Git workflows, worktrees, routines, `/next` recommendations      |
-| **popkit-ops**      | Quality assessments, security scanning, debugging workflows      |
-| **popkit-research** | Knowledge capture, research notes, documentation sync            |
+| Plugin              | What it adds                                                |
+| ------------------- | ----------------------------------------------------------- |
+| **popkit-core**     | Project setup, Power Mode (multi-agent), session management |
+| **popkit-dev**      | Git workflows, worktrees, routines, `/next` recommendations |
+| **popkit-ops**      | Quality assessments, security scanning, debugging workflows |
+| **popkit-research** | Knowledge capture, research notes, documentation sync       |
 
 ```bash
 /plugin install popkit-ops@popkit-claude      # Quality & security
