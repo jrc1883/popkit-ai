@@ -20,10 +20,10 @@ PopKit organizes your Claude Code sessions around **workflows, not tools**.
 
 Most AI coding assistants give you a prompt and say "figure it out." PopKit gives you:
 
-- **Morning routines** that check your project health before you write code
-- **"What's next?"** recommendations based on your actual git status, failing tests, and open issues
-- **Guided development** that walks you through feature implementation phase by phase
-- **Session capture** so you can pick up exactly where you left off
+- **[Morning routines](https://popkit.unjoe.me/features/routines/)** that check your project health before you write code
+- **["What's next?"](https://popkit.unjoe.me/reference/commands/#popkit-devnext)** recommendations based on your actual git status, failing tests, and open issues
+- **[Guided development](https://popkit.unjoe.me/features/feature-dev/)** that walks you through feature implementation phase by phase
+- **[Session capture](https://popkit.unjoe.me/features/routines/#nightly-routine)** so you can pick up exactly where you left off
 
 It's the difference between "here's an AI" and "here's how to use AI to build software."
 
@@ -38,7 +38,7 @@ PopKit intentionally exposes two layers:
 | Workflow commands | `/popkit-` | User-facing orchestration across commands, skills, and hooks | Yes      |
 | Direct skills     | `/pop-`    | Low-level primitives for targeted/advanced invocation        | Advanced |
 
-Example: `/popkit-dev:next` uses `pop-next-action` internally, then adds mode handling, reporting, and command-level guidance.
+Example: `/popkit-dev:next` uses `pop-next-action` internally, then adds [mode handling, reporting, and command-level guidance](https://popkit.unjoe.me/concepts/commands/#what-commands-add).
 
 ---
 
@@ -85,7 +85,7 @@ Every morning, PopKit checks your project's vital signs:
 Ready to continue.
 ```
 
-The "Ready to Code" score tells you if something needs attention before you start coding. 87 means you're good to go. 45 means something's broken.
+The ["Ready to Code" score](https://popkit.unjoe.me/features/routines/#morning-routine) tells you if something needs attention before you start coding. 87 means you're good to go. 45 means something's broken.
 
 ---
 
@@ -121,13 +121,13 @@ No more staring at your terminal wondering what to do.
 
 ## Guided Development
 
-Start a feature with `/popkit-dev:dev`:
+Start a feature with [`/popkit-dev:dev`](https://popkit.unjoe.me/features/feature-dev/):
 
 ```
 /popkit-dev:dev "Add password reset via email"
 ```
 
-PopKit walks you through seven phases:
+PopKit walks you through [seven phases](https://popkit.unjoe.me/features/feature-dev/#the-7-phases):
 
 1. **Discovery** — What exactly are we building?
 2. **Exploration** — What patterns exist in this codebase?
@@ -150,7 +150,7 @@ End your day with context saved:
 ```
 
 ```
-■ Sleep Score: 92/100
+■ [Sleep Score](https://popkit.unjoe.me/features/routines/#nightly-routine): 92/100
 
   ✓ All changes committed
   ✓ Branch pushed to origin
@@ -188,7 +188,7 @@ This reduces token usage, makes workflows reproducible, and keeps AI focused on 
 
 ## Parallel Development
 
-Work on multiple features simultaneously with worktree management:
+Work on multiple features simultaneously with [worktree management](https://popkit.unjoe.me/reference/commands/#popkit-devworktree):
 
 ```
 /popkit-dev:worktree list
@@ -208,12 +208,12 @@ No more manual worktree juggling when you're working on multiple features.
 
 PopKit is modular. Install what you need:
 
-| Plugin              | What it adds                                                |
-| ------------------- | ----------------------------------------------------------- |
-| **popkit-core**     | Project setup, Power Mode (multi-agent), session management |
-| **popkit-dev**      | Git workflows, worktrees, routines, `/next` recommendations |
-| **popkit-ops**      | Quality assessments, security scanning, debugging workflows |
-| **popkit-research** | Knowledge capture, research notes, documentation sync       |
+| Plugin              | What it adds                                                                                                |
+| ------------------- | ----------------------------------------------------------------------------------------------------------- |
+| **popkit-core**     | Project setup, [Power Mode](https://popkit.unjoe.me/features/power-mode/) (multi-agent), session management |
+| **popkit-dev**      | Git workflows, worktrees, [routines](https://popkit.unjoe.me/features/routines/), `/next` recommendations   |
+| **popkit-ops**      | Quality assessments, security scanning, debugging workflows                                                 |
+| **popkit-research** | Knowledge capture, research notes, documentation sync                                                       |
 
 ```bash
 /plugin install popkit-ops@popkit-claude      # Quality & security
