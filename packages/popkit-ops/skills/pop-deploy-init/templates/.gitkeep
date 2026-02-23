@@ -1,0 +1,13 @@
+# Deployment Templates Directory
+# Purpose: Placeholder for deployment configuration templates
+# Status: Reserved for pop-deploy-setup skill (Issue #305)
+#
+# Planned templates:
+# - Dockerfile.template - Docker image build template
+# - docker-compose.template.yml - Docker Compose template
+# - github-actions-deploy.template.yml - GitHub Actions deploy workflow
+# - vercel.template.json - Vercel configuration template
+# - netlify.template.toml - Netlify configuration template
+#
+# These templates will be used by the devops-automator agent (Issue #304)
+# to generate deployment configurations based on detected targets.

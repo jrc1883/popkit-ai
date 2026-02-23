@@ -9,13 +9,13 @@ Deploy to any target: Docker, npm/PyPI, Vercel/Netlify, or GitHub Releases.
 
 ## Subcommands
 
-| Subcommand     | Description                                      |
-| -------------- | ------------------------------------------------ |
-| init (default) | Analyze project and configure deployment targets |
-| setup          | Generate CI/CD pipeline and target configuration |
-| validate       | Run pre-deployment checks                        |
-| execute        | Deploy to target(s)                              |
-| rollback       | Undo a deployment                                |
+| Subcommand     | Description                                      | Status         |
+| -------------- | ------------------------------------------------ | -------------- |
+| init (default) | Analyze project and configure deployment targets | ✅ Available   |
+| setup          | Generate CI/CD pipeline and target configuration | 🚧 Coming Soon |
+| validate       | Run pre-deployment checks                        | 🚧 Coming Soon |
+| execute        | Deploy to target(s)                              | 🚧 Coming Soon |
+| rollback       | Undo a deployment                                | 🚧 Coming Soon |
 
 ---
 
@@ -48,6 +48,8 @@ Analyze project state, identify deployment targets, configure `.claude/popkit/de
 
 ## setup
 
+> **🚧 Coming Soon** - This subcommand is planned. See Issue #305 for status.
+
 Generate CI/CD and target configuration. Invokes **devops-automator** agent.
 
 | Target          | Files Generated                                            |
@@ -67,6 +69,8 @@ Generate CI/CD and target configuration. Invokes **devops-automator** agent.
 
 ## validate
 
+> **🚧 Coming Soon** - This subcommand is planned. See Issue #305 for status.
+
 Run pre-deployment checks. Invokes **deployment-validator** agent.
 
 **Checks:** Build, Tests, Lint, TypeCheck, Security, Secrets, Config, Dependencies.
@@ -78,6 +82,8 @@ Run pre-deployment checks. Invokes **deployment-validator** agent.
 ---
 
 ## execute
+
+> **🚧 Coming Soon** - This subcommand is planned. See Issue #305 for status.
 
 Deploy to configured target(s).
 
@@ -96,6 +102,8 @@ Deploy to configured target(s).
 ---
 
 ## rollback
+
+> **🚧 Coming Soon** - This subcommand is planned. See Issue #305 for status.
 
 Undo deployment and restore previous version. Invokes **rollback-specialist** agent.
 

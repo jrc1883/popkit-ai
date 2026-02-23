@@ -2,6 +2,22 @@
 """
 Issue Workflow Hook - Activation Logic for Issue-Driven Development
 
+INTEGRATION NOTE:
+-----------------
+This is a CLI tool and library module, NOT a hooks.json registered hook.
+It is called programmatically by /popkit-dev:issue work command and can be
+invoked directly from the command line.
+
+Usage:
+    python issue-workflow.py start <issue_number>   # Start working on issue
+    python issue-workflow.py work #4 -p             # Start with Power Mode
+    python issue-workflow.py status                 # Get current status
+    python issue-workflow.py complete <phase>       # Complete a phase
+    python issue-workflow.py rollback <phase>       # Rollback to checkpoint
+
+Creates directories:
+    .claude/popkit/phase-checkpoints/  - Phase checkpoint storage (runtime)
+
 Integrates with /popkit:issue work <number> to:
 1. Fetch and parse issue with PopKit Guidance section
 2. Determine if brainstorming should be triggered
@@ -10,7 +26,7 @@ Integrates with /popkit:issue work <number> to:
 5. Suggest agents based on issue type and guidance
 6. Run quality gates at phase transitions (Issue #11)
 
-This hook ties together:
+This module ties together:
 - Issue Parser (github_issues.py)
 - Quality Gates (quality-gate.py)
 - Power Mode (power-mode/)
