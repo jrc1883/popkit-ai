@@ -27,6 +27,7 @@ def run_command(
     cwd: Optional[Union[str, Path]] = None,
     timeout: int = 30,
     shell: bool = False,
+    strip_output: bool = True,
 ) -> Tuple[int, str, str]:
     """
     Run a command and return full result.
@@ -40,11 +41,13 @@ def run_command(
         cwd: Working directory (optional)
         timeout: Timeout in seconds (default: 30)
         shell: Run through shell (default: False, for security)
+        strip_output: If True (default), strip whitespace from output.
+                     If False, only strip trailing newlines (preserves leading ws).
 
     Returns:
         Tuple of (exit_code, stdout, stderr)
         - exit_code: -1 on timeout or exception
-        - stdout: Command output (stripped)
+        - stdout: Command output (stripped based on strip_output)
         - stderr: Error output or exception message
 
     Examples:
@@ -69,7 +72,16 @@ def run_command(
             timeout=timeout,
             shell=shell,
         )
-        return result.returncode, result.stdout.strip(), result.stderr.strip()
+
+        if strip_output:
+            stdout = result.stdout.strip()
+            stderr = result.stderr.strip()
+        else:
+            # Only strip trailing newlines, preserve leading whitespace
+            stdout = result.stdout.rstrip("\r\n")
+            stderr = result.stderr.rstrip("\r\n")
+
+        return result.returncode, stdout, stderr
 
     except subprocess.TimeoutExpired:
         return -1, "", f"Command timed out after {timeout}s"
@@ -85,6 +97,7 @@ def run_command_simple(
     cmd: Union[str, List[str]],
     cwd: Optional[Union[str, Path]] = None,
     timeout: int = 30,
+    strip_output: bool = True,
 ) -> Tuple[str, bool]:
     """
     Run a command and return simplified result.
@@ -96,6 +109,8 @@ def run_command_simple(
         cmd: Command as string or list of strings
         cwd: Working directory (optional)
         timeout: Timeout in seconds (default: 30)
+        strip_output: If True (default), strip whitespace from output.
+                     If False, only strip trailing newlines (preserves leading ws).
 
     Returns:
         Tuple of (output, success)
@@ -106,8 +121,12 @@ def run_command_simple(
         >>> output, success = run_command_simple("git branch --show-current")
         >>> if success:
         ...     print(f"Current branch: {output}")
+        >>> # Preserve leading whitespace (e.g., for git status --porcelain)
+        >>> output, success = run_command_simple("git status --porcelain", strip_output=False)
     """
-    exit_code, stdout, stderr = run_command(cmd, cwd=cwd, timeout=timeout)
+    exit_code, stdout, stderr = run_command(
+        cmd, cwd=cwd, timeout=timeout, strip_output=strip_output
+    )
 
     if exit_code == 0:
         return stdout, True

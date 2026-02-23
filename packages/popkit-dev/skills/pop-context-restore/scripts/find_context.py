@@ -19,27 +19,12 @@ Output:
 """
 
 import json
-import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Tuple
+from typing import Any, Dict
 
-
-def run_command(cmd: str, timeout: int = 30) -> Tuple[str, bool]:
-    """Run a shell command and return output and success status."""
-    try:
-        result = subprocess.run(
-            cmd.split() if isinstance(cmd, str) else cmd,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-        )
-        return result.stdout.strip(), result.returncode == 0
-    except subprocess.TimeoutExpired:
-        return "Command timed out", False
-    except Exception as e:
-        return str(e), False
+from popkit_shared.utils.subprocess_utils import run_command_simple
 
 
 def load_status_context() -> Dict[str, Any]:
@@ -79,7 +64,7 @@ def find_recent_files(hours: int = 24, limit: int = 10) -> Dict[str, Any]:
 
     # Use git to find recently modified files
     cmd = "git diff --name-only HEAD~10 2>/dev/null || git ls-files -m"
-    output, ok = run_command(cmd)
+    output, ok = run_command_simple(cmd)
 
     if ok and output:
         files = output.split("\n")[:limit]
@@ -87,7 +72,7 @@ def find_recent_files(hours: int = 24, limit: int = 10) -> Dict[str, Any]:
         result["total_found"] = len(files)
 
     # Also check for uncommitted changes
-    status_output, ok = run_command("git status --porcelain")
+    status_output, ok = run_command_simple("git status --porcelain")
     if ok and status_output:
         for line in status_output.split("\n"):
             if line.strip():
@@ -110,12 +95,14 @@ def gather_git_context() -> Dict[str, Any]:
     }
 
     # Current branch
-    branch, ok = run_command("git branch --show-current")
+    branch, ok = run_command_simple("git branch --show-current")
     if ok:
         context["branch"] = branch
 
     # Recent commits with details
-    commits_output, ok = run_command("git log --oneline -10 --format='%h|%s|%ar'")
+    commits_output, ok = run_command_simple(
+        "git log --oneline -10 --format='%h|%s|%ar'"
+    )
     if ok and commits_output:
         for line in commits_output.split("\n"):
             if "|" in line:
@@ -126,11 +113,11 @@ def gather_git_context() -> Dict[str, Any]:
                     )
 
     # Uncommitted changes with details
-    diff_stat, ok = run_command("git diff --stat")
+    diff_stat, ok = run_command_simple("git diff --stat")
     if ok and diff_stat:
         context["uncommitted_summary"] = diff_stat
 
-    status_output, ok = run_command("git status --porcelain")
+    status_output, ok = run_command_simple("git status --porcelain")
     if ok and status_output:
         for line in status_output.split("\n"):
             if line.strip():
@@ -153,7 +140,7 @@ def gather_git_context() -> Dict[str, Any]:
                 )
 
     # Check stash
-    stash_output, ok = run_command("git stash list | wc -l")
+    stash_output, ok = run_command_simple("git stash list | wc -l")
     if ok:
         try:
             context["stash_count"] = int(stash_output.strip())
@@ -173,7 +160,7 @@ def get_project_state() -> Dict[str, Any]:
     }
 
     # Quick test check (just see if command exists)
-    test_check, ok = run_command(
+    test_check, ok = run_command_simple(
         "npm run test --if-present 2>&1 | head -20", timeout=60
     )
     if ok:
@@ -184,7 +171,7 @@ def get_project_state() -> Dict[str, Any]:
         state["tests"]["output"] = test_check[:500]
 
     # Build check
-    build_check, ok = run_command(
+    build_check, ok = run_command_simple(
         "npm run build --if-present 2>&1 | tail -5", timeout=120
     )
     if ok:
@@ -194,7 +181,7 @@ def get_project_state() -> Dict[str, Any]:
     state["build"]["output"] = build_check[:500] if build_check else ""
 
     # Lint check
-    lint_check, ok = run_command(
+    lint_check, ok = run_command_simple(
         "npm run lint --if-present 2>&1 | tail -10", timeout=60
     )
     if ok:

@@ -23,27 +23,12 @@ Output:
 """
 
 import json
-import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-
-def run_command(cmd: str, timeout: int = 30) -> tuple:
-    """Run a shell command and return output and success status."""
-    try:
-        result = subprocess.run(
-            cmd.split() if isinstance(cmd, str) else cmd,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-        )
-        return result.stdout.strip(), result.returncode == 0
-    except subprocess.TimeoutExpired:
-        return "Command timed out", False
-    except Exception as e:
-        return str(e), False
+from popkit_shared.utils.subprocess_utils import run_command_simple
 
 
 def gather_git_state() -> Dict[str, Any]:
@@ -58,17 +43,17 @@ def gather_git_state() -> Dict[str, Any]:
     }
 
     # Get current branch
-    branch, ok = run_command("git branch --show-current")
+    branch, ok = run_command_simple("git branch --show-current")
     if ok:
         state["branch"] = branch
 
     # Get last commit
-    commit, ok = run_command("git log -1 --format='%h - %s'")
+    commit, ok = run_command_simple("git log -1 --format='%h - %s'")
     if ok:
         state["lastCommit"] = commit
 
     # Count uncommitted changes
-    status, ok = run_command("git status --porcelain")
+    status, ok = run_command_simple("git status --porcelain")
     if ok:
         lines = [
             status_line for status_line in status.split("\n") if status_line.strip()
@@ -82,7 +67,7 @@ def gather_git_state() -> Dict[str, Any]:
                 state["modifiedFiles"].append(line[3:].strip())
 
     # Count staged files
-    staged, ok = run_command("git diff --cached --name-only")
+    staged, ok = run_command_simple("git diff --cached --name-only")
     if ok:
         staged_files = [f for f in staged.split("\n") if f.strip()]
         state["stagedFiles"] = len(staged_files)
@@ -112,7 +97,7 @@ def gather_service_state() -> Dict[str, Any]:
                 f"lsof -i :{port} -t 2>/dev/null || ss -tlnp 2>/dev/null | grep :{port}"
             )
 
-        output, ok = run_command(cmd)
+        output, ok = run_command_simple(cmd)
         services[name] = {
             "running": bool(output.strip()),
             "port": port,
@@ -127,7 +112,7 @@ def gather_project_checks() -> Dict[str, Any]:
     checks = {"testStatus": "unknown", "buildStatus": "unknown", "lintErrors": -1}
 
     # Run tests
-    test_output, ok = run_command("npm test 2>&1 | tail -5", timeout=60)
+    test_output, ok = run_command_simple("npm test 2>&1 | tail -5", timeout=60)
     if ok:
         # Try to extract pass/fail counts
         if "passing" in test_output:
@@ -138,7 +123,7 @@ def gather_project_checks() -> Dict[str, Any]:
             checks["testStatus"] = test_output[-100:] if test_output else "no tests"
 
     # Check build
-    build_output, ok = run_command(
+    build_output, ok = run_command_simple(
         "npm run build --if-present 2>&1 | tail -1", timeout=120
     )
     if ok:
@@ -147,7 +132,7 @@ def gather_project_checks() -> Dict[str, Any]:
         checks["buildStatus"] = "failing" if build_output else "not configured"
 
     # Run lint
-    lint_output, ok = run_command(
+    lint_output, ok = run_command_simple(
         "npm run lint --if-present 2>&1 | tail -5", timeout=60
     )
     if ok:

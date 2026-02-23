@@ -9,10 +9,11 @@ Issue #69: Generic Workspace Routine Templates
 """
 
 import json
-import subprocess
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
+
+from .subprocess_utils import run_command_simple
 
 try:
     from .generic_project_detector import ProjectType
@@ -22,35 +23,6 @@ try:
 except ImportError:
     HAS_PROJECT_DETECTOR = False
     get_project_type_with_cache = None
-
-
-def run_command(
-    cmd: str | List[str], timeout: int = 30, cwd: Optional[Path] = None
-) -> tuple[str, bool]:
-    """
-    Run a shell command and return output and success status.
-
-    Args:
-        cmd: Command string or list of arguments
-        timeout: Command timeout in seconds
-        cwd: Working directory
-
-    Returns:
-        (output, success) tuple
-    """
-    try:
-        result = subprocess.run(
-            cmd.split() if isinstance(cmd, str) else cmd,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-            cwd=cwd,
-        )
-        return result.stdout.strip(), result.returncode == 0
-    except subprocess.TimeoutExpired:
-        return "Command timed out", False
-    except Exception as e:
-        return str(e), False
 
 
 def gather_git_state(project_path: Path = None) -> Dict[str, Any]:
@@ -79,17 +51,17 @@ def gather_git_state(project_path: Path = None) -> Dict[str, Any]:
     }
 
     # Get current branch
-    branch, ok = run_command("git branch --show-current", cwd=project_path)
+    branch, ok = run_command_simple("git branch --show-current", cwd=project_path)
     if ok:
         state["branch"] = branch
 
     # Get last commit
-    commit, ok = run_command("git log -1 --format='%h - %s'", cwd=project_path)
+    commit, ok = run_command_simple("git log -1 --format='%h - %s'", cwd=project_path)
     if ok:
         state["last_commit"] = commit
 
     # Count uncommitted changes
-    status, ok = run_command("git status --porcelain", cwd=project_path)
+    status, ok = run_command_simple("git status --porcelain", cwd=project_path)
     if ok:
         lines = [line for line in status.split("\n") if line.strip()]
         state["uncommitted_files"] = len(lines)
@@ -101,21 +73,23 @@ def gather_git_state(project_path: Path = None) -> Dict[str, Any]:
                 state["modified_files"].append(line[3:].strip())
 
     # Count staged files
-    staged, ok = run_command("git diff --cached --name-only", cwd=project_path)
+    staged, ok = run_command_simple("git diff --cached --name-only", cwd=project_path)
     if ok:
         staged_files = [f for f in staged.split("\n") if f.strip()]
         state["staged_files"] = len(staged_files)
 
     # Check remote sync status
-    fetch_output, _ = run_command("git fetch --dry-run", cwd=project_path)
-    rev_list, ok = run_command("git rev-list --left-right --count HEAD...@{u}", cwd=project_path)
+    fetch_output, _ = run_command_simple("git fetch --dry-run", cwd=project_path)
+    rev_list, ok = run_command_simple(
+        "git rev-list --left-right --count HEAD...@{u}", cwd=project_path
+    )
     if ok and "\t" in rev_list:
         ahead, behind = rev_list.split("\t")
         state["ahead_remote"] = int(ahead)
         state["behind_remote"] = int(behind)
 
     # Count stashes
-    stash_list, ok = run_command("git stash list", cwd=project_path)
+    stash_list, ok = run_command_simple("git stash list", cwd=project_path)
     if ok:
         state["stashes"] = len([s for s in stash_list.split("\n") if s.strip()])
 
@@ -147,12 +121,12 @@ def gather_dependency_state(project_type: ProjectType, project_path: Path = None
         return state
 
     # Check if dependencies are installed
-    output, ok = run_command(project_type.check_installed, timeout=10, cwd=project_path)
+    output, ok = run_command_simple(project_type.check_installed, timeout=10, cwd=project_path)
     state["installed"] = ok
 
     # Check for outdated dependencies
     if project_type.check_outdated:
-        outdated, ok = run_command(project_type.check_outdated, timeout=30, cwd=project_path)
+        outdated, ok = run_command_simple(project_type.check_outdated, timeout=30, cwd=project_path)
         if ok and outdated:
             # Parse output based on package manager
             if project_type.package_manager in ("npm", "pnpm", "yarn"):
@@ -305,7 +279,7 @@ def gather_test_state(
             test_cmd = "go test -run=^$ ./..."  # Run no tests, just compile
 
         if test_cmd:
-            _, ok = run_command(test_cmd, timeout=60, cwd=project_path)
+            _, ok = run_command_simple(test_cmd, timeout=60, cwd=project_path)
             state["last_run_passed"] = ok
 
     return state

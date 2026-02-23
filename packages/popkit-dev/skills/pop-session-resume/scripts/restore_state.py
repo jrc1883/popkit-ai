@@ -19,27 +19,12 @@ Output:
 """
 
 import json
-import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional
 
-
-def run_command(cmd: str, timeout: int = 30) -> Tuple[str, bool]:
-    """Run a shell command and return output and success status."""
-    try:
-        result = subprocess.run(
-            cmd.split() if isinstance(cmd, str) else cmd,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-        )
-        return result.stdout.strip(), result.returncode == 0
-    except subprocess.TimeoutExpired:
-        return "Command timed out", False
-    except Exception as e:
-        return str(e), False
+from popkit_shared.utils.subprocess_utils import run_command_simple
 
 
 def find_status_file() -> Optional[Path]:
@@ -73,7 +58,9 @@ def calculate_session_type(last_update: str) -> Dict[str, Any]:
         now = datetime.now(last_dt.tzinfo) if last_dt.tzinfo else datetime.now()
 
         # Calculate hours since
-        delta = now - last_dt.replace(tzinfo=None) if not last_dt.tzinfo else now - last_dt
+        delta = (
+            now - last_dt.replace(tzinfo=None) if not last_dt.tzinfo else now - last_dt
+        )
         hours_since = delta.total_seconds() / 3600
 
         if hours_since < 0.5:
@@ -116,7 +103,7 @@ def verify_git_state(saved_git: Dict[str, Any]) -> Dict[str, Any]:
     verification = {"matches": True, "discrepancies": []}
 
     # Check branch
-    current_branch, ok = run_command("git branch --show-current")
+    current_branch, ok = run_command_simple("git branch --show-current")
     if ok:
         if current_branch != saved_git.get("branch", ""):
             verification["matches"] = False
@@ -129,7 +116,7 @@ def verify_git_state(saved_git: Dict[str, Any]) -> Dict[str, Any]:
             )
 
     # Check uncommitted files count
-    status, ok = run_command("git status --porcelain")
+    status, ok = run_command_simple("git status --porcelain")
     if ok:
         current_uncommitted = len([l for l in status.split("\n") if l.strip()])
         saved_uncommitted = saved_git.get("uncommittedFiles", 0)
@@ -145,7 +132,7 @@ def verify_git_state(saved_git: Dict[str, Any]) -> Dict[str, Any]:
             )
 
     # Check last commit
-    commit, ok = run_command("git log -1 --format='%h - %s'")
+    commit, ok = run_command_simple("git log -1 --format='%h - %s'")
     if ok:
         if commit != saved_git.get("lastCommit", ""):
             verification["discrepancies"].append(
@@ -310,7 +297,10 @@ def main():
 
     # Verify git state
     verification = None
-    if args.mode in ["verify-git", "all"] and session_info["session_type"] == "Fresh Start":
+    if (
+        args.mode in ["verify-git", "all"]
+        and session_info["session_type"] == "Fresh Start"
+    ):
         verification = verify_git_state(status.get("git", {}))
         result["verification"] = verification
 

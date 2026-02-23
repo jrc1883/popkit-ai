@@ -14,32 +14,13 @@ Part of the popkit plugin system.
 
 import json
 import os
-import subprocess
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
+
+from .subprocess_utils import run_command
 
 # Score weights (total = 100)
 WEIGHTS = {"git": 20, "build": 20, "tests": 20, "issues": 20, "activity": 20}
-
-
-def run_command(cmd: List[str], cwd: str, timeout: int = 30) -> Tuple[int, str, str]:
-    """Run a command and return exit code, stdout, stderr.
-
-    Args:
-        cmd: Command as list of strings
-        cwd: Working directory
-        timeout: Timeout in seconds
-
-    Returns:
-        Tuple of (exit_code, stdout, stderr)
-    """
-    try:
-        result = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, timeout=timeout)
-        return result.returncode, result.stdout, result.stderr
-    except subprocess.TimeoutExpired:
-        return -1, "", "Command timed out"
-    except Exception as e:
-        return -1, "", str(e)
 
 
 # =============================================================================
@@ -68,7 +49,7 @@ def calculate_git_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
     details = {}
 
     # Check for uncommitted changes
-    code, stdout, _ = run_command(["git", "status", "--porcelain"], project_path)
+    code, stdout, _ = run_command(["git", "status", "--porcelain"], cwd=project_path)
     if code != 0:
         return 0, {"status": "error", "message": "Failed to run git status"}
 
@@ -81,7 +62,7 @@ def calculate_git_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
         details["uncommitted_penalty"] = penalty
 
     # Check for unpushed commits
-    code, stdout, _ = run_command(["git", "rev-list", "--count", "@{u}..HEAD"], project_path)
+    code, stdout, _ = run_command(["git", "rev-list", "--count", "@{u}..HEAD"], cwd=project_path)
 
     if code == 0:
         try:
@@ -130,7 +111,7 @@ def calculate_build_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
         # Check if there's a tsconfig
         if os.path.isfile(os.path.join(project_path, "tsconfig.json")):
             code, stdout, stderr = run_command(
-                ["npx", "tsc", "--noEmit"], project_path, timeout=120
+                ["npx", "tsc", "--noEmit"], cwd=project_path, timeout=120
             )
 
             if code == 0:
@@ -164,13 +145,13 @@ def calculate_build_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
     if has_pyproject:
         # Try running type check with mypy if installed
         code, stdout, stderr = run_command(
-            ["python", "-m", "mypy", "--version"], project_path, timeout=10
+            ["python", "-m", "mypy", "--version"], cwd=project_path, timeout=10
         )
 
         if code == 0:
             # mypy is installed, run it
             code, stdout, stderr = run_command(
-                ["python", "-m", "mypy", "."], project_path, timeout=120
+                ["python", "-m", "mypy", "."], cwd=project_path, timeout=120
             )
 
             if code == 0:
@@ -187,7 +168,7 @@ def calculate_build_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
 
     # For Rust projects
     if has_cargo:
-        code, stdout, stderr = run_command(["cargo", "check"], project_path, timeout=300)
+        code, stdout, stderr = run_command(["cargo", "check"], cwd=project_path, timeout=300)
 
         if code == 0:
             details["status"] = "passed"
@@ -303,7 +284,7 @@ def calculate_issue_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
         return WEIGHTS["issues"], {"status": "no_git", "message": "Not a git repository"}
 
     # Try to get repo from remote
-    code, stdout, _ = run_command(["git", "config", "--get", "remote.origin.url"], project_path)
+    code, stdout, _ = run_command(["git", "config", "--get", "remote.origin.url"], cwd=project_path)
 
     if code != 0 or not stdout.strip():
         return WEIGHTS["issues"], {"status": "no_remote", "message": "No remote configured"}
@@ -332,7 +313,7 @@ def calculate_issue_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
             "--limit",
             "100",
         ],
-        project_path,
+        cwd=project_path,
         timeout=30,
     )
 
@@ -389,7 +370,7 @@ def calculate_activity_score(
     now = datetime.now(timezone.utc)
 
     # Try to get from git log
-    code, stdout, _ = run_command(["git", "log", "-1", "--format=%cI"], project_path)
+    code, stdout, _ = run_command(["git", "log", "-1", "--format=%cI"], cwd=project_path)
 
     if code == 0 and stdout.strip():
         try:
