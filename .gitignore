@@ -65,6 +65,14 @@ logs/
 .coverage
 .coverage.*
 
+# Pytest temporary directories
+.tmp_pytest/
+**/.tmp/
+.pytest_cache/
+
+# Ruff cache
+.ruff_cache/
+
 # Temporary build artifacts
 packages/*/build-*.txt
 .popkit/
