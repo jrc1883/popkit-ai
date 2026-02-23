@@ -68,14 +68,14 @@ Automates DevOps workflows including CI/CD pipeline generation, deployment confi
 
 This agent is designed to be invoked by `/popkit-ops:deploy setup` to generate:
 
-| Target           | Generated Files                      |
-| ---------------- | ------------------------------------ |
-| Docker           | Dockerfile, docker-compose.yml       |
-| npm              | .npmrc, publish workflow             |
-| PyPI             | pyproject.toml updates, twine config |
-| Vercel           | vercel.json, deploy workflow         |
-| Netlify          | netlify.toml, deploy workflow        |
-| GitHub Releases  | release workflow, asset config       |
+| Target          | Generated Files                      |
+| --------------- | ------------------------------------ |
+| Docker          | Dockerfile, docker-compose.yml       |
+| npm             | .npmrc, publish workflow             |
+| PyPI            | pyproject.toml updates, twine config |
+| Vercel          | vercel.json, deploy workflow         |
+| Netlify         | netlify.toml, deploy workflow        |
+| GitHub Releases | release workflow, asset config       |
 
 ## Workflow
 
@@ -121,4 +121,4 @@ This agent is part of Issue #63 (Deploy Command Epic). Contributions welcome.
 
 ---
 
-*This is a placeholder for planned functionality. See Issue #304 for implementation status.*
+_This is a placeholder for planned functionality. See Issue #304 for implementation status._

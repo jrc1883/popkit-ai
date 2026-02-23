@@ -9,9 +9,9 @@ Deploy to any target: Docker, npm/PyPI, Vercel/Netlify, or GitHub Releases.
 
 ## Subcommands
 
-| Subcommand     | Description                                      | Status        |
-| -------------- | ------------------------------------------------ | ------------- |
-| init (default) | Analyze project and configure deployment targets | ✅ Available  |
+| Subcommand     | Description                                      | Status         |
+| -------------- | ------------------------------------------------ | -------------- |
+| init (default) | Analyze project and configure deployment targets | ✅ Available   |
 | setup          | Generate CI/CD pipeline and target configuration | 🚧 Coming Soon |
 | validate       | Run pre-deployment checks                        | 🚧 Coming Soon |
 | execute        | Deploy to target(s)                              | 🚧 Coming Soon |
