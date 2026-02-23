@@ -3,6 +3,20 @@
 Pre-Commit Hook
 Runs Ruff validation on staged Python files before commit.
 
+INTEGRATION NOTE:
+-----------------
+This hook is designed as a Git pre-commit hook, NOT a Claude Code hook.
+It is NOT registered in hooks.json because it runs via Git's pre-commit system.
+
+To install as a Git pre-commit hook:
+    ln -s $(pwd)/packages/popkit-core/hooks/pre-commit.py .git/hooks/pre-commit
+    chmod +x .git/hooks/pre-commit
+
+Or via the setup hook which handles this automatically.
+
+The hook follows the JSON stdin/stdout protocol for compatibility with Claude Code's
+hook system if needed in the future.
+
 Responsibilities:
 1. Detect staged Python files
 2. Run Ruff check --fix on staged files
@@ -285,7 +299,9 @@ def main():
             sys.exit(1)  # Block commit
 
         # Re-stage files if auto-fixes were applied
-        all_modified = list(set(check_result["fixed_files"] + format_result["formatted_files"]))
+        all_modified = list(
+            set(check_result["fixed_files"] + format_result["formatted_files"])
+        )
 
         if all_modified:
             print(
@@ -295,9 +311,7 @@ def main():
 
             if not restage_files(all_modified):
                 # Re-stage failed - warn but allow commit
-                warning_msg = (
-                    "⚠️  Could not re-stage auto-fixed files. Please review and stage manually."
-                )
+                warning_msg = "⚠️  Could not re-stage auto-fixed files. Please review and stage manually."
                 print(warning_msg, file=sys.stderr)
 
                 response = {
