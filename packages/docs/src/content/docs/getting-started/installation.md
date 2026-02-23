@@ -50,16 +50,16 @@ Restart Claude Code after installing local plugins.
 
 PopKit requires **Claude Code 2.1.33+** for full feature support.
 
-| Feature | Minimum | Notes |
-|---------|---------|-------|
-| Core functionality | 2.1.0 | Skill hot-reload, forked contexts |
-| Plugin auto-update control | 2.1.2 | `FORCE_AUTOUPDATE_PLUGINS` env var |
-| Hook context injection | 2.1.9 | PreToolUse `additionalContext` |
-| Plugin SHA pinning | 2.1.14 | Pin to specific git commits |
-| Native task management | 2.1.16 | Dependency tracking for agents |
-| Agent memory | 2.1.32 | Automatic memory recording |
-| Agent Teams | 2.1.32 | Native multi-agent collaboration |
-| Full feature support | **2.1.33** | TeammateIdle/TaskCompleted hooks, memory scopes |
+| Feature                    | Minimum    | Notes                                           |
+| -------------------------- | ---------- | ----------------------------------------------- |
+| Core functionality         | 2.1.0      | Skill hot-reload, forked contexts               |
+| Plugin auto-update control | 2.1.2      | `FORCE_AUTOUPDATE_PLUGINS` env var              |
+| Hook context injection     | 2.1.9      | PreToolUse `additionalContext`                  |
+| Plugin SHA pinning         | 2.1.14     | Pin to specific git commits                     |
+| Native task management     | 2.1.16     | Dependency tracking for agents                  |
+| Agent memory               | 2.1.32     | Automatic memory recording                      |
+| Agent Teams                | 2.1.32     | Native multi-agent collaboration                |
+| Full feature support       | **2.1.33** | TeammateIdle/TaskCompleted hooks, memory scopes |
 
 **Recommended**: Always use the latest Claude Code version for best compatibility.
 
