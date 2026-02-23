@@ -37,6 +37,7 @@ try:
         record_reasoning,
         record_recommendation,
     )
+    from popkit_shared.utils.subprocess_utils import run_command_simple
 
     HAS_UTILITIES = True
 except ImportError:
@@ -280,8 +281,6 @@ class MorningWorkflow:
 
     def _add_morning_checks(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """Add morning-specific checks to state."""
-        import subprocess
-
         # Import git_utils from popkit-dev hooks
         # __file__ is in packages/popkit-dev/skills/pop-morning/scripts/
         # parents[3] gets us to popkit-dev/
@@ -290,30 +289,10 @@ class MorningWorkflow:
         sys.path.insert(0, str(hooks_path))
         from git_utils import count_stale_branches, git_fetch_prune
 
-        def run_command(cmd: list, stderr_redirect: bool = False) -> str:
-            """
-            Run command and return output.
-
-            Args:
-                cmd: Command as list of arguments
-                stderr_redirect: If True, redirects stderr to stdout
-            """
-            try:
-                if stderr_redirect:
-                    result = subprocess.run(
-                        cmd,
-                        capture_output=True,
-                        text=True,
-                        timeout=10,
-                        stderr=subprocess.DEVNULL,
-                    )
-                else:
-                    result = subprocess.run(
-                        cmd, capture_output=True, text=True, timeout=10
-                    )
-                return result.stdout.strip()
-            except Exception:
-                return ""
+        def run_cmd(cmd: list) -> str:
+            """Run command and return output string only."""
+            output, _ = run_command_simple(cmd, timeout=10)
+            return output
 
         # Check how many commits behind remote
         git_data = state.get("git", {})
@@ -327,7 +306,7 @@ class MorningWorkflow:
             print(f"[WARN] {prune_message}", file=sys.stderr)
 
         # Check commits behind - SECURE: branch is passed as a separate argument
-        behind_output = run_command(
+        behind_output = run_cmd(
             ["git", "rev-list", "--count", f"HEAD..origin/{branch}"]
         )
         try:
@@ -344,7 +323,7 @@ class MorningWorkflow:
         # Check PRs needing review
         github_data = state.get("github", {})
         try:
-            prs_json = run_command(
+            prs_json = run_cmd(
                 [
                     "gh",
                     "pr",
@@ -371,7 +350,7 @@ class MorningWorkflow:
 
         # Check issues needing triage (no assignee or no labels)
         try:
-            issues_json = run_command(
+            issues_json = run_cmd(
                 [
                     "gh",
                     "issue",
@@ -413,7 +392,7 @@ class MorningWorkflow:
 
                     # Check if behind base branch
                     base_ref = worktree_info.get("baseRef", "main")
-                    behind_output = run_command(
+                    behind_output = run_cmd(
                         ["git", "rev-list", "--count", f"HEAD..{base_ref}"]
                     )
                     try:

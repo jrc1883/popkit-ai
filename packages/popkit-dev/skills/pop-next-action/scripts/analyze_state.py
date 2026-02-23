@@ -20,13 +20,12 @@ Output:
 """
 
 import json
-import shlex
-import shutil
-import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional
+
+from popkit_shared.utils.subprocess_utils import run_command_simple
 
 
 HIGH_PRIORITY_LABELS = {
@@ -40,74 +39,6 @@ MEDIUM_PRIORITY_LABELS = {
     "p2-medium",
     "priority:medium",
 }
-
-
-def _normalize_command(cmd: Union[str, List[str]]) -> List[str]:
-    """Normalize command input into an argv list without shell parsing."""
-    if isinstance(cmd, str):
-        return shlex.split(cmd, posix=False)
-    return list(cmd)
-
-
-def _resolve_executable(argv: List[str]) -> List[str]:
-    """Resolve command executable path for reliable Windows process spawning."""
-    if not argv:
-        return argv
-
-    executable = argv[0]
-    if not executable:
-        return argv
-
-    # Keep explicit paths untouched.
-    if Path(executable).is_absolute() or "\\" in executable or "/" in executable:
-        return argv
-
-    resolved = shutil.which(executable)
-    if (
-        not resolved
-        and sys.platform.startswith("win")
-        and not executable.lower().endswith(".cmd")
-    ):
-        resolved = shutil.which(f"{executable}.cmd")
-
-    if resolved:
-        argv[0] = resolved
-
-    return argv
-
-
-def run_command(
-    cmd: Union[str, List[str]],
-    timeout: int = 30,
-    preserve_leading_ws: bool = False,
-    cwd: Optional[str] = None,
-) -> Tuple[str, bool]:
-    """Run a command and return output and success status."""
-    try:
-        argv = _resolve_executable(_normalize_command(cmd))
-        result = subprocess.run(
-            argv,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-            cwd=cwd,
-        )
-
-        output_text = result.stdout or ""
-        if result.returncode != 0 and result.stderr:
-            if output_text.strip():
-                output_text = f"{output_text.rstrip()}\n{result.stderr}"
-            else:
-                output_text = result.stderr
-
-        output = (
-            output_text.rstrip("\r\n") if preserve_leading_ws else output_text.strip()
-        )
-        return output, result.returncode == 0
-    except subprocess.TimeoutExpired:
-        return "Command timed out", False
-    except Exception as e:
-        return str(e), False
 
 
 def _extract_porcelain_path(line: str) -> str:
@@ -190,19 +121,23 @@ def analyze_git_state(repo_root: Path) -> Dict[str, Any]:
     }
 
     # Check if git repo (capture_output=True already suppresses stderr)
-    _, is_repo = run_command(["git", "rev-parse", "--git-dir"], cwd=str(repo_root))
+    _, is_repo = run_command_simple(
+        ["git", "rev-parse", "--git-dir"], cwd=str(repo_root)
+    )
     if not is_repo:
         state["is_repo"] = False
         return state
 
     # Get branch
-    branch, ok = run_command(["git", "branch", "--show-current"], cwd=str(repo_root))
+    branch, ok = run_command_simple(
+        ["git", "branch", "--show-current"], cwd=str(repo_root)
+    )
     if ok:
         state["branch"] = branch
 
     # Get uncommitted changes
-    status, ok = run_command(
-        ["git", "status", "--porcelain"], preserve_leading_ws=True, cwd=str(repo_root)
+    status, ok = run_command_simple(
+        ["git", "status", "--porcelain"], strip_output=False, cwd=str(repo_root)
     )
     if ok and status:
         files = [
@@ -216,7 +151,7 @@ def analyze_git_state(repo_root: Path) -> Dict[str, Any]:
             state["urgency"] = "HIGH"
 
     # Get ahead/behind (capture_output=True already suppresses stderr)
-    ahead_behind, ok = run_command(
+    ahead_behind, ok = run_command_simple(
         ["git", "rev-list", "--left-right", "--count", "@{u}...HEAD"],
         cwd=str(repo_root),
     )
@@ -231,7 +166,9 @@ def analyze_git_state(repo_root: Path) -> Dict[str, Any]:
             state["urgency"] = max(state["urgency"], "MEDIUM")
 
     # Get recent commits
-    commits, ok = run_command(["git", "log", "--oneline", "-5"], cwd=str(repo_root))
+    commits, ok = run_command_simple(
+        ["git", "log", "--oneline", "-5"], cwd=str(repo_root)
+    )
     if ok:
         state["recent_commits"] = commits.splitlines()[:5]
 
@@ -255,10 +192,10 @@ def analyze_code_state(repo_root: Path) -> Dict[str, Any]:
 
         # Prefer root TypeScript check if root config exists.
         if (repo_root / "tsconfig.json").exists():
-            output, ok = run_command(
+            output, ok = run_command_simple(
                 ["npx", "tsc", "--noEmit", "--pretty", "false"],
                 timeout=90,
-                preserve_leading_ws=True,
+                strip_output=False,
                 cwd=str(repo_root),
             )
             state["typescript_projects_checked"] = 1
@@ -272,7 +209,7 @@ def analyze_code_state(repo_root: Path) -> Dict[str, Any]:
             total_errors = 0
             unknown_failure = False
             for tsconfig in tsconfig_files[:3]:
-                output, ok = run_command(
+                output, ok = run_command_simple(
                     [
                         "npx",
                         "tsc",
@@ -283,7 +220,7 @@ def analyze_code_state(repo_root: Path) -> Dict[str, Any]:
                         str(tsconfig),
                     ],
                     timeout=75,
-                    preserve_leading_ws=True,
+                    strip_output=False,
                     cwd=str(repo_root),
                 )
                 state["typescript_projects_checked"] += 1
@@ -326,14 +263,14 @@ def analyze_issues(repo_root: Path) -> Dict[str, Any]:
     state = {"has_gh": False, "open_count": 0, "issues": [], "urgency": "LOW"}
 
     # Check for gh CLI
-    _, has_gh = run_command(["gh", "--version"], cwd=str(repo_root))
+    _, has_gh = run_command_simple(["gh", "--version"], cwd=str(repo_root))
     state["has_gh"] = has_gh
 
     if not has_gh:
         return state
 
     # Get open issues
-    output, ok = run_command(
+    output, ok = run_command_simple(
         [
             "gh",
             "issue",
@@ -380,7 +317,7 @@ def analyze_feature_branches(repo_root: Path) -> Dict[str, Any]:
     }
 
     # Get all local branches
-    branches, ok = run_command(["git", "branch"], cwd=str(repo_root))
+    branches, ok = run_command_simple(["git", "branch"], cwd=str(repo_root))
     if not ok:
         return state
 
@@ -405,7 +342,7 @@ def analyze_feature_branches(repo_root: Path) -> Dict[str, Any]:
         issue_number = int(issue_match.group(1)) if issue_match else None
 
         # Skip branches that track a deleted upstream (usually merged/abandoned).
-        upstream_ref, _ = run_command(
+        upstream_ref, _ = run_command_simple(
             [
                 "git",
                 "for-each-ref",
@@ -414,7 +351,7 @@ def analyze_feature_branches(repo_root: Path) -> Dict[str, Any]:
             ],
             cwd=str(repo_root),
         )
-        upstream_track, _ = run_command(
+        upstream_track, _ = run_command_simple(
             [
                 "git",
                 "for-each-ref",
@@ -438,15 +375,15 @@ def analyze_feature_branches(repo_root: Path) -> Dict[str, Any]:
             continue
 
         # Get last commit date and message
-        date_output, _ = run_command(
+        date_output, _ = run_command_simple(
             ["git", "log", "-1", "--format=%ar", branch], cwd=str(repo_root)
         )
-        msg_output, _ = run_command(
+        msg_output, _ = run_command_simple(
             ["git", "log", "-1", "--format=%s", branch], cwd=str(repo_root)
         )
 
         # Count commits ahead of main
-        ahead_output, _ = run_command(
+        ahead_output, _ = run_command_simple(
             ["git", "rev-list", "--count", f"main..{branch}"], cwd=str(repo_root)
         )
         commits_ahead = (
@@ -483,10 +420,10 @@ def analyze_research_branches(repo_root: Path) -> Dict[str, Any]:
 
     # Fetch to get all remote branches
     # SECURE: Using list-based arguments instead of shell string
-    run_command(["git", "fetch", "--all", "--prune"], cwd=str(repo_root))
+    run_command_simple(["git", "fetch", "--all", "--prune"], cwd=str(repo_root))
 
     # Look for research-related branches
-    branches, ok = run_command(["git", "branch", "-r"], cwd=str(repo_root))
+    branches, ok = run_command_simple(["git", "branch", "-r"], cwd=str(repo_root))
     if not ok:
         return state
 
@@ -500,7 +437,7 @@ def analyze_research_branches(repo_root: Path) -> Dict[str, Any]:
         # Check if it matches research patterns
         if any(pattern in branch.lower() for pattern in research_patterns):
             # Get branch creation time - SECURE: branch is separate argument
-            date_output, _ = run_command(
+            date_output, _ = run_command_simple(
                 ["git", "log", "-1", "--format=%ar", branch], cwd=str(repo_root)
             )
 

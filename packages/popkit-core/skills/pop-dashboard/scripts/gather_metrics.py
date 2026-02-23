@@ -22,11 +22,12 @@ Output:
 
 import json
 import os
-import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+
+from popkit_shared.utils.subprocess_utils import run_command_simple
 
 
 def get_registry_path() -> Path:
@@ -59,25 +60,6 @@ def save_registry(registry: Dict[str, Any]) -> None:
     registry_path.write_text(json.dumps(registry, indent=2))
 
 
-def run_command(
-    cmd: str, cwd: Optional[str] = None, timeout: int = 30
-) -> Tuple[str, bool]:
-    """Run a shell command and return output and success status."""
-    try:
-        result = subprocess.run(
-            cmd.split() if isinstance(cmd, str) else cmd,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-            cwd=cwd,
-        )
-        return result.stdout.strip(), result.returncode == 0
-    except subprocess.TimeoutExpired:
-        return "Command timed out", False
-    except Exception as e:
-        return str(e), False
-
-
 def detect_project_info(path: str) -> Dict[str, Any]:
     """Auto-detect project information from manifest files."""
     project_path = Path(path).resolve()
@@ -106,7 +88,7 @@ def detect_project_info(path: str) -> Dict[str, Any]:
         # Could parse TOML for name, but keep it simple
 
     # Try getting git remote
-    remote, ok = run_command("git remote get-url origin", cwd=path)
+    remote, ok = run_command_simple("git remote get-url origin", cwd=path)
     if ok and remote:
         info["repo"] = remote
 
@@ -123,7 +105,7 @@ def calculate_health_score(path: str) -> Dict[str, Any]:
 
     # Git status (20 points)
     git_score = 20
-    status, ok = run_command("git status --porcelain", cwd=path)
+    status, ok = run_command_simple("git status --porcelain", cwd=path)
     if ok:
         if status:
             uncommitted = len(status.split("\n"))
@@ -132,7 +114,9 @@ def calculate_health_score(path: str) -> Dict[str, Any]:
             result["details"].append(f"{uncommitted} uncommitted files")
 
         # Check unpushed commits
-        ahead, ok = run_command("git rev-list @{u}..HEAD --count 2>/dev/null", cwd=path)
+        ahead, ok = run_command_simple(
+            "git rev-list @{u}..HEAD --count 2>/dev/null", cwd=path
+        )
         if ok and ahead.isdigit() and int(ahead) > 0:
             git_score -= min(int(ahead), 4) * 5
             result["details"].append(f"{ahead} unpushed commits")
@@ -147,7 +131,7 @@ def calculate_health_score(path: str) -> Dict[str, Any]:
     build_score = 20
     # Check for TypeScript errors if tsconfig exists
     if (Path(path) / "tsconfig.json").exists():
-        ts_errors, ok = run_command(
+        ts_errors, ok = run_command_simple(
             "npx tsc --noEmit 2>&1 | grep -c 'error TS' || echo 0", cwd=path, timeout=60
         )
         try:
@@ -179,7 +163,7 @@ def calculate_health_score(path: str) -> Dict[str, Any]:
 
     # Issue health (20 points) - check via gh CLI
     issue_score = 20
-    issues, ok = run_command(
+    issues, ok = run_command_simple(
         "gh issue list --state open --limit 20 --json createdAt", cwd=path
     )
     if ok and issues:
@@ -207,7 +191,7 @@ def calculate_health_score(path: str) -> Dict[str, Any]:
 
     # Activity (20 points)
     activity_score = 5  # Default for inactive
-    last_commit, ok = run_command("git log -1 --format=%ci", cwd=path)
+    last_commit, ok = run_command_simple("git log -1 --format=%ci", cwd=path)
     if ok and last_commit:
         try:
             commit_date = datetime.strptime(last_commit.split()[0], "%Y-%m-%d")
@@ -240,7 +224,7 @@ def calculate_quick_health(path: str) -> int:
         return 0
 
     # Git status (50 points)
-    status, ok = run_command("git status --porcelain", cwd=path)
+    status, ok = run_command_simple("git status --porcelain", cwd=path)
     if ok:
         if not status:
             score += 50
@@ -249,7 +233,7 @@ def calculate_quick_health(path: str) -> int:
             score += max(0, 50 - uncommitted * 10)
 
     # Activity (50 points)
-    last_commit, ok = run_command("git log -1 --format=%ci", cwd=path)
+    last_commit, ok = run_command_simple("git log -1 --format=%ci", cwd=path)
     if ok and last_commit:
         try:
             commit_date = datetime.strptime(last_commit.split()[0], "%Y-%m-%d")
@@ -281,7 +265,7 @@ def get_recent_activity(
             continue
 
         # Get recent commits
-        commits, ok = run_command(
+        commits, ok = run_command_simple(
             "git log -3 --format='%h|%s|%ar' 2>/dev/null", cwd=path
         )
         if ok and commits:
