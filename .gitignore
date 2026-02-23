@@ -64,6 +64,7 @@ logs/
 # Python coverage
 .coverage
 .coverage.*
+htmlcov/
 
 # Pytest temporary directories
 .tmp_pytest/
@@ -80,6 +81,7 @@ packages/*/build-*.txt
 # Personal session/state files
 STATUS.json
 .workspace/
+CLAUDE.md
 
 # Environment variables (secrets)
 .env
@@ -107,3 +109,6 @@ docs/research/
 docs/security/
 docs/benchmark/
 codebase-health-report.md
+
+# Benchmark output
+benchmark-results/
