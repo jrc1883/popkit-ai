@@ -234,7 +234,6 @@ PopKit is modular. Install what you need:
 ## Documentation
 
 - **[Documentation Site](https://popkit.unjoe.me)** — Guides and references
-- **[CLAUDE.md](CLAUDE.md)** — AI-readable project instructions
 - **[CHANGELOG.md](CHANGELOG.md)** — Version history
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** — How to contribute
 
@@ -249,7 +248,9 @@ PopKit is modular. Install what you need:
 
 ## License
 
-MIT — see [LICENSE](LICENSE)
+[PolyForm Noncommercial 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0) — see [LICENSE](LICENSE)
+
+This software is free for personal, educational, and noncommercial use.
 
 ---
 
