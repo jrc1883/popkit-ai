@@ -23,11 +23,26 @@ Deploy to any target: Docker, npm/PyPI, Vercel/Netlify, or GitHub Releases.
 
 Analyze project state, identify deployment targets, configure `.claude/popkit/deploy.json`.
 
-**Process:** Check PopKit → Front-load user intent (AskUserQuestion: project type, targets, state) → Store configuration.
+**Invokes:** `pop-deploy-init` skill
+
+**Process:**
+
+1. Run `scripts/detect_deploy_targets.py` to identify available targets
+2. Present detected targets via AskUserQuestion (multiSelect)
+3. Set primary target if multiple selected
+4. Configure CI/CD trigger mode (GitHub Actions, manual, both)
+5. Create `.claude/popkit/deploy.json` configuration
+6. Optionally proceed to setup
 
 **Output:** Configuration summary, next steps for setup.
 
-**Options:** --force, --skip-github, --json
+**Options:**
+
+| Flag            | Description                              |
+| --------------- | ---------------------------------------- |
+| `--force`       | Overwrite existing config without backup |
+| `--skip-github` | Skip GitHub-related detection            |
+| `--json`        | Output JSON instead of formatted text    |
 
 ---
 

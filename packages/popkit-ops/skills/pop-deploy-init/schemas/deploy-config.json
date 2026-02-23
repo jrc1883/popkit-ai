@@ -1,0 +1,390 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://popkit.dev/schemas/deploy-config.json",
+  "title": "PopKit Deploy Configuration",
+  "description": "Configuration for PopKit deployment targets and CI/CD integration",
+  "type": "object",
+  "required": ["version", "project_name", "targets"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Schema version",
+      "enum": ["1.0"]
+    },
+    "project_name": {
+      "type": "string",
+      "description": "Human-readable project name",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 timestamp of configuration creation"
+    },
+    "targets": {
+      "type": "object",
+      "description": "Deployment target configurations",
+      "properties": {
+        "docker": {
+          "$ref": "#/definitions/dockerTarget"
+        },
+        "npm": {
+          "$ref": "#/definitions/npmTarget"
+        },
+        "pypi": {
+          "$ref": "#/definitions/pypiTarget"
+        },
+        "vercel": {
+          "$ref": "#/definitions/vercelTarget"
+        },
+        "netlify": {
+          "$ref": "#/definitions/netlifyTarget"
+        },
+        "github_releases": {
+          "$ref": "#/definitions/githubReleasesTarget"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ci": {
+      "$ref": "#/definitions/ciConfig"
+    },
+    "history": {
+      "type": "array",
+      "description": "Deployment history (most recent first)",
+      "items": {
+        "$ref": "#/definitions/deploymentRecord"
+      }
+    }
+  },
+  "definitions": {
+    "targetBase": {
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether this target is active"
+        },
+        "primary": {
+          "type": "boolean",
+          "description": "Whether this is the primary deployment target",
+          "default": false
+        }
+      }
+    },
+    "dockerTarget": {
+      "allOf": [
+        { "$ref": "#/definitions/targetBase" },
+        {
+          "properties": {
+            "config": {
+              "type": "object",
+              "properties": {
+                "image_name": {
+                  "type": "string",
+                  "description": "Docker image name (without registry prefix)"
+                },
+                "registry": {
+                  "type": "string",
+                  "description": "Container registry URL",
+                  "default": "ghcr.io"
+                },
+                "build_context": {
+                  "type": "string",
+                  "description": "Docker build context path",
+                  "default": "."
+                },
+                "dockerfile": {
+                  "type": "string",
+                  "description": "Path to Dockerfile",
+                  "default": "Dockerfile"
+                },
+                "platforms": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "Target platforms for multi-arch builds",
+                  "default": ["linux/amd64"]
+                },
+                "tags": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "Image tags (supports {{version}} placeholder)",
+                  "default": ["latest", "{{version}}"]
+                },
+                "build_args": {
+                  "type": "object",
+                  "additionalProperties": { "type": "string" },
+                  "description": "Build-time arguments"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "npmTarget": {
+      "allOf": [
+        { "$ref": "#/definitions/targetBase" },
+        {
+          "properties": {
+            "config": {
+              "type": "object",
+              "properties": {
+                "registry": {
+                  "type": "string",
+                  "description": "npm registry URL",
+                  "default": "https://registry.npmjs.org"
+                },
+                "access": {
+                  "type": "string",
+                  "enum": ["public", "restricted"],
+                  "description": "Package access level",
+                  "default": "public"
+                },
+                "tag": {
+                  "type": "string",
+                  "description": "npm dist-tag",
+                  "default": "latest"
+                },
+                "dry_run": {
+                  "type": "boolean",
+                  "description": "Run publish in dry-run mode",
+                  "default": false
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "pypiTarget": {
+      "allOf": [
+        { "$ref": "#/definitions/targetBase" },
+        {
+          "properties": {
+            "config": {
+              "type": "object",
+              "properties": {
+                "registry": {
+                  "type": "string",
+                  "description": "PyPI registry URL",
+                  "default": "https://upload.pypi.org/legacy/"
+                },
+                "test_registry": {
+                  "type": "string",
+                  "description": "TestPyPI registry URL",
+                  "default": "https://test.pypi.org/legacy/"
+                },
+                "distributions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["wheel", "sdist"]
+                  },
+                  "description": "Distribution formats to build",
+                  "default": ["wheel", "sdist"]
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "vercelTarget": {
+      "allOf": [
+        { "$ref": "#/definitions/targetBase" },
+        {
+          "properties": {
+            "config": {
+              "type": "object",
+              "properties": {
+                "project_id": {
+                  "type": "string",
+                  "description": "Vercel project ID"
+                },
+                "team_id": {
+                  "type": "string",
+                  "description": "Vercel team/org ID"
+                },
+                "production_branch": {
+                  "type": "string",
+                  "description": "Branch that triggers production deployment",
+                  "default": "main"
+                },
+                "preview_branches": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "Branches that trigger preview deployments"
+                },
+                "environment_variables": {
+                  "type": "object",
+                  "additionalProperties": { "type": "string" },
+                  "description": "Environment variables to set"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "netlifyTarget": {
+      "allOf": [
+        { "$ref": "#/definitions/targetBase" },
+        {
+          "properties": {
+            "config": {
+              "type": "object",
+              "properties": {
+                "site_id": {
+                  "type": "string",
+                  "description": "Netlify site ID"
+                },
+                "production_branch": {
+                  "type": "string",
+                  "description": "Branch that triggers production deployment",
+                  "default": "main"
+                },
+                "build_command": {
+                  "type": "string",
+                  "description": "Build command",
+                  "default": "npm run build"
+                },
+                "publish_directory": {
+                  "type": "string",
+                  "description": "Directory to publish",
+                  "default": "dist"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "githubReleasesTarget": {
+      "allOf": [
+        { "$ref": "#/definitions/targetBase" },
+        {
+          "properties": {
+            "config": {
+              "type": "object",
+              "properties": {
+                "release_notes_source": {
+                  "type": "string",
+                  "enum": ["changelog", "commits", "manual"],
+                  "description": "Source for release notes",
+                  "default": "changelog"
+                },
+                "draft": {
+                  "type": "boolean",
+                  "description": "Create as draft release",
+                  "default": false
+                },
+                "prerelease": {
+                  "type": "boolean",
+                  "description": "Mark as pre-release",
+                  "default": false
+                },
+                "assets": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "path": { "type": "string" },
+                      "name": { "type": "string" },
+                      "content_type": { "type": "string" }
+                    },
+                    "required": ["path"]
+                  },
+                  "description": "Release assets to upload"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ciConfig": {
+      "type": "object",
+      "description": "CI/CD configuration",
+      "properties": {
+        "provider": {
+          "type": ["string", "null"],
+          "enum": ["github_actions", null],
+          "description": "CI/CD provider"
+        },
+        "triggers": {
+          "type": "object",
+          "properties": {
+            "push": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Branches that trigger on push"
+            },
+            "pull_request": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Branches that trigger on PR"
+            },
+            "tag": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Tag patterns that trigger deployment"
+            }
+          }
+        },
+        "manual_only": {
+          "type": "boolean",
+          "description": "Only deploy via manual CLI commands",
+          "default": false
+        },
+        "workflow_dispatch": {
+          "type": "boolean",
+          "description": "Enable manual workflow dispatch",
+          "default": false
+        }
+      }
+    },
+    "deploymentRecord": {
+      "type": "object",
+      "description": "Record of a deployment execution",
+      "required": ["timestamp", "target", "version", "status"],
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When deployment was executed"
+        },
+        "target": {
+          "type": "string",
+          "description": "Deployment target name"
+        },
+        "version": {
+          "type": "string",
+          "description": "Version deployed"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["success", "failed", "rolled_back"],
+          "description": "Deployment outcome"
+        },
+        "commit_sha": {
+          "type": "string",
+          "description": "Git commit SHA"
+        },
+        "duration_ms": {
+          "type": "integer",
+          "description": "Deployment duration in milliseconds"
+        },
+        "error": {
+          "type": "string",
+          "description": "Error message if failed"
+        },
+        "rollback_to": {
+          "type": "string",
+          "description": "Version rolled back to (if rolled_back status)"
+        }
+      }
+    }
+  }
+}
