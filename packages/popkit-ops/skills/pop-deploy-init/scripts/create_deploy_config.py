@@ -190,7 +190,8 @@ def main():
             try:
                 pkg = json.loads(pkg_json.read_text())
                 project_name = pkg.get("name", "").split("/")[-1]
-            except Exception:
+            except (json.JSONDecodeError, OSError):
+                # Best-effort: skip if package.json is malformed or unreadable
                 pass
 
         if not project_name:

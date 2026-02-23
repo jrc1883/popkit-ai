@@ -60,7 +60,8 @@ def detect_docker_target(project_dir: Path) -> dict[str, Any]:
                 result["detected"] = True
                 result["confidence"] = "medium"
                 result["reason"] = "Docker scripts in package.json"
-        except Exception:
+        except (json.JSONDecodeError, OSError):
+            # Best-effort: skip if package.json is malformed or unreadable
             pass
 
     # Suggest image name from project
@@ -198,7 +199,8 @@ def detect_vercel_target(project_dir: Path) -> dict[str, Any]:
                 result["config"]["project_id"] = config["projectId"]
             if "orgId" in config:
                 result["config"]["team_id"] = config["orgId"]
-        except Exception:
+        except (json.JSONDecodeError, OSError):
+            # Best-effort: skip if vercel.json is malformed or unreadable
             pass
 
     elif vercel_dir.exists():
@@ -218,7 +220,8 @@ def detect_vercel_target(project_dir: Path) -> dict[str, Any]:
                 result["reason"] = "Next.js project detected"
                 result["config"]["framework"] = "nextjs"
 
-        except Exception:
+        except (json.JSONDecodeError, OSError):
+            # Best-effort: skip if package.json is malformed or unreadable
             pass
 
     if result["detected"]:
@@ -251,7 +254,8 @@ def detect_netlify_target(project_dir: Path) -> dict[str, Any]:
                 result["config"]["has_publish_dir"] = True
             if "command" in content:
                 result["config"]["has_build_command"] = True
-        except Exception:
+        except OSError:
+            # Best-effort: skip if netlify.toml is unreadable
             pass
 
     elif netlify_dir.exists():
@@ -278,7 +282,8 @@ def detect_netlify_target(project_dir: Path) -> dict[str, Any]:
                         result["reason"] = f"{gen} static site detected"
                         result["config"]["framework"] = gen
                         break
-            except Exception:
+            except (json.JSONDecodeError, OSError):
+                # Best-effort: skip if package.json is malformed or unreadable
                 pass
 
     return result
@@ -307,13 +312,14 @@ def detect_github_releases_target(project_dir: Path) -> dict[str, Any]:
     if workflows_dir.exists():
         for workflow in workflows_dir.glob("*.yml"):
             try:
-                content = workflow.read_text()
+                content = workflow.read_text(encoding="utf-8")
                 if "release" in content.lower():
                     result["config"]["existing_workflow"] = workflow.name
                     result["confidence"] = "high"
                     result["reason"] = "Release workflow already exists"
                     break
-            except Exception:
+            except (OSError, UnicodeDecodeError):
+                # Best-effort: skip if workflow file is unreadable or has encoding issues
                 pass
 
     if "confidence" not in result or result["confidence"] == "none":
@@ -342,7 +348,8 @@ def _get_project_name(project_dir: Path) -> str:
             if name:
                 # Remove scope if present
                 return name.split("/")[-1]
-        except Exception:
+        except (json.JSONDecodeError, OSError):
+            # Best-effort: skip if package.json is malformed or unreadable
             pass
 
     pyproject = project_dir / "pyproject.toml"
@@ -354,7 +361,8 @@ def _get_project_name(project_dir: Path) -> str:
                 if line.strip().startswith("name") and "=" in line:
                     name = line.split("=")[1].strip().strip('"').strip("'")
                     return name
-        except Exception:
+        except OSError:
+            # Best-effort: skip if pyproject.toml is unreadable
             pass
 
     return project_dir.name
@@ -362,15 +370,20 @@ def _get_project_name(project_dir: Path) -> str:
 
 def _detect_registry(project_dir: Path) -> str:
     """Detect container registry from git remote."""
+    import re
+
     git_config = project_dir / ".git" / "config"
     if git_config.exists():
         try:
             content = git_config.read_text()
-            if "github.com" in content:
+            # Use regex to match exact domain boundaries to avoid substring attacks
+            # Matches: github.com, @github.com, /github.com/, :github.com
+            if re.search(r"(?:^|[/@:])github\.com(?:[/:]|$)", content, re.MULTILINE):
                 return "ghcr.io"
-            if "gitlab.com" in content:
+            if re.search(r"(?:^|[/@:])gitlab\.com(?:[/:]|$)", content, re.MULTILINE):
                 return "registry.gitlab.com"
-        except Exception:
+        except OSError:
+            # Best-effort: skip if git config is unreadable
             pass
 
     return "docker.io"

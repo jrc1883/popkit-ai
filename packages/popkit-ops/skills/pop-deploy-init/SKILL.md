@@ -160,12 +160,12 @@ Initialize deployment configuration for your project. Detects available targets 
 
 ## Required Decision Points
 
-| Step | When                     | Decision ID         |
-| ---- | ------------------------ | ------------------- |
-| 1    | After target detection   | `target_selection`  |
-| 2    | Multiple targets         | `priority_target`   |
-| 3    | CI/CD configuration      | `ci_trigger_mode`   |
-| 4    | After config creation    | `run_setup`         |
+| Step | When                   | Decision ID        |
+| ---- | ---------------------- | ------------------ |
+| 1    | After target detection | `target_selection` |
+| 2    | Multiple targets       | `priority_target`  |
+| 3    | CI/CD configuration    | `ci_trigger_mode`  |
+| 4    | After config creation  | `run_setup`        |
 
 **Skipping these violates PopKit UX standard.**
 
@@ -178,6 +178,7 @@ python scripts/detect_deploy_targets.py --dir .
 ```
 
 This analyzes:
+
 - `package.json` / `pyproject.toml` for registry targets (npm/PyPI)
 - `Dockerfile` / `docker-compose.yml` for Docker targets
 - `vercel.json` / `netlify.toml` for platform targets
@@ -291,11 +292,13 @@ Summary:
 ### Docker Target
 
 Detected when:
+
 - `Dockerfile` exists (high confidence)
 - `docker-compose.yml` exists (high confidence)
 - `package.json` has docker scripts (medium confidence)
 
 Configuration:
+
 - Image name from project name
 - Registry from git remote (ghcr.io for GitHub)
 - Multi-stage build template if TypeScript/compiled
@@ -303,11 +306,13 @@ Configuration:
 ### npm Target
 
 Detected when:
+
 - `package.json` exists with name field (high confidence)
 - No "private": true (required)
 - Has main/exports field (high confidence)
 
 Configuration:
+
 - Registry URL (default: npmjs.org)
 - Access level (public/restricted)
 - Publish directory (default: .)
@@ -315,11 +320,13 @@ Configuration:
 ### PyPI Target
 
 Detected when:
+
 - `pyproject.toml` exists (high confidence)
 - Has `[project]` section with name (required)
 - Has build system configuration (high confidence)
 
 Configuration:
+
 - Registry URL (default: pypi.org)
 - Build backend (setuptools, hatch, poetry)
 - Distribution format (wheel, sdist)
@@ -327,11 +334,13 @@ Configuration:
 ### Vercel Target
 
 Detected when:
+
 - `vercel.json` exists (high confidence)
 - `package.json` has Next.js dependency (high confidence)
 - `.vercel/` directory exists (medium confidence)
 
 Configuration:
+
 - Project ID (from vercel.json or CLI)
 - Team ID (optional)
 - Production branch
@@ -339,10 +348,12 @@ Configuration:
 ### Netlify Target
 
 Detected when:
+
 - `netlify.toml` exists (high confidence)
 - Static site generator detected (medium confidence)
 
 Configuration:
+
 - Site ID
 - Build command
 - Publish directory
@@ -350,11 +361,13 @@ Configuration:
 ### GitHub Releases Target
 
 Detected when:
+
 - Git repository exists (required)
-- Has version tags (v*) (medium confidence)
+- Has version tags (v\*) (medium confidence)
 - CHANGELOG.md exists (medium confidence)
 
 Configuration:
+
 - Release notes source (CHANGELOG, commits, manual)
 - Asset patterns (binaries, archives)
 - Draft vs publish immediately
@@ -362,13 +375,16 @@ Configuration:
 ## Integration
 
 **Called by:**
+
 - `/popkit-ops:deploy init` command
 - Manual skill invocation
 
 **Triggers:**
+
 - deployment-validator agent (for pre-deploy checks)
 
 **Followed by:**
+
 - `pop-deploy-setup` - Generate deployment files
 - `pop-deploy-validate` - Pre-deployment validation
 
@@ -384,6 +400,7 @@ Configuration:
 ## Examples
 
 See `examples/` for:
+
 - `docker-target.md` - Docker deployment setup
 - `npm-target.md` - npm publishing setup
 - `multi-target.md` - Multiple target configuration
