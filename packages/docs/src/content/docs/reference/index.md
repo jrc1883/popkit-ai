@@ -21,6 +21,10 @@ Specialized AI agents organized by tier (Always Active, On-Demand, Feature Workf
 
 Reusable automation skills for project management, development workflows, operations, and research.
 
+### [Configuration](/reference/configuration/)
+
+Complete reference for all configuration files, options, and schemas including routine profiles, custom routines, and environment variables.
+
 ## Source Files
 
 Reference pages are generated from plugin source files:

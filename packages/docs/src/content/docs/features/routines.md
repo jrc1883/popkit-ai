@@ -5,37 +5,136 @@ description: Day-bracketing workflows with health checks
 
 # Morning/Nightly Routines
 
-PopKit provides day-bracketing workflows that check project health at the start and end of each day.
+PopKit provides day-bracketing workflows that check project health at the start and end of each day. Routines are **programmatic workflows** with predictable, deterministic steps - not AI-generated guesses.
 
-## Morning Routine
+## The Routine Concept
+
+Morning and nightly are two **built-in routines** (ID: `pk`). You can also create custom routines for your specific workflow needs.
+
+| Type    | Built-in ID  | Purpose                    | Output              |
+| ------- | ------------ | -------------------------- | ------------------- |
+| Morning | `pk`         | Start-of-day health check  | Ready to Code Score |
+| Nightly | `pk`         | End-of-day cleanup & save  | Sleep Score         |
+| Custom  | `<prefix>-N` | Project-specific workflows | Custom score        |
+
+---
+
+## How Morning Routine Works
 
 **Command**: `/popkit-dev:routine morning`
 
-**What it does**:
+The morning routine executes a **5-step deterministic pipeline**:
 
-1. **Project Health Check**
-   - Git status and unpushed commits
-   - Dependency updates available
-   - Test failures
-   - Security vulnerabilities
+### Step 1: Restore Session
 
-2. **Context Restoration**
-   - Restore previous session state
-   - Load work-in-progress branches
-   - Review open PRs
+**What it does**: Reads `STATUS.json` to restore previous context
 
-3. **Daily Planning**
-   - Show open issues
-   - Suggest priority tasks
-   - Review milestones
+**Programmatic**:
 
-4. **Ready to Code Score**
-   - 0-100 score based on health
-   - Green (90+): All systems go
-   - Yellow (70-89): Minor issues
-   - Red (<70): Critical issues
+```python
+# Reads STATUS.json from project root
+status = json.load("STATUS.json")
+session_data = {
+    "last_nightly_score": status["last_nightly_routine"]["sleep_score"],
+    "last_work_summary": status["git_status"]["action_required"],
+    "previous_branch": status["git_status"]["current_branch"],
+}
+```
 
-**Output**:
+### Step 2: Collect State
+
+**What it does**: Runs shell commands to gather current project state
+
+**Programmatic**:
+
+```bash
+# Git state
+git fetch --prune
+git status --porcelain
+git rev-list --count HEAD..origin/main
+git stash list
+
+# GitHub state (if gh CLI available)
+gh pr list --state open --json number,title,reviewDecision
+gh issue list --state open --json number,title,assignees,labels
+
+# Service health (platform-specific)
+pgrep -f node
+pgrep -f redis-server
+pgrep -f postgres
+```
+
+### Step 3: Calculate Score
+
+**What it does**: Applies deterministic scoring formula
+
+**Programmatic**:
+
+| Check                   | Points | Criteria                    |
+| ----------------------- | ------ | --------------------------- |
+| Clean working directory | 25     | No uncommitted changes      |
+| Tests passing           | 25     | All tests pass              |
+| CI status               | 20     | Last run successful         |
+| Dependencies            | 15     | No critical vulnerabilities |
+| Documentation           | 15     | CLAUDE.md up to date        |
+
+Score interpretation:
+
+- **90-100**: Green - All systems go
+- **70-89**: Yellow - Minor issues
+- **< 70**: Red - Critical issues need attention
+
+### Step 4: Generate Report
+
+**What it does**: Formats collected data into readable output
+
+Uses templates from `packages/popkit-dev/output-styles/morning-dashboard.md`
+
+### Step 5: Capture State
+
+**What it does**: Writes current state to `STATUS.json` for tomorrow
+
+**Programmatic**:
+
+```python
+# Writes to STATUS.json
+{
+    "session_id": "morning-2024-01-15-083045",
+    "timestamp": "2024-01-15T08:30:45Z",
+    "last_morning_routine": {
+        "executed_at": "2024-01-15T08:30:45Z",
+        "ready_to_code_score": "87/100",
+        "breakdown": {...}
+    },
+    "recommendations": {
+        "before_coding": ["Sync with remote: git pull (3 commits behind)"],
+        "todays_focus": ["Review 2 pending PRs"]
+    }
+}
+```
+
+---
+
+## How Nightly Routine Works
+
+**Command**: `/popkit-dev:routine nightly`
+
+### Sleep Score Calculation
+
+| Check                  | Points | Criteria                        |
+| ---------------------- | ------ | ------------------------------- |
+| Uncommitted work saved | 25     | No unsaved changes or committed |
+| Branches cleaned       | 20     | No stale branches               |
+| Issues updated         | 20     | Today's issues have status      |
+| CI passing             | 15     | Last run successful             |
+| Services stopped       | 10     | Dev services shut down          |
+| Logs archived          | 10     | Session logs saved              |
+
+---
+
+## Routine Output Examples
+
+### Morning Routine
 
 ```
 ☀️ Morning Routine Report
@@ -58,34 +157,7 @@ Ready to Code Score: 92/100 ✅
 - Review open PRs
 ```
 
-## Nightly Routine
-
-**Command**: `/popkit-dev:routine nightly`
-
-**What it does**:
-
-1. **Work Summary**
-   - List commits made today
-   - Show files modified
-   - Count lines added/removed
-
-2. **State Capture**
-   - Save current work state
-   - Capture open files
-   - Store session context
-
-3. **Cleanup Tasks**
-   - Stash uncommitted changes
-   - Delete merged branches
-   - Clear temporary files
-
-4. **Sleep Score**
-   - 0-100 score based on cleanup
-   - Green (90+): Ready to rest
-   - Yellow (70-89): Minor cleanup needed
-   - Red (<70): Incomplete work
-
-**Output**:
+### Nightly Routine
 
 ```
 🌙 Nightly Routine Report
@@ -111,68 +183,183 @@ Sleep Score: 88/100 ✅
 - Other
 ```
 
-## Quick Mode
+---
 
-For faster execution, use quick mode:
+## Profiles
+
+Pre-configured flag combinations for common use cases:
+
+| Profile    | Speed  | Flags Applied                                             |
+| ---------- | ------ | --------------------------------------------------------- |
+| `minimal`  | < 10s  | `--quick --skip-tests --skip-services --skip-deployments` |
+| `standard` | ~20s   | (defaults)                                                |
+| `thorough` | ~60s   | `--full --measure`                                        |
+| `ci`       | varies | `--optimized --measure --simple --no-cache`               |
 
 ```bash
-# Morning quick check
-/popkit-dev:routine morning quick
+# Fast morning check
+/popkit-dev:routine morning --profile minimal
 
-# Nightly quick summary
-/popkit-dev:routine nightly quick
+# Deep analysis with metrics
+/popkit-dev:routine morning --profile thorough
 ```
 
-Quick mode skips detailed analysis and provides summary only.
+---
+
+## All Flags
+
+| Flag                 | Effect                                     |
+| -------------------- | ------------------------------------------ |
+| `--quick`            | One-line summary instead of full report    |
+| `--measure`          | Track performance metrics                  |
+| `--optimized`        | Use caching for efficiency                 |
+| `--no-cache`         | Force fresh execution, bypass cache        |
+| `--simple`           | Markdown tables instead of ASCII dashboard |
+| `--skip-tests`       | Skip test execution                        |
+| `--skip-services`    | Skip service health checks                 |
+| `--skip-deployments` | Skip deployment status check               |
+| `--full`             | Include all checks (slower)                |
+| `--no-nightly`       | Skip "From Last Night" section             |
+| `--no-upstream`      | Skip Anthropic upstream update check       |
+
+### Smart Defaults
+
+- `--measure` automatically enables `--simple` for parseable output
+- `--full` overrides `--optimized` (thorough checks can't be cached)
+
+---
 
 ## Custom Routines
 
-Create custom routines for your workflow:
+Create project-specific routines beyond `pk`.
 
-### 1. Generate Template
+### Available Slots
 
-```bash
-/popkit-dev:routine generate lunch-break
-```
+Each project can have up to **5 custom routines** per type (morning/nightly).
 
-### 2. Edit Template
+IDs use your project prefix: `rc-1`, `rc-2`, `maa-1`, etc.
 
-Edit `.popkit/routines/lunch-break.json`
-
-### 3. Run Custom Routine
+### Create a Custom Routine
 
 ```bash
-/popkit-dev:routine lunch-break
+/popkit-dev:routine generate
 ```
 
-## Routine Configuration
+This creates:
 
-Configure routine behavior in `.popkit/config.json`:
+```
+.claude/popkit/routines/morning/<prefix>-1/
+├── routine.md      # Routine definition with checks
+├── config.json     # Score weights and settings
+└── checks/         # Custom check scripts
+```
+
+### List Available Routines
+
+```bash
+/popkit-dev:routine list
+```
+
+Output:
+
+```
+Morning Routines
+
+| ID    | Name                  | Default | Created    |
+|-------|-----------------------|---------|------------|
+| pk    | PopKit Standard       | yes     | (built-in) |
+| rc-1  | Full Stack Check      |         | 2024-01-15 |
+
+Slots available: 4 of 5
+```
+
+### Set Default Routine
+
+```bash
+/popkit-dev:routine set rc-1
+```
+
+### Run Specific Routine
+
+```bash
+/popkit-dev:routine morning run rc-1
+```
+
+---
+
+## Configuration Files
+
+### Main Config
+
+Location: `.claude/popkit/config.json`
 
 ```json
 {
+  "project_name": "Reseller Central",
+  "prefix": "rc",
+  "defaults": {
+    "morning": "pk",
+    "nightly": "pk"
+  },
   "routines": {
-    "morning": {
-      "enabled": true,
-      "autoRun": false,
-      "checks": ["git", "dependencies", "tests", "security"]
-    },
-    "nightly": {
-      "enabled": true,
-      "autoRun": false,
-      "cleanup": ["branches", "temp-files", "stash"]
-    }
+    "morning": [
+      {
+        "id": "rc-1",
+        "name": "Full Stack Check",
+        "description": "Includes database and Redis health",
+        "created": "2024-01-15T08:00:00Z",
+        "based_on": "pk"
+      }
+    ],
+    "nightly": []
   }
 }
 ```
+
+### Session State
+
+Location: `STATUS.json` (project root)
+
+This file persists across sessions and enables context restoration.
+
+See [Configuration Reference](/reference/configuration/) for complete schema documentation.
+
+---
+
+## Performance Measurement
+
+Track routine efficiency with `--measure`:
+
+```bash
+/popkit-dev:routine morning --measure
+```
+
+View measurements:
+
+```bash
+/popkit-core:stats routine
+/popkit-core:stats routine morning --all
+```
+
+Measurements include:
+
+- Duration (ms)
+- Tool calls
+- Token usage (input/output)
+- Cost estimate (USD)
+- Per-check breakdown
+
+---
 
 ## Best Practices
 
 1. **Run Morning Routine First**: Start each day with health check
 2. **Run Nightly Routine Last**: End each day with cleanup
 3. **Address Red Scores**: Fix critical issues before coding
-4. **Review Priorities**: Use morning routine for planning
-5. **Commit Before Nightly**: Ensure work is saved
+4. **Use Profiles**: Match routine depth to your time
+5. **Create Custom Routines**: Tailor checks to your stack
+
+---
 
 ## Troubleshooting
 
@@ -205,11 +392,14 @@ Configure routine behavior in `.popkit/config.json`:
 **Solution**:
 
 - Ensure nightly routine ran successfully
-- Check `.popkit/state/` directory exists
+- Check `STATUS.json` exists in project root
 - Manually run: `/popkit-core:project restore`
+
+---
 
 ## Next Steps
 
+- Review [Configuration Reference](/reference/configuration/)
 - Learn about [Power Mode](/features/power-mode/)
 - Explore [Feature Development](/features/feature-dev/)
 - Review [Git Workflows](/features/git-workflows/)
