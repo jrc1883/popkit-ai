@@ -9,61 +9,99 @@ Patterns detected:
 - origin/claude/research-*
 - origin/claude/*-research-*
 - Branches with research docs (*.md in root, .claude/research/, or legacy docs/research/)
+
+Usage:
+    from popkit_shared.utils.research_branch_detector import (
+        fetch_remotes,
+        get_research_branches,
+        parse_research_doc,
+        get_branch_content,
+    )
 """
 
 import json
 import re
-import subprocess
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
+
+from popkit_shared.utils.subprocess_utils import run_git_command
 
 
 @dataclass
 class ResearchBranch:
-    """Represents a detected research branch."""
+    """Represents a detected research branch.
 
-    full_name: str  # e.g., origin/claude/research-claude-code-features-01Wp...
-    short_name: str  # e.g., research-claude-code-features
-    topic: str  # e.g., claude-code-features
-    created_ago: str  # e.g., "2 hours ago"
+    Attributes:
+        full_name: Full remote ref (e.g., origin/claude/research-claude-code-features-01Wp...).
+        short_name: Cleaned short name without remote prefix or session ID suffix.
+        topic: Extracted topic slug (e.g., claude-code-features).
+        created_ago: Human-readable time since last commit (e.g., "2 hours ago").
+        commit_count: Number of commits ahead of the main branch.
+        files_changed: List of file paths changed relative to main.
+        has_docs: Whether the branch contains documentation files.
+        doc_paths: Paths to detected research documentation files.
+    """
+
+    full_name: str
+    short_name: str
+    topic: str
+    created_ago: str
     commit_count: int
     files_changed: List[str]
     has_docs: bool
     doc_paths: List[str]
 
 
-def run_git(args: List[str], check: bool = False) -> Tuple[bool, str]:
-    """Run a git command and return success status and output."""
-    try:
-        result = subprocess.run(["git"] + args, capture_output=True, text=True, timeout=30)
-        if check and result.returncode != 0:
-            return False, result.stderr
-        return True, result.stdout.strip()
-    except subprocess.TimeoutExpired:
-        return False, "Command timed out"
-    except Exception as e:
-        return False, str(e)
+def _run_git(args: List[str]) -> Tuple[bool, str]:
+    """Run a git command and return (success, output).
+
+    Thin wrapper around subprocess_utils.run_git_command that returns
+    (bool, str) for backward compatibility with internal callers.
+
+    Args:
+        args: Git arguments without the leading 'git'.
+
+    Returns:
+        Tuple of (success, output_or_error).
+    """
+    output, success = run_git_command(args)
+    return success, output
 
 
 def fetch_remotes() -> bool:
-    """Fetch all remotes and prune deleted branches."""
-    success, _ = run_git(["fetch", "--all", "--prune"])
+    """Fetch all remotes and prune deleted branches.
+
+    Runs ``git fetch --all --prune`` so that the local view of remote
+    branches is up to date before detection.
+
+    Returns:
+        True if the fetch succeeded, False otherwise.
+    """
+    success, _ = _run_git(["fetch", "--all", "--prune"])
     return success
 
 
-def get_research_branches() -> List[ResearchBranch]:
-    """
-    Detect research branches matching known patterns.
+def get_research_branches(remote: str = "origin") -> List[ResearchBranch]:
+    """Detect research branches matching known patterns.
 
-    Patterns:
-    1. origin/claude/research-*
-    2. origin/claude/*-research-*
-    3. Any branch with .claude/research/*.md, legacy docs/research/*.md, or RESEARCH*.md
+    Scans remote branches for names that match Claude Code Web session
+    research patterns:
+
+    1. ``{remote}/claude/research-*``
+    2. ``{remote}/claude/*-research-*``
+
+    Args:
+        remote: Git remote name to scan. Defaults to "origin".
+
+    Returns:
+        List of ResearchBranch objects with metadata for each detected
+        branch. Returns an empty list if no branches match or if the
+        git command fails.
     """
     branches: List[ResearchBranch] = []
 
     # Get all remote branches
-    success, output = run_git(["branch", "-r", "--format=%(refname:short)"])
+    success, output = _run_git(["branch", "-r", "--format=%(refname:short)"])
     if not success:
         return branches
 
@@ -71,8 +109,8 @@ def get_research_branches() -> List[ResearchBranch]:
 
     # Pattern 1 & 2: Claude research branches
     research_patterns = [
-        r"origin/claude/research-(.+)",
-        r"origin/claude/(.+)-research-(.+)",
+        rf"{re.escape(remote)}/claude/research-(.+)",
+        rf"{re.escape(remote)}/claude/(.+)-research-(.+)",
     ]
 
     for branch in all_remotes:
@@ -93,8 +131,15 @@ def get_research_branches() -> List[ResearchBranch]:
 
 
 def _analyze_branch(full_name: str, match: re.Match) -> Optional[ResearchBranch]:
-    """Analyze a branch to extract research information."""
+    """Analyze a branch to extract research information.
 
+    Args:
+        full_name: Full remote branch ref (e.g., origin/claude/research-topic-abc123).
+        match: Regex match object from pattern detection.
+
+    Returns:
+        A ResearchBranch with populated metadata, or None if analysis fails.
+    """
     # Extract topic from match groups
     groups = match.groups()
     if len(groups) == 1:
@@ -106,15 +151,15 @@ def _analyze_branch(full_name: str, match: re.Match) -> Optional[ResearchBranch]
     topic_clean = re.sub(r"-[A-Za-z0-9]{20,}$", "", topic)
 
     # Get commit info
-    success, commit_time = run_git(["log", "-1", "--format=%ar", full_name])
+    success, commit_time = _run_git(["log", "-1", "--format=%ar", full_name])
     created_ago = commit_time if success else "unknown"
 
     # Get commit count ahead of master
-    success, count = run_git(["rev-list", "--count", f"master..{full_name}"])
+    success, count = _run_git(["rev-list", "--count", f"master..{full_name}"])
     commit_count = int(count) if success and count.isdigit() else 0
 
     # Get files changed
-    success, diff_stat = run_git(["diff", "--stat", "--name-only", f"master...{full_name}"])
+    success, diff_stat = _run_git(["diff", "--stat", "--name-only", f"master...{full_name}"])
     files_changed = diff_stat.split("\n") if success and diff_stat else []
     files_changed = [f.strip() for f in files_changed if f.strip()]
 
@@ -152,8 +197,41 @@ def _analyze_branch(full_name: str, match: re.Match) -> Optional[ResearchBranch]
     )
 
 
+def get_branch_content(branch: str, path: str) -> str:
+    """Read a file from a branch without checking it out.
+
+    Uses ``git show <branch>:<path>`` to retrieve file contents directly
+    from the object store.
+
+    Args:
+        branch: Full branch ref (e.g., "origin/claude/research-topic").
+        path: File path relative to the repository root.
+
+    Returns:
+        File contents as a string.
+
+    Raises:
+        FileNotFoundError: If the path does not exist on the branch.
+        RuntimeError: If the git command fails for another reason.
+    """
+    success, output = _run_git(["show", f"{branch}:{path}"])
+    if not success:
+        if "does not exist" in output or "not exist" in output or "fatal" in output:
+            raise FileNotFoundError(f"Path '{path}' not found on branch '{branch}': {output}")
+        raise RuntimeError(f"Failed to read '{path}' from '{branch}': {output}")
+    return output
+
+
 def format_branch_table(branches: List[ResearchBranch]) -> str:
-    """Format research branches as a markdown table."""
+    """Format research branches as a markdown table.
+
+    Args:
+        branches: List of detected research branches.
+
+    Returns:
+        Markdown-formatted table string, or a "no branches" message if
+        the list is empty.
+    """
     if not branches:
         return "No research branches detected."
 
@@ -169,37 +247,60 @@ def format_branch_table(branches: List[ResearchBranch]) -> str:
 
 
 def get_branch_content_preview(branch: ResearchBranch, max_lines: int = 50) -> Dict[str, str]:
-    """Get preview of doc content from a research branch."""
-    previews = {}
+    """Get preview of doc content from a research branch.
+
+    Reads the first ``max_lines`` of up to 3 documentation files found
+    on the branch.
+
+    Args:
+        branch: ResearchBranch to preview.
+        max_lines: Maximum number of lines to return per file.
+
+    Returns:
+        Dict mapping file path to truncated content string.
+    """
+    previews: Dict[str, str] = {}
 
     for doc_path in branch.doc_paths[:3]:  # Limit to 3 docs
-        success, content = run_git(["show", f"{branch.full_name}:{doc_path}"])
-        if success:
+        try:
+            content = get_branch_content(branch.full_name, doc_path)
             lines = content.split("\n")[:max_lines]
             previews[doc_path] = "\n".join(lines)
+        except (FileNotFoundError, RuntimeError):
+            continue
 
     return previews
 
 
-def parse_research_doc(content: str) -> Dict[str, str]:
+def parse_research_doc(content: str) -> Dict[str, object]:
+    """Parse a research document to extract structured information.
+
+    Extracts YAML-style frontmatter metadata and markdown sections from
+    a research document following the standard format::
+
+        # Research: [Topic Name]
+
+        **Research Date:** YYYY-MM-DD
+        **Status:** Research Document
+        **Priority:** P1-high | P2-medium | P3-low
+
+        ## Executive Summary
+        [This becomes the issue body]
+
+        ## Implementation Tasks
+        - [ ] Task 1
+        - [ ] Task 2
+
+    Args:
+        content: Raw markdown content of the research document.
+
+    Returns:
+        Dict with keys: title, date, priority, summary, tasks,
+        raw_content. Tasks is a list of strings; other values are
+        strings. Missing fields default to empty strings or
+        "P2-medium" for priority.
     """
-    Parse a research document to extract structured information.
-
-    Expected format:
-    # Research: [Topic Name]
-
-    **Research Date:** YYYY-MM-DD
-    **Status:** Research Document
-    **Priority:** P1-high | P2-medium | P3-low
-
-    ## Executive Summary
-    [This becomes the issue body]
-
-    ## Implementation Tasks
-    - [ ] Task 1
-    - [ ] Task 2
-    """
-    result = {
+    result: Dict[str, object] = {
         "title": "",
         "date": "",
         "priority": "P2-medium",
@@ -222,17 +323,17 @@ def parse_research_doc(content: str) -> Dict[str, str]:
     # Extract metadata
     for line in lines:
         if "**Research Date:**" in line or "**Date:**" in line or "Date:" in line:
-            match = re.search(r"(\d{4}-\d{2}-\d{2}|[A-Z][a-z]+ \d{1,2}, \d{4})", line)
-            if match:
-                result["date"] = match.group(0)
+            date_match = re.search(r"(\d{4}-\d{2}-\d{2}|[A-Z][a-z]+ \d{1,2}, \d{4})", line)
+            if date_match:
+                result["date"] = date_match.group(0)
         elif "**Priority:**" in line:
-            match = re.search(r"P[0-3]-(critical|high|medium|low)", line, re.IGNORECASE)
-            if match:
-                result["priority"] = match.group(0)
+            prio_match = re.search(r"P[0-3]-(critical|high|medium|low)", line, re.IGNORECASE)
+            if prio_match:
+                result["priority"] = prio_match.group(0)
 
     # Extract executive summary
     in_summary = False
-    summary_lines = []
+    summary_lines: List[str] = []
     for line in lines:
         if "## Executive Summary" in line:
             in_summary = True
@@ -245,6 +346,7 @@ def parse_research_doc(content: str) -> Dict[str, str]:
     result["summary"] = "\n".join(summary_lines).strip()
 
     # Extract implementation tasks
+    tasks: List[str] = []
     in_tasks = False
     for line in lines:
         if "## Implementation" in line or "## Tasks" in line:
@@ -255,21 +357,30 @@ def parse_research_doc(content: str) -> Dict[str, str]:
         elif in_tasks:
             task_match = re.match(r"^\s*-\s*\[[ x]\]\s*(.+)", line)
             if task_match:
-                result["tasks"].append(task_match.group(1))
+                tasks.append(task_match.group(1))
+
+    result["tasks"] = tasks
 
     return result
 
 
-def generate_issue_body(branch: ResearchBranch, parsed_docs: List[Dict[str, str]]) -> str:
-    """Generate a GitHub issue body from research branch content."""
+def generate_issue_body(branch: ResearchBranch, parsed_docs: List[Dict[str, object]]) -> str:
+    """Generate a GitHub issue body from research branch content.
 
+    Args:
+        branch: The research branch to generate the issue for.
+        parsed_docs: List of parsed research documents (from parse_research_doc).
+
+    Returns:
+        Markdown-formatted issue body string.
+    """
     # Use first doc for primary content
     primary = parsed_docs[0] if parsed_docs else {}
 
     body_parts = [
         "## Summary",
         "",
-        primary.get("summary", "Research findings from Claude Code Web session."),
+        str(primary.get("summary", "Research findings from Claude Code Web session.")),
         "",
         "## Source",
         f"- **Branch:** `{branch.full_name}`",
@@ -342,10 +453,20 @@ if __name__ == "__main__":
             print(f"Branch '{branch_name}' not found")
 
     elif command == "parse" and len(sys.argv) > 2:
-        with open(sys.argv[2], "r") as f:
+        with open(sys.argv[2]) as f:
             content = f.read()
         result = parse_research_doc(content)
         print(json.dumps(result, indent=2))
+
+    elif command == "content" and len(sys.argv) > 3:
+        branch_ref = sys.argv[2]
+        file_path = sys.argv[3]
+        try:
+            content = get_branch_content(branch_ref, file_path)
+            print(content)
+        except (FileNotFoundError, RuntimeError) as e:
+            print(f"Error: {e}", file=sys.stderr)
+            sys.exit(1)
 
     else:
         print(f"Unknown command: {command}")

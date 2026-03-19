@@ -152,40 +152,49 @@ def create_research_entry(entry_type, title, content, context, rationale, altern
     return entry_id
 ```
 
-### Step 6: Generate Embedding (if cloud available)
+### Step 6: Generate Embedding (optional)
+
+Embedding generation is optional and requires a Voyage AI setup. Without it, research
+entries are still fully functional -- they are stored as structured JSON and searchable
+via keyword matching against the local index.
 
 ```python
 def embed_entry(entry):
-    """Generate and store embedding for semantic search."""
+    """Generate and store embedding for semantic search.
+
+    Requires VOYAGE_API_KEY environment variable. If not configured,
+    embedding is skipped and the entry relies on keyword-based search.
+
+    See: https://docs.voyageai.com/ for setup instructions.
+    """
     # Combine searchable content
     text = f"{entry['title']}\n{entry['content']}\n{entry.get('rationale', '')}"
 
-    # Check for cloud API
-    api_key = os.environ.get('POPKIT_API_KEY')
+    # Check for Voyage AI API key
+    api_key = os.environ.get('VOYAGE_API_KEY')
     if not api_key:
+        # No embedding provider configured -- this is fine.
+        # Entries are still searchable via keyword matching.
         return None
 
-    # Generate embedding via cloud
+    # Embedding generation via Voyage AI (when configured)
     try:
-        response = requests.post(
-            "https://api.thehouseofdeals.com/v1/embeddings",
-            headers={"Authorization": f"Bearer {api_key}"},
-            json={
-                "text": text,
-                "id": entry['id'],
-                "type": "research",
-                "metadata": {
-                    "title": entry['title'],
-                    "type": entry['type'],
-                    "tags": entry['tags'],
-                    "project": entry['project']
-                }
-            }
+        from popkit_shared.utils.voyage_client import generate_embedding
+        embedding_id = generate_embedding(
+            text=text,
+            entry_id=entry['id'],
+            metadata={
+                "title": entry['title'],
+                "type": entry['type'],
+                "tags": entry['tags'],
+                "project": entry['project'],
+            },
         )
-        if response.ok:
-            return response.json().get('embeddingId')
+        return embedding_id
+    except ImportError:
+        print("voyage_client not available -- skipping embedding")
     except Exception as e:
-        print(f"Embedding failed (offline mode): {e}")
+        print(f"Embedding generation failed: {e}")
 
     return None
 ```
@@ -216,7 +225,7 @@ def embed_entry(entry):
       "tags": ["auth", "infrastructure"],
       "project": "popkit-cloud",
       "createdAt": "2024-12-09T10:30:00Z",
-      "embeddingId": "vec_r001"
+      "embeddingId": "vec_r001"  // optional, null if VOYAGE_API_KEY not set
     }
   ],
   "tagIndex": {
@@ -264,8 +273,8 @@ def surface_related_research(issue_keywords):
         if any(kw.lower() in entry['title'].lower() for kw in issue_keywords):
             matches.append(entry)
 
-    # Semantic search (if cloud available)
-    if os.environ.get('POPKIT_API_KEY'):
+    # Semantic search (if Voyage AI configured)
+    if os.environ.get('VOYAGE_API_KEY'):
         semantic_matches = semantic_search(issue_keywords)
         matches.extend(semantic_matches)
 
@@ -387,7 +396,7 @@ Title: Use Redis for session storage
 Tags: auth, infrastructure, redis
 Project: popkit-cloud
 
-Embedding: Generated (cloud sync enabled)
+Embedding: Generated (requires VOYAGE_API_KEY) | Skipped (keyword search only)
 
 Use /popkit:research show r001 to view
 Use /popkit:research search "..." to find later
