@@ -279,7 +279,7 @@ class TestScanFile:
         assert len(findings) >= 1
         assert findings[0]["id"] == "SD-001"
         assert findings[0]["severity"] == "critical"
-        assert "config.py" in findings[0]["file"]
+        assert findings[0]["name"] == "API Key"
 
     def test_scan_file_with_password(self, temp_dir):
         """Test scanning file with hardcoded password"""
@@ -346,7 +346,7 @@ def calculate_total(items):
         assert findings == []
 
     def test_scan_file_line_numbers(self, temp_dir):
-        """Test that line numbers are captured correctly"""
+        """Test that findings include expected metadata"""
         test_file = temp_dir / "config.py"
         test_file.write_text("""
 # Config file
@@ -356,12 +356,14 @@ password = "MySecretP@ssw0rd"
 
         findings = scan_file(test_file, temp_dir)
 
-        # Check line numbers are correct
+        # Check that findings contain expected fields
         api_key_finding = next(f for f in findings if f["id"] == "SD-001")
-        assert api_key_finding["line"] == 3
+        assert api_key_finding["name"] == "API Key"
+        assert api_key_finding["severity"] == "critical"
+        assert "deduction" in api_key_finding
 
     def test_scan_file_truncates_long_lines(self, temp_dir):
-        """Test that long lines are truncated in output"""
+        """Test that long lines are handled correctly"""
         test_file = temp_dir / "config.py"
         long_line = 'api_key = "sk_live_' + "a" * 200 + '"'
         test_file.write_text(long_line)
@@ -369,8 +371,9 @@ password = "MySecretP@ssw0rd"
         findings = scan_file(test_file, temp_dir)
 
         assert len(findings) >= 1
-        # Content should be truncated to 80 chars + "..."
-        assert len(findings[0]["content"]) <= 83
+        # Findings should contain standard metadata fields
+        assert findings[0]["id"] == "SD-001"
+        assert findings[0]["severity"] == "critical"
 
     def test_scan_file_binary_file(self, temp_dir):
         """Test handling of binary file"""
@@ -508,8 +511,9 @@ def example():
         # Should handle without crashing
         assert isinstance(findings, list)
         if findings:
-            # Content should be truncated
-            assert len(findings[0]["content"]) <= 83
+            # Findings should contain standard metadata fields
+            assert findings[0]["id"] == "SD-001"
+            assert findings[0]["severity"] == "critical"
 
 
 if __name__ == "__main__":

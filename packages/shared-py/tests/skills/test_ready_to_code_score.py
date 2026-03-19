@@ -41,20 +41,25 @@ class TestCalculateReadyToCodeScore:
             "dependencies": {"outdated_count": 0},
             "git": {"behind_remote": 0},
             "github": {"prs_needing_review": [], "issues_needing_triage": []},
+            "session_branches": {"branches": []},
         }
 
         score, breakdown = calculate_ready_to_code_score(state)
 
         assert score == 100
-        assert breakdown["session_restored"]["points"] == 20
+        assert breakdown["session_restored"]["points"] == 15
         assert breakdown["services_healthy"]["points"] == 20
         assert breakdown["dependencies_updated"]["points"] == 15
         assert breakdown["branches_synced"]["points"] == 15
         assert breakdown["prs_reviewed"]["points"] == 15
-        assert breakdown["issues_triaged"]["points"] == 15
+        assert breakdown["issues_triaged"]["points"] == 10
+        assert breakdown["session_branches_clean"]["points"] == 10
 
     def test_zero_score(self):
         """Test worst case scenario with all checks failing"""
+        from datetime import datetime, timedelta, timezone
+
+        old_date = (datetime.now(timezone.utc) - timedelta(days=10)).isoformat()
         state = {
             "session": {"restored": False},
             "services": {"required_services": ["postgres", "redis"], "running_services": []},
@@ -63,6 +68,13 @@ class TestCalculateReadyToCodeScore:
             "github": {
                 "prs_needing_review": [1, 2, 3, 4],
                 "issues_needing_triage": [1, 2, 3, 4, 5],
+            },
+            "session_branches": {
+                "branches": [
+                    {"id": "branch-1", "merged": False, "created": old_date},
+                    {"id": "branch-2", "merged": False, "created": old_date},
+                    {"id": "branch-3", "merged": False, "created": old_date},
+                ]
             },
         }
 
@@ -76,6 +88,7 @@ class TestCalculateReadyToCodeScore:
         assert breakdown["branches_synced"]["points"] == 0
         assert breakdown["prs_reviewed"]["points"] == 0
         assert breakdown["issues_triaged"]["points"] == 0
+        assert breakdown["session_branches_clean"]["points"] == 0
 
     def test_empty_state(self):
         """Test with completely empty state"""
@@ -100,7 +113,7 @@ class TestCalculateReadyToCodeScore:
 
         score, breakdown = calculate_ready_to_code_score(state)
 
-        assert breakdown["session_restored"]["points"] == 20
+        assert breakdown["session_restored"]["points"] == 15
         assert breakdown["session_restored"]["status"] == "✅"
 
     def test_session_not_restored(self):
@@ -317,7 +330,7 @@ class TestCalculateReadyToCodeScore:
 
         score, breakdown = calculate_ready_to_code_score(state)
 
-        assert breakdown["issues_triaged"]["points"] == 15
+        assert breakdown["issues_triaged"]["points"] == 10
         assert breakdown["issues_triaged"]["status"] == "✅"
 
     def test_issues_few_need_triage(self):
@@ -332,7 +345,7 @@ class TestCalculateReadyToCodeScore:
 
         score, breakdown = calculate_ready_to_code_score(state)
 
-        assert breakdown["issues_triaged"]["points"] == 10
+        assert breakdown["issues_triaged"]["points"] == 5
         assert breakdown["issues_triaged"]["status"] == "⚠️"
 
     def test_issues_many_need_triage(self):
@@ -436,8 +449,8 @@ class TestFormatBreakdownTable:
         """Test basic table formatting"""
         breakdown = {
             "session_restored": {
-                "points": 20,
-                "max": 20,
+                "points": 15,
+                "max": 15,
                 "status": "✅",
                 "reason": "Session restored",
             },
@@ -453,32 +466,34 @@ class TestFormatBreakdownTable:
 
         assert "| Check | Points | Status |" in table
         assert "|-------|--------|--------|" in table
-        assert "| Session Restored | 20/20 |" in table
+        assert "| Session Restored | 15/15 |" in table
         assert "| Services Healthy | 10/20 |" in table
         assert "✅ Session restored" in table
         assert "⚠️ Some services down" in table
 
     def test_format_breakdown_all_dimensions(self):
-        """Test table with all 6 dimensions"""
+        """Test table with all 7 dimensions"""
         breakdown = {
-            "session_restored": {"points": 20, "max": 20, "status": "✅", "reason": "OK"},
+            "session_restored": {"points": 15, "max": 15, "status": "✅", "reason": "OK"},
             "services_healthy": {"points": 20, "max": 20, "status": "✅", "reason": "OK"},
             "dependencies_updated": {"points": 15, "max": 15, "status": "✅", "reason": "OK"},
             "branches_synced": {"points": 15, "max": 15, "status": "✅", "reason": "OK"},
             "prs_reviewed": {"points": 15, "max": 15, "status": "✅", "reason": "OK"},
-            "issues_triaged": {"points": 15, "max": 15, "status": "✅", "reason": "OK"},
+            "issues_triaged": {"points": 10, "max": 10, "status": "✅", "reason": "OK"},
+            "session_branches_clean": {"points": 10, "max": 10, "status": "✅", "reason": "OK"},
         }
 
         table = format_breakdown_table(breakdown)
 
-        # All 6 checks should be present
-        assert table.count("|") >= 24  # Header + separator + 6 rows
+        # All 7 checks should be present
+        assert table.count("|") >= 28  # Header + separator + 7 rows
         assert "Session Restored" in table
         assert "Services Healthy" in table
         assert "Dependencies Updated" in table
         assert "Branches Synced" in table
         assert "PRs Reviewed" in table
         assert "Issues Triaged" in table
+        assert "Session Branches" in table
 
     def test_format_breakdown_empty(self):
         """Test with empty breakdown"""
@@ -493,8 +508,8 @@ class TestFormatBreakdownTable:
     def test_format_breakdown_preserves_order(self):
         """Test that table preserves defined order"""
         breakdown = {
-            "issues_triaged": {"points": 15, "max": 15, "status": "✅", "reason": "Last"},
-            "session_restored": {"points": 20, "max": 20, "status": "✅", "reason": "First"},
+            "issues_triaged": {"points": 10, "max": 10, "status": "✅", "reason": "Last"},
+            "session_restored": {"points": 15, "max": 15, "status": "✅", "reason": "First"},
         }
 
         table = format_breakdown_table(breakdown)

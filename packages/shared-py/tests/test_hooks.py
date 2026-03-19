@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 
 
-def test_hook(hook_path, test_data):
+def run_hook_test(hook_path, test_data):
     """
     Test a hook with given input data.
 
@@ -143,7 +143,7 @@ def main():
 
         for case in cases:
             total_tests += 1
-            success, output, error = test_hook(hook_path, case["input"])
+            success, output, error = run_hook_test(hook_path, case["input"])
 
             if not success:
                 print(f"  ❌ {case['name']}")
