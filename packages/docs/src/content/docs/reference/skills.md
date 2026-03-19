@@ -1,11 +1,11 @@
 ---
 title: Skills Reference
-description: Complete reference for all 44 PopKit skills
+description: Complete reference for all 50 PopKit skills
 ---
 
 # Skills Reference
 
-PopKit provides 44 reusable skills across 4 plugins. Skills provide specialized automation for common development tasks.
+PopKit provides 50 reusable skills across 4 plugins. Skills provide specialized automation for common development tasks.
 
 ## Invocation Modes
 
@@ -197,7 +197,7 @@ Foundation skills for project management, embedding, and plugin operations.
 
 ---
 
-## popkit-dev (16 skills)
+## popkit-dev (17 skills)
 
 Development workflow skills for git operations, routines, and feature development.
 
@@ -377,7 +377,19 @@ Development workflow skills for git operations, routines, and feature developmen
 
 ---
 
-## popkit-ops (8 skills)
+### pop-session-branch
+
+**Description:** Create, switch, and merge session branches for side investigations. Branch off to explore bugs, research APIs, or debug issues without polluting main context. DAG-based session architecture inspired by Pi.
+
+**Use when:** You need to temporarily investigate something unrelated to your main task.
+
+```bash
+/popkit-dev:pop-session-branch
+```
+
+---
+
+## popkit-ops (13 skills)
 
 Operations and quality skills for assessments, testing, debugging, and benchmarking.
 
@@ -459,6 +471,56 @@ Operations and quality skills for assessments, testing, debugging, and benchmark
 
 ```bash
 /popkit-ops:pop-systematic-debugging
+```
+
+---
+
+### pop-deploy-init
+
+**Description:** Initialize deployment configuration for a project. Detects project type, target platform, and generates deploy.json configuration.
+
+```bash
+/popkit-ops:pop-deploy-init
+```
+
+---
+
+### pop-deploy-setup
+
+**Description:** Set up deployment infrastructure — generates Dockerfiles, docker-compose, Kubernetes manifests, and CI/CD pipeline configs based on deploy.json configuration.
+
+```bash
+/popkit-ops:pop-deploy-setup
+```
+
+---
+
+### pop-deploy-validate
+
+**Description:** Pre-deployment validation with build checks, test suite, security scans, and dependency audits. Generates readiness score (0-100) with go/no-go recommendation.
+
+```bash
+/popkit-ops:pop-deploy-validate
+```
+
+---
+
+### pop-deploy-execute
+
+**Description:** Execute deployments to target environments with dry-run support. Captures metrics, handles rollback on failure, records deployment history.
+
+```bash
+/popkit-ops:pop-deploy-execute
+```
+
+---
+
+### pop-deploy-rollback
+
+**Description:** Emergency rollback to previous versions with automatic and manual triggers. Validates rollback success and generates incident reports.
+
+```bash
+/popkit-ops:pop-deploy-rollback
 ```
 
 ---
