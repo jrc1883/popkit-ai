@@ -117,7 +117,7 @@ def calculate_sleep_score(
                 if age_days > 3:
                     stale_session_count += 1
             except (ValueError, TypeError):
-                pass
+                pass  # Malformed timestamp; skip stale check for this branch
 
     if len(unmerged_session) == 0:
         score += 10

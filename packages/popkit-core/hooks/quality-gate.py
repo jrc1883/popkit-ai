@@ -93,7 +93,7 @@ class QualityGateHook:
             try:
                 return json.loads(self.state_file.read_text())
             except json.JSONDecodeError:
-                pass
+                pass  # Corrupt state file; return default empty state
         return {
             "file_edit_count": 0,
             "recent_files": [],
@@ -116,7 +116,7 @@ class QualityGateHook:
             try:
                 return json.loads(self.config_file.read_text())
             except json.JSONDecodeError:
-                pass
+                pass  # Corrupt config file; ignore user overrides
         return None
 
     # =========================================================================
@@ -797,7 +797,7 @@ class QualityGateHook:
                 state = json.loads(power_state.read_text())
                 return state.get("active", False)
             except Exception:
-                pass
+                pass  # Corrupt power-mode state; fall through to env var check
 
         # Check environment variable
         return os.environ.get("POPKIT_POWER_MODE") == "1"

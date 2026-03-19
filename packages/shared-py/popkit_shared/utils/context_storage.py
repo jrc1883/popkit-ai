@@ -549,12 +549,12 @@ def get_context_storage(prefer: Optional[str] = None) -> ContextStorage:
         try:
             return UpstashContextStorage()
         except ValueError:
-            pass
+            pass  # Upstash credentials missing; fall through to auto-detect
     elif prefer == "cloud":
         try:
             return CloudAPIContextStorage()
         except ValueError:
-            pass
+            pass  # Cloud API credentials missing; fall through to auto-detect
 
     # Auto-detect
     # 1. Check for PopKit Cloud API
@@ -562,14 +562,14 @@ def get_context_storage(prefer: Optional[str] = None) -> ContextStorage:
         try:
             return CloudAPIContextStorage()
         except ValueError:
-            pass
+            pass  # Cloud API init failed despite key; try other backends
 
     # 2. Check for Upstash (Power Mode)
     if os.environ.get("UPSTASH_REDIS_REST_URL") and os.environ.get("UPSTASH_REDIS_REST_TOKEN"):
         try:
             return UpstashContextStorage()
         except ValueError:
-            pass
+            pass  # Upstash init failed despite env vars; fall back to file
 
     # 3. Default to file-based
     return FileContextStorage()

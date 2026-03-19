@@ -66,7 +66,7 @@ def get_current_version(project_dir: Path) -> str | None:
             pkg = json.loads(pkg_json.read_text())
             return pkg.get("version")
         except (json.JSONDecodeError, OSError):
-            pass
+            pass  # Corrupt or unreadable package.json; try other sources
 
     # pyproject.toml
     pyproject = project_dir / "pyproject.toml"
@@ -77,7 +77,7 @@ def get_current_version(project_dir: Path) -> str | None:
                 if line.strip().startswith("version") and "=" in line:
                     return line.split("=")[1].strip().strip('"').strip("'")
         except OSError:
-            pass
+            pass  # Unreadable pyproject.toml; try git tag next
 
     # Git tag
     try:
@@ -91,7 +91,7 @@ def get_current_version(project_dir: Path) -> str | None:
         if result.returncode == 0:
             return result.stdout.strip()
     except (subprocess.TimeoutExpired, FileNotFoundError):
-        pass
+        pass  # Git unavailable or timed out; no version detected
 
     return None
 
@@ -109,7 +109,7 @@ def get_git_sha(project_dir: Path) -> str | None:
         if result.returncode == 0:
             return result.stdout.strip()
     except (subprocess.TimeoutExpired, FileNotFoundError):
-        pass
+        pass  # Git unavailable or timed out; no SHA available
     return None
 
 

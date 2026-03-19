@@ -44,7 +44,7 @@ class ChainMetrics:
                 with open(METRICS_FILE, "r", encoding="utf-8") as f:
                     return json.load(f)
             except (json.JSONDecodeError, IOError):
-                pass
+                pass  # Corrupt or unreadable metrics file; return defaults below
 
         return {"version": "1.0.0", "runs": [], "aggregates": {}}
 

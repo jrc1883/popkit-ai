@@ -275,7 +275,7 @@ def get_brainstorm_context():
                 )
                 context_parts.append(f"Recent decisions: {decision_text}")
         except (json.JSONDecodeError, OSError):
-            pass
+            pass  # STATUS.json unreadable; skip context enrichment
 
     # Check decisions log for broader context
     decisions_log = _get_plugin_data_dir() / "decisions-log.json"
@@ -287,7 +287,7 @@ def get_brainstorm_context():
                 count = len(log_entries)
                 context_parts.append(f"{count} previous decisions logged")
         except (json.JSONDecodeError, OSError):
-            pass
+            pass  # Decisions log unreadable; skip decision count
 
     return " | ".join(context_parts) if context_parts else ""
 

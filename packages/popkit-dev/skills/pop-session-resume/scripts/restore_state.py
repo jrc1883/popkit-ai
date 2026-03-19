@@ -214,11 +214,11 @@ def collect_session_branch_context(status: Dict[str, Any]) -> Dict[str, Any]:
                         if age_days > 3:
                             result["stale"].append(b.get("id"))
                     except (ValueError, TypeError):
-                        pass
+                        pass  # Malformed timestamp; leave age as zero
                 result["unmerged"].append(branch_info)
             return result
         except Exception:
-            pass
+            pass  # API branch listing failed; fall back to STATUS.json
 
     # Fallback: read from STATUS.json directly
     branches = status.get("branches", {})
@@ -247,7 +247,7 @@ def collect_session_branch_context(status: Dict[str, Any]) -> Dict[str, Any]:
                 if age_days > 3:
                     result["stale"].append(bid)
             except (ValueError, TypeError):
-                pass
+                pass  # Malformed timestamp; leave age as zero
         result["unmerged"].append(branch_info)
 
     return result

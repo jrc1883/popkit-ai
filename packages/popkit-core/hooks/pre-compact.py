@@ -51,7 +51,7 @@ def get_git_snapshot():
         if result.returncode == 0:
             snapshot["branch"] = result.stdout.strip()
     except Exception:
-        pass
+        pass  # Git unavailable or not a repo; skip branch capture
 
     try:
         result = subprocess.run(
@@ -63,7 +63,7 @@ def get_git_snapshot():
         if result.returncode == 0:
             snapshot["last_commit"] = result.stdout.strip()
     except Exception:
-        pass
+        pass  # Git unavailable or not a repo; skip last-commit capture
 
     return snapshot
 
@@ -93,7 +93,7 @@ def get_session_token_summary():
                 summary["tool_calls"] = data.get("tool_calls", 0)
                 break
             except (json.JSONDecodeError, OSError):
-                pass
+                pass  # Session token file unreadable; return zero defaults
 
     return summary
 

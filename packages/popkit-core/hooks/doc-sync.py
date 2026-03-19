@@ -89,7 +89,7 @@ class DocSyncChecker:
                     data = json.load(f)
                     return data.get("version")
             except (json.JSONDecodeError, IOError):
-                pass
+                pass  # Corrupt plugin.json; treat version as unknown
         return None
 
     def get_marketplace_version(self) -> Optional[str]:
@@ -101,7 +101,7 @@ class DocSyncChecker:
                     data = json.load(f)
                     return data.get("version")
             except (json.JSONDecodeError, IOError):
-                pass
+                pass  # Corrupt marketplace.json; treat version as unknown
         return None
 
     def get_hook_count(self) -> int:
@@ -113,7 +113,7 @@ class DocSyncChecker:
                     data = json.load(f)
                     return len(data.get("hooks", []))
             except (json.JSONDecodeError, IOError):
-                pass
+                pass  # Corrupt hooks.json; report zero hooks
         return 0
 
     def get_command_count(self) -> Dict[str, int]:

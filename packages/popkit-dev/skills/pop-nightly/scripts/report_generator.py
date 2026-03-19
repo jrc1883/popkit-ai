@@ -272,7 +272,7 @@ def _generate_session_branches_section(state: Dict[str, Any]) -> List[str]:
                     status = "STALE"
                     stale_branches.append((branch_id, int(age_days)))
             except (ValueError, TypeError):
-                pass
+                pass  # Malformed timestamp; leave age as default
 
         active_marker = " (current)" if branch_id == current_branch else ""
         lines.append(
@@ -352,7 +352,7 @@ def _generate_recommendations_before_leaving(
                 if (now - created_dt).total_seconds() / 86400 > 3:
                     stale_session.append(b.get("id", "?"))
             except (ValueError, TypeError):
-                pass
+                pass  # Malformed timestamp; skip stale check for this branch
     if stale_session:
         names = ", ".join(stale_session[:3])
         recommendations.append(f"Clean up stale session branches: {names}")

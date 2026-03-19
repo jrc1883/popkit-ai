@@ -50,7 +50,7 @@ def get_git_branch():
         if result.returncode == 0:
             return result.stdout.strip()
     except Exception:
-        pass
+        pass  # Git unavailable or not a repo; return empty string
     return ""
 
 
@@ -66,7 +66,7 @@ def get_git_last_commit():
         if result.returncode == 0:
             return result.stdout.strip()
     except Exception:
-        pass
+        pass  # Git unavailable or not a repo; return empty string
     return ""
 
 
@@ -218,7 +218,7 @@ def extract_in_progress(input_data):
                 elif isinstance(current_task, str):
                     in_progress.append(f"task: {current_task}")
         except (json.JSONDecodeError, OSError):
-            pass
+            pass  # STATUS.json unreadable; skip task context
 
     return "; ".join(in_progress) if in_progress else "unknown"
 

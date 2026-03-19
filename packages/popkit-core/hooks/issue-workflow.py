@@ -87,7 +87,7 @@ class IssueWorkflowHook:
             try:
                 return json.loads(self.state_file.read_text())
             except json.JSONDecodeError:
-                pass
+                pass  # Corrupt state file; return default empty state
         return {
             "active_issue": None,
             "current_phase": None,

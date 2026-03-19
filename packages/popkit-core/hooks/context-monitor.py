@@ -76,7 +76,7 @@ class ContextMonitor:
                 with open(self.session_file, "r") as f:
                     return json.load(f)
             except (json.JSONDecodeError, IOError):
-                pass
+                pass  # Corrupt or unreadable session file; return fresh defaults
 
         return {
             "session_start": datetime.now().isoformat(),
@@ -251,7 +251,7 @@ class ContextMonitor:
                 return True
 
         except (json.JSONDecodeError, OSError):
-            pass
+            pass  # Compaction file unreadable; assume no new compaction
 
         return False
 

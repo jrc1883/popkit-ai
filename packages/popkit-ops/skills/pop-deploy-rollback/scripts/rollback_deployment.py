@@ -206,7 +206,7 @@ def investigate_failure(
                 }
             )
     except (subprocess.TimeoutExpired, FileNotFoundError):
-        pass
+        pass  # Git unavailable; skip git log diagnostics
 
     # Check Docker logs if docker target
     if target == "docker":
@@ -228,7 +228,7 @@ def investigate_failure(
                     }
                 )
         except (subprocess.TimeoutExpired, FileNotFoundError):
-            pass
+            pass  # Docker unavailable; skip container log diagnostics
 
     return {
         "success": True,
@@ -354,7 +354,7 @@ def execute_npm_rollback(
             pkg = json.loads(pkg_json.read_text())
             pkg_name = pkg.get("name", "")
         except (json.JSONDecodeError, OSError):
-            pass
+            pass  # Corrupt package.json; proceed with empty pkg name
 
     tag = npm_config.get("tag", "latest")
 

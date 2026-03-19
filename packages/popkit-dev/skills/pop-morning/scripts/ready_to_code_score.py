@@ -237,7 +237,7 @@ def calculate_ready_to_code_score(
                 if age_days > 3:
                     stale_count += 1
             except (ValueError, TypeError):
-                pass
+                pass  # Malformed timestamp; skip stale check for this branch
 
     if len(unmerged) == 0:
         score += 10

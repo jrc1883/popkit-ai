@@ -297,7 +297,7 @@ def _generate_session_branches_section(state: Dict[str, Any]) -> List[str]:
                 if age_days > 3:
                     status = "STALE"
             except (ValueError, TypeError):
-                pass
+                pass  # Malformed timestamp; leave age as default
 
         active_marker = " (current)" if branch_id == current_branch else ""
         lines.append(
