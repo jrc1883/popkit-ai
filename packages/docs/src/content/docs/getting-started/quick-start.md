@@ -9,7 +9,7 @@ This guide will help you get up and running with PopKit in minutes.
 
 ## Prerequisites
 
-- Claude Code 2.1.33 or higher
+- Claude Code 2.1.33 or higher (tested through 2.1.79)
 - Git installed
 - Node.js 18+ (for local development)
 

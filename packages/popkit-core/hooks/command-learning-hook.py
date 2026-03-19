@@ -6,6 +6,15 @@ Part of Issue #89 - Platform-Aware Command Learning
 
 PostToolUse hook that captures command failures and learns from them.
 Also provides PreToolUse suggestions for commands that have known corrections.
+
+AUDIT NOTE (2026-03-19):
+Status: KEEP (unique value, platform-specific)
+- This hook provides genuine value on Windows/cross-platform setups by
+  learning command corrections (e.g., Unix commands that fail on Windows).
+- It is lightweight: only processes Bash tool calls, no network requests.
+- The pattern learner and command translator are platform-aware and
+  accumulate useful corrections over time.
+- Compatible with CC 2.1.79.
 """
 
 import json
@@ -151,7 +160,9 @@ class CommandLearningHook:
             }
 
         # Check if command translation is available
-        translation = CommandTranslator.translate(command, self.platform_info.shell_type)
+        translation = CommandTranslator.translate(
+            command, self.platform_info.shell_type
+        )
 
         if translation.translated != command and translation.confidence > 0.8:
             return {
@@ -188,9 +199,15 @@ class CommandLearningHook:
             if match:
                 # Check if platform hint matches
                 if platform_hint != "any":
-                    if platform_hint == "windows" and self.platform_info.os_type != OSType.WINDOWS:
+                    if (
+                        platform_hint == "windows"
+                        and self.platform_info.os_type != OSType.WINDOWS
+                    ):
                         continue
-                    if platform_hint == "unix" and self.platform_info.os_type == OSType.WINDOWS:
+                    if (
+                        platform_hint == "unix"
+                        and self.platform_info.os_type == OSType.WINDOWS
+                    ):
                         # Could be Git Bash on Windows
                         if self.platform_info.shell_type != ShellType.GIT_BASH:
                             continue
@@ -208,7 +225,9 @@ class CommandLearningHook:
         messages = []
 
         # Try to get a translation suggestion
-        translation = CommandTranslator.suggest_for_error(command, output, self.platform_info)
+        translation = CommandTranslator.suggest_for_error(
+            command, output, self.platform_info
+        )
 
         if translation and translation.translated != command:
             # Record this as a learned correction

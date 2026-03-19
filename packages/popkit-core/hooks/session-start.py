@@ -9,7 +9,20 @@ Responsibilities:
 3. Register project with PopKit Cloud (async, non-blocking)
 4. Ensure PopKit directories exist (auto-init)
 5. Filter agents based on initial task (Phase 2: Embedding-Based Agent Loading)
-6. Detect and optimize for agent_type when --agent flag is used (Claude Code 2.1.2+)
+6. Detect and optimize for agent_type when --agent flag is used (Claude Code 2.1.2+, verified through 2.1.79)
+
+AUDIT NOTE (2026-03-19):
+Status: KEEP (essential session init)
+- Core responsibilities (logging, directory init, expertise loading) are
+  necessary and well-gated with test_mode skipping.
+- Cloud registration is properly async with circuit breaker - good design.
+- XML context generation at session start provides initial project context.
+- The embedding-based agent loader (load_relevant_agents_for_session) depends
+  on AgentLoader which may not be installed; graceful fallback.
+- With 1M context, the agent filtering at session start is less critical
+  since all agent definitions can fit in context, but it still provides
+  useful prioritization.
+- Compatible with CC 2.1.79.
 """
 
 import json
@@ -514,7 +527,9 @@ def load_relevant_agents_for_session(data):
 
         # Output debug info to stderr
         agent_ids = [a["agent_id"] for a in relevant_agents]
-        print(f"Agent filtering: loaded {len(agent_ids)} relevant agents", file=sys.stderr)
+        print(
+            f"Agent filtering: loaded {len(agent_ids)} relevant agents", file=sys.stderr
+        )
         print(
             f"  Agents: {', '.join(agent_ids[:5])}{'...' if len(agent_ids) > 5 else ''}",
             file=sys.stderr,
@@ -674,7 +689,9 @@ def main():
                     parts.append(f"directories: {len(dirs)}")
                 if index:
                     parts.append("research index")
-                print(f"Learning systems initialized: {', '.join(parts)}", file=sys.stderr)
+                print(
+                    f"Learning systems initialized: {', '.join(parts)}", file=sys.stderr
+                )
 
         # Load agent expertise files (Issue #201, Phase 2, non-blocking)
         expertise_loading = load_agent_expertise()

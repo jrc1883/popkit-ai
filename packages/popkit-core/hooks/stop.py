@@ -2,6 +2,11 @@
 """
 Stop Hook
 Handles session termination and cleanup.
+
+AUDIT NOTE (2026-03-19):
+Status: KEEP (minimal, essential)
+- Simple session-end logging. No network calls, no heavy computation.
+- Compatible with CC 2.1.79.
 """
 
 import json

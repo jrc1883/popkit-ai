@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Setup Hook (Claude Code 2.1.10+)
+Setup Hook (Claude Code 2.1.10+, verified compatible through 2.1.79)
 Handles `claude --init` and `claude --maintenance` flag events.
 
 This hook fires ONLY during explicit setup operations, not on every session.

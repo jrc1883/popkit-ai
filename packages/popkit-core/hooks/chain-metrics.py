@@ -4,6 +4,19 @@ Chain Metrics Hook
 Tracks workflow execution metrics including timing, success rates, and bottlenecks.
 
 Persists to .claude/chain-metrics.json for persistence across sessions.
+
+AUDIT NOTE (2026-03-19):
+Status: OVER-ENGINEERED / LOW VALUE
+- This hook runs on every Task tool call but the data it collects
+  (workflow run history) is never consumed by any other part of PopKit.
+- The hook writes to ~/.claude/chain-metrics.json, accumulating data
+  that is never pruned in the default path (only pruned per-workflow
+  when runs exceed MAX_RUNS_HISTORY=100).
+- With CC 2.1.79, the built-in session analytics provide similar metrics
+  natively.
+- Recommendation: Keep for now since it is non-blocking and lightweight,
+  but consider removing if no consumers are added. The format_stats_report
+  function is useful but should be a standalone CLI tool, not a hook.
 """
 
 import json
@@ -144,7 +157,9 @@ class ChainMetrics:
             agg["failed_runs"] += 1
 
         # Update rates
-        agg["success_rate"] = round((agg["successful_runs"] / agg["total_runs"]) * 100, 1)
+        agg["success_rate"] = round(
+            (agg["successful_runs"] / agg["total_runs"]) * 100, 1
+        )
 
         # Update duration averages
         if run.get("total_duration_ms"):
@@ -181,8 +196,12 @@ class ChainMetrics:
 
     def _prune_old_runs(self, workflow_id: str):
         """Keep only the last MAX_RUNS_HISTORY runs per workflow."""
-        workflow_runs = [r for r in self.metrics["runs"] if r["workflow_id"] == workflow_id]
-        other_runs = [r for r in self.metrics["runs"] if r["workflow_id"] != workflow_id]
+        workflow_runs = [
+            r for r in self.metrics["runs"] if r["workflow_id"] == workflow_id
+        ]
+        other_runs = [
+            r for r in self.metrics["runs"] if r["workflow_id"] != workflow_id
+        ]
 
         if len(workflow_runs) > MAX_RUNS_HISTORY:
             # Sort by started_at and keep most recent
@@ -195,7 +214,9 @@ class ChainMetrics:
         """Get aggregate statistics for a workflow."""
         return self.metrics["aggregates"].get(workflow_id)
 
-    def get_recent_runs(self, workflow_id: str = None, limit: int = 10) -> List[Dict[str, Any]]:
+    def get_recent_runs(
+        self, workflow_id: str = None, limit: int = 10
+    ) -> List[Dict[str, Any]]:
         """Get recent runs, optionally filtered by workflow."""
         runs = self.metrics["runs"]
 
@@ -244,7 +265,9 @@ class ChainMetrics:
         if stats.get("bottlenecks"):
             lines.append("Top Bottlenecks:")
             for i, b in enumerate(stats["bottlenecks"], 1):
-                lines.append(f"  {i}. {b['step_id']} ({self._format_duration(b['avg_ms'])})")
+                lines.append(
+                    f"  {i}. {b['step_id']} ({self._format_duration(b['avg_ms'])})"
+                )
 
         return "\n".join(lines)
 
@@ -292,7 +315,9 @@ def main():
             response = {"status": "success" if success else "error"}
 
         elif operation == "complete_run":
-            success = metrics.complete_run(data.get("run_id"), data.get("run_status", "completed"))
+            success = metrics.complete_run(
+                data.get("run_id"), data.get("run_status", "completed")
+            )
             response = {"status": "success" if success else "error"}
 
         elif operation == "get_stats":
@@ -301,7 +326,9 @@ def main():
             response = {"status": "success", "stats": stats}
 
         elif operation == "get_recent":
-            runs = metrics.get_recent_runs(data.get("workflow_id"), data.get("limit", 10))
+            runs = metrics.get_recent_runs(
+                data.get("workflow_id"), data.get("limit", 10)
+            )
             response = {"status": "success", "runs": runs}
 
         else:

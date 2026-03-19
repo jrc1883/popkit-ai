@@ -2,6 +2,18 @@
 """
 OPTIMUS Agent Observability Hook
 Sends agent telemetry data to OPTIMUS Command Center
+
+AUDIT NOTE (2026-03-19):
+Status: CANDIDATE FOR REMOVAL
+- This hook sends telemetry to a localhost OPTIMUS server (port 3051) that
+  is not part of the standard PopKit deployment. Every PostToolUse invocation
+  makes an HTTP request that silently fails when no server is running, adding
+  ~50-100ms of wasted timeout per tool call.
+- The same telemetry data is already sent by post-tool-use.py (lines 654-675)
+  making this hook fully redundant.
+- Recommendation: Remove from hooks.json to eliminate the per-tool-call
+  overhead.  Keep the file for users who do run OPTIMUS, but it should be
+  opt-in rather than always-on.
 """
 
 import json

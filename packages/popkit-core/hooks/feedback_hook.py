@@ -8,6 +8,14 @@ Parent: Epic #88 (Self-Improvement & Learning System)
 PostToolUse hook that tracks tool calls and determines when to
 request user feedback without causing feedback fatigue.
 Uses AskUserQuestion for consistent UX.
+
+AUDIT NOTE (2026-03-19):
+Status: KEEP (lightweight, well-designed)
+- This hook is gated behind feedback_store.is_feedback_enabled() and
+  only activates on Task/SlashCommand/Skill tool completions.
+- The anti-fatigue logic (min_tool_calls, dismissed_count, never_ask_session)
+  is well thought out.
+- Compatible with CC 2.1.79.
 """
 
 import json
@@ -128,7 +136,9 @@ def evaluate_trigger(hook_input: dict, manager) -> Optional[FeedbackTrigger]:
 
     # Check Skill tool (may indicate workflow phase)
     if tool_name == "Skill" and workflow_phase:
-        return manager.evaluate_workflow_phase(phase_name=workflow_phase, phase_output=tool_output)
+        return manager.evaluate_workflow_phase(
+            phase_name=workflow_phase, phase_output=tool_output
+        )
 
     return None
 
@@ -271,7 +281,9 @@ def main():
         print(json.dumps(result))
 
     except json.JSONDecodeError as e:
-        print(json.dumps({"action": "continue", "error": f"Invalid JSON input: {str(e)}"}))
+        print(
+            json.dumps({"action": "continue", "error": f"Invalid JSON input: {str(e)}"})
+        )
     except Exception as e:
         print(json.dumps({"action": "continue", "error": f"Hook error: {str(e)}"}))
 

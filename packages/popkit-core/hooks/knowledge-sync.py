@@ -8,6 +8,18 @@ Features:
 - TTL-based caching with SQLite metadata
 - Priority-based fetching within time budget
 - HTML to markdown conversion
+
+AUDIT NOTE (2026-03-19):
+Status: OVER-ENGINEERED / SIMPLIFY
+- This hook fetches web pages on every session start within an 8-second
+  time budget. In practice, the `requests` and `html2text` dependencies
+  are rarely installed, causing silent fallback to no-op on most setups.
+- With 1M context, the original motivation (pre-cache docs to save context
+  space) is much less pressing.
+- The default sources (Anthropic engineering blog, Claude Code docs) are
+  better served by the Context7 MCP tool which is already available.
+- Recommendation: Make this fully opt-in (disabled by default). Only sync
+  when sources.json exists AND has user-configured entries.
 """
 
 import hashlib
@@ -189,7 +201,9 @@ class KnowledgeSync:
         elapsed = (datetime.now() - self.start_time).total_seconds()
         return max(0, TIME_BUDGET_SECONDS - elapsed)
 
-    def fetch_url(self, url: str, timeout: int = FETCH_TIMEOUT_SECONDS) -> Optional[str]:
+    def fetch_url(
+        self, url: str, timeout: int = FETCH_TIMEOUT_SECONDS
+    ) -> Optional[str]:
         """Fetch URL and convert HTML to markdown."""
         if not HAS_REQUESTS:
             return None
@@ -322,7 +336,9 @@ class KnowledgeSync:
 
         # Sort by priority (high first)
         priority_order = {"high": 0, "medium": 1, "low": 2}
-        sources = sorted(sources, key=lambda s: priority_order.get(s.get("priority", "medium"), 1))
+        sources = sorted(
+            sources, key=lambda s: priority_order.get(s.get("priority", "medium"), 1)
+        )
 
         results = {"synced": [], "fresh": [], "skipped": [], "errors": []}
 
@@ -357,7 +373,9 @@ class KnowledgeSync:
                     self.log_fetch(source_id, url, True, duration_ms, len(content))
                 else:
                     results["errors"].append(source_id)
-                    self.log_fetch(source_id, url, False, duration_ms, error="Cache write failed")
+                    self.log_fetch(
+                        source_id, url, False, duration_ms, error="Cache write failed"
+                    )
             else:
                 results["errors"].append(source_id)
                 self.log_fetch(source_id, url, False, duration_ms, error="Fetch failed")

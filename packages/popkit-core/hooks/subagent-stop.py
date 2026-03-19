@@ -3,6 +3,13 @@
 Subagent Stop Hook
 Handles subagent completion with logging, error tracking, and optional TTS notifications.
 Integrates with the popkit error tracking and lessons learned system.
+
+AUDIT NOTE (2026-03-19):
+Status: KEEP (useful for multi-agent workflows)
+- Handles validation result checking, error tracking, retry logic,
+  transcript parsing, and session recording.
+- TTS announcement is a nice accessibility feature.
+- Compatible with CC 2.1.79.
 """
 
 import json
@@ -196,7 +203,9 @@ def record_subagent_completion(data: dict):
                 "timestamp": datetime.now().isoformat(),
                 "agent_id": agent_id,
                 "session_id": incoming_session_id,
-                "transcript_available": bool(transcript_path and Path(transcript_path).exists()),
+                "transcript_available": bool(
+                    transcript_path and Path(transcript_path).exists()
+                ),
             }
         )
 

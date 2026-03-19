@@ -8,6 +8,12 @@ output contains PopKit Way instructions for AskUserQuestion.
 If found, it PROGRAMMATICALLY invokes AskUserQuestion, making it 100%
 reliable instead of relying on Claude's instruction-following.
 
+AUDIT NOTE (2026-03-19):
+Status: KEEP (non-blocking, unique value)
+- Only fires on Skill tool completions (infrequent).
+- Provides reliable AskUserQuestion enforcement.
+- Compatible with CC 2.1.79.
+
 Input (stdin): JSON with skill execution data
 Output (stdout): JSON with hook action (ask_user_question or passthrough)
 

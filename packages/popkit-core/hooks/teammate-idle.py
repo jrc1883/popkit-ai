@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
 """
-NATIVE SWARM AUTO-DRIVE HOOK
+NATIVE SWARM AUTO-DRIVE HOOK (CC 2.1.33+, verified through 2.1.79)
 
 This hook implements automatic task claiming for idle teammates in a Native Swarm.
+
+AUDIT NOTE (2026-03-19):
+Status: KEEP (essential for swarm mode)
+- Only fires on TeammateIdle events during swarm sessions.
+- Provides self-organizing behavior that reduces manager latency.
+- Compatible with CC 2.1.79 (TeammateIdle hook event stable).
 When a teammate is detected as idle, this hook injects instructions to:
 1. Check TaskList for unassigned tasks
 2. Claim tasks matching their role
@@ -85,7 +91,9 @@ def build_auto_claim_instruction(role, teammate_id):
     # Add role-specific guidance
     if role in ROLE_KEYWORDS:
         keywords = ROLE_KEYWORDS[role]
-        instruction_parts.append(f"   - Keywords to look for: {', '.join(keywords[:3])}")
+        instruction_parts.append(
+            f"   - Keywords to look for: {', '.join(keywords[:3])}"
+        )
 
     instruction_parts.extend(
         [

@@ -48,7 +48,7 @@ Restart Claude Code after installing local plugins.
 
 ## Version Requirements
 
-PopKit requires **Claude Code 2.1.33+** for full feature support.
+PopKit requires **Claude Code 2.1.33+** for full feature support. Tested and verified through **CC 2.1.79**.
 
 | Feature                    | Minimum    | Notes                                           |
 | -------------------------- | ---------- | ----------------------------------------------- |
@@ -60,6 +60,7 @@ PopKit requires **Claude Code 2.1.33+** for full feature support.
 | Agent memory               | 2.1.32     | Automatic memory recording                      |
 | Agent Teams                | 2.1.32     | Native multi-agent collaboration                |
 | Full feature support       | **2.1.33** | TeammateIdle/TaskCompleted hooks, memory scopes |
+| 1M context support         | 2.1.79     | Opus 4.6 with 1M context window                 |
 
 **Recommended**: Always use the latest Claude Code version for best compatibility.
 

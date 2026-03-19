@@ -5,6 +5,13 @@ Detects changes to documentation-impacting files and suggests synchronization.
 
 Part of PopKit plugin - Issue #82 (Documentation Automation Epic #81)
 
+AUDIT NOTE (2026-03-19):
+Status: KEEP (lightweight, useful)
+- Only runs on Write/Edit/MultiEdit of documentation-impacting files.
+- No network calls, no database writes.
+- Provides useful reminders to keep docs in sync with config changes.
+- Compatible with CC 2.1.79.
+
 Monitors:
 - plugin.json version changes -> marketplace.json, CLAUDE.md
 - agents/config.json changes -> CLAUDE.md agent counts
@@ -160,7 +167,9 @@ class DocSyncChecker:
                     counts["tier1"] = len(tiers.get("tier-1-always-active", []))
                     counts["tier2"] = len(tiers.get("tier-2-on-demand", []))
                     counts["feature_workflow"] = len(tiers.get("feature-workflow", []))
-                    counts["total"] = counts["tier1"] + counts["tier2"] + counts["feature_workflow"]
+                    counts["total"] = (
+                        counts["tier1"] + counts["tier2"] + counts["feature_workflow"]
+                    )
             except (json.JSONDecodeError, IOError):
                 # Best-effort fallback: ignore optional failure.
                 pass

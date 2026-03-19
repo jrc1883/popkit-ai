@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-TaskCompleted Hook (Claude Code 2.1.33+)
+TaskCompleted Hook (Claude Code 2.1.33+, verified compatible through 2.1.79)
 Fires when a task (subagent or todo item) completes.
 
 Responsibilities:
@@ -82,8 +82,12 @@ def update_session_metrics(data):
     )
 
     metrics["tasks_completed"] = metrics.get("tasks_completed", 0) + 1
-    metrics["total_duration_ms"] = metrics.get("total_duration_ms", 0) + data.get("duration_ms", 0)
-    metrics["total_tokens"] = metrics.get("total_tokens", 0) + data.get("tokens_used", 0)
+    metrics["total_duration_ms"] = metrics.get("total_duration_ms", 0) + data.get(
+        "duration_ms", 0
+    )
+    metrics["total_tokens"] = metrics.get("total_tokens", 0) + data.get(
+        "tokens_used", 0
+    )
     metrics["total_tools"] = metrics.get("total_tools", 0) + data.get("tools_used", 0)
     metrics["last_task_completed"] = datetime.now().isoformat()
 

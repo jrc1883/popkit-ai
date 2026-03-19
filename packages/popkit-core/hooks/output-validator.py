@@ -4,6 +4,13 @@ Output Validator Hook
 Validates agent outputs against their declared output_style schema.
 
 Part of the popkit plugin output validation layer.
+
+AUDIT NOTE (2026-03-19):
+Status: KEEP (useful for agent output quality)
+- Only runs on SubagentStop events (infrequent).
+- Validates agent markdown output against JSON schemas.
+- The regex-based field extraction is fragile but functional.
+- Compatible with CC 2.1.79.
 """
 
 import json
@@ -17,7 +24,8 @@ def load_schema(output_style: str) -> dict | None:
     """Load JSON schema for given output style."""
     # Try relative to hooks directory first, then project root
     schema_paths = [
-        Path(__file__).parent.parent / f"output-styles/schemas/{output_style}.schema.json",
+        Path(__file__).parent.parent
+        / f"output-styles/schemas/{output_style}.schema.json",
         Path(f"output-styles/schemas/{output_style}.schema.json"),
     ]
 
@@ -67,12 +75,16 @@ def extract_fields_from_markdown(output: str) -> dict:
                 extracted[field] = value
 
     # Check for summary section
-    summary_match = re.search(r"### Summary\s*\n(.+?)(?:\n###|\n---|\Z)", output, re.DOTALL)
+    summary_match = re.search(
+        r"### Summary\s*\n(.+?)(?:\n###|\n---|\Z)", output, re.DOTALL
+    )
     if summary_match:
         extracted["summary"] = summary_match.group(1).strip()[:500]  # Limit length
 
     # Check for symptom section (debugging report)
-    symptom_match = re.search(r"### Symptom\s*\n(.+?)(?:\n###|\n---|\Z)", output, re.DOTALL)
+    symptom_match = re.search(
+        r"### Symptom\s*\n(.+?)(?:\n###|\n---|\Z)", output, re.DOTALL
+    )
     if symptom_match:
         extracted["symptom"] = {"description": symptom_match.group(1).strip()[:500]}
 

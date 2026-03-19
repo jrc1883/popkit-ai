@@ -3,6 +3,24 @@
 Global User Prompt Submit Hook
 Handles keyword detection, agent routing, and security filtering
 Integrates with observability and orchestration systems
+
+AUDIT NOTE (2026-03-19):
+Status: KEEP but SIMPLIFY
+- Core value: security filtering, skill detection/reminders, XML context.
+- OVER-ENGINEERED AREAS:
+  1. Keyword-based agent detection (lines 74-407): Massive hardcoded keyword
+     map. With 1M context, the model can route to agents without needing
+     keyword matching in a hook. This was designed for 200k context where
+     every token counted.
+  2. SQLite context memory (lines 553-577): Stores every prompt in a DB
+     that is rarely queried.
+  3. Orchestrator HTTP calls (lines 730-756): localhost:8005 is never running.
+  4. XML context generation (lines 758-851): Complex delta/full context
+     system designed to minimize context usage. With 1M context, sending
+     full context every time would be simpler and more reliable.
+- Security filters (lines 409-470) are tiered and well-designed - keep.
+- Skill triggers (lines 480-534) provide genuine value as reminders.
+- Compatible with CC 2.1.79.
 """
 
 import hashlib
@@ -718,14 +736,18 @@ class UserPromptSubmitHook:
     def log_event(self, event_data: Dict[str, Any]):
         """Log event to observability system"""
         try:
-            response = requests.post(self.observability_endpoint, json=event_data, timeout=2)
+            response = requests.post(
+                self.observability_endpoint, json=event_data, timeout=2
+            )
             if response.status_code != 200:
                 print(
                     f"Warning: Observability logging failed: {response.status_code}",
                     file=sys.stderr,
                 )
         except Exception as e:
-            print(f"Warning: Could not log to observability system: {e}", file=sys.stderr)
+            print(
+                f"Warning: Could not log to observability system: {e}", file=sys.stderr
+            )
 
     def route_to_orchestrator(
         self, prompt: str, detected_agents: Dict, project_context: Dict
@@ -740,7 +762,9 @@ class UserPromptSubmitHook:
                 "timestamp": datetime.now().isoformat(),
             }
 
-            response = requests.post(self.orchestrator_endpoint, json=routing_data, timeout=5)
+            response = requests.post(
+                self.orchestrator_endpoint, json=routing_data, timeout=5
+            )
 
             if response.status_code == 200:
                 return response.json()
@@ -755,7 +779,9 @@ class UserPromptSubmitHook:
 
         return None
 
-    def generate_xml_context(self, prompt: str, project_context: Dict[str, Any]) -> Optional[str]:
+    def generate_xml_context(
+        self, prompt: str, project_context: Dict[str, Any]
+    ) -> Optional[str]:
         """Generate XML context (full or delta) for the current message.
 
         Args:
@@ -795,7 +821,9 @@ class UserPromptSubmitHook:
                     merged_context[key] = value
 
             # Determine full vs delta
-            send_full = should_send_full_context(message_number, state["last_full_context_message"])
+            send_full = should_send_full_context(
+                message_number, state["last_full_context_message"]
+            )
 
             xml_parts = []
 
@@ -825,11 +853,15 @@ class UserPromptSubmitHook:
                 if delta:
                     # Generate delta XML (simplified - just include changed fields)
                     delta_context = {
-                        k: v.get("value", None) for k, v in delta.items() if v["type"] != "removed"
+                        k: v.get("value", None)
+                        for k, v in delta.items()
+                        if v["type"] != "removed"
                     }
                     if delta_context:
                         project_xml = generate_project_context_xml(delta_context)
-                        xml_parts.append(f"<!-- Context Update: {len(delta)} fields changed -->")
+                        xml_parts.append(
+                            f"<!-- Context Update: {len(delta)} fields changed -->"
+                        )
                         xml_parts.append(project_xml)
 
                     # Update state with new hashes
@@ -913,7 +945,9 @@ class UserPromptSubmitHook:
         self.log_event(event_data)
 
         # Route to orchestrator
-        orchestration_result = self.route_to_orchestrator(prompt, detected_agents, project_context)
+        orchestration_result = self.route_to_orchestrator(
+            prompt, detected_agents, project_context
+        )
 
         return {
             "action": "continue",
@@ -952,10 +986,14 @@ class UserPromptSubmitHook:
         # Handle extended thinking flag
         if thinking_flags.get("force_thinking") is True:
             budget = thinking_flags.get("budget_tokens", 10000)
-            enhancements.append(f"Extended thinking mode enabled (budget: {budget} tokens)")
+            enhancements.append(
+                f"Extended thinking mode enabled (budget: {budget} tokens)"
+            )
 
         # Check for uncertainty/meta triggers
-        if "meta" in detected_agents and "next-action" in detected_agents.get("meta", {}):
+        if "meta" in detected_agents and "next-action" in detected_agents.get(
+            "meta", {}
+        ):
             suggestions.append("Try `/popkit:next` for context-aware recommendations")
 
         # Add skill reminders based on detected skills
@@ -1067,7 +1105,9 @@ def main():
                 agent_summary = []
                 for category, agents in result["detected_agents"].items():
                     agent_summary.append(f"{category}: {', '.join(agents.keys())}")
-                print(f"🎯 Agents activated: {' | '.join(agent_summary)}", file=sys.stderr)
+                print(
+                    f"🎯 Agents activated: {' | '.join(agent_summary)}", file=sys.stderr
+                )
 
         # Output JSON response to stdout
         print(json.dumps(response))
