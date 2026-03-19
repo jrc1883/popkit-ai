@@ -196,6 +196,18 @@
           }
         ]
       }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/pre-compact.py\"",
+            "timeout": 3000
+          }
+        ]
+      }
     ]
   }
 }
