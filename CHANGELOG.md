@@ -29,6 +29,14 @@ All notable changes to PopKit are documented in this file.
   - `pop-deploy-rollback`: Emergency rollback with incident report generation
   - Skill count: 44 → 50
 
+### Changed
+
+- **Claude Code compatibility documentation**: Updated version compatibility table (CC 2.1.33 through 2.1.79)
+  - PostCompact hook, MCP elicitation, Elicitation hooks, worktree.sparsePaths, /effort (2.1.76)
+  - Opus 4.6 max output 64k/128k, plugin validate improvements, SendMessage replaces resume, /fork renamed to /branch (2.1.77)
+  - StopFailure hook event, ${CLAUDE_PLUGIN_DATA} variable, agent frontmatter effort/maxTurns/disallowedTools (2.1.78)
+  - CLAUDE_CODE_PLUGIN_SEED_DIR multi-directory support, 1M context (2.1.79)
+
 ### Fixed
 
 - Component counts updated across all documentation (24 agents, 50 skills, 25 commands)
