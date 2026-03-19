@@ -26,6 +26,12 @@ output_style: prototype-report
 model: inherit
 version: 1.0.0
 memory: project
+effort: medium
+maxTurns: 20
+disallowedTools:
+  - Bash(rm -rf*)
+  - Bash(git push*)
+  - Bash(git reset*)
 ---
 
 # Rapid Prototyper Agent

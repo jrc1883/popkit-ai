@@ -11,6 +11,12 @@ output_style: agent-specification
 model: inherit
 version: 1.0.0
 memory: user
+effort: low
+maxTurns: 15
+disallowedTools:
+  - Bash(rm -rf*)
+  - Bash(git push*)
+  - Bash(git reset*)
 ---
 
 # Meta Agent - Agent Creator

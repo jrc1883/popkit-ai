@@ -12,6 +12,12 @@ output_style: api-design-report
 model: inherit
 version: 1.0.0
 memory: user
+effort: medium
+maxTurns: 20
+disallowedTools:
+  - Bash(rm -rf*)
+  - Bash(git push*)
+  - Bash(git reset*)
 ---
 
 # API Designer Agent

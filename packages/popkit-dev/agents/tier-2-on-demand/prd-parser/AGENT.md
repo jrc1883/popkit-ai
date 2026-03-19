@@ -20,6 +20,12 @@ triggers:
   - "break down this spec"
   - "turn this into tasks"
   - "parse product requirements"
+effort: medium
+maxTurns: 20
+disallowedTools:
+  - Bash(rm -rf*)
+  - Bash(git push*)
+  - Bash(git reset*)
 ---
 
 # PRD Parser Agent

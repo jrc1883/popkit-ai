@@ -29,6 +29,12 @@ hooks:
   PostToolUse:
     - script: "${CLAUDE_PLUGIN_ROOT}/../../shared-py/hooks/auto-run-tests.py"
       once: false
+effort: high
+maxTurns: 40
+disallowedTools:
+  - Bash(rm -rf*)
+  - Bash(git push*)
+  - Bash(git reset*)
 ---
 
 # Test Writer Fixer Agent

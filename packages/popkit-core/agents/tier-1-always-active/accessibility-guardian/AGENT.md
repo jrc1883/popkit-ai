@@ -10,6 +10,14 @@ output_style: accessibility-audit
 model: inherit
 version: 1.0.0
 memory: user
+effort: low
+maxTurns: 15
+disallowedTools:
+  - Write
+  - Edit
+  - Bash(rm -rf*)
+  - Bash(git push*)
+  - Bash(git reset*)
 ---
 
 # Accessibility Guardian Agent

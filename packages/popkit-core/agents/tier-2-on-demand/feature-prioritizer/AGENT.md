@@ -11,6 +11,13 @@ output_style: prioritization-report
 model: inherit
 version: 1.0.0
 memory: user
+effort: low
+maxTurns: 10
+disallowedTools:
+  - Edit
+  - Bash(rm -rf*)
+  - Bash(git push*)
+  - Bash(git reset*)
 ---
 
 # Feature Prioritizer Agent

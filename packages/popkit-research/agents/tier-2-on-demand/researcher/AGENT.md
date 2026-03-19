@@ -12,6 +12,14 @@ output_style: analysis-report
 model: inherit
 version: 1.0.0
 memory: user
+effort: medium
+maxTurns: 25
+disallowedTools:
+  - Write
+  - Edit
+  - Bash(rm -rf*)
+  - Bash(git push*)
+  - Bash(git reset*)
 ---
 
 # Researcher Agent - Agent Discovery & Analysis

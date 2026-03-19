@@ -28,6 +28,12 @@ output_style: debugging-report
 model: inherit
 version: 1.0.0
 memory: project
+effort: high
+maxTurns: 45
+disallowedTools:
+  - Bash(rm -rf*)
+  - Bash(git push*)
+  - Bash(git reset --hard*)
 ---
 
 # Bug Whisperer Agent

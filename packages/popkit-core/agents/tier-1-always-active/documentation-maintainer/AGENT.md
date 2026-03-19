@@ -13,6 +13,12 @@ output_style: documentation-report
 model: inherit
 version: 1.0.0
 memory: project
+effort: low
+maxTurns: 15
+disallowedTools:
+  - Bash(rm -rf*)
+  - Bash(git push*)
+  - Bash(git reset*)
 ---
 
 # Documentation Maintainer Agent

@@ -69,6 +69,11 @@ output_style: deployment-workflow
 model: inherit
 version: 1.0.0
 memory: local
+effort: high
+maxTurns: 45
+disallowedTools:
+  - Bash(rm -rf*)
+  - Bash(git reset --hard*)
 ---
 
 # DevOps Automator Agent
