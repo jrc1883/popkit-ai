@@ -156,6 +156,7 @@ End your day with context saved:
   ✓ Branch pushed to origin
   ✓ Tests passing
   ✓ No uncommitted stashes
+  ✓ Session branches clean
 
 ■ Session Captured
   Work: Implemented password reset email flow
@@ -212,7 +213,7 @@ PopKit is modular. Install what you need:
 | ------------------- | ----------------------------------------------------------------------------------------------------------- |
 | **popkit-core**     | Project setup, [Power Mode](https://popkit.unjoe.me/features/power-mode/) (multi-agent), session management |
 | **popkit-dev**      | Git workflows, worktrees, [routines](https://popkit.unjoe.me/features/routines/), `/next` recommendations   |
-| **popkit-ops**      | Quality assessments, security scanning, debugging workflows                                                 |
+| **popkit-ops**      | Quality assessments, security scanning, debugging, [deployment pipeline](https://popkit.unjoe.me/reference/commands/#popkit-opsdeploy) |
 | **popkit-research** | Knowledge capture, research notes, documentation sync                                                       |
 
 ```bash
@@ -224,7 +225,7 @@ PopKit is modular. Install what you need:
 
 ## Requirements
 
-- Claude Code 2.1.33+
+- Claude Code 2.1.33+ (tested through 2.1.79)
 - Python 3.11+
 - Git
 - GitHub CLI (`gh`) for GitHub integration
