@@ -20,11 +20,21 @@ Output:
 
 import json
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
 
 from popkit_shared.utils.subprocess_utils import run_command_simple
+
+try:
+    from popkit_shared.utils.session_branch_manager import (
+        get_current_branch as get_session_branch,
+        list_branches as list_session_branches,
+    )
+
+    HAS_SESSION_BRANCHES = True
+except ImportError:
+    HAS_SESSION_BRANCHES = False
 
 
 def find_status_file() -> Optional[Path]:
@@ -153,12 +163,105 @@ def verify_git_state(saved_git: Dict[str, Any]) -> Dict[str, Any]:
     return verification
 
 
+def collect_session_branch_context(status: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Collect session branch context from STATUS.json and the branch manager.
+
+    Args:
+        status: Parsed STATUS.json contents
+
+    Returns:
+        Dict with session branch information:
+        - current_branch: Current session branch ID
+        - current_branch_reason: Reason for the current branch
+        - unmerged: List of unmerged branch summaries
+        - stale: List of stale branch IDs (>3 days)
+    """
+    result = {
+        "current_branch": "main",
+        "current_branch_reason": "",
+        "unmerged": [],
+        "stale": [],
+    }
+
+    # Try the branch manager first (live data)
+    if HAS_SESSION_BRANCHES:
+        try:
+            branch_id, branch_data = get_session_branch()
+            branches = list_session_branches()
+
+            result["current_branch"] = branch_id
+            result["current_branch_reason"] = branch_data.get("reason", "")
+
+            now = datetime.now(timezone.utc)
+            for b in branches:
+                if b.get("id") == "main" or b.get("merged", False):
+                    continue
+                branch_info = {
+                    "id": b.get("id"),
+                    "reason": b.get("reason", ""),
+                    "parent": b.get("parent", "main"),
+                    "age_days": 0,
+                }
+                created = b.get("created")
+                if created:
+                    try:
+                        created_dt = datetime.fromisoformat(
+                            created.replace("Z", "+00:00")
+                        )
+                        age_days = (now - created_dt).total_seconds() / 86400
+                        branch_info["age_days"] = round(age_days, 1)
+                        if age_days > 3:
+                            result["stale"].append(b.get("id"))
+                    except (ValueError, TypeError):
+                        pass
+                result["unmerged"].append(branch_info)
+            return result
+        except Exception:
+            pass
+
+    # Fallback: read from STATUS.json directly
+    branches = status.get("branches", {})
+    current_branch = status.get("currentBranch", "main")
+    result["current_branch"] = current_branch
+
+    if current_branch in branches:
+        result["current_branch_reason"] = branches[current_branch].get("reason", "")
+
+    now = datetime.now(timezone.utc)
+    for bid, bdata in branches.items():
+        if bid == "main" or bdata.get("merged", False):
+            continue
+        branch_info = {
+            "id": bid,
+            "reason": bdata.get("reason", ""),
+            "parent": bdata.get("parent", "main"),
+            "age_days": 0,
+        }
+        created = bdata.get("created")
+        if created:
+            try:
+                created_dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
+                age_days = (now - created_dt).total_seconds() / 86400
+                branch_info["age_days"] = round(age_days, 1)
+                if age_days > 3:
+                    result["stale"].append(bid)
+            except (ValueError, TypeError):
+                pass
+        result["unmerged"].append(branch_info)
+
+    return result
+
+
 def generate_summary(
     status: Dict[str, Any],
     session_info: Dict[str, Any],
     verification: Optional[Dict] = None,
 ) -> Dict[str, Any]:
     """Generate session summary for display."""
+    # Collect session branch context
+    branch_context = collect_session_branch_context(status)
+
     summary = {
         "session_type": session_info["session_type"],
         "time_since": session_info["time_since"],
@@ -168,6 +271,7 @@ def generate_summary(
             "uncommitted": status.get("git", {}).get("uncommittedFiles", 0),
             "lastCommit": status.get("git", {}).get("lastCommit", "unknown"),
         },
+        "session_branch": branch_context,
         "tasks": {
             "inProgress": status.get("tasks", {}).get("inProgress", []),
             "completed": status.get("tasks", {}).get("completed", [])[:3],  # Last 3
@@ -180,12 +284,28 @@ def generate_summary(
             "keyDecisions": status.get("context", {}).get("keyDecisions", []),
         },
         "projectData": status.get("projectData", {}),
-        "options": [
-            {"label": "Continue with next action", "value": "continue"},
-            {"label": "Review full context first", "value": "review"},
-            {"label": "Start fresh", "value": "fresh"},
-        ],
     }
+
+    # Build options list - include session branch switch if applicable
+    options = []
+    options.append({"label": "Continue with next action", "value": "continue"})
+
+    # Offer to switch back to session branch if it was active last session
+    if (
+        branch_context["current_branch"] != "main"
+        and branch_context["current_branch_reason"]
+    ):
+        options.append(
+            {
+                "label": f"Switch to session branch: {branch_context['current_branch']}",
+                "value": "switch_branch",
+                "description": branch_context["current_branch_reason"],
+            }
+        )
+
+    options.append({"label": "Review full context first", "value": "review"})
+    options.append({"label": "Start fresh", "value": "fresh"})
+    summary["options"] = options
 
     if verification:
         summary["verification"] = verification
@@ -205,15 +325,42 @@ def format_display_box(summary: Dict[str, Any]) -> str:
         f"│ Last: {summary['time_since']}{' ' * (36 - len(summary['time_since']))}│",
         "├─────────────────────────────────────────────┤",
         f"│ Branch: {summary['git']['branch'][:30]}{' ' * (34 - min(30, len(summary['git']['branch'])))}│",
-        f"│ Uncommitted: {summary['git']['uncommitted']} files{' ' * 24}│",
     ]
+
+    # Show session branch if not on main
+    branch_ctx = summary.get("session_branch", {})
+    session_branch_id = branch_ctx.get("current_branch", "main")
+    if session_branch_id != "main":
+        sb_display = session_branch_id[:28]
+        lines.append(f"│ Session branch: {sb_display}{' ' * (27 - len(sb_display))}│")
+
+    lines.append(f"│ Uncommitted: {summary['git']['uncommitted']} files{' ' * 24}│")
+
+    # Show unmerged session branches
+    unmerged = branch_ctx.get("unmerged", [])
+    if unmerged:
+        lines.append("├─────────────────────────────────────────────┤")
+        count_label = f"Session Branches ({len(unmerged)} unmerged):"
+        lines.append(f"│ {count_label}{' ' * (42 - len(count_label))}│")
+        for b in unmerged[:3]:
+            bid = b.get("id", "?")[:16]
+            reason = b.get("reason", "")[:16]
+            age = b.get("age_days", 0)
+            stale_marker = ", stale" if age > 3 else ""
+            if age < 1:
+                age_str = f"{int(age * 24)}h"
+            else:
+                age_str = f"{int(age)}d"
+            entry = f"{bid}: {reason} ({age_str}{stale_marker})"
+            entry_short = entry[:40]
+            lines.append(f"│ * {entry_short}{' ' * (40 - len(entry_short))}│")
 
     if summary["tasks"]["inProgress"]:
         lines.append("├─────────────────────────────────────────────┤")
         lines.append("│ In Progress:                                │")
         for task in summary["tasks"]["inProgress"][:3]:
             task_short = task[:38]
-            lines.append(f"│ • {task_short}{' ' * (40 - len(task_short))}│")
+            lines.append(f"│ * {task_short}{' ' * (40 - len(task_short))}│")
 
     if summary["context"]["nextAction"]:
         lines.append("├─────────────────────────────────────────────┤")

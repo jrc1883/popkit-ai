@@ -12,7 +12,7 @@ Generates formatted markdown report for nightly routine with:
 """
 
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -25,7 +25,9 @@ except ImportError:
 # Import Bible verse utility (Issue #71)
 try:
     # Add shared-py to path
-    sys.path.insert(0, str(Path.home() / ".claude" / "popkit" / "packages" / "shared-py"))
+    sys.path.insert(
+        0, str(Path.home() / ".claude" / "popkit" / "packages" / "shared-py")
+    )
     from popkit_shared.utils.bible_verses import get_nightly_verse
 
     HAS_BIBLE_VERSES = True
@@ -62,7 +64,9 @@ def generate_nightly_report(
     report.append("")
 
     # Score interpretation
-    report.append(f"**Grade**: {interpretation['grade']} - {interpretation['interpretation']}")
+    report.append(
+        f"**Grade**: {interpretation['grade']} - {interpretation['interpretation']}"
+    )
     report.append("")
 
     # Score breakdown table
@@ -94,6 +98,17 @@ def generate_nightly_report(
         if len(uncommitted_files) > 10:
             report.append(f"- ... and {len(uncommitted_files) - 10} more")
         report.append("")
+
+    # Session branches section (if any unmerged)
+    session_branches_data = state.get("session_branches", {})
+    session_branches_list = session_branches_data.get("branches", [])
+    unmerged_session = [
+        b
+        for b in session_branches_list
+        if b.get("id") != "main" and not b.get("merged", False)
+    ]
+    if unmerged_session:
+        report.extend(_generate_session_branches_section(state))
 
     # Stashes section (if any)
     stash_count = git_state.get("stashes", 0)
@@ -146,7 +161,9 @@ def generate_nightly_report(
     report.append("## 📋 Recommendations")
     report.append("")
 
-    recommendations_before = _generate_recommendations_before_leaving(score, breakdown, state)
+    recommendations_before = _generate_recommendations_before_leaving(
+        score, breakdown, state
+    )
 
     if recommendations_before:
         report.append("**Before Leaving:**")
@@ -154,7 +171,9 @@ def generate_nightly_report(
             report.append(f"- {rec}")
         report.append("")
 
-    recommendations_next = _generate_recommendations_next_session(score, breakdown, state)
+    recommendations_next = _generate_recommendations_next_session(
+        score, breakdown, state
+    )
 
     if recommendations_next:
         report.append("**Next Morning:**")
@@ -188,6 +207,97 @@ def generate_nightly_report(
     return "\n".join(report)
 
 
+def _generate_session_branches_section(state: Dict[str, Any]) -> List[str]:
+    """Generate session branches section for nightly report."""
+    session_branches_data = state.get("session_branches", {})
+    branches_list = session_branches_data.get("branches", [])
+    current_branch = session_branches_data.get("current_branch", "main")
+    history = session_branches_data.get("history", [])
+
+    unmerged = [
+        b for b in branches_list if b.get("id") != "main" and not b.get("merged", False)
+    ]
+
+    if not unmerged:
+        return []
+
+    now = datetime.now(timezone.utc)
+
+    # Determine which branches were active today
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    active_today = set()
+    for entry in history:
+        at = entry.get("at", "")
+        if today_str in at:
+            if entry.get("to"):
+                active_today.add(entry["to"])
+            if entry.get("from"):
+                active_today.add(entry["from"])
+            if entry.get("branch"):
+                active_today.add(entry["branch"])
+
+    lines = [
+        "## Session Branches",
+        "",
+    ]
+
+    if active_today - {"main"}:
+        lines.append(
+            f"**Active during today**: {len(active_today - {'main'})} branch{'es' if len(active_today - {'main'}) != 1 else ''} used"
+        )
+    lines.append(
+        f"**Unmerged**: {len(unmerged)} branch{'es' if len(unmerged) != 1 else ''}"
+    )
+    lines.append("")
+    lines.append("| Branch | Reason | Age | Status |")
+    lines.append("|--------|--------|-----|--------|")
+
+    stale_branches = []
+    for branch in unmerged:
+        branch_id = branch.get("id", "unknown")
+        reason = branch.get("reason", "")[:40]
+        created = branch.get("created")
+        age_str = "unknown"
+        status = "Active"
+
+        if created:
+            try:
+                created_dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
+                age_days = (now - created_dt).total_seconds() / 86400
+                if age_days < 1:
+                    age_str = f"{int(age_days * 24)}h"
+                else:
+                    age_str = f"{int(age_days)}d"
+                if age_days > 3:
+                    status = "STALE"
+                    stale_branches.append((branch_id, int(age_days)))
+            except (ValueError, TypeError):
+                pass
+
+        active_marker = " (current)" if branch_id == current_branch else ""
+        lines.append(
+            f"| {branch_id}{active_marker} | {reason} | {age_str} | {status} |"
+        )
+
+    lines.append("")
+
+    # Recommendations
+    if stale_branches:
+        lines.append("**Cleanup recommended before leaving:**")
+        for name, age in stale_branches:
+            lines.append(f"- Merge or delete `{name}` ({age} days old)")
+        lines.append("")
+
+    # Check if currently on a non-main session branch
+    if current_branch != "main":
+        lines.append(
+            f"**Note**: Currently on session branch `{current_branch}`. Consider merging before leaving."
+        )
+        lines.append("")
+
+    return lines
+
+
 def _generate_recommendations_before_leaving(
     score: int, breakdown: Dict[str, Dict[str, Any]], state: Dict[str, Any]
 ) -> List[str]:
@@ -203,7 +313,9 @@ def _generate_recommendations_before_leaving(
     # Stashes
     stash_count = git_state.get("stashes", 0)
     if stash_count > 5:
-        recommendations.append(f"Review {stash_count} stashes - consider cleaning up old ones")
+        recommendations.append(
+            f"Review {stash_count} stashes - consider cleaning up old ones"
+        )
 
     # Services
     running_services = state.get("services", {}).get("running_services", [])
@@ -214,6 +326,36 @@ def _generate_recommendations_before_leaving(
     ci_status = state.get("github", {}).get("ci_status", {})
     if ci_status.get("conclusion") == "failure":
         recommendations.append("Investigate CI failure before leaving")
+
+    # Session branch cleanup
+    session_branches_data = state.get("session_branches", {})
+    session_branches_list = session_branches_data.get("branches", [])
+    unmerged_session = [
+        b
+        for b in session_branches_list
+        if b.get("id") != "main" and not b.get("merged", False)
+    ]
+    current_session_branch = session_branches_data.get("current_branch", "main")
+
+    if current_session_branch != "main":
+        recommendations.append(
+            f"Merge session branch `{current_session_branch}` or switch back to main"
+        )
+
+    stale_session = []
+    now = datetime.now(timezone.utc)
+    for b in unmerged_session:
+        created = b.get("created")
+        if created:
+            try:
+                created_dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
+                if (now - created_dt).total_seconds() / 86400 > 3:
+                    stale_session.append(b.get("id", "?"))
+            except (ValueError, TypeError):
+                pass
+    if stale_session:
+        names = ", ".join(stale_session[:3])
+        recommendations.append(f"Clean up stale session branches: {names}")
 
     # Low score warning
     if score < 50:

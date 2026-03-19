@@ -3,10 +3,11 @@
 Ready to Code Score Calculation
 
 Calculates a 0-100 score indicating readiness to start development work.
-Based on 6 dimensions: session restored, services healthy, dependencies updated,
-branches synced, PRs reviewed, and issues triaged.
+Based on 7 dimensions: session restored, services healthy, dependencies updated,
+branches synced, PRs reviewed, issues triaged, and session branches clean.
 """
 
+from datetime import datetime, timezone
 from typing import Any, Dict, Tuple
 
 
@@ -23,6 +24,7 @@ def calculate_ready_to_code_score(
             - services: Dev service status (running/stopped)
             - session: Session restore data
             - dependencies: Dependency check results
+            - session_branches: Session branch data (branches list, current branch)
 
     Returns:
         Tuple of (score, breakdown) where:
@@ -32,14 +34,14 @@ def calculate_ready_to_code_score(
     score = 0
     breakdown = {}
 
-    # 1. Session Restored (20 points)
+    # 1. Session Restored (15 points)
     # Check if we successfully restored previous session context
     session_data = state.get("session", {})
     if session_data.get("restored", False):
-        score += 20
+        score += 15
         breakdown["session_restored"] = {
-            "points": 20,
-            "max": 20,
+            "points": 15,
+            "max": 15,
             "status": "✅",
             "reason": "Previous session context restored",
         }
@@ -47,7 +49,7 @@ def calculate_ready_to_code_score(
         score += 0
         breakdown["session_restored"] = {
             "points": 0,
-            "max": 20,
+            "max": 15,
             "status": "❌",
             "reason": "No session context found or restore failed",
         }
@@ -142,7 +144,9 @@ def calculate_ready_to_code_score(
     if stale_branches > 0:
         penalty = min(stale_branches, 5)
         branch_score = max(0, branch_score - penalty)
-        sync_reason += f"; {stale_branches} stale branch{'es' if stale_branches != 1 else ''}"
+        sync_reason += (
+            f"; {stale_branches} stale branch{'es' if stale_branches != 1 else ''}"
+        )
         if sync_status == "✅":
             sync_status = "⚠️"
 
@@ -184,23 +188,23 @@ def calculate_ready_to_code_score(
             "reason": f"{len(prs_needing_review)} PRs waiting - review backlog",
         }
 
-    # 6. Issues Triaged (15 points)
+    # 6. Issues Triaged (10 points)
     # Check if today's issues are assigned/prioritized
     issues_needing_triage = github_data.get("issues_needing_triage", [])
 
     if len(issues_needing_triage) == 0:
-        score += 15
+        score += 10
         breakdown["issues_triaged"] = {
-            "points": 15,
-            "max": 15,
+            "points": 10,
+            "max": 10,
             "status": "✅",
             "reason": "All issues triaged",
         }
     elif len(issues_needing_triage) <= 3:
-        score += 10  # Few issues to triage
+        score += 5  # Few issues to triage
         breakdown["issues_triaged"] = {
-            "points": 10,
-            "max": 15,
+            "points": 5,
+            "max": 10,
             "status": "⚠️",
             "reason": f"{len(issues_needing_triage)} issues need triage",
         }
@@ -208,9 +212,61 @@ def calculate_ready_to_code_score(
         score += 0
         breakdown["issues_triaged"] = {
             "points": 0,
-            "max": 15,
+            "max": 10,
             "status": "❌",
             "reason": f"{len(issues_needing_triage)} issues need attention",
+        }
+
+    # 7. Session Branches Clean (10 points)
+    # Check for stale unmerged session branches
+    session_branches_data = state.get("session_branches", {})
+    branches_list = session_branches_data.get("branches", [])
+    unmerged = [
+        b for b in branches_list if b.get("id") != "main" and not b.get("merged", False)
+    ]
+
+    # Calculate age of each unmerged branch
+    stale_count = 0
+    now = datetime.now(timezone.utc)
+    for branch in unmerged:
+        created = branch.get("created")
+        if created:
+            try:
+                created_dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
+                age_days = (now - created_dt).total_seconds() / 86400
+                if age_days > 3:
+                    stale_count += 1
+            except (ValueError, TypeError):
+                pass
+
+    if len(unmerged) == 0:
+        score += 10
+        breakdown["session_branches_clean"] = {
+            "points": 10,
+            "max": 10,
+            "status": "✅",
+            "reason": "No unmerged session branches",
+        }
+    elif stale_count > 0 or len(unmerged) >= 3:
+        score += 0
+        reasons = []
+        if len(unmerged) >= 3:
+            reasons.append(f"{len(unmerged)} unmerged branches")
+        if stale_count > 0:
+            reasons.append(f"{stale_count} stale (>3 days)")
+        breakdown["session_branches_clean"] = {
+            "points": 0,
+            "max": 10,
+            "status": "❌",
+            "reason": "; ".join(reasons),
+        }
+    else:
+        score += 5
+        breakdown["session_branches_clean"] = {
+            "points": 5,
+            "max": 10,
+            "status": "⚠️",
+            "reason": f"{len(unmerged)} unmerged branch{'es' if len(unmerged) != 1 else ''}, all recent",
         }
 
     return score, breakdown
@@ -290,6 +346,7 @@ def format_breakdown_table(breakdown: Dict[str, Dict[str, Any]]) -> str:
         ("branches_synced", "Branches Synced"),
         ("prs_reviewed", "PRs Reviewed"),
         ("issues_triaged", "Issues Triaged"),
+        ("session_branches_clean", "Session Branches"),
     ]
 
     for key, display_name in order:

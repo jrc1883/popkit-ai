@@ -31,15 +31,22 @@ try:
     from popkit_shared.utils.generic_state_capture import capture_project_state
     from popkit_shared.utils.routine_cache import RoutineCache
     from popkit_shared.utils.routine_measurement import RoutineMeasurement
+    from popkit_shared.utils.session_branch_manager import (
+        get_branch_history,
+        get_current_branch as get_session_branch,
+        list_branches as list_session_branches,
+    )
     from popkit_shared.utils.session_recorder import (
         get_recorder,
         record_reasoning,
         record_recommendation,
     )
 
+    HAS_SESSION_BRANCHES = True
     HAS_UTILITIES = True
 except ImportError:
     HAS_UTILITIES = False
+    HAS_SESSION_BRANCHES = False
     ProfileManager = None
     print(
         "[WARN] PopKit utilities not available - running in degraded mode",
@@ -127,6 +134,9 @@ class NightlyWorkflow:
         print("[1/4] Collecting project state...", file=sys.stderr)
         state = self._collect_state()
 
+        # Step 1b: Collect session branch data
+        state["session_branches"] = self._collect_session_branches()
+
         # Step 2: Calculate Sleep Score
         print("[2/4] Calculating Sleep Score...", file=sys.stderr)
         score, breakdown = calculate_sleep_score(state)
@@ -164,7 +174,9 @@ class NightlyWorkflow:
             self.measurement.finalize(
                 {
                     "sleep_score": score,
-                    "uncommitted_files": state.get("git", {}).get("uncommitted_files", 0),
+                    "uncommitted_files": state.get("git", {}).get(
+                        "uncommitted_files", 0
+                    ),
                     "stashes": state.get("git", {}).get("stashes", 0),
                 }
             )
@@ -175,6 +187,39 @@ class NightlyWorkflow:
             "state": state,
             "breakdown": breakdown,
         }
+
+    def _collect_session_branches(self) -> Dict[str, Any]:
+        """
+        Collect session branch data from STATUS.json.
+
+        Returns:
+            Dict with keys:
+            - branches: List of branch dicts
+            - current_branch: Current session branch ID
+            - history: Recent branch history entries
+        """
+        if not HAS_SESSION_BRANCHES:
+            return {"branches": [], "current_branch": "main", "history": []}
+
+        try:
+            branches = list_session_branches()
+            branch_id, _ = get_session_branch()
+            history = get_branch_history(limit=50)
+            print(
+                f"[OK] Session branches: {len(branches)} total, current: {branch_id}",
+                file=sys.stderr,
+            )
+            return {
+                "branches": branches,
+                "current_branch": branch_id,
+                "history": history,
+            }
+        except Exception as e:
+            print(
+                f"[WARN] Could not load session branches: {e}",
+                file=sys.stderr,
+            )
+            return {"branches": [], "current_branch": "main", "history": []}
 
     def _collect_state(self) -> Dict[str, Any]:
         """
@@ -255,7 +300,9 @@ class NightlyWorkflow:
 
         git_state = {
             "branch": run_command(["git", "rev-parse", "--abbrev-ref", "HEAD"]),
-            "uncommitted_files": len(status_output.splitlines()) if status_output else 0,
+            "uncommitted_files": len(status_output.splitlines())
+            if status_output
+            else 0,
             "uncommitted_files_list": [
                 {"status": line[:2].strip(), "path": line[3:]}
                 for line in status_output.splitlines()
@@ -361,7 +408,9 @@ class NightlyWorkflow:
             try:
                 existing_status = json.loads(status_file.read_text(encoding="utf-8"))
             except (json.JSONDecodeError, UnicodeDecodeError) as e:
-                print(f"[WARN] Could not parse existing STATUS.json: {e}", file=sys.stderr)
+                print(
+                    f"[WARN] Could not parse existing STATUS.json: {e}", file=sys.stderr
+                )
 
         # Update with nightly routine data
         git_state = state.get("git", {})
@@ -414,7 +463,9 @@ class NightlyWorkflow:
         except Exception as e:
             print(f"[ERROR] Failed to update STATUS.json: {e}", file=sys.stderr)
 
-    def _get_before_leaving_recommendations(self, score: int, state: Dict[str, Any]) -> list:
+    def _get_before_leaving_recommendations(
+        self, score: int, state: Dict[str, Any]
+    ) -> list:
         """Generate before-leaving recommendations."""
         recommendations = []
         git_state = state.get("git", {})
@@ -425,7 +476,9 @@ class NightlyWorkflow:
             )
 
         if git_state.get("stashes", 0) > 5:
-            recommendations.append(f"Review {git_state['stashes']} stashes - consider cleanup")
+            recommendations.append(
+                f"Review {git_state['stashes']} stashes - consider cleanup"
+            )
 
         if score < 60:
             recommendations.append("⚠️ Low Sleep Score - address issues before leaving")
@@ -524,22 +577,36 @@ def main():
 
     # Individual flags (existing)
     parser.add_argument("--quick", action="store_true", help="Quick one-line summary")
-    parser.add_argument("--measure", action="store_true", help="Track performance metrics")
+    parser.add_argument(
+        "--measure", action="store_true", help="Track performance metrics"
+    )
     parser.add_argument("--optimized", action="store_true", help="Use caching")
     parser.add_argument("--no-cache", action="store_true", help="Force fresh execution")
 
     # New flags (documented but not yet fully implemented - Issue #105)
-    parser.add_argument("--simple", action="store_true", help="Markdown tables instead of ASCII")
-    parser.add_argument("--skip-cleanup", action="store_true", help="Skip auto-cleanup actions")
+    parser.add_argument(
+        "--simple", action="store_true", help="Markdown tables instead of ASCII"
+    )
+    parser.add_argument(
+        "--skip-cleanup", action="store_true", help="Skip auto-cleanup actions"
+    )
     parser.add_argument("--skip-ip-scan", action="store_true", help="Skip IP leak scan")
-    parser.add_argument("--no-morning", action="store_true", help="Skip morning comparison")
+    parser.add_argument(
+        "--no-morning", action="store_true", help="Skip morning comparison"
+    )
 
     # Help tiers (Issue #105)
-    parser.add_argument("--help-detailed", action="store_true", help="Show detailed examples")
-    parser.add_argument("--help-full", action="store_true", help="Show full documentation")
+    parser.add_argument(
+        "--help-detailed", action="store_true", help="Show detailed examples"
+    )
+    parser.add_argument(
+        "--help-full", action="store_true", help="Show full documentation"
+    )
 
     # List profiles (Issue #105)
-    parser.add_argument("--list-profiles", action="store_true", help="List available profiles")
+    parser.add_argument(
+        "--list-profiles", action="store_true", help="List available profiles"
+    )
 
     args = parser.parse_args()
 

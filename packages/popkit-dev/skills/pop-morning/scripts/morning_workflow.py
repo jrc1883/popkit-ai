@@ -32,6 +32,10 @@ try:
     from popkit_shared.utils.generic_state_capture import capture_project_state
     from popkit_shared.utils.routine_cache import RoutineCache
     from popkit_shared.utils.routine_measurement import RoutineMeasurement
+    from popkit_shared.utils.session_branch_manager import (
+        get_current_branch as get_session_branch,
+        list_branches as list_session_branches,
+    )
     from popkit_shared.utils.session_recorder import (
         get_recorder,
         record_reasoning,
@@ -39,9 +43,11 @@ try:
     )
     from popkit_shared.utils.subprocess_utils import run_command_simple
 
+    HAS_SESSION_BRANCHES = True
     HAS_UTILITIES = True
 except ImportError:
     HAS_UTILITIES = False
+    HAS_SESSION_BRANCHES = False
     ProfileManager = None
     print(
         "[WARN] PopKit utilities not available - running in degraded mode",
@@ -151,6 +157,9 @@ class MorningWorkflow:
         # Add session data to state
         state["session"] = session_data
 
+        # Step 2b: Collect session branch data
+        state["session_branches"] = self._collect_session_branches()
+
         # Step 3: Calculate Ready to Code Score
         print("[3/5] Calculating Ready to Code Score...", file=sys.stderr)
         score, breakdown = calculate_ready_to_code_score(state)
@@ -244,6 +253,36 @@ class MorningWorkflow:
             )
 
         return session_data
+
+    def _collect_session_branches(self) -> Dict[str, Any]:
+        """
+        Collect session branch data from STATUS.json.
+
+        Returns:
+            Dict with keys:
+            - branches: List of branch dicts
+            - current_branch: Current session branch ID
+        """
+        if not HAS_SESSION_BRANCHES:
+            return {"branches": [], "current_branch": "main"}
+
+        try:
+            branches = list_session_branches()
+            branch_id, _ = get_session_branch()
+            print(
+                f"[OK] Session branches: {len(branches)} total, current: {branch_id}",
+                file=sys.stderr,
+            )
+            return {
+                "branches": branches,
+                "current_branch": branch_id,
+            }
+        except Exception as e:
+            print(
+                f"[WARN] Could not load session branches: {e}",
+                file=sys.stderr,
+            )
+            return {"branches": [], "current_branch": "main"}
 
     def _collect_state(self) -> Dict[str, Any]:
         """

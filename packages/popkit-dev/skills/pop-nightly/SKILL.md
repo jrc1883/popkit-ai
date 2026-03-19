@@ -19,12 +19,13 @@ Automated end-of-day maintenance that ensures clean project state before leaving
 
 See [examples/scoring-system.md](examples/scoring-system.md) for complete scoring documentation.
 
-Comprehensive health check across 6 dimensions:
+Comprehensive health check across 7 dimensions:
 
 | Check                  | Points | Criteria                            |
 | ---------------------- | ------ | ----------------------------------- |
-| Uncommitted work saved | 25     | No uncommitted changes OR committed |
-| Branches cleaned       | 20     | No stale merged branches            |
+| Uncommitted work saved | 20     | No uncommitted changes OR committed |
+| Branches cleaned       | 15     | No stale merged branches            |
+| Session branches clean | 10     | No stale unmerged session branches  |
 | Issues updated         | 20     | Today's issues have status updates  |
 | CI passing             | 15     | Latest CI run successful            |
 | Services stopped       | 10     | No dev services running             |
@@ -83,9 +84,46 @@ All wrapped in `capture_state.py` for consistent error handling.
 - Sleep Score (0-100) with visual indicator
 - Score breakdown table
 - Uncommitted changes list (if any)
-- Recommendations before leaving
+- Session branches status (active during the day, unmerged, stale)
+- Recommendations before leaving (including branch cleanup)
 - Encouraging Bible verse (Issue #71)
 - Next morning actions
+
+## Session Branches
+
+The nightly routine checks for session branches that were active during the day and flags cleanup opportunities.
+
+**Checks performed:**
+
+- **Active branches**: Lists all unmerged session branches
+- **Day activity**: Shows branches that were created or switched to during the day
+- **Stale detection**: Flags branches older than 3 days for cleanup
+- **Cleanup suggestions**: Recommends merging or deleting stale branches
+
+**Scoring impact (10 points):**
+
+- 10/10: No unmerged session branches
+- 5/10: 1-2 unmerged branches, none older than 3 days
+- 0/10: 3+ unmerged branches or any branch older than 3 days
+
+**Report output example:**
+
+```
+## Session Branches
+
+**Active during today**: 2 branches used
+**Unmerged**: 3 branches
+
+| Branch         | Reason                    | Age    | Status    |
+|----------------|---------------------------|--------|-----------|
+| auth-bug       | Token expiry investigation | 1 day  | Active    |
+| cache-research | Redis vs Memcached spike   | 4 days | STALE     |
+| test-debug     | Flaky test investigation   | 6 days | STALE     |
+
+Recommendations:
+- Merge "auth-bug" with outcome before leaving
+- Delete or merge stale branches: cache-research (4d), test-debug (6d)
+```
 
 ## Next Actions (The PopKit Way)
 
@@ -129,6 +167,7 @@ Never just show a report and end the session!
 ## Related Skills
 
 - **pop-session-capture**: Updates STATUS.json (invoked automatically)
+- **pop-session-branch**: Session branching for side investigations
 - **pop-morning**: Morning counterpart with Ready to Code score
 - **pop-routine-optimized**: Optimized execution with caching
 

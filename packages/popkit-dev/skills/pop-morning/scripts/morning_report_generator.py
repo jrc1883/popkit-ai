@@ -6,7 +6,7 @@ Generates formatted morning routine reports with Ready to Code Score,
 setup recommendations, and today's action items.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 # Try relative import (when used as package), fall back to direct import
@@ -45,6 +45,13 @@ def generate_morning_report(
         "",
     ]
 
+    # Add session branches section if there are unmerged branches
+    session_branches_breakdown = breakdown.get("session_branches_clean", {})
+    if session_branches_breakdown.get("points", 0) < session_branches_breakdown.get(
+        "max", 10
+    ):
+        report_lines.extend(_generate_session_branches_section(state))
+
     # Add service status if services are not healthy
     services_breakdown = breakdown.get("services_healthy", {})
     if services_breakdown.get("points", 0) < services_breakdown.get("max", 20):
@@ -72,7 +79,9 @@ def generate_morning_report(
 
     # Add recommendations
     report_lines.extend(["## 📋 Recommendations", "", "**Before Starting Work:**"])
-    report_lines.extend([f"- {rec}" for rec in _generate_setup_recommendations(score, state)])
+    report_lines.extend(
+        [f"- {rec}" for rec in _generate_setup_recommendations(score, state)]
+    )
 
     report_lines.extend(["", "**Today's Focus:**"])
     report_lines.extend([f"- {rec}" for rec in _generate_today_recommendations(state)])
@@ -246,6 +255,81 @@ def _generate_issues_section(state: Dict[str, Any]) -> List[str]:
     return lines
 
 
+def _generate_session_branches_section(state: Dict[str, Any]) -> List[str]:
+    """Generate session branches section for morning report."""
+    session_branches_data = state.get("session_branches", {})
+    branches_list = session_branches_data.get("branches", [])
+    current_branch = session_branches_data.get("current_branch", "main")
+
+    unmerged = [
+        b for b in branches_list if b.get("id") != "main" and not b.get("merged", False)
+    ]
+
+    if not unmerged:
+        return []
+
+    now = datetime.now(timezone.utc)
+    lines = [
+        "## Session Branches",
+        "",
+        f"**Current session branch**: {current_branch}",
+        f"**Unmerged branches**: {len(unmerged)}",
+        "",
+        "| Branch | Reason | Age | Status |",
+        "|--------|--------|-----|--------|",
+    ]
+
+    for branch in unmerged:
+        branch_id = branch.get("id", "unknown")
+        reason = branch.get("reason", "")[:40]
+        created = branch.get("created")
+        age_str = "unknown"
+        status = "Active"
+
+        if created:
+            try:
+                created_dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
+                age_days = (now - created_dt).total_seconds() / 86400
+                if age_days < 1:
+                    age_str = f"{int(age_days * 24)}h"
+                else:
+                    age_str = f"{int(age_days)}d"
+                if age_days > 3:
+                    status = "STALE"
+            except (ValueError, TypeError):
+                pass
+
+        active_marker = " (current)" if branch_id == current_branch else ""
+        lines.append(
+            f"| {branch_id}{active_marker} | {reason} | {age_str} | {status} |"
+        )
+
+    # Add recommendations for stale branches
+    stale = [b for b in unmerged if _branch_age_days(b) > 3]
+    if stale:
+        lines.append("")
+        lines.append("**Stale branch cleanup recommended:**")
+        for b in stale:
+            age = int(_branch_age_days(b))
+            lines.append(f"- Merge or delete `{b.get('id')}` ({age} days old)")
+
+    lines.append("")
+    return lines
+
+
+def _branch_age_days(branch: Dict[str, Any]) -> float:
+    """Calculate age of a branch in days."""
+    created = branch.get("created")
+    if not created:
+        return 0
+    try:
+        created_dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
+        now = datetime.now(timezone.utc)
+        return (now - created_dt).total_seconds() / 86400
+    except (ValueError, TypeError):
+        return 0
+
+
 def _generate_setup_recommendations(score: int, state: Dict[str, Any]) -> List[str]:
     """Generate setup recommendations before starting work."""
     recommendations = []
@@ -257,27 +341,51 @@ def _generate_setup_recommendations(score: int, state: Dict[str, Any]) -> List[s
     missing = [s for s in required if s not in running]
 
     if missing:
-        recommendations.append(f"Start {len(missing)} dev services: {', '.join(missing)}")
+        recommendations.append(
+            f"Start {len(missing)} dev services: {', '.join(missing)}"
+        )
 
     # Sync recommendations
     git_data = state.get("git", {})
     behind = git_data.get("behind_remote", 0)
 
     if behind > 0:
-        recommendations.append(f"Sync with remote: git pull (behind by {behind} commits)")
+        recommendations.append(
+            f"Sync with remote: git pull (behind by {behind} commits)"
+        )
 
     # Dependency recommendations
     deps_data = state.get("dependencies", {})
     outdated_count = deps_data.get("outdated_count", 0)
 
     if outdated_count > 10:
-        recommendations.append(f"Update {outdated_count} outdated dependencies: pnpm update")
+        recommendations.append(
+            f"Update {outdated_count} outdated dependencies: pnpm update"
+        )
     elif outdated_count > 0:
         recommendations.append(f"Review {outdated_count} dependency updates (optional)")
 
+    # Session branch cleanup
+    session_branches_data = state.get("session_branches", {})
+    branches_list = session_branches_data.get("branches", [])
+    stale_branches = [
+        b
+        for b in branches_list
+        if b.get("id") != "main"
+        and not b.get("merged", False)
+        and _branch_age_days(b) > 3
+    ]
+    if stale_branches:
+        names = ", ".join(b.get("id", "?") for b in stale_branches[:3])
+        recommendations.append(
+            f"Clean up {len(stale_branches)} stale session branch{'es' if len(stale_branches) != 1 else ''}: {names}"
+        )
+
     # Low score warning
     if score < 60:
-        recommendations.append("⚠️ Low Ready to Code Score - address critical issues first")
+        recommendations.append(
+            "⚠️ Low Ready to Code Score - address critical issues first"
+        )
 
     if not recommendations:
         recommendations.append("All set! Start coding immediately.")
