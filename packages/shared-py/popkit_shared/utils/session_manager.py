@@ -32,7 +32,9 @@ class SessionManager:
     """Manages shared session state across hook invocations."""
 
     def __init__(self):
-        self.sessions_dir = Path.home() / ".claude" / "popkit" / "sessions"
+        from .plugin_data import get_global_plugin_data_dir
+
+        self.sessions_dir = get_global_plugin_data_dir() / "sessions"
         self.sessions_dir.mkdir(parents=True, exist_ok=True)
 
         # Session timeout: 5 minutes of inactivity

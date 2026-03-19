@@ -24,9 +24,18 @@ Design constraints:
 """
 
 import json
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
+
+
+def _get_plugin_data_dir() -> Path:
+    """Get plugin data directory (CLAUDE_PLUGIN_DATA or fallback)."""
+    plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+    if plugin_data:
+        return Path(plugin_data)
+    return Path.cwd() / ".claude" / "popkit"
 
 
 def read_compaction_log():
@@ -34,7 +43,7 @@ def read_compaction_log():
 
     Returns the full log and the latest entry, or empty defaults.
     """
-    log_file = Path.cwd() / ".claude" / "popkit" / "compaction-log.json"
+    log_file = _get_plugin_data_dir() / "compaction-log.json"
 
     if not log_file.exists():
         return [], None

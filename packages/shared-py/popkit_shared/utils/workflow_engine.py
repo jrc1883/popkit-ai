@@ -251,20 +251,12 @@ class WorkflowEvent:
 def _get_workflows_dir() -> Path:
     """Get the workflows storage directory.
 
-    Creates .claude/popkit/workflows/ if it doesn't exist.
+    Uses CLAUDE_PLUGIN_DATA (CC 2.1.78+) or falls back to .claude/popkit/.
+    Creates the workflows/ subdirectory if it doesn't exist.
     """
-    # Look for project root indicators
-    current = Path.cwd()
-    for parent in [current] + list(current.parents):
-        if (parent / ".git").exists() or (parent / "package.json").exists():
-            workflows_dir = parent / ".claude" / "popkit" / "workflows"
-            workflows_dir.mkdir(parents=True, exist_ok=True)
-            return workflows_dir
+    from .plugin_data import get_plugin_data_subdir
 
-    # Fallback to current directory
-    workflows_dir = current / ".claude" / "popkit" / "workflows"
-    workflows_dir.mkdir(parents=True, exist_ok=True)
-    return workflows_dir
+    return get_plugin_data_subdir("workflows")
 
 
 def _get_workflow_state_file(workflow_id: str) -> Path:

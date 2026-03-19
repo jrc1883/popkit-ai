@@ -18,10 +18,19 @@ Design constraints:
 """
 
 import json
+import os
 import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
+
+
+def _get_plugin_data_dir() -> Path:
+    """Get plugin data directory (CLAUDE_PLUGIN_DATA or fallback)."""
+    plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+    if plugin_data:
+        return Path(plugin_data)
+    return Path.cwd() / ".claude" / "popkit"
 
 
 def get_git_snapshot():
@@ -90,11 +99,12 @@ def get_session_token_summary():
 
 
 def write_compaction_log(entry):
-    """Append compaction event to .claude/popkit/compaction-log.json.
+    """Append compaction event to compaction-log.json.
 
     Keeps the last 50 entries to avoid unbounded growth.
+    Uses CLAUDE_PLUGIN_DATA (CC 2.1.78+) or falls back to .claude/popkit/.
     """
-    log_dir = Path.cwd() / ".claude" / "popkit"
+    log_dir = _get_plugin_data_dir()
     log_dir.mkdir(parents=True, exist_ok=True)
     log_file = log_dir / "compaction-log.json"
 
@@ -161,7 +171,7 @@ def update_status_json(git_snapshot, token_summary, compaction_count):
 
 def count_previous_compactions():
     """Count how many compactions have occurred this session."""
-    log_file = Path.cwd() / ".claude" / "popkit" / "compaction-log.json"
+    log_file = _get_plugin_data_dir() / "compaction-log.json"
     if not log_file.exists():
         return 0
 

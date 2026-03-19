@@ -25,7 +25,12 @@ session_id = datetime.now().strftime("%Y%m%d-%H%M%S")
 os.environ["POPKIT_RECORD_ID"] = session_id
 
 # Print recording info
-recordings_dir = Path.home() / ".claude" / "popkit" / "recordings"
+plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+recordings_dir = (
+    Path(plugin_data) / "recordings"
+    if plugin_data
+    else Path.home() / ".claude" / "popkit" / "recordings"
+)
 timestamp = datetime.now().strftime("%Y-%m-%d-%H%M%S")
 recording_file = recordings_dir / f"{timestamp}-{command_name}-{session_id}.json"
 
@@ -38,4 +43,6 @@ print("Now run your PopKit command in Claude Code...")
 print("All tool calls will be captured automatically.")
 print()
 print("After command completes, analyze with:")
-print(f"  python packages/shared-py/popkit_shared/utils/recording_analyzer.py {recording_file}")
+print(
+    f"  python packages/shared-py/popkit_shared/utils/recording_analyzer.py {recording_file}"
+)

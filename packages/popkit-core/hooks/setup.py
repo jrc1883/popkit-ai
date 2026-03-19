@@ -21,15 +21,27 @@ from datetime import datetime
 from pathlib import Path
 
 
+def _get_plugin_data_dir() -> Path:
+    """Get plugin data directory (CLAUDE_PLUGIN_DATA or fallback)."""
+    plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+    if plugin_data:
+        return Path(plugin_data)
+    return Path(".claude", "popkit")
+
+
 def ensure_popkit_directories():
-    """Create required PopKit directory structure."""
+    """Create required PopKit directory structure.
+
+    Uses CLAUDE_PLUGIN_DATA (CC 2.1.78+) or falls back to .claude/popkit/.
+    """
     dirs_created = []
+    data_dir = _get_plugin_data_dir()
     base_dirs = [
         Path(".claude"),
-        Path(".claude", "popkit"),
-        Path(".claude", "popkit", "cache"),
-        Path(".claude", "popkit", "logs"),
-        Path(".claude", "popkit", "embeddings"),
+        data_dir,
+        data_dir / "cache",
+        data_dir / "logs",
+        data_dir / "embeddings",
         Path(".claude", "skills"),
     ]
 
@@ -141,7 +153,7 @@ def main():
         # 4. Maintenance-specific tasks
         if setup_mode == "maintenance":
             # Clear stale caches
-            cache_dir = Path(".claude", "popkit", "cache")
+            cache_dir = _get_plugin_data_dir() / "cache"
             stale_count = 0
             if cache_dir.exists():
                 for cache_file in cache_dir.glob("*.json"):

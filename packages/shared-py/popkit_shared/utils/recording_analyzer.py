@@ -504,7 +504,9 @@ def analyze_recording(file_path: str, format: str = "markdown") -> str:
 def list_recordings(recordings_dir: Optional[Path] = None) -> List[Path]:
     """List all available recordings."""
     if recordings_dir is None:
-        recordings_dir = Path.home() / ".claude" / "popkit" / "recordings"
+        from .plugin_data import get_global_plugin_data_dir
+
+        recordings_dir = get_global_plugin_data_dir() / "recordings"
 
     if not recordings_dir.exists():
         return []

@@ -14,35 +14,22 @@ import os
 from pathlib import Path
 from typing import Any, Dict
 
+from .plugin_data import get_plugin_data_subdir
+
 # Constants
-POPKIT_DIR = ".claude/popkit"
 SESSIONS_SUBDIR = "sessions"
 
 
 def get_popkit_sessions_dir() -> Path:
     """
-    Get the .claude/popkit/sessions directory path.
+    Get the plugin data sessions directory path.
 
-    Searches upward from current directory to find project root,
-    then returns .claude/popkit/sessions directory path.
+    Uses CLAUDE_PLUGIN_DATA (CC 2.1.78+) or falls back to .claude/popkit/.
 
     Returns:
-        Path to .claude/popkit/sessions directory
+        Path to sessions directory
     """
-    current = Path.cwd()
-
-    # Search upward for project root (.git directory)
-    for parent in [current] + list(current.parents):
-        git_dir = parent / ".git"
-        if git_dir.exists():
-            sessions_dir = parent / POPKIT_DIR / SESSIONS_SUBDIR
-            sessions_dir.mkdir(parents=True, exist_ok=True)
-            return sessions_dir
-
-    # Fallback: create in current directory
-    sessions_dir = current / POPKIT_DIR / SESSIONS_SUBDIR
-    sessions_dir.mkdir(parents=True, exist_ok=True)
-    return sessions_dir
+    return get_plugin_data_subdir(SESSIONS_SUBDIR)
 
 
 def get_session_context_path(session_id: str) -> Path:

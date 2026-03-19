@@ -123,10 +123,12 @@ def build_auto_claim_instruction(role, teammate_id):
 def log_idle_event(input_data, role):
     """
     Log idle events for observability (optional).
-    Writes to .claude/popkit/swarm-events.jsonl if the directory exists.
+    Writes to swarm-events.jsonl in plugin data dir if it exists.
+    Uses CLAUDE_PLUGIN_DATA (CC 2.1.78+) or falls back to ~/.claude/popkit/.
     """
     try:
-        log_dir = os.path.expanduser("~/.claude/popkit")
+        plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+        log_dir = plugin_data if plugin_data else os.path.expanduser("~/.claude/popkit")
         if os.path.exists(log_dir):
             log_file = os.path.join(log_dir, "swarm-events.jsonl")
             event = {

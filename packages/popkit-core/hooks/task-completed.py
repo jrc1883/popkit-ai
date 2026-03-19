@@ -10,14 +10,23 @@ Responsibilities:
 """
 
 import json
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
 
 
+def _get_plugin_data_dir() -> Path:
+    """Get plugin data directory (CLAUDE_PLUGIN_DATA or fallback)."""
+    plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+    if plugin_data:
+        return Path(plugin_data)
+    return Path.cwd() / ".claude" / "popkit"
+
+
 def log_task_completion(data):
     """Log task completion event."""
-    logs_dir = Path(".claude", "popkit", "logs")
+    logs_dir = _get_plugin_data_dir() / "logs"
     logs_dir.mkdir(parents=True, exist_ok=True)
 
     log_file = logs_dir / "task-completions.json"

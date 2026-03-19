@@ -786,8 +786,12 @@ class QualityGateHook:
 
     def is_power_mode_active(self) -> bool:
         """Check if Power Mode is currently active."""
-        # Check for coordinator state file (in .claude/popkit/)
-        power_state = self.claude_dir / "popkit" / "power-mode-state.json"
+        # Check for coordinator state file (CLAUDE_PLUGIN_DATA or .claude/popkit/)
+        plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+        if plugin_data:
+            power_state = Path(plugin_data) / "power-mode-state.json"
+        else:
+            power_state = self.claude_dir / "popkit" / "power-mode-state.json"
         if power_state.exists():
             try:
                 state = json.loads(power_state.read_text())

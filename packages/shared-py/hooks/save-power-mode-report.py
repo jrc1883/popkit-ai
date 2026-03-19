@@ -19,9 +19,17 @@ from datetime import datetime
 from pathlib import Path
 
 
+def _get_plugin_data_dir(cwd) -> Path:
+    """Get plugin data directory (CLAUDE_PLUGIN_DATA or fallback)."""
+    plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+    if plugin_data:
+        return Path(plugin_data)
+    return Path(cwd) / ".claude" / "popkit"
+
+
 def load_insights(cwd):
     """Load insights from power mode session."""
-    insights_path = Path(cwd) / ".claude" / "popkit" / "insights.json"
+    insights_path = _get_plugin_data_dir(cwd) / "insights.json"
 
     if not insights_path.exists():
         return []
@@ -36,7 +44,7 @@ def load_insights(cwd):
 
 def load_power_state(cwd):
     """Load power mode state."""
-    state_path = Path(cwd) / ".claude" / "popkit" / "power-state.json"
+    state_path = _get_plugin_data_dir(cwd) / "power-state.json"
 
     if not state_path.exists():
         return None
@@ -100,10 +108,7 @@ def generate_report(cwd, state, insights):
 
 def save_report(cwd, report):
     """Save power mode report."""
-    cwd_path = Path(cwd)
-
-    # Ensure .claude/popkit directory exists
-    reports_dir = cwd_path / ".claude" / "popkit"
+    reports_dir = _get_plugin_data_dir(cwd)
     reports_dir.mkdir(parents=True, exist_ok=True)
 
     # Save report with timestamp

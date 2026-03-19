@@ -20,7 +20,12 @@ from lifecycle import AgentLifecycle, AgentState
 from protocol import MessageFactory, ProtocolMessage
 
 logger = logging.getLogger(__name__)
-DEFAULT_STATE_FILE = Path.home() / ".claude" / "popkit" / "power-mode-state.json"
+_plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+DEFAULT_STATE_FILE = (
+    Path(_plugin_data) / "power-mode-state.json"
+    if _plugin_data
+    else Path.home() / ".claude" / "popkit" / "power-mode-state.json"
+)
 
 
 def _utc_timestamp() -> str:

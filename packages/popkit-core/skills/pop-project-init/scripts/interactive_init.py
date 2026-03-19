@@ -48,7 +48,9 @@ def detect_monorepo(project_dir: Path) -> Dict[str, Any]:
             result["is_monorepo"] = True
             result["workspace_root"] = str(current)
             result["workspace_type"] = _detect_workspace_type(current)
-            result["projects"] = _list_workspace_projects(current, result["workspace_type"])
+            result["projects"] = _list_workspace_projects(
+                current, result["workspace_type"]
+            )
             break
 
         parent = current.parent
@@ -175,7 +177,9 @@ def detect_stack(project_dir: Path) -> Dict[str, Any]:
     # Detect from pyproject.toml
     if indicators["pyproject_toml"]:
         try:
-            content = (project_dir / "pyproject.toml").read_text(encoding="utf-8").lower()
+            content = (
+                (project_dir / "pyproject.toml").read_text(encoding="utf-8").lower()
+            )
             if "fastapi" in content:
                 result["detected"] = "python-fastapi"
                 result["confidence"] = "high"
@@ -281,9 +285,13 @@ def detect_quality_gates(project_dir: Path) -> Dict[str, Any]:
     existing_tools = []
 
     # Check for existing quality tools
-    if (project_dir / ".eslintrc.json").exists() or (project_dir / ".eslintrc.js").exists():
+    if (project_dir / ".eslintrc.json").exists() or (
+        project_dir / ".eslintrc.js"
+    ).exists():
         existing_tools.append("eslint")
-    if (project_dir / ".prettierrc").exists() or (project_dir / ".prettierrc.json").exists():
+    if (project_dir / ".prettierrc").exists() or (
+        project_dir / ".prettierrc.json"
+    ).exists():
         existing_tools.append("prettier")
     if (project_dir / "tsconfig.json").exists():
         existing_tools.append("typescript")
@@ -334,7 +342,11 @@ def detect_premium_features(project_dir: Path) -> Dict[str, Any]:
     is_authenticated = bool(os.environ.get("POPKIT_API_KEY"))
     has_voyage_key = bool(os.environ.get("VOYAGE_API_KEY"))
 
-    config_path = project_dir / ".claude" / "popkit" / "config.json"
+    plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+    if plugin_data:
+        config_path = Path(plugin_data) / "config.json"
+    else:
+        config_path = project_dir / ".claude" / "popkit" / "config.json"
     current_tier = "free"
     if config_path.exists():
         try:
@@ -349,7 +361,9 @@ def detect_premium_features(project_dir: Path) -> Dict[str, Any]:
         "current_tier": current_tier,
         "features": {
             "power_mode": "available",
-            "semantic_search": "requires_voyage_key" if not has_voyage_key else "available",
+            "semantic_search": "requires_voyage_key"
+            if not has_voyage_key
+            else "available",
             "cloud_sync": "requires_auth" if not is_authenticated else "available",
         },
     }
@@ -447,7 +461,8 @@ def generate_questions(
                     "description": "Formatting only (Prettier/Ruff). Fast, minimal overhead.",
                 },
                 {
-                    "label": "Standard" + (" (Recommended)" if rec == "standard" else ""),
+                    "label": "Standard"
+                    + (" (Recommended)" if rec == "standard" else ""),
                     "description": "Formatting + linting + type checking. Good balance.",
                 },
                 {

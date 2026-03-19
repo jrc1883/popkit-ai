@@ -12,10 +12,20 @@ Part of PopKit plugin - Issue #16, #314
 """
 
 import json
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict
+
+
+def _get_plugin_data_dir() -> Path:
+    """Get plugin data directory (CLAUDE_PLUGIN_DATA or fallback)."""
+    plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+    if plugin_data:
+        return Path(plugin_data)
+    return Path.cwd() / ".claude" / "popkit"
+
 
 # Context window limits by model (approximate)
 # Updated for CC 2.1.79: Models now support up to 1M context tokens.
@@ -212,7 +222,7 @@ class ContextMonitor:
 
         Returns True if a new compaction was detected.
         """
-        log_file = Path.cwd() / ".claude" / "popkit" / "compaction-log.json"
+        log_file = _get_plugin_data_dir() / "compaction-log.json"
         if not log_file.exists():
             return False
 

@@ -17,9 +17,18 @@ Responsibilities:
 """
 
 import json
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
+
+
+def _get_plugin_data_dir() -> Path:
+    """Get plugin data directory (CLAUDE_PLUGIN_DATA or fallback)."""
+    plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+    if plugin_data:
+        return Path(plugin_data)
+    return Path.cwd() / ".claude" / "popkit"
 
 
 # Decision categories and their detection signals
@@ -225,11 +234,12 @@ def persist_to_decisions_log(decision_entry):
 
     This is the full audit trail of all decisions, kept separately from
     STATUS.json which is meant to be compact.
+    Uses CLAUDE_PLUGIN_DATA (CC 2.1.78+) or falls back to .claude/popkit/.
 
     Args:
         decision_entry: Dict with the decision details
     """
-    log_file = Path.cwd() / ".claude" / "popkit" / "decisions-log.json"
+    log_file = _get_plugin_data_dir() / "decisions-log.json"
 
     log_entries = []
     if log_file.exists():

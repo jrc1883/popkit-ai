@@ -286,15 +286,24 @@ def register_project_async():
         return None
 
 
+def _get_plugin_data_dir() -> Path:
+    """Get plugin data directory (CLAUDE_PLUGIN_DATA or fallback)."""
+    plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+    if plugin_data:
+        return Path(plugin_data)
+    return Path.cwd() / ".claude" / "popkit"
+
+
 def ensure_popkit_directories():
     """Ensure PopKit runtime directories exist.
 
     This is idempotent and fast - creates directories only if missing.
     Part of the skill automation architecture (Issue #173).
+    Uses CLAUDE_PLUGIN_DATA (CC 2.1.78+) or falls back to .claude/popkit/.
 
     Created directories:
-    - .claude/popkit/           - PopKit runtime state
-    - .claude/popkit/routines/  - Custom morning/nightly routines
+    - <plugin_data>/           - PopKit runtime state
+    - <plugin_data>/routines/  - Custom morning/nightly routines
 
     Returns:
         dict: Status of directory creation, or None on error
@@ -307,7 +316,7 @@ def ensure_popkit_directories():
         if not (cwd / ".git").exists() and not (cwd / "CLAUDE.md").exists():
             return None
 
-        base = cwd / ".claude" / "popkit"
+        base = _get_plugin_data_dir()
         dirs_to_create = [
             base,
             base / "routines" / "morning",

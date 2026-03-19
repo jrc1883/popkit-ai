@@ -17,9 +17,18 @@ Responsibilities:
 """
 
 import json
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
+
+
+def _get_plugin_data_dir() -> Path:
+    """Get plugin data directory (CLAUDE_PLUGIN_DATA or fallback)."""
+    plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+    if plugin_data:
+        return Path(plugin_data)
+    return Path.cwd() / ".claude" / "popkit"
 
 
 def detect_workflow(elicitation_data):
@@ -269,7 +278,7 @@ def get_brainstorm_context():
             pass
 
     # Check decisions log for broader context
-    decisions_log = Path.cwd() / ".claude" / "popkit" / "decisions-log.json"
+    decisions_log = _get_plugin_data_dir() / "decisions-log.json"
     if decisions_log.exists():
         try:
             with open(decisions_log, "r", encoding="utf-8") as f:

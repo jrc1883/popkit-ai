@@ -16,7 +16,11 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 # Constants
-GLOBAL_POPKIT_DIR = os.path.join(os.path.expanduser("~"), ".claude", "popkit")
+# Global plugin data uses ~/.claude/popkit/ (user-level, not project-level)
+_plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+GLOBAL_POPKIT_DIR = (
+    _plugin_data if _plugin_data else os.path.join(os.path.expanduser("~"), ".claude", "popkit")
+)
 PROJECTS_FILE = "projects.json"
 DEFAULT_SETTINGS = {"autoDiscover": True, "healthCheckInterval": "daily", "maxInactiveProjects": 20}
 

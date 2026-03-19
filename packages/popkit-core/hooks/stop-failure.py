@@ -20,10 +20,19 @@ Design constraints:
 """
 
 import json
+import os
 import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
+
+
+def _get_plugin_data_dir() -> Path:
+    """Get plugin data directory (CLAUDE_PLUGIN_DATA or fallback)."""
+    plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+    if plugin_data:
+        return Path(plugin_data)
+    return Path.cwd() / ".claude" / "popkit"
 
 
 def get_git_branch():
@@ -108,11 +117,12 @@ def capture_session_state(error_info, branch, last_commit):
 
 
 def write_error_log(entry):
-    """Append error entry to .claude/popkit/error-log.json.
+    """Append error entry to error-log.json in plugin data directory.
 
     Keeps the last 20 entries to avoid unbounded growth.
+    Uses CLAUDE_PLUGIN_DATA (CC 2.1.78+) or falls back to .claude/popkit/.
     """
-    log_dir = Path.cwd() / ".claude" / "popkit"
+    log_dir = _get_plugin_data_dir()
     log_dir.mkdir(parents=True, exist_ok=True)
     log_file = log_dir / "error-log.json"
 

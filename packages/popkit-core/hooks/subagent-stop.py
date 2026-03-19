@@ -179,7 +179,11 @@ def record_subagent_completion(data: dict):
         incoming_session_id = data.get("session_id")
 
         # Verify session ID matches the recording session
-        state_file = Path.home() / ".claude" / "popkit" / "recording-state.json"
+        plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+        if plugin_data:
+            state_file = Path(plugin_data) / "recording-state.json"
+        else:
+            state_file = Path.home() / ".claude" / "popkit" / "recording-state.json"
         if not state_file.exists():
             return
 

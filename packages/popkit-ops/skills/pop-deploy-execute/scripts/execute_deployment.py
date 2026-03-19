@@ -17,6 +17,7 @@ Output:
 """
 
 import json
+import os
 import subprocess
 import sys
 import time
@@ -25,14 +26,22 @@ from pathlib import Path
 from typing import Any
 
 
+def _get_plugin_data_dir(project_dir: Path) -> Path:
+    """Get plugin data directory (CLAUDE_PLUGIN_DATA or fallback)."""
+    plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+    if plugin_data:
+        return Path(plugin_data)
+    return project_dir / ".claude" / "popkit"
+
+
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
 
 
 def load_deploy_config(project_dir: Path) -> dict[str, Any]:
-    """Load .claude/popkit/deploy.json."""
-    config_file = project_dir / ".claude" / "popkit" / "deploy.json"
+    """Load deploy.json from plugin data directory."""
+    config_file = _get_plugin_data_dir(project_dir) / "deploy.json"
 
     if not config_file.exists():
         return {
