@@ -225,7 +225,7 @@ def embed_entry(entry):
       "tags": ["auth", "infrastructure"],
       "project": "popkit-cloud",
       "createdAt": "2024-12-09T10:30:00Z",
-      "embeddingId": "vec_r001"  // optional, null if VOYAGE_API_KEY not set
+      "embeddingId": "vec_r001" // optional, null if VOYAGE_API_KEY not set
     }
   ],
   "tagIndex": {

@@ -20,14 +20,14 @@ Deploy to any target: Docker, npm/PyPI, Vercel/Netlify, or GitHub Releases. Orch
 
 ## Subcommands
 
-| Subcommand       | Description                                      | Skill Invoked         |
-| ---------------- | ------------------------------------------------ | --------------------- |
-| (none)           | Show deployment status and available actions      | -                     |
-| init             | Analyze project and configure deployment targets  | pop-deploy-init       |
-| setup            | Generate CI/CD pipeline and target configuration  | pop-deploy-setup      |
-| validate         | Run pre-deployment checks                         | pop-deploy-validate   |
-| execute          | Deploy to target(s)                               | pop-deploy-execute    |
-| rollback         | Undo a deployment                                 | pop-deploy-rollback   |
+| Subcommand | Description                                      | Skill Invoked       |
+| ---------- | ------------------------------------------------ | ------------------- |
+| (none)     | Show deployment status and available actions     | -                   |
+| init       | Analyze project and configure deployment targets | pop-deploy-init     |
+| setup      | Generate CI/CD pipeline and target configuration | pop-deploy-setup    |
+| validate   | Run pre-deployment checks                        | pop-deploy-validate |
+| execute    | Deploy to target(s)                              | pop-deploy-execute  |
+| rollback   | Undo a deployment                                | pop-deploy-rollback |
 
 ## Pipeline
 
@@ -123,12 +123,12 @@ Initialize deployment configuration. Analyzes project structure to detect deploy
 
 ### Required Decision Points
 
-| Step | Decision                      | Type        |
-| ---- | ----------------------------- | ----------- |
-| 1    | Select deployment targets     | multiSelect |
-| 2    | Set primary target            | select      |
-| 3    | Configure CI/CD trigger mode  | select      |
-| 4    | Proceed to setup?             | select      |
+| Step | Decision                     | Type        |
+| ---- | ---------------------------- | ----------- |
+| 1    | Select deployment targets    | multiSelect |
+| 2    | Set primary target           | select      |
+| 3    | Configure CI/CD trigger mode | select      |
+| 4    | Proceed to setup?            | select      |
 
 **Skipping these violates PopKit UX standard.**
 
@@ -197,11 +197,11 @@ Generate deployment infrastructure files from `deploy.json` configuration.
 
 ### Required Decision Points
 
-| Step | Decision                        | Type        |
-| ---- | ------------------------------- | ----------- |
-| 1    | Select targets for generation   | multiSelect |
-| 2    | Choose template level           | select      |
-| 3    | Review generated files          | select      |
+| Step | Decision                      | Type        |
+| ---- | ----------------------------- | ----------- |
+| 1    | Select targets for generation | multiSelect |
+| 2    | Choose template level         | select      |
+| 3    | Review generated files        | select      |
 
 **Skipping these violates PopKit UX standard.**
 
@@ -218,20 +218,20 @@ Generate deployment infrastructure files from `deploy.json` configuration.
 
 ### Templates
 
-| Level    | Description                                                 |
-| -------- | ----------------------------------------------------------- |
-| minimal  | Basic configs, no extras                                    |
-| standard | Production-ready with health checks and logging             |
-| advanced | Multi-stage, multi-env, monitoring, secrets management      |
+| Level    | Description                                            |
+| -------- | ------------------------------------------------------ |
+| minimal  | Basic configs, no extras                               |
+| standard | Production-ready with health checks and logging        |
+| advanced | Multi-stage, multi-env, monitoring, secrets management |
 
 ### Options
 
-| Flag               | Description                           |
-| ------------------ | ------------------------------------- |
-| `--dry-run`        | Preview files without writing         |
-| `--no-commit`      | Skip auto-commit of generated files   |
-| `--template`       | Template level: minimal/standard/advanced |
-| `--all`            | Generate for all configured targets   |
+| Flag          | Description                               |
+| ------------- | ----------------------------------------- |
+| `--dry-run`   | Preview files without writing             |
+| `--no-commit` | Skip auto-commit of generated files       |
+| `--template`  | Template level: minimal/standard/advanced |
+| `--all`       | Generate for all configured targets       |
 
 ### Output
 
@@ -283,40 +283,40 @@ Run pre-deployment validation checks. Produces a readiness score and go/no-go re
 
 ### Required Decision Points
 
-| Step | Decision                      | Type   |
-| ---- | ----------------------------- | ------ |
-| 1    | Select validation scope       | select |
-| 2    | Post-validation action        | select |
+| Step | Decision                | Type   |
+| ---- | ----------------------- | ------ |
+| 1    | Select validation scope | select |
+| 2    | Post-validation action  | select |
 
 **Skipping these violates PopKit UX standard.**
 
 ### Validation Checks
 
-| Scope    | Checks                                                      | Time     |
-| -------- | ----------------------------------------------------------- | -------- |
+| Scope    | Checks                                                        | Time     |
+| -------- | ------------------------------------------------------------- | -------- |
 | quick    | Config exists, target config valid, version check, git status | ~30s     |
-| standard | Above + build, tests, dependencies, lockfile, env vars      | ~2-5min  |
+| standard | Above + build, tests, dependencies, lockfile, env vars        | ~2-5min  |
 | full     | Above + security scan, license audit, Docker lint, size check | ~5-15min |
 
 ### Readiness Score
 
-| Score | Meaning                    | Recommendation                 |
-| ----- | -------------------------- | ------------------------------ |
-| 100   | All checks passed          | GO - Deploy                    |
-| 80-99 | Passed with warnings       | GO - Deploy with awareness     |
-| 60-79 | Some non-blocking failures | CONDITIONAL - Fix warnings     |
-| 40-59 | Significant issues         | NO-GO - Fix before deploying   |
-| 0-39  | Critical failures          | NO-GO - Blocking issues        |
+| Score | Meaning                    | Recommendation               |
+| ----- | -------------------------- | ---------------------------- |
+| 100   | All checks passed          | GO - Deploy                  |
+| 80-99 | Passed with warnings       | GO - Deploy with awareness   |
+| 60-79 | Some non-blocking failures | CONDITIONAL - Fix warnings   |
+| 40-59 | Significant issues         | NO-GO - Fix before deploying |
+| 0-39  | Critical failures          | NO-GO - Blocking issues      |
 
 ### Options
 
-| Flag       | Description                        |
-| ---------- | ---------------------------------- |
-| `--target` | Validate specific target           |
-| `--quick`  | Config and build check only        |
-| `--fix`    | Auto-fix where possible            |
-| `--strict` | Treat warnings as blocking         |
-| `--json`   | Output JSON format                 |
+| Flag       | Description                 |
+| ---------- | --------------------------- |
+| `--target` | Validate specific target    |
+| `--quick`  | Config and build check only |
+| `--fix`    | Auto-fix where possible     |
+| `--strict` | Treat warnings as blocking  |
+| `--json`   | Output JSON format          |
 
 ### Output
 
@@ -376,22 +376,22 @@ Deploy to configured target(s) with safety controls.
 
 ### Required Decision Points
 
-| Step | Decision                     | Type   |
-| ---- | ---------------------------- | ------ |
-| 1    | Select deployment target     | select |
-| 2    | Select deployment mode       | select |
-| 3    | Confirm live deployment      | select |
-| 4    | Post-deployment action       | select |
+| Step | Decision                 | Type   |
+| ---- | ------------------------ | ------ |
+| 1    | Select deployment target | select |
+| 2    | Select deployment mode   | select |
+| 3    | Confirm live deployment  | select |
+| 4    | Post-deployment action   | select |
 
 **Skipping these violates PopKit UX standard.**
 
 ### Deployment Modes
 
-| Mode    | Description                                  |
-| ------- | -------------------------------------------- |
-| dry-run | Simulate all steps without executing         |
-| deploy  | Full deployment execution                    |
-| canary  | Deploy to small subset first (K8s/Docker)    |
+| Mode    | Description                               |
+| ------- | ----------------------------------------- |
+| dry-run | Simulate all steps without executing      |
+| deploy  | Full deployment execution                 |
+| canary  | Deploy to small subset first (K8s/Docker) |
 
 ### Execution by Target
 
@@ -406,15 +406,15 @@ Deploy to configured target(s) with safety controls.
 
 ### Options
 
-| Flag              | Description                         |
-| ----------------- | ----------------------------------- |
-| `--target`        | Deploy specific target              |
-| `--all`           | Deploy all enabled targets          |
-| `--dry-run`       | Simulate without executing          |
-| `--yes`           | Skip confirmation prompt            |
-| `--version`       | Specify version to deploy           |
-| `--skip-validate` | Skip pre-deploy validation          |
-| `--watch`         | Watch deployment progress           |
+| Flag              | Description                |
+| ----------------- | -------------------------- |
+| `--target`        | Deploy specific target     |
+| `--all`           | Deploy all enabled targets |
+| `--dry-run`       | Simulate without executing |
+| `--yes`           | Skip confirmation prompt   |
+| `--version`       | Specify version to deploy  |
+| `--skip-validate` | Skip pre-deploy validation |
+| `--watch`         | Watch deployment progress  |
 
 ### Output
 
@@ -479,33 +479,33 @@ Emergency rollback to a previous deployment version with verification and incide
 
 ### Required Decision Points
 
-| Step | Decision                     | Type   |
-| ---- | ---------------------------- | ------ |
-| 1    | Rollback strategy            | select |
-| 2    | Confirm rollback             | select |
-| 3    | Create incident report?      | select |
+| Step | Decision                | Type   |
+| ---- | ----------------------- | ------ |
+| 1    | Rollback strategy       | select |
+| 2    | Confirm rollback        | select |
+| 3    | Create incident report? | select |
 
 **Skipping these violates PopKit UX standard.**
 
 ### Rollback by Target
 
-| Target          | Rollback Strategy                              |
-| --------------- | ---------------------------------------------- |
-| Docker          | Re-tag previous image, restart containers      |
-| npm             | Deprecate current, point latest to previous    |
-| PyPI            | Yank current version                           |
-| Vercel          | Promote previous deployment to production      |
-| Netlify         | Promote previous deployment to production      |
-| GitHub Releases | Mark current as pre-release, restore previous  |
+| Target          | Rollback Strategy                             |
+| --------------- | --------------------------------------------- |
+| Docker          | Re-tag previous image, restart containers     |
+| npm             | Deprecate current, point latest to previous   |
+| PyPI            | Yank current version                          |
+| Vercel          | Promote previous deployment to production     |
+| Netlify         | Promote previous deployment to production     |
+| GitHub Releases | Mark current as pre-release, restore previous |
 
 ### Options
 
-| Flag       | Description                       |
-| ---------- | --------------------------------- |
-| `--target` | Roll back specific target         |
-| `--to`     | Roll back to specific version     |
-| `--list`   | List available rollback targets   |
-| `--yes`    | Skip confirmation                 |
+| Flag       | Description                     |
+| ---------- | ------------------------------- |
+| `--target` | Roll back specific target       |
+| `--to`     | Roll back to specific version   |
+| `--list`   | List available rollback targets |
+| `--yes`    | Skip confirmation               |
 
 ### Output
 
@@ -537,13 +537,13 @@ Next: Investigate root cause, then /popkit-ops:deploy execute when fixed
 
 When a subcommand is invoked, the command verifies pipeline prerequisites:
 
-| Subcommand | Prerequisite                                   | On Missing                                         |
-| ---------- | ---------------------------------------------- | -------------------------------------------------- |
-| init       | None                                           | -                                                  |
-| setup      | deploy.json must exist (init completed)        | Prompt: "Run init first? Y/n"                      |
-| validate   | Deployment files must exist (setup completed)  | Prompt: "Run setup first? Y/n"                     |
-| execute    | Validation should pass (validate completed)    | Prompt: "Run validate first? Y/n" (or --skip-validate) |
-| rollback   | Deployment history must exist                  | Error: "No deployment history. Nothing to roll back." |
+| Subcommand | Prerequisite                                  | On Missing                                             |
+| ---------- | --------------------------------------------- | ------------------------------------------------------ |
+| init       | None                                          | -                                                      |
+| setup      | deploy.json must exist (init completed)       | Prompt: "Run init first? Y/n"                          |
+| validate   | Deployment files must exist (setup completed) | Prompt: "Run setup first? Y/n"                         |
+| execute    | Validation should pass (validate completed)   | Prompt: "Run validate first? Y/n" (or --skip-validate) |
+| rollback   | Deployment history must exist                 | Error: "No deployment history. Nothing to roll back."  |
 
 If a prerequisite is missing, the command offers to run the missing step first, then continues to the requested step. This allows running `/popkit-ops:deploy execute` from a fresh project -- it will walk through init, setup, and validate before executing.
 
@@ -566,17 +566,17 @@ If a prerequisite is missing, the command offers to run the missing step first, 
 
 ## Architecture
 
-| Component              | Integration                                                       |
-| ---------------------- | ----------------------------------------------------------------- |
-| Deploy Init Skill      | packages/popkit-ops/skills/pop-deploy-init/                       |
-| Deploy Setup Skill     | packages/popkit-ops/skills/pop-deploy-setup/                      |
-| Deploy Validate Skill  | packages/popkit-ops/skills/pop-deploy-validate/                   |
-| Deploy Execute Skill   | packages/popkit-ops/skills/pop-deploy-execute/                    |
-| Deploy Rollback Skill  | packages/popkit-ops/skills/pop-deploy-rollback/                   |
-| Deploy Config          | .claude/popkit/deploy.json                                        |
-| DevOps Agent           | packages/popkit-ops/agents/tier-2-on-demand/devops-automator/     |
-| Validator Agent        | packages/popkit-ops/agents/tier-2-on-demand/deployment-validator/ |
-| Rollback Agent         | packages/popkit-ops/agents/tier-2-on-demand/rollback-specialist/  |
+| Component             | Integration                                                       |
+| --------------------- | ----------------------------------------------------------------- |
+| Deploy Init Skill     | packages/popkit-ops/skills/pop-deploy-init/                       |
+| Deploy Setup Skill    | packages/popkit-ops/skills/pop-deploy-setup/                      |
+| Deploy Validate Skill | packages/popkit-ops/skills/pop-deploy-validate/                   |
+| Deploy Execute Skill  | packages/popkit-ops/skills/pop-deploy-execute/                    |
+| Deploy Rollback Skill | packages/popkit-ops/skills/pop-deploy-rollback/                   |
+| Deploy Config         | .claude/popkit/deploy.json                                        |
+| DevOps Agent          | packages/popkit-ops/agents/tier-2-on-demand/devops-automator/     |
+| Validator Agent       | packages/popkit-ops/agents/tier-2-on-demand/deployment-validator/ |
+| Rollback Agent        | packages/popkit-ops/agents/tier-2-on-demand/rollback-specialist/  |
 
 ## Related
 

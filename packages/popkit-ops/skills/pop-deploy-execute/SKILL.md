@@ -176,12 +176,12 @@ Execute deployment to target environment with safety controls.
 
 ## Required Decision Points
 
-| Step | When                   | Decision ID        |
-| ---- | ---------------------- | ------------------ |
-| 1    | Target selection       | `deploy_target`    |
-| 2    | Mode selection         | `deploy_mode`      |
-| 3    | Before live deploy     | `confirm_deploy`   |
-| 4    | After deployment       | `post_deploy`      |
+| Step | When               | Decision ID      |
+| ---- | ------------------ | ---------------- |
+| 1    | Target selection   | `deploy_target`  |
+| 2    | Mode selection     | `deploy_mode`    |
+| 3    | Before live deploy | `confirm_deploy` |
+| 4    | After deployment   | `post_deploy`    |
 
 **Skipping these violates PopKit UX standard.**
 
@@ -194,6 +194,7 @@ python scripts/execute_deployment.py --dir . --action prepare --target docker
 ```
 
 This:
+
 - Loads deploy.json configuration
 - Identifies target and environment
 - Checks last deployment for rollback reference
@@ -256,18 +257,21 @@ Use AskUserQuestion:
 ## Deployment Modes
 
 ### Dry Run
+
 - Simulates all deployment steps without executing
 - Validates commands, configs, and access
 - Reports what would happen
 - No changes to target environment
 
 ### Standard Deploy
+
 - Full deployment execution
 - Captures start/end timestamps
 - Records deployment in history
 - Triggers post-deploy verification
 
 ### Canary Deploy
+
 - Deploys to small subset (e.g., 10% of instances)
 - Monitors for errors during canary period
 - Promotes to full deployment or rolls back
@@ -312,21 +316,24 @@ When deployment fails:
 ## Integration
 
 **Called by:**
+
 - `/popkit-ops:deploy execute` command
 - `pop-deploy-validate` workflow (proceed to deploy step)
 
 **Triggers:**
+
 - deployment-validator agent (post-deploy verification)
 
 **Followed by:**
+
 - `pop-deploy-rollback` - If deployment fails or needs rollback
 - `pop-deploy-validate` - Post-deploy verification
 
 ## Related
 
-| Component              | Relationship                   |
-| ---------------------- | ------------------------------ |
-| `pop-deploy-validate`  | Pre-deploy validation          |
-| `pop-deploy-rollback`  | Rollback on failure            |
-| `deployment-validator` | Agent for verification         |
-| `deploy.json`          | Configuration and history      |
+| Component              | Relationship              |
+| ---------------------- | ------------------------- |
+| `pop-deploy-validate`  | Pre-deploy validation     |
+| `pop-deploy-rollback`  | Rollback on failure       |
+| `deployment-validator` | Agent for verification    |
+| `deploy.json`          | Configuration and history |

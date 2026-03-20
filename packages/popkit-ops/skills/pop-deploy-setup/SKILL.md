@@ -144,11 +144,11 @@ Generate deployment infrastructure files from your project's `deploy.json` confi
 
 ## Required Decision Points
 
-| Step | When                   | Decision ID        |
-| ---- | ---------------------- | ------------------ |
-| 1    | After config load      | `target_selection` |
-| 2    | Before generation      | `template_level`   |
-| 3    | After generation       | `review_action`    |
+| Step | When              | Decision ID        |
+| ---- | ----------------- | ------------------ |
+| 1    | After config load | `target_selection` |
+| 2    | Before generation | `template_level`   |
+| 3    | After generation  | `review_action`    |
 
 **Skipping these violates PopKit UX standard.**
 
@@ -161,6 +161,7 @@ python scripts/generate_deploy_files.py --dir . --action load-config
 ```
 
 Reads `.claude/popkit/deploy.json` and validates structure. Reports:
+
 - Configured targets and their settings
 - Existing deployment files found
 - Potential conflicts
@@ -209,34 +210,34 @@ Use AskUserQuestion:
 
 ### Docker Target
 
-| Template | Files Generated |
-| -------- | --------------- |
-| minimal  | `Dockerfile` |
-| standard | `Dockerfile`, `docker-compose.yml`, `.dockerignore` |
+| Template | Files Generated                                                                     |
+| -------- | ----------------------------------------------------------------------------------- |
+| minimal  | `Dockerfile`                                                                        |
+| standard | `Dockerfile`, `docker-compose.yml`, `.dockerignore`                                 |
 | advanced | Above + `docker-compose.prod.yml`, `docker-compose.dev.yml`, multi-stage Dockerfile |
 
 ### CI/CD (GitHub Actions)
 
-| Template | Files Generated |
-| -------- | --------------- |
-| minimal  | `.github/workflows/deploy.yml` |
-| standard | Above + `.github/workflows/test.yml` |
+| Template | Files Generated                                                                |
+| -------- | ------------------------------------------------------------------------------ |
+| minimal  | `.github/workflows/deploy.yml`                                                 |
+| standard | Above + `.github/workflows/test.yml`                                           |
 | advanced | Above + `.github/workflows/release.yml`, environment-specific deploy workflows |
 
 ### Kubernetes
 
-| Template | Files Generated |
-| -------- | --------------- |
-| minimal  | `k8s/deployment.yml`, `k8s/service.yml` |
-| standard | Above + `k8s/ingress.yml`, `k8s/configmap.yml` |
+| Template | Files Generated                                                              |
+| -------- | ---------------------------------------------------------------------------- |
+| minimal  | `k8s/deployment.yml`, `k8s/service.yml`                                      |
+| standard | Above + `k8s/ingress.yml`, `k8s/configmap.yml`                               |
 | advanced | Above + `k8s/hpa.yml`, `k8s/pdb.yml`, `k8s/secrets.yml`, Helm chart skeleton |
 
 ### Platform (Vercel/Netlify)
 
-| Template | Files Generated |
-| -------- | --------------- |
-| minimal  | Platform config file only |
-| standard | Config + environment setup |
+| Template | Files Generated                                   |
+| -------- | ------------------------------------------------- |
+| minimal  | Platform config file only                         |
+| standard | Config + environment setup                        |
 | advanced | Config + preview environments + headers/redirects |
 
 ## Output Format
@@ -264,21 +265,24 @@ Summary:
 ## Integration
 
 **Called by:**
+
 - `/popkit-ops:deploy setup` command
 - `pop-deploy-init` workflow (run_setup step)
 
 **Triggers:**
+
 - deployment-validator agent (for post-setup validation)
 
 **Followed by:**
+
 - `pop-deploy-validate` - Validate generated deployment files
 - `pop-deploy-execute` - Execute the deployment
 
 ## Related
 
-| Component              | Relationship                  |
-| ---------------------- | ----------------------------- |
-| `pop-deploy-init`      | Creates deploy.json config    |
-| `pop-deploy-validate`  | Validates generated files     |
-| `deployment-validator` | Agent for validation          |
-| `deploy.json`          | Input configuration           |
+| Component              | Relationship               |
+| ---------------------- | -------------------------- |
+| `pop-deploy-init`      | Creates deploy.json config |
+| `pop-deploy-validate`  | Validates generated files  |
+| `deployment-validator` | Agent for validation       |
+| `deploy.json`          | Input configuration        |

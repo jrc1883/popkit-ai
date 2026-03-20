@@ -126,10 +126,10 @@ Pre-deployment validation and readiness assessment. Ensures everything is in ord
 
 ## Required Decision Points
 
-| Step | When                 | Decision ID      |
-| ---- | -------------------- | ---------------- |
-| 1    | Before validation    | `scope_level`    |
-| 2    | After results        | `proceed_action` |
+| Step | When              | Decision ID      |
+| ---- | ----------------- | ---------------- |
+| 1    | Before validation | `scope_level`    |
+| 2    | After results     | `proceed_action` |
 
 **Skipping these violates PopKit UX standard.**
 
@@ -137,33 +137,33 @@ Pre-deployment validation and readiness assessment. Ensures everything is in ord
 
 ### Quick Checks (always run)
 
-| Check | Description | Blocking |
-| ----- | ----------- | -------- |
-| Config exists | deploy.json present and valid | Yes |
-| Target config | All enabled targets have required fields | Yes |
-| Version check | Version field present and valid | Yes |
-| Git status | Working directory clean (no uncommitted changes) | Warning |
+| Check         | Description                                      | Blocking |
+| ------------- | ------------------------------------------------ | -------- |
+| Config exists | deploy.json present and valid                    | Yes      |
+| Target config | All enabled targets have required fields         | Yes      |
+| Version check | Version field present and valid                  | Yes      |
+| Git status    | Working directory clean (no uncommitted changes) | Warning  |
 
 ### Standard Checks (default)
 
-| Check | Description | Blocking |
-| ----- | ----------- | -------- |
-| Build | Project builds successfully | Yes |
-| Tests | Test suite passes | Yes |
-| Dependencies | No known vulnerable dependencies | Warning |
-| Lockfile | Lock file present and up to date | Warning |
-| ENV vars | Required environment variables documented | Warning |
+| Check        | Description                               | Blocking |
+| ------------ | ----------------------------------------- | -------- |
+| Build        | Project builds successfully               | Yes      |
+| Tests        | Test suite passes                         | Yes      |
+| Dependencies | No known vulnerable dependencies          | Warning  |
+| Lockfile     | Lock file present and up to date          | Warning  |
+| ENV vars     | Required environment variables documented | Warning  |
 
 ### Full Checks (comprehensive)
 
-| Check | Description | Blocking |
-| ----- | ----------- | -------- |
-| Security scan | Static security analysis | Warning |
-| License audit | Dependency license compatibility | Warning |
-| Docker lint | Dockerfile best practices (hadolint) | Warning |
-| K8s validate | Kubernetes manifest validation | Warning |
-| Size check | Build artifact size within limits | Warning |
-| Integration | Integration test suite passes | Yes |
+| Check         | Description                          | Blocking |
+| ------------- | ------------------------------------ | -------- |
+| Security scan | Static security analysis             | Warning  |
+| License audit | Dependency license compatibility     | Warning  |
+| Docker lint   | Dockerfile best practices (hadolint) | Warning  |
+| K8s validate  | Kubernetes manifest validation       | Warning  |
+| Size check    | Build artifact size within limits    | Warning  |
+| Integration   | Integration test suite passes        | Yes      |
 
 ## Process
 
@@ -210,13 +210,13 @@ Use AskUserQuestion:
 
 Score is calculated from check results:
 
-| Score | Meaning | Recommendation |
-| ----- | ------- | -------------- |
-| 100   | All checks passed | GO - Deploy |
-| 80-99 | Passed with warnings | GO - Deploy with awareness |
+| Score | Meaning                    | Recommendation                   |
+| ----- | -------------------------- | -------------------------------- |
+| 100   | All checks passed          | GO - Deploy                      |
+| 80-99 | Passed with warnings       | GO - Deploy with awareness       |
 | 60-79 | Some non-blocking failures | CONDITIONAL - Fix warnings first |
-| 40-59 | Significant issues | NO-GO - Fix before deploying |
-| 0-39  | Critical failures | NO-GO - Blocking issues |
+| 40-59 | Significant issues         | NO-GO - Fix before deploying     |
+| 0-39  | Critical failures          | NO-GO - Blocking issues          |
 
 ## Output Format
 
@@ -248,22 +248,25 @@ Next: /popkit-ops:deploy execute --target docker
 ## Integration
 
 **Called by:**
+
 - `/popkit-ops:deploy validate` command
 - `pop-deploy-setup` workflow (validate step)
 - `pop-deploy-execute` workflow (pre-deploy validation)
 
 **Triggers:**
+
 - deployment-validator agent
 
 **Followed by:**
+
 - `pop-deploy-execute` - Execute the deployment
 - `pop-deploy-setup` - Fix configuration issues
 
 ## Related
 
-| Component              | Relationship                  |
-| ---------------------- | ----------------------------- |
-| `pop-deploy-init`      | Creates deploy.json config    |
-| `pop-deploy-setup`     | Generates deployment files    |
-| `pop-deploy-execute`   | Executes deployment           |
+| Component              | Relationship                   |
+| ---------------------- | ------------------------------ |
+| `pop-deploy-init`      | Creates deploy.json config     |
+| `pop-deploy-setup`     | Generates deployment files     |
+| `pop-deploy-execute`   | Executes deployment            |
 | `deployment-validator` | Agent for automated validation |

@@ -11,6 +11,7 @@ Based on patterns from Anthropic's Long Horizon Coding Agent Demo.
 """
 
 import json
+import os
 import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime

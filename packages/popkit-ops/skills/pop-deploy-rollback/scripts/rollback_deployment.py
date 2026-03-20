@@ -505,7 +505,6 @@ def verify_rollback(
             )
 
     elif target == "npm":
-        npm_config = config.get("targets", {}).get("npm", {}).get("config", {})
         pkg_json = project_dir / "package.json"
         if pkg_json.exists():
             try:

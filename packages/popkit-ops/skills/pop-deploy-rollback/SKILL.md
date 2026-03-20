@@ -151,11 +151,11 @@ Emergency rollback to a previous deployment version with verification and incide
 
 ## Required Decision Points
 
-| Step | When                | Decision ID          |
-| ---- | ------------------- | -------------------- |
-| 1    | Strategy selection  | `rollback_strategy`  |
-| 2    | Before execution    | `confirm_rollback`   |
-| 3    | After rollback      | `incident_report`    |
+| Step | When               | Decision ID         |
+| ---- | ------------------ | ------------------- |
+| 1    | Strategy selection | `rollback_strategy` |
+| 2    | Before execution   | `confirm_rollback`  |
+| 3    | After rollback     | `incident_report`   |
 
 **Skipping these violates PopKit UX standard.**
 
@@ -168,6 +168,7 @@ python scripts/rollback_deployment.py --dir . --action assess --target docker
 ```
 
 This:
+
 - Loads deploy.json and deployment history
 - Identifies current deployed version
 - Finds last successful deployment (rollback target)
@@ -223,22 +224,26 @@ Use AskUserQuestion:
 ## Rollback Strategies
 
 ### Docker Rollback
+
 1. Pull previous image tag from registry
 2. Stop current container(s)
 3. Start container(s) with previous image
 4. Verify health checks pass
 
 ### npm Rollback
+
 1. Deprecate failed version
 2. Point `latest` dist-tag to previous version
 3. Publish notice if public package
 
 ### Kubernetes Rollback
+
 1. Use `kubectl rollout undo` for deployments
 2. Verify pod health
 3. Check service endpoints
 
 ### Platform Rollback (Vercel/Netlify)
+
 1. Promote previous deployment to production
 2. Verify domain routes correctly
 
@@ -272,6 +277,7 @@ Generated at `.claude/popkit/incidents/incident-{timestamp}.md`:
 # Deployment Incident Report
 
 ## Summary
+
 - **Date:** 2026-03-18T14:35:00Z
 - **Target:** docker
 - **Failed Version:** 1.2.0
@@ -280,6 +286,7 @@ Generated at `.claude/popkit/incidents/incident-{timestamp}.md`:
 - **Severity:** P2
 
 ## Timeline
+
 - 14:30:00 - Deployment of v1.2.0 initiated
 - 14:30:45 - Deployment completed
 - 14:31:00 - Health check failures detected
@@ -287,12 +294,15 @@ Generated at `.claude/popkit/incidents/incident-{timestamp}.md`:
 - 14:35:00 - Rollback completed, service restored
 
 ## Root Cause
+
 [To be filled during post-mortem]
 
 ## Impact
+
 [To be filled during post-mortem]
 
 ## Action Items
+
 - [ ] Investigate root cause
 - [ ] Add regression test
 - [ ] Update deployment validation checks
@@ -301,22 +311,25 @@ Generated at `.claude/popkit/incidents/incident-{timestamp}.md`:
 ## Integration
 
 **Called by:**
+
 - `/popkit-ops:deploy rollback` command
 - `pop-deploy-execute` workflow (on failure)
 - rollback-specialist agent
 
 **Triggers:**
+
 - rollback-specialist agent
 
 **Followed by:**
+
 - `pop-deploy-validate` - Re-validate after fixing issues
 - `pop-deploy-execute` - Re-deploy when fixed
 
 ## Related
 
-| Component              | Relationship                   |
-| ---------------------- | ------------------------------ |
-| `pop-deploy-execute`   | Deployment that may need rollback |
-| `pop-deploy-validate`  | Post-rollback validation       |
-| `rollback-specialist`  | Agent for rollback operations  |
-| `deploy.json`          | Configuration and history      |
+| Component             | Relationship                      |
+| --------------------- | --------------------------------- |
+| `pop-deploy-execute`  | Deployment that may need rollback |
+| `pop-deploy-validate` | Post-rollback validation          |
+| `rollback-specialist` | Agent for rollback operations     |
+| `deploy.json`         | Configuration and history         |

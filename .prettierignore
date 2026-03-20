@@ -43,3 +43,6 @@ venv/
 .claude/
 .popkit/
 logs/
+
+# Scratch workspace files
+.workspace/

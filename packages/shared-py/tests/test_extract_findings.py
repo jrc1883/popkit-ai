@@ -250,14 +250,14 @@ class TestExtractLinks:
         """HTML anchor tags are extracted."""
         links = extract_links(SAMPLE_HTML)
 
-        urls = {l["url"] for l in links}
+        urls = {link["url"] for link in links}
         assert urls == {"https://example.com", "https://other.com"}
 
     def test_multiple_markdown_links(self):
         """Multiple markdown links on the same or different lines are found."""
         links = extract_links(SAMPLE_MARKDOWN)
 
-        texts = [l["text"] for l in links]
+        texts = [link["text"] for link in links]
         assert "Example Site" in texts
         assert "Docs" in texts
         assert "RFC 7231" in texts
@@ -276,7 +276,7 @@ class TestExtractLinks:
         links = extract_links(content)
 
         assert len(links) == 2
-        urls = {l["url"] for l in links}
+        urls = {link["url"] for link in links}
         assert urls == {"https://md.com", "https://html.com"}
 
 
