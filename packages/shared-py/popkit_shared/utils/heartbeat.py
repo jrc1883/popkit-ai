@@ -11,6 +11,7 @@ Based on patterns from Anthropic's Long Horizon Coding Agent Demo.
 """
 
 import json
+import os
 import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
@@ -21,7 +22,12 @@ from typing import Any, Dict, List, Optional
 # CONFIGURATION
 # =============================================================================
 
-HEARTBEAT_DIR = Path.home() / ".claude" / "popkit" / "heartbeats"
+_plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+HEARTBEAT_DIR = (
+    Path(_plugin_data) / "heartbeats"
+    if _plugin_data
+    else Path.home() / ".claude" / "popkit" / "heartbeats"
+)
 HEARTBEAT_INTERVAL = 30  # seconds
 STUCK_THRESHOLD = 180  # 3 minutes without heartbeat = stuck
 MAX_SAME_FILE_EDITS = 5  # Same file edited 5+ times = potentially stuck

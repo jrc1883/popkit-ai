@@ -8,6 +8,18 @@ Features:
 - TTL-based caching with SQLite metadata
 - Priority-based fetching within time budget
 - HTML to markdown conversion
+
+AUDIT NOTE (2026-03-19):
+Status: OVER-ENGINEERED / SIMPLIFY
+- This hook fetches web pages on every session start within an 8-second
+  time budget. In practice, the `requests` and `html2text` dependencies
+  are rarely installed, causing silent fallback to no-op on most setups.
+- With 1M context, the original motivation (pre-cache docs to save context
+  space) is much less pressing.
+- The default sources (Anthropic engineering blog, Claude Code docs) are
+  better served by the Context7 MCP tool which is already available.
+- Recommendation: Make this fully opt-in (disabled by default). Only sync
+  when sources.json exists AND has user-configured entries.
 """
 
 import hashlib

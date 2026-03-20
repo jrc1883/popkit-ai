@@ -41,6 +41,27 @@
         },
         "PreCompact": {
           "$ref": "#/definitions/hookEventArray"
+        },
+        "PostCompact": {
+          "$ref": "#/definitions/hookEventArray"
+        },
+        "StopFailure": {
+          "$ref": "#/definitions/hookEventArray"
+        },
+        "Setup": {
+          "$ref": "#/definitions/hookEventArray"
+        },
+        "TeammateIdle": {
+          "$ref": "#/definitions/hookEventArray"
+        },
+        "TaskCompleted": {
+          "$ref": "#/definitions/hookEventArray"
+        },
+        "Elicitation": {
+          "$ref": "#/definitions/hookEventArray"
+        },
+        "ElicitationResult": {
+          "$ref": "#/definitions/hookEventArray"
         }
       }
     }
@@ -98,7 +119,7 @@
           "type": "integer",
           "description": "Timeout in milliseconds",
           "minimum": 0,
-          "maximum": 60000,
+          "maximum": 300000,
           "default": 10000
         },
         "blocking": {

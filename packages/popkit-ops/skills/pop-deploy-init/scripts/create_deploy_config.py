@@ -12,10 +12,19 @@ Output:
 """
 
 import json
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+
+
+def _get_plugin_data_dir(project_dir: Path) -> Path:
+    """Get plugin data directory (CLAUDE_PLUGIN_DATA or fallback)."""
+    plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+    if plugin_data:
+        return Path(plugin_data)
+    return project_dir / ".claude" / "popkit"
 
 
 def get_default_target_config(target: str, project_name: str) -> dict[str, Any]:
@@ -134,8 +143,8 @@ def create_deploy_config(
 
 
 def write_config(project_dir: Path, config: dict[str, Any]) -> Path:
-    """Write configuration to .claude/popkit/deploy.json."""
-    config_dir = project_dir / ".claude" / "popkit"
+    """Write configuration to deploy.json in plugin data directory."""
+    config_dir = _get_plugin_data_dir(project_dir)
     config_dir.mkdir(parents=True, exist_ok=True)
 
     config_file = config_dir / "deploy.json"

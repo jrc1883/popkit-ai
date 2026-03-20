@@ -4,7 +4,45 @@ All notable changes to PopKit are documented in this file.
 
 **Versioning:** PopKit uses semantic versioning. Currently in preview (0.x) until stable public launch.
 
-## [Unreleased]
+## [1.0.0-beta.11] - 2026-03-19
+
+### Added
+
+- **Session Branching** (#313): DAG-based session branching for side-quest investigations
+  - Create, switch, merge, delete session branches without polluting main context
+  - Full CLI interface via `branch_operations.py`
+  - Integrated into morning routine (stale branch detection, scoring)
+  - Integrated into nightly routine (cleanup warnings, scoring)
+  - Integrated into session resume (branch context restoration)
+  - 67 pytest tests with 99% coverage
+
+- **Devops-Automator Agent** (#304): Full implementation replacing coming-soon stub
+  - 10 capabilities: CI/CD, containers, IaC, K8s, monitoring, environments, secrets, builds, releases, platforms
+  - 5-phase systematic approach with 7 circuit breakers
+  - Integrated into routing config (keywords, file patterns, error patterns)
+  - Agent count: 23 → 24, Tier 2: 11 → 12
+
+- **Deploy Skills** (#305): Complete deployment pipeline (5 skills)
+  - `pop-deploy-setup`: Generate Dockerfiles, docker-compose, K8s manifests, CI/CD pipelines
+  - `pop-deploy-validate`: Pre-deployment validation with readiness score (0-100)
+  - `pop-deploy-execute`: Execute deployments with dry-run support and rollback on failure
+  - `pop-deploy-rollback`: Emergency rollback with incident report generation
+  - Skill count: 44 → 50
+
+### Changed
+
+- **Claude Code compatibility documentation**: Updated version compatibility table (CC 2.1.33 through 2.1.79)
+  - PostCompact hook, MCP elicitation, Elicitation hooks, worktree.sparsePaths, /effort (2.1.76)
+  - Opus 4.6 max output 64k/128k, plugin validate improvements, SendMessage replaces resume, /fork renamed to /branch (2.1.77)
+  - StopFailure hook event, ${CLAUDE_PLUGIN_DATA} variable, agent frontmatter effort/maxTurns/disallowedTools (2.1.78)
+  - CLAUDE_CODE_PLUGIN_SEED_DIR multi-directory support, 1M context (2.1.79)
+
+### Fixed
+
+- Component counts updated across all documentation (24 agents, 50 skills, 25 commands)
+- Claude Code minimum version corrected in quick-start (2.1.33, was 2.1.6)
+- Agent routing tests updated for new agent counts
+- TIER_MAP and routing_config.json updated with devops-automator
 
 ---
 

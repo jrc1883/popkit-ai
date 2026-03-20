@@ -5,6 +5,7 @@ Shows what the enhanced HTML report will include after Phase 2-3 integration.
 """
 
 import json
+import os
 from pathlib import Path
 
 from transcript_parser import TranscriptParser
@@ -14,7 +15,12 @@ def demo_enhanced_report():
     """Demonstrate enhanced recording report features"""
 
     # Load the recent recording
-    recordings_dir = Path.home() / ".claude" / "popkit" / "recordings"
+    plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+    recordings_dir = (
+        Path(plugin_data) / "recordings"
+        if plugin_data
+        else Path.home() / ".claude" / "popkit" / "recordings"
+    )
     recordings = sorted(
         recordings_dir.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True
     )

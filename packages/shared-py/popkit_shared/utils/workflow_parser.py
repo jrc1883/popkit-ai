@@ -609,7 +609,7 @@ class WorkflowRegistry:
     """
 
     _instance: Optional["WorkflowRegistry"] = None
-    _cache_file = ".claude/popkit/workflows/registry.json"
+    _cache_file = "workflows/registry.json"  # Relative to plugin data dir
 
     def __init__(self):
         self.entries: Dict[str, WorkflowRegistryEntry] = {}  # workflow_id -> entry
@@ -651,16 +651,13 @@ class WorkflowRegistry:
 
     @classmethod
     def _get_cache_path(cls) -> Path:
-        """Get the cache file path."""
-        # Find project root
-        current = Path.cwd()
-        for parent in [current] + list(current.parents):
-            if (parent / ".git").exists() or (parent / "package.json").exists():
-                cache_path = parent / cls._cache_file
-                cache_path.parent.mkdir(parents=True, exist_ok=True)
-                return cache_path
+        """Get the cache file path.
 
-        cache_path = current / cls._cache_file
+        Uses CLAUDE_PLUGIN_DATA (CC 2.1.78+) or falls back to .claude/popkit/.
+        """
+        from .plugin_data import get_plugin_data_dir
+
+        cache_path = get_plugin_data_dir() / cls._cache_file
         cache_path.parent.mkdir(parents=True, exist_ok=True)
         return cache_path
 

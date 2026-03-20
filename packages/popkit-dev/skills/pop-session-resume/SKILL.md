@@ -58,6 +58,7 @@ Last: 15 minutes ago
 
 Quick context:
 - Branch: feature/auth
+- Session branch: main
 - Focus: Password reset flow
 - Next: Add email template
 
@@ -72,6 +73,7 @@ Last: 2 hours ago
 
 Context restore:
 - Branch: feature/auth (2 uncommitted files)
+- Session branch: auth-bug (investigating token expiry)
 - Last commit: feat: add login form
 - In Progress: Implement password reset flow
 - Focus: Authentication system
@@ -92,9 +94,14 @@ Last activity: Yesterday at 2:30 PM
 
 Full context load:
 - Branch: feature/auth (2 uncommitted files)
+- Session branch: main
 - Last commit: feat: add login form
 - Test status: 45 passing
 - Build status: passing
+
+Session branches (2 unmerged):
+- auth-bug: Token expiry investigation (1 day old)
+- cache-research: Redis vs Memcached spike (4 days old, STALE)
 
 Tasks in progress:
 - [ ] Implement password reset flow
@@ -125,6 +132,36 @@ curl -s http://localhost:3000/health
 
 Report discrepancies if any.
 
+### Step 4b: Restore Session Branch Context
+
+Check STATUS.json for session branch state and restore it:
+
+```python
+# Check for session branch context
+branches = status.get("branches", {})
+current_branch = status.get("currentBranch", "main")
+
+if current_branch != "main":
+    branch_data = branches.get(current_branch, {})
+    print(f"Last session branch: {current_branch}")
+    print(f"Reason: {branch_data.get('reason', 'unknown')}")
+    print(f"Parent: {branch_data.get('parent', 'main')}")
+
+# List unmerged branches
+unmerged = [b for b in branches.values()
+            if b.get("id") != "main" and not b.get("merged", False)]
+if unmerged:
+    print(f"\nUnmerged session branches: {len(unmerged)}")
+    for b in unmerged:
+        print(f"  - {b['id']}: {b.get('reason', '')}")
+```
+
+**Behavior by session type:**
+
+- **Continuation**: Silently restore to last active session branch
+- **Resume**: Show which session branch was active, offer to switch back
+- **Fresh Start**: List all unmerged branches, recommend cleanup of stale ones
+
 ### Step 5: Offer to Continue
 
 After displaying context:
@@ -133,8 +170,9 @@ After displaying context:
 Ready to continue. Options:
 
 1. Continue with: [nextAction from STATUS.json]
-2. Review full context first
-3. Start fresh (ignore previous session)
+2. Switch to session branch: auth-bug (investigating token expiry)
+3. Review full context first
+4. Start fresh (ignore previous session)
 
 What would you like to do?
 ```
@@ -147,8 +185,13 @@ What would you like to do?
 │ Last: 2 hours ago                           │
 ├─────────────────────────────────────────────┤
 │ Branch: feature/auth                        │
+│ Session branch: auth-bug                    │
 │ Uncommitted: 2 files                        │
 │ Tests: 45 passing                           │
+├─────────────────────────────────────────────┤
+│ Session Branches (2 unmerged):              │
+│ • auth-bug: Token expiry (active)           │
+│ • cache-research: Redis spike (4d, stale)   │
 ├─────────────────────────────────────────────┤
 │ In Progress:                                │
 │ • Implement password reset flow             │
@@ -163,7 +206,15 @@ What would you like to do?
 **Pairs with:**
 
 - **session-capture** - Creates STATUS.json that this reads
+- **session-branch** - Session branching for side investigations (branch context stored in STATUS.json)
 - **context-restore** - More detailed context loading
+
+**Session branch integration:**
+
+- Reads `branches` and `currentBranch` from STATUS.json
+- Restores session branch context on resume
+- Shows unmerged branches for awareness
+- Offers to switch back to last active session branch
 
 **Hook integration:**
 

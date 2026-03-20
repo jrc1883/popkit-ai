@@ -9,6 +9,14 @@ output_style: agent-handoff
 model: inherit
 version: 1.0.0
 memory: project
+effort: high
+maxTurns: 40
+disallowedTools:
+  - Write
+  - Edit
+  - Bash(rm -rf*)
+  - Bash(git push*)
+  - Bash(git reset*)
 ---
 
 # Code Explorer Agent

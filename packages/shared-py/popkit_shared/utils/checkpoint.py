@@ -22,7 +22,12 @@ from typing import Any, Dict, List, Optional
 # CONFIGURATION
 # =============================================================================
 
-CHECKPOINT_DIR = Path.home() / ".claude" / "popkit" / "checkpoints"
+_plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+CHECKPOINT_DIR = (
+    Path(_plugin_data) / "checkpoints"
+    if _plugin_data
+    else Path.home() / ".claude" / "popkit" / "checkpoints"
+)
 MAX_CHECKPOINTS_PER_SESSION = 10  # Keep last N checkpoints
 
 

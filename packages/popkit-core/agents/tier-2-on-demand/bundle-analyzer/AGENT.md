@@ -25,6 +25,12 @@ output_style: bundle-report
 model: inherit
 version: 1.0.0
 memory: project
+effort: medium
+maxTurns: 20
+disallowedTools:
+  - Bash(rm -rf*)
+  - Bash(git push*)
+  - Bash(git reset*)
 ---
 
 # Bundle Analyzer Agent

@@ -3,17 +3,36 @@
 Context Token Monitor Hook
 Tracks cumulative input tokens and warns before context window exhaustion.
 
-Part of PopKit plugin - Issue #16
+Compaction awareness (Issue #314):
+- Detects when compaction has occurred by checking compaction-log.json
+- Resets token tracking after compaction (compacted context is smaller)
+- Adjusts suggestions to note that PreCompact hook preserves state
+
+Part of PopKit plugin - Issue #16, #314
 """
 
 import json
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict
 
+
+def _get_plugin_data_dir() -> Path:
+    """Get plugin data directory (CLAUDE_PLUGIN_DATA or fallback)."""
+    plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+    if plugin_data:
+        return Path(plugin_data)
+    return Path.cwd() / ".claude" / "popkit"
+
+
 # Context window limits by model (approximate)
+# Updated for CC 2.1.79: Models now support up to 1M context tokens.
+# The default remains 200k for standard plans; 1M is available with
+# extended-context plans (e.g., Opus 4.6 1M). Adjust per your plan.
 MODEL_CONTEXT_LIMITS = {
+    "claude-opus-4-6-1m": 1000000,  # Opus 4.6 with 1M context
     "claude-opus-4": 200000,
     "claude-sonnet-4": 200000,
     "claude-sonnet-4-5": 200000,
@@ -22,6 +41,10 @@ MODEL_CONTEXT_LIMITS = {
 }
 
 # Warning thresholds
+# NOTE (2026-03-19 audit): With 1M context now available, these thresholds
+# fire much later in absolute terms (e.g., 80% of 1M = 800k tokens).
+# The percentages remain appropriate since the *relative* concern is the same:
+# running out of context still causes session loss regardless of window size.
 THRESHOLDS = {
     "info": 0.60,  # 60% - informational
     "warning": 0.80,  # 80% - suggest summarization
@@ -53,7 +76,7 @@ class ContextMonitor:
                 with open(self.session_file, "r") as f:
                     return json.load(f)
             except (json.JSONDecodeError, IOError):
-                pass
+                pass  # Corrupt or unreadable session file; return fresh defaults
 
         return {
             "session_start": datetime.now().isoformat(),
@@ -62,6 +85,8 @@ class ContextMonitor:
             "tool_calls": 0,
             "last_updated": datetime.now().isoformat(),
             "warnings_shown": [],
+            "compactions_detected": 0,
+            "last_compaction_at": None,
         }
 
     def save_session_data(self):
@@ -127,27 +152,44 @@ class ContextMonitor:
             "suggestion": None,
         }
 
+        # Include compaction count in context for suggestions
+        compactions = self.session_data.get("compactions_detected", 0)
+        compaction_note = (
+            f" (after {compactions} compaction{'s' if compactions != 1 else ''})"
+            if compactions > 0
+            else ""
+        )
+
         if usage_ratio >= THRESHOLDS["danger"]:
             result["level"] = "danger"
             result["warning"] = (
-                f"URGENT: Context at {result['usage_percent']}% capacity ({total:,}/{limit:,} tokens)"
+                f"URGENT: Context at {result['usage_percent']}% capacity"
+                f" ({total:,}/{limit:,} tokens){compaction_note}"
             )
             result["suggestion"] = (
-                "Run /popkit:session-capture IMMEDIATELY to save state before context overflow"
+                "Run /popkit:session-capture IMMEDIATELY."
+                " PreCompact hook will auto-save state if compaction triggers,"
+                " but manual capture preserves more detail."
             )
         elif usage_ratio >= THRESHOLDS["critical"]:
             result["level"] = "critical"
             result["warning"] = (
-                f"Context at {result['usage_percent']}% capacity ({total:,}/{limit:,} tokens)"
+                f"Context at {result['usage_percent']}% capacity"
+                f" ({total:,}/{limit:,} tokens){compaction_note}"
             )
-            result["suggestion"] = "Strongly recommend: /popkit:session-capture to save state now"
+            result["suggestion"] = (
+                "Strongly recommend: /popkit:session-capture to save state now."
+                " PreCompact hook will auto-snapshot if compaction occurs."
+            )
         elif usage_ratio >= THRESHOLDS["warning"]:
             result["level"] = "warning"
             result["warning"] = (
-                f"Context at {result['usage_percent']}% capacity ({total:,}/{limit:,} tokens)"
+                f"Context at {result['usage_percent']}% capacity"
+                f" ({total:,}/{limit:,} tokens){compaction_note}"
             )
             result["suggestion"] = (
-                "Consider: /popkit:session-capture to save state, or summarize conversation"
+                "Consider: /popkit:session-capture to save state, or summarize conversation."
+                " Compaction will auto-preserve git state via PreCompact hook."
             )
         elif usage_ratio >= THRESHOLDS["info"]:
             result["level"] = "info"
@@ -170,6 +212,49 @@ class ContextMonitor:
 
         return False
 
+    def check_for_recent_compaction(self) -> bool:
+        """Detect if compaction has occurred since our last check.
+
+        Reads the compaction log written by pre-compact.py and compares
+        the count to what we last saw. If compaction happened, reset
+        token tracking (compacted context is smaller than the sum of
+        all previous tokens) and note it in session data.
+
+        Returns True if a new compaction was detected.
+        """
+        log_file = _get_plugin_data_dir() / "compaction-log.json"
+        if not log_file.exists():
+            return False
+
+        try:
+            with open(log_file, "r", encoding="utf-8") as f:
+                events = json.load(f)
+
+            current_count = len(events)
+            tracked_count = self.session_data.get("compactions_detected", 0)
+
+            if current_count > tracked_count:
+                # New compaction detected -- reset token counters
+                # After compaction, the actual context is much smaller than
+                # the cumulative total we were tracking, so our numbers are stale.
+                self.session_data["compactions_detected"] = current_count
+                self.session_data["last_compaction_at"] = datetime.now().isoformat()
+
+                # Reset cumulative tokens (they no longer reflect reality)
+                self.session_data["total_input_tokens"] = 0
+                self.session_data["total_output_tokens"] = 0
+                self.session_data["tool_calls"] = 0
+
+                # Clear warning state so thresholds can fire again fresh
+                self.session_data["warnings_shown"] = []
+
+                return True
+
+        except (json.JSONDecodeError, OSError):
+            pass  # Compaction file unreadable; assume no new compaction
+
+        return False
+
     def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """Main processing function."""
         result = {
@@ -178,6 +263,12 @@ class ContextMonitor:
             "threshold_check": {},
             "display": None,
         }
+
+        # Check for recent compaction before updating tokens
+        compaction_detected = self.check_for_recent_compaction()
+        if compaction_detected:
+            result["compaction_detected"] = True
+            result["compaction_count"] = self.session_data.get("compactions_detected", 0)
 
         # Update token counts
         tokens = self.update_tokens(input_data)

@@ -120,16 +120,14 @@ class EfficiencyTracker:
         return hashlib.md5(datetime.now().isoformat().encode()).hexdigest()[:8]
 
     def _get_state_file_path(self) -> Path:
-        """Get path to state file."""
-        # Try project-local first
-        local_dir = Path.cwd() / ".claude" / "popkit"
-        if local_dir.exists():
-            return local_dir / self.STATE_FILE_NAME
+        """Get path to state file.
 
-        # Fall back to home directory
-        home_dir = Path.home() / ".claude" / "popkit"
-        home_dir.mkdir(parents=True, exist_ok=True)
-        return home_dir / self.STATE_FILE_NAME
+        Uses CLAUDE_PLUGIN_DATA (CC 2.1.78+) or falls back to .claude/popkit/.
+        """
+        from .plugin_data import get_plugin_data_dir
+
+        data_dir = get_plugin_data_dir()
+        return data_dir / self.STATE_FILE_NAME
 
     def _load_state(self):
         """Load existing state if present."""

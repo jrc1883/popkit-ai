@@ -92,7 +92,7 @@ def load_config() -> Dict[str, Any]:
                 worktree_config.update(config.get("worktree", {}))
                 return {"worktree": worktree_config}
         except Exception:
-            pass
+            pass  # Corrupt config file; use defaults
 
     return DEFAULT_CONFIG
 
@@ -106,7 +106,7 @@ def load_status_json() -> Dict[str, Any]:
             with open(status_path, "r") as f:
                 return json.load(f)
         except Exception:
-            pass
+            pass  # Corrupt or missing STATUS.json; return empty
 
     return {}
 

@@ -85,7 +85,7 @@ def run_ruff_check(files):
     """
     try:
         result = subprocess.run(
-            ["ruff", "check", "--fix"] + files,
+            ["ruff", "check", "--fix", "--config", "packages/shared-py/pyproject.toml"] + files,
             capture_output=True,
             text=True,
             timeout=30,
@@ -149,7 +149,10 @@ def run_ruff_format(files):
     """
     try:
         result = subprocess.run(
-            ["ruff", "format"] + files, capture_output=True, text=True, timeout=30
+            ["ruff", "format", "--config", "packages/shared-py/pyproject.toml"] + files,
+            capture_output=True,
+            text=True,
+            timeout=30,
         )
 
         if result.returncode != 0:

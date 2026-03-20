@@ -29,6 +29,14 @@ hooks:
   PreToolUse:
     - script: "${CLAUDE_PLUGIN_ROOT}/../../shared-py/hooks/validate-security-tool.py"
       once: false
+effort: high
+maxTurns: 40
+disallowedTools:
+  - Write
+  - Edit
+  - Bash(rm -rf*)
+  - Bash(git push*)
+  - Bash(git reset*)
 ---
 
 # Security Auditor Agent

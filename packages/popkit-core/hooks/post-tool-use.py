@@ -3,6 +3,23 @@
 Global Post-Tool-Use Hook
 Logging, metrics collection, agent communication, and follow-up orchestration
 Analyzes tool results and coordinates next steps in multi-agent workflows
+
+AUDIT NOTE (2026-03-19):
+Status: KEEP but SIMPLIFY over time
+- This is the largest hook (~1500 lines). It does too many things:
+  1. Tool result analysis (useful, keep)
+  2. Quality metrics to SQLite (over-engineered for the value provided)
+  3. Followup agent recommendations (useful but verbose stderr output)
+  4. OPTIMUS telemetry (lines 654-675, redundant with agent-observability.py)
+  5. Semantic router agent detection (lines 755-795, heavy for a post-hook)
+  6. XML findings generation (lines 463-534, complex for rarely-consumed output)
+  7. Cloud activity recording (lines 940-957, PopKit Cloud not deployed)
+  8. Test telemetry (lines 1029-1107, only active in test mode - fine)
+- With 1M context, the model can reason about tool results directly without
+  the hook needing to pre-analyze and inject recommendations.
+- The pending skill decision enforcement (lines 832-904) and workflow routing
+  (lines 959-1005) are genuinely useful features.
+- Compatible with CC 2.1.79.
 """
 
 import json

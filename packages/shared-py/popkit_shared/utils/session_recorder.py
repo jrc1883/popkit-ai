@@ -49,12 +49,20 @@ except ImportError:
     HAS_SESSION_MANAGER = False
 
 
+def _get_global_plugin_data_dir() -> Path:
+    """Get global plugin data directory (CLAUDE_PLUGIN_DATA or fallback)."""
+    plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+    if plugin_data:
+        return Path(plugin_data)
+    return Path.home() / ".claude" / "popkit"
+
+
 class SessionRecorder:
     """Records session activity for analysis."""
 
     def __init__(self):
         self.recording_enabled = self._check_recording_enabled()
-        self.recordings_dir = Path.home() / ".claude" / "popkit" / "recordings"
+        self.recordings_dir = _get_global_plugin_data_dir() / "recordings"
         self.recording_file = None
         self.session_id = None
         self.events: List[Dict[str, Any]] = []
@@ -69,7 +77,7 @@ class SessionRecorder:
             return True
 
         # Check for recording state file (persists across tool calls)
-        state_file = Path.home() / ".claude" / "popkit" / "recording-state.json"
+        state_file = _get_global_plugin_data_dir() / "recording-state.json"
         if state_file.exists():
             try:
                 state = json.loads(state_file.read_text())
@@ -85,7 +93,7 @@ class SessionRecorder:
         self.recordings_dir.mkdir(parents=True, exist_ok=True)
 
         # Check for state file first (persists across tool calls)
-        state_file = Path.home() / ".claude" / "popkit" / "recording-state.json"
+        state_file = _get_global_plugin_data_dir() / "recording-state.json"
         if state_file.exists():
             try:
                 state = json.loads(state_file.read_text())
@@ -252,7 +260,7 @@ class SessionRecorder:
                 # Load timestamps from state file if available
                 recording_data = {"session_id": self.session_id, "events": all_events}
 
-                state_file = Path.home() / ".claude" / "popkit" / "recording-state.json"
+                state_file = _get_global_plugin_data_dir() / "recording-state.json"
                 if state_file.exists():
                     try:
                         state = json.loads(state_file.read_text())
@@ -287,7 +295,7 @@ class SessionRecorder:
         # Load timestamps from state file if available
         recording_data = {"session_id": self.session_id, "events": self.events}
 
-        state_file = Path.home() / ".claude" / "popkit" / "recording-state.json"
+        state_file = _get_global_plugin_data_dir() / "recording-state.json"
         if state_file.exists():
             try:
                 state = json.loads(state_file.read_text())
@@ -508,7 +516,7 @@ def is_recording_enabled() -> bool:
     is created before the state file exists.
     """
     # Check state file first (most common case for manual recording)
-    state_file = Path.home() / ".claude" / "popkit" / "recording-state.json"
+    state_file = _get_global_plugin_data_dir() / "recording-state.json"
     if state_file.exists():
         try:
             state = json.loads(state_file.read_text())

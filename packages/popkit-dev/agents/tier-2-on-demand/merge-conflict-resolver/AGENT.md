@@ -28,6 +28,12 @@ triggers:
   - "resolve conflicts"
   - "fix merge issues"
   - "git conflicts"
+effort: medium
+maxTurns: 25
+disallowedTools:
+  - Bash(rm -rf*)
+  - Bash(git push*)
+  - Bash(git reset --hard*)
 ---
 
 # Merge Conflict Resolver Agent

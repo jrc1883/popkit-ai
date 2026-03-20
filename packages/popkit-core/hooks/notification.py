@@ -21,6 +21,13 @@ Features:
 - Colorized emoji output
 
 Part of Issue #189: Slack notification idle UI fix adaptation for PopKit
+
+AUDIT NOTE (2026-03-19):
+Status: KEEP (well-designed, event-driven)
+- This hook only fires on Notification events, which are infrequent.
+- The sensitive data sanitization is valuable.
+- The TTS feature is a nice touch for accessibility.
+- Compatible with CC 2.1.79.
 """
 
 import json

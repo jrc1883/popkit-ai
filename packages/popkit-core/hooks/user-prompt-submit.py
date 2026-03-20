@@ -3,6 +3,24 @@
 Global User Prompt Submit Hook
 Handles keyword detection, agent routing, and security filtering
 Integrates with observability and orchestration systems
+
+AUDIT NOTE (2026-03-19):
+Status: KEEP but SIMPLIFY
+- Core value: security filtering, skill detection/reminders, XML context.
+- OVER-ENGINEERED AREAS:
+  1. Keyword-based agent detection (lines 74-407): Massive hardcoded keyword
+     map. With 1M context, the model can route to agents without needing
+     keyword matching in a hook. This was designed for 200k context where
+     every token counted.
+  2. SQLite context memory (lines 553-577): Stores every prompt in a DB
+     that is rarely queried.
+  3. Orchestrator HTTP calls (lines 730-756): localhost:8005 is never running.
+  4. XML context generation (lines 758-851): Complex delta/full context
+     system designed to minimize context usage. With 1M context, sending
+     full context every time would be simpler and more reliable.
+- Security filters (lines 409-470) are tiered and well-designed - keep.
+- Skill triggers (lines 480-534) provide genuine value as reminders.
+- Compatible with CC 2.1.79.
 """
 
 import hashlib

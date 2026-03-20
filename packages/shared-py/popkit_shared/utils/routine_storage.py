@@ -15,7 +15,6 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 # Constants
-POPKIT_DIR = ".claude/popkit"
 ROUTINES_DIR = "routines"
 CONFIG_FILE = "config.json"
 STATE_FILE = "state.json"
@@ -46,17 +45,22 @@ def get_project_root() -> str:
 
 
 def get_popkit_dir(project_root: Optional[str] = None) -> str:
-    """Get the .claude/popkit directory path.
+    """Get the plugin data directory path.
+
+    Uses CLAUDE_PLUGIN_DATA (CC 2.1.78+) or falls back to .claude/popkit/.
 
     Args:
-        project_root: Optional project root override
+        project_root: Optional project root override (used only for fallback)
 
     Returns:
-        Path to .claude/popkit directory
+        Path to plugin data directory
     """
+    plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+    if plugin_data:
+        return plugin_data
     if project_root is None:
         project_root = get_project_root()
-    return os.path.join(project_root, POPKIT_DIR)
+    return os.path.join(project_root, ".claude", "popkit")
 
 
 def get_routines_dir(project_root: Optional[str] = None, routine_type: str = "morning") -> str:

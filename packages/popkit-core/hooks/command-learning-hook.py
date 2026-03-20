@@ -6,6 +6,15 @@ Part of Issue #89 - Platform-Aware Command Learning
 
 PostToolUse hook that captures command failures and learns from them.
 Also provides PreToolUse suggestions for commands that have known corrections.
+
+AUDIT NOTE (2026-03-19):
+Status: KEEP (unique value, platform-specific)
+- This hook provides genuine value on Windows/cross-platform setups by
+  learning command corrections (e.g., Unix commands that fail on Windows).
+- It is lightweight: only processes Bash tool calls, no network requests.
+- The pattern learner and command translator are platform-aware and
+  accumulate useful corrections over time.
+- Compatible with CC 2.1.79.
 """
 
 import json

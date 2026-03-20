@@ -45,10 +45,12 @@ class RoutineCache:
         """Initialize cache.
 
         Args:
-            cache_dir: Directory for cache storage (default: .claude/popkit/cache/)
+            cache_dir: Directory for cache storage (default: <plugin_data>/cache/)
         """
         if cache_dir is None:
-            cache_dir = Path.cwd() / ".claude" / "popkit" / "cache"
+            from .plugin_data import get_plugin_data_subdir
+
+            cache_dir = get_plugin_data_subdir("cache")
 
         self.cache_dir = cache_dir
         self.cache_dir.mkdir(parents=True, exist_ok=True)

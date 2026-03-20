@@ -45,15 +45,13 @@ Use AskUserQuestion tool with:
 Use the `research_branch_detector.py` utility:
 
 ```python
-import sys
-# No longer needed - install popkit-shared instead
-from research_branch_detector import (
+from popkit_shared.utils.research_branch_detector import (
     fetch_remotes,
     get_research_branches,
     format_branch_table,
     get_branch_content_preview,
     parse_research_doc,
-    generate_issue_body
+    generate_issue_body,
 )
 
 # Fetch and detect
@@ -347,5 +345,5 @@ For best results, research docs should follow this format:
 
 - `/popkit:next` - Primary entry point
 - `/popkit:routine morning` - Can detect in morning check
-- `hooks/utils/research_branch_detector.py` - Detection utility
+- `popkit_shared.utils.research_branch_detector` - Detection utility
 - `output-styles/research-summary.md` - Output formatting

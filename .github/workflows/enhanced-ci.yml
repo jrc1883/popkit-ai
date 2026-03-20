@@ -255,7 +255,6 @@ jobs:
             "README.md"
             "CHANGELOG.md"
             "LICENSE"
-            "CLAUDE.md"
           )
 
           for FILE in "${REQUIRED_FILES[@]}"; do

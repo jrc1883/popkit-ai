@@ -9,7 +9,20 @@ Responsibilities:
 3. Register project with PopKit Cloud (async, non-blocking)
 4. Ensure PopKit directories exist (auto-init)
 5. Filter agents based on initial task (Phase 2: Embedding-Based Agent Loading)
-6. Detect and optimize for agent_type when --agent flag is used (Claude Code 2.1.2+)
+6. Detect and optimize for agent_type when --agent flag is used (Claude Code 2.1.2+, verified through 2.1.79)
+
+AUDIT NOTE (2026-03-19):
+Status: KEEP (essential session init)
+- Core responsibilities (logging, directory init, expertise loading) are
+  necessary and well-gated with test_mode skipping.
+- Cloud registration is properly async with circuit breaker - good design.
+- XML context generation at session start provides initial project context.
+- The embedding-based agent loader (load_relevant_agents_for_session) depends
+  on AgentLoader which may not be installed; graceful fallback.
+- With 1M context, the agent filtering at session start is less critical
+  since all agent definitions can fit in context, but it still provides
+  useful prioritization.
+- Compatible with CC 2.1.79.
 """
 
 import json
@@ -273,15 +286,24 @@ def register_project_async():
         return None
 
 
+def _get_plugin_data_dir() -> Path:
+    """Get plugin data directory (CLAUDE_PLUGIN_DATA or fallback)."""
+    plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+    if plugin_data:
+        return Path(plugin_data)
+    return Path.cwd() / ".claude" / "popkit"
+
+
 def ensure_popkit_directories():
     """Ensure PopKit runtime directories exist.
 
     This is idempotent and fast - creates directories only if missing.
     Part of the skill automation architecture (Issue #173).
+    Uses CLAUDE_PLUGIN_DATA (CC 2.1.78+) or falls back to .claude/popkit/.
 
     Created directories:
-    - .claude/popkit/           - PopKit runtime state
-    - .claude/popkit/routines/  - Custom morning/nightly routines
+    - <plugin_data>/           - PopKit runtime state
+    - <plugin_data>/routines/  - Custom morning/nightly routines
 
     Returns:
         dict: Status of directory creation, or None on error
@@ -294,7 +316,7 @@ def ensure_popkit_directories():
         if not (cwd / ".git").exists() and not (cwd / "CLAUDE.md").exists():
             return None
 
-        base = cwd / ".claude" / "popkit"
+        base = _get_plugin_data_dir()
         dirs_to_create = [
             base,
             base / "routines" / "morning",

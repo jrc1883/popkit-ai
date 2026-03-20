@@ -14,6 +14,13 @@ from .github_issues import (
     save_lesson_locally,
 )
 
+# Plugin data directory resolution (CC 2.1.78+ CLAUDE_PLUGIN_DATA support)
+from .plugin_data import (
+    get_global_plugin_data_dir,
+    get_plugin_data_dir,
+    get_plugin_data_subdir,
+)
+
 # Version utilities will be imported when available
 try:
     from .version import (
@@ -27,6 +34,10 @@ except ImportError:
     pass
 
 __all__ = [
+    # Plugin Data Directory
+    "get_plugin_data_dir",
+    "get_plugin_data_subdir",
+    "get_global_plugin_data_dir",
     # GitHub Issues
     "create_issue_from_lesson",
     "create_issue_from_validation_failure",

@@ -26,6 +26,16 @@ Mitigations for long runtime:
 4. Individual gate timeouts prevent runaway processes
 
 See Issue #195 for analysis.
+
+AUDIT NOTE (2026-03-19):
+Status: KEEP (high value, well-designed)
+- This is one of the most valuable hooks - auto-detects project quality
+  gates (tsc, lint, build, mypy) and runs them on high-risk file changes.
+- The trigger logic (high-risk patterns, batch threshold) prevents
+  running on every edit, which is important for the 180s timeout.
+- Flaky test detection is a nice feature.
+- Rollback safety (destructive_ops_allowed) is properly gated.
+- Compatible with CC 2.1.79.
 """
 
 import json
@@ -83,7 +93,7 @@ class QualityGateHook:
             try:
                 return json.loads(self.state_file.read_text())
             except json.JSONDecodeError:
-                pass
+                pass  # Corrupt state file; return default empty state
         return {
             "file_edit_count": 0,
             "recent_files": [],
@@ -106,7 +116,7 @@ class QualityGateHook:
             try:
                 return json.loads(self.config_file.read_text())
             except json.JSONDecodeError:
-                pass
+                pass  # Corrupt config file; ignore user overrides
         return None
 
     # =========================================================================
@@ -755,14 +765,18 @@ class QualityGateHook:
 
     def is_power_mode_active(self) -> bool:
         """Check if Power Mode is currently active."""
-        # Check for coordinator state file (in .claude/popkit/)
-        power_state = self.claude_dir / "popkit" / "power-mode-state.json"
+        # Check for coordinator state file (CLAUDE_PLUGIN_DATA or .claude/popkit/)
+        plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+        if plugin_data:
+            power_state = Path(plugin_data) / "power-mode-state.json"
+        else:
+            power_state = self.claude_dir / "popkit" / "power-mode-state.json"
         if power_state.exists():
             try:
                 state = json.loads(power_state.read_text())
                 return state.get("active", False)
             except Exception:
-                pass
+                pass  # Corrupt power-mode state; fall through to env var check
 
         # Check environment variable
         return os.environ.get("POPKIT_POWER_MODE") == "1"

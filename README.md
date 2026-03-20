@@ -156,6 +156,7 @@ End your day with context saved:
   ✓ Branch pushed to origin
   ✓ Tests passing
   ✓ No uncommitted stashes
+  ✓ Session branches clean
 
 ■ Session Captured
   Work: Implemented password reset email flow
@@ -208,12 +209,12 @@ No more manual worktree juggling when you're working on multiple features.
 
 PopKit is modular. Install what you need:
 
-| Plugin              | What it adds                                                                                                |
-| ------------------- | ----------------------------------------------------------------------------------------------------------- |
-| **popkit-core**     | Project setup, [Power Mode](https://popkit.unjoe.me/features/power-mode/) (multi-agent), session management |
-| **popkit-dev**      | Git workflows, worktrees, [routines](https://popkit.unjoe.me/features/routines/), `/next` recommendations   |
-| **popkit-ops**      | Quality assessments, security scanning, debugging workflows                                                 |
-| **popkit-research** | Knowledge capture, research notes, documentation sync                                                       |
+| Plugin              | What it adds                                                                                                                           |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| **popkit-core**     | Project setup, [Power Mode](https://popkit.unjoe.me/features/power-mode/) (multi-agent), session management                            |
+| **popkit-dev**      | Git workflows, worktrees, [routines](https://popkit.unjoe.me/features/routines/), `/next` recommendations                              |
+| **popkit-ops**      | Quality assessments, security scanning, debugging, [deployment pipeline](https://popkit.unjoe.me/reference/commands/#popkit-opsdeploy) |
+| **popkit-research** | Knowledge capture, research notes, documentation sync                                                                                  |
 
 ```bash
 /plugin install popkit-ops@popkit-claude      # Quality & security
@@ -224,7 +225,7 @@ PopKit is modular. Install what you need:
 
 ## Requirements
 
-- Claude Code 2.1.33+
+- Claude Code 2.1.33+ (tested through 2.1.79)
 - Python 3.11+
 - Git
 - GitHub CLI (`gh`) for GitHub integration
@@ -241,7 +242,7 @@ PopKit is modular. Install what you need:
 
 ## Status
 
-**Version:** 1.0.0-beta.10
+**Version:** 1.0.0-beta.11
 **Status:** Public beta — core features stable, actively improving
 
 ---

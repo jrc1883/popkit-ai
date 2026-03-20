@@ -33,6 +33,12 @@ output_style: deployment-report
 model: inherit
 version: 1.0.0
 memory: local
+effort: high
+maxTurns: 40
+disallowedTools:
+  - Bash(rm -rf*)
+  - Bash(git push*)
+  - Bash(git reset*)
 ---
 
 # Deployment Validator Agent
