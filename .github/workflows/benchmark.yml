@@ -327,7 +327,7 @@ jobs:
           pip install numpy scipy matplotlib pandas
 
       - name: Download all benchmark results
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           path: benchmark-results/
           pattern: benchmark-results-*
@@ -380,7 +380,7 @@ jobs:
           pip install jinja2 markdown
 
       - name: Download analysis results
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: benchmark-analysis
           path: benchmark-results/analysis/
