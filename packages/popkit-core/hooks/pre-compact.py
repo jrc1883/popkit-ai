@@ -213,9 +213,7 @@ def main():
         update_status_json(git_snapshot, token_summary, compaction_count)
 
         # Build additionalContext for the model post-compaction
-        branch_info = (
-            f" on branch '{git_snapshot['branch']}'" if git_snapshot["branch"] else ""
-        )
+        branch_info = f" on branch '{git_snapshot['branch']}'" if git_snapshot["branch"] else ""
         token_info = (
             f" ({token_summary['total_input_tokens']:,} input tokens consumed)"
             if token_summary["total_input_tokens"] > 0

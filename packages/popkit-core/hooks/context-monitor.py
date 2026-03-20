@@ -268,9 +268,7 @@ class ContextMonitor:
         compaction_detected = self.check_for_recent_compaction()
         if compaction_detected:
             result["compaction_detected"] = True
-            result["compaction_count"] = self.session_data.get(
-                "compactions_detected", 0
-            )
+            result["compaction_count"] = self.session_data.get("compactions_detected", 0)
 
         # Update token counts
         tokens = self.update_tokens(input_data)
@@ -282,9 +280,7 @@ class ContextMonitor:
         result["threshold_check"] = threshold_check
 
         # Generate display if warning needed
-        if threshold_check["level"] != "ok" and self.should_show_warning(
-            threshold_check["level"]
-        ):
+        if threshold_check["level"] != "ok" and self.should_show_warning(threshold_check["level"]):
             result["display"] = {
                 "level": threshold_check["level"],
                 "warning": threshold_check["warning"],

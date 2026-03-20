@@ -356,9 +356,7 @@ class PostToolUseHook:
 
         return analysis
 
-    def analyze_write_result(
-        self, tool_args: Dict[str, Any], tool_result: Any
-    ) -> Dict[str, Any]:
+    def analyze_write_result(self, tool_args: Dict[str, Any], tool_result: Any) -> Dict[str, Any]:
         """Analyze Write tool results"""
         analysis = {"quality_score": 0.7, "followup_needed": []}
 
@@ -371,14 +369,10 @@ class PostToolUseHook:
             analysis["followup_needed"].extend(["code_review", "linting"])
             analysis["quality_score"] = 0.8
         elif file_path.endswith((".py", ".rb", ".go")):
-            analysis["suggestions"].append(
-                "Consider running syntax validation and tests"
-            )
+            analysis["suggestions"].append("Consider running syntax validation and tests")
             analysis["followup_needed"].extend(["syntax_check", "test_execution"])
         elif file_path.endswith((".md", ".txt", ".rst")):
-            analysis["suggestions"].append(
-                "Consider spell check and documentation review"
-            )
+            analysis["suggestions"].append("Consider spell check and documentation review")
             analysis["followup_needed"].append("documentation_review")
 
         # Content analysis
@@ -400,9 +394,7 @@ class PostToolUseHook:
 
         return analysis
 
-    def analyze_edit_result(
-        self, tool_args: Dict[str, Any], tool_result: Any
-    ) -> Dict[str, Any]:
+    def analyze_edit_result(self, tool_args: Dict[str, Any], tool_result: Any) -> Dict[str, Any]:
         """Analyze Edit/MultiEdit tool results"""
         analysis = {"quality_score": 0.8, "followup_needed": ["code_review"]}
 
@@ -415,14 +407,10 @@ class PostToolUseHook:
                 analysis["suggestions"].append(
                     f"Large refactoring with {edit_count} changes - comprehensive review recommended"
                 )
-                analysis["followup_needed"].extend(
-                    ["comprehensive_review", "test_execution"]
-                )
+                analysis["followup_needed"].extend(["comprehensive_review", "test_execution"])
 
             # Check for potential conflicts
-            edit_locations = [
-                edit.get("old_string", "")[:50] for edit in tool_args["edits"]
-            ]
+            edit_locations = [edit.get("old_string", "")[:50] for edit in tool_args["edits"]]
             if len(set(edit_locations)) != len(edit_locations):
                 analysis["issues"].append("Potential overlapping edits detected")
                 analysis["quality_score"] -= 0.2
@@ -435,9 +423,7 @@ class PostToolUseHook:
 
         return analysis
 
-    def analyze_bash_result(
-        self, tool_args: Dict[str, Any], tool_result: Any
-    ) -> Dict[str, Any]:
+    def analyze_bash_result(self, tool_args: Dict[str, Any], tool_result: Any) -> Dict[str, Any]:
         """Analyze Bash tool results"""
         analysis = {"quality_score": 0.6, "followup_needed": []}
 
@@ -453,9 +439,7 @@ class PostToolUseHook:
             analysis["followup_needed"].append("deployment_readiness")
             analysis["quality_score"] = 0.8
         elif any(cmd in command for cmd in ["docker build", "docker run"]):
-            analysis["followup_needed"].extend(
-                ["container_security", "resource_monitoring"]
-            )
+            analysis["followup_needed"].extend(["container_security", "resource_monitoring"])
         elif "test" in command:
             analysis["followup_needed"].append("test_results_analysis")
             analysis["quality_score"] = 0.9
@@ -472,9 +456,7 @@ class PostToolUseHook:
 
         return analysis
 
-    def analyze_read_result(
-        self, tool_args: Dict[str, Any], tool_result: Any
-    ) -> Dict[str, Any]:
+    def analyze_read_result(self, tool_args: Dict[str, Any], tool_result: Any) -> Dict[str, Any]:
         """Analyze Read tool results"""
         analysis = {"quality_score": 0.9, "followup_needed": []}
 
@@ -482,9 +464,7 @@ class PostToolUseHook:
 
         # Large file analysis
         if isinstance(tool_result, str) and len(tool_result) > 50000:
-            analysis["suggestions"].append(
-                "Large file read - consider chunked processing"
-            )
+            analysis["suggestions"].append("Large file read - consider chunked processing")
             analysis["followup_needed"].append("optimization_review")
 
         # File type specific analysis
@@ -493,9 +473,7 @@ class PostToolUseHook:
         elif file_path.endswith((".json", ".yaml", ".yml")):
             analysis["followup_needed"].append("config_validation")
         elif file_path.endswith(".sql"):
-            analysis["followup_needed"].extend(
-                ["query_optimization", "security_review"]
-            )
+            analysis["followup_needed"].extend(["query_optimization", "security_review"])
 
         return analysis
 
@@ -559,9 +537,7 @@ class PostToolUseHook:
                 elif isinstance(tool_result, str) and "error" in tool_result.lower():
                     # Extract error message from output
                     error_lines = [
-                        line
-                        for line in tool_result.split("\n")
-                        if "error" in line.lower()
+                        line for line in tool_result.split("\n") if "error" in line.lower()
                     ]
                     if error_lines:
                         findings["error_message"] = error_lines[0][:200]
@@ -625,9 +601,7 @@ class PostToolUseHook:
         if tool_name == "Bash":
             metrics["safety_score"] = 1.0 - (metrics["error_count"] * 0.2)
         elif tool_name in ["Write", "Edit", "MultiEdit"]:
-            metrics["code_impact_score"] = min(
-                1.0, len(analysis.get("suggestions", [])) / 5.0
-            )
+            metrics["code_impact_score"] = min(1.0, len(analysis.get("suggestions", [])) / 5.0)
 
         return metrics
 
@@ -685,9 +659,7 @@ class PostToolUseHook:
                 "metadata": {"analysis": analysis, "working_directory": os.getcwd()},
             }
 
-            response = requests.post(
-                self.observability_endpoint, json=event_data, timeout=2
-            )
+            response = requests.post(self.observability_endpoint, json=event_data, timeout=2)
 
             if response.status_code != 200:
                 print(
@@ -703,9 +675,7 @@ class PostToolUseHook:
                     "metadata": {
                         "toolName": tool_name,
                         "success": analysis.get("success", True),
-                        "executionTime": analysis.get("metrics", {}).get(
-                            "execution_time", 0
-                        ),
+                        "executionTime": analysis.get("metrics", {}).get("execution_time", 0),
                         "qualityScore": analysis.get("quality_score", 0),
                         "sessionId": self.session_id,
                         "timestamp": datetime.now().isoformat(),
@@ -722,9 +692,7 @@ class PostToolUseHook:
                 pass
 
         except Exception as e:
-            print(
-                f"Warning: Could not log to observability system: {e}", file=sys.stderr
-            )
+            print(f"Warning: Could not log to observability system: {e}", file=sys.stderr)
 
     def request_followup_orchestration(
         self, tool_name: str, analysis: Dict[str, Any], followup_agents: List[str]
@@ -741,9 +709,7 @@ class PostToolUseHook:
                 "timestamp": datetime.now().isoformat(),
             }
 
-            response = requests.post(
-                self.orchestrator_endpoint, json=orchestration_data, timeout=3
-            )
+            response = requests.post(self.orchestrator_endpoint, json=orchestration_data, timeout=3)
 
             if response.status_code == 200:
                 return response.json()
@@ -769,8 +735,7 @@ class PostToolUseHook:
             "project_name": Path(cwd).name,
             "has_package_json": os.path.exists(os.path.join(cwd, "package.json")),
             "has_tests": any(
-                os.path.exists(os.path.join(cwd, d))
-                for d in ["test", "tests", "__tests__"]
+                os.path.exists(os.path.join(cwd, d)) for d in ["test", "tests", "__tests__"]
             ),
             "has_claude_md": os.path.exists(os.path.join(cwd, "CLAUDE.md")),
             "git_repository": os.path.exists(os.path.join(cwd, ".git")),
@@ -847,9 +812,7 @@ class PostToolUseHook:
                 print(f"  [Expertise] Agent detection failed: {e}", file=sys.stderr)
 
         # Determine follow-up agents
-        followup_agents = self.determine_followup_agents(
-            tool_name, analysis, project_context
-        )
+        followup_agents = self.determine_followup_agents(tool_name, analysis, project_context)
         result["followup_agents"] = followup_agents
 
         # Calculate metrics
@@ -859,14 +822,10 @@ class PostToolUseHook:
         # Generate recommendations
         result["recommendations"] = analysis.get("suggestions", [])
         if followup_agents:
-            result["recommendations"].append(
-                f"Consider activating: {', '.join(followup_agents)}"
-            )
+            result["recommendations"].append(f"Consider activating: {', '.join(followup_agents)}")
 
         # Store metrics
-        self.store_metrics(
-            tool_name, metrics, followup_agents, analysis.get("followup_needed", [])
-        )
+        self.store_metrics(tool_name, metrics, followup_agents, analysis.get("followup_needed", []))
 
         # Log event
         self.log_post_tool_event(tool_name, tool_args, tool_result, analysis)
@@ -879,9 +838,7 @@ class PostToolUseHook:
             result["orchestration_result"] = orchestration_result
 
         # Generate XML findings for next agent (Phase 1: XML Integration #517)
-        findings_xml = self.generate_findings_xml(
-            tool_name, analysis, followup_agents, tool_result
-        )
+        findings_xml = self.generate_findings_xml(tool_name, analysis, followup_agents, tool_result)
         result["findings_xml"] = findings_xml
 
         # Track activity in PopKit Cloud (non-blocking)
@@ -945,9 +902,7 @@ class PostToolUseHook:
                     "is_required": True,
                     "is_error_recovery": True,
                     "has_error": True,
-                    "error_message": tracker.state.last_error
-                    if tracker.state
-                    else None,
+                    "error_message": tracker.state.last_error if tracker.state else None,
                     "skill_name": tracker.get_active_skill(),
                     "decision": recovery[0],
                 }
@@ -1243,15 +1198,10 @@ def update_agent_expertise(tool_name: str, tool_input: dict, tool_output: str):
         if agent_id == "code-reviewer":
             # Look for common review comments in tool output
             output_lower = (
-                tool_output.lower()
-                if isinstance(tool_output, str)
-                else str(tool_output).lower()
+                tool_output.lower() if isinstance(tool_output, str) else str(tool_output).lower()
             )
 
-            if (
-                "missing error handling" in output_lower
-                or "unhandled error" in output_lower
-            ):
+            if "missing error handling" in output_lower or "unhandled error" in output_lower:
                 manager.record_pattern_occurrence(
                     category="error-handling",
                     pattern="wrap async functions in try/catch",
@@ -1278,14 +1228,10 @@ def update_agent_expertise(tool_name: str, tool_input: dict, tool_output: str):
         # security-auditor: Detects security patterns
         elif agent_id == "security-auditor":
             output_lower = (
-                tool_output.lower()
-                if isinstance(tool_output, str)
-                else str(tool_output).lower()
+                tool_output.lower() if isinstance(tool_output, str) else str(tool_output).lower()
             )
 
-            if "password" in output_lower and (
-                "log" in output_lower or "print" in output_lower
-            ):
+            if "password" in output_lower and ("log" in output_lower or "print" in output_lower):
                 manager.record_issue(
                     pattern="logging sensitive data",
                     severity="high",
@@ -1304,9 +1250,7 @@ def update_agent_expertise(tool_name: str, tool_input: dict, tool_output: str):
         # bug-whisperer: Detects debugging patterns
         elif agent_id == "bug-whisperer":
             output_lower = (
-                tool_output.lower()
-                if isinstance(tool_output, str)
-                else str(tool_output).lower()
+                tool_output.lower() if isinstance(tool_output, str) else str(tool_output).lower()
             )
 
             if "race condition" in output_lower:
@@ -1375,9 +1319,7 @@ def main():
                     if tool_result
                     else None,  # Truncate large results
                     "error": error,
-                    "duration_ms": int(execution_time * 1000)
-                    if execution_time
-                    else None,
+                    "duration_ms": int(execution_time * 1000) if execution_time else None,
                 }
             )
 
@@ -1387,9 +1329,7 @@ def main():
             sys.exit(1)
 
         hook = PostToolUseHook()
-        result = hook.process_tool_completion(
-            tool_name, tool_args, tool_result, execution_time
-        )
+        result = hook.process_tool_completion(tool_name, tool_args, tool_result, execution_time)
 
         # Update agent expertise (Issue #201, Phase 2, non-blocking)
         update_agent_expertise(tool_name, tool_args, str(tool_result))
@@ -1530,9 +1470,7 @@ def main():
                 f"🔀 Workflow Advanced: {workflow_result.get('workflow_id')}",
                 file=sys.stderr,
             )
-            print(
-                f"   → Next step: {workflow_result.get('next_step')}", file=sys.stderr
-            )
+            print(f"   → Next step: {workflow_result.get('next_step')}", file=sys.stderr)
 
             if workflow_result.get("skill"):
                 print(
@@ -1540,9 +1478,7 @@ def main():
                     file=sys.stderr,
                 )
             elif workflow_result.get("agent"):
-                print(
-                    f"   💡 Use agent: {workflow_result.get('agent')}", file=sys.stderr
-                )
+                print(f"   💡 Use agent: {workflow_result.get('agent')}", file=sys.stderr)
 
             if workflow_result.get("message"):
                 print(f"   {workflow_result.get('message')}", file=sys.stderr)

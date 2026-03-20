@@ -136,9 +136,7 @@ def evaluate_trigger(hook_input: dict, manager) -> Optional[FeedbackTrigger]:
 
     # Check Skill tool (may indicate workflow phase)
     if tool_name == "Skill" and workflow_phase:
-        return manager.evaluate_workflow_phase(
-            phase_name=workflow_phase, phase_output=tool_output
-        )
+        return manager.evaluate_workflow_phase(phase_name=workflow_phase, phase_output=tool_output)
 
     return None
 
@@ -281,9 +279,7 @@ def main():
         print(json.dumps(result))
 
     except json.JSONDecodeError as e:
-        print(
-            json.dumps({"action": "continue", "error": f"Invalid JSON input: {str(e)}"})
-        )
+        print(json.dumps({"action": "continue", "error": f"Invalid JSON input: {str(e)}"}))
     except Exception as e:
         print(json.dumps({"action": "continue", "error": f"Hook error: {str(e)}"}))
 

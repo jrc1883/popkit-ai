@@ -291,16 +291,11 @@ class PreToolUseHook:
         cwd = os.getcwd()
 
         # Check for production indicators
-        if any(
-            indicator in cwd.lower()
-            for indicator in ["prod", "production", "live", "deploy"]
-        ):
+        if any(indicator in cwd.lower() for indicator in ["prod", "production", "live", "deploy"]):
             return "production"
 
         # Check for testing indicators
-        if any(
-            indicator in cwd.lower() for indicator in ["test", "testing", "spec", "qa"]
-        ):
+        if any(indicator in cwd.lower() for indicator in ["test", "testing", "spec", "qa"]):
             return "testing"
 
         # Check for development indicators or default
@@ -344,9 +339,7 @@ class PreToolUseHook:
 
         return paths
 
-    def check_safety_violations(
-        self, tool_name: str, tool_args: Dict[str, Any]
-    ) -> List[str]:
+    def check_safety_violations(self, tool_name: str, tool_args: Dict[str, Any]) -> List[str]:
         """Check for safety violations in tool usage (Issue #213 - platform-aware paths)"""
         violations = []
 
@@ -366,14 +359,10 @@ class PreToolUseHook:
 
             for sensitive_pattern in sensitive_paths:
                 if re.search(sensitive_pattern, file_path, re.IGNORECASE):
-                    violations.append(
-                        f"Access to sensitive path blocked: {sensitive_pattern}"
-                    )
+                    violations.append(f"Access to sensitive path blocked: {sensitive_pattern}")
 
         # Check dangerous tool combinations
-        tool_signature = (
-            f"{tool_name}:{tool_args.get('command', tool_args.get('file_path', ''))}"
-        )
+        tool_signature = f"{tool_name}:{tool_args.get('command', tool_args.get('file_path', ''))}"
         for dangerous_tool in self.safety_rules["dangerous_tools"]:
             if dangerous_tool in tool_signature:
                 violations.append(f"Dangerous tool usage blocked: {dangerous_tool}")
@@ -384,9 +373,7 @@ class PreToolUseHook:
         self, tool_name: str, tool_args: Dict[str, Any], context: str
     ) -> Tuple[bool, List[str]]:
         """Check if tool usage requires special permissions or confirmation"""
-        permissions = self.tool_permissions.get(
-            context, self.tool_permissions["development"]
-        )
+        permissions = self.tool_permissions.get(context, self.tool_permissions["development"])
         warnings = []
 
         # Check if tool is allowed
@@ -397,20 +384,14 @@ class PreToolUseHook:
             return False, [f"Tool {tool_name} is restricted in {context} environment"]
 
         # Check if confirmation is required
-        tool_signature = (
-            f"{tool_name}:{tool_args.get('command', tool_args.get('file_path', ''))}"
-        )
+        tool_signature = f"{tool_name}:{tool_args.get('command', tool_args.get('file_path', ''))}"
         for confirmation_pattern in permissions["requires_confirmation"]:
             if confirmation_pattern in tool_signature:
-                warnings.append(
-                    f"Tool {tool_name} requires confirmation in {context} environment"
-                )
+                warnings.append(f"Tool {tool_name} requires confirmation in {context} environment")
 
         return True, warnings
 
-    def coordinate_with_agents(
-        self, tool_name: str, tool_args: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def coordinate_with_agents(self, tool_name: str, tool_args: Dict[str, Any]) -> Dict[str, Any]:
         """Coordinate tool usage with active agents"""
         coordination_result = {
             "conflicts": [],
@@ -468,9 +449,7 @@ class PreToolUseHook:
                 },
             }
 
-            response = requests.post(
-                self.observability_endpoint, json=event_data, timeout=2
-            )
+            response = requests.post(self.observability_endpoint, json=event_data, timeout=2)
 
             if response.status_code != 200:
                 print(
@@ -479,9 +458,7 @@ class PreToolUseHook:
                 )
 
         except Exception as e:
-            print(
-                f"Warning: Could not log to observability system: {e}", file=sys.stderr
-            )
+            print(f"Warning: Could not log to observability system: {e}", file=sys.stderr)
 
     def request_orchestration(
         self, tool_name: str, tool_args: Dict[str, Any], coordination: Dict[str, Any]
@@ -499,9 +476,7 @@ class PreToolUseHook:
                 "timestamp": datetime.now().isoformat(),
             }
 
-            response = requests.post(
-                self.orchestrator_endpoint, json=orchestration_data, timeout=3
-            )
+            response = requests.post(self.orchestrator_endpoint, json=orchestration_data, timeout=3)
 
             if response.status_code == 200:
                 return response.json()
@@ -622,19 +597,15 @@ class PreToolUseHook:
                                 )
                                 if project_match:
                                     project_xml_str = project_match.group(0)
-                                    project_data = parse_project_context(
-                                        project_xml_str
-                                    )
+                                    project_data = parse_project_context(project_xml_str)
 
                                     if project_data:
                                         if project_data.get("stack"):
-                                            parsed_context["stack"] = project_data[
-                                                "stack"
-                                            ]
+                                            parsed_context["stack"] = project_data["stack"]
                                         if project_data.get("infrastructure"):
-                                            parsed_context["infrastructure"] = (
-                                                project_data["infrastructure"]
-                                            )
+                                            parsed_context["infrastructure"] = project_data[
+                                                "infrastructure"
+                                            ]
 
                                 return parsed_context
 
@@ -655,24 +626,18 @@ class PreToolUseHook:
                     re.DOTALL,
                 )
                 if not problem_match:
-                    problem_match = re.search(
-                        r"<problem>(.*?)</problem>", xml_content, re.DOTALL
-                    )
+                    problem_match = re.search(r"<problem>(.*?)</problem>", xml_content, re.DOTALL)
 
                 if problem_match:
                     problem_xml = problem_match.group(1)
 
                     # Category (required)
-                    category_match = re.search(
-                        r"<category>(.*?)</category>", problem_xml
-                    )
+                    category_match = re.search(r"<category>(.*?)</category>", problem_xml)
                     if category_match:
                         parsed_context["category"] = category_match.group(1).strip()
 
                     # Severity (optional)
-                    severity_match = re.search(
-                        r"<severity>(.*?)</severity>", problem_xml
-                    )
+                    severity_match = re.search(r"<severity>(.*?)</severity>", problem_xml)
                     if severity_match:
                         parsed_context["severity"] = severity_match.group(1).strip()
 
@@ -684,9 +649,7 @@ class PreToolUseHook:
                         parsed_context["workflow"] = workflow_match.group(1).strip()
 
                 # Parse project context for stack and infrastructure
-                project_match = re.search(
-                    r"<project[^>]*>(.*?)</project>", xml_content, re.DOTALL
-                )
+                project_match = re.search(r"<project[^>]*>(.*?)</project>", xml_content, re.DOTALL)
                 if not project_match:
                     project_match = re.search(
                         r"<project-context>(.*?)</project-context>",
@@ -698,9 +661,7 @@ class PreToolUseHook:
                     project_xml = project_match.group(1)
 
                     # Extract stack (support both <technology> and <item>)
-                    stack_items = re.findall(
-                        r"<technology>(.*?)</technology>", project_xml
-                    )
+                    stack_items = re.findall(r"<technology>(.*?)</technology>", project_xml)
                     if not stack_items:
                         stack_items = re.findall(r"<item>(.*?)</item>", project_xml)
                     if stack_items:
@@ -732,9 +693,7 @@ class PreToolUseHook:
                             "gcp",
                             "azure",
                         ]:
-                            service_match = re.search(
-                                f"<{service}>(.*?)</{service}>", infra_xml
-                            )
+                            service_match = re.search(f"<{service}>(.*?)</{service}>", infra_xml)
                             if service_match:
                                 infrastructure[service] = (
                                     service_match.group(1).strip().lower() == "true"
@@ -790,9 +749,7 @@ class PreToolUseHook:
 
         # Category-to-agent mapping
         agent_map = {
-            "bug": "bug-whisperer"
-            if severity in ["critical", "high"]
-            else "code-reviewer",
+            "bug": "bug-whisperer" if severity in ["critical", "high"] else "code-reviewer",
             "feature": "refactoring-expert",
             "optimization": "performance-optimizer",
             "refactor": "refactoring-expert",
@@ -816,9 +773,7 @@ class PreToolUseHook:
             suggested_agent = "query-optimizer"
 
         # If security-related infrastructure detected, escalate to security-auditor
-        if any(
-            sec in infrastructure for sec in ["redis", "elasticsearch"]
-        ) and category in [
+        if any(sec in infrastructure for sec in ["redis", "elasticsearch"]) and category in [
             "bug",
             "feature",
         ]:
@@ -875,9 +830,7 @@ class PreToolUseHook:
     # All features work without API key - no feature gating or rate limiting
     # API key only adds semantic intelligence enhancements
 
-    def track_skill_invocation(
-        self, tool_name: str, tool_args: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def track_skill_invocation(self, tool_name: str, tool_args: Dict[str, Any]) -> Dict[str, Any]:
         """Track skill invocations for AskUserQuestion enforcement (Issue #159).
 
         Follows Anthropic's recommendation from the Hooks Guide:
@@ -942,9 +895,7 @@ class PreToolUseHook:
 
         return workflow_map.get(tool_name, "unknown")
 
-    def filter_tools_for_context(
-        self, tool_name: str, tool_args: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def filter_tools_for_context(self, tool_name: str, tool_args: Dict[str, Any]) -> Dict[str, Any]:
         """
         Apply tool filtering for context optimization (Issue #275).
 
@@ -1089,15 +1040,11 @@ class PreToolUseHook:
         result["recommendations"].extend(coordination.get("recommendations", []))
 
         # Orchestration request
-        orchestration_result = self.request_orchestration(
-            tool_name, tool_args, coordination
-        )
+        orchestration_result = self.request_orchestration(tool_name, tool_args, coordination)
         if orchestration_result:
             result["orchestration"] = orchestration_result
             if orchestration_result.get("action") == "modify":
-                result["tool_args"] = orchestration_result.get(
-                    "modified_args", tool_args
-                )
+                result["tool_args"] = orchestration_result.get("modified_args", tool_args)
 
         # Get recent context
         result["recent_context"] = self.get_recent_context()
@@ -1148,9 +1095,7 @@ def main():
                         "type": "tool_call_start",
                         "timestamp": datetime.now().isoformat(),
                         "tool_name": tool_name,
-                        "tool_use_id": input_data.get(
-                            "tool_use_id"
-                        ),  # For transcript correlation
+                        "tool_use_id": input_data.get("tool_use_id"),  # For transcript correlation
                         "parameters": tool_args,
                     }
                 )
@@ -1216,9 +1161,7 @@ def main():
         if result.get("suggested_agent"):
             context_parts.append(f"Suggested agent: {result['suggested_agent']}")
         if result.get("recommendations"):
-            context_parts.append(
-                "Recommendations: " + "; ".join(result["recommendations"])
-            )
+            context_parts.append("Recommendations: " + "; ".join(result["recommendations"]))
         if context_parts:
             response["additionalContext"] = " | ".join(context_parts)
 

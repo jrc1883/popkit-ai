@@ -96,12 +96,8 @@ def capture_session_state(error_info, branch, last_commit):
     # Mark the abnormal termination
     status["lastFailure"] = {
         "timestamp": datetime.now().isoformat() + "Z",
-        "errorType": error_info.get(
-            "error_type", error_info.get("errorType", "unknown")
-        ),
-        "errorMessage": error_info.get(
-            "error_message", error_info.get("errorMessage", "")
-        ),
+        "errorType": error_info.get("error_type", error_info.get("errorType", "unknown")),
+        "errorMessage": error_info.get("error_message", error_info.get("errorMessage", "")),
         "recoverable": error_info.get("recoverable", True),
     }
 
@@ -210,9 +206,7 @@ def extract_in_progress(input_data):
             current_task = status.get("currentTask") or status.get("current_task")
             if current_task:
                 if isinstance(current_task, dict):
-                    desc = current_task.get("description") or current_task.get(
-                        "name", ""
-                    )
+                    desc = current_task.get("description") or current_task.get("name", "")
                     if desc:
                         in_progress.append(f"task: {desc}")
                 elif isinstance(current_task, str):

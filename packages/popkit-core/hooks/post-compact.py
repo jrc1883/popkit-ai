@@ -103,9 +103,7 @@ def extract_task_summary(status):
             recent = decisions[-3:]
             for d in recent:
                 if isinstance(d, dict):
-                    parts.append(
-                        f"Decision: {d.get('summary', d.get('description', str(d)))}"
-                    )
+                    parts.append(f"Decision: {d.get('summary', d.get('description', str(d)))}")
                 elif isinstance(d, str):
                     parts.append(f"Decision: {d}")
 
@@ -147,9 +145,7 @@ def build_context_message(compaction_count, latest_entry, status):
         input_tokens = tokens.get("total_input_tokens", 0)
         tool_calls = tokens.get("tool_calls", 0)
         if input_tokens > 0:
-            lines.append(
-                f"Tokens at compaction: {input_tokens:,} input, {tool_calls} tool calls"
-            )
+            lines.append(f"Tokens at compaction: {input_tokens:,} input, {tool_calls} tool calls")
 
     # Task summary from STATUS.json
     task_parts = extract_task_summary(status)
@@ -162,9 +158,7 @@ def build_context_message(compaction_count, latest_entry, status):
     status_git = status.get("git", {})
     if status_git:
         branch = status_git.get("branch", "")
-        if branch and (
-            not latest_entry or branch != latest_entry.get("git", {}).get("branch", "")
-        ):
+        if branch and (not latest_entry or branch != latest_entry.get("git", {}).get("branch", "")):
             lines.append(f"Current branch (from STATUS): {branch}")
 
     # Compaction history summary

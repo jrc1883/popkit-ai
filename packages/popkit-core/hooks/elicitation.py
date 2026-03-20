@@ -111,9 +111,7 @@ def get_deploy_context():
         try:
             with open(deploy_file, "r", encoding="utf-8") as f:
                 deploy_config = json.load(f)
-            targets = deploy_config.get(
-                "targets", deploy_config.get("environments", {})
-            )
+            targets = deploy_config.get("targets", deploy_config.get("environments", {}))
             if isinstance(targets, dict):
                 target_names = list(targets.keys())
             elif isinstance(targets, list):
@@ -125,9 +123,7 @@ def get_deploy_context():
             )
 
             # Include current default target if set
-            default_target = deploy_config.get(
-                "default", deploy_config.get("defaultTarget")
-            )
+            default_target = deploy_config.get("default", deploy_config.get("defaultTarget"))
             if default_target:
                 context_parts.append(f"Default target: {default_target}")
         except (json.JSONDecodeError, OSError):
@@ -268,9 +264,7 @@ def get_brainstorm_context():
             if decisions:
                 recent = decisions[-3:]  # Last 3 decisions
                 decision_text = "; ".join(
-                    d.get("summary", d.get("decision", str(d)))
-                    if isinstance(d, dict)
-                    else str(d)
+                    d.get("summary", d.get("decision", str(d))) if isinstance(d, dict) else str(d)
                     for d in recent
                 )
                 context_parts.append(f"Recent decisions: {decision_text}")
