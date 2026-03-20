@@ -82,7 +82,12 @@ class BenchmarkOrchestrator:
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         # Recording directories
-        self.popkit_recordings_dir = Path.home() / ".claude" / "popkit" / "recordings"
+        plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+        self.popkit_recordings_dir = (
+            Path(plugin_data) / "recordings"
+            if plugin_data
+            else Path.home() / ".claude" / "popkit" / "recordings"
+        )
         self.claude_projects_dir = Path.home() / ".claude" / "projects"
 
         # Task definition

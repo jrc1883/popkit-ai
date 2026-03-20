@@ -13,11 +13,11 @@ Complete reference documentation for all PopKit components.
 
 All slash commands across 4 plugins with subcommands, options, and examples.
 
-### [Agents (23)](/reference/agents/)
+### [Agents (24)](/reference/agents/)
 
 Specialized AI agents organized by tier (Always Active, On-Demand, Feature Workflow) with descriptions, tools, and triggers.
 
-### [Skills (43)](/reference/skills/)
+### [Skills (50)](/reference/skills/)
 
 Reusable automation skills for project management, development workflows, operations, and research.
 

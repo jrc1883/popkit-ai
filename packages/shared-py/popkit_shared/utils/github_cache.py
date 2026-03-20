@@ -45,10 +45,12 @@ class LocalGitHubCache:
         """Initialize local cache.
 
         Args:
-            cache_dir: Cache directory (default: .claude/popkit)
+            cache_dir: Cache directory (default: CLAUDE_PLUGIN_DATA or .claude/popkit)
         """
         if cache_dir is None:
-            cache_dir = Path(".claude/popkit")
+            from .plugin_data import get_plugin_data_dir
+
+            cache_dir = get_plugin_data_dir()
 
         self.cache_dir = Path(cache_dir)
         self.cache_file = self.cache_dir / "github-cache.json"

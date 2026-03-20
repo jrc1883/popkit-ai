@@ -167,7 +167,7 @@ Development workflow agents for code exploration, architecture, review, and conf
 
 ---
 
-## popkit-ops (6 agents)
+## popkit-ops (7 agents)
 
 Operations agents for debugging, performance, security, testing, and deployment.
 
@@ -225,6 +225,14 @@ Operations agents for debugging, performance, security, testing, and deployment.
 
 ---
 
+#### devops-automator
+
+**Description:** Expert in CI/CD pipeline configuration, Docker/container orchestration, infrastructure as code, monitoring setup, environment management, and build optimization. Use for DevOps workflow automation, pipeline design, and infrastructure provisioning.
+
+**Tools:** Read, Write, Edit, Grep, Glob, Bash (Docker, Kubernetes, Terraform, GitHub CLI, build tools, platform CLIs, health checks), Task
+
+---
+
 ## popkit-research (1 agent)
 
 Knowledge management agent for codebase analysis and agent discovery.
@@ -245,9 +253,9 @@ Knowledge management agent for codebase analysis and agent discovery.
 | --------------- | ------ | ------ | ---------------- | ------ |
 | popkit-core     | 4      | 5      | -                | 9      |
 | popkit-dev      | 2      | 3      | 2                | 7      |
-| popkit-ops      | 4      | 2      | -                | 6      |
+| popkit-ops      | 4      | 3      | -                | 7      |
 | popkit-research | -      | 1      | -                | 1      |
-| **Total**       | **10** | **11** | **2**            | **23** |
+| **Total**       | **10** | **12** | **2**            | **24** |
 
 ## Agent Memory
 

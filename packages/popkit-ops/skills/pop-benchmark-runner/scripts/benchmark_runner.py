@@ -116,7 +116,12 @@ class BenchmarkRunner:
         self.codebase_manager = CodebaseManager(base_dir=bench_base)
 
         # Recordings directory
-        self.recordings_dir = Path.home() / ".claude" / "popkit" / "recordings"
+        plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+        self.recordings_dir = (
+            Path(plugin_data) / "recordings"
+            if plugin_data
+            else Path.home() / ".claude" / "popkit" / "recordings"
+        )
         self.recordings_dir.mkdir(parents=True, exist_ok=True)
 
         # Track recordings

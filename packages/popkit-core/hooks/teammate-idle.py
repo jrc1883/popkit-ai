@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
 """
-NATIVE SWARM AUTO-DRIVE HOOK
+NATIVE SWARM AUTO-DRIVE HOOK (CC 2.1.33+, verified through 2.1.79)
 
 This hook implements automatic task claiming for idle teammates in a Native Swarm.
+
+AUDIT NOTE (2026-03-19):
+Status: KEEP (essential for swarm mode)
+- Only fires on TeammateIdle events during swarm sessions.
+- Provides self-organizing behavior that reduces manager latency.
+- Compatible with CC 2.1.79 (TeammateIdle hook event stable).
 When a teammate is detected as idle, this hook injects instructions to:
 1. Check TaskList for unassigned tasks
 2. Claim tasks matching their role
@@ -115,10 +121,12 @@ def build_auto_claim_instruction(role, teammate_id):
 def log_idle_event(input_data, role):
     """
     Log idle events for observability (optional).
-    Writes to .claude/popkit/swarm-events.jsonl if the directory exists.
+    Writes to swarm-events.jsonl in plugin data dir if it exists.
+    Uses CLAUDE_PLUGIN_DATA (CC 2.1.78+) or falls back to ~/.claude/popkit/.
     """
     try:
-        log_dir = os.path.expanduser("~/.claude/popkit")
+        plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+        log_dir = plugin_data if plugin_data else os.path.expanduser("~/.claude/popkit")
         if os.path.exists(log_dir):
             log_file = os.path.join(log_dir, "swarm-events.jsonl")
             event = {

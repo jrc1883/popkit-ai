@@ -2,16 +2,17 @@
 """
 Sleep Score Calculator for Nightly Routine
 
-Calculates a 0-100 score based on 6 project health dimensions:
-1. Uncommitted work saved (25 points)
-2. Branches cleaned (20 points)
-3. Issues updated (20 points)
-4. CI passing (15 points)
-5. Services stopped (10 points)
-6. Logs archived (10 points)
+Calculates a 0-100 score based on 7 project health dimensions:
+1. Uncommitted work saved (20 points)
+2. Branches cleaned (15 points)
+3. Session branches clean (10 points)
+4. Issues updated (20 points)
+5. CI passing (15 points)
+6. Services stopped (10 points)
+7. Logs archived (10 points)
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Tuple
 
 
@@ -36,27 +37,27 @@ def calculate_sleep_score(
     score = 0
     breakdown = {}
 
-    # 1. Uncommitted work saved (25 points)
+    # 1. Uncommitted work saved (20 points)
     git_state = state.get("git", {})
     uncommitted_count = git_state.get("uncommitted_files", 0)
 
     if uncommitted_count == 0:
-        score += 25
+        score += 20
         breakdown["uncommitted_work_saved"] = {
-            "points": 25,
-            "max": 25,
+            "points": 20,
+            "max": 20,
             "status": "✅",
             "reason": "No uncommitted changes",
         }
     else:
         breakdown["uncommitted_work_saved"] = {
             "points": 0,
-            "max": 25,
+            "max": 20,
             "status": "❌",
             "reason": f"{uncommitted_count} uncommitted files",
         }
 
-    # 2. Branches cleaned (20 points)
+    # 2. Branches cleaned (15 points)
     merged_branches = git_state.get("merged_branches", 0)
     stale_branches = git_state.get("stale_branches", 0)
 
@@ -77,25 +78,77 @@ def calculate_sleep_score(
             cleanup_status = "⚠️"
 
     if not cleanup_reasons:
-        branch_score = 20
+        branch_score = 15
         cleanup_status = "✅"
         cleanup_reason = "No stale branches"
     else:
         # Deduct points for cleanup issues
-        # 10 points for merged branches, 10 points for stale branches
+        # 8 points for merged branches, 7 points for stale branches
         if merged_branches == 0:
-            branch_score = max(0, 20 - min(stale_branches * 2, 10))
+            branch_score = max(0, 15 - min(stale_branches * 2, 8))
         cleanup_reason = "; ".join(cleanup_reasons)
 
     score += branch_score
     breakdown["branches_cleaned"] = {
         "points": branch_score,
-        "max": 20,
+        "max": 15,
         "status": cleanup_status,
         "reason": cleanup_reason,
     }
 
-    # 3. Issues updated (20 points)
+    # 3. Session Branches Clean (10 points)
+    session_branches_data = state.get("session_branches", {})
+    session_branches_list = session_branches_data.get("branches", [])
+    unmerged_session = [
+        b
+        for b in session_branches_list
+        if b.get("id") != "main" and not b.get("merged", False)
+    ]
+
+    # Calculate age of each unmerged session branch
+    stale_session_count = 0
+    now = datetime.now(timezone.utc)
+    for branch in unmerged_session:
+        created = branch.get("created")
+        if created:
+            try:
+                created_dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
+                age_days = (now - created_dt).total_seconds() / 86400
+                if age_days > 3:
+                    stale_session_count += 1
+            except (ValueError, TypeError):
+                pass  # Malformed timestamp; skip stale check for this branch
+
+    if len(unmerged_session) == 0:
+        score += 10
+        breakdown["session_branches_clean"] = {
+            "points": 10,
+            "max": 10,
+            "status": "✅",
+            "reason": "No unmerged session branches",
+        }
+    elif stale_session_count > 0 or len(unmerged_session) >= 3:
+        reasons = []
+        if len(unmerged_session) >= 3:
+            reasons.append(f"{len(unmerged_session)} unmerged session branches")
+        if stale_session_count > 0:
+            reasons.append(f"{stale_session_count} stale (>3 days)")
+        breakdown["session_branches_clean"] = {
+            "points": 0,
+            "max": 10,
+            "status": "❌",
+            "reason": "; ".join(reasons),
+        }
+    else:
+        score += 5
+        breakdown["session_branches_clean"] = {
+            "points": 5,
+            "max": 10,
+            "status": "⚠️",
+            "reason": f"{len(unmerged_session)} unmerged session branch{'es' if len(unmerged_session) != 1 else ''}, all recent",
+        }
+
+    # 4. Issues updated (20 points)
     github_state = state.get("github", {})
     issues = github_state.get("issues", [])
     today = datetime.now().strftime("%Y-%m-%d")
@@ -130,7 +183,7 @@ def calculate_sleep_score(
             "reason": "No open issues",
         }
 
-    # 4. CI passing (15 points)
+    # 5. CI passing (15 points)
     ci_status = github_state.get("ci_status", {})
     ci_conclusion = ci_status.get("conclusion", "unknown")
 
@@ -165,7 +218,7 @@ def calculate_sleep_score(
             "reason": f"CI status: {ci_conclusion}",
         }
 
-    # 5. Services stopped (10 points)
+    # 6. Services stopped (10 points)
     services_state = state.get("services", {})
     running_services = services_state.get("running_services", [])
 
@@ -185,7 +238,7 @@ def calculate_sleep_score(
             "reason": f"{len(running_services)} services still running",
         }
 
-    # 6. Logs archived (10 points)
+    # 7. Logs archived (10 points)
     log_count = services_state.get("log_files", 0)
 
     if log_count == 0:
@@ -291,6 +344,7 @@ def format_breakdown_table(breakdown: Dict[str, Dict[str, Any]]) -> str:
     check_names = {
         "uncommitted_work_saved": "Uncommitted work saved",
         "branches_cleaned": "Branches cleaned",
+        "session_branches_clean": "Session branches clean",
         "issues_updated": "Issues updated",
         "ci_passing": "CI passing",
         "services_stopped": "Services stopped",

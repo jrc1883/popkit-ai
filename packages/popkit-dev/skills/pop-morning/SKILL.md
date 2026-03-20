@@ -19,16 +19,17 @@ Automated start-of-day setup that ensures optimal development environment before
 
 See [examples/scoring-system.md](examples/scoring-system.md) for complete scoring documentation.
 
-Comprehensive readiness check across 6 dimensions:
+Comprehensive readiness check across 7 dimensions:
 
 | Check                | Points | Criteria                                           |
 | -------------------- | ------ | -------------------------------------------------- |
-| Session Restored     | 20     | Previous session context restored from STATUS.json |
+| Session Restored     | 15     | Previous session context restored from STATUS.json |
 | Services Healthy     | 20     | All required dev services running                  |
 | Dependencies Updated | 15     | Package dependencies up to date                    |
 | Branches Synced      | 15     | Local branch synced with remote                    |
 | PRs Reviewed         | 15     | No PRs waiting for review                          |
-| Issues Triaged       | 15     | All issues assigned/prioritized                    |
+| Issues Triaged       | 10     | All issues assigned/prioritized                    |
+| Session Branches     | 10     | No stale unmerged session branches                 |
 
 **Branch Protection Penalty (Issue #142):**
 
@@ -93,10 +94,43 @@ See [examples/output-format.md](examples/output-format.md) for complete report e
 
 - Ready to Code Score (0-100) with visual indicator and grade
 - Score breakdown table (what contributed to score)
+- Session branches status (active, stale, unmerged)
 - Dev services status (if not all running)
 - Branch sync status (if behind remote)
 - Recommendations (actions before coding)
 - Today's focus (PRs, issues, continuations)
+
+## Session Branches
+
+The morning routine checks for active session branches from the session branching system (see `pop-session-branch` skill). This helps detect leftover investigations from previous sessions.
+
+**Checks performed:**
+
+- **Active branches**: Lists unmerged session branches with their reason and age
+- **Stale branches**: Flags session branches older than 3 days as stale
+- **Current branch**: Shows which session branch is currently active (if not `main`)
+
+**Scoring impact (10 points):**
+
+- 10/10: No unmerged session branches, or all branches < 1 day old
+- 5/10: 1-2 unmerged branches, none older than 3 days
+- 0/10: 3+ unmerged branches or any branch older than 3 days
+
+**Report output example:**
+
+```
+## Session Branches
+
+**Current**: main
+**Active branches**: 2 unmerged
+
+| Branch         | Reason                    | Age    | Status |
+|----------------|---------------------------|--------|--------|
+| auth-bug       | Token expiry investigation | 1 day  | Active |
+| cache-research | Redis vs Memcached spike   | 4 days | STALE  |
+
+Recommendation: Merge or delete stale branch "cache-research" (4 days old)
+```
 
 ## Next Actions (The PopKit Way)
 
@@ -146,6 +180,7 @@ See [examples/usage.md](examples/usage.md) for all usage scenarios.
 ## Related Skills
 
 - **pop-session-resume**: Restores session context (invoked automatically)
+- **pop-session-branch**: Session branching for side investigations
 - **pop-nightly**: Evening counterpart with Sleep Score
 - **pop-routine-optimized**: Optimized execution with caching
 

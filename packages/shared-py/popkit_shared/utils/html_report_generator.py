@@ -365,7 +365,9 @@ def compute_session_token_usage(
 
     total_tokens = total_input + total_output + total_cache_write + total_cache_read
 
-    # Calculate context percentage (assume 200k window)
+    # Calculate context percentage
+    # NOTE (2026-03-19 audit): Default window is 200k; models like Opus 4.6
+    # now support 1M context. This estimate is conservative for standard plans.
     CONTEXT_WINDOW = 200_000
     context_percentage = (total_tokens / CONTEXT_WINDOW) * 100
 

@@ -4,6 +4,19 @@ Chain Metrics Hook
 Tracks workflow execution metrics including timing, success rates, and bottlenecks.
 
 Persists to .claude/chain-metrics.json for persistence across sessions.
+
+AUDIT NOTE (2026-03-19):
+Status: OVER-ENGINEERED / LOW VALUE
+- This hook runs on every Task tool call but the data it collects
+  (workflow run history) is never consumed by any other part of PopKit.
+- The hook writes to ~/.claude/chain-metrics.json, accumulating data
+  that is never pruned in the default path (only pruned per-workflow
+  when runs exceed MAX_RUNS_HISTORY=100).
+- With CC 2.1.79, the built-in session analytics provide similar metrics
+  natively.
+- Recommendation: Keep for now since it is non-blocking and lightweight,
+  but consider removing if no consumers are added. The format_stats_report
+  function is useful but should be a standalone CLI tool, not a hook.
 """
 
 import json
@@ -31,7 +44,7 @@ class ChainMetrics:
                 with open(METRICS_FILE, "r", encoding="utf-8") as f:
                     return json.load(f)
             except (json.JSONDecodeError, IOError):
-                pass
+                pass  # Corrupt or unreadable metrics file; return defaults below
 
         return {"version": "1.0.0", "runs": [], "aggregates": {}}
 

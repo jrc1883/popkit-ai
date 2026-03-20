@@ -29,6 +29,9 @@ __pycache__/
 .venv/
 venv/
 
+# GitHub issue templates (custom YAML that Prettier can't parse)
+.github/ISSUE_TEMPLATE/
+
 # Git
 .git/
 
@@ -40,3 +43,6 @@ venv/
 .claude/
 .popkit/
 logs/
+
+# Scratch workspace files
+.workspace/

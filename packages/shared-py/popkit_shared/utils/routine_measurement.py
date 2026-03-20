@@ -260,13 +260,15 @@ def save_measurement(measurement: RoutineMeasurement, output_dir: Optional[Path]
 
     Args:
         measurement: The measurement data
-        output_dir: Optional output directory (defaults to .claude/popkit/measurements/)
+        output_dir: Optional output directory (defaults to <plugin_data>/measurements/)
 
     Returns:
         Path to saved file
     """
     if output_dir is None:
-        output_dir = Path.cwd() / ".claude" / "popkit" / "measurements"
+        from .plugin_data import get_plugin_data_subdir
+
+        output_dir = get_plugin_data_subdir("measurements")
 
     output_dir.mkdir(parents=True, exist_ok=True)
 

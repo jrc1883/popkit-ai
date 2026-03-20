@@ -44,6 +44,7 @@ from typing import Any, Dict, List, Optional
 
 from popkit_shared.utils.flag_parser import parse_work_args
 from popkit_shared.utils.github_issues import get_workflow_config
+from popkit_shared.utils.plugin_data import get_plugin_data_dir
 
 # Import quality gate hook for phase transitions
 sys.path.insert(0, str(Path(__file__).parent))
@@ -63,7 +64,7 @@ class IssueWorkflowHook:
     def __init__(self):
         self.cwd = Path.cwd()
         self.claude_dir = self.cwd / ".claude"
-        self.popkit_dir = self.claude_dir / "popkit"
+        self.popkit_dir = get_plugin_data_dir()
         self.state_file = self.popkit_dir / "issue-workflow-state.json"
         # Use the REAL Power Mode state file path that statusline.py and checkin-hook.py use
         self.power_mode_state = self.popkit_dir / "power-mode-state.json"
@@ -86,7 +87,7 @@ class IssueWorkflowHook:
             try:
                 return json.loads(self.state_file.read_text())
             except json.JSONDecodeError:
-                pass
+                pass  # Corrupt state file; return default empty state
         return {
             "active_issue": None,
             "current_phase": None,

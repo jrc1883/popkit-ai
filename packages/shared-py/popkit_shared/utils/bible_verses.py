@@ -168,7 +168,11 @@ class VerseSelector:
         """
         self.verses = verses or DEFAULT_VERSES
         self.rotation = rotation
-        self.state_file = state_file or Path(".claude/popkit/verse-state.json")
+        if state_file is None:
+            from .plugin_data import get_plugin_data_dir
+
+            state_file = get_plugin_data_dir() / "verse-state.json"
+        self.state_file = state_file
         self.state = self._load_state()
 
     def _load_state(self) -> dict:
@@ -241,7 +245,9 @@ def load_verse_config() -> dict:
     Returns:
         Config dict with 'enabled', 'rotation', and 'custom_verses'
     """
-    config_file = Path(".claude/popkit/config.json")
+    from .plugin_data import get_plugin_data_dir
+
+    config_file = get_plugin_data_dir() / "config.json"
     if not config_file.exists():
         return {
             "enabled": True,

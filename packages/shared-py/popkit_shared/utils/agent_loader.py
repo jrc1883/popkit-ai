@@ -85,7 +85,7 @@ _FALLBACK_KEYWORD_MAP: Dict[str, List[str]] = {
     "power mode": ["power-coordinator"],
 }
 
-# Tier assignments for all 23 agents
+# Tier assignments for all 24 agents
 TIER_MAP: Dict[str, str] = {
     # Tier 1 (always active)
     "accessibility-guardian": "tier-1-always-active",
@@ -108,6 +108,7 @@ TIER_MAP: Dict[str, str] = {
     "prd-parser": "tier-2-on-demand",
     "rapid-prototyper": "tier-2-on-demand",
     "deployment-validator": "tier-2-on-demand",
+    "devops-automator": "tier-2-on-demand",
     "rollback-specialist": "tier-2-on-demand",
     "researcher": "tier-2-on-demand",
     # Feature Workflow

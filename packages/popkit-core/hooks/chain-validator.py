@@ -8,6 +8,13 @@ Features:
 - Circular dependency detection
 - Output style verification
 - Warning-based approach (don't block, just warn)
+
+AUDIT NOTE (2026-03-19):
+Status: KEEP (lightweight, useful)
+- This hook runs on every Task tool call and validates workflow chains.
+- It never blocks execution (always approves), only warns.
+- Cost is low (reads config files, no network calls).
+- Compatible with CC 2.1.79 - no API changes needed.
 """
 
 import json

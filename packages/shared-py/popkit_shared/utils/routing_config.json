@@ -356,6 +356,27 @@
       "pipeline",
       "workflow coordination",
       "agent coordination"
+    ],
+    "devops-automator": [
+      "devops",
+      "ci/cd",
+      "cicd",
+      "terraform",
+      "infrastructure as code",
+      "iac",
+      "monitoring",
+      "alerting",
+      "grafana",
+      "prometheus",
+      "helm",
+      "ansible",
+      "secrets management",
+      "environment variable",
+      "build pipeline",
+      "github actions",
+      "cloudformation",
+      "nginx",
+      "load balancer"
     ]
   },
   "file_patterns": {

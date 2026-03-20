@@ -87,8 +87,8 @@ class TestConfigLoading:
         assert "file_patterns" in routing_config
         assert "error_patterns" in routing_config
 
-    def test_config_keywords_has_all_23_agents(self, routing_config):
-        """Keywords section must cover all 23 agents."""
+    def test_config_keywords_has_all_24_agents(self, routing_config):
+        """Keywords section must cover all 24 agents."""
         expected_agents = set(TIER_MAP.keys())
         config_agents = set(routing_config["keywords"].keys())
         missing = expected_agents - config_agents
@@ -135,7 +135,7 @@ class TestConfigLoading:
 
 
 class TestKeywordRouting:
-    """Tests for keyword-based agent routing across all 23 agents."""
+    """Tests for keyword-based agent routing across all 24 agents."""
 
     @pytest.mark.parametrize(
         "query,expected_agent",
@@ -829,9 +829,9 @@ class TestMergeResults:
 class TestTierMap:
     """Tests for tier assignments."""
 
-    def test_tier_map_has_23_agents(self):
-        """TIER_MAP should have all 23 agents."""
-        assert len(TIER_MAP) == 23
+    def test_tier_map_has_24_agents(self):
+        """TIER_MAP should have all 24 agents."""
+        assert len(TIER_MAP) == 24
 
     def test_tier1_count(self):
         """Should have 10 Tier 1 agents."""
@@ -839,9 +839,9 @@ class TestTierMap:
         assert len(tier1) == 10
 
     def test_tier2_count(self):
-        """Should have 11 Tier 2 agents."""
+        """Should have 12 Tier 2 agents."""
         tier2 = [a for a, t in TIER_MAP.items() if t == "tier-2-on-demand"]
-        assert len(tier2) == 11
+        assert len(tier2) == 12
 
     def test_feature_workflow_count(self):
         """Should have 2 Feature Workflow agents."""
@@ -849,7 +849,7 @@ class TestTierMap:
         assert len(fw) == 2
 
     def test_all_agents_present(self):
-        """All 23 expected agents should be in TIER_MAP."""
+        """All 24 expected agents should be in TIER_MAP."""
         expected = {
             "accessibility-guardian",
             "api-designer",
@@ -863,6 +863,7 @@ class TestTierMap:
             "test-writer-fixer",
             "bundle-analyzer",
             "dead-code-eliminator",
+            "devops-automator",
             "feature-prioritizer",
             "meta-agent",
             "power-coordinator",

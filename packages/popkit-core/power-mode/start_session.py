@@ -118,7 +118,11 @@ def start_power_mode_session(objective_text: str, issues: list):
     print("\n[OK] Coordination channels initialized")
 
     # Save session state locally
-    state_file = Path.home() / ".claude" / "popkit" / "power-mode-state.json"
+    plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
+    if plugin_data:
+        state_file = Path(plugin_data) / "power-mode-state.json"
+    else:
+        state_file = Path.home() / ".claude" / "popkit" / "power-mode-state.json"
     state_file.parent.mkdir(parents=True, exist_ok=True)
 
     local_state = {

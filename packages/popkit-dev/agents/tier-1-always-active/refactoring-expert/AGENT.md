@@ -22,6 +22,12 @@ output_style: refactoring-report
 model: inherit
 version: 1.0.0
 memory: project
+effort: high
+maxTurns: 40
+disallowedTools:
+  - Bash(rm -rf*)
+  - Bash(git push*)
+  - Bash(git reset*)
 ---
 
 # Refactoring Expert Agent

@@ -31,6 +31,11 @@ output_style: rollback-report
 model: inherit
 version: 1.0.0
 memory: local
+effort: high
+maxTurns: 40
+disallowedTools:
+  - Bash(rm -rf*)
+  - Bash(git reset --hard*)
 ---
 
 # Rollback Specialist Agent

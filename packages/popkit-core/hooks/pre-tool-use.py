@@ -3,6 +3,26 @@
 Global Pre-Tool-Use Hook
 Safety checks, agent coordination, and orchestration before tool execution
 Prevents dangerous operations and coordinates multi-agent workflows
+
+AUDIT NOTE (2026-03-19):
+Status: KEEP but SIMPLIFY over time
+- This is the most critical hook (blocks dangerous operations). Safety
+  checks are essential and well-implemented.
+- OVER-ENGINEERED AREAS:
+  1. Orchestrator HTTP calls (lines 443-472): The orchestrator service at
+     localhost:8005 is never running in standard deployments. These calls
+     silently fail with ~2-3s timeout on every blocked check.
+  2. SQLite context tracking (lines 258-267, 765-807): Writes to
+     context-memory.db on every tool call. With 1M context, the model
+     retains far more context natively.
+  3. Tool filtering (lines 878-927): Currently in "passthrough mode" and
+     never actually filters anything. Consider removing the dead code.
+  4. XML context parsing (lines 504-693): Complex XML/regex parsing for
+     agent routing that adds latency. With 1M context, simpler approaches
+     (e.g., additionalContext strings) work well.
+- The safety checks (lines 322-350) and permission checks (lines 352-372)
+  are the core value and should be preserved.
+- Compatible with CC 2.1.79; uses additionalContext (2.1.9+).
 """
 
 import json
@@ -1134,7 +1154,7 @@ def main():
             "suggested_agent": result.get("suggested_agent"),
         }
 
-        # CC 2.1.9+: Build additionalContext for model reasoning injection
+        # CC 2.1.9+ (verified through 2.1.79): Build additionalContext for model reasoning injection
         context_parts = []
         if result.get("warnings"):
             context_parts.append("Safety warnings: " + "; ".join(result["warnings"]))

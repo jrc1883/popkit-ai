@@ -10,6 +10,13 @@ output_style: code-review-report
 model: inherit
 version: 1.0.0
 memory: project
+effort: medium
+maxTurns: 25
+disallowedTools:
+  - Write
+  - Bash(rm -rf*)
+  - Bash(git push*)
+  - Bash(git reset*)
 ---
 
 # Code Reviewer Agent

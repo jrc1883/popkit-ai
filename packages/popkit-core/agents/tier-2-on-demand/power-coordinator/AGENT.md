@@ -15,6 +15,11 @@ tools:
 model: inherit
 version: 2.0.0
 tier: tier-2-on-demand
+effort: high
+maxTurns: 50
+disallowedTools:
+  - Bash(rm -rf*)
+  - Bash(git reset --hard*)
 ---
 
 # Agent: Power Coordinator (Swarm Lead)

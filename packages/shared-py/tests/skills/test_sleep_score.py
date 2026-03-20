@@ -36,14 +36,16 @@ class TestCalculateSleepScore:
             "git": {"uncommitted_files": 0, "merged_branches": 0},
             "github": {"issues": [], "ci_status": {"conclusion": "success"}},
             "services": {"running_services": [], "log_files": 0},
+            "session_branches": {"branches": []},
             "timestamp": datetime.now().isoformat(),
         }
 
         score, breakdown = calculate_sleep_score(state)
 
         assert score == 100
-        assert breakdown["uncommitted_work_saved"]["points"] == 25
-        assert breakdown["branches_cleaned"]["points"] == 20
+        assert breakdown["uncommitted_work_saved"]["points"] == 20
+        assert breakdown["branches_cleaned"]["points"] == 15
+        assert breakdown["session_branches_clean"]["points"] == 10
         assert breakdown["issues_updated"]["points"] == 20
         assert breakdown["ci_passing"]["points"] == 15
         assert breakdown["services_stopped"]["points"] == 10
@@ -51,6 +53,9 @@ class TestCalculateSleepScore:
 
     def test_zero_score_worst_case(self):
         """Test worst case scenario"""
+        from datetime import timedelta, timezone
+
+        old_date = (datetime.now(timezone.utc) - timedelta(days=10)).isoformat()
         state = {
             "git": {"uncommitted_files": 10, "merged_branches": 5},
             "github": {
@@ -61,6 +66,13 @@ class TestCalculateSleepScore:
                 "running_services": ["postgres", "redis", "elasticsearch"],
                 "log_files": 20,
             },
+            "session_branches": {
+                "branches": [
+                    {"id": "branch-1", "merged": False, "created": old_date},
+                    {"id": "branch-2", "merged": False, "created": old_date},
+                    {"id": "branch-3", "merged": False, "created": old_date},
+                ]
+            },
         }
 
         score, breakdown = calculate_sleep_score(state)
@@ -69,6 +81,7 @@ class TestCalculateSleepScore:
         assert score == 10
         assert breakdown["uncommitted_work_saved"]["points"] == 0
         assert breakdown["branches_cleaned"]["points"] == 0
+        assert breakdown["session_branches_clean"]["points"] == 0
         assert breakdown["issues_updated"]["points"] == 10  # Partial credit
         assert breakdown["ci_passing"]["points"] == 0
         assert breakdown["services_stopped"]["points"] == 0
@@ -91,7 +104,7 @@ class TestCalculateSleepScore:
 
         score, breakdown = calculate_sleep_score(state)
 
-        assert breakdown["uncommitted_work_saved"]["points"] == 25
+        assert breakdown["uncommitted_work_saved"]["points"] == 20
         assert breakdown["uncommitted_work_saved"]["status"] == "✅"
 
     def test_uncommitted_files_present(self):
@@ -110,7 +123,7 @@ class TestCalculateSleepScore:
 
         score, breakdown = calculate_sleep_score(state)
 
-        assert breakdown["branches_cleaned"]["points"] == 20
+        assert breakdown["branches_cleaned"]["points"] == 15
         assert breakdown["branches_cleaned"]["status"] == "✅"
 
     def test_branches_cleaned_has_merged(self):
@@ -322,14 +335,14 @@ class TestFormatBreakdownTable:
         """Test basic table formatting"""
         breakdown = {
             "uncommitted_work_saved": {
-                "points": 25,
-                "max": 25,
+                "points": 20,
+                "max": 20,
                 "status": "✅",
                 "reason": "No uncommitted changes",
             },
             "branches_cleaned": {
                 "points": 0,
-                "max": 20,
+                "max": 15,
                 "status": "❌",
                 "reason": "3 merged branches",
             },
@@ -339,14 +352,15 @@ class TestFormatBreakdownTable:
 
         assert "| Check | Points | Status |" in table
         assert "|-------|--------|--------|" in table
-        assert "| Uncommitted work saved | 25/25 |" in table
-        assert "| Branches cleaned | 0/20 |" in table
+        assert "| Uncommitted work saved | 20/20 |" in table
+        assert "| Branches cleaned | 0/15 |" in table
 
     def test_format_breakdown_all_checks(self):
-        """Test table with all 6 checks"""
+        """Test table with all 7 checks"""
         breakdown = {
-            "uncommitted_work_saved": {"points": 25, "max": 25, "status": "✅", "reason": "OK"},
-            "branches_cleaned": {"points": 20, "max": 20, "status": "✅", "reason": "OK"},
+            "uncommitted_work_saved": {"points": 20, "max": 20, "status": "✅", "reason": "OK"},
+            "branches_cleaned": {"points": 15, "max": 15, "status": "✅", "reason": "OK"},
+            "session_branches_clean": {"points": 10, "max": 10, "status": "✅", "reason": "OK"},
             "issues_updated": {"points": 20, "max": 20, "status": "✅", "reason": "OK"},
             "ci_passing": {"points": 15, "max": 15, "status": "✅", "reason": "OK"},
             "services_stopped": {"points": 10, "max": 10, "status": "✅", "reason": "OK"},
@@ -357,6 +371,7 @@ class TestFormatBreakdownTable:
 
         assert "Uncommitted work saved" in table
         assert "Branches cleaned" in table
+        assert "Session branches clean" in table
         assert "Issues updated" in table
         assert "CI passing" in table
         assert "Services stopped" in table

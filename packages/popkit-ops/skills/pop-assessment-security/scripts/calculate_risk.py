@@ -108,7 +108,7 @@ def get_version(plugin_dir: Path) -> str:
                 data = json.load(f)
                 return data.get("version", "unknown")
         except Exception:
-            pass
+            pass  # Corrupt plugin.json; report version as unknown
     return "unknown"
 
 

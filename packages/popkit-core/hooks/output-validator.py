@@ -4,6 +4,13 @@ Output Validator Hook
 Validates agent outputs against their declared output_style schema.
 
 Part of the popkit plugin output validation layer.
+
+AUDIT NOTE (2026-03-19):
+Status: KEEP (useful for agent output quality)
+- Only runs on SubagentStop events (infrequent).
+- Validates agent markdown output against JSON schemas.
+- The regex-based field extraction is fragile but functional.
+- Compatible with CC 2.1.79.
 """
 
 import json

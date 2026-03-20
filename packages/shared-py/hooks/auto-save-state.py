@@ -76,7 +76,7 @@ def get_project_name(cwd):
                 data = json.load(f)
                 return data.get("name", cwd_path.name)
         except Exception:
-            pass
+            pass  # Corrupt package.json; try other sources
 
     # Try pyproject.toml
     pyproject = cwd_path / "pyproject.toml"

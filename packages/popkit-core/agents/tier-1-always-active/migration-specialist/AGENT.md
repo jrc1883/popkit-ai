@@ -29,6 +29,12 @@ output_style: migration-report
 model: inherit
 version: 1.0.0
 memory: project
+effort: medium
+maxTurns: 25
+disallowedTools:
+  - Bash(rm -rf*)
+  - Bash(git push*)
+  - Bash(git reset*)
 ---
 
 # Migration Specialist Agent
