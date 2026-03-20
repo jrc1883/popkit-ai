@@ -188,8 +188,9 @@ def main():
     """Main entry point -- JSON stdin/stdout protocol."""
     try:
         input_text = sys.stdin.read()
-        # Parse input (PostCompact event payload)
-        input_data = json.loads(input_text) if input_text.strip() else {}
+        # Validate JSON input (PostCompact event payload); content not needed
+        if input_text.strip():
+            json.loads(input_text)
 
         # Read compaction log from pre-compact.py
         events, latest_entry = read_compaction_log()

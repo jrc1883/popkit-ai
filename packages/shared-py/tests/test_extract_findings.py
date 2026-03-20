@@ -250,9 +250,8 @@ class TestExtractLinks:
         """HTML anchor tags are extracted."""
         links = extract_links(SAMPLE_HTML)
 
-        urls = [l["url"] for l in links]
-        assert "https://example.com" in urls
-        assert "https://other.com" in urls
+        urls = {l["url"] for l in links}
+        assert urls == {"https://example.com", "https://other.com"}
 
     def test_multiple_markdown_links(self):
         """Multiple markdown links on the same or different lines are found."""
@@ -278,8 +277,7 @@ class TestExtractLinks:
 
         assert len(links) == 2
         urls = {l["url"] for l in links}
-        assert "https://md.com" in urls
-        assert "https://html.com" in urls
+        assert urls == {"https://md.com", "https://html.com"}
 
 
 # =============================================================================

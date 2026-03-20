@@ -153,8 +153,6 @@ def generate_dockerfile(
     project_name: str, config: dict[str, Any], template: str
 ) -> str:
     """Generate Dockerfile content based on project config."""
-    docker_config = config.get("config", {})
-
     if template == "minimal":
         return """FROM node:20-alpine
 WORKDIR /app
