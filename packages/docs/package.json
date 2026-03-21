@@ -19,11 +19,11 @@
   "author": "Joseph Cannon",
   "license": "MIT",
   "engines": {
-    "node": ">=20.3.0",
+    "node": ">=22.12.0",
     "npm": ">=9.6.5"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.37.6",
-    "astro": "^5.17.2"
+    "@astrojs/starlight": "^0.38.1",
+    "astro": "^6.0.4"
   }
 }
