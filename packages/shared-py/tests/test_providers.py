@@ -201,9 +201,13 @@ class TestGenericMCPAdapter:
         with patch.dict(os.environ, {"POPKIT_HOME": str(tmp_path)}):
             result = adapter.generate_config(tmp_path / "packages", output_dir)
 
-        assert len(result) == 2
+        assert len(result) == 6  # mcp-config, sh, bat, systemd, launchd, dockerfile
         assert any("mcp-config.json" in str(p) for p in result)
-        assert any("start-mcp-server" in str(p) for p in result)
+        assert any("start-mcp-server.sh" in str(p) for p in result)
+        assert any("start-mcp-server.bat" in str(p) for p in result)
+        assert any("popkit-mcp.service" in str(p) for p in result)
+        assert any("com.popkit.mcp.plist" in str(p) for p in result)
+        assert any("Dockerfile" in str(p) for p in result)
 
     def test_install_creates_symlink(self, tmp_path):
         """Install creates symlink in POPKIT_HOME/packages/."""
