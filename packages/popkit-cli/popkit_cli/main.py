@@ -1,0 +1,152 @@
+#!/usr/bin/env python3
+"""
+PopKit CLI Entry Point
+
+Main CLI for managing PopKit packages and provider integrations.
+
+Commands:
+    popkit install [package]    Install packages to ~/.popkit/
+    popkit provider list        Show detected AI coding tool providers
+    popkit provider wire        Auto-detect tools, generate configs
+    popkit mcp start            Launch the MCP server
+    popkit status               Show system status
+    popkit version              Show version info
+"""
+
+import argparse
+import sys
+
+from . import __version__
+
+
+def cmd_install(args: argparse.Namespace) -> int:
+    """Install PopKit packages to POPKIT_HOME."""
+    from .commands.install import run_install
+
+    return run_install(args)
+
+
+def cmd_provider(args: argparse.Namespace) -> int:
+    """Manage provider integrations."""
+    from .commands.provider import run_provider
+
+    return run_provider(args)
+
+
+def cmd_mcp(args: argparse.Namespace) -> int:
+    """MCP server management."""
+    from .commands.mcp import run_mcp
+
+    return run_mcp(args)
+
+
+def cmd_status(args: argparse.Namespace) -> int:
+    """Show system status."""
+    from .commands.status import run_status
+
+    return run_status(args)
+
+
+def cmd_version(args: argparse.Namespace) -> int:
+    """Show version information."""
+    print(f"popkit {__version__}")
+    return 0
+
+
+def build_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser."""
+    parser = argparse.ArgumentParser(
+        prog="popkit",
+        description="PopKit - LLM-agnostic developer orchestration engine",
+    )
+    parser.add_argument("--version", action="version", version=f"popkit {__version__}")
+
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+
+    # install
+    install_parser = subparsers.add_parser("install", help="Install PopKit packages to ~/.popkit/")
+    install_parser.add_argument(
+        "package",
+        nargs="?",
+        default=None,
+        help="Package name or path to install (default: all packages)",
+    )
+    install_parser.add_argument(
+        "--source",
+        type=str,
+        default=None,
+        help="Source directory containing packages (default: auto-detect)",
+    )
+    install_parser.set_defaults(func=cmd_install)
+
+    # provider
+    provider_parser = subparsers.add_parser(
+        "provider", help="Manage AI coding tool provider integrations"
+    )
+    provider_sub = provider_parser.add_subparsers(dest="provider_command", help="Provider commands")
+
+    # provider list
+    provider_list = provider_sub.add_parser("list", help="Show detected providers")
+    provider_list.set_defaults(func=cmd_provider)
+
+    # provider wire
+    provider_wire = provider_sub.add_parser(
+        "wire", help="Auto-detect tools, generate provider configs"
+    )
+    provider_wire.add_argument(
+        "--provider",
+        type=str,
+        default=None,
+        help="Wire a specific provider only",
+    )
+    provider_wire.set_defaults(func=cmd_provider)
+
+    # mcp
+    mcp_parser = subparsers.add_parser("mcp", help="MCP server management")
+    mcp_sub = mcp_parser.add_subparsers(dest="mcp_command", help="MCP commands")
+
+    # mcp start
+    mcp_start = mcp_sub.add_parser("start", help="Start the MCP server")
+    mcp_start.add_argument(
+        "--transport",
+        choices=["stdio", "sse", "streamable-http"],
+        default="stdio",
+        help="MCP transport protocol (default: stdio)",
+    )
+    mcp_start.add_argument(
+        "--port",
+        type=int,
+        default=8080,
+        help="Port for HTTP transports (default: 8080)",
+    )
+    mcp_start.set_defaults(func=cmd_mcp)
+
+    # status
+    status_parser = subparsers.add_parser("status", help="Show system status")
+    status_parser.set_defaults(func=cmd_status)
+
+    # version
+    version_parser = subparsers.add_parser("version", help="Show version info")
+    version_parser.set_defaults(func=cmd_version)
+
+    return parser
+
+
+def main() -> int:
+    """CLI entry point."""
+    parser = build_parser()
+    args = parser.parse_args()
+
+    if not args.command:
+        parser.print_help()
+        return 0
+
+    if hasattr(args, "func"):
+        return args.func(args)
+
+    parser.print_help()
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

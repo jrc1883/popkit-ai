@@ -269,7 +269,7 @@ jobs:
         run: |
           echo "Checking package documentation..."
 
-          for PLUGIN in popkit-core popkit-dev popkit-ops popkit-research; do
+          for PLUGIN in popkit-core popkit-dev popkit-ops popkit-research popkit-mcp popkit-cli; do
             README="packages/$PLUGIN/README.md"
             if [ ! -f "$README" ]; then
               echo "❌ Missing: $README"

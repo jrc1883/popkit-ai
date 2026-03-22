@@ -1,0 +1,29 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "popkit-mcp"
+version = "1.0.0"
+description = "PopKit MCP Server - exposes skills, agents, and commands as MCP tools"
+authors = ["Joseph Cannon <joseph@thehouseofdeals.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "popkit_mcp"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+mcp = "^1.12.0"
+pyyaml = "^6.0"
+popkit-shared = {path = "../shared-py", develop = true}
+
+[tool.poetry.scripts]
+popkit-mcp-server = "popkit_mcp.server:main"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]
