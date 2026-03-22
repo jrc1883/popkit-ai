@@ -23,10 +23,14 @@ def _ensure_registered() -> None:
         return
 
     from .claude_code import ClaudeCodeAdapter
+    from .codex import CodexAdapter
+    from .copilot import CopilotAdapter
     from .cursor import CursorAdapter
     from .generic_mcp import GenericMCPAdapter
 
     register_adapter(ClaudeCodeAdapter)
+    register_adapter(CodexAdapter)
+    register_adapter(CopilotAdapter)
     register_adapter(CursorAdapter)
     register_adapter(GenericMCPAdapter)
 

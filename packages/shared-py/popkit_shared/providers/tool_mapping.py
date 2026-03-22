@@ -66,6 +66,37 @@ CURSOR_MAPPINGS: List[ToolMapping] = [
 ]
 
 # =============================================================================
+# Codex CLI Tool Mappings
+# =============================================================================
+
+CODEX_MAPPINGS: List[ToolMapping] = [
+    ToolMapping(ToolCategory.FILE_READ, "Read"),
+    ToolMapping(ToolCategory.FILE_WRITE, "Write"),
+    ToolMapping(ToolCategory.FILE_EDIT, "Edit"),
+    ToolMapping(ToolCategory.FILE_SEARCH, "Glob"),
+    ToolMapping(ToolCategory.CODE_SEARCH, "Grep"),
+    ToolMapping(ToolCategory.CODE_EXECUTE, "Bash"),
+    ToolMapping(ToolCategory.SHELL, "Bash"),
+    ToolMapping(ToolCategory.SHELL_BACKGROUND, "Bash", {"run_in_background": True}),
+    ToolMapping(ToolCategory.WEB_FETCH, "web_fetch"),
+]
+
+# =============================================================================
+# GitHub Copilot Tool Mappings (MCP-based, similar to Cursor)
+# =============================================================================
+
+COPILOT_MAPPINGS: List[ToolMapping] = [
+    ToolMapping(ToolCategory.FILE_READ, "read_file"),
+    ToolMapping(ToolCategory.FILE_WRITE, "write_file"),
+    ToolMapping(ToolCategory.FILE_EDIT, "edit_file"),
+    ToolMapping(ToolCategory.FILE_SEARCH, "search_files"),
+    ToolMapping(ToolCategory.CODE_SEARCH, "search_code"),
+    ToolMapping(ToolCategory.CODE_EXECUTE, "run_terminal_cmd"),
+    ToolMapping(ToolCategory.SHELL, "run_terminal_cmd"),
+    ToolMapping(ToolCategory.WEB_FETCH, "web_fetch"),
+]
+
+# =============================================================================
 # Helper Functions
 # =============================================================================
 
@@ -83,6 +114,8 @@ def get_mappings_for_provider(provider_name: str) -> List[ToolMapping]:
         "claude-code": CLAUDE_CODE_MAPPINGS,
         "generic-mcp": GENERIC_MCP_MAPPINGS,
         "cursor": CURSOR_MAPPINGS,
+        "codex": CODEX_MAPPINGS,
+        "copilot": COPILOT_MAPPINGS,
     }
     return registry.get(provider_name, [])
 
