@@ -3,13 +3,16 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "popkit-mcp"
+name = "popkit"
 version = "1.0.0"
-description = "PopKit MCP Server - exposes skills, agents, and commands as MCP tools"
+description = "PopKit - LLM-agnostic developer orchestration engine"
 authors = ["Joseph Cannon <joseph@thehouseofdeals.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "popkit_mcp"}]
+packages = [
+    {include = "popkit_cli", from = "packages/popkit-cli"},
+    {include = "popkit_shared", from = "packages/shared-py"},
+]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -25,23 +28,14 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.11"
-mcp = "^1.12.0"
 pyyaml = "^6.0"
-popkit-shared = {version = "^1.0.0", optional = true}
+filelock = "^3.13.0"
 
 [tool.poetry.extras]
-full = ["popkit-shared"]
+# pip install popkit[mcp]  — includes MCP server
+mcp = ["mcp"]
+# pip install popkit[full]  — everything
+full = ["mcp", "lxml"]
 
 [tool.poetry.scripts]
-# uvx popkit-mcp  — standard MCP convention
-popkit-mcp = "popkit_mcp.server:main"
-# Also support the longer name
-popkit-mcp-server = "popkit_mcp.server:main"
-
-[tool.ruff]
-target-version = "py311"
-line-length = 100
-
-[tool.ruff.lint]
-select = ["E", "F", "I"]
-ignore = ["E501"]
+popkit = "popkit_cli.main:main"

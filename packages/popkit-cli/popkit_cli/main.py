@@ -47,6 +47,13 @@ def cmd_status(args: argparse.Namespace) -> int:
     return run_status(args)
 
 
+def cmd_update(args: argparse.Namespace) -> int:
+    """Update PopKit packages."""
+    from .commands.update import run_update
+
+    return run_update(args)
+
+
 def cmd_version(args: argparse.Namespace) -> int:
     """Show version information."""
     print(f"popkit {__version__}")
@@ -120,6 +127,10 @@ def build_parser() -> argparse.ArgumentParser:
         help="Port for HTTP transports (default: 8080)",
     )
     mcp_start.set_defaults(func=cmd_mcp)
+
+    # update
+    update_parser = subparsers.add_parser("update", help="Update PopKit packages")
+    update_parser.set_defaults(func=cmd_update)
 
     # status
     status_parser = subparsers.add_parser("status", help="Show system status")
