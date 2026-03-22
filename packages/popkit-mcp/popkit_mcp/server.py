@@ -70,8 +70,8 @@ class ContentCache:
                 current_mtime = path.stat().st_mtime
                 if current_mtime <= cached_mtime:
                     return cached_content
-            except OSError:
-                pass
+            except OSError as exc:
+                logger.debug("ContentCache.get: stat failed for %s: %s", path, exc)
         return None
 
     def put(self, path: Path, content: str) -> None:
@@ -79,8 +79,8 @@ class ContentCache:
         try:
             mtime = path.stat().st_mtime
             self._cache[str(path)] = (mtime, content)
-        except OSError:
-            pass
+        except OSError as exc:
+            logger.debug("ContentCache.put: stat failed for %s: %s", path, exc)
 
     def invalidate(self) -> None:
         """Clear the entire cache."""

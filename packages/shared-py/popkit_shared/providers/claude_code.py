@@ -143,5 +143,5 @@ class ClaudeCodeAdapter(ProviderAdapter):
                     settings = json.load(f)
                 return settings.get("version")
         except (json.JSONDecodeError, IOError):
-            pass
+            pass  # Version detection is best-effort; settings may not exist or be readable
         return None

@@ -98,13 +98,13 @@ class ProviderAdapter(ABC):
     @abstractmethod
     def name(self) -> str:
         """Provider identifier (e.g., 'claude-code', 'cursor')."""
-        ...
+        raise NotImplementedError
 
     @property
     @abstractmethod
     def display_name(self) -> str:
         """Human-readable provider name."""
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     def detect(self) -> ProviderInfo:
@@ -113,7 +113,7 @@ class ProviderAdapter(ABC):
         Returns:
             ProviderInfo with detection results
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     def generate_config(self, package_dir: Path, output_dir: Path) -> List[Path]:
@@ -129,7 +129,7 @@ class ProviderAdapter(ABC):
         Returns:
             List of generated file paths
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     def get_tool_mappings(self) -> List[ToolMapping]:
@@ -140,7 +140,7 @@ class ProviderAdapter(ABC):
         Returns:
             List of ToolMapping instances
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     def install(self, package_dir: Path) -> bool:
@@ -155,7 +155,7 @@ class ProviderAdapter(ABC):
         Returns:
             True if installation succeeded
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     def uninstall(self, package_name: str) -> bool:
@@ -169,7 +169,7 @@ class ProviderAdapter(ABC):
         Returns:
             True if uninstallation succeeded
         """
-        ...
+        raise NotImplementedError
 
     def map_tool(self, category: ToolCategory) -> Optional[ToolMapping]:
         """Map an abstract tool category to this provider's tool.

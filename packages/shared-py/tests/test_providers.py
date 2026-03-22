@@ -40,7 +40,7 @@ class TestToolCategory:
 
     def test_all_categories_are_strings(self):
         """All categories have string values."""
-        for cat in ToolCategory:
+        for cat in list(ToolCategory):
             assert isinstance(cat.value, str)
 
     def test_key_categories_exist(self):

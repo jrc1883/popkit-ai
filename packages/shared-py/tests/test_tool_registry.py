@@ -11,7 +11,7 @@ MCP_PKG = Path(__file__).parent.parent.parent / "popkit-mcp"
 if str(MCP_PKG) not in sys.path:
     sys.path.insert(0, str(MCP_PKG))
 
-from popkit_mcp.tool_registry import (
+from popkit_mcp.tool_registry import (  # noqa: E402
     _parse_frontmatter,
     build_registry,
     scan_agents,

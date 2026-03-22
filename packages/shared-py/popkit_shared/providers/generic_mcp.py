@@ -189,9 +189,9 @@ exit 1
         with open(path, "w", encoding="utf-8", newline="\n") as f:
             f.write(script)
         try:
-            os.chmod(path, 0o755)
+            os.chmod(path, 0o700)
         except OSError:
-            pass
+            pass  # chmod not supported on all platforms (e.g., Windows)
 
     def _write_windows_startup(self, path: Path) -> None:
         """Write Windows startup script."""

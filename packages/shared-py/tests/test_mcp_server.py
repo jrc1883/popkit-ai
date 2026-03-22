@@ -15,7 +15,7 @@ MCP_PKG = Path(__file__).parent.parent.parent / "popkit-mcp"
 if str(MCP_PKG) not in sys.path:
     sys.path.insert(0, str(MCP_PKG))
 
-from popkit_mcp.server import ContentCache, _validate_command, create_server
+from popkit_mcp.server import ContentCache, _validate_command, create_server  # noqa: E402
 
 # =============================================================================
 # ContentCache Tests

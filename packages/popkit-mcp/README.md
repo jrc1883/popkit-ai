@@ -4,13 +4,13 @@ Standalone MCP server that exposes PopKit skills, agents, and commands as MCP to
 
 ## MCP Tools
 
-| Tool | Description |
-|------|-------------|
-| `popkit/run_skill` | Invoke any PopKit skill by name |
-| `popkit/spawn_agent` | Start an agent with a task |
-| `popkit/power_mode` | Orchestrate multi-agent workflows |
-| `popkit/get_context` | Retrieve project context |
-| `popkit/health_check` | System status and diagnostics |
+| Tool                  | Description                       |
+| --------------------- | --------------------------------- |
+| `popkit/run_skill`    | Invoke any PopKit skill by name   |
+| `popkit/spawn_agent`  | Start an agent with a task        |
+| `popkit/power_mode`   | Orchestrate multi-agent workflows |
+| `popkit/get_context`  | Retrieve project context          |
+| `popkit/health_check` | System status and diagnostics     |
 
 ## Usage
 
