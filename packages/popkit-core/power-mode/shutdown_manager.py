@@ -10,6 +10,7 @@ import asyncio
 import inspect
 import json
 import logging
+import os
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -103,9 +104,7 @@ class GracefulShutdownManager:
         )
         self.sent_requests[agent] = message
 
-        logger.debug(
-            "Sending shutdown request to %s (request_id=%s)", agent, message.request_id
-        )
+        logger.debug("Sending shutdown request to %s (request_id=%s)", agent, message.request_id)
 
         if self.lifecycle:
             state = self.lifecycle.get_state(agent)
@@ -156,9 +155,7 @@ class GracefulShutdownManager:
         for agent in agents:
             proc = self.processes.get(agent)
             if proc is None:
-                logger.warning(
-                    "No process handle found for agent %s; marking as exited", agent
-                )
+                logger.warning("No process handle found for agent %s; marking as exited", agent)
                 summary.events.append(f"missing-process:{agent}")
                 self._mark_exited(agent)
                 continue
@@ -266,9 +263,7 @@ class GracefulShutdownManager:
             try:
                 state = json.loads(self.state_file.read_text(encoding="utf-8"))
             except json.JSONDecodeError:
-                logger.warning(
-                    "State file is not valid JSON; rebuilding %s", self.state_file
-                )
+                logger.warning("State file is not valid JSON; rebuilding %s", self.state_file)
                 state = {}
 
         state["active"] = False
