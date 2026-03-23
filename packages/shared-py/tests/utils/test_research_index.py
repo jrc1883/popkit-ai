@@ -422,7 +422,7 @@ class TestEmbedEntry:
             ),
             patch.dict("os.environ", {"VOYAGE_API_KEY": "test-key"}),
         ):
-            result = manager.embed_entry(eid, force=True)
+            manager.embed_entry(eid, force=True)
             mock_client.embed_document.assert_called_once()
             assert not hasattr(mock_client, "embed_text") or not mock_client.embed_text.called
 
