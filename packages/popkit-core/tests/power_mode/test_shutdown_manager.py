@@ -33,9 +33,7 @@ class AsyncProcess:
 
 def test_shutdown_graceful_exit_updates_state_file(tmp_path):
     state_file = tmp_path / "power-mode-state.json"
-    state_file.write_text(
-        json.dumps({"active": True, "session_id": "abc"}), encoding="utf-8"
-    )
+    state_file.write_text(json.dumps({"active": True, "session_id": "abc"}), encoding="utf-8")
 
     lifecycle = AgentLifecycle()
     lifecycle.set_state("agent-1", AgentState.SPAWNED)

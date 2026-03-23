@@ -1,0 +1,58 @@
+name: popkit-ops
+version: 1.0.0-beta.11
+description: >-
+  PopKit operations plugin - quality assurance, deployment, and debugging workflows
+author:
+  name: Joseph Cannon
+  email: joseph@thehouseofdeals.com
+license: MIT
+repository: https://github.com/jrc1883/popkit-claude
+
+agents:
+  # Tier 1: Always Active
+  - path: agents/tier-1-always-active/bug-whisperer
+    tier: always-active
+    capabilities: [file_read, code_search, file_edit, shell, web_fetch, file_write]
+  - path: agents/tier-1-always-active/performance-optimizer
+    tier: always-active
+    capabilities: [file_read, code_search, file_search, shell, web_fetch, file_write, file_edit]
+  - path: agents/tier-1-always-active/security-auditor
+    tier: always-active
+    capabilities: [file_read, code_search, file_search, shell, web_fetch, file_write, file_edit]
+  - path: agents/tier-1-always-active/test-writer-fixer
+    tier: always-active
+    capabilities: [file_read, file_write, file_edit, code_search, file_search, shell]
+
+  # Tier 2: On Demand
+  - path: agents/tier-2-on-demand/deployment-validator
+    tier: on-demand
+    capabilities: [file_read, code_search, file_write, shell, web_fetch, file_edit]
+  - path: agents/tier-2-on-demand/devops-automator
+    tier: on-demand
+    capabilities: [file_read, file_write, file_edit, code_search, file_search, shell, web_fetch]
+  - path: agents/tier-2-on-demand/rollback-specialist
+    tier: on-demand
+    capabilities: [file_read, file_write, file_edit, shell, web_fetch]
+
+skills:
+  - path: skills/pop-assessment-anthropic
+  - path: skills/pop-assessment-architecture
+  - path: skills/pop-assessment-performance
+  - path: skills/pop-assessment-security
+  - path: skills/pop-assessment-ux
+  - path: skills/pop-benchmark-runner
+  - path: skills/pop-code-review
+  - path: skills/pop-deploy-execute
+  - path: skills/pop-deploy-init
+  - path: skills/pop-deploy-rollback
+  - path: skills/pop-deploy-setup
+  - path: skills/pop-deploy-validate
+  - path: skills/pop-systematic-debugging
+
+commands:
+  - path: commands/assess.md
+  - path: commands/audit.md
+  - path: commands/benchmark.md
+  - path: commands/debug.md
+  - path: commands/deploy.md
+  - path: commands/security.md

@@ -1,0 +1,71 @@
+name: popkit-dev
+version: 1.0.0-beta.11
+description: >-
+  Complete development workflow plugin - feature development, git operations,
+  GitHub management, and daily routines
+author:
+  name: Joseph Cannon
+  email: joseph@thehouseofdeals.com
+license: MIT
+repository: https://github.com/jrc1883/popkit-claude
+
+agents:
+  # Feature Workflow
+  - path: agents/feature-workflow/code-architect
+    tier: on-demand
+    capabilities: [file_read, code_search, file_search, file_write, file_edit]
+  - path: agents/feature-workflow/code-explorer
+    tier: on-demand
+    capabilities: [file_read, code_search, file_search, file_write, file_edit]
+
+  # Tier 1: Always Active
+  - path: agents/tier-1-always-active/code-reviewer
+    tier: always-active
+    capabilities: [file_read, code_search, file_search, file_edit, file_write]
+  - path: agents/tier-1-always-active/refactoring-expert
+    tier: always-active
+    capabilities: [file_read, file_edit, code_search, file_search, shell, file_write]
+
+  # Tier 2: On Demand
+  - path: agents/tier-2-on-demand/merge-conflict-resolver
+    tier: on-demand
+    capabilities: [file_read, file_write, file_edit, shell, code_search, task_manage]
+  - path: agents/tier-2-on-demand/prd-parser
+    tier: on-demand
+    capabilities: [file_read, file_write, code_search, file_search, shell, web_search]
+  - path: agents/tier-2-on-demand/rapid-prototyper
+    tier: on-demand
+    capabilities: [file_read, file_write, file_edit, code_search, file_search, shell, web_fetch]
+
+skills:
+  - path: skills/pop-brainstorming
+  - path: skills/pop-changelog-automation
+  - path: skills/pop-complexity-analyzer
+  - path: skills/pop-context-restore
+  - path: skills/pop-executing-plans
+  - path: skills/pop-finish-branch
+  - path: skills/pop-morning
+  - path: skills/pop-next-action
+  - path: skills/pop-nightly
+  - path: skills/pop-routine-measure
+  - path: skills/pop-routine-optimized
+  - path: skills/pop-session-branch
+  - path: skills/pop-session-capture
+  - path: skills/pop-session-resume
+  - path: skills/pop-worktree-manager
+  - path: skills/pop-worktrees
+  - path: skills/pop-writing-plans
+
+commands:
+  - path: commands/dev.md
+  - path: commands/git.md
+  - path: commands/issue.md
+  - path: commands/milestone.md
+  - path: commands/next.md
+  - path: commands/routine.md
+  - path: commands/worktree.md
+
+hooks:
+  post_tool_use:
+    - script: hooks/post-tool-use.py
+      matcher: [shell]

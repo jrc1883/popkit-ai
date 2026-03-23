@@ -8,6 +8,8 @@
     "packages/popkit-dev",
     "packages/popkit-ops",
     "packages/popkit-research",
+    "packages/popkit-mcp",
+    "packages/popkit-cli",
     "packages/shared-py",
     "packages/docs"
   ],

@@ -1,0 +1,23 @@
+name: popkit-research
+version: 1.0.0-beta.11
+description: >-
+  PopKit research plugin - knowledge management and research workflows
+author:
+  name: Joseph Cannon
+  email: joseph@thehouseofdeals.com
+license: MIT
+repository: https://github.com/jrc1883/popkit-claude
+
+agents:
+  - path: agents/tier-2-on-demand/researcher
+    tier: on-demand
+    capabilities: [file_read, code_search, file_search, web_fetch, web_search, file_write, file_edit]
+
+skills:
+  - path: skills/pop-knowledge-lookup
+  - path: skills/pop-research-capture
+  - path: skills/pop-research-merge
+
+commands:
+  - path: commands/knowledge.md
+  - path: commands/research.md

@@ -32,6 +32,12 @@ jobs:
           cd packages/shared-py
           ruff check .
 
+      - name: Run ruff check (popkit-mcp)
+        run: ruff check packages/popkit-mcp/ --config packages/shared-py/pyproject.toml
+
+      - name: Run ruff check (popkit-cli)
+        run: ruff check packages/popkit-cli/ --config packages/shared-py/pyproject.toml
+
       - name: Run ruff check (hook scripts)
         run: ruff check packages/popkit-core/hooks/ packages/popkit-dev/hooks/ --config packages/shared-py/pyproject.toml
 
@@ -56,6 +62,9 @@ jobs:
         run: |
           cd packages/shared-py
           ruff format --check .
+
+      - name: Check Python formatting (popkit-mcp, popkit-cli)
+        run: ruff format --check packages/popkit-mcp/ packages/popkit-cli/ --config packages/shared-py/pyproject.toml
 
       - name: Check Python formatting (hook scripts)
         run: ruff format --check packages/popkit-core/hooks/ packages/popkit-dev/hooks/ --config packages/shared-py/pyproject.toml

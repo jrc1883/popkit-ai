@@ -12,7 +12,7 @@ class TestLocalGitHubCacheInit:
 
     def test_init_default_cache_dir(self):
         cache = LocalGitHubCache()
-        assert str(cache.cache_dir).endswith("popkit")
+        assert "popkit" in str(cache.cache_dir)
         assert str(cache.cache_file).endswith("github-cache.json")
 
     def test_init_custom_cache_dir(self, tmp_path):

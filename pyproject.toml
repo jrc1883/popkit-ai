@@ -1,0 +1,41 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "popkit"
+version = "1.0.0"
+description = "PopKit - LLM-agnostic developer orchestration engine"
+authors = ["Joseph Cannon <joseph@thehouseofdeals.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [
+    {include = "popkit_cli", from = "packages/popkit-cli"},
+    {include = "popkit_shared", from = "packages/shared-py"},
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+[tool.poetry.urls]
+"Homepage" = "https://github.com/jrc1883/popkit-claude"
+"Repository" = "https://github.com/jrc1883/popkit-claude"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pyyaml = "^6.0"
+filelock = "^3.13.0"
+
+[tool.poetry.extras]
+# pip install popkit[mcp]  — includes MCP server
+mcp = ["mcp"]
+# pip install popkit[full]  — everything
+full = ["mcp", "lxml"]
+
+[tool.poetry.scripts]
+popkit = "popkit_cli.main:main"
