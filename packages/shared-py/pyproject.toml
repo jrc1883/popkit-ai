@@ -71,6 +71,7 @@ ignore = [
 # UP017 (datetime.UTC) has ~30 usages, fix incrementally
 [tool.ruff.lint.per-file-ignores]
 "hooks/*.py" = ["S110"]                    # Hooks are intentionally best-effort
+"**/hooks/*.py" = ["S110"]                 # Also match when linted from repo root
 "tests/**/*.py" = ["S110", "UP017"]        # Test helpers — fix incrementally
 "popkit_shared/utils/*.py" = ["S110", "UP017"]  # Legacy utils — fix incrementally
 "popkit_shared/storage/*.py" = ["S110"]    # Storage layer — best-effort patterns
