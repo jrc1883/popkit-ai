@@ -176,11 +176,13 @@ class TestEmbeddingStoreCRUD:
 
     def test_delete(self, store, sample_record):
         store.store(sample_record)
-        assert store.delete("test-1") is True
+        deleted = store.delete("test-1")
+        assert deleted is True
         assert store.get("test-1") is None
 
     def test_delete_nonexistent(self, store):
-        assert store.delete("nonexistent") is False
+        deleted = store.delete("nonexistent")
+        assert deleted is False
 
     def test_delete_by_source_type(self, store, sample_records):
         for r in sample_records:

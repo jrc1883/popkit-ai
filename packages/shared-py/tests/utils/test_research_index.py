@@ -221,12 +221,14 @@ class TestCRUD:
 
     def test_delete(self, manager, sample_entry):
         eid = manager.create(sample_entry)
-        assert manager.delete(eid) is True
+        deleted = manager.delete(eid)
+        assert deleted is True
         assert manager.get(eid) is None
         assert len(manager.list()) == 0
 
     def test_delete_nonexistent(self, manager):
-        assert manager.delete("r999") is False
+        deleted = manager.delete("r999")
+        assert deleted is False
 
     def test_delete_cleans_indexes(self, manager, sample_entry):
         eid = manager.create(sample_entry)
