@@ -242,7 +242,7 @@ PopKit is modular. Install what you need:
 
 ## Status
 
-**Version:** 1.0.0-beta.11
+**Version:** 1.0.0-beta.12
 **Status:** Public beta — core features stable, actively improving
 
 ---

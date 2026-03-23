@@ -4,6 +4,40 @@ All notable changes to PopKit are documented in this file.
 
 **Versioning:** PopKit uses semantic versioning. Currently in preview (0.x) until stable public launch.
 
+## [1.0.0-beta.12] - 2026-03-22
+
+### Added
+
+- **PopKit v2.0 Foundation** (#333): LLM-agnostic orchestration engine
+  - MCP Server (`popkit-mcp`): 8 tools exposing 50 skills, 24 agents, 25 commands to any MCP client
+  - Provider Abstraction Layer: 5 adapters (Claude Code, Cursor, Codex CLI, Copilot, generic MCP)
+  - CLI Skeleton (`popkit-cli`): install, provider list/wire, mcp start, status, update
+  - Cross-platform POPKIT_HOME resolution (Linux XDG, macOS, Windows APPDATA)
+  - Universal `popkit-package.yaml` manifests for all 4 plugin packages
+  - Hook protocol normalization with provider-aware `respond_continue/deny/ask`
+  - Cursor safety rules generation (`.cursorrules` from agent definitions)
+  - Codex CLI TOML config + AGENTS.md generation
+  - Copilot JSON config (handles `mcpServers` vs `servers` root key difference)
+  - Generic MCP: systemd, launchd, Docker deployment artifacts
+  - pip install infrastructure: `popkit[full]` meta-package, `uvx popkit-mcp` standalone
+  - 218 new tests (1747 total), 24 end-to-end integration tests
+  - Design document: `.claude/plans/2026-03-21-v2-phases-2-4-design.md`
+
+### Changed
+
+- **Python 3.11+ modernization**: 2571 auto-fixed changes across 118 files
+  - `Dict[str, Any]` → `dict[str, Any]`, `Optional[str]` → `str | None`, etc.
+  - Added security lint rules (S110, BLE) to catch CodeQL issues locally
+  - Zero behavior change — all tests pass
+
+- **ESLint 10 migration**: flat config (`eslint.config.mjs`) replacing legacy `.eslintrc.json`
+
+### Fixed
+
+- `shutdown_manager.py`: missing `import os` (pre-existing bug from #284)
+- Cross-plugin validator: no longer scans non-plugin packages (popkit-mcp, popkit-cli)
+- `test_github_cache.py`: assertion compatible with new POPKIT_HOME resolution
+
 ## [1.0.0-beta.11] - 2026-03-19
 
 ### Added
