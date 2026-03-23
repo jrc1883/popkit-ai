@@ -16,7 +16,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 # =============================================================================
 # ANONYMIZATION LEVELS
@@ -46,12 +46,12 @@ class PrivacySettings:
 
     # Consent tracking
     consent_given: bool = False
-    consent_timestamp: Optional[str] = None
+    consent_timestamp: str | None = None
     consent_version: str = "1.0"
 
     # Exclusions
-    excluded_projects: List[str] = field(default_factory=list)
-    excluded_patterns: List[str] = field(default_factory=list)
+    excluded_projects: list[str] = field(default_factory=list)
+    excluded_patterns: list[str] = field(default_factory=list)
 
     # Data retention
     auto_delete_days: int = 90  # Delete shared data after N days
@@ -59,12 +59,12 @@ class PrivacySettings:
     # Region (for GDPR)
     data_region: str = "us"  # "us" or "eu"
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert to dictionary."""
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict) -> "PrivacySettings":
+    def from_dict(cls, data: dict) -> "PrivacySettings":
         """Create from dictionary."""
         return cls(
             sharing_enabled=data.get("sharing_enabled", True),
@@ -141,7 +141,7 @@ REPLACEMENT_TOKENS = {
 # =============================================================================
 
 
-def detect_sensitive_data(content: str) -> List[Dict[str, Any]]:
+def detect_sensitive_data(content: str) -> list[dict[str, Any]]:
     """
     Detect sensitive data patterns in content.
 
@@ -167,7 +167,7 @@ def detect_sensitive_data(content: str) -> List[Dict[str, Any]]:
 
 def anonymize_content(
     content: str, level: AnonymizationLevel = AnonymizationLevel.MODERATE
-) -> Tuple[str, List[str]]:
+) -> tuple[str, list[str]]:
     """
     Anonymize content based on level.
 
@@ -286,11 +286,11 @@ class PrivacyManager:
     Manages user privacy settings and consent.
     """
 
-    def __init__(self, project_dir: Optional[str] = None):
+    def __init__(self, project_dir: str | None = None):
         self.project_dir = Path(project_dir or os.getcwd())
         self.settings_dir = self.project_dir / ".claude" / "popkit"
         self.settings_file = self.settings_dir / "privacy.json"
-        self._settings: Optional[PrivacySettings] = None
+        self._settings: PrivacySettings | None = None
 
     @property
     def settings(self) -> PrivacySettings:
@@ -309,7 +309,7 @@ class PrivacyManager:
                 pass
         return PrivacySettings()
 
-    def save_settings(self, settings: Optional[PrivacySettings] = None) -> None:
+    def save_settings(self, settings: PrivacySettings | None = None) -> None:
         """Save settings to file."""
         if settings:
             self._settings = settings
@@ -354,7 +354,7 @@ class PrivacyManager:
             self.settings.excluded_patterns.append(pattern)
             self.save_settings()
 
-    def can_share(self) -> Tuple[bool, str]:
+    def can_share(self) -> tuple[bool, str]:
         """
         Check if sharing is allowed.
 
@@ -398,9 +398,7 @@ class PrivacyManager:
 
         return False
 
-    def anonymize(
-        self, content: str, file_path: Optional[str] = None
-    ) -> Tuple[str, Dict[str, Any]]:
+    def anonymize(self, content: str, file_path: str | None = None) -> tuple[str, dict[str, Any]]:
         """
         Anonymize content according to settings.
 
@@ -434,7 +432,7 @@ class PrivacyManager:
 # =============================================================================
 
 
-def request_data_deletion(api_key: str, base_url: Optional[str] = None) -> Dict[str, Any]:
+def request_data_deletion(api_key: str, base_url: str | None = None) -> dict[str, Any]:
     """
     Request deletion of all user data from PopKit Cloud.
 
@@ -465,7 +463,7 @@ def request_data_deletion(api_key: str, base_url: Optional[str] = None) -> Dict[
         return {"error": f"Network error: {e.reason}"}
 
 
-def export_user_data(api_key: str, base_url: Optional[str] = None) -> Dict[str, Any]:
+def export_user_data(api_key: str, base_url: str | None = None) -> dict[str, Any]:
     """
     Export all user data from PopKit Cloud.
 

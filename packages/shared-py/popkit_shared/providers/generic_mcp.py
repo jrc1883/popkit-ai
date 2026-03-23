@@ -21,7 +21,7 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from .base import ProviderAdapter, ProviderInfo, ToolMapping
 from .tool_mapping import GENERIC_MCP_MAPPINGS
@@ -53,7 +53,7 @@ class GenericMCPAdapter(ProviderAdapter):
             is_available=True,
         )
 
-    def generate_config(self, package_dir: Path, output_dir: Path) -> List[Path]:
+    def generate_config(self, package_dir: Path, output_dir: Path) -> list[Path]:
         """Generate MCP server configuration files.
 
         Creates configs for connecting to the PopKit MCP server across
@@ -106,7 +106,7 @@ class GenericMCPAdapter(ProviderAdapter):
 
         return generated
 
-    def get_tool_mappings(self) -> List[ToolMapping]:
+    def get_tool_mappings(self) -> list[ToolMapping]:
         """Get generic MCP tool mappings."""
         return GENERIC_MCP_MAPPINGS
 
@@ -147,7 +147,7 @@ class GenericMCPAdapter(ProviderAdapter):
     # Config Generators
     # =========================================================================
 
-    def _build_mcp_config(self, popkit_home: Path) -> Dict[str, Any]:
+    def _build_mcp_config(self, popkit_home: Path) -> dict[str, Any]:
         """Build universal MCP configuration."""
         return {
             "mcpServers": {

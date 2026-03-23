@@ -15,7 +15,7 @@ import os
 import re
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 # Optional import with graceful fallback
 try:
@@ -94,43 +94,43 @@ class SemanticVersion:
         return f"{self.major}.{self.minor}.{self.patch}"
 
 
-def get_current_version() -> Optional[str]:
+def get_current_version() -> str | None:
     """Read current version from plugin.json."""
     try:
         if PLUGIN_JSON_PATH.exists():
-            with open(PLUGIN_JSON_PATH, "r", encoding="utf-8") as f:
+            with open(PLUGIN_JSON_PATH, encoding="utf-8") as f:
                 data = json.load(f)
                 return data.get("version")
-    except (json.JSONDecodeError, IOError):
+    except (OSError, json.JSONDecodeError):
         # Best-effort fallback: ignore optional failure.
         pass
     return None
 
 
-def load_cache() -> Dict[str, Any]:
+def load_cache() -> dict[str, Any]:
     """Load cache data from settings.local.json."""
     try:
         if SETTINGS_PATH.exists():
-            with open(SETTINGS_PATH, "r", encoding="utf-8") as f:
+            with open(SETTINGS_PATH, encoding="utf-8") as f:
                 return json.load(f)
-    except (json.JSONDecodeError, IOError):
+    except (OSError, json.JSONDecodeError):
         # Best-effort fallback: ignore optional failure.
         pass
     return {}
 
 
-def save_cache(cache_data: Dict[str, Any]) -> bool:
+def save_cache(cache_data: dict[str, Any]) -> bool:
     """Save cache data to settings.local.json."""
     try:
         SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
         with open(SETTINGS_PATH, "w", encoding="utf-8") as f:
             json.dump(cache_data, f, indent=2)
         return True
-    except IOError:
+    except OSError:
         return False
 
 
-def is_cache_valid(cache_data: Dict[str, Any]) -> bool:
+def is_cache_valid(cache_data: dict[str, Any]) -> bool:
     """Check if cached update info is still valid (< 24 hours old)."""
     update_cache = cache_data.get("popkit_update_check", {})
     last_check = update_cache.get("last_checked")
@@ -145,7 +145,7 @@ def is_cache_valid(cache_data: Dict[str, Any]) -> bool:
         return False
 
 
-def fetch_latest_version() -> Optional[Dict[str, Any]]:
+def fetch_latest_version() -> dict[str, Any] | None:
     """Fetch latest release info from GitHub API.
 
     Returns:
@@ -176,7 +176,7 @@ def fetch_latest_version() -> Optional[Dict[str, Any]]:
     return None
 
 
-def check_for_updates() -> Tuple[bool, Optional[Dict[str, Any]]]:
+def check_for_updates() -> tuple[bool, dict[str, Any] | None]:
     """Check for popkit updates with caching.
 
     Returns:
@@ -237,7 +237,7 @@ def check_for_updates() -> Tuple[bool, Optional[Dict[str, Any]]]:
     return False, None
 
 
-def is_feature_available(feature_name: str, claude_code_version: Optional[str] = None) -> bool:
+def is_feature_available(feature_name: str, claude_code_version: str | None = None) -> bool:
     """Check if a PopKit feature is available in the current Claude Code version.
 
     Args:
@@ -267,8 +267,8 @@ def is_feature_available(feature_name: str, claude_code_version: Optional[str] =
 
 
 def meets_minimum_requirements(
-    claude_code_version: Optional[str] = None,
-) -> Tuple[bool, Optional[str]]:
+    claude_code_version: str | None = None,
+) -> tuple[bool, str | None]:
     """Check if Claude Code version meets PopKit minimum requirements.
 
     Args:
@@ -298,7 +298,7 @@ def meets_minimum_requirements(
         return False, f"Invalid Claude Code version format: {claude_code_version}"
 
 
-def format_update_notification(release_info: Dict[str, Any], current_version: str) -> str:
+def format_update_notification(release_info: dict[str, Any], current_version: str) -> str:
     """Format update notification message for stderr output."""
     latest = release_info.get("version", "unknown")
     name = release_info.get("name", "")

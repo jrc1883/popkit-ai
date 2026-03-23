@@ -12,7 +12,7 @@ Executes test definitions and validates assertions across all test categories:
 import json
 import time
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 
 class TestRunner:
@@ -38,7 +38,7 @@ class TestRunner:
             "failures": [],
         }
 
-    def execute_test_definition(self, test_def: Dict[str, Any]) -> Dict[str, Any]:
+    def execute_test_definition(self, test_def: dict[str, Any]) -> dict[str, Any]:
         """
         Execute a complete test definition with all test cases.
 
@@ -115,8 +115,8 @@ class TestRunner:
         return results
 
     def _execute_test_case(
-        self, test_def: Dict[str, Any], test_case: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, test_def: dict[str, Any], test_case: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Execute a single test case.
 
@@ -150,7 +150,7 @@ class TestRunner:
                 },
             }
 
-    def _execute_hook_test(self, test_def: Dict, test_case: Dict) -> Dict:
+    def _execute_hook_test(self, test_def: dict, test_case: dict) -> dict:
         """Execute hook protocol test."""
         from .hook_validator import validate_hook_protocol
 
@@ -181,7 +181,7 @@ class TestRunner:
                 },
             }
 
-    def _execute_agent_test(self, test_def: Dict, test_case: Dict) -> Dict:
+    def _execute_agent_test(self, test_def: dict, test_case: dict) -> dict:
         """Execute agent definition validation test (modular architecture)."""
         from .agent_validator import validate_agent_files
 
@@ -206,7 +206,7 @@ class TestRunner:
                 },
             }
 
-    def _execute_skill_test(self, test_def: Dict, test_case: Dict) -> Dict:
+    def _execute_skill_test(self, test_def: dict, test_case: dict) -> dict:
         """Execute skill format test."""
         from .skill_validator import validate_all_skills
 
@@ -236,12 +236,12 @@ class TestRunner:
                 },
             }
 
-    def _execute_routing_test(self, test_def: Dict, test_case: Dict) -> Dict:
+    def _execute_routing_test(self, test_def: dict, test_case: dict) -> dict:
         """Execute routing logic test."""
         # Similar to agent test but focuses on routing logic
         return self._execute_agent_test(test_def, test_case)
 
-    def _execute_structure_test(self, test_def: Dict, test_case: Dict) -> Dict:
+    def _execute_structure_test(self, test_def: dict, test_case: dict) -> dict:
         """Execute plugin structure integrity test."""
         from .plugin_validator import validate_plugin_structure
 
@@ -263,7 +263,7 @@ class TestRunner:
 
                 if file_path.exists():
                     try:
-                        with open(file_path, "r", encoding="utf-8") as f:
+                        with open(file_path, encoding="utf-8") as f:
                             parsed = json.load(f)
                             result["json_valid"] = True
                             result.update(parsed)  # Add parsed content to result
@@ -287,7 +287,7 @@ class TestRunner:
                 },
             }
 
-    def _validate_assertions(self, test_def: Dict, test_case: Dict, result: Dict) -> Dict:
+    def _validate_assertions(self, test_def: dict, test_case: dict, result: dict) -> dict:
         """
         Validate assertions against test result.
 
@@ -495,13 +495,13 @@ class TestRunner:
 
     def _create_failure(
         self,
-        test_def: Dict,
-        test_case: Dict,
-        assertion: Dict,
+        test_def: dict,
+        test_case: dict,
+        assertion: dict,
         reason: str,
         expected: Any = None,
         actual: Any = None,
-    ) -> Dict:
+    ) -> dict:
         """Create failure result dictionary."""
         failure = {
             "test_id": test_def.get("test_id"),

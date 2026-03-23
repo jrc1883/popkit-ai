@@ -11,7 +11,7 @@ Issue #69: Generic Workspace Routine Templates
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 from .subprocess_utils import run_command_simple
 
@@ -25,7 +25,7 @@ except ImportError:
     get_project_type_with_cache = None
 
 
-def gather_git_state(project_path: Path = None) -> Dict[str, Any]:
+def gather_git_state(project_path: Path = None) -> dict[str, Any]:
     """
     Gather current git repository state.
 
@@ -96,7 +96,7 @@ def gather_git_state(project_path: Path = None) -> Dict[str, Any]:
     return state
 
 
-def gather_dependency_state(project_type: ProjectType, project_path: Path = None) -> Dict[str, Any]:
+def gather_dependency_state(project_type: ProjectType, project_path: Path = None) -> dict[str, Any]:
     """
     Check dependency health based on project type.
 
@@ -169,7 +169,7 @@ def check_service_running(port: int) -> bool:
         return False
 
 
-def gather_service_state(project_type: ProjectType, project_path: Path = None) -> Dict[str, Any]:
+def gather_service_state(project_type: ProjectType, project_path: Path = None) -> dict[str, Any]:
     """
     Check running services based on project type.
 
@@ -224,7 +224,7 @@ def gather_service_state(project_type: ProjectType, project_path: Path = None) -
 
 def gather_test_state(
     project_type: ProjectType, project_path: Path = None, skip_tests: bool = False
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Check test framework and test status.
 
@@ -285,7 +285,7 @@ def gather_test_state(
     return state
 
 
-def gather_build_state(project_type: ProjectType, project_path: Path = None) -> Dict[str, Any]:
+def gather_build_state(project_type: ProjectType, project_path: Path = None) -> dict[str, Any]:
     """
     Check build tool and build status.
 
@@ -328,7 +328,7 @@ def gather_build_state(project_type: ProjectType, project_path: Path = None) -> 
 
 def capture_generic_project_state(
     project_path: str = ".", skip_tests: bool = False, skip_services: bool = False
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Capture complete project state for any project type.
 

@@ -15,7 +15,7 @@ import json
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # =============================================================================
 # ESTIMATION CONSTANTS
@@ -55,22 +55,22 @@ class EfficiencyMetrics:
     stuck_patterns_detected: int = 0
 
     # Raw data for detailed calculation
-    insight_lengths: List[int] = field(default_factory=list)
+    insight_lengths: list[int] = field(default_factory=list)
 
     # Efficiency gains
     tool_calls: int = 0
-    resolution_times_ms: List[int] = field(default_factory=list)
+    resolution_times_ms: list[int] = field(default_factory=list)
 
     # Power Mode specific
     sync_barriers_hit: int = 0
     duplicate_work_prevented: int = 0
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert to dictionary."""
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict) -> "EfficiencyMetrics":
+    def from_dict(cls, data: dict) -> "EfficiencyMetrics":
         """Create from dictionary."""
         return cls(**{k: v for k, v in data.items() if k in cls.__dataclass_fields__})
 
@@ -138,7 +138,7 @@ class EfficiencyTracker:
                     # Only load if same session
                     if data.get("session_id") == self.session_id:
                         self.metrics = EfficiencyMetrics.from_dict(data)
-            except (json.JSONDecodeError, IOError):
+            except (OSError, json.JSONDecodeError):
                 # Best-effort fallback: ignore optional failure.
                 pass
 
@@ -148,7 +148,7 @@ class EfficiencyTracker:
             self.state_file.parent.mkdir(parents=True, exist_ok=True)
             with open(self.state_file, "w") as f:
                 json.dump(self.metrics.to_dict(), f, indent=2)
-        except IOError:
+        except OSError:
             # Best-effort fallback: ignore optional failure.
             pass
 
@@ -319,7 +319,7 @@ class EfficiencyTracker:
 
         return min(sum(factors), 100.0)
 
-    def get_summary(self) -> Dict:
+    def get_summary(self) -> dict:
         """
         Get a summary of efficiency metrics.
 
@@ -425,7 +425,7 @@ class EfficiencyTracker:
 # GLOBAL INSTANCE
 # =============================================================================
 
-_tracker_instance: Optional[EfficiencyTracker] = None
+_tracker_instance: EfficiencyTracker | None = None
 
 
 def get_tracker(session_id: str = "") -> EfficiencyTracker:

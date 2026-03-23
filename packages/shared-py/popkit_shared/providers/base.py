@@ -13,7 +13,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class ToolCategory(str, Enum):
@@ -65,7 +65,7 @@ class ToolMapping:
 
     category: ToolCategory
     provider_name: str
-    provider_args: Dict[str, Any] = field(default_factory=dict)
+    provider_args: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -82,8 +82,8 @@ class ProviderInfo:
 
     name: str
     display_name: str
-    version: Optional[str] = None
-    install_path: Optional[Path] = None
+    version: str | None = None
+    install_path: Path | None = None
     is_available: bool = True
 
 
@@ -116,7 +116,7 @@ class ProviderAdapter(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def generate_config(self, package_dir: Path, output_dir: Path) -> List[Path]:
+    def generate_config(self, package_dir: Path, output_dir: Path) -> list[Path]:
         """Generate provider-specific configuration from a PopKit package.
 
         Reads the package's popkit-package.yaml (or plugin.json) and generates
@@ -132,7 +132,7 @@ class ProviderAdapter(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_tool_mappings(self) -> List[ToolMapping]:
+    def get_tool_mappings(self) -> list[ToolMapping]:
         """Get this provider's tool name mappings.
 
         Maps abstract ToolCategory values to provider-specific tool names.
@@ -171,7 +171,7 @@ class ProviderAdapter(ABC):
         """
         raise NotImplementedError
 
-    def map_tool(self, category: ToolCategory) -> Optional[ToolMapping]:
+    def map_tool(self, category: ToolCategory) -> ToolMapping | None:
         """Map an abstract tool category to this provider's tool.
 
         Args:

@@ -24,7 +24,7 @@ Part of Issue #66 - Power Mode v2
 
 import re
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # =============================================================================
 # CONFIGURATION
@@ -76,12 +76,12 @@ class PowerModeRecommendation:
     should_auto_enable: bool = False
     confidence: float = 0.0
     reason: str = ""
-    detected_signals: List[str] = field(default_factory=list)
-    suggested_agents: List[str] = field(default_factory=list)
-    suggested_phases: List[str] = field(default_factory=list)
+    detected_signals: list[str] = field(default_factory=list)
+    suggested_agents: list[str] = field(default_factory=list)
+    suggested_phases: list[str] = field(default_factory=list)
     estimated_files: int = 0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "should_suggest": self.should_suggest,
@@ -116,7 +116,7 @@ class PowerDetector:
         self.power_labels = set(POWER_MODE_LABELS)
         self.complexity_keywords = COMPLEXITY_KEYWORDS
 
-    def analyze_issue(self, issue_data: Dict) -> PowerModeRecommendation:
+    def analyze_issue(self, issue_data: dict) -> PowerModeRecommendation:
         """
         Analyze a GitHub issue to determine if Power Mode should be suggested.
 
@@ -220,7 +220,7 @@ class PowerDetector:
 
         return result
 
-    def analyze_task(self, task_description: str, context: Dict = None) -> PowerModeRecommendation:
+    def analyze_task(self, task_description: str, context: dict = None) -> PowerModeRecommendation:
         """
         Analyze a free-form task description for Power Mode suitability.
 
@@ -290,7 +290,7 @@ class PowerDetector:
 
         return result
 
-    def _parse_popkit_guidance(self, body: str) -> Optional[Dict]:
+    def _parse_popkit_guidance(self, body: str) -> dict | None:
         """
         Parse PopKit Guidance section from issue body.
 
@@ -380,10 +380,10 @@ class PowerDetector:
 
     def should_use_power_mode(
         self,
-        issue_data: Optional[Dict] = None,
-        task_description: Optional[str] = None,
-        context: Optional[Dict] = None,
-        flags: Optional[Dict] = None,
+        issue_data: dict | None = None,
+        task_description: str | None = None,
+        context: dict | None = None,
+        flags: dict | None = None,
     ) -> PowerModeRecommendation:
         """
         Determine if Power Mode should be used based on all available signals.
@@ -445,7 +445,7 @@ class PowerDetector:
 # =============================================================================
 
 
-def should_suggest_power_mode(issue_data: Dict) -> bool:
+def should_suggest_power_mode(issue_data: dict) -> bool:
     """Quick check if Power Mode should be suggested for an issue."""
     detector = PowerDetector()
     result = detector.analyze_issue(issue_data)
@@ -453,7 +453,7 @@ def should_suggest_power_mode(issue_data: Dict) -> bool:
 
 
 def get_power_mode_recommendation(
-    issue_data: Optional[Dict] = None, task: Optional[str] = None, flags: Optional[Dict] = None
+    issue_data: dict | None = None, task: str | None = None, flags: dict | None = None
 ) -> PowerModeRecommendation:
     """Get Power Mode recommendation for any context."""
     detector = PowerDetector()

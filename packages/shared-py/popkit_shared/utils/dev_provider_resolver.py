@@ -7,9 +7,10 @@ Pick the simplest provider that can satisfy required capabilities with the
 lowest operational risk, then reassess when assumptions change.
 """
 
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, Iterable, List, Optional, Set
+from typing import Any
 
 from .plugin_detector import scan_installed_plugins
 
@@ -22,7 +23,7 @@ class DevProvider(str, Enum):
     FEATURE_DEV = "feature-dev"
 
 
-POPKIT_ONLY_CAPABILITIES: Set[str] = {
+POPKIT_ONLY_CAPABILITIES: set[str] = {
     "power_mode",
     "issue_guidance",
     "quality_gate_overrides",
@@ -31,7 +32,7 @@ POPKIT_ONLY_CAPABILITIES: Set[str] = {
     "session_capture_hooks",
 }
 
-UPSTREAM_BASE_CAPABILITIES: Set[str] = {
+UPSTREAM_BASE_CAPABILITIES: set[str] = {
     "feature_scaffold",
     "basic_plan_execute",
     "standard_review",
@@ -47,7 +48,7 @@ def _normalize_provider(value: str) -> str:
     return normalized
 
 
-def detect_feature_dev_plugin(plugins: Optional[List[Dict[str, Any]]] = None) -> bool:
+def detect_feature_dev_plugin(plugins: list[dict[str, Any]] | None = None) -> bool:
     """Detect whether the official feature-dev plugin is installed."""
     if plugins is None:
         try:
@@ -77,7 +78,7 @@ class ProviderAvailability:
 
     @classmethod
     def from_installed_plugins(
-        cls, plugins: Optional[List[Dict[str, Any]]] = None
+        cls, plugins: list[dict[str, Any]] | None = None
     ) -> "ProviderAvailability":
         return cls(
             popkit_available=True,
@@ -91,7 +92,7 @@ class ProviderContext:
     """Inputs that drive provider selection."""
 
     requested_provider: DevProvider = DevProvider.AUTO
-    required_capabilities: Set[str] = field(default_factory=set)
+    required_capabilities: set[str] = field(default_factory=set)
     complexity: int = 5  # 1-10 scale
     workflow_mode: str = "full"
     allow_upstream: bool = True
@@ -103,12 +104,12 @@ class ProviderDecision:
     """Resolution output with explicit assumptions and reassessment points."""
 
     selected_provider: DevProvider
-    fallback_from: Optional[DevProvider] = None
-    rationale: List[str] = field(default_factory=list)
-    assumptions: List[str] = field(default_factory=list)
-    reassessment_triggers: List[str] = field(default_factory=list)
+    fallback_from: DevProvider | None = None
+    rationale: list[str] = field(default_factory=list)
+    assumptions: list[str] = field(default_factory=list)
+    reassessment_triggers: list[str] = field(default_factory=list)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "selected_provider": self.selected_provider.value,
             "fallback_from": self.fallback_from.value if self.fallback_from else None,
@@ -123,7 +124,7 @@ class DevProviderResolver:
 
     def __init__(
         self,
-        popkit_only_capabilities: Optional[Iterable[str]] = None,
+        popkit_only_capabilities: Iterable[str] | None = None,
         complexity_popkit_threshold: int = 8,
     ):
         self.popkit_only_capabilities = set(popkit_only_capabilities or POPKIT_ONLY_CAPABILITIES)
@@ -135,7 +136,7 @@ class DevProviderResolver:
     def resolve(
         self,
         context: ProviderContext,
-        availability: Optional[ProviderAvailability] = None,
+        availability: ProviderAvailability | None = None,
     ) -> ProviderDecision:
         availability = availability or self.detect_availability()
 
@@ -180,7 +181,7 @@ class DevProviderResolver:
     def _decision_popkit(
         self,
         reason: str,
-        fallback_from: Optional[DevProvider] = None,
+        fallback_from: DevProvider | None = None,
     ) -> ProviderDecision:
         return ProviderDecision(
             selected_provider=DevProvider.POPKIT,

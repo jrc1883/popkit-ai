@@ -12,7 +12,7 @@ import hashlib
 import json
 import os
 import re
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 # Patterns to redact
 SENSITIVE_PATTERNS = [
@@ -95,7 +95,7 @@ def redact_sensitive_data(text: str) -> str:
     return result
 
 
-def generalize_paths(text: str, project_root: Optional[str] = None) -> str:
+def generalize_paths(text: str, project_root: str | None = None) -> str:
     """Replace specific file paths with generalized patterns.
 
     Args:
@@ -122,7 +122,7 @@ def generalize_paths(text: str, project_root: Optional[str] = None) -> str:
     return result
 
 
-def anonymize_project_names(text: str, project_names: Set[str]) -> str:
+def anonymize_project_names(text: str, project_names: set[str]) -> str:
     """Replace specific project names with generic placeholders.
 
     Args:
@@ -146,7 +146,7 @@ def anonymize_project_names(text: str, project_names: Set[str]) -> str:
     return result
 
 
-def extract_project_context(project_root: str) -> Dict[str, Any]:
+def extract_project_context(project_root: str) -> dict[str, Any]:
     """Extract project context for anonymization.
 
     Args:
@@ -164,14 +164,14 @@ def extract_project_context(project_root: str) -> Dict[str, Any]:
     package_json = os.path.join(project_root, "package.json")
     if os.path.isfile(package_json):
         try:
-            with open(package_json, "r", encoding="utf-8") as f:
+            with open(package_json, encoding="utf-8") as f:
                 pkg = json.load(f)
                 if "name" in pkg:
                     context["project_names"].add(pkg["name"])
                 if "author" in pkg:
                     if isinstance(pkg["author"], str):
                         context["project_names"].add(pkg["author"].split("<")[0].strip())
-        except (json.JSONDecodeError, IOError):
+        except (OSError, json.JSONDecodeError):
             # Best-effort fallback: ignore optional failure.
             pass
 
@@ -179,12 +179,12 @@ def extract_project_context(project_root: str) -> Dict[str, Any]:
     pyproject = os.path.join(project_root, "pyproject.toml")
     if os.path.isfile(pyproject):
         try:
-            with open(pyproject, "r", encoding="utf-8") as f:
+            with open(pyproject, encoding="utf-8") as f:
                 content = f.read()
                 match = re.search(r'name\s*=\s*["\']([^"\']+)["\']', content)
                 if match:
                     context["project_names"].add(match.group(1))
-        except IOError:
+        except OSError:
             # Best-effort fallback: ignore optional failure.
             pass
 
@@ -195,10 +195,10 @@ def extract_project_context(project_root: str) -> Dict[str, Any]:
 
 
 def anonymize_pattern(
-    pattern: Dict[str, Any],
-    project_root: Optional[str] = None,
-    extra_names: Optional[Set[str]] = None,
-) -> Dict[str, Any]:
+    pattern: dict[str, Any],
+    project_root: str | None = None,
+    extra_names: set[str] | None = None,
+) -> dict[str, Any]:
     """Fully anonymize a pattern for sharing.
 
     Args:
@@ -262,7 +262,7 @@ def anonymize_pattern(
     return result
 
 
-def validate_anonymization(pattern: Dict[str, Any]) -> Dict[str, List[str]]:
+def validate_anonymization(pattern: dict[str, Any]) -> dict[str, list[str]]:
     """Validate that a pattern has been properly anonymized.
 
     Args:
@@ -300,9 +300,9 @@ def create_shareable_pattern(
     pattern_type: str,
     content: str,
     solution: str,
-    project_root: Optional[str] = None,
-    metadata: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+    project_root: str | None = None,
+    metadata: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Create a new shareable pattern with proper anonymization.
 
     Args:
@@ -323,9 +323,7 @@ def create_shareable_pattern(
         "type": pattern_type,
         "content": content,
         "solution": solution,
-        "created_at": datetime.datetime.now(datetime.timezone.utc)
-        .isoformat()
-        .replace("+00:00", "Z"),
+        "created_at": datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z"),
         "share_level": "community",  # Default to community
         "quality_score": None,  # To be set by cloud
         "votes": 0,
@@ -342,8 +340,8 @@ def create_shareable_pattern(
 
 
 def prepare_batch_for_sharing(
-    patterns: List[Dict[str, Any]], project_root: Optional[str] = None
-) -> List[Dict[str, Any]]:
+    patterns: list[dict[str, Any]], project_root: str | None = None
+) -> list[dict[str, Any]]:
     """Prepare a batch of patterns for sharing.
 
     Args:

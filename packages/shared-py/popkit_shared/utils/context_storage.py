@@ -19,7 +19,7 @@ import os
 from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
@@ -32,12 +32,12 @@ class ContextStorage(ABC):
     """Abstract base class for context storage backends."""
 
     @abstractmethod
-    def save_context(self, workflow_id: str, context: Dict[str, Any]) -> bool:
+    def save_context(self, workflow_id: str, context: dict[str, Any]) -> bool:
         """Save context for a workflow. Returns success status."""
         pass
 
     @abstractmethod
-    def load_context(self, workflow_id: str) -> Optional[Dict[str, Any]]:
+    def load_context(self, workflow_id: str) -> dict[str, Any] | None:
         """Load context for a workflow. Returns None if not found."""
         pass
 
@@ -47,7 +47,7 @@ class ContextStorage(ABC):
         pass
 
     @abstractmethod
-    def list_workflows(self) -> List[str]:
+    def list_workflows(self) -> list[str]:
         """List all active workflow IDs."""
         pass
 
@@ -61,19 +61,19 @@ class ContextStorage(ABC):
         self,
         skill_name: str,
         event_type: str,
-        data: Dict[str, Any],
-        workflow_id: Optional[str] = None,
-    ) -> Optional[str]:
+        data: dict[str, Any],
+        workflow_id: str | None = None,
+    ) -> str | None:
         """Publish skill activity to activity ledger."""
         return None  # Default: no-op for backends that don't support it
 
     def get_recent_activity(
-        self, count: int = 20, skill_filter: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
+        self, count: int = 20, skill_filter: str | None = None
+    ) -> list[dict[str, Any]]:
         """Get recent activity from ledger."""
         return []  # Default: empty for backends that don't support it
 
-    def get_active_skills(self) -> List[str]:
+    def get_active_skills(self) -> list[str]:
         """Get list of currently active skills."""
         return []  # Default: empty
 
@@ -89,7 +89,7 @@ class FileContextStorage(ContextStorage):
     Default backend that works without any infrastructure.
     """
 
-    def __init__(self, base_dir: Optional[Path] = None):
+    def __init__(self, base_dir: Path | None = None):
         self.base_dir = base_dir or self._find_popkit_dir()
 
     def _find_popkit_dir(self) -> Path:
@@ -111,24 +111,24 @@ class FileContextStorage(ContextStorage):
         safe_id = "".join(c if c.isalnum() or c in "-_" else "_" for c in workflow_id)
         return self.base_dir / f"{safe_id}.json"
 
-    def save_context(self, workflow_id: str, context: Dict[str, Any]) -> bool:
+    def save_context(self, workflow_id: str, context: dict[str, Any]) -> bool:
         try:
             context["_updated_at"] = datetime.now().isoformat()
             context["_workflow_id"] = workflow_id
             with open(self._workflow_file(workflow_id), "w") as f:
                 json.dump(context, f, indent=2, default=str)
             return True
-        except (IOError, TypeError):
+        except (OSError, TypeError):
             return False
 
-    def load_context(self, workflow_id: str) -> Optional[Dict[str, Any]]:
+    def load_context(self, workflow_id: str) -> dict[str, Any] | None:
         file_path = self._workflow_file(workflow_id)
         if not file_path.exists():
             return None
         try:
-            with open(file_path, "r") as f:
+            with open(file_path) as f:
                 return json.load(f)
-        except (json.JSONDecodeError, IOError):
+        except (OSError, json.JSONDecodeError):
             return None
 
     def delete_context(self, workflow_id: str) -> bool:
@@ -138,15 +138,15 @@ class FileContextStorage(ContextStorage):
             return True
         return False
 
-    def list_workflows(self) -> List[str]:
+    def list_workflows(self) -> list[str]:
         workflows = []
         for f in self.base_dir.glob("*.json"):
             try:
-                with open(f, "r") as file:
+                with open(f) as file:
                     data = json.load(file)
                     if wf_id := data.get("_workflow_id"):
                         workflows.append(wf_id)
-            except (json.JSONDecodeError, IOError):
+            except (OSError, json.JSONDecodeError):
                 continue
         return workflows
 
@@ -162,9 +162,9 @@ class FileContextStorage(ContextStorage):
         self,
         skill_name: str,
         event_type: str,
-        data: Dict[str, Any],
-        workflow_id: Optional[str] = None,
-    ) -> Optional[str]:
+        data: dict[str, Any],
+        workflow_id: str | None = None,
+    ) -> str | None:
         """Append activity to JSONL file."""
         activity_file = self._get_activity_file()
         entry_id = f"{int(datetime.now().timestamp() * 1000)}-0"
@@ -182,12 +182,12 @@ class FileContextStorage(ContextStorage):
             with open(activity_file, "a") as f:
                 f.write(json.dumps(entry, default=str) + "\n")
             return entry_id
-        except IOError:
+        except OSError:
             return None
 
     def get_recent_activity(
-        self, count: int = 20, skill_filter: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
+        self, count: int = 20, skill_filter: str | None = None
+    ) -> list[dict[str, Any]]:
         """Read recent activity from JSONL file."""
         activity_file = self._get_activity_file()
 
@@ -195,7 +195,7 @@ class FileContextStorage(ContextStorage):
             return []
 
         try:
-            with open(activity_file, "r") as f:
+            with open(activity_file) as f:
                 lines = f.readlines()
 
             # Get last N lines (newest)
@@ -212,14 +212,14 @@ class FileContextStorage(ContextStorage):
                     continue
 
             return activities
-        except IOError:
+        except OSError:
             return []
 
-    def get_active_skills(self) -> List[str]:
+    def get_active_skills(self) -> list[str]:
         """Get active skills from activity file."""
         activities = self.get_recent_activity(count=50)
 
-        skill_states: Dict[str, str] = {}
+        skill_states: dict[str, str] = {}
         for activity in reversed(activities):
             skill = activity.get("skill", "unknown")
             event = activity.get("event", "unknown")
@@ -248,7 +248,7 @@ class UpstashContextStorage(ContextStorage):
     STREAM_KEY = "popkit:activity"  # Central activity ledger
     TTL_SECONDS = 86400 * 7  # 7 days
 
-    def __init__(self, url: Optional[str] = None, token: Optional[str] = None):
+    def __init__(self, url: str | None = None, token: str | None = None):
         self.url = url or os.environ.get("UPSTASH_REDIS_REST_URL")
         self.token = token or os.environ.get("UPSTASH_REDIS_REST_TOKEN")
 
@@ -262,7 +262,7 @@ class UpstashContextStorage(ContextStorage):
         """Generate Redis key for workflow."""
         return f"{self.KEY_PREFIX}{workflow_id}"
 
-    def _redis_command(self, command: List[str]) -> Any:
+    def _redis_command(self, command: list[str]) -> Any:
         """Execute Redis command via Upstash REST API."""
         url = f"{self.url}"
         headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
@@ -279,7 +279,7 @@ class UpstashContextStorage(ContextStorage):
         except URLError:
             return None
 
-    def save_context(self, workflow_id: str, context: Dict[str, Any]) -> bool:
+    def save_context(self, workflow_id: str, context: dict[str, Any]) -> bool:
         context["_updated_at"] = datetime.now().isoformat()
         context["_workflow_id"] = workflow_id
 
@@ -290,7 +290,7 @@ class UpstashContextStorage(ContextStorage):
         result = self._redis_command(["SET", key, value, "EX", str(self.TTL_SECONDS)])
         return result == "OK"
 
-    def load_context(self, workflow_id: str) -> Optional[Dict[str, Any]]:
+    def load_context(self, workflow_id: str) -> dict[str, Any] | None:
         key = self._make_key(workflow_id)
         result = self._redis_command(["GET", key])
 
@@ -306,7 +306,7 @@ class UpstashContextStorage(ContextStorage):
         result = self._redis_command(["DEL", key])
         return result == 1
 
-    def list_workflows(self) -> List[str]:
+    def list_workflows(self) -> list[str]:
         """List workflow IDs using SCAN."""
         workflows = []
         cursor = "0"
@@ -340,9 +340,9 @@ class UpstashContextStorage(ContextStorage):
         self,
         skill_name: str,
         event_type: str,
-        data: Dict[str, Any],
-        workflow_id: Optional[str] = None,
-    ) -> Optional[str]:
+        data: dict[str, Any],
+        workflow_id: str | None = None,
+    ) -> str | None:
         """Publish skill activity to the central activity stream.
 
         Uses XADD to append to the activity ledger. All skills write here,
@@ -387,8 +387,8 @@ class UpstashContextStorage(ContextStorage):
         return result if isinstance(result, str) else None
 
     def get_recent_activity(
-        self, count: int = 20, skill_filter: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
+        self, count: int = 20, skill_filter: str | None = None
+    ) -> list[dict[str, Any]]:
         """Get recent activity from the stream.
 
         Uses XREVRANGE to get latest entries (newest first).
@@ -435,7 +435,7 @@ class UpstashContextStorage(ContextStorage):
 
         return activities
 
-    def get_active_skills(self) -> List[str]:
+    def get_active_skills(self) -> list[str]:
         """Get list of skills that have been active recently.
 
         Returns skills with "start" but no "complete"/"error" in recent activity.
@@ -443,7 +443,7 @@ class UpstashContextStorage(ContextStorage):
         activities = self.get_recent_activity(count=50)
 
         # Track skill states
-        skill_states: Dict[str, str] = {}  # skill -> latest event
+        skill_states: dict[str, str] = {}  # skill -> latest event
 
         # Process oldest to newest (reverse since we got newest first)
         for activity in reversed(activities):
@@ -480,13 +480,13 @@ class CloudAPIContextStorage(ContextStorage):
 
     API_BASE = "https://api.popkit.dev/v1"
 
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: str | None = None):
         self.api_key = api_key or os.environ.get("POPKIT_API_KEY")
 
         if not self.api_key:
             raise ValueError("POPKIT_API_KEY environment variable required.")
 
-    def _api_request(self, method: str, path: str, body: Optional[Dict] = None) -> Any:
+    def _api_request(self, method: str, path: str, body: dict | None = None) -> Any:
         """Make authenticated API request."""
         url = f"{self.API_BASE}{path}"
         headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
@@ -502,11 +502,11 @@ class CloudAPIContextStorage(ContextStorage):
         except URLError:
             return None
 
-    def save_context(self, workflow_id: str, context: Dict[str, Any]) -> bool:
+    def save_context(self, workflow_id: str, context: dict[str, Any]) -> bool:
         result = self._api_request("PUT", f"/workflows/{workflow_id}", context)
         return result is not None and result.get("success", False)
 
-    def load_context(self, workflow_id: str) -> Optional[Dict[str, Any]]:
+    def load_context(self, workflow_id: str) -> dict[str, Any] | None:
         result = self._api_request("GET", f"/workflows/{workflow_id}")
         return result.get("data") if result else None
 
@@ -514,7 +514,7 @@ class CloudAPIContextStorage(ContextStorage):
         result = self._api_request("DELETE", f"/workflows/{workflow_id}")
         return result is not None and result.get("success", False)
 
-    def list_workflows(self) -> List[str]:
+    def list_workflows(self) -> list[str]:
         result = self._api_request("GET", "/workflows")
         return result.get("workflows", []) if result else []
 
@@ -527,7 +527,7 @@ class CloudAPIContextStorage(ContextStorage):
 # =============================================================================
 
 
-def get_context_storage(prefer: Optional[str] = None) -> ContextStorage:
+def get_context_storage(prefer: str | None = None) -> ContextStorage:
     """Get appropriate context storage backend.
 
     Auto-detection order:
@@ -587,7 +587,7 @@ def is_cloud_available() -> bool:
     return bool(os.environ.get("POPKIT_API_KEY"))
 
 
-def get_storage_status() -> Dict[str, Any]:
+def get_storage_status() -> dict[str, Any]:
     """Get status of all storage backends."""
     return {
         "current": get_context_storage().get_backend_name(),

@@ -16,7 +16,7 @@ import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 # =============================================================================
 # CONFIGURATION
@@ -44,10 +44,10 @@ class HeartbeatData:
 
     timestamp: str
     session_id: str
-    tool_name: Optional[str] = None
-    tool_input: Optional[Dict[str, Any]] = None
+    tool_name: str | None = None
+    tool_input: dict[str, Any] | None = None
     status: str = "active"  # active, stuck, recovering, completed
-    progress: Optional[str] = None
+    progress: str | None = None
 
 
 @dataclass
@@ -59,9 +59,9 @@ class SessionHealth:
     last_heartbeat: str
     duration_seconds: int
     tool_calls: int
-    files_touched: List[str] = field(default_factory=list)
-    stuck_indicators: List[str] = field(default_factory=list)
-    memory_usage: Optional[str] = None
+    files_touched: list[str] = field(default_factory=list)
+    stuck_indicators: list[str] = field(default_factory=list)
+    memory_usage: str | None = None
 
     @property
     def is_healthy(self) -> bool:
@@ -85,8 +85,8 @@ class StuckDetectionResult:
 
     is_stuck: bool
     confidence: float  # 0.0 to 1.0
-    indicators: List[str]
-    recommendations: List[str]
+    indicators: list[str]
+    recommendations: list[str]
 
 
 # =============================================================================
@@ -105,16 +105,16 @@ class HeartbeatMonitor:
     - Recovery suggestions
     """
 
-    def __init__(self, session_id: Optional[str] = None):
+    def __init__(self, session_id: str | None = None):
         """Initialize monitor for a session."""
         self.session_id = session_id or self._generate_session_id()
         self.session_dir = HEARTBEAT_DIR / self.session_id
         self.session_dir.mkdir(parents=True, exist_ok=True)
 
-        self.heartbeats: List[HeartbeatData] = []
+        self.heartbeats: list[HeartbeatData] = []
         self.start_time = datetime.now()
         self.tool_calls = 0
-        self.files_touched: Dict[str, int] = {}  # file -> edit count
+        self.files_touched: dict[str, int] = {}  # file -> edit count
 
     def _generate_session_id(self) -> str:
         """Generate unique session ID."""
@@ -126,9 +126,9 @@ class HeartbeatMonitor:
 
     def beat(
         self,
-        tool_name: Optional[str] = None,
-        tool_input: Optional[Dict[str, Any]] = None,
-        progress: Optional[str] = None,
+        tool_name: str | None = None,
+        tool_input: dict[str, Any] | None = None,
+        progress: str | None = None,
     ) -> HeartbeatData:
         """
         Record a heartbeat.
@@ -366,7 +366,7 @@ class HeartbeatMonitor:
         return monitor
 
     @classmethod
-    def list_sessions(cls, include_completed: bool = False) -> List[Dict[str, Any]]:
+    def list_sessions(cls, include_completed: bool = False) -> list[dict[str, Any]]:
         """
         List all sessions.
 
@@ -411,7 +411,7 @@ class HeartbeatMonitor:
 # MODULE-LEVEL FUNCTIONS
 # =============================================================================
 
-_current_monitor: Optional[HeartbeatMonitor] = None
+_current_monitor: HeartbeatMonitor | None = None
 
 
 def get_monitor() -> HeartbeatMonitor:
@@ -422,7 +422,7 @@ def get_monitor() -> HeartbeatMonitor:
     return _current_monitor
 
 
-def beat(tool_name: str = None, tool_input: Dict = None, progress: str = None) -> HeartbeatData:
+def beat(tool_name: str = None, tool_input: dict = None, progress: str = None) -> HeartbeatData:
     """Convenience function to record heartbeat."""
     return get_monitor().beat(tool_name, tool_input, progress)
 

@@ -17,16 +17,16 @@ Part of Issue #215 - /popkit-core:upstream command
 
 import json
 import subprocess
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 from urllib.parse import quote
 
 # =============================================================================
 # Constants
 # =============================================================================
 
-REPO_SPECS: Dict[str, Dict[str, Any]] = {
+REPO_SPECS: dict[str, dict[str, Any]] = {
     "anthropics/claude-code": {
         "track_releases": True,
         "track_commits": True,
@@ -101,12 +101,12 @@ class ChangelogItem:
         published_date: str,
         discovered_date: str,
         status: str = STATUS_PENDING,
-        research_summary: Optional[str] = None,
-        research_date: Optional[str] = None,
-        popkit_impact: Optional[str] = None,
-        related_issues: Optional[List[str]] = None,
-        related_prs: Optional[List[str]] = None,
-        notes: Optional[str] = None,
+        research_summary: str | None = None,
+        research_date: str | None = None,
+        popkit_impact: str | None = None,
+        related_issues: list[str] | None = None,
+        related_prs: list[str] | None = None,
+        notes: str | None = None,
     ):
         self.id = id
         self.type = type
@@ -122,7 +122,7 @@ class ChangelogItem:
         self.related_prs = related_prs or []
         self.notes = notes
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "id": self.id,
@@ -141,7 +141,7 @@ class ChangelogItem:
         }
 
     @staticmethod
-    def from_dict(data: Dict[str, Any]) -> "ChangelogItem":
+    def from_dict(data: dict[str, Any]) -> "ChangelogItem":
         """Create from dictionary."""
         return ChangelogItem(
             id=data["id"],
@@ -166,10 +166,10 @@ class RepositoryTracking:
     def __init__(
         self,
         repo: str,
-        last_checked: Optional[str] = None,
-        latest_release: Optional[str] = None,
-        latest_commit: Optional[str] = None,
-        changelog_items: Optional[List[ChangelogItem]] = None,
+        last_checked: str | None = None,
+        latest_release: str | None = None,
+        latest_commit: str | None = None,
+        changelog_items: list[ChangelogItem] | None = None,
     ):
         self.repo = repo
         self.last_checked = last_checked
@@ -177,7 +177,7 @@ class RepositoryTracking:
         self.latest_commit = latest_commit
         self.changelog_items = changelog_items or []
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "last_checked": self.last_checked,
@@ -187,7 +187,7 @@ class RepositoryTracking:
         }
 
     @staticmethod
-    def from_dict(repo: str, data: Dict[str, Any]) -> "RepositoryTracking":
+    def from_dict(repo: str, data: dict[str, Any]) -> "RepositoryTracking":
         """Create from dictionary."""
         return RepositoryTracking(
             repo=repo,
@@ -208,7 +208,7 @@ class RepositoryTracking:
 class UpstreamTracker:
     """Main tracking interface for Anthropic repository updates."""
 
-    def __init__(self, cache_dir: Optional[Path] = None):
+    def __init__(self, cache_dir: Path | None = None):
         """Initialize upstream tracker.
 
         Args:
@@ -221,9 +221,9 @@ class UpstreamTracker:
 
         self.cache_dir = Path(cache_dir)
         self.tracking_file = self.cache_dir / "upstream-tracking.json"
-        self._tracking_data: Optional[Dict[str, Any]] = None
+        self._tracking_data: dict[str, Any] | None = None
 
-    def _load_tracking(self) -> Dict[str, Any]:
+    def _load_tracking(self) -> dict[str, Any]:
         """Load tracking data from disk.
 
         Returns:
@@ -236,14 +236,14 @@ class UpstreamTracker:
             return self._init_tracking()
 
         try:
-            with open(self.tracking_file, "r", encoding="utf-8") as f:
+            with open(self.tracking_file, encoding="utf-8") as f:
                 self._tracking_data = json.load(f)
                 return self._tracking_data
-        except (json.JSONDecodeError, IOError):
+        except (OSError, json.JSONDecodeError):
             # Corrupted tracking file, reinitialize
             return self._init_tracking()
 
-    def _init_tracking(self) -> Dict[str, Any]:
+    def _init_tracking(self) -> dict[str, Any]:
         """Initialize empty tracking structure.
 
         Returns:
@@ -347,13 +347,13 @@ class UpstreamTracker:
     # =============================================================================
 
     @staticmethod
-    def normalize_status(status: Optional[str]) -> Optional[str]:
+    def normalize_status(status: str | None) -> str | None:
         """Normalize status aliases to canonical values."""
         if status is None:
             return None
         return STATUS_ALIASES.get(status.strip().lower(), status.strip().lower())
 
-    def check_updates(self, force: bool = False) -> Tuple[int, List[str]]:
+    def check_updates(self, force: bool = False) -> tuple[int, list[str]]:
         """Check all monitored repositories for new updates.
 
         Args:
@@ -403,7 +403,7 @@ class UpstreamTracker:
 
     def _fetch_repo_updates(
         self, repo: str, repo_tracking: RepositoryTracking
-    ) -> List[ChangelogItem]:
+    ) -> list[ChangelogItem]:
         """Fetch new updates for a repository.
 
         Args:
@@ -476,8 +476,8 @@ class UpstreamTracker:
         self,
         repo: str,
         max_releases: int = 10,
-        release_tag_prefixes: Optional[List[str]] = None,
-    ) -> List[Dict[str, Any]]:
+        release_tag_prefixes: list[str] | None = None,
+    ) -> list[dict[str, Any]]:
         """Fetch releases from GitHub API.
 
         Args:
@@ -525,9 +525,9 @@ class UpstreamTracker:
     def _fetch_commits(
         self,
         repo: str,
-        since: Optional[str] = None,
+        since: str | None = None,
         max_commits: int = 20,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Fetch commits from GitHub API.
 
         Args:
@@ -554,7 +554,7 @@ class UpstreamTracker:
                 return []
 
             commits = json.loads(result.stdout)
-            formatted: List[Dict[str, Any]] = []
+            formatted: list[dict[str, Any]] = []
             for commit in commits:
                 sha = commit.get("sha", "")
                 message = (commit.get("commit", {}).get("message") or "").strip()
@@ -585,23 +585,23 @@ class UpstreamTracker:
             return []
 
     @staticmethod
-    def _format_since_for_github(since: Optional[str]) -> Optional[str]:
+    def _format_since_for_github(since: str | None) -> str | None:
         """Convert local ISO timestamp to GitHub API-compatible UTC timestamp."""
         if not since:
             return None
         try:
             parsed = datetime.fromisoformat(since)
             if parsed.tzinfo is None:
-                parsed = parsed.replace(tzinfo=timezone.utc)
+                parsed = parsed.replace(tzinfo=UTC)
             else:
-                parsed = parsed.astimezone(timezone.utc)
+                parsed = parsed.astimezone(UTC)
             return parsed.isoformat(timespec="seconds").replace("+00:00", "Z")
         except ValueError:
             return None
 
     def list_items(
-        self, status_filter: Optional[str] = None, repo_filter: Optional[str] = None
-    ) -> List[ChangelogItem]:
+        self, status_filter: str | None = None, repo_filter: str | None = None
+    ) -> list[ChangelogItem]:
         """List tracked changelog items.
 
         Args:
@@ -632,7 +632,7 @@ class UpstreamTracker:
 
         return items
 
-    def get_item(self, item_id: str) -> Optional[ChangelogItem]:
+    def get_item(self, item_id: str) -> ChangelogItem | None:
         """Get a specific changelog item by ID.
 
         Args:
@@ -655,12 +655,12 @@ class UpstreamTracker:
     def update_item(
         self,
         item_id: str,
-        status: Optional[str] = None,
-        research_summary: Optional[str] = None,
-        popkit_impact: Optional[str] = None,
-        related_issues: Optional[List[str]] = None,
-        related_prs: Optional[List[str]] = None,
-        notes: Optional[str] = None,
+        status: str | None = None,
+        research_summary: str | None = None,
+        popkit_impact: str | None = None,
+        related_issues: list[str] | None = None,
+        related_prs: list[str] | None = None,
+        notes: str | None = None,
     ) -> bool:
         """Update a changelog item.
 
@@ -711,7 +711,7 @@ class UpstreamTracker:
 
         return False
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get tracking statistics.
 
         Returns:

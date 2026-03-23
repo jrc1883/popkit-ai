@@ -18,7 +18,6 @@ Part of the popkit plugin stateless hook architecture.
 import json
 import os
 from abc import ABC, abstractmethod
-from typing import Optional, Type
 
 from .context_carrier import (
     HookContext,
@@ -84,7 +83,7 @@ class StatelessHook(ABC):
 
     def __init__(self):
         """Initialize hook - no external state."""
-        self._provider: Optional[str] = None
+        self._provider: str | None = None
 
     @property
     def provider(self) -> str:
@@ -217,7 +216,7 @@ class StatelessHook(ABC):
     # Provider-Aware Response Helpers (v2.0)
     # =========================================================================
 
-    def respond_continue(self, ctx: HookContext, message: Optional[str] = None) -> HookContext:
+    def respond_continue(self, ctx: HookContext, message: str | None = None) -> HookContext:
         """Mark the hook response as CONTINUE (allow the action).
 
         Args:
@@ -323,7 +322,7 @@ class StatelessHook(ABC):
             return json.dumps({"action": "error", "error": str(e)})
 
 
-def run_hook(hook_class: Type[StatelessHook], input_json: str) -> str:
+def run_hook(hook_class: type[StatelessHook], input_json: str) -> str:
     """Run a hook class with JSON input.
 
     Convenience function that instantiates the hook class and runs it.

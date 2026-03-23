@@ -13,7 +13,7 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # Add utils to path for local imports
 sys.path.insert(0, os.path.dirname(__file__))
@@ -45,7 +45,7 @@ BATCH_SIZE = 50  # items per API call
 # =============================================================================
 
 
-def get_project_root(start_path: Optional[str] = None) -> Optional[str]:
+def get_project_root(start_path: str | None = None) -> str | None:
     """
     Detect project root by looking for .claude/ directory.
 
@@ -73,7 +73,7 @@ def get_project_root(start_path: Optional[str] = None) -> Optional[str]:
 # =============================================================================
 
 
-def extract_yaml_frontmatter(content: str) -> Dict[str, str]:
+def extract_yaml_frontmatter(content: str) -> dict[str, str]:
     """Extract YAML frontmatter from markdown file."""
     if not content.startswith("---"):
         return {}
@@ -100,7 +100,7 @@ def extract_yaml_frontmatter(content: str) -> Dict[str, str]:
 # =============================================================================
 
 
-def scan_project_items(project_root: Optional[str] = None) -> List[Dict[str, Any]]:
+def scan_project_items(project_root: str | None = None) -> list[dict[str, Any]]:
     """
     Scan project for embeddable items.
 
@@ -175,11 +175,11 @@ def scan_project_items(project_root: Optional[str] = None) -> List[Dict[str, Any
 
 
 def embed_project_items(
-    project_root: Optional[str] = None,
+    project_root: str | None = None,
     force: bool = False,
-    source_types: Optional[List[str]] = None,
+    source_types: list[str] | None = None,
     verbose: bool = True,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Embed project items incrementally.
 
@@ -384,7 +384,7 @@ def auto_embed_item(file_path: str, source_type: str) -> bool:
 # =============================================================================
 
 
-def get_project_embedding_status(project_root: Optional[str] = None) -> Dict[str, Any]:
+def get_project_embedding_status(project_root: str | None = None) -> dict[str, Any]:
     """
     Get embedding status for current project.
 

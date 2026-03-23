@@ -23,7 +23,6 @@ import re
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 
 @dataclass
@@ -34,10 +33,10 @@ class Conflict:
     content: str
     our_side: str = ""
     their_side: str = ""
-    base: Optional[str] = None
+    base: str | None = None
     lines_count: int = 0
     complexity_score: int = 0
-    risk_factors: List[str] = None
+    risk_factors: list[str] = None
     priority: float = 0.0
     scope: str = ""  # Function/class/module where conflict occurs
     is_architectural: bool = False
@@ -132,9 +131,9 @@ class ConflictResolver:
 
     def __init__(self):
         """Initialize conflict resolver."""
-        self.conflicts: List[Conflict] = []
+        self.conflicts: list[Conflict] = []
 
-    def detect_conflicts(self) -> List[Conflict]:
+    def detect_conflicts(self) -> list[Conflict]:
         """
         Detect all merge conflicts in repository.
 
@@ -160,7 +159,7 @@ class ConflictResolver:
             # Parse each conflicted file
             for file_path in file_paths:
                 try:
-                    with open(file_path, "r", encoding="utf-8") as f:
+                    with open(file_path, encoding="utf-8") as f:
                         content = f.read()
 
                     # Check for conflict markers
@@ -233,7 +232,7 @@ class ConflictResolver:
 
         return False
 
-    def analyze_conflict_complexity(self, conflict: Conflict) -> Dict:
+    def analyze_conflict_complexity(self, conflict: Conflict) -> dict:
         """
         Analyze conflict complexity using complexity analyzer.
 
@@ -349,7 +348,7 @@ class ConflictResolver:
 
         return float(priority)
 
-    def prioritize_conflicts(self, conflicts: List[Conflict]) -> List[Conflict]:
+    def prioritize_conflicts(self, conflicts: list[Conflict]) -> list[Conflict]:
         """
         Sort conflicts by priority (highest first).
 
@@ -377,7 +376,7 @@ class ConflictResolver:
 
         return sorted_conflicts
 
-    def get_conflict_context(self, conflict: Conflict, context_lines: int = 50) -> Dict[str, str]:
+    def get_conflict_context(self, conflict: Conflict, context_lines: int = 50) -> dict[str, str]:
         """
         Get surrounding context for a conflict.
 
@@ -389,7 +388,7 @@ class ConflictResolver:
             Dictionary with before/after context
         """
         try:
-            with open(conflict.file_path, "r", encoding="utf-8") as f:
+            with open(conflict.file_path, encoding="utf-8") as f:
                 lines = f.readlines()
 
             # Find conflict markers
@@ -424,7 +423,7 @@ class ConflictResolver:
             print(f"Error getting context: {e}")
             return {"before": "", "after": ""}
 
-    def get_commit_context(self, conflict: Conflict) -> Dict[str, str]:
+    def get_commit_context(self, conflict: Conflict) -> dict[str, str]:
         """
         Get commit history context for conflict.
 
@@ -467,7 +466,7 @@ class ConflictResolver:
 # =============================================================================
 
 
-def detect_and_analyze_conflicts() -> Tuple[List[Conflict], List[Dict]]:
+def detect_and_analyze_conflicts() -> tuple[list[Conflict], list[dict]]:
     """
     Convenience function to detect and analyze all conflicts.
 

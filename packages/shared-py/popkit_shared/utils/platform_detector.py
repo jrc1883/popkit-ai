@@ -15,7 +15,6 @@ import sys
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Dict, Optional, Tuple
 
 
 class OSType(Enum):
@@ -67,7 +66,7 @@ class PlatformInfo:
     shell_path: str
     shell_version: str
     capabilities: ShellCapabilities
-    available_commands: Dict[str, str] = field(default_factory=dict)
+    available_commands: dict[str, str] = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         """Convert to dictionary for JSON serialization"""
@@ -96,7 +95,7 @@ class PlatformDetector:
     """Detects platform, shell, and capabilities"""
 
     # Cache the detection result
-    _cached_info: Optional[PlatformInfo] = None
+    _cached_info: PlatformInfo | None = None
 
     @classmethod
     def detect(cls, force_refresh: bool = False) -> PlatformInfo:
@@ -153,7 +152,7 @@ class PlatformDetector:
         return platform.platform()
 
     @classmethod
-    def _detect_shell(cls) -> Tuple[ShellType, str]:
+    def _detect_shell(cls) -> tuple[ShellType, str]:
         """Detect the current shell type and path"""
         os_type = cls._detect_os()
 
@@ -279,7 +278,7 @@ class PlatformDetector:
         return caps
 
     @classmethod
-    def _detect_available_commands(cls, capabilities: ShellCapabilities) -> Dict[str, str]:
+    def _detect_available_commands(cls, capabilities: ShellCapabilities) -> dict[str, str]:
         """Detect which commands are available in the current environment"""
         commands_to_check = []
 

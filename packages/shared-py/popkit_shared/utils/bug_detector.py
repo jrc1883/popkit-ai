@@ -11,7 +11,7 @@ context, and matches against known solutions from collective learning.
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # =============================================================================
 # DETECTION PATTERNS
@@ -70,13 +70,13 @@ class DetectedBug:
     """Represents a detected bug."""
 
     detection_type: str  # "error" or "stuck"
-    error_type: Optional[str]  # Specific error type
-    error_message: Optional[str]  # Error message
-    stuck_pattern: Optional[str]  # Stuck pattern description
+    error_type: str | None  # Specific error type
+    error_message: str | None  # Error message
+    stuck_pattern: str | None  # Stuck pattern description
     confidence: float  # 0.0 to 1.0
-    context: Dict[str, Any]  # Additional context
-    tool_name: Optional[str]  # Tool that triggered detection
-    suggestions: List[str] = field(default_factory=list)
+    context: dict[str, Any]  # Additional context
+    tool_name: str | None  # Tool that triggered detection
+    suggestions: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -84,8 +84,8 @@ class DetectionResult:
     """Result of bug detection."""
 
     detected: bool
-    bugs: List[DetectedBug]
-    matched_patterns: List[Dict[str, Any]]  # From collective
+    bugs: list[DetectedBug]
+    matched_patterns: list[dict[str, Any]]  # From collective
     action: str  # "continue", "inject_hint", "pause", "report"
 
 
@@ -103,7 +103,7 @@ class BugDetector:
         result = detector.detect(tool_name, tool_input, tool_output, history)
     """
 
-    def __init__(self, pattern_client: Optional[Any] = None):
+    def __init__(self, pattern_client: Any | None = None):
         """
         Initialize detector.
 
@@ -111,14 +111,14 @@ class BugDetector:
             pattern_client: Optional PatternClient for collective search
         """
         self.pattern_client = pattern_client
-        self.history: List[Dict[str, Any]] = []
+        self.history: list[dict[str, Any]] = []
 
     def detect(
         self,
         tool_name: str,
-        tool_input: Dict[str, Any],
+        tool_input: dict[str, Any],
         tool_output: str,
-        history: Optional[List[Dict[str, Any]]] = None,
+        history: list[dict[str, Any]] | None = None,
     ) -> DetectionResult:
         """
         Detect bugs from tool call.
@@ -132,8 +132,8 @@ class BugDetector:
         Returns:
             DetectionResult with detected bugs and recommendations
         """
-        bugs: List[DetectedBug] = []
-        matched_patterns: List[Dict[str, Any]] = []
+        bugs: list[DetectedBug] = []
+        matched_patterns: list[dict[str, Any]] = []
 
         # Update history
         if history is not None:
@@ -169,7 +169,7 @@ class BugDetector:
             detected=len(bugs) > 0, bugs=bugs, matched_patterns=matched_patterns, action=action
         )
 
-    def _detect_errors(self, tool_name: str, tool_output: str) -> List[DetectedBug]:
+    def _detect_errors(self, tool_name: str, tool_output: str) -> list[DetectedBug]:
         """Detect errors in tool output."""
         bugs = []
 
@@ -206,8 +206,8 @@ class BugDetector:
         return bugs
 
     def _detect_stuck_behavior(
-        self, tool_name: str, tool_input: Dict[str, Any]
-    ) -> List[DetectedBug]:
+        self, tool_name: str, tool_input: dict[str, Any]
+    ) -> list[DetectedBug]:
         """Detect stuck behavioral patterns."""
         bugs = []
 
@@ -283,7 +283,7 @@ class BugDetector:
 
         return 0.6
 
-    def _search_patterns(self, bugs: List[DetectedBug]) -> List[Dict[str, Any]]:
+    def _search_patterns(self, bugs: list[DetectedBug]) -> list[dict[str, Any]]:
         """Search collective for matching patterns."""
         if not self.pattern_client:
             return []
@@ -320,7 +320,7 @@ class BugDetector:
             return []
 
     def _determine_action(
-        self, bugs: List[DetectedBug], matched_patterns: List[Dict[str, Any]]
+        self, bugs: list[DetectedBug], matched_patterns: list[dict[str, Any]]
     ) -> str:
         """Determine recommended action based on detection."""
         if not bugs:
@@ -344,7 +344,7 @@ class BugDetector:
 
         return "continue"
 
-    def _generate_suggestions(self, bug: DetectedBug) -> List[str]:
+    def _generate_suggestions(self, bug: DetectedBug) -> list[str]:
         """Generate suggestions for a detected bug."""
         suggestions = []
 

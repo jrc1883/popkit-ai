@@ -27,9 +27,9 @@ Usage:
 """
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 
 def _get_status_path() -> Path:
@@ -43,7 +43,7 @@ def _get_status_path() -> Path:
     return Path.cwd() / "STATUS.json"
 
 
-def _load_status() -> Dict[str, Any]:
+def _load_status() -> dict[str, Any]:
     """Load STATUS.json, initializing branch structure if needed."""
     status_path = _get_status_path()
 
@@ -61,7 +61,7 @@ def _load_status() -> Dict[str, Any]:
             "main": {
                 "id": "main",
                 "parent": None,
-                "created": datetime.now(timezone.utc).isoformat(),
+                "created": datetime.now(UTC).isoformat(),
                 "reason": "Main development branch",
                 "context": status.get("context", {}),
                 "tasks": status.get("tasks", {}),
@@ -74,14 +74,14 @@ def _load_status() -> Dict[str, Any]:
     return status
 
 
-def _save_status(status: Dict[str, Any]) -> None:
+def _save_status(status: dict[str, Any]) -> None:
     """Save STATUS.json."""
     status_path = _get_status_path()
     status_path.parent.mkdir(parents=True, exist_ok=True)
     status_path.write_text(json.dumps(status, indent=2))
 
 
-def get_current_branch() -> Tuple[str, Dict[str, Any]]:
+def get_current_branch() -> tuple[str, dict[str, Any]]:
     """Get the current branch ID and its data.
 
     Returns:
@@ -93,7 +93,7 @@ def get_current_branch() -> Tuple[str, Dict[str, Any]]:
     return branch_id, branch_data
 
 
-def list_branches() -> List[Dict[str, Any]]:
+def list_branches() -> list[dict[str, Any]]:
     """List all branches with their metadata.
 
     Returns:
@@ -126,7 +126,7 @@ def create_branch(
     branch_id: str,
     reason: str,
     copy_context: bool = True,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Create a new branch for side investigation.
 
     Args:
@@ -158,7 +158,7 @@ def create_branch(
     new_branch = {
         "id": branch_id,
         "parent": current_id,
-        "created": datetime.now(timezone.utc).isoformat(),
+        "created": datetime.now(UTC).isoformat(),
         "reason": reason,
         "merged": False,
     }
@@ -187,7 +187,7 @@ def create_branch(
             "from": current_id,
             "to": branch_id,
             "reason": reason,
-            "at": datetime.now(timezone.utc).isoformat(),
+            "at": datetime.now(UTC).isoformat(),
         }
     )
     status["branchHistory"] = history
@@ -197,7 +197,7 @@ def create_branch(
     return new_branch
 
 
-def switch_branch(branch_id: str) -> Dict[str, Any]:
+def switch_branch(branch_id: str) -> dict[str, Any]:
     """Switch to a different branch.
 
     Args:
@@ -226,7 +226,7 @@ def switch_branch(branch_id: str) -> Dict[str, Any]:
             "action": "switch",
             "from": current_id,
             "to": branch_id,
-            "at": datetime.now(timezone.utc).isoformat(),
+            "at": datetime.now(UTC).isoformat(),
         }
     )
     status["branchHistory"] = history
@@ -243,7 +243,7 @@ def merge_branch(
     branch_id: str,
     outcome: str,
     delete_after_merge: bool = False,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Merge a branch back to its parent.
 
     Args:
@@ -276,7 +276,7 @@ def merge_branch(
 
     # Mark branch as merged
     branch["merged"] = True
-    branch["merged_at"] = datetime.now(timezone.utc).isoformat()
+    branch["merged_at"] = datetime.now(UTC).isoformat()
     branch["outcome"] = outcome
 
     # Copy key findings to parent context
@@ -298,7 +298,7 @@ def merge_branch(
             {
                 "branch": branch_id,
                 "outcome": outcome,
-                "at": datetime.now(timezone.utc).isoformat(),
+                "at": datetime.now(UTC).isoformat(),
             }
         )
         # Keep only last 5 merges
@@ -316,7 +316,7 @@ def merge_branch(
             "from": branch_id,
             "to": parent_id,
             "outcome": outcome,
-            "at": datetime.now(timezone.utc).isoformat(),
+            "at": datetime.now(UTC).isoformat(),
         }
     )
     status["branchHistory"] = history
@@ -377,7 +377,7 @@ def delete_branch(branch_id: str, force: bool = False) -> bool:
             "action": "delete",
             "branch": branch_id,
             "forced": force and not branch.get("merged", False),
-            "at": datetime.now(timezone.utc).isoformat(),
+            "at": datetime.now(UTC).isoformat(),
         }
     )
     status["branchHistory"] = history
@@ -389,7 +389,7 @@ def delete_branch(branch_id: str, force: bool = False) -> bool:
     return True
 
 
-def get_branch_history(limit: int = 20) -> List[Dict[str, Any]]:
+def get_branch_history(limit: int = 20) -> list[dict[str, Any]]:
     """Get recent branch history.
 
     Args:
@@ -404,9 +404,9 @@ def get_branch_history(limit: int = 20) -> List[Dict[str, Any]]:
 
 
 def update_branch_context(
-    context_updates: Dict[str, Any],
-    branch_id: Optional[str] = None,
-) -> Dict[str, Any]:
+    context_updates: dict[str, Any],
+    branch_id: str | None = None,
+) -> dict[str, Any]:
     """Update context for a branch.
 
     Args:
@@ -429,7 +429,7 @@ def update_branch_context(
     context = branch.get("context", {})
     context.update(context_updates)
     branch["context"] = context
-    branch["lastUpdated"] = datetime.now(timezone.utc).isoformat()
+    branch["lastUpdated"] = datetime.now(UTC).isoformat()
 
     branches[branch_id] = branch
     status["branches"] = branches
@@ -439,9 +439,9 @@ def update_branch_context(
 
 
 def update_branch_tasks(
-    tasks_updates: Dict[str, List[str]],
-    branch_id: Optional[str] = None,
-) -> Dict[str, Any]:
+    tasks_updates: dict[str, list[str]],
+    branch_id: str | None = None,
+) -> dict[str, Any]:
     """Update tasks for a branch.
 
     Args:
@@ -464,7 +464,7 @@ def update_branch_tasks(
     tasks = branch.get("tasks", {"inProgress": [], "completed": [], "blocked": []})
     tasks.update(tasks_updates)
     branch["tasks"] = tasks
-    branch["lastUpdated"] = datetime.now(timezone.utc).isoformat()
+    branch["lastUpdated"] = datetime.now(UTC).isoformat()
 
     branches[branch_id] = branch
     status["branches"] = branches

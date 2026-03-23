@@ -13,7 +13,7 @@ import json
 import os
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 # Health-related tool patterns
 HEALTH_PATTERNS = [
@@ -28,7 +28,7 @@ HEALTH_PATTERNS = [
 ]
 
 
-def detect_mcp_sdk(project_dir: str) -> Dict[str, Any]:
+def detect_mcp_sdk(project_dir: str) -> dict[str, Any]:
     """Detect @modelcontextprotocol/sdk in package.json.
 
     Args:
@@ -44,7 +44,7 @@ def detect_mcp_sdk(project_dir: str) -> Dict[str, Any]:
         return result
 
     try:
-        with open(pkg_path, "r", encoding="utf-8") as f:
+        with open(pkg_path, encoding="utf-8") as f:
             pkg = json.load(f)
 
         # Check dependencies and devDependencies
@@ -56,14 +56,14 @@ def detect_mcp_sdk(project_dir: str) -> Dict[str, Any]:
                 result["location"] = dep_type
                 return result
 
-    except (json.JSONDecodeError, IOError):
+    except (OSError, json.JSONDecodeError):
         # Best-effort fallback: ignore optional failure.
         pass
 
     return result
 
 
-def detect_mcp_directories(project_dir: str) -> Dict[str, Any]:
+def detect_mcp_directories(project_dir: str) -> dict[str, Any]:
     """Detect MCP server directories.
 
     Looks for common patterns:
@@ -100,7 +100,7 @@ def detect_mcp_directories(project_dir: str) -> Dict[str, Any]:
     return result
 
 
-def detect_mcp_config(project_dir: str) -> Dict[str, Any]:
+def detect_mcp_config(project_dir: str) -> dict[str, Any]:
     """Detect .mcp.json configuration.
 
     Args:
@@ -116,21 +116,21 @@ def detect_mcp_config(project_dir: str) -> Dict[str, Any]:
         return result
 
     try:
-        with open(mcp_path, "r", encoding="utf-8") as f:
+        with open(mcp_path, encoding="utf-8") as f:
             config = json.load(f)
 
         if "mcpServers" in config:
             result["found"] = True
             result["servers"] = config["mcpServers"]
 
-    except (json.JSONDecodeError, IOError):
+    except (OSError, json.JSONDecodeError):
         # Best-effort fallback: ignore optional failure.
         pass
 
     return result
 
 
-def parse_mcp_tools(source: str) -> List[str]:
+def parse_mcp_tools(source: str) -> list[str]:
     """Parse MCP tool names from TypeScript source code.
 
     Looks for patterns like:
@@ -156,7 +156,7 @@ def parse_mcp_tools(source: str) -> List[str]:
     return list(set(tools))  # Deduplicate
 
 
-def classify_health_tools(tools: List[str]) -> Tuple[List[str], List[str]]:
+def classify_health_tools(tools: list[str]) -> tuple[list[str], list[str]]:
     """Classify tools as health-related or other.
 
     Health-related patterns:
@@ -184,7 +184,7 @@ def classify_health_tools(tools: List[str]) -> Tuple[List[str], List[str]]:
     return health_tools, other_tools
 
 
-def detect_mcp_infrastructure(project_dir: str) -> Dict[str, Any]:
+def detect_mcp_infrastructure(project_dir: str) -> dict[str, Any]:
     """Full MCP infrastructure detection.
 
     Args:
@@ -223,10 +223,10 @@ def detect_mcp_infrastructure(project_dir: str) -> Dict[str, Any]:
             # Look for TypeScript files
             for ts_file in Path(dir_path).glob("**/*.ts"):
                 try:
-                    with open(ts_file, "r", encoding="utf-8") as f:
+                    with open(ts_file, encoding="utf-8") as f:
                         source = f.read()
                     all_tools.extend(parse_mcp_tools(source))
-                except IOError:
+                except OSError:
                     continue
 
         result["tools"] = list(set(all_tools))
@@ -245,7 +245,7 @@ def detect_mcp_infrastructure(project_dir: str) -> Dict[str, Any]:
     return result
 
 
-def format_detection_report(result: Dict[str, Any]) -> str:
+def format_detection_report(result: dict[str, Any]) -> str:
     """Format detection result as human-readable report.
 
     Args:

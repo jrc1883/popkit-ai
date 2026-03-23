@@ -13,7 +13,6 @@ import random
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 
 @dataclass
@@ -155,9 +154,9 @@ class VerseSelector:
 
     def __init__(
         self,
-        verses: Optional[list[BibleVerse]] = None,
+        verses: list[BibleVerse] | None = None,
         rotation: str = "random",
-        state_file: Optional[Path] = None,
+        state_file: Path | None = None,
     ):
         """Initialize verse selector.
 
@@ -185,9 +184,9 @@ class VerseSelector:
             return {"index": 0, "date": None}
 
         try:
-            with open(self.state_file, "r", encoding="utf-8") as f:
+            with open(self.state_file, encoding="utf-8") as f:
                 return json.load(f)
-        except (json.JSONDecodeError, IOError):
+        except (OSError, json.JSONDecodeError):
             return {"index": 0, "date": None}
 
     def _save_state(self) -> None:
@@ -256,7 +255,7 @@ def load_verse_config() -> dict:
         }
 
     try:
-        with open(config_file, "r", encoding="utf-8") as f:
+        with open(config_file, encoding="utf-8") as f:
             config = json.load(f)
             verse_config = config.get("nightly_routine", {}).get("bible_verse", {})
             return {
@@ -264,7 +263,7 @@ def load_verse_config() -> dict:
                 "rotation": verse_config.get("rotation", "random"),
                 "custom_verses": verse_config.get("custom_verses", []),
             }
-    except (json.JSONDecodeError, IOError):
+    except (OSError, json.JSONDecodeError):
         return {
             "enabled": True,
             "rotation": "random",
@@ -272,7 +271,7 @@ def load_verse_config() -> dict:
         }
 
 
-def get_nightly_verse() -> Optional[str]:
+def get_nightly_verse() -> str | None:
     """Get formatted verse for nightly routine.
 
     Returns:

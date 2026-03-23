@@ -6,12 +6,12 @@ Validates that skills follow the SKILL.md format with proper frontmatter and str
 
 import re
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 import yaml
 
 
-def validate_skill_format(skill_file: Path) -> Dict[str, Any]:
+def validate_skill_format(skill_file: Path) -> dict[str, Any]:
     """
     Validate that a skill file follows the SKILL.md format.
 
@@ -130,7 +130,7 @@ def validate_skill_format(skill_file: Path) -> Dict[str, Any]:
     return result
 
 
-def validate_all_skills(skill_files: List[Path]) -> List[Dict[str, Any]]:
+def validate_all_skills(skill_files: list[Path]) -> list[dict[str, Any]]:
     """
     Validate all skill files.
 
@@ -143,7 +143,7 @@ def validate_all_skills(skill_files: List[Path]) -> List[Dict[str, Any]]:
     return [validate_skill_format(skill_file) for skill_file in skill_files]
 
 
-def get_skill_statistics(skills_dir: Path) -> Dict[str, Any]:
+def get_skill_statistics(skills_dir: Path) -> dict[str, Any]:
     """
     Get statistics about skills in a directory.
 
@@ -191,7 +191,7 @@ def get_skill_statistics(skills_dir: Path) -> Dict[str, Any]:
     return stats
 
 
-def check_skill_naming_consistency(skills_dir: Path) -> Dict[str, Any]:
+def check_skill_naming_consistency(skills_dir: Path) -> dict[str, Any]:
     """
     Check that skill names are consistent across directory and frontmatter.
 
@@ -245,7 +245,7 @@ def check_skill_naming_consistency(skills_dir: Path) -> Dict[str, Any]:
     return result
 
 
-def find_duplicate_skill_names(skills_dir: Path) -> Dict[str, List[str]]:
+def find_duplicate_skill_names(skills_dir: Path) -> dict[str, list[str]]:
     """
     Find skills with duplicate names.
 

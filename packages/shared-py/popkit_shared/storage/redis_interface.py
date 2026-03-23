@@ -26,7 +26,7 @@ Original Source:
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # =============================================================================
 # ABSTRACT BASE CLIENT
@@ -60,7 +60,7 @@ class BaseRedisClient(ABC):
         pass
 
     @abstractmethod
-    def set(self, key: str, value: str, ex: Optional[int] = None) -> bool:
+    def set(self, key: str, value: str, ex: int | None = None) -> bool:
         """
         Set a key-value pair with optional expiration.
 
@@ -75,7 +75,7 @@ class BaseRedisClient(ABC):
         pass
 
     @abstractmethod
-    def get(self, key: str) -> Optional[str]:
+    def get(self, key: str) -> str | None:
         """
         Get a value by key.
 
@@ -114,7 +114,7 @@ class BaseRedisClient(ABC):
         pass
 
     @abstractmethod
-    def keys(self, pattern: str = "*") -> List[str]:
+    def keys(self, pattern: str = "*") -> list[str]:
         """
         Get keys matching pattern.
 
@@ -128,7 +128,7 @@ class BaseRedisClient(ABC):
 
     # Hash operations
     @abstractmethod
-    def hset(self, name: str, mapping: Dict[str, str]) -> int:
+    def hset(self, name: str, mapping: dict[str, str]) -> int:
         """
         Set hash fields.
 
@@ -142,7 +142,7 @@ class BaseRedisClient(ABC):
         pass
 
     @abstractmethod
-    def hget(self, name: str, key: str) -> Optional[str]:
+    def hget(self, name: str, key: str) -> str | None:
         """
         Get hash field.
 
@@ -156,7 +156,7 @@ class BaseRedisClient(ABC):
         pass
 
     @abstractmethod
-    def hgetall(self, name: str) -> Dict[str, str]:
+    def hgetall(self, name: str) -> dict[str, str]:
         """
         Get all hash fields.
 
@@ -212,7 +212,7 @@ class BaseRedisClient(ABC):
         pass
 
     @abstractmethod
-    def lrange(self, name: str, start: int, end: int) -> List[str]:
+    def lrange(self, name: str, start: int, end: int) -> list[str]:
         """
         Get list range.
 
@@ -227,7 +227,7 @@ class BaseRedisClient(ABC):
         pass
 
     @abstractmethod
-    def lpop(self, name: str) -> Optional[str]:
+    def lpop(self, name: str) -> str | None:
         """
         Pop from start of list.
 
@@ -298,7 +298,7 @@ class BaseRedisClient(ABC):
     # Stream operations (Redis Streams - native in Redis 5.0+)
     @abstractmethod
     def xadd(
-        self, name: str, fields: Dict[str, str], id: str = "*", maxlen: Optional[int] = None
+        self, name: str, fields: dict[str, str], id: str = "*", maxlen: int | None = None
     ) -> str:
         """
         Add entry to stream.
@@ -316,8 +316,8 @@ class BaseRedisClient(ABC):
 
     @abstractmethod
     def xread(
-        self, streams: Dict[str, str], count: Optional[int] = None, block: Optional[int] = None
-    ) -> List:
+        self, streams: dict[str, str], count: int | None = None, block: int | None = None
+    ) -> list:
         """
         Read from streams.
 
@@ -332,9 +332,7 @@ class BaseRedisClient(ABC):
         pass
 
     @abstractmethod
-    def xrange(
-        self, name: str, min: str = "-", max: str = "+", count: Optional[int] = None
-    ) -> List:
+    def xrange(self, name: str, min: str = "-", max: str = "+", count: int | None = None) -> list:
         """
         Get stream range.
 
@@ -396,7 +394,7 @@ class BasePubSub(ABC):
         pass
 
     @abstractmethod
-    def get_message(self, timeout: float = 0.0) -> Optional[Dict]:
+    def get_message(self, timeout: float = 0.0) -> dict | None:
         """
         Get next message if available.
 

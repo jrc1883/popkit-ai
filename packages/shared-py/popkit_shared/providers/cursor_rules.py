@@ -10,7 +10,7 @@ Part of the PopKit v2.0 provider-agnostic architecture.
 """
 
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 
 def generate_safety_rules() -> str:
@@ -58,7 +58,7 @@ Never execute these without explicit user confirmation:
 def generate_agent_rule(
     agent_name: str,
     description: str,
-    tools: List[str],
+    tools: list[str],
     content: str,
     tier: str = "on-demand",
 ) -> str:
@@ -103,9 +103,9 @@ is activated), adopt the following persona and constraints:
 
 
 def generate_all_rules(
-    agents: List[Dict[str, Any]],
+    agents: list[dict[str, Any]],
     output_dir: Path,
-) -> List[Path]:
+) -> list[Path]:
     """Generate all Cursor rule files for PopKit agents.
 
     Args:

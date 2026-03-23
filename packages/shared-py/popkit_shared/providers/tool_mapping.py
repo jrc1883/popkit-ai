@@ -9,15 +9,13 @@ universal manifest declarations into provider-native configurations.
 Part of the PopKit v2.0 provider-agnostic architecture.
 """
 
-from typing import Dict, List
-
 from .base import ToolCategory, ToolMapping
 
 # =============================================================================
 # Claude Code Tool Mappings
 # =============================================================================
 
-CLAUDE_CODE_MAPPINGS: List[ToolMapping] = [
+CLAUDE_CODE_MAPPINGS: list[ToolMapping] = [
     ToolMapping(ToolCategory.FILE_READ, "Read"),
     ToolMapping(ToolCategory.FILE_WRITE, "Write"),
     ToolMapping(ToolCategory.FILE_EDIT, "Edit"),
@@ -38,7 +36,7 @@ CLAUDE_CODE_MAPPINGS: List[ToolMapping] = [
 # Generic MCP Tool Mappings
 # =============================================================================
 
-GENERIC_MCP_MAPPINGS: List[ToolMapping] = [
+GENERIC_MCP_MAPPINGS: list[ToolMapping] = [
     ToolMapping(ToolCategory.FILE_READ, "popkit/read_file"),
     ToolMapping(ToolCategory.FILE_WRITE, "popkit/write_file"),
     ToolMapping(ToolCategory.FILE_EDIT, "popkit/edit_file"),
@@ -54,7 +52,7 @@ GENERIC_MCP_MAPPINGS: List[ToolMapping] = [
 # Cursor Tool Mappings (MCP-based)
 # =============================================================================
 
-CURSOR_MAPPINGS: List[ToolMapping] = [
+CURSOR_MAPPINGS: list[ToolMapping] = [
     ToolMapping(ToolCategory.FILE_READ, "read_file"),
     ToolMapping(ToolCategory.FILE_WRITE, "write_file"),
     ToolMapping(ToolCategory.FILE_EDIT, "edit_file"),
@@ -69,7 +67,7 @@ CURSOR_MAPPINGS: List[ToolMapping] = [
 # Codex CLI Tool Mappings
 # =============================================================================
 
-CODEX_MAPPINGS: List[ToolMapping] = [
+CODEX_MAPPINGS: list[ToolMapping] = [
     ToolMapping(ToolCategory.FILE_READ, "Read"),
     ToolMapping(ToolCategory.FILE_WRITE, "Write"),
     ToolMapping(ToolCategory.FILE_EDIT, "Edit"),
@@ -85,7 +83,7 @@ CODEX_MAPPINGS: List[ToolMapping] = [
 # GitHub Copilot Tool Mappings (MCP-based, similar to Cursor)
 # =============================================================================
 
-COPILOT_MAPPINGS: List[ToolMapping] = [
+COPILOT_MAPPINGS: list[ToolMapping] = [
     ToolMapping(ToolCategory.FILE_READ, "read_file"),
     ToolMapping(ToolCategory.FILE_WRITE, "write_file"),
     ToolMapping(ToolCategory.FILE_EDIT, "edit_file"),
@@ -101,7 +99,7 @@ COPILOT_MAPPINGS: List[ToolMapping] = [
 # =============================================================================
 
 
-def get_mappings_for_provider(provider_name: str) -> List[ToolMapping]:
+def get_mappings_for_provider(provider_name: str) -> list[ToolMapping]:
     """Get tool mappings for a specific provider.
 
     Args:
@@ -110,7 +108,7 @@ def get_mappings_for_provider(provider_name: str) -> List[ToolMapping]:
     Returns:
         List of ToolMapping instances
     """
-    registry: Dict[str, List[ToolMapping]] = {
+    registry: dict[str, list[ToolMapping]] = {
         "claude-code": CLAUDE_CODE_MAPPINGS,
         "generic-mcp": GENERIC_MCP_MAPPINGS,
         "cursor": CURSOR_MAPPINGS,
@@ -120,7 +118,7 @@ def get_mappings_for_provider(provider_name: str) -> List[ToolMapping]:
     return registry.get(provider_name, [])
 
 
-def translate_tools(abstract_tools: List[str], provider_name: str) -> List[str]:
+def translate_tools(abstract_tools: list[str], provider_name: str) -> list[str]:
     """Translate abstract tool category names to provider-specific names.
 
     Args:

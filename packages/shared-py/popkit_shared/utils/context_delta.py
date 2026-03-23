@@ -9,7 +9,7 @@ Used by: user-prompt-submit.py hook
 """
 
 import re
-from typing import Any, Dict, Optional
+from typing import Any
 
 # Import compute_hash from context_state
 try:
@@ -19,8 +19,8 @@ except ImportError:
 
 
 def compute_context_delta(
-    previous: Dict[str, Any], current: Dict[str, Any]
-) -> Dict[str, Dict[str, Any]]:
+    previous: dict[str, Any], current: dict[str, Any]
+) -> dict[str, dict[str, Any]]:
     """
     Compute what changed between previous and current context.
 
@@ -76,8 +76,8 @@ def compute_context_delta(
 
 
 def extract_new_context(
-    message: str, existing_context: Optional[Dict[str, Any]] = None
-) -> Dict[str, Any]:
+    message: str, existing_context: dict[str, Any] | None = None
+) -> dict[str, Any]:
     """
     Extract new context information from user message.
 

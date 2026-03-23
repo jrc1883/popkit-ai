@@ -15,7 +15,7 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class DocSyncChecker:
@@ -23,9 +23,9 @@ class DocSyncChecker:
 
     def __init__(self, project_root: Path = None):
         self.project_root = project_root or Path.cwd()
-        self.drift_issues: List[Dict[str, Any]] = []
+        self.drift_issues: list[dict[str, Any]] = []
 
-    def get_plugin_version(self) -> Optional[str]:
+    def get_plugin_version(self) -> str | None:
         """Get version from plugin.json."""
         plugin_file = self.project_root / ".claude-plugin" / "plugin.json"
         if plugin_file.exists():
@@ -33,11 +33,11 @@ class DocSyncChecker:
                 with open(plugin_file, encoding="utf-8") as f:
                     data = json.load(f)
                     return data.get("version")
-            except (json.JSONDecodeError, IOError):
+            except (OSError, json.JSONDecodeError):
                 pass
         return None
 
-    def get_marketplace_version(self) -> Optional[str]:
+    def get_marketplace_version(self) -> str | None:
         """Get version from marketplace.json."""
         marketplace_file = self.project_root / ".claude-plugin" / "marketplace.json"
         if marketplace_file.exists():
@@ -51,12 +51,12 @@ class DocSyncChecker:
                     plugins = data.get("plugins", [])
                     if plugins and "version" in plugins[0]:
                         return plugins[0]["version"]
-            except (json.JSONDecodeError, IOError, IndexError, KeyError):
+            except (OSError, json.JSONDecodeError, IndexError, KeyError):
                 # Best-effort fallback: ignore optional failure.
                 pass
         return None
 
-    def get_agent_counts(self) -> Dict[str, int]:
+    def get_agent_counts(self) -> dict[str, int]:
         """Get agent counts from config.json."""
         config_file = self.project_root / "agents" / "config.json"
         counts = {"tier1": 0, "tier2": 0, "feature": 0, "total": 0}
@@ -70,7 +70,7 @@ class DocSyncChecker:
                     counts["tier2"] = len(tiers.get("tier-2-on-demand", {}).get("agents", []))
                     counts["feature"] = len(tiers.get("feature-workflow", {}).get("agents", []))
                     counts["total"] = counts["tier1"] + counts["tier2"] + counts["feature"]
-            except (json.JSONDecodeError, IOError):
+            except (OSError, json.JSONDecodeError):
                 # Best-effort fallback: ignore optional failure.
                 pass
 
@@ -84,7 +84,7 @@ class DocSyncChecker:
                 with open(hooks_file, encoding="utf-8") as f:
                     data = json.load(f)
                     return len(data.get("hooks", []))
-            except (json.JSONDecodeError, IOError):
+            except (OSError, json.JSONDecodeError):
                 pass
         return 0
 
@@ -102,7 +102,7 @@ class DocSyncChecker:
                     count += 1
         return count
 
-    def get_command_counts(self) -> Dict[str, int]:
+    def get_command_counts(self) -> dict[str, int]:
         """Count commands (total, active, deprecated)."""
         commands_dir = self.project_root / "commands"
         if not commands_dir.exists():
@@ -117,7 +117,7 @@ class DocSyncChecker:
                 content = cmd_file.read_text(encoding="utf-8")
                 if "deprecated" in content.lower() or "DEPRECATED" in content:
                     deprecated += 1
-            except IOError:
+            except OSError:
                 # Best-effort fallback: ignore optional failure.
                 pass
 
@@ -131,7 +131,7 @@ class DocSyncChecker:
 
         return len(list(utils_dir.glob("*.py")))
 
-    def gather_source_counts(self) -> Dict[str, Any]:
+    def gather_source_counts(self) -> dict[str, Any]:
         """Gather all counts from source-of-truth files."""
         agent_counts = self.get_agent_counts()
         command_counts = self.get_command_counts()
@@ -148,7 +148,7 @@ class DocSyncChecker:
             "utils": self.get_utils_count(),
         }
 
-    def parse_claude_md(self) -> Dict[str, Any]:
+    def parse_claude_md(self) -> dict[str, Any]:
         """Parse CLAUDE.md for documented counts."""
         claude_md = self.project_root / "CLAUDE.md"
         if not claude_md.exists():
@@ -156,7 +156,7 @@ class DocSyncChecker:
 
         try:
             content = claude_md.read_text(encoding="utf-8")
-        except IOError:
+        except OSError:
             return {}
 
         documented = {}
@@ -205,7 +205,7 @@ class DocSyncChecker:
 
         return documented
 
-    def compare_counts(self) -> List[Dict[str, Any]]:
+    def compare_counts(self) -> list[dict[str, Any]]:
         """Compare source counts to documented counts."""
         source = self.gather_source_counts()
         documented = self.parse_claude_md()

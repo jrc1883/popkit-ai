@@ -14,8 +14,8 @@ Part of the popkit plugin system.
 
 import json
 import os
-from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, Optional, Tuple
+from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from .subprocess_utils import run_command
 
@@ -28,7 +28,7 @@ WEIGHTS = {"git": 20, "build": 20, "tests": 20, "issues": 20, "activity": 20}
 # =============================================================================
 
 
-def calculate_git_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
+def calculate_git_score(project_path: str) -> tuple[int, dict[str, Any]]:
     """Calculate git status score.
 
     Score breakdown:
@@ -82,7 +82,7 @@ def calculate_git_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
     return max(0, score), details
 
 
-def calculate_build_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
+def calculate_build_score(project_path: str) -> tuple[int, dict[str, Any]]:
     """Calculate build status score.
 
     Score breakdown:
@@ -180,7 +180,7 @@ def calculate_build_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
     return WEIGHTS["build"], {"status": "unknown", "message": "Could not determine build status"}
 
 
-def calculate_test_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
+def calculate_test_score(project_path: str) -> tuple[int, dict[str, Any]]:
     """Calculate test coverage score.
 
     Score breakdown:
@@ -231,7 +231,7 @@ def calculate_test_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
     coverage_path = os.path.join(project_path, "coverage", "coverage-summary.json")
     if os.path.isfile(coverage_path):
         try:
-            with open(coverage_path, "r", encoding="utf-8") as f:
+            with open(coverage_path, encoding="utf-8") as f:
                 coverage_data = json.load(f)
                 total = coverage_data.get("total", {})
                 lines = total.get("lines", {}).get("pct", 0)
@@ -254,7 +254,7 @@ def calculate_test_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
                     return 10, details
                 else:
                     return 5, details
-        except (json.JSONDecodeError, IOError):
+        except (OSError, json.JSONDecodeError):
             pass
 
     # No coverage data, but tests exist
@@ -263,7 +263,7 @@ def calculate_test_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
     return 10, details  # Middle score for having tests without coverage
 
 
-def calculate_issue_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
+def calculate_issue_score(project_path: str) -> tuple[int, dict[str, Any]]:
     """Calculate issue health score.
 
     Score breakdown:
@@ -324,7 +324,7 @@ def calculate_issue_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
 
     try:
         issues = json.loads(stdout)
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         stale_threshold = now - timedelta(days=30)
 
         stale_count = 0
@@ -349,8 +349,8 @@ def calculate_issue_score(project_path: str) -> Tuple[int, Dict[str, Any]]:
 
 
 def calculate_activity_score(
-    project_path: str, last_active: Optional[str] = None
-) -> Tuple[int, Dict[str, Any]]:
+    project_path: str, last_active: str | None = None
+) -> tuple[int, dict[str, Any]]:
     """Calculate activity score.
 
     Score breakdown:
@@ -367,7 +367,7 @@ def calculate_activity_score(
         Tuple of (score, details dict)
     """
     details = {}
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     # Try to get from git log
     code, stdout, _ = run_command(["git", "log", "-1", "--format=%cI"], cwd=project_path)
@@ -426,8 +426,8 @@ def calculate_activity_score(
 
 
 def calculate_health_score(
-    project_path: str, last_active: Optional[str] = None, skip_slow: bool = False
-) -> Dict[str, Any]:
+    project_path: str, last_active: str | None = None, skip_slow: bool = False
+) -> dict[str, Any]:
     """Calculate overall health score for a project.
 
     Args:
@@ -474,7 +474,7 @@ def calculate_health_score(
                 "details": activity_details,
             },
         },
-        "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
     }
 
 
@@ -495,7 +495,7 @@ def calculate_quick_health(project_path: str) -> int:
     return int(quick_score * 2.5)
 
 
-def format_health_report(result: Dict[str, Any]) -> str:
+def format_health_report(result: dict[str, Any]) -> str:
     """Format health calculation result as readable report.
 
     Args:

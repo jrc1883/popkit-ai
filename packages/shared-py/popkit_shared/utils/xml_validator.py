@@ -9,7 +9,6 @@ Supports both lxml (full XSD validation) and ElementTree (well-formedness).
 import logging
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from typing import Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +61,7 @@ def get_schema_path(schema_type: str) -> Path:
     return schema_file
 
 
-def is_well_formed_xml(xml_string: str) -> Tuple[bool, Optional[str]]:
+def is_well_formed_xml(xml_string: str) -> tuple[bool, str | None]:
     """
     Checks if XML is well-formed (parseable by ElementTree).
 
@@ -113,7 +112,7 @@ def validate_xml_structure(xml_string: str, expected_root: str) -> bool:
         return False
 
 
-def validate_xml_against_schema(xml_string: str, schema_type: str) -> Tuple[bool, Optional[str]]:
+def validate_xml_against_schema(xml_string: str, schema_type: str) -> tuple[bool, str | None]:
     """
     Validates XML string against XSD schema.
 
@@ -206,21 +205,21 @@ def clear_schema_cache():
 # Convenience functions for specific schema types
 
 
-def validate_problem_xml(xml_string: str) -> Tuple[bool, Optional[str]]:
+def validate_problem_xml(xml_string: str) -> tuple[bool, str | None]:
     """Validates problem-context XML."""
     return validate_xml_against_schema(xml_string, "problem")
 
 
-def validate_project_xml(xml_string: str) -> Tuple[bool, Optional[str]]:
+def validate_project_xml(xml_string: str) -> tuple[bool, str | None]:
     """Validates project XML."""
     return validate_xml_against_schema(xml_string, "project")
 
 
-def validate_findings_xml(xml_string: str) -> Tuple[bool, Optional[str]]:
+def validate_findings_xml(xml_string: str) -> tuple[bool, str | None]:
     """Validates findings XML."""
     return validate_xml_against_schema(xml_string, "findings")
 
 
-def validate_workflow_xml(xml_string: str) -> Tuple[bool, Optional[str]]:
+def validate_workflow_xml(xml_string: str) -> tuple[bool, str | None]:
     """Validates workflow XML."""
     return validate_xml_against_schema(xml_string, "workflow")

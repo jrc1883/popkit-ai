@@ -12,7 +12,7 @@ import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 # =============================================================================
 # CONFIGURATION
@@ -85,7 +85,7 @@ class SurfacedResearch:
     id: str
     type: str
     title: str
-    tags: List[str]
+    tags: list[str]
     similarity: float
     reason: str  # Why this was surfaced
 
@@ -95,7 +95,7 @@ class SurfaceResult:
     """Result of research surfacing check."""
 
     should_surface: bool
-    entries: List[SurfacedResearch]
+    entries: list[SurfacedResearch]
     message: str
 
 
@@ -115,7 +115,7 @@ class ResearchSurfacer:
     - Non-intrusive notifications
     """
 
-    def __init__(self, project_root: Optional[str] = None):
+    def __init__(self, project_root: str | None = None):
         """
         Initialize the research surfacer.
 
@@ -151,7 +151,7 @@ class ResearchSurfacer:
     # TRIGGER DETECTION
     # =========================================================================
 
-    def _extract_keywords(self, text: str) -> List[str]:
+    def _extract_keywords(self, text: str) -> list[str]:
         """Extract relevant keywords from text."""
         # Normalize text
         text_lower = text.lower()
@@ -164,7 +164,7 @@ class ResearchSurfacer:
 
         return found
 
-    def _extract_file_context(self, files: List[str]) -> List[str]:
+    def _extract_file_context(self, files: list[str]) -> list[str]:
         """Extract context from file paths."""
         contexts = []
 
@@ -182,8 +182,8 @@ class ResearchSurfacer:
         return contexts
 
     def _should_check_research(
-        self, message: str, tool_name: Optional[str] = None, files: Optional[List[str]] = None
-    ) -> Tuple[bool, str]:
+        self, message: str, tool_name: str | None = None, files: list[str] | None = None
+    ) -> tuple[bool, str]:
         """
         Determine if we should check for relevant research.
 
@@ -228,7 +228,7 @@ class ResearchSurfacer:
     # RESEARCH LOOKUP
     # =========================================================================
 
-    def _search_local(self, query: str, limit: int = MAX_SURFACE_COUNT) -> List[SurfacedResearch]:
+    def _search_local(self, query: str, limit: int = MAX_SURFACE_COUNT) -> list[SurfacedResearch]:
         """Search local research index."""
         manager = self._get_research_manager()
         if not manager:
@@ -263,7 +263,7 @@ class ResearchSurfacer:
         except Exception:
             return []
 
-    def _search_cloud(self, query: str, limit: int = MAX_SURFACE_COUNT) -> List[SurfacedResearch]:
+    def _search_cloud(self, query: str, limit: int = MAX_SURFACE_COUNT) -> list[SurfacedResearch]:
         """Search cloud research index (for Pro/Team users)."""
         api_key = os.environ.get("POPKIT_API_KEY")
         if not api_key:
@@ -311,9 +311,9 @@ class ResearchSurfacer:
     def check_and_surface(
         self,
         message: str,
-        tool_name: Optional[str] = None,
-        tool_input: Optional[Dict[str, Any]] = None,
-        files: Optional[List[str]] = None,
+        tool_name: str | None = None,
+        tool_input: dict[str, Any] | None = None,
+        files: list[str] | None = None,
     ) -> SurfaceResult:
         """
         Check if relevant research should be surfaced.
@@ -375,7 +375,7 @@ class ResearchSurfacer:
 
         return SurfaceResult(should_surface=True, entries=top_results, message=message)
 
-    def _format_notification(self, entries: List[SurfacedResearch]) -> str:
+    def _format_notification(self, entries: list[SurfacedResearch]) -> str:
         """Format notification message for surfaced research."""
         lines = ["", "💡 **Relevant Research Found**"]
 
@@ -404,7 +404,7 @@ class ResearchSurfacer:
 # =============================================================================
 
 
-def get_surfacer(project_root: Optional[str] = None) -> ResearchSurfacer:
+def get_surfacer(project_root: str | None = None) -> ResearchSurfacer:
     """
     Get a research surfacer instance.
 
@@ -419,10 +419,10 @@ def get_surfacer(project_root: Optional[str] = None) -> ResearchSurfacer:
 
 def check_research_relevance(
     message: str,
-    tool_name: Optional[str] = None,
-    tool_input: Optional[Dict[str, Any]] = None,
-    files: Optional[List[str]] = None,
-) -> Optional[str]:
+    tool_name: str | None = None,
+    tool_input: dict[str, Any] | None = None,
+    files: list[str] | None = None,
+) -> str | None:
     """
     Quick check for relevant research.
 

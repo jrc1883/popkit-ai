@@ -11,7 +11,7 @@ import os
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 @dataclass
@@ -33,8 +33,8 @@ class RoutineMeasurement:
     routine_id: str
     routine_name: str
     start_time: float
-    end_time: Optional[float] = None
-    tool_calls: List[ToolCall] = field(default_factory=list)
+    end_time: float | None = None
+    tool_calls: list[ToolCall] = field(default_factory=list)
 
     @property
     def duration(self) -> float:
@@ -63,7 +63,7 @@ class RoutineMeasurement:
         """Total characters processed."""
         return sum(tc.chars for tc in self.tool_calls)
 
-    def tool_breakdown(self) -> Dict[str, Dict[str, Any]]:
+    def tool_breakdown(self) -> dict[str, dict[str, Any]]:
         """Breakdown by tool type."""
         breakdown = {}
         for tc in self.tool_calls:
@@ -91,7 +91,7 @@ class RoutineMeasurement:
         )
         return sorted_breakdown
 
-    def estimate_cost(self) -> Dict[str, float]:
+    def estimate_cost(self) -> dict[str, float]:
         """Estimate API cost based on token usage.
 
         Uses Claude Sonnet 4.5 pricing:
@@ -108,7 +108,7 @@ class RoutineMeasurement:
             "total": round(total_cost, 4),
         }
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "routine_id": self.routine_id,
@@ -130,7 +130,7 @@ class RoutineMeasurementTracker:
     """Singleton tracker for routine measurements."""
 
     _instance = None
-    _measurement: Optional[RoutineMeasurement] = None
+    _measurement: RoutineMeasurement | None = None
 
     def __new__(cls):
         if cls._instance is None:
@@ -167,7 +167,7 @@ class RoutineMeasurementTracker:
         )
         self._measurement.tool_calls.append(tool_call)
 
-    def stop(self) -> Optional[RoutineMeasurement]:
+    def stop(self) -> RoutineMeasurement | None:
         """Stop tracking and return measurement."""
         if self._measurement is None:
             return None
@@ -181,7 +181,7 @@ class RoutineMeasurementTracker:
         """Check if measurement is active."""
         return self._measurement is not None
 
-    def get_current(self) -> Optional[RoutineMeasurement]:
+    def get_current(self) -> RoutineMeasurement | None:
         """Get current measurement (if active)."""
         return self._measurement
 
@@ -255,7 +255,7 @@ def format_measurement_report(measurement: RoutineMeasurement) -> str:
     return "\n".join(report_lines)
 
 
-def save_measurement(measurement: RoutineMeasurement, output_dir: Optional[Path] = None) -> Path:
+def save_measurement(measurement: RoutineMeasurement, output_dir: Path | None = None) -> Path:
     """Save measurement data to JSON file.
 
     Args:

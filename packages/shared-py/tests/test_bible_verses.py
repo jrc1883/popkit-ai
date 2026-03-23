@@ -216,7 +216,7 @@ class TestLoadVerseConfig:
                 return_value=config_path,
             ):
                 # Direct test of config parsing
-                with open(config_path, "r", encoding="utf-8") as cf:
+                with open(config_path, encoding="utf-8") as cf:
                     loaded = json.load(cf)
                 verse_config = loaded.get("nightly_routine", {}).get("bible_verse", {})
                 assert verse_config["enabled"] is False

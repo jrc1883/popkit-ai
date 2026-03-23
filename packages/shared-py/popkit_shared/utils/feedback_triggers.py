@@ -12,7 +12,7 @@ feedback fatigue. Integrates with AskUserQuestion for consistent UX.
 import json
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 
 class TriggerType(Enum):
@@ -41,13 +41,13 @@ class FeedbackTrigger:
     trigger_type: TriggerType
     priority: TriggerPriority
     context_type: str
-    context_id: Optional[str]
-    agent_name: Optional[str]
-    command_name: Optional[str]
-    workflow_phase: Optional[str]
+    context_id: str | None
+    agent_name: str | None
+    command_name: str | None
+    workflow_phase: str | None
     question_text: str
 
-    def to_ask_user_question(self) -> Dict[str, Any]:
+    def to_ask_user_question(self) -> dict[str, Any]:
         """
         Convert to AskUserQuestion format for consistent UX.
 
@@ -111,8 +111,8 @@ class FeedbackTriggerManager:
         pass
 
     def evaluate_agent_completion(
-        self, agent_name: str, tool_output: Optional[str] = None, error_occurred: bool = False
-    ) -> Optional[FeedbackTrigger]:
+        self, agent_name: str, tool_output: str | None = None, error_occurred: bool = False
+    ) -> FeedbackTrigger | None:
         """
         Evaluate whether to trigger feedback after agent completion.
 
@@ -154,7 +154,7 @@ class FeedbackTriggerManager:
 
     def evaluate_command_execution(
         self, command_name: str, success: bool = True, output_size: int = 0
-    ) -> Optional[FeedbackTrigger]:
+    ) -> FeedbackTrigger | None:
         """
         Evaluate whether to trigger feedback after command execution.
 
@@ -194,9 +194,9 @@ class FeedbackTriggerManager:
     def evaluate_workflow_phase(
         self,
         phase_name: str,
-        workflow_name: Optional[str] = None,
-        phase_output: Optional[str] = None,
-    ) -> Optional[FeedbackTrigger]:
+        workflow_name: str | None = None,
+        phase_output: str | None = None,
+    ) -> FeedbackTrigger | None:
         """
         Evaluate whether to trigger feedback after a workflow phase.
 
@@ -225,7 +225,7 @@ class FeedbackTriggerManager:
 
     def evaluate_session_end(
         self, session_duration_minutes: int, tool_call_count: int, feedback_count: int
-    ) -> Optional[FeedbackTrigger]:
+    ) -> FeedbackTrigger | None:
         """
         Evaluate whether to request session-end feedback.
 
@@ -263,7 +263,7 @@ class FeedbackTriggerManager:
         dismissed_count: int,
         never_ask_session: bool = False,
         min_tool_calls: int = 10,
-    ) -> Tuple[bool, str]:
+    ) -> tuple[bool, str]:
         """
         Final decision on whether to show feedback prompt.
 
@@ -298,7 +298,7 @@ class FeedbackTriggerManager:
 
         return True, "Threshold met"
 
-    def parse_feedback_response(self, response: str) -> Tuple[Optional[int], Optional[str]]:
+    def parse_feedback_response(self, response: str) -> tuple[int | None, str | None]:
         """
         Parse user's feedback response.
 
@@ -342,7 +342,7 @@ class FeedbackTriggerManager:
         return None, response  # Return as comment if can't parse
 
 
-def create_feedback_prompt(question: str, include_comment_option: bool = False) -> Dict[str, Any]:
+def create_feedback_prompt(question: str, include_comment_option: bool = False) -> dict[str, Any]:
     """
     Create a standard feedback prompt for AskUserQuestion.
 
@@ -370,7 +370,7 @@ def create_feedback_prompt(question: str, include_comment_option: bool = False) 
     }
 
 
-def create_never_ask_prompt() -> Dict[str, Any]:
+def create_never_ask_prompt() -> dict[str, Any]:
     """
     Create prompt asking if user wants to disable feedback for session.
 
@@ -394,7 +394,7 @@ def create_never_ask_prompt() -> Dict[str, Any]:
 
 
 # Singleton instance
-_manager: Optional[FeedbackTriggerManager] = None
+_manager: FeedbackTriggerManager | None = None
 
 
 def get_trigger_manager() -> FeedbackTriggerManager:

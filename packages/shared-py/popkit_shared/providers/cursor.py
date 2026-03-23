@@ -12,7 +12,7 @@ Part of the PopKit v2.0 provider-agnostic architecture.
 import json
 import shutil
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from .base import ProviderAdapter, ProviderInfo, ToolMapping
 from .tool_mapping import CURSOR_MAPPINGS
@@ -62,7 +62,7 @@ class CursorAdapter(ProviderAdapter):
             is_available=is_available,
         )
 
-    def generate_config(self, package_dir: Path, output_dir: Path) -> List[Path]:
+    def generate_config(self, package_dir: Path, output_dir: Path) -> list[Path]:
         """Generate Cursor-specific configuration.
 
         Creates:
@@ -77,7 +77,7 @@ class CursorAdapter(ProviderAdapter):
             List of generated file paths
         """
         output_dir.mkdir(parents=True, exist_ok=True)
-        generated: List[Path] = []
+        generated: list[Path] = []
 
         # Generate MCP config
         mcp_config = self._build_mcp_config(package_dir)
@@ -92,7 +92,7 @@ class CursorAdapter(ProviderAdapter):
 
         return generated
 
-    def get_tool_mappings(self) -> List[ToolMapping]:
+    def get_tool_mappings(self) -> list[ToolMapping]:
         """Get Cursor tool mappings."""
         return CURSOR_MAPPINGS
 
@@ -113,12 +113,12 @@ class CursorAdapter(ProviderAdapter):
         mcp_json_path = cursor_dir / "mcp.json"
 
         # Load existing config or start fresh
-        existing: Dict[str, Any] = {}
+        existing: dict[str, Any] = {}
         if mcp_json_path.is_file():
             try:
-                with open(mcp_json_path, "r", encoding="utf-8") as f:
+                with open(mcp_json_path, encoding="utf-8") as f:
                     existing = json.load(f)
-            except (json.JSONDecodeError, IOError):
+            except (OSError, json.JSONDecodeError):
                 existing = {}
 
         # Ensure mcpServers key exists
@@ -133,7 +133,7 @@ class CursorAdapter(ProviderAdapter):
             with open(mcp_json_path, "w", encoding="utf-8") as f:
                 json.dump(existing, f, indent=2)
             return True
-        except IOError:
+        except OSError:
             return False
 
     def uninstall(self, package_name: str) -> bool:
@@ -153,9 +153,9 @@ class CursorAdapter(ProviderAdapter):
             return False
 
         try:
-            with open(mcp_json_path, "r", encoding="utf-8") as f:
+            with open(mcp_json_path, encoding="utf-8") as f:
                 config = json.load(f)
-        except (json.JSONDecodeError, IOError):
+        except (OSError, json.JSONDecodeError):
             return False
 
         servers = config.get("mcpServers", {})
@@ -168,10 +168,10 @@ class CursorAdapter(ProviderAdapter):
             with open(mcp_json_path, "w", encoding="utf-8") as f:
                 json.dump(config, f, indent=2)
             return True
-        except IOError:
+        except OSError:
             return False
 
-    def _build_mcp_config(self, package_dir: Path) -> Dict[str, Any]:
+    def _build_mcp_config(self, package_dir: Path) -> dict[str, Any]:
         """Build MCP server configuration for Cursor.
 
         Args:
@@ -196,7 +196,7 @@ class CursorAdapter(ProviderAdapter):
             }
         }
 
-    def _generate_cursorrules(self, package_dir: Path, output_dir: Path) -> List[Path]:
+    def _generate_cursorrules(self, package_dir: Path, output_dir: Path) -> list[Path]:
         """Generate .cursorrules files from AGENT.md files.
 
         Scans the package for AGENT.md files and creates corresponding
@@ -209,7 +209,7 @@ class CursorAdapter(ProviderAdapter):
         Returns:
             List of generated .cursorrules file paths
         """
-        generated: List[Path] = []
+        generated: list[Path] = []
         rules_dir = output_dir / "cursorrules"
         rules_dir.mkdir(parents=True, exist_ok=True)
 
@@ -242,7 +242,7 @@ class CursorAdapter(ProviderAdapter):
         """
         try:
             content = agent_md_path.read_text(encoding="utf-8")
-        except IOError:
+        except OSError:
             return ""
 
         # Wrap in a Cursor-compatible format with attribution
