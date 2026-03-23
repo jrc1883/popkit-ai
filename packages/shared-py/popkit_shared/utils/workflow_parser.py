@@ -30,7 +30,7 @@ import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Optional
 
 # Import workflow classes
 try:
@@ -44,7 +44,7 @@ except ImportError:
 # =============================================================================
 
 
-def _parse_yaml_frontmatter(content: str) -> Tuple[Dict[str, Any], str]:
+def _parse_yaml_frontmatter(content: str) -> tuple[dict[str, Any], str]:
     """Parse YAML frontmatter from a markdown file.
 
     Uses a minimal parser to avoid yaml module dependency.
@@ -72,7 +72,7 @@ def _parse_yaml_frontmatter(content: str) -> Tuple[Dict[str, Any], str]:
     return _parse_yaml_dict(frontmatter_str), body
 
 
-def _parse_yaml_dict(yaml_str: str, indent: int = 0) -> Dict[str, Any]:
+def _parse_yaml_dict(yaml_str: str, indent: int = 0) -> dict[str, Any]:
     """Parse a YAML string into a dictionary.
 
     Supports:
@@ -195,7 +195,7 @@ def _parse_yaml_dict(yaml_str: str, indent: int = 0) -> Dict[str, Any]:
     return result
 
 
-def _parse_yaml_array(yaml_str: str, indent: int) -> Tuple[List[Any], int]:
+def _parse_yaml_array(yaml_str: str, indent: int) -> tuple[list[Any], int]:
     """Parse a YAML array starting at the given indentation."""
     result = []
     lines = yaml_str.split("\n")
@@ -352,7 +352,7 @@ def _parse_yaml_value(value_str: str) -> Any:
     return value_str
 
 
-def _parse_inline_array(value_str: str) -> List[Any]:
+def _parse_inline_array(value_str: str) -> list[Any]:
     """Parse an inline YAML array like [a, b, c]."""
     inner = value_str[1:-1].strip()
     if not inner:
@@ -365,7 +365,7 @@ def _parse_inline_array(value_str: str) -> List[Any]:
     return items
 
 
-def _parse_inline_dict(value_str: str) -> Dict[str, Any]:
+def _parse_inline_dict(value_str: str) -> dict[str, Any]:
     """Parse an inline YAML dict like {a: 1, b: 2}."""
     inner = value_str[1:-1].strip()
     if not inner:
@@ -389,8 +389,8 @@ class ValidationResult:
     """Result of workflow validation."""
 
     valid: bool
-    errors: List[str] = field(default_factory=list)
-    warnings: List[str] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
 
     def add_error(self, msg: str) -> None:
         self.errors.append(msg)
@@ -400,7 +400,7 @@ class ValidationResult:
         self.warnings.append(msg)
 
 
-def validate_workflow_definition(workflow_data: Dict[str, Any]) -> ValidationResult:
+def validate_workflow_definition(workflow_data: dict[str, Any]) -> ValidationResult:
     """Validate a workflow definition.
 
     Checks:
@@ -520,7 +520,7 @@ def validate_workflow_definition(workflow_data: Dict[str, Any]) -> ValidationRes
 # =============================================================================
 
 
-def parse_skill_workflow(skill_path: Path) -> Optional[Dict[str, Any]]:
+def parse_skill_workflow(skill_path: Path) -> dict[str, Any] | None:
     """Parse workflow definition from a skill file.
 
     Args:
@@ -551,7 +551,7 @@ def parse_skill_workflow(skill_path: Path) -> Optional[Dict[str, Any]]:
     return workflow
 
 
-def parse_skill_file(skill_path: Path) -> Dict[str, Any]:
+def parse_skill_file(skill_path: Path) -> dict[str, Any]:
     """Parse a skill file and return all frontmatter.
 
     Args:
@@ -589,7 +589,7 @@ class WorkflowRegistryEntry:
     version: int
     step_count: int
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "skill_name": self.skill_name,
             "skill_path": self.skill_path,
@@ -612,10 +612,10 @@ class WorkflowRegistry:
     _cache_file = "workflows/registry.json"  # Relative to plugin data dir
 
     def __init__(self):
-        self.entries: Dict[str, WorkflowRegistryEntry] = {}  # workflow_id -> entry
-        self.by_skill: Dict[str, str] = {}  # skill_name -> workflow_id
-        self._definitions: Dict[str, Dict[str, Any]] = {}  # workflow_id -> definition
-        self.last_scan: Optional[str] = None
+        self.entries: dict[str, WorkflowRegistryEntry] = {}  # workflow_id -> entry
+        self.by_skill: dict[str, str] = {}  # skill_name -> workflow_id
+        self._definitions: dict[str, dict[str, Any]] = {}  # workflow_id -> definition
+        self.last_scan: str | None = None
 
     @classmethod
     def load(cls, force_scan: bool = False) -> "WorkflowRegistry":
@@ -662,7 +662,7 @@ class WorkflowRegistry:
         return cache_path
 
     @classmethod
-    def _get_skills_dir(cls) -> Optional[Path]:
+    def _get_skills_dir(cls) -> Path | None:
         """Get the skills directory path."""
         current = Path.cwd()
         for parent in [current] + list(current.parents):
@@ -677,7 +677,7 @@ class WorkflowRegistry:
 
     def _load_cache(self, cache_path: Path) -> None:
         """Load registry from cache file."""
-        with open(cache_path, "r", encoding="utf-8") as f:
+        with open(cache_path, encoding="utf-8") as f:
             data = json.load(f)
 
         self.last_scan = data.get("last_scan")
@@ -753,7 +753,7 @@ class WorkflowRegistry:
             self.by_skill[skill_name] = workflow_id
             self._definitions[workflow_id] = workflow
 
-    def get_by_id(self, workflow_id: str) -> Optional[WorkflowDefinition]:
+    def get_by_id(self, workflow_id: str) -> WorkflowDefinition | None:
         """Get a workflow definition by ID.
 
         Args:
@@ -767,7 +767,7 @@ class WorkflowRegistry:
 
         return WorkflowDefinition.from_dict(self._definitions[workflow_id])
 
-    def get_by_skill(self, skill_name: str) -> Optional[WorkflowDefinition]:
+    def get_by_skill(self, skill_name: str) -> WorkflowDefinition | None:
         """Get a workflow definition by skill name.
 
         Args:
@@ -782,7 +782,7 @@ class WorkflowRegistry:
 
         return self.get_by_id(workflow_id)
 
-    def list_workflows(self) -> List[WorkflowRegistryEntry]:
+    def list_workflows(self) -> list[WorkflowRegistryEntry]:
         """List all registered workflows."""
         return list(self.entries.values())
 
@@ -804,7 +804,7 @@ class WorkflowRegistry:
 # =============================================================================
 
 
-def get_workflow_for_skill(skill_name: str) -> Optional[WorkflowDefinition]:
+def get_workflow_for_skill(skill_name: str) -> WorkflowDefinition | None:
     """Get the workflow definition for a skill.
 
     Args:
@@ -830,7 +830,7 @@ def skill_has_workflow(skill_name: str) -> bool:
     return registry.has_workflow(skill_name)
 
 
-def list_available_workflows() -> List[Dict[str, Any]]:
+def list_available_workflows() -> list[dict[str, Any]]:
     """List all available workflows.
 
     Returns:

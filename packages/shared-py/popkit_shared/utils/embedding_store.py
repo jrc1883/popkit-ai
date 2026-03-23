@@ -15,7 +15,7 @@ import sqlite3
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # =============================================================================
 # CONFIGURATION
@@ -37,22 +37,22 @@ class EmbeddingRecord:
 
     id: str
     content: str
-    embedding: List[float]
+    embedding: list[float]
     source_type: (
         str  # "skill", "agent", "command", "project-skill", "project-agent", "project-command"
     )
     source_id: str
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
     embedding_model: str = DEFAULT_EMBEDDING_MODEL
-    project_path: Optional[str] = None  # NULL = global PopKit, path = project-local
+    project_path: str | None = None  # NULL = global PopKit, path = project-local
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> "EmbeddingRecord":
+    def from_dict(cls, d: dict[str, Any]) -> "EmbeddingRecord":
         """Create from dictionary."""
         return cls(**d)
 
@@ -70,7 +70,7 @@ class SearchResult:
     similarity: float
     rank: int = 0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {"record": self.record.to_dict(), "similarity": self.similarity, "rank": self.rank}
 
@@ -92,7 +92,7 @@ class EmbeddingStore:
     - Thread-safe connections
     """
 
-    def __init__(self, db_path: Optional[Path] = None):
+    def __init__(self, db_path: Path | None = None):
         """
         Initialize the embedding store.
 
@@ -209,7 +209,7 @@ class EmbeddingStore:
             )
             conn.commit()
 
-    def store_batch(self, records: List[EmbeddingRecord]) -> int:
+    def store_batch(self, records: list[EmbeddingRecord]) -> int:
         """
         Store multiple embedding records efficiently.
 
@@ -255,7 +255,7 @@ class EmbeddingStore:
 
         return len(records)
 
-    def get(self, id: str) -> Optional[EmbeddingRecord]:
+    def get(self, id: str) -> EmbeddingRecord | None:
         """
         Retrieve an embedding by ID.
 
@@ -273,7 +273,7 @@ class EmbeddingStore:
 
         return None
 
-    def get_by_source(self, source_type: str, source_id: str) -> Optional[EmbeddingRecord]:
+    def get_by_source(self, source_type: str, source_id: str) -> EmbeddingRecord | None:
         """
         Retrieve an embedding by source type and ID.
 
@@ -310,7 +310,7 @@ class EmbeddingStore:
             conn.commit()
             return cursor.rowcount > 0
 
-    def delete_by_source(self, source_type: str, source_id: Optional[str] = None) -> int:
+    def delete_by_source(self, source_type: str, source_id: str | None = None) -> int:
         """
         Delete embeddings by source.
 
@@ -340,12 +340,12 @@ class EmbeddingStore:
 
     def search(
         self,
-        query_embedding: List[float],
-        source_type: Optional[str] = None,
+        query_embedding: list[float],
+        source_type: str | None = None,
         top_k: int = 5,
         min_similarity: float = 0.0,
-        exclude_ids: Optional[List[str]] = None,
-    ) -> List[SearchResult]:
+        exclude_ids: list[str] | None = None,
+    ) -> list[SearchResult]:
         """
         Find similar embeddings using cosine similarity.
 
@@ -394,10 +394,10 @@ class EmbeddingStore:
         self,
         query: str,
         embed_func,
-        source_type: Optional[str] = None,
+        source_type: str | None = None,
         top_k: int = 5,
         min_similarity: float = 0.0,
-    ) -> List[SearchResult]:
+    ) -> list[SearchResult]:
         """
         Search by content string (embeds query first).
 
@@ -450,14 +450,14 @@ class EmbeddingStore:
 
     def search_project(
         self,
-        query_embedding: List[float],
+        query_embedding: list[float],
         project_path: str,
-        source_type: Optional[str] = None,
+        source_type: str | None = None,
         top_k: int = 5,
         min_similarity: float = 0.0,
         include_global: bool = True,
         global_boost: float = 0.0,
-    ) -> List[SearchResult]:
+    ) -> list[SearchResult]:
         """
         Search embeddings with project scope.
 
@@ -525,7 +525,7 @@ class EmbeddingStore:
 
         return results[:top_k]
 
-    def clear_project(self, project_path: str, source_type: Optional[str] = None) -> int:
+    def clear_project(self, project_path: str, source_type: str | None = None) -> int:
         """
         Clear embeddings for a specific project.
 
@@ -549,7 +549,7 @@ class EmbeddingStore:
             conn.commit()
             return cursor.rowcount
 
-    def count_project(self, project_path: str, source_type: Optional[str] = None) -> int:
+    def count_project(self, project_path: str, source_type: str | None = None) -> int:
         """
         Count embeddings for a specific project.
 
@@ -574,7 +574,7 @@ class EmbeddingStore:
 
             return result[0] if result else 0
 
-    def list_projects(self) -> List[Dict[str, Any]]:
+    def list_projects(self) -> list[dict[str, Any]]:
         """
         List all projects with embeddings.
 
@@ -604,7 +604,7 @@ class EmbeddingStore:
     # STATISTICS
     # =========================================================================
 
-    def count(self, source_type: Optional[str] = None) -> int:
+    def count(self, source_type: str | None = None) -> int:
         """
         Count stored embeddings.
 
@@ -624,7 +624,7 @@ class EmbeddingStore:
 
             return result[0] if result else 0
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> dict[str, Any]:
         """
         Get storage statistics.
 
@@ -656,7 +656,7 @@ class EmbeddingStore:
             "db_path": str(self.db_path),
         }
 
-    def list_sources(self, source_type: Optional[str] = None) -> List[Dict[str, Any]]:
+    def list_sources(self, source_type: str | None = None) -> list[dict[str, Any]]:
         """
         List all stored sources.
 
@@ -695,7 +695,7 @@ class EmbeddingStore:
     # UTILITIES
     # =========================================================================
 
-    def _cosine_similarity(self, a: List[float], b: List[float]) -> float:
+    def _cosine_similarity(self, a: list[float], b: list[float]) -> float:
         """
         Calculate cosine similarity between two vectors.
 
@@ -734,7 +734,7 @@ class EmbeddingStore:
             project_path=row[10] if len(row) > 10 else None,
         )
 
-    def clear(self, source_type: Optional[str] = None) -> int:
+    def clear(self, source_type: str | None = None) -> int:
         """
         Clear all embeddings (or by type).
 
@@ -760,7 +760,7 @@ class EmbeddingStore:
             result = conn.execute("SELECT 1 FROM embeddings WHERE id = ?", (id,)).fetchone()
             return result is not None
 
-    def content_exists(self, content: str) -> Optional[str]:
+    def content_exists(self, content: str) -> str | None:
         """
         Check if content already has an embedding.
 

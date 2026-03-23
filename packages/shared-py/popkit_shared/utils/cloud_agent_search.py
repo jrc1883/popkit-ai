@@ -13,7 +13,8 @@ import os
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
-from typing import List, Optional
+
+from popkit_shared import __version__ as POPKIT_VERSION
 
 # =============================================================================
 # CONFIGURATION
@@ -36,7 +37,7 @@ class AgentMatch:
     score: float
     tier: str
     description: str
-    keywords: List[str]
+    keywords: list[str]
     method: str  # "semantic" or "keyword" (for fallback tracking)
 
 
@@ -45,9 +46,9 @@ class SearchResult:
     """Complete search result with metadata."""
 
     query: str
-    matches: List[AgentMatch]
+    matches: list[AgentMatch]
     fallback_to_keywords: bool
-    error: Optional[str] = None
+    error: str | None = None
 
 
 # =============================================================================
@@ -64,7 +65,7 @@ def is_available() -> bool:
 
 
 def search_agents(
-    query: str, top_k: int = 3, min_score: float = 0.3, tier: Optional[str] = None
+    query: str, top_k: int = 3, min_score: float = 0.3, tier: str | None = None
 ) -> SearchResult:
     """
     Search for agents using semantic similarity via PopKit Cloud.
@@ -105,7 +106,7 @@ def search_agents(
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
-        "X-PopKit-Version": "0.9.10",
+        "X-PopKit-Version": POPKIT_VERSION,
     }
 
     try:
@@ -151,7 +152,7 @@ def search_agents(
         return SearchResult(query=query, matches=[], fallback_to_keywords=True, error=str(e))
 
 
-def list_agents() -> List[dict]:
+def list_agents() -> list[dict]:
     """
     List all indexed agents from PopKit Cloud.
 
@@ -167,7 +168,7 @@ def list_agents() -> List[dict]:
 
     headers = {
         "Authorization": f"Bearer {api_key}",
-        "X-PopKit-Version": "0.9.10",
+        "X-PopKit-Version": POPKIT_VERSION,
     }
 
     try:
@@ -181,7 +182,7 @@ def list_agents() -> List[dict]:
         return []
 
 
-def get_agent(name: str) -> Optional[dict]:
+def get_agent(name: str) -> dict | None:
     """
     Get details for a specific agent.
 
@@ -200,7 +201,7 @@ def get_agent(name: str) -> Optional[dict]:
 
     headers = {
         "Authorization": f"Bearer {api_key}",
-        "X-PopKit-Version": "0.9.10",
+        "X-PopKit-Version": POPKIT_VERSION,
     }
 
     try:

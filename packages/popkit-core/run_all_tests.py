@@ -316,8 +316,16 @@ class ModularPluginTestRunner:
         )
 
         # Scan all plugins to build ecosystem data
+        # Only include actual Claude Code plugins (have .claude-plugin/plugin.json)
+        # or packages with popkit-package.yaml (v2 universal manifests).
+        # Skip Python-only packages like popkit-mcp, popkit-cli that don't have
+        # skills/agents/commands.
         plugins_data = {}
         for plugin_dir in self.root_dir.glob("packages/popkit-*"):
+            has_plugin_json = (plugin_dir / ".claude-plugin" / "plugin.json").exists()
+            has_manifest = (plugin_dir / "popkit-package.yaml").exists()
+            if not (has_plugin_json or has_manifest):
+                continue
             plugin_name = plugin_dir.name
             plugins_data[plugin_name] = {
                 "path": plugin_dir,

@@ -24,14 +24,14 @@ Usage in skills:
 import json
 import os
 import re
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Union
 
 # Environment variable checks
 BENCHMARK_MODE = os.environ.get("POPKIT_BENCHMARK_MODE", "").lower() == "true"
 RESPONSE_FILE = os.environ.get("POPKIT_BENCHMARK_RESPONSES", "")
 
 # Cache for loaded responses
-_responses_cache: Optional[Dict[str, Any]] = None
+_responses_cache: dict[str, Any] | None = None
 
 
 def is_benchmark_mode() -> bool:
@@ -43,7 +43,7 @@ def is_benchmark_mode() -> bool:
     return BENCHMARK_MODE
 
 
-def load_responses() -> Dict[str, Any]:
+def load_responses() -> dict[str, Any]:
     """Load benchmark responses from the response file.
 
     Returns:
@@ -62,9 +62,9 @@ def load_responses() -> Dict[str, Any]:
         return _responses_cache
 
     try:
-        with open(RESPONSE_FILE, "r", encoding="utf-8") as f:
+        with open(RESPONSE_FILE, encoding="utf-8") as f:
             _responses_cache = json.load(f)
-    except (json.JSONDecodeError, IOError) as e:
+    except (OSError, json.JSONDecodeError) as e:
         print(f"[benchmark_responses] Warning: Failed to load response file: {e}")
         _responses_cache = {"responses": {}, "standardAutoApprove": [], "explicitDeclines": []}
 
@@ -73,7 +73,7 @@ def load_responses() -> Dict[str, Any]:
 
 def get_response(
     question_header: str, question_text: str = ""
-) -> Optional[Union[str, bool, List[str], Dict[str, str]]]:
+) -> Union[str, bool, list[str], dict[str, str]] | None:
     """Get pre-defined response for a question.
 
     Args:
@@ -137,10 +137,10 @@ def should_skip_question(question_header: str, question_text: str = "") -> bool:
 
 
 def format_response_for_tool(
-    response: Union[str, bool, List[str], Dict[str, str]],
+    response: Union[str, bool, list[str], dict[str, str]],
     question_header: str,
-    options: Optional[List[Dict[str, str]]] = None,
-) -> Dict[str, str]:
+    options: list[dict[str, str]] | None = None,
+) -> dict[str, str]:
     """Format a response for use as an AskUserQuestion tool result.
 
     Args:

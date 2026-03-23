@@ -10,14 +10,14 @@ Part of the popkit plugin system.
 
 import json
 import subprocess
-from typing import Any, Dict, List
+from typing import Any
 
 from .github_issues import infer_issue_type, parse_popkit_guidance
 
 
 def fetch_issues(
     state: str = "open", label: str = None, assignee: str = None, limit: int = 20
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """Fetch issues from GitHub.
 
     Args:
@@ -58,7 +58,7 @@ def fetch_issues(
         return []
 
 
-def get_power_mode_status(guidance: Dict[str, Any]) -> str:
+def get_power_mode_status(guidance: dict[str, Any]) -> str:
     """Determine Power Mode status from parsed guidance.
 
     Args:
@@ -87,7 +87,7 @@ def get_power_mode_status(guidance: Dict[str, Any]) -> str:
     return "(unknown)"
 
 
-def get_phase_count(guidance: Dict[str, Any]) -> int:
+def get_phase_count(guidance: dict[str, Any]) -> int:
     """Count phases from guidance.
 
     Args:
@@ -100,7 +100,7 @@ def get_phase_count(guidance: Dict[str, Any]) -> int:
     return len(phases) if phases else 0
 
 
-def infer_complexity_from_labels(labels: List[str]) -> str:
+def infer_complexity_from_labels(labels: list[str]) -> str:
     """Infer complexity from issue labels.
 
     Args:
@@ -131,7 +131,7 @@ def list_issues_with_power_mode_status(
     state: str = "open",
     assignee: str = None,
     limit: int = 20,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """List issues with Power Mode recommendations.
 
     Args:
@@ -227,7 +227,7 @@ def list_issues_with_power_mode_status(
     return result
 
 
-def format_issues_table(data: Dict[str, Any]) -> str:
+def format_issues_table(data: dict[str, Any]) -> str:
     """Format issues as ASCII table.
 
     Args:

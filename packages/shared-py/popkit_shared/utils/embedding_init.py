@@ -9,15 +9,11 @@ Part of PopKit Issue #19 (Embeddings Enhancement).
 """
 
 import json
-import os
 import sys
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
-
-# Add utils to path
-sys.path.insert(0, os.path.dirname(__file__))
+from typing import Any
 
 from .embedding_store import EmbeddingRecord, EmbeddingStore
 from .voyage_client import VoyageClient, is_available
@@ -35,7 +31,7 @@ POPKIT_ROOT = Path(__file__).parent.parent.parent
 # =============================================================================
 
 
-def extract_yaml_frontmatter(content: str) -> Dict[str, str]:
+def extract_yaml_frontmatter(content: str) -> dict[str, str]:
     """Extract YAML frontmatter from markdown file."""
     if not content.startswith("---"):
         return {}
@@ -57,7 +53,7 @@ def extract_yaml_frontmatter(content: str) -> Dict[str, str]:
     return result
 
 
-def extract_skill_descriptions() -> List[Dict[str, Any]]:
+def extract_skill_descriptions() -> list[dict[str, Any]]:
     """
     Extract descriptions from all SKILL.md files.
 
@@ -101,7 +97,7 @@ def extract_skill_descriptions() -> List[Dict[str, Any]]:
     return skills
 
 
-def extract_agent_descriptions() -> List[Dict[str, Any]]:
+def extract_agent_descriptions() -> list[dict[str, Any]]:
     """
     Extract descriptions from all AGENT.md files.
 
@@ -153,7 +149,7 @@ def extract_agent_descriptions() -> List[Dict[str, Any]]:
     return agents
 
 
-def extract_command_descriptions() -> List[Dict[str, Any]]:
+def extract_command_descriptions() -> list[dict[str, Any]]:
     """
     Extract descriptions from all command .md files.
 
@@ -197,8 +193,8 @@ def extract_command_descriptions() -> List[Dict[str, Any]]:
 
 
 def compute_and_store_embeddings(
-    items: List[Dict[str, Any]], client: VoyageClient, store: EmbeddingStore, batch_size: int = 50
-) -> Tuple[int, int]:
+    items: list[dict[str, Any]], client: VoyageClient, store: EmbeddingStore, batch_size: int = 50
+) -> tuple[int, int]:
     """
     Compute embeddings for items and store them.
 
@@ -260,7 +256,7 @@ def initialize_embeddings(
     agents: bool = True,
     commands: bool = True,
     verbose: bool = True,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Initialize embeddings for all PopKit components.
 
@@ -389,7 +385,7 @@ def initialize_embeddings(
     return results
 
 
-def get_embedding_status() -> Dict[str, Any]:
+def get_embedding_status() -> dict[str, Any]:
     """
     Get current embedding status without making changes.
 

@@ -64,18 +64,33 @@ def scan_plugin_agents(plugin_path: Path) -> List[str]:
 
 
 def load_plugin_version(plugin_path: Path) -> str:
-    """Load plugin version from plugin.json."""
+    """Load plugin version from plugin.json or pyproject.toml."""
+    # Try .claude-plugin/plugin.json first (Claude Code plugins)
     plugin_json = plugin_path / ".claude-plugin" / "plugin.json"
+    if plugin_json.exists():
+        try:
+            with open(plugin_json, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return data.get("version", "unknown")
+        except (json.JSONDecodeError, IOError, KeyError):
+            pass  # Best-effort: fall through to pyproject.toml
 
-    if not plugin_json.exists():
-        return "unknown"
+    # Try pyproject.toml (Python packages like popkit-mcp, popkit-cli)
+    pyproject = plugin_path / "pyproject.toml"
+    if pyproject.exists():
+        try:
+            content = pyproject.read_text(encoding="utf-8")
+            for line in content.splitlines():
+                line = line.strip()
+                if line.startswith("version") and "=" in line:
+                    # Parse: version = "1.0.0"
+                    ver = line.split("=", 1)[1].strip().strip('"').strip("'")
+                    if ver:
+                        return ver
+        except (IOError, UnicodeDecodeError):
+            pass  # Best-effort: fall through to "unknown"
 
-    try:
-        with open(plugin_json, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            return data.get("version", "unknown")
-    except Exception:
-        return "unknown"
+    return "unknown"
 
 
 def validate_unique_command_names(plugins_data: Dict[str, Dict]) -> Tuple[bool, str]:

@@ -18,7 +18,7 @@ This enables benchmarking WITH PopKit (uses #1) vs WITHOUT PopKit (uses #2).
 import json
 from collections import Counter, defaultdict
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # Import TranscriptParser for JSONL support
 try:
@@ -47,19 +47,19 @@ class RecordingAnalyzer:
         else:
             return "popkit_json"
 
-    def _load_recording(self) -> Dict[str, Any]:
+    def _load_recording(self) -> dict[str, Any]:
         """Load recording from file - handles both PopKit JSON and Claude JSONL formats."""
         if self.recording_file.suffix == ".jsonl":
             return self._load_claude_jsonl()
         else:
             return self._load_popkit_json()
 
-    def _load_popkit_json(self) -> Dict[str, Any]:
+    def _load_popkit_json(self) -> dict[str, Any]:
         """Load PopKit's aggregated JSON format (current default)."""
         with open(self.recording_file) as f:
             return json.load(f)
 
-    def _load_claude_jsonl(self) -> Dict[str, Any]:
+    def _load_claude_jsonl(self) -> dict[str, Any]:
         """
         Load Claude Code's native JSONL transcript and convert to PopKit-compatible format.
 
@@ -169,11 +169,11 @@ class RecordingAnalyzer:
         # Claude Code JSONL files are typically named like: <session-uuid>.jsonl
         return self.recording_file.stem  # filename without extension
 
-    def get_timeline(self) -> List[Dict[str, Any]]:
+    def get_timeline(self) -> list[dict[str, Any]]:
         """Get chronological timeline of events."""
         return sorted(self.events, key=lambda e: e.get("sequence", 0))
 
-    def get_tool_usage_breakdown(self) -> Dict[str, Dict[str, Any]]:
+    def get_tool_usage_breakdown(self) -> dict[str, dict[str, Any]]:
         """Get breakdown of tool usage.
 
         Works with both PopKit JSON (has duration_ms, error fields) and
@@ -209,7 +209,7 @@ class RecordingAnalyzer:
 
         return dict(tools)
 
-    def get_performance_metrics(self) -> Dict[str, Any]:
+    def get_performance_metrics(self) -> dict[str, Any]:
         """Get performance metrics.
 
         Works with both formats:
@@ -259,7 +259,7 @@ class RecordingAnalyzer:
             "session_duration_ms": session_duration_ms,  # Total session time (JSONL)
         }
 
-    def get_error_summary(self) -> Dict[str, Any]:
+    def get_error_summary(self) -> dict[str, Any]:
         """Get summary of errors."""
         tool_calls = [e for e in self.events if e["type"] == "tool_call"]
         errors = [c for c in tool_calls if c.get("error")]
@@ -278,11 +278,11 @@ class RecordingAnalyzer:
             "errors": errors,
         }
 
-    def get_decision_summary(self) -> List[Dict[str, Any]]:
+    def get_decision_summary(self) -> list[dict[str, Any]]:
         """Get summary of user decisions."""
         return [e for e in self.events if e["type"] == "decision"]
 
-    def get_skill_invocations(self) -> List[Dict[str, Any]]:
+    def get_skill_invocations(self) -> list[dict[str, Any]]:
         """Get skill invocations."""
         return [e for e in self.events if e["type"] == "skill_invocation"]
 
@@ -501,7 +501,7 @@ def analyze_recording(file_path: str, format: str = "markdown") -> str:
     return analyzer.generate_report(format=format)
 
 
-def list_recordings(recordings_dir: Optional[Path] = None) -> List[Path]:
+def list_recordings(recordings_dir: Path | None = None) -> list[Path]:
     """List all available recordings."""
     if recordings_dir is None:
         from .plugin_data import get_global_plugin_data_dir

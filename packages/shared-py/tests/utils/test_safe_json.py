@@ -194,7 +194,7 @@ class TestReadHookInput:
 
     def test_stdin_read_error(self):
         """Test handling of stdin read errors"""
-        with patch("sys.stdin.read", side_effect=IOError("Read error")):
+        with patch("sys.stdin.read", side_effect=OSError("Read error")):
             result = read_hook_input()
             assert result == {}
 

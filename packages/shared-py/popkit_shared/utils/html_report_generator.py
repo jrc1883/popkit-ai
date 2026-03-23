@@ -17,9 +17,9 @@ Generates comprehensive HTML reports from PopKit session recordings with:
 
 import ast
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 # Transcript parser feature flag (for future use)
 HAS_TRANSCRIPT_PARSER = False
@@ -48,7 +48,7 @@ def parse_timestamp(ts_str: str) -> datetime:
             return datetime.min
 
 
-def format_duration(duration_ms: Optional[int]) -> str:
+def format_duration(duration_ms: int | None) -> str:
     """Format duration in milliseconds to human-readable string."""
     if duration_ms is None:
         return "N/A"
@@ -70,7 +70,7 @@ def clean_escaped_text(text: str) -> str:
     return text
 
 
-def try_parse_python_structure(text: str) -> Optional[Any]:
+def try_parse_python_structure(text: str) -> Any | None:
     """Try to parse text as a Python literal structure."""
     try:
         cleaned = clean_escaped_text(text)
@@ -80,7 +80,7 @@ def try_parse_python_structure(text: str) -> Optional[Any]:
         return None
 
 
-def try_parse_json(text: str) -> Optional[Any]:
+def try_parse_json(text: str) -> Any | None:
     """Try to parse text as JSON."""
     try:
         return json.loads(text)
@@ -133,7 +133,7 @@ def make_file_link(file_path: str) -> str:
     return f'<a href="file:///{url_path}" target="_blank" class="file-link">{escaped_path}</a>'
 
 
-def format_params_inline(params: Dict[str, Any]) -> str:
+def format_params_inline(params: dict[str, Any]) -> str:
     """Format key parameters for inline display."""
     if not params:
         return "<em>none</em>"
@@ -184,10 +184,10 @@ def get_agent_name_from_type(subagent_type: str) -> str:
 
 def compute_session_token_usage(
     claude_dir: Path,
-    subagent_stops: List[Dict],
+    subagent_stops: list[dict],
     recording_start: str = None,
     recording_end: str = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Compute total token usage for the recording session ONLY.
 
@@ -229,7 +229,7 @@ def compute_session_token_usage(
                 start_dt = start_local
             else:
                 # Assume local time, convert to UTC
-                start_dt = start_local.replace(tzinfo=timezone.utc).astimezone(timezone.utc)
+                start_dt = start_local.replace(tzinfo=UTC).astimezone(UTC)
                 # Actually, we need to treat it as local time first
                 # Get local timezone offset
                 is_dst = time.daylight and time.localtime().tm_isdst > 0
@@ -238,7 +238,7 @@ def compute_session_token_usage(
 
                 start_dt = start_local.replace(
                     tzinfo=timezone(timedelta(seconds=utc_offset))
-                ).astimezone(timezone.utc)
+                ).astimezone(UTC)
             # Converted local time to UTC for comparison with transcript timestamps
         except Exception as e:
             print(f"Warning: Failed to parse recording_start: {e}")
@@ -254,7 +254,7 @@ def compute_session_token_usage(
 
                 end_dt = end_local.replace(
                     tzinfo=timezone(timedelta(seconds=utc_offset))
-                ).astimezone(timezone.utc)
+                ).astimezone(UTC)
             # Converted local time to UTC for comparison with transcript timestamps
         except Exception as e:
             print(f"Warning: Failed to parse recording_end: {e}")
@@ -309,7 +309,7 @@ def compute_session_token_usage(
                                 )
                                 # Ensure it's timezone-aware (should already be UTC)
                                 if msg_dt.tzinfo is None:
-                                    msg_dt = msg_dt.replace(tzinfo=timezone.utc)
+                                    msg_dt = msg_dt.replace(tzinfo=UTC)
 
                                 # Skip messages outside recording window
                                 if msg_dt < start_dt or msg_dt > end_dt:
@@ -383,7 +383,7 @@ def compute_session_token_usage(
     }
 
 
-def parse_agent_transcripts(claude_dir: Path, subagent_stops: List[Dict]) -> Dict[str, List[Dict]]:
+def parse_agent_transcripts(claude_dir: Path, subagent_stops: list[dict]) -> dict[str, list[dict]]:
     """
     Parse agent transcript files to extract tool calls and reasoning.
 
@@ -417,7 +417,7 @@ def parse_agent_transcripts(claude_dir: Path, subagent_stops: List[Dict]) -> Dic
         # Parse the transcript file directly
         events = []
         try:
-            with open(transcript_file, "r", encoding="utf-8") as f:
+            with open(transcript_file, encoding="utf-8") as f:
                 for line in f:
                     if not line.strip():
                         continue
@@ -485,8 +485,8 @@ def parse_agent_transcripts(claude_dir: Path, subagent_stops: List[Dict]) -> Dic
 
 
 def build_unified_timeline(
-    main_events: List[Dict], transcripts: Dict[str, List[Dict]]
-) -> List[Dict]:
+    main_events: list[dict], transcripts: dict[str, list[dict]]
+) -> list[dict]:
     """
     Build a unified timeline merging main agent and sub-agent events.
 
@@ -527,7 +527,7 @@ def build_unified_timeline(
     return timeline
 
 
-def mark_subagent_scopes(events: List[Dict]) -> List[Dict]:
+def mark_subagent_scopes(events: list[dict]) -> list[dict]:
     """
     Mark events that occur within a sub-agent's scope for visual indentation.
 
@@ -557,7 +557,7 @@ def mark_subagent_scopes(events: List[Dict]) -> List[Dict]:
     return result
 
 
-def detect_parallel_batches(events: List[Dict]) -> List[Dict]:
+def detect_parallel_batches(events: list[dict]) -> list[dict]:
     """
     Detect groups of tool calls that were launched in parallel.
 
@@ -610,7 +610,7 @@ def detect_parallel_batches(events: List[Dict]) -> List[Dict]:
     return result
 
 
-def get_agent_color(source: str) -> Tuple[str, str]:
+def get_agent_color(source: str) -> tuple[str, str]:
     """Get background and border color for agent badge."""
     if source == "main":
         return "#1e3a5f", "#58a6ff"
@@ -633,8 +633,8 @@ def escape_html(text: str) -> str:
 
 
 def parse_transcript_for_reasoning(
-    data: Dict[str, Any], events: List[Dict[str, Any]]
-) -> Dict[str, Dict[str, Any]]:
+    data: dict[str, Any], events: list[dict[str, Any]]
+) -> dict[str, dict[str, Any]]:
     """
     Parse transcript data to extract reasoning blocks and token usage.
 

@@ -6,10 +6,10 @@ Validates overall plugin structure, required files, and configuration integrity.
 
 import json
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 
-def validate_plugin_structure(plugin_root: Path) -> Dict[str, Any]:
+def validate_plugin_structure(plugin_root: Path) -> dict[str, Any]:
     """
     Validate plugin directory structure and required files.
 
@@ -152,7 +152,7 @@ def validate_plugin_structure(plugin_root: Path) -> Dict[str, Any]:
     return result
 
 
-def validate_plugin_json(plugin_json: Dict[str, Any]) -> Dict[str, Any]:
+def validate_plugin_json(plugin_json: dict[str, Any]) -> dict[str, Any]:
     """
     Validate plugin.json structure and required fields.
 
@@ -199,7 +199,7 @@ def validate_plugin_json(plugin_json: Dict[str, Any]) -> Dict[str, Any]:
     return result
 
 
-def validate_hooks_json(hooks_json: Dict[str, Any], hooks_dir: Path) -> Dict[str, Any]:
+def validate_hooks_json(hooks_json: dict[str, Any], hooks_dir: Path) -> dict[str, Any]:
     """
     Validate hooks.json structure and hook file references.
 
@@ -268,7 +268,7 @@ def validate_hooks_json(hooks_json: Dict[str, Any], hooks_dir: Path) -> Dict[str
     return result
 
 
-def validate_agent_config(agent_config: Dict[str, Any], agents_dir: Path) -> Dict[str, Any]:
+def validate_agent_config(agent_config: dict[str, Any], agents_dir: Path) -> dict[str, Any]:
     """
     Validate agents/config.json structure and agent file references.
 
@@ -342,7 +342,7 @@ def validate_agent_config(agent_config: Dict[str, Any], agents_dir: Path) -> Dic
     return result
 
 
-def find_orphaned_files(plugin_root: Path) -> Dict[str, List[str]]:
+def find_orphaned_files(plugin_root: Path) -> dict[str, list[str]]:
     """
     Find files that are not referenced by any configuration.
 
@@ -392,7 +392,7 @@ def find_orphaned_files(plugin_root: Path) -> Dict[str, List[str]]:
     return orphaned
 
 
-def get_plugin_health_score(plugin_root: Path) -> Dict[str, Any]:
+def get_plugin_health_score(plugin_root: Path) -> dict[str, Any]:
     """
     Calculate overall plugin health score based on structure validation.
 

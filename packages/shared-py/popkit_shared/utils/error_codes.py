@@ -12,7 +12,7 @@ recovery suggestions.
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class ErrorSeverity(Enum):
@@ -34,7 +34,7 @@ class ErrorCode:
     message: str  # Human-readable description
     severity: ErrorSeverity
     help_doc: str  # Legacy per-code doc path (kept for compatibility)
-    recovery: List[str]  # Recovery suggestions
+    recovery: list[str]  # Recovery suggestions
 
 
 class ErrorRegistry:
@@ -834,7 +834,7 @@ class ErrorRegistry:
     )
 
     @classmethod
-    def get_error(cls, code: str) -> Optional[ErrorCode]:
+    def get_error(cls, code: str) -> ErrorCode | None:
         """
         Get error by code string.
 
@@ -852,7 +852,7 @@ class ErrorRegistry:
         return getattr(cls, code.upper(), None)
 
     @classmethod
-    def all_errors(cls) -> List[ErrorCode]:
+    def all_errors(cls) -> list[ErrorCode]:
         """
         Get all registered error codes.
 
@@ -875,10 +875,10 @@ class ErrorResponse:
     @staticmethod
     def create(
         error_code: ErrorCode,
-        context: Optional[Dict[str, Any]] = None,
-        additional_recovery: Optional[List[str]] = None,
-        hook_name: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        context: dict[str, Any] | None = None,
+        additional_recovery: list[str] | None = None,
+        hook_name: str | None = None,
+    ) -> dict[str, Any]:
         """
         Create a standardized error response.
 
@@ -940,9 +940,9 @@ class ErrorResponse:
     @staticmethod
     def create_warning(
         warning_code: ErrorCode,
-        context: Optional[Dict[str, Any]] = None,
-        hook_name: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        context: dict[str, Any] | None = None,
+        hook_name: str | None = None,
+    ) -> dict[str, Any]:
         """
         Create a standardized warning response (non-blocking).
 

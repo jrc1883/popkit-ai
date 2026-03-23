@@ -10,11 +10,11 @@ import json
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 def build_timeline_summary(
-    events: List[Dict[str, Any]], reasoning_lookup: Dict[str, Dict[str, Any]]
+    events: list[dict[str, Any]], reasoning_lookup: dict[str, dict[str, Any]]
 ) -> str:
     """Build a concise timeline summary for narrative generation."""
     timeline_items = []
@@ -57,10 +57,10 @@ def build_timeline_summary(
 
 
 def generate_narrative_with_api(
-    session_data: Dict[str, Any],
-    events: List[Dict[str, Any]],
-    reasoning_lookup: Dict[str, Dict[str, Any]],
-    total_tokens: Optional[Dict[str, int]] = None,
+    session_data: dict[str, Any],
+    events: list[dict[str, Any]],
+    reasoning_lookup: dict[str, dict[str, Any]],
+    total_tokens: dict[str, int] | None = None,
 ) -> str:
     """
     Generate narrative using Claude API.
@@ -147,9 +147,9 @@ Focus on the "why" and "how" of the decision-making process.
 
 
 def generate_template_narrative(
-    session_data: Dict[str, Any],
-    events: List[Dict[str, Any]],
-    total_tokens: Optional[Dict[str, int]] = None,
+    session_data: dict[str, Any],
+    events: list[dict[str, Any]],
+    total_tokens: dict[str, int] | None = None,
 ) -> str:
     """Generate a template narrative when API is unavailable."""
 
@@ -204,9 +204,9 @@ The primary tools used were {tools_str}, indicating a focus on code analysis, fi
 
 def generate_session_narrative(
     recording_file: Path,
-    events: List[Dict[str, Any]],
-    reasoning_lookup: Dict[str, Dict[str, Any]],
-    total_tokens: Optional[Dict[str, int]] = None,
+    events: list[dict[str, Any]],
+    reasoning_lookup: dict[str, dict[str, Any]],
+    total_tokens: dict[str, int] | None = None,
 ) -> str:
     """
     Generate a natural language narrative for a recording session.
@@ -240,9 +240,9 @@ def generate_session_narrative(
 # Convenience function
 def generate_narrative(
     recording_file: Path,
-    events: List[Dict[str, Any]],
-    reasoning_lookup: Dict[str, Dict[str, Any]],
-    total_tokens: Optional[Dict[str, int]] = None,
+    events: list[dict[str, Any]],
+    reasoning_lookup: dict[str, dict[str, Any]],
+    total_tokens: dict[str, int] | None = None,
 ) -> str:
     """Convenience wrapper for generate_session_narrative."""
     return generate_session_narrative(recording_file, events, reasoning_lookup, total_tokens)

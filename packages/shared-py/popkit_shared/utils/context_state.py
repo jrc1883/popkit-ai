@@ -12,7 +12,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 from .plugin_data import get_plugin_data_subdir
 
@@ -51,7 +51,7 @@ def get_session_context_path(session_id: str) -> Path:
     return sessions_dir / f"{session_id}-context.json"
 
 
-def load_context_state(session_id: str) -> Dict[str, Any]:
+def load_context_state(session_id: str) -> dict[str, Any]:
     """
     Load context state from file, return empty dict if not found.
 
@@ -84,16 +84,16 @@ def load_context_state(session_id: str) -> Dict[str, Any]:
         return {"context_sent": {}, "message_count": 0, "last_full_context_message": 0}
 
     try:
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             return json.load(f)
-    except (json.JSONDecodeError, IOError) as e:
+    except (OSError, json.JSONDecodeError) as e:
         # If file is corrupted, return empty state
         # Log warning but don't crash
         print(f"Warning: Failed to load context state: {e}", file=__import__("sys").stderr)
         return {"context_sent": {}, "message_count": 0, "last_full_context_message": 0}
 
 
-def save_context_state(session_id: str, state: Dict[str, Any]) -> None:
+def save_context_state(session_id: str, state: dict[str, Any]) -> None:
     """
     Atomically save context state to file.
 
@@ -138,7 +138,7 @@ def save_context_state(session_id: str, state: Dict[str, Any]) -> None:
         # Clean up temp file if something went wrong
         if temp_path.exists():
             temp_path.unlink()
-        raise IOError(f"Failed to save context state: {e}")
+        raise OSError(f"Failed to save context state: {e}")
 
 
 def compute_hash(data: Any) -> str:

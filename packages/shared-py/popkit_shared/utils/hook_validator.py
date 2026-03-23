@@ -9,12 +9,12 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 def validate_hook_protocol(
-    hook_path: Path, input_data: Any, timeout: int = 10000, plugin_root: Optional[Path] = None
-) -> Dict[str, Any]:
+    hook_path: Path, input_data: Any, timeout: int = 10000, plugin_root: Path | None = None
+) -> dict[str, Any]:
     """
     Validate that a hook follows JSON stdin/stdout protocol.
 
@@ -141,8 +141,8 @@ def validate_hook_protocol(
 
 
 def validate_all_hooks(
-    hooks_dir: Path, sample_inputs: Optional[Dict[str, Any]] = None
-) -> Dict[str, Any]:
+    hooks_dir: Path, sample_inputs: dict[str, Any] | None = None
+) -> dict[str, Any]:
     """
     Validate all hooks in a hooks directory.
 
@@ -208,7 +208,7 @@ def validate_all_hooks(
 
 def check_hook_performance(
     hook_path: Path, input_data: Any, iterations: int = 10
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Check hook performance over multiple iterations.
 

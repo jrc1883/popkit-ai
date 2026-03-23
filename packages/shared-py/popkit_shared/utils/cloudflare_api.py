@@ -12,7 +12,7 @@ import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 # =============================================================================
 # CONFIGURATION
@@ -38,10 +38,10 @@ class Zone:
     name: str
     status: str
     account_id: str
-    plan: Dict[str, Any] = field(default_factory=dict)
+    plan: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "Zone":
+    def from_dict(cls, data: dict[str, Any]) -> "Zone":
         return cls(
             id=data["id"],
             name=data["name"],
@@ -62,10 +62,10 @@ class DNSRecord:
     content: str
     proxied: bool = False
     ttl: int = 1  # 1 = automatic
-    comment: Optional[str] = None
+    comment: str | None = None
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "DNSRecord":
+    def from_dict(cls, data: dict[str, Any]) -> "DNSRecord":
         return cls(
             id=data["id"],
             zone_id=data.get("zone_id", ""),
@@ -77,7 +77,7 @@ class DNSRecord:
             comment=data.get("comment"),
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to API request format."""
         result = {
             "type": self.type,
@@ -99,10 +99,10 @@ class Worker:
     name: str
     created_on: str
     modified_on: str
-    routes: List[str] = field(default_factory=list)
+    routes: list[str] = field(default_factory=list)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "Worker":
+    def from_dict(cls, data: dict[str, Any]) -> "Worker":
         return cls(
             id=data.get("id", data.get("name", "")),
             name=data.get("name", ""),
@@ -122,7 +122,7 @@ class Deployment:
     created_on: str
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "Deployment":
+    def from_dict(cls, data: dict[str, Any]) -> "Deployment":
         return cls(
             id=data.get("id", ""),
             version_id=data.get("version_id", ""),
@@ -137,8 +137,8 @@ class APIResponse:
 
     success: bool
     result: Any
-    errors: List[Dict[str, Any]] = field(default_factory=list)
-    messages: List[Dict[str, Any]] = field(default_factory=list)
+    errors: list[dict[str, Any]] = field(default_factory=list)
+    messages: list[dict[str, Any]] = field(default_factory=list)
 
 
 # =============================================================================
@@ -159,7 +159,7 @@ class CloudflareClient:
     - Retry with backoff
     """
 
-    def __init__(self, api_token: Optional[str] = None, account_id: Optional[str] = None):
+    def __init__(self, api_token: str | None = None, account_id: str | None = None):
         """
         Initialize Cloudflare client.
 
@@ -186,7 +186,7 @@ class CloudflareClient:
     # ZONE MANAGEMENT
     # =========================================================================
 
-    def list_zones(self) -> List[Zone]:
+    def list_zones(self) -> list[Zone]:
         """
         List all zones (domains) in the account.
 
@@ -209,7 +209,7 @@ class CloudflareClient:
         response = self._request("GET", f"/zones/{zone_id}")
         return Zone.from_dict(response.result)
 
-    def get_zone_by_name(self, domain: str) -> Optional[Zone]:
+    def get_zone_by_name(self, domain: str) -> Zone | None:
         """
         Find a zone by domain name.
 
@@ -229,8 +229,8 @@ class CloudflareClient:
     # =========================================================================
 
     def list_dns_records(
-        self, zone_id: str, record_type: Optional[str] = None, name: Optional[str] = None
-    ) -> List[DNSRecord]:
+        self, zone_id: str, record_type: str | None = None, name: str | None = None
+    ) -> list[DNSRecord]:
         """
         List DNS records for a zone.
 
@@ -274,7 +274,7 @@ class CloudflareClient:
         content: str,
         proxied: bool = True,
         ttl: int = 1,
-        comment: Optional[str] = None,
+        comment: str | None = None,
     ) -> DNSRecord:
         """
         Create a DNS record.
@@ -308,12 +308,12 @@ class CloudflareClient:
         self,
         zone_id: str,
         record_id: str,
-        record_type: Optional[str] = None,
-        name: Optional[str] = None,
-        content: Optional[str] = None,
-        proxied: Optional[bool] = None,
-        ttl: Optional[int] = None,
-        comment: Optional[str] = None,
+        record_type: str | None = None,
+        name: str | None = None,
+        content: str | None = None,
+        proxied: bool | None = None,
+        ttl: int | None = None,
+        comment: str | None = None,
     ) -> DNSRecord:
         """
         Update a DNS record.
@@ -367,7 +367,7 @@ class CloudflareClient:
     # WORKER MANAGEMENT
     # =========================================================================
 
-    def list_workers(self) -> List[Worker]:
+    def list_workers(self) -> list[Worker]:
         """
         List all Workers in the account.
 
@@ -398,7 +398,7 @@ class CloudflareClient:
         )
         return Worker.from_dict(response.result)
 
-    def get_worker_deployments(self, worker_name: str) -> List[Deployment]:
+    def get_worker_deployments(self, worker_name: str) -> list[Deployment]:
         """
         Get deployment history for a Worker.
 
@@ -420,7 +420,7 @@ class CloudflareClient:
     # VERIFICATION
     # =========================================================================
 
-    def verify_token(self) -> Tuple[bool, str]:
+    def verify_token(self) -> tuple[bool, str]:
         """
         Verify API token is valid.
 
@@ -438,7 +438,7 @@ class CloudflareClient:
     # =========================================================================
 
     def _request(
-        self, method: str, endpoint: str, data: Optional[Dict[str, Any]] = None
+        self, method: str, endpoint: str, data: dict[str, Any] | None = None
     ) -> APIResponse:
         """
         Make API request to Cloudflare.
@@ -523,7 +523,7 @@ class CloudflareClient:
 # MODULE-LEVEL FUNCTIONS
 # =============================================================================
 
-_client: Optional[CloudflareClient] = None
+_client: CloudflareClient | None = None
 
 
 def get_client() -> CloudflareClient:
@@ -534,17 +534,17 @@ def get_client() -> CloudflareClient:
     return _client
 
 
-def list_zones() -> List[Zone]:
+def list_zones() -> list[Zone]:
     """List all zones."""
     return get_client().list_zones()
 
 
-def get_zone_by_name(domain: str) -> Optional[Zone]:
+def get_zone_by_name(domain: str) -> Zone | None:
     """Get zone by domain name."""
     return get_client().get_zone_by_name(domain)
 
 
-def list_dns_records(zone_id: str, record_type: Optional[str] = None) -> List[DNSRecord]:
+def list_dns_records(zone_id: str, record_type: str | None = None) -> list[DNSRecord]:
     """List DNS records for a zone."""
     return get_client().list_dns_records(zone_id, record_type)
 
@@ -555,7 +555,7 @@ def create_dns_record(
     name: str,
     content: str,
     proxied: bool = True,
-    comment: Optional[str] = None,
+    comment: str | None = None,
 ) -> DNSRecord:
     """Create a DNS record."""
     return get_client().create_dns_record(
@@ -568,7 +568,7 @@ def delete_dns_record(zone_id: str, record_id: str) -> bool:
     return get_client().delete_dns_record(zone_id, record_id)
 
 
-def list_workers() -> List[Worker]:
+def list_workers() -> list[Worker]:
     """List all Workers."""
     return get_client().list_workers()
 

@@ -10,7 +10,7 @@ Issue #69: Generic Workspace Routine Templates
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 try:
     from .tech_stack_detector import Technology, TechnologyType, TechStackDetector
@@ -25,21 +25,19 @@ class ProjectType:
     """Detected project type with relevant tools."""
 
     primary_language: str  # e.g., "Python", "JavaScript", "Rust"
-    package_manager: Optional[str] = None  # e.g., "npm", "pip", "cargo"
-    test_framework: Optional[str] = None  # e.g., "jest", "pytest", "cargo test"
-    build_tool: Optional[str] = None  # e.g., "npm run build", "cargo build"
-    linter: Optional[str] = None  # e.g., "eslint", "ruff", "clippy"
-    formatter: Optional[str] = None  # e.g., "prettier", "ruff", "rustfmt"
+    package_manager: str | None = None  # e.g., "npm", "pip", "cargo"
+    test_framework: str | None = None  # e.g., "jest", "pytest", "cargo test"
+    build_tool: str | None = None  # e.g., "npm run build", "cargo build"
+    linter: str | None = None  # e.g., "eslint", "ruff", "clippy"
+    formatter: str | None = None  # e.g., "prettier", "ruff", "rustfmt"
 
     # Common service ports based on tech stack
-    expected_services: List[Dict[str, Any]] = None  # e.g., [{"name": "dev server", "port": 3000}]
+    expected_services: list[dict[str, Any]] = None  # e.g., [{"name": "dev server", "port": 3000}]
 
     # Dependency check commands
-    check_installed: Optional[str] = None  # e.g., "npm list" or "pip freeze"
-    check_outdated: Optional[str] = None  # e.g., "npm outdated" or "pip list --outdated"
-    install_command: Optional[str] = (
-        None  # e.g., "npm install" or "pip install -r requirements.txt"
-    )
+    check_installed: str | None = None  # e.g., "npm list" or "pip freeze"
+    check_outdated: str | None = None  # e.g., "npm outdated" or "pip list --outdated"
+    install_command: str | None = None  # e.g., "npm install" or "pip install -r requirements.txt"
 
 
 class GenericProjectDetector:
@@ -58,7 +56,7 @@ class GenericProjectDetector:
 
     def __init__(self, project_path: str = "."):
         self.project_path = Path(project_path).resolve()
-        self._project_type: Optional[ProjectType] = None
+        self._project_type: ProjectType | None = None
 
     def detect(self) -> ProjectType:
         """
@@ -95,9 +93,7 @@ class GenericProjectDetector:
 
         return self._project_type
 
-    def _find_tech(
-        self, technologies: List[Technology], tech_type: TechnologyType
-    ) -> Optional[str]:
+    def _find_tech(self, technologies: list[Technology], tech_type: TechnologyType) -> str | None:
         """Find first technology of given type."""
         for tech in technologies:
             if tech.type == tech_type:
@@ -107,11 +103,11 @@ class GenericProjectDetector:
     def _build_project_type(
         self,
         language: str,
-        package_manager: Optional[str],
-        test_framework: Optional[str],
-        build_tool: Optional[str],
-        linter: Optional[str],
-        formatter: Optional[str],
+        package_manager: str | None,
+        test_framework: str | None,
+        build_tool: str | None,
+        linter: str | None,
+        formatter: str | None,
     ) -> ProjectType:
         """Build ProjectType with language-specific defaults."""
 

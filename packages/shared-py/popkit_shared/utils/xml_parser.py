@@ -8,12 +8,12 @@ Replaces fragile regex-based parsing with proper XML parsing.
 
 import logging
 import xml.etree.ElementTree as ET
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
-def parse_problem_context(xml_string: str) -> Optional[Dict[str, Any]]:
+def parse_problem_context(xml_string: str) -> dict[str, Any] | None:
     """
     Parses problem-context XML using ElementTree.
 
@@ -76,7 +76,7 @@ def parse_problem_context(xml_string: str) -> Optional[Dict[str, Any]]:
         return None
 
 
-def parse_project_context(xml_string: str) -> Optional[Dict[str, Any]]:
+def parse_project_context(xml_string: str) -> dict[str, Any] | None:
     """
     Parses project context XML using ElementTree.
 
@@ -168,7 +168,7 @@ def parse_project_context(xml_string: str) -> Optional[Dict[str, Any]]:
         return None
 
 
-def parse_findings(xml_string: str) -> Optional[Dict[str, Any]]:
+def parse_findings(xml_string: str) -> dict[str, Any] | None:
     """
     Parses findings XML using ElementTree.
 
@@ -264,7 +264,7 @@ def parse_findings(xml_string: str) -> Optional[Dict[str, Any]]:
         return None
 
 
-def extract_xml_from_conversation(messages: List[str], search_last_n: int = 5) -> Optional[str]:
+def extract_xml_from_conversation(messages: list[str], search_last_n: int = 5) -> str | None:
     """
     Extracts XML content from HTML comment markers in conversation history.
 
@@ -303,7 +303,7 @@ def extract_xml_from_conversation(messages: List[str], search_last_n: int = 5) -
     return None
 
 
-def _parse_workflow(workflow_elem: ET.Element) -> Dict[str, Any]:
+def _parse_workflow(workflow_elem: ET.Element) -> dict[str, Any]:
     """
     Helper function to parse workflow element.
 

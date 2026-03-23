@@ -6,12 +6,18 @@ Provides a foundation for building hooks that follow stateless message compositi
 Hooks extending this class receive explicit context, use message builder utilities,
 and return complete output including updated context.
 
+Supports multi-provider hook execution (v2.0):
+- provider property detects the current provider from environment
+- respond() method returns provider-agnostic HookResponse
+- run() auto-formats output for the detected provider
+- Fully backward compatible: existing hooks work unchanged
+
 Part of the popkit plugin stateless hook architecture.
 """
 
 import json
+import os
 from abc import ABC, abstractmethod
-from typing import Type
 
 from .context_carrier import (
     HookContext,
@@ -29,6 +35,25 @@ from .message_builder import (
 )
 
 
+def _detect_provider() -> str:
+    """Detect the current provider from environment.
+
+    Returns:
+        Provider identifier string
+    """
+    # Claude Code sets these env vars
+    if os.environ.get("CLAUDE_PLUGIN_DATA") or os.environ.get("CLAUDE_PLUGIN_ROOT"):
+        return "claude-code"
+
+    # PopKit sets this when running under a specific provider
+    popkit_provider = os.environ.get("POPKIT_PROVIDER")
+    if popkit_provider:
+        return popkit_provider
+
+    # Default: assume Claude Code for backward compatibility
+    return "claude-code"
+
+
 class StatelessHook(ABC):
     """Base class for stateless hooks.
 
@@ -36,6 +61,7 @@ class StatelessHook(ABC):
     - Receive explicit context (no hidden state)
     - Use message builder utilities for composition
     - Return complete output including updated context
+    - Can detect and adapt to different providers (v2.0)
 
     Example:
         class MyHook(StatelessHook):
@@ -43,13 +69,32 @@ class StatelessHook(ABC):
                 # Do processing
                 return self.update_context(ctx, tool_result="done")
 
+    Provider-aware example (v2.0):
+        class SafetyHook(StatelessHook):
+            def process(self, ctx: HookContext) -> HookContext:
+                if self.provider == "cursor":
+                    # Cursor-specific handling
+                    pass
+                return self.respond_continue(ctx)
+
     The hook can then be run via JSON protocol:
         output = run_hook(MyHook, input_json)
     """
 
     def __init__(self):
         """Initialize hook - no external state."""
-        pass
+        self._provider: str | None = None
+
+    @property
+    def provider(self) -> str:
+        """Current provider (auto-detected from environment).
+
+        Returns:
+            Provider identifier (e.g., "claude-code", "cursor", "generic-mcp")
+        """
+        if self._provider is None:
+            self._provider = _detect_provider()
+        return self._provider
 
     @abstractmethod
     def process(self, ctx: HookContext) -> HookContext:
@@ -168,16 +213,64 @@ class StatelessHook(ABC):
         return rebuild_from_history(history)
 
     # =========================================================================
+    # Provider-Aware Response Helpers (v2.0)
+    # =========================================================================
+
+    def respond_continue(self, ctx: HookContext, message: str | None = None) -> HookContext:
+        """Mark the hook response as CONTINUE (allow the action).
+
+        Args:
+            ctx: Current context
+            message: Optional informational message
+
+        Returns:
+            Updated context with response metadata
+        """
+        updates = {"hook_output": ("_response", {"action": "continue"})}
+        if message:
+            updates["hook_output"] = ("_response", {"action": "continue", "message": message})
+        return update_context(ctx, **updates)
+
+    def respond_deny(self, ctx: HookContext, message: str) -> HookContext:
+        """Mark the hook response as DENY (block the action).
+
+        Args:
+            ctx: Current context
+            message: Explanation of why the action was denied
+
+        Returns:
+            Updated context with deny response
+        """
+        return update_context(
+            ctx, hook_output=("_response", {"action": "deny", "message": message})
+        )
+
+    def respond_ask(self, ctx: HookContext, message: str) -> HookContext:
+        """Mark the hook response as ASK (prompt user for confirmation).
+
+        Args:
+            ctx: Current context
+            message: Question to ask the user
+
+        Returns:
+            Updated context with ask response
+        """
+        return update_context(ctx, hook_output=("_response", {"action": "ask", "message": message}))
+
+    # =========================================================================
     # JSON Protocol
     # =========================================================================
 
     def run(self, input_json: str) -> str:
         """Run the hook with JSON input.
 
-        This implements the Claude Code hook JSON protocol:
+        Implements the hook JSON protocol with provider-aware output:
         - Receive JSON on stdin with tool_name, tool_input, session_id
         - Process the hook
-        - Return JSON with action, context, and any output
+        - Return JSON formatted for the current provider
+
+        For Claude Code: {"action": "continue|deny|ask", "context": {...}}
+        For other providers: same format (protocol originated from Claude Code)
 
         Args:
             input_json: JSON string with hook input
@@ -193,6 +286,10 @@ class StatelessHook(ABC):
         try:
             input_data = json.loads(input_json)
 
+            # Detect provider from input or environment
+            if "provider" in input_data:
+                self._provider = input_data["provider"]
+
             # Create context from input
             ctx = create_context(
                 session_id=input_data.get("session_id", "unknown"),
@@ -204,8 +301,20 @@ class StatelessHook(ABC):
             # Process
             result_ctx = self.process(ctx)
 
-            # Build output
-            output = {"action": "continue", "context": json.loads(serialize_context(result_ctx))}
+            # Check if hook used respond_* helpers
+            response_meta = None
+            if hasattr(result_ctx, "hook_outputs") and isinstance(result_ctx.hook_outputs, dict):
+                response_meta = result_ctx.hook_outputs.get("_response")
+
+            if isinstance(response_meta, dict) and "action" in response_meta:
+                output = dict(response_meta)
+                output["context"] = json.loads(serialize_context(result_ctx))
+            else:
+                # Backward compatible: default to continue
+                output = {
+                    "action": "continue",
+                    "context": json.loads(serialize_context(result_ctx)),
+                }
 
             return json.dumps(output)
 
@@ -213,7 +322,7 @@ class StatelessHook(ABC):
             return json.dumps({"action": "error", "error": str(e)})
 
 
-def run_hook(hook_class: Type[StatelessHook], input_json: str) -> str:
+def run_hook(hook_class: type[StatelessHook], input_json: str) -> str:
     """Run a hook class with JSON input.
 
     Convenience function that instantiates the hook class and runs it.

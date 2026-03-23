@@ -14,7 +14,7 @@ import subprocess
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # =============================================================================
 # DATA CLASSES
@@ -30,9 +30,9 @@ class Vulnerability:
     title: str
     url: str
     vulnerable_versions: str
-    patched_versions: Optional[str]
-    cve: Optional[str] = None
-    ghsa: Optional[str] = None
+    patched_versions: str | None
+    cve: str | None = None
+    ghsa: str | None = None
     fix_available: bool = False
     direct: bool = False  # Direct dependency vs transitive
 
@@ -56,15 +56,15 @@ class Vulnerability:
 class ScanResult:
     """Result of a security scan."""
 
-    vulnerabilities: List[Vulnerability] = field(default_factory=list)
+    vulnerabilities: list[Vulnerability] = field(default_factory=list)
     total_packages: int = 0
     scan_time: str = field(default_factory=lambda: datetime.now().isoformat())
-    error: Optional[str] = None
+    error: str | None = None
 
     @property
-    def by_severity(self) -> Dict[str, List[Vulnerability]]:
+    def by_severity(self) -> dict[str, list[Vulnerability]]:
         """Group vulnerabilities by severity."""
-        result: Dict[str, List[Vulnerability]] = {
+        result: dict[str, list[Vulnerability]] = {
             "critical": [],
             "high": [],
             "moderate": [],
@@ -77,7 +77,7 @@ class ScanResult:
         return result
 
     @property
-    def counts(self) -> Dict[str, int]:
+    def counts(self) -> dict[str, int]:
         """Count by severity."""
         by_sev = self.by_severity
         return {k: len(v) for k, v in by_sev.items()}
@@ -128,7 +128,7 @@ class SecurityScanner:
     - Routine integration
     """
 
-    def __init__(self, project_path: Optional[str] = None):
+    def __init__(self, project_path: str | None = None):
         """Initialize scanner with project path."""
         self.project_path = project_path or os.getcwd()
 
@@ -209,7 +209,7 @@ class SecurityScanner:
 
         return result
 
-    def _extract_ghsa(self, url: str) -> Optional[str]:
+    def _extract_ghsa(self, url: str) -> str | None:
         """Extract GHSA ID from advisory URL."""
         if "GHSA-" in url:
             parts = url.split("/")
@@ -218,7 +218,7 @@ class SecurityScanner:
                     return part
         return None
 
-    def get_existing_issues(self) -> List[ExistingIssue]:
+    def get_existing_issues(self) -> list[ExistingIssue]:
         """
         Get existing security issues from GitHub.
 
@@ -263,8 +263,8 @@ class SecurityScanner:
         return issues
 
     def find_existing_issue(
-        self, vuln: Vulnerability, existing: List[ExistingIssue]
-    ) -> Optional[ExistingIssue]:
+        self, vuln: Vulnerability, existing: list[ExistingIssue]
+    ) -> ExistingIssue | None:
         """
         Check if vulnerability already has a tracking issue.
 
@@ -291,7 +291,7 @@ class SecurityScanner:
 
         return None
 
-    def create_issue(self, vuln: Vulnerability, dry_run: bool = False) -> Optional[int]:
+    def create_issue(self, vuln: Vulnerability, dry_run: bool = False) -> int | None:
         """
         Create GitHub issue for vulnerability.
 
@@ -396,7 +396,7 @@ npm update {vuln.name}
 
         return None
 
-    def run_fix(self, force: bool = False) -> Dict[str, Any]:
+    def run_fix(self, force: bool = False) -> dict[str, Any]:
         """
         Run npm audit fix.
 
@@ -435,7 +435,7 @@ npm update {vuln.name}
 # =============================================================================
 
 
-def format_scan_report(result: ScanResult, existing_issues: List[ExistingIssue] = None) -> str:
+def format_scan_report(result: ScanResult, existing_issues: list[ExistingIssue] = None) -> str:
     """Format scan result as human-readable report."""
     existing_issues = existing_issues or []
 

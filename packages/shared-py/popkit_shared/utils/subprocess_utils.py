@@ -19,16 +19,16 @@ Usage:
 
 import subprocess
 from pathlib import Path
-from typing import List, Optional, Tuple, Union
+from typing import Union
 
 
 def run_command(
-    cmd: Union[str, List[str]],
-    cwd: Optional[Union[str, Path]] = None,
+    cmd: Union[str, list[str]],
+    cwd: Union[str, Path] | None = None,
     timeout: int = 30,
     shell: bool = False,
     strip_output: bool = True,
-) -> Tuple[int, str, str]:
+) -> tuple[int, str, str]:
     """
     Run a command and return full result.
 
@@ -94,11 +94,11 @@ def run_command(
 
 
 def run_command_simple(
-    cmd: Union[str, List[str]],
-    cwd: Optional[Union[str, Path]] = None,
+    cmd: Union[str, list[str]],
+    cwd: Union[str, Path] | None = None,
     timeout: int = 30,
     strip_output: bool = True,
-) -> Tuple[str, bool]:
+) -> tuple[str, bool]:
     """
     Run a command and return simplified result.
 
@@ -137,8 +137,8 @@ def run_command_simple(
 
 
 def run_command_checked(
-    cmd: Union[str, List[str]],
-    cwd: Optional[Union[str, Path]] = None,
+    cmd: Union[str, list[str]],
+    cwd: Union[str, Path] | None = None,
     timeout: int = 30,
 ) -> str:
     """
@@ -174,10 +174,10 @@ def run_command_checked(
 
 
 def run_git_command(
-    args: Union[str, List[str]],
-    cwd: Optional[Union[str, Path]] = None,
+    args: Union[str, list[str]],
+    cwd: Union[str, Path] | None = None,
     timeout: int = 30,
-) -> Tuple[str, bool]:
+) -> tuple[str, bool]:
     """
     Run a git command with 'git' prefix.
 
@@ -207,7 +207,7 @@ def run_git_command(
 # These maintain the exact signatures used in existing code
 
 
-def run_command_full(cmd: List[str], cwd: str, timeout: int = 30) -> Tuple[int, str, str]:
+def run_command_full(cmd: list[str], cwd: str, timeout: int = 30) -> tuple[int, str, str]:
     """
     Legacy signature matching health_calculator.py.
 

@@ -13,7 +13,6 @@ import re
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Tuple
 
 
 @dataclass
@@ -30,7 +29,7 @@ class LeakFinding:
 
 # Patterns that should NEVER appear in the public repo
 # These are checked against packages/plugin/ content before publish
-FORBIDDEN_PATTERNS: Dict[str, Dict] = {
+FORBIDDEN_PATTERNS: dict[str, dict] = {
     # Cloud implementation paths (should never be in plugin)
     "cloud_code": {
         "pattern": r"packages/cloud/",
@@ -120,7 +119,7 @@ FORBIDDEN_PATTERNS: Dict[str, Dict] = {
 }
 
 # Files to always skip (not check)
-SKIP_PATTERNS: List[str] = [
+SKIP_PATTERNS: list[str] = [
     r"\.git/",
     r"node_modules/",
     r"node_modules\\",  # Windows path separator
@@ -142,7 +141,7 @@ SKIP_PATTERNS: List[str] = [
 ]
 
 # Files where certain patterns are allowed (false positive exclusions)
-ALLOWED_EXCEPTIONS: Dict[str, List[str]] = {
+ALLOWED_EXCEPTIONS: dict[str, list[str]] = {
     # This file itself can mention patterns
     "ip_protection.py": list(FORBIDDEN_PATTERNS.keys()),
     # CLAUDE.md documents what's private
@@ -215,9 +214,9 @@ def is_exception(filepath: str, pattern_name: str) -> bool:
     return False
 
 
-def scan_content(content: str, filepath: str = "") -> List[LeakFinding]:
+def scan_content(content: str, filepath: str = "") -> list[LeakFinding]:
     """Scan content for IP leaks."""
-    findings: List[LeakFinding] = []
+    findings: list[LeakFinding] = []
     lines = content.split("\n")
 
     for pattern_name, config in FORBIDDEN_PATTERNS.items():
@@ -248,7 +247,7 @@ def scan_content(content: str, filepath: str = "") -> List[LeakFinding]:
     return findings
 
 
-def scan_file(filepath: Path) -> List[LeakFinding]:
+def scan_file(filepath: Path) -> list[LeakFinding]:
     """Scan a single file for IP leaks."""
     if should_skip_file(str(filepath)):
         return []
@@ -260,9 +259,9 @@ def scan_file(filepath: Path) -> List[LeakFinding]:
         return []
 
 
-def scan_directory(directory: Path, recursive: bool = True) -> List[LeakFinding]:
+def scan_directory(directory: Path, recursive: bool = True) -> list[LeakFinding]:
     """Scan a directory for IP leaks."""
-    findings: List[LeakFinding] = []
+    findings: list[LeakFinding] = []
 
     if recursive:
         files = directory.rglob("*")
@@ -276,9 +275,9 @@ def scan_directory(directory: Path, recursive: bool = True) -> List[LeakFinding]
     return findings
 
 
-def scan_git_history(directory: Path, depth: int = 100) -> List[LeakFinding]:
+def scan_git_history(directory: Path, depth: int = 100) -> list[LeakFinding]:
     """Scan git history for leaked secrets (deep scan)."""
-    findings: List[LeakFinding] = []
+    findings: list[LeakFinding] = []
 
     try:
         # Get recent commits
@@ -322,7 +321,7 @@ def scan_git_history(directory: Path, depth: int = 100) -> List[LeakFinding]:
     return findings
 
 
-def format_findings_report(findings: List[LeakFinding], format_type: str = "markdown") -> str:
+def format_findings_report(findings: list[LeakFinding], format_type: str = "markdown") -> str:
     """Format findings into a report."""
     if not findings:
         return "No IP leaks detected."
@@ -394,7 +393,7 @@ def format_findings_report(findings: List[LeakFinding], format_type: str = "mark
     return "\n".join(lines)
 
 
-def scan_pre_publish(plugin_dir: Path) -> Tuple[bool, str]:
+def scan_pre_publish(plugin_dir: Path) -> tuple[bool, str]:
     """
     Pre-publish scan for /popkit:git publish.
     Returns (is_safe, report).

@@ -16,9 +16,9 @@ import json
 import os
 import time
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 # File locking (Unix-only) - fcntl used locally where needed
 try:
@@ -40,7 +40,7 @@ class SessionManager:
         # Session timeout: 5 minutes of inactivity
         self.session_timeout_seconds = 300
 
-    def get_or_create_session(self) -> Dict[str, Any]:
+    def get_or_create_session(self) -> dict[str, Any]:
         """Get current active session or create a new one."""
         session_id = os.getenv("POPKIT_RECORD_ID")
         if session_id:
@@ -50,7 +50,7 @@ class SessionManager:
             # Auto-detect or create session
             return self._get_active_session()
 
-    def _get_active_session(self) -> Dict[str, Any]:
+    def _get_active_session(self) -> dict[str, Any]:
         """Get the currently active session or create new one."""
         # Look for recent session file
         session_files = sorted(
@@ -65,7 +65,7 @@ class SessionManager:
         # No active session, create new one
         return self._create_new_session()
 
-    def _load_or_create_session(self, session_id: str) -> Dict[str, Any]:
+    def _load_or_create_session(self, session_id: str) -> dict[str, Any]:
         """Load existing session by ID or create if doesn't exist."""
         session_file = self.sessions_dir / f"session-{session_id}.json"
 
@@ -76,10 +76,10 @@ class SessionManager:
 
         return self._create_new_session(session_id)
 
-    def _load_session(self, session_file: Path) -> Optional[Dict[str, Any]]:
+    def _load_session(self, session_file: Path) -> dict[str, Any] | None:
         """Load session from file with lock."""
         try:
-            with open(session_file, "r") as f:
+            with open(session_file) as f:
                 # Acquire shared lock for reading (Unix only)
                 if HAS_FCNTL:
                     import fcntl
@@ -96,7 +96,7 @@ class SessionManager:
         except (json.JSONDecodeError, FileNotFoundError):
             return None
 
-    def _is_session_active(self, session: Dict[str, Any]) -> bool:
+    def _is_session_active(self, session: dict[str, Any]) -> bool:
         """Check if session is still active (not timed out)."""
         last_activity = session.get("last_activity_timestamp")
         if not last_activity:
@@ -104,13 +104,13 @@ class SessionManager:
 
         try:
             last_time = datetime.fromisoformat(last_activity)
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
             elapsed = (now - last_time).total_seconds()
             return elapsed < self.session_timeout_seconds
         except (ValueError, TypeError):
             return False
 
-    def _create_new_session(self, session_id: Optional[str] = None) -> Dict[str, Any]:
+    def _create_new_session(self, session_id: str | None = None) -> dict[str, Any]:
         """Create a new session."""
         if session_id is None:
             session_id = str(uuid.uuid4())[:8]
@@ -120,8 +120,8 @@ class SessionManager:
 
         session = {
             "session_id": session_id,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "last_activity_timestamp": datetime.now(timezone.utc).isoformat(),
+            "created_at": datetime.now(UTC).isoformat(),
+            "last_activity_timestamp": datetime.now(UTC).isoformat(),
             "command": command_name,
             "working_directory": os.getcwd(),
             "recording_file": f"{timestamp}-{command_name}-{session_id}.json",
@@ -136,7 +136,7 @@ class SessionManager:
         self._save_session(session)
         return session
 
-    def _save_session(self, session: Dict[str, Any]) -> None:
+    def _save_session(self, session: dict[str, Any]) -> None:
         """Save session to file with lock."""
         session_id = session["session_id"]
         session_file = self.sessions_dir / f"session-{session_id}.json"
@@ -158,14 +158,14 @@ class SessionManager:
     def update_session_activity(self, session_id: str) -> None:
         """Update session's last activity timestamp."""
         session = self._load_or_create_session(session_id)
-        session["last_activity_timestamp"] = datetime.now(timezone.utc).isoformat()
+        session["last_activity_timestamp"] = datetime.now(UTC).isoformat()
         session["event_count"] = session.get("event_count", 0) + 1
         self._save_session(session)
 
     def end_session(self, session_id: str) -> None:
         """Mark session as ended."""
         session = self._load_or_create_session(session_id)
-        session["ended_at"] = datetime.now(timezone.utc).isoformat()
+        session["ended_at"] = datetime.now(UTC).isoformat()
         session["status"] = "completed"
         self._save_session(session)
 
@@ -187,7 +187,7 @@ class SessionManager:
 
 
 # Global singleton
-_session_manager: Optional[SessionManager] = None
+_session_manager: SessionManager | None = None
 
 
 def get_session_manager() -> SessionManager:
@@ -198,7 +198,7 @@ def get_session_manager() -> SessionManager:
     return _session_manager
 
 
-def get_current_session() -> Dict[str, Any]:
+def get_current_session() -> dict[str, Any]:
     """Get the current active session."""
     return get_session_manager().get_or_create_session()
 

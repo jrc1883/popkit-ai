@@ -17,7 +17,6 @@ from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
 
 
 @dataclass
@@ -26,7 +25,7 @@ class VoteResult:
 
     issue_number: int
     score: int
-    breakdown: Dict[str, int]
+    breakdown: dict[str, int]
     total_reactions: int
     fetched_at: str
     cached: bool = False
@@ -54,7 +53,7 @@ class VoteCache:
     CACHE_TTL_HOURS = 1  # How long to cache votes
     DEFAULT_DB_PATH = Path.home() / ".claude" / "config" / "vote_cache.db"
 
-    def __init__(self, db_path: Optional[Path] = None):
+    def __init__(self, db_path: Path | None = None):
         self.db_path = db_path or self.DEFAULT_DB_PATH
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._init_database()
@@ -89,7 +88,7 @@ class VoteCache:
                 ON vote_cache(fetched_at);
             """)
 
-    def get(self, repo: str, issue_number: int) -> Optional[VoteResult]:
+    def get(self, repo: str, issue_number: int) -> VoteResult | None:
         """Get cached vote result if not expired"""
         with self._get_connection() as conn:
             row = conn.execute(
@@ -157,7 +156,7 @@ class VoteFetcher:
     Uses gh CLI for API calls and SQLite for caching.
     """
 
-    def __init__(self, weights: Optional[Dict[str, int]] = None, cache: Optional[VoteCache] = None):
+    def __init__(self, weights: dict[str, int] | None = None, cache: VoteCache | None = None):
         """
         Initialize the vote fetcher.
 
@@ -168,7 +167,7 @@ class VoteFetcher:
         self.weights = weights or DEFAULT_WEIGHTS.copy()
         self.cache = cache or VoteCache()
 
-    def get_repo(self) -> Optional[str]:
+    def get_repo(self) -> str | None:
         """Get the current repository in owner/repo format"""
         try:
             result = subprocess.run(
@@ -184,7 +183,7 @@ class VoteFetcher:
             pass
         return None
 
-    def fetch_reactions(self, issue_number: int, repo: Optional[str] = None) -> List[Dict]:
+    def fetch_reactions(self, issue_number: int, repo: str | None = None) -> list[dict]:
         """
         Fetch reactions for a specific issue using gh API.
 
@@ -226,7 +225,7 @@ class VoteFetcher:
         except json.JSONDecodeError:
             return []
 
-    def calculate_score(self, reactions: List[Dict]) -> tuple:
+    def calculate_score(self, reactions: list[dict]) -> tuple:
         """
         Calculate vote score from reactions.
 
@@ -247,7 +246,7 @@ class VoteFetcher:
         return score, dict(breakdown), len(reactions)
 
     def get_issue_votes(
-        self, issue_number: int, repo: Optional[str] = None, use_cache: bool = True
+        self, issue_number: int, repo: str | None = None, use_cache: bool = True
     ) -> VoteResult:
         """
         Get vote score for a specific issue.
@@ -289,8 +288,8 @@ class VoteFetcher:
         return result
 
     def get_bulk_votes(
-        self, issue_numbers: List[int], repo: Optional[str] = None, use_cache: bool = True
-    ) -> Dict[int, VoteResult]:
+        self, issue_numbers: list[int], repo: str | None = None, use_cache: bool = True
+    ) -> dict[int, VoteResult]:
         """
         Get votes for multiple issues.
 
@@ -375,7 +374,7 @@ class VoteFetcher:
 
 
 # Singleton instance
-_fetcher: Optional[VoteFetcher] = None
+_fetcher: VoteFetcher | None = None
 
 
 def get_vote_fetcher() -> VoteFetcher:

@@ -11,7 +11,7 @@ Issue #69: Generic Workspace Routine Templates - Caching & Configuration
 import json
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 try:
     from .generic_project_detector import ProjectType
@@ -39,7 +39,7 @@ class ProjectConfig:
         self.project_path = Path(project_path).resolve()
         self.config_file = self.project_path / self.CONFIG_FILENAME
 
-    def load(self) -> Optional[Dict[str, Any]]:
+    def load(self) -> dict[str, Any] | None:
         """
         Load project configuration from disk.
 
@@ -60,11 +60,11 @@ class ProjectConfig:
 
             return config
 
-        except (json.JSONDecodeError, IOError) as e:
+        except (OSError, json.JSONDecodeError) as e:
             print(f"[WARN] Failed to load project config: {e}")
             return None
 
-    def save(self, config: Dict[str, Any]) -> bool:
+    def save(self, config: dict[str, Any]) -> bool:
         """
         Save project configuration to disk.
 
@@ -87,11 +87,11 @@ class ProjectConfig:
 
             return True
 
-        except (IOError, Exception) as e:
+        except (OSError, Exception) as e:
             print(f"[ERROR] Failed to save project config: {e}")
             return False
 
-    def is_cache_valid(self, config: Optional[Dict[str, Any]] = None) -> bool:
+    def is_cache_valid(self, config: dict[str, Any] | None = None) -> bool:
         """
         Check if cached configuration is still valid.
 
@@ -126,7 +126,7 @@ class ProjectConfig:
         except (ValueError, TypeError):
             return False
 
-    def get_cached_project_type(self) -> Optional[ProjectType]:
+    def get_cached_project_type(self) -> ProjectType | None:
         """
         Get cached project type if valid.
 
@@ -206,7 +206,7 @@ class ProjectConfig:
 
         return self.save(config)
 
-    def update_overrides(self, overrides: Dict[str, Any]) -> bool:
+    def update_overrides(self, overrides: dict[str, Any]) -> bool:
         """
         Update configuration overrides.
 
@@ -225,7 +225,7 @@ class ProjectConfig:
 
         return self.save(config)
 
-    def get_override(self, field: str) -> Optional[Any]:
+    def get_override(self, field: str) -> Any | None:
         """
         Get a specific override value.
 
@@ -261,7 +261,7 @@ class ProjectConfig:
 
 def get_project_type_with_cache(
     project_path: str = ".", force_refresh: bool = False
-) -> Optional[ProjectType]:
+) -> ProjectType | None:
     """
     Get project type with smart caching.
 

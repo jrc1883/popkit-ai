@@ -17,7 +17,7 @@ import subprocess
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class TechnologyType(Enum):
@@ -41,20 +41,20 @@ class Technology:
     name: str
     type: TechnologyType
     confidence: float  # 0.0-1.0
-    version: Optional[str] = None
-    config_file: Optional[str] = None
-    evidence: List[str] = field(default_factory=list)
+    version: str | None = None
+    config_file: str | None = None
+    evidence: list[str] = field(default_factory=list)
 
 
 @dataclass
 class TechStack:
     """Complete technology stack analysis."""
 
-    technologies: List[Technology]
-    primary_language: Optional[str] = None
+    technologies: list[Technology]
+    primary_language: str | None = None
     confidence_score: float = 0.0  # Overall confidence
-    config_files_found: List[str] = field(default_factory=list)
-    warnings: List[str] = field(default_factory=list)
+    config_files_found: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
 
 
 class TechStackDetector:
@@ -62,9 +62,9 @@ class TechStackDetector:
 
     def __init__(self, project_path: str = "."):
         self.project_path = Path(project_path).resolve()
-        self.technologies: List[Technology] = []
-        self.config_files: List[str] = []
-        self.warnings: List[str] = []
+        self.technologies: list[Technology] = []
+        self.config_files: list[str] = []
+        self.warnings: list[str] = []
 
     def _file_exists(self, *path_parts: str) -> bool:
         """Check if file exists in project."""
@@ -74,7 +74,7 @@ class TechStackDetector:
             self.config_files.append(str(Path(*path_parts)))
         return exists
 
-    def _read_file(self, *path_parts: str) -> Optional[str]:
+    def _read_file(self, *path_parts: str) -> str | None:
         """Read file contents safely."""
         try:
             file_path = self.project_path / Path(*path_parts)
@@ -82,7 +82,7 @@ class TechStackDetector:
         except Exception:
             return None
 
-    def _read_json(self, *path_parts: str) -> Optional[Dict[str, Any]]:
+    def _read_json(self, *path_parts: str) -> dict[str, Any] | None:
         """Read and parse JSON file."""
         content = self._read_file(*path_parts)
         if content:
@@ -92,7 +92,7 @@ class TechStackDetector:
                 self.warnings.append(f"Invalid JSON in {'/'.join(path_parts)}")
         return None
 
-    def _run_command(self, args: List[str]) -> Optional[str]:
+    def _run_command(self, args: list[str]) -> str | None:
         """Run command and return output."""
         try:
             result = subprocess.run(
@@ -112,9 +112,9 @@ class TechStackDetector:
         name: str,
         tech_type: TechnologyType,
         confidence: float,
-        version: Optional[str] = None,
-        config_file: Optional[str] = None,
-        evidence: Optional[List[str]] = None,
+        version: str | None = None,
+        config_file: str | None = None,
+        evidence: list[str] | None = None,
     ):
         """Add detected technology to list."""
         self.technologies.append(
@@ -233,7 +233,7 @@ class TechStackDetector:
                 evidence=["[tool.isort] section found"],
             )
 
-    def _detect_python_version(self) -> Optional[str]:
+    def _detect_python_version(self) -> str | None:
         """Detect Python version from pyproject.toml or runtime."""
         # Try pyproject.toml first
         content = self._read_file("pyproject.toml")
@@ -690,7 +690,7 @@ class TechStackDetector:
             warnings=self.warnings,
         )
 
-    def _determine_primary_language(self) -> Optional[str]:
+    def _determine_primary_language(self) -> str | None:
         """Determine primary programming language."""
         languages = [tech for tech in self.technologies if tech.type == TechnologyType.LANGUAGE]
 
@@ -724,7 +724,7 @@ def format_tech_stack_report(stack: TechStack) -> str:
     lines.append("")
 
     # Group technologies by type
-    by_type: Dict[TechnologyType, List[Technology]] = {}
+    by_type: dict[TechnologyType, list[Technology]] = {}
     for tech in stack.technologies:
         if tech.type not in by_type:
             by_type[tech.type] = []

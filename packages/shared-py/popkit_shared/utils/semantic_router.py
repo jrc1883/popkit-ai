@@ -16,10 +16,7 @@ import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional
-
-# Add utils to path
-sys.path.insert(0, os.path.dirname(__file__))
+from typing import Any
 
 from .cloud_agent_search import (
     is_available as cloud_is_available,
@@ -61,7 +58,7 @@ class RoutingResult:
     method: str  # "semantic", "keyword", "file_pattern", "error_pattern"
     is_project_item: bool = False  # True if from project-local embedding
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "agent": self.agent,
             "confidence": self.confidence,
@@ -89,7 +86,7 @@ class SemanticRouter:
     - Confidence scoring
     """
 
-    def __init__(self, project_path: Optional[str] = None):
+    def __init__(self, project_path: str | None = None):
         """
         Initialize the semantic router.
 
@@ -108,10 +105,10 @@ class SemanticRouter:
             # Auto-detect project root
             self.project_path = self._detect_project_root()
 
-    def _detect_project_root(self) -> Optional[str]:
+    def _detect_project_root(self) -> str | None:
         """Auto-detect project root from cwd."""
         try:
-            from embedding_project import get_project_root
+            from .embedding_project import get_project_root
 
             return get_project_root()
         except ImportError:
@@ -122,7 +119,7 @@ class SemanticRouter:
                     return str(path)
             return None
 
-    def _load_config(self) -> Dict[str, Any]:
+    def _load_config(self) -> dict[str, Any]:
         """Load agent routing config."""
         if CONFIG_PATH.exists():
             try:
@@ -141,8 +138,8 @@ class SemanticRouter:
         query: str,
         top_k: int = 3,
         min_confidence: float = DEFAULT_MIN_CONFIDENCE,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> List[RoutingResult]:
+        context: dict[str, Any] | None = None,
+    ) -> list[RoutingResult]:
         """
         Route query to best matching agents.
 
@@ -202,9 +199,9 @@ class SemanticRouter:
         self,
         query: str,
         min_confidence: float = DEFAULT_MIN_CONFIDENCE,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
         set_active_agent: bool = False,
-    ) -> Optional[RoutingResult]:
+    ) -> RoutingResult | None:
         """
         Route to single best agent.
 
@@ -226,9 +223,7 @@ class SemanticRouter:
 
         return result
 
-    def explain_routing(
-        self, query: str, context: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+    def explain_routing(self, query: str, context: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Get detailed routing explanation.
 
@@ -292,8 +287,8 @@ class SemanticRouter:
         project_path: str,
         top_k: int = 3,
         min_confidence: float = DEFAULT_MIN_CONFIDENCE,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> List[RoutingResult]:
+        context: dict[str, Any] | None = None,
+    ) -> list[RoutingResult]:
         """
         Route with explicit project context.
 
@@ -322,7 +317,7 @@ class SemanticRouter:
     # ROUTING METHODS
     # =========================================================================
 
-    def _cloud_route(self, query: str, top_k: int, min_confidence: float) -> List[RoutingResult]:
+    def _cloud_route(self, query: str, top_k: int, min_confidence: float) -> list[RoutingResult]:
         """
         Route using cloud semantic search (Upstash Vector).
 
@@ -358,7 +353,7 @@ class SemanticRouter:
             print(f"Cloud routing error: {e}", file=sys.stderr)
             return []
 
-    def _semantic_route(self, query: str, top_k: int, min_confidence: float) -> List[RoutingResult]:
+    def _semantic_route(self, query: str, top_k: int, min_confidence: float) -> list[RoutingResult]:
         """Route using embedding similarity with project awareness."""
         if not self.client:
             return []
@@ -421,7 +416,7 @@ class SemanticRouter:
             print(f"Semantic routing error: {e}", file=sys.stderr)
             return []
 
-    def _keyword_route(self, query: str, top_k: int) -> List[RoutingResult]:
+    def _keyword_route(self, query: str, top_k: int) -> list[RoutingResult]:
         """Route using keyword matching."""
         keywords = self._config.get("keywords", {})
         query_lower = query.lower()
@@ -441,7 +436,7 @@ class SemanticRouter:
 
         return matches[:top_k]
 
-    def _file_pattern_route(self, file_path: str) -> List[RoutingResult]:
+    def _file_pattern_route(self, file_path: str) -> list[RoutingResult]:
         """Route based on file pattern."""
         import fnmatch
 
@@ -462,7 +457,7 @@ class SemanticRouter:
 
         return results
 
-    def _error_pattern_route(self, error: str) -> List[RoutingResult]:
+    def _error_pattern_route(self, error: str) -> list[RoutingResult]:
         """Route based on error pattern."""
         patterns = self._config.get("errorPatterns", {})
         results = []
@@ -481,7 +476,7 @@ class SemanticRouter:
 
         return results
 
-    def _deduplicate_results(self, results: List[RoutingResult]) -> List[RoutingResult]:
+    def _deduplicate_results(self, results: list[RoutingResult]) -> list[RoutingResult]:
         """Remove duplicate agents, keeping highest confidence."""
         seen = {}
         for result in results:
@@ -494,7 +489,7 @@ class SemanticRouter:
 # MODULE-LEVEL FUNCTIONS
 # =============================================================================
 
-_router: Optional[SemanticRouter] = None
+_router: SemanticRouter | None = None
 
 
 def get_router() -> SemanticRouter:
@@ -505,18 +500,16 @@ def get_router() -> SemanticRouter:
     return _router
 
 
-def route(
-    query: str, top_k: int = 3, context: Optional[Dict[str, Any]] = None
-) -> List[RoutingResult]:
+def route(query: str, top_k: int = 3, context: dict[str, Any] | None = None) -> list[RoutingResult]:
     """Convenience function to route a query."""
     return get_router().route(query, top_k=top_k, context=context)
 
 
 def route_single(
     query: str,
-    context: Optional[Dict[str, Any]] = None,
+    context: dict[str, Any] | None = None,
     set_active_agent: bool = False,
-) -> Optional[RoutingResult]:
+) -> RoutingResult | None:
     """Convenience function to get single best agent.
 
     Args:

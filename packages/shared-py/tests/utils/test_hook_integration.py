@@ -14,7 +14,7 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 import pytest
 
@@ -78,7 +78,7 @@ class PreToolUseStateless(StatelessHook):
             ),
         )
 
-    def _check_safety_violations(self, tool_name: str, tool_input: Dict[str, Any]) -> List[str]:
+    def _check_safety_violations(self, tool_name: str, tool_input: dict[str, Any]) -> list[str]:
         violations = []
         if tool_name == "Bash":
             command = tool_input.get("command", "")
@@ -92,7 +92,7 @@ class PreToolUseStateless(StatelessHook):
                     violations.append(f"Sensitive path access: {pattern}")
         return violations
 
-    def _get_recommendations(self, tool_name: str, tool_input: Dict[str, Any]) -> List[str]:
+    def _get_recommendations(self, tool_name: str, tool_input: dict[str, Any]) -> list[str]:
         recommendations = []
         if tool_name in ("Write", "Edit"):
             file_path = tool_input.get("file_path", "")
@@ -151,7 +151,7 @@ class PostToolUseStateless(StatelessHook):
             ),
         )
 
-    def _get_followups(self, tool_name: str, tool_result) -> List[str]:
+    def _get_followups(self, tool_name: str, tool_result) -> list[str]:
         return self.FOLLOWUP_RULES.get(tool_name, [])
 
     def _check_truncation(self, result) -> str:

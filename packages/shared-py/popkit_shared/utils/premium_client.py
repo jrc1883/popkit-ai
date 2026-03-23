@@ -13,7 +13,7 @@ import os
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # =============================================================================
 # CONFIGURATION
@@ -34,9 +34,9 @@ class PremiumStatus:
 
     tier: str
     is_premium: bool
-    user_id: Optional[str]
-    features: Dict[str, bool]
-    upgrade_url: Optional[str]
+    user_id: str | None
+    features: dict[str, bool]
+    upgrade_url: str | None
 
 
 @dataclass
@@ -52,10 +52,10 @@ class MCPGeneratorResult:
     """Result from MCP server generation."""
 
     success: bool
-    files: List[GeneratedFile]
+    files: list[GeneratedFile]
     instructions: str
-    tools: List[str]
-    error: Optional[str] = None
+    tools: list[str]
+    error: str | None = None
 
 
 @dataclass
@@ -86,7 +86,7 @@ class PremiumClient:
     - Premium skill listing
     """
 
-    def __init__(self, api_key: Optional[str] = None, api_url: str = POPKIT_API_URL):
+    def __init__(self, api_key: str | None = None, api_url: str = POPKIT_API_URL):
         """
         Initialize premium client.
 
@@ -101,7 +101,7 @@ class PremiumClient:
     # PUBLIC API
     # =========================================================================
 
-    def get_status(self) -> Optional[PremiumStatus]:
+    def get_status(self) -> PremiumStatus | None:
         """
         Get premium subscription status.
 
@@ -129,7 +129,7 @@ class PremiumClient:
         except Exception:
             return None
 
-    def list_skills(self) -> List[SkillInfo]:
+    def list_skills(self) -> list[SkillInfo]:
         """
         List available premium skills.
 
@@ -160,12 +160,12 @@ class PremiumClient:
     def generate_mcp_server(
         self,
         project_name: str,
-        tech_stack: List[str],
-        services: Optional[List[str]] = None,
-        dev_port: Optional[int] = None,
-        db_port: Optional[int] = None,
-        framework: Optional[str] = None,
-        database: Optional[str] = None,
+        tech_stack: list[str],
+        services: list[str] | None = None,
+        dev_port: int | None = None,
+        db_port: int | None = None,
+        framework: str | None = None,
+        database: str | None = None,
         include_embeddings: bool = True,
         include_routines: bool = True,
     ) -> MCPGeneratorResult:
@@ -196,7 +196,7 @@ class PremiumClient:
             )
 
         try:
-            body: Dict[str, Any] = {
+            body: dict[str, Any] = {
                 "projectName": project_name,
                 "techStack": tech_stack,
                 "services": services or [],
@@ -267,17 +267,17 @@ class PremiumClient:
     # INTERNAL METHODS
     # =========================================================================
 
-    def _get(self, endpoint: str) -> Dict[str, Any]:
+    def _get(self, endpoint: str) -> dict[str, Any]:
         """Make GET request to API."""
         return self._request("GET", endpoint)
 
-    def _post(self, endpoint: str, body: Dict[str, Any]) -> Dict[str, Any]:
+    def _post(self, endpoint: str, body: dict[str, Any]) -> dict[str, Any]:
         """Make POST request to API."""
         return self._request("POST", endpoint, body)
 
     def _request(
-        self, method: str, endpoint: str, body: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        self, method: str, endpoint: str, body: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """Make HTTP request to API."""
         url = f"{self.api_url}{endpoint}"
 
@@ -304,7 +304,7 @@ class PremiumClient:
 # MODULE-LEVEL FUNCTIONS
 # =============================================================================
 
-_client: Optional[PremiumClient] = None
+_client: PremiumClient | None = None
 
 
 def get_client() -> PremiumClient:
@@ -315,7 +315,7 @@ def get_client() -> PremiumClient:
     return _client
 
 
-def get_status() -> Optional[PremiumStatus]:
+def get_status() -> PremiumStatus | None:
     """Get premium subscription status."""
     return get_client().get_status()
 
@@ -326,12 +326,12 @@ def is_premium() -> bool:
     return status.is_premium if status else False
 
 
-def list_skills() -> List[SkillInfo]:
+def list_skills() -> list[SkillInfo]:
     """List available premium skills."""
     return get_client().list_skills()
 
 
-def generate_mcp_server(project_name: str, tech_stack: List[str], **kwargs) -> MCPGeneratorResult:
+def generate_mcp_server(project_name: str, tech_stack: list[str], **kwargs) -> MCPGeneratorResult:
     """Generate an MCP server."""
     return get_client().generate_mcp_server(project_name, tech_stack, **kwargs)
 

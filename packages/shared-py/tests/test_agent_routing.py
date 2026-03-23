@@ -10,7 +10,7 @@ fallback behavior.
 import json
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Set
+from typing import Any
 
 import pytest
 
@@ -58,7 +58,7 @@ def loader_with_tier1():
     return AgentLoader(use_embeddings=False, always_include_tier1=True)
 
 
-def _agent_ids(results: List[Dict[str, Any]]) -> Set[str]:
+def _agent_ids(results: list[dict[str, Any]]) -> set[str]:
     """Extract agent IDs from results as a set."""
     return {r["agent_id"] for r in results}
 

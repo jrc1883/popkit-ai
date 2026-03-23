@@ -28,7 +28,7 @@ import json
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # =============================================================================
 # Data Classes
@@ -44,14 +44,14 @@ class SkillContext:
     """
 
     workflow_id: str  # Unique workflow run ID
-    previous_skill: Optional[str]  # Name of upstream skill
-    previous_output: Dict[str, Any]  # Structured output from upstream
-    shared_decisions: List[Dict]  # User decisions already made (AskUserQuestion)
-    artifacts: Dict[str, str]  # Files created: {"design_document": "path/to/file.md"}
+    previous_skill: str | None  # Name of upstream skill
+    previous_output: dict[str, Any]  # Structured output from upstream
+    shared_decisions: list[dict]  # User decisions already made (AskUserQuestion)
+    artifacts: dict[str, str]  # Files created: {"design_document": "path/to/file.md"}
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
-    github_issue: Optional[int] = None  # Linked GitHub issue number
-    complexity_score: Optional[int] = None  # Task complexity (1-10)
-    complexity_analysis: Optional[Dict[str, Any]] = None  # Full complexity analysis
+    github_issue: int | None = None  # Linked GitHub issue number
+    complexity_score: int | None = None  # Task complexity (1-10)
+    complexity_analysis: dict[str, Any] | None = None  # Full complexity analysis
 
 
 @dataclass
@@ -63,11 +63,11 @@ class SkillOutput:
 
     skill_name: str
     status: str  # "completed", "needs_input", "error"
-    output: Dict[str, Any]  # Structured data for downstream
-    artifacts: List[str]  # Files created (paths)
-    next_suggested: Optional[str] = None  # Suggested next skill
-    error_message: Optional[str] = None  # If status is "error"
-    decisions_made: List[Dict] = field(default_factory=list)  # AskUserQuestion results
+    output: dict[str, Any]  # Structured data for downstream
+    artifacts: list[str]  # Files created (paths)
+    next_suggested: str | None = None  # Suggested next skill
+    error_message: str | None = None  # If status is "error"
+    decisions_made: list[dict] = field(default_factory=list)  # AskUserQuestion results
 
 
 # =============================================================================
@@ -117,7 +117,7 @@ def _get_artifacts_file() -> Path:
 # =============================================================================
 
 
-def load_skill_context() -> Optional[SkillContext]:
+def load_skill_context() -> SkillContext | None:
     """Load context from previous skill (file-based).
 
     Returns None if no context exists or workflow is fresh.
@@ -133,7 +133,7 @@ def load_skill_context() -> Optional[SkillContext]:
         return None
 
     try:
-        with open(workflow_file, "r") as f:
+        with open(workflow_file) as f:
             data = json.load(f)
 
         return SkillContext(
@@ -171,7 +171,7 @@ def save_skill_context(output: SkillOutput) -> None:
     existing = {}
     if workflow_file.exists():
         try:
-            with open(workflow_file, "r") as f:
+            with open(workflow_file) as f:
                 existing = json.load(f)
         except json.JSONDecodeError:
             existing = {}
@@ -219,7 +219,7 @@ def clear_workflow_context() -> None:
         workflow_file.unlink()
 
 
-def get_workflow_summary() -> Dict[str, Any]:
+def get_workflow_summary() -> dict[str, Any]:
     """Get a summary of the current workflow state.
 
     Useful for status displays and debugging.
@@ -253,7 +253,7 @@ def cache_decision(decision_id: str, question: str, answer: str) -> None:
     decisions = {}
     if decisions_file.exists():
         try:
-            with open(decisions_file, "r") as f:
+            with open(decisions_file) as f:
                 decisions = json.load(f)
         except json.JSONDecodeError:
             decisions = {}
@@ -268,7 +268,7 @@ def cache_decision(decision_id: str, question: str, answer: str) -> None:
         json.dump(decisions, f, indent=2)
 
 
-def get_cached_decision(decision_id: str) -> Optional[str]:
+def get_cached_decision(decision_id: str) -> str | None:
     """Get a previously cached decision.
 
     Returns None if decision hasn't been made.
@@ -279,7 +279,7 @@ def get_cached_decision(decision_id: str) -> Optional[str]:
         return None
 
     try:
-        with open(decisions_file, "r") as f:
+        with open(decisions_file) as f:
             decisions = json.load(f)
         return decisions.get(decision_id, {}).get("answer")
     except (json.JSONDecodeError, KeyError):
@@ -307,7 +307,7 @@ def register_artifact(name: str, path: str, artifact_type: str = "file") -> None
     artifacts = {}
     if artifacts_file.exists():
         try:
-            with open(artifacts_file, "r") as f:
+            with open(artifacts_file) as f:
                 artifacts = json.load(f)
         except json.JSONDecodeError:
             artifacts = {}
@@ -322,7 +322,7 @@ def register_artifact(name: str, path: str, artifact_type: str = "file") -> None
         json.dump(artifacts, f, indent=2)
 
 
-def get_artifact(name: str) -> Optional[str]:
+def get_artifact(name: str) -> str | None:
     """Get the path to a registered artifact."""
     artifacts_file = _get_artifacts_file()
 
@@ -330,7 +330,7 @@ def get_artifact(name: str) -> Optional[str]:
         return None
 
     try:
-        with open(artifacts_file, "r") as f:
+        with open(artifacts_file) as f:
             artifacts = json.load(f)
         return artifacts.get(name, {}).get("path")
     except (json.JSONDecodeError, KeyError):
@@ -349,7 +349,7 @@ def link_workflow_to_issue(issue_number: int) -> None:
     state = {}
     if workflow_file.exists():
         try:
-            with open(workflow_file, "r") as f:
+            with open(workflow_file) as f:
                 state = json.load(f)
         except json.JSONDecodeError:
             state = {}
@@ -361,7 +361,7 @@ def link_workflow_to_issue(issue_number: int) -> None:
         json.dump(state, f, indent=2)
 
 
-def get_linked_issue() -> Optional[int]:
+def get_linked_issue() -> int | None:
     """Get the GitHub issue linked to current workflow."""
     ctx = load_skill_context()
     return ctx.github_issue if ctx else None

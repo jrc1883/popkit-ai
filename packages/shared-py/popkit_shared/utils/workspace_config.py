@@ -14,14 +14,14 @@ Part of the popkit plugin system.
 import glob
 import json
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # =============================================================================
 # Workspace Detection
 # =============================================================================
 
 
-def find_workspace_root(start_path: str) -> Optional[str]:
+def find_workspace_root(start_path: str) -> str | None:
     """Walk up directory tree to find workspace root.
 
     Args:
@@ -45,11 +45,11 @@ def find_workspace_root(start_path: str) -> Optional[str]:
         package_json = os.path.join(current, "package.json")
         if os.path.isfile(package_json):
             try:
-                with open(package_json, "r", encoding="utf-8") as f:
+                with open(package_json, encoding="utf-8") as f:
                     data = json.load(f)
                     if "workspaces" in data:
                         return current
-            except (json.JSONDecodeError, IOError):
+            except (OSError, json.JSONDecodeError):
                 # Ignore malformed package.json and continue walking up.
                 pass
 
@@ -60,7 +60,7 @@ def find_workspace_root(start_path: str) -> Optional[str]:
         current = parent
 
 
-def detect_workspace_type(workspace_root: str) -> Optional[str]:
+def detect_workspace_type(workspace_root: str) -> str | None:
     """Detect workspace type.
 
     Args:
@@ -81,7 +81,7 @@ def detect_workspace_type(workspace_root: str) -> Optional[str]:
     package_json = os.path.join(workspace_root, "package.json")
     if os.path.isfile(package_json):
         try:
-            with open(package_json, "r", encoding="utf-8") as f:
+            with open(package_json, encoding="utf-8") as f:
                 data = json.load(f)
                 if "workspaces" in data:
                     # Detect pnpm vs npm/yarn by lock file
@@ -91,7 +91,7 @@ def detect_workspace_type(workspace_root: str) -> Optional[str]:
                         return "yarn"
                     else:
                         return "npm"
-        except (json.JSONDecodeError, IOError):
+        except (OSError, json.JSONDecodeError):
             # Workspace detection should continue if package.json is malformed.
             pass
 
@@ -103,7 +103,7 @@ def detect_workspace_type(workspace_root: str) -> Optional[str]:
 # =============================================================================
 
 
-def parse_pnpm_workspace(workspace_root: str) -> List[str]:
+def parse_pnpm_workspace(workspace_root: str) -> list[str]:
     """Parse pnpm-workspace.yaml to get workspace patterns.
 
     Args:
@@ -120,7 +120,7 @@ def parse_pnpm_workspace(workspace_root: str) -> List[str]:
     try:
         # Simple YAML parsing for the packages list
         # This avoids dependency on PyYAML
-        with open(yaml_path, "r", encoding="utf-8") as f:
+        with open(yaml_path, encoding="utf-8") as f:
             content = f.read()
 
         patterns = []
@@ -145,11 +145,11 @@ def parse_pnpm_workspace(workspace_root: str) -> List[str]:
 
         return patterns
 
-    except IOError:
+    except OSError:
         return []
 
 
-def parse_package_json_workspaces(workspace_root: str) -> List[str]:
+def parse_package_json_workspaces(workspace_root: str) -> list[str]:
     """Parse package.json workspaces field.
 
     Args:
@@ -164,7 +164,7 @@ def parse_package_json_workspaces(workspace_root: str) -> List[str]:
         return []
 
     try:
-        with open(package_json, "r", encoding="utf-8") as f:
+        with open(package_json, encoding="utf-8") as f:
             data = json.load(f)
 
         workspaces = data.get("workspaces", [])
@@ -177,11 +177,11 @@ def parse_package_json_workspaces(workspace_root: str) -> List[str]:
 
         return []
 
-    except (json.JSONDecodeError, IOError):
+    except (OSError, json.JSONDecodeError):
         return []
 
 
-def parse_lerna_json(workspace_root: str) -> List[str]:
+def parse_lerna_json(workspace_root: str) -> list[str]:
     """Parse lerna.json to get workspace patterns.
 
     Args:
@@ -196,16 +196,16 @@ def parse_lerna_json(workspace_root: str) -> List[str]:
         return []
 
     try:
-        with open(lerna_json, "r", encoding="utf-8") as f:
+        with open(lerna_json, encoding="utf-8") as f:
             data = json.load(f)
 
         return data.get("packages", ["packages/*"])
 
-    except (json.JSONDecodeError, IOError):
+    except (OSError, json.JSONDecodeError):
         return []
 
 
-def parse_popkit_workspace(workspace_root: str) -> Dict[str, Any]:
+def parse_popkit_workspace(workspace_root: str) -> dict[str, Any]:
     """Parse .claude/workspace.json configuration.
 
     Args:
@@ -220,9 +220,9 @@ def parse_popkit_workspace(workspace_root: str) -> Dict[str, Any]:
         return {"apps": []}
 
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             return json.load(f)
-    except (json.JSONDecodeError, IOError):
+    except (OSError, json.JSONDecodeError):
         return {"apps": []}
 
 
@@ -231,7 +231,7 @@ def parse_popkit_workspace(workspace_root: str) -> Dict[str, Any]:
 # =============================================================================
 
 
-def resolve_workspace_patterns(workspace_root: str, patterns: List[str]) -> List[str]:
+def resolve_workspace_patterns(workspace_root: str, patterns: list[str]) -> list[str]:
     """Resolve glob patterns to actual directory paths.
 
     Args:
@@ -260,7 +260,7 @@ def resolve_workspace_patterns(workspace_root: str, patterns: List[str]) -> List
     return sorted(set(resolved))
 
 
-def get_workspace_projects(workspace_root: Optional[str] = None) -> List[Dict[str, Any]]:
+def get_workspace_projects(workspace_root: str | None = None) -> list[dict[str, Any]]:
     """Get all projects in the workspace.
 
     Args:
@@ -322,11 +322,11 @@ def get_workspace_projects(workspace_root: Optional[str] = None) -> List[Dict[st
 
         if os.path.isfile(package_json):
             try:
-                with open(package_json, "r", encoding="utf-8") as f:
+                with open(package_json, encoding="utf-8") as f:
                     data = json.load(f)
                     name = data.get("name", name)
                     description = data.get("description", "")
-            except (json.JSONDecodeError, IOError):
+            except (OSError, json.JSONDecodeError):
                 # Keep inferred defaults when project metadata is unavailable.
                 pass
 
@@ -337,9 +337,7 @@ def get_workspace_projects(workspace_root: Optional[str] = None) -> List[Dict[st
     return projects
 
 
-def find_project_by_name(
-    name: str, workspace_root: Optional[str] = None
-) -> Optional[Dict[str, Any]]:
+def find_project_by_name(name: str, workspace_root: str | None = None) -> dict[str, Any] | None:
     """Find a project by name in the workspace.
 
     Args:
@@ -367,7 +365,7 @@ def find_project_by_name(
 # =============================================================================
 
 
-def load_project_context(project_path: str) -> Dict[str, Optional[str]]:
+def load_project_context(project_path: str) -> dict[str, str | None]:
     """Load context files from a project.
 
     Args:
@@ -382,9 +380,9 @@ def load_project_context(project_path: str) -> Dict[str, Optional[str]]:
     claude_md_path = os.path.join(project_path, "CLAUDE.md")
     if os.path.isfile(claude_md_path):
         try:
-            with open(claude_md_path, "r", encoding="utf-8") as f:
+            with open(claude_md_path, encoding="utf-8") as f:
                 context["claude_md"] = f.read()
-        except IOError:
+        except OSError:
             # Optional context file; ignore read failures.
             pass
 
@@ -392,9 +390,9 @@ def load_project_context(project_path: str) -> Dict[str, Optional[str]]:
     package_json_path = os.path.join(project_path, "package.json")
     if os.path.isfile(package_json_path):
         try:
-            with open(package_json_path, "r", encoding="utf-8") as f:
+            with open(package_json_path, encoding="utf-8") as f:
                 context["package_json"] = f.read()
-        except IOError:
+        except OSError:
             # Optional context file; ignore read failures.
             pass
 
@@ -402,9 +400,9 @@ def load_project_context(project_path: str) -> Dict[str, Optional[str]]:
     readme_path = os.path.join(project_path, "README.md")
     if os.path.isfile(readme_path):
         try:
-            with open(readme_path, "r", encoding="utf-8") as f:
+            with open(readme_path, encoding="utf-8") as f:
                 context["readme"] = f.read()
-        except IOError:
+        except OSError:
             # Optional context file; ignore read failures.
             pass
 
@@ -412,9 +410,9 @@ def load_project_context(project_path: str) -> Dict[str, Optional[str]]:
     status_path = os.path.join(project_path, ".claude", "STATUS.json")
     if os.path.isfile(status_path):
         try:
-            with open(status_path, "r", encoding="utf-8") as f:
+            with open(status_path, encoding="utf-8") as f:
                 context["status"] = f.read()
-        except IOError:
+        except OSError:
             # Optional context file; ignore read failures.
             pass
 
@@ -422,7 +420,7 @@ def load_project_context(project_path: str) -> Dict[str, Optional[str]]:
 
 
 def format_project_context(
-    project_name: str, project_path: str, context: Dict[str, Optional[str]]
+    project_name: str, project_path: str, context: dict[str, str | None]
 ) -> str:
     """Format project context for display.
 

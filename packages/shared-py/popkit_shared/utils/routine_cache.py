@@ -11,7 +11,7 @@ import json
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 @dataclass
@@ -28,12 +28,12 @@ class CacheEntry:
         """Check if entry has expired."""
         return time.time() - self.timestamp > self.ttl
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "CacheEntry":
+    def from_dict(cls, data: dict[str, Any]) -> "CacheEntry":
         """Create from dictionary."""
         return cls(**data)
 
@@ -41,7 +41,7 @@ class CacheEntry:
 class RoutineCache:
     """Cache manager for routine executions."""
 
-    def __init__(self, cache_dir: Optional[Path] = None):
+    def __init__(self, cache_dir: Path | None = None):
         """Initialize cache.
 
         Args:
@@ -55,14 +55,14 @@ class RoutineCache:
         self.cache_dir = cache_dir
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self.cache_file = self.cache_dir / "routine_cache.json"
-        self.cache: Dict[str, CacheEntry] = {}
+        self.cache: dict[str, CacheEntry] = {}
         self._load()
 
     def _load(self) -> None:
         """Load cache from disk."""
         if self.cache_file.exists():
             try:
-                with open(self.cache_file, "r") as f:
+                with open(self.cache_file) as f:
                     data = json.load(f)
                     self.cache = {k: CacheEntry.from_dict(v) for k, v in data.items()}
             except (json.JSONDecodeError, KeyError):
@@ -91,7 +91,7 @@ class RoutineCache:
 
         return hashlib.sha256(value.encode()).hexdigest()
 
-    def get(self, key: str, current_value: Optional[Any] = None) -> Optional[Any]:
+    def get(self, key: str, current_value: Any | None = None) -> Any | None:
         """Get cached value if still valid.
 
         Args:
@@ -151,7 +151,7 @@ class RoutineCache:
         self.cache = {}
         self._save()
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get cache statistics.
 
         Returns:

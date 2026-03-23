@@ -1,0 +1,83 @@
+name: popkit-core
+version: 1.0.0-beta.12
+description: >-
+  Core utilities plugin - plugin management, project analysis, Power Mode
+  orchestration with Native Swarm & E2B sandboxes, stats, privacy, and meta-features
+author:
+  name: Joseph Cannon
+  email: joseph@thehouseofdeals.com
+license: MIT
+repository: https://github.com/jrc1883/popkit-claude
+
+agents:
+  # Tier 1: Always Active
+  - path: agents/tier-1-always-active/accessibility-guardian
+    tier: always-active
+    capabilities: [file_read, code_search, file_search, web_fetch]
+  - path: agents/tier-1-always-active/api-designer
+    tier: always-active
+    capabilities: [file_read, file_write, file_edit, code_search, web_fetch]
+  - path: agents/tier-1-always-active/documentation-maintainer
+    tier: always-active
+    capabilities: [file_read, file_write, file_edit, code_search, file_search, web_fetch]
+  - path: agents/tier-1-always-active/migration-specialist
+    tier: always-active
+    capabilities: [file_read, file_write, file_edit, code_search, file_search, shell]
+
+  # Tier 2: On Demand
+  - path: agents/tier-2-on-demand/bundle-analyzer
+    tier: on-demand
+    capabilities: [file_read, file_write, file_edit, code_search, file_search, shell]
+  - path: agents/tier-2-on-demand/dead-code-eliminator
+    tier: on-demand
+    capabilities: [file_read, file_write, file_edit, code_search, file_search, shell]
+  - path: agents/tier-2-on-demand/feature-prioritizer
+    tier: on-demand
+    capabilities: [file_read, code_search, file_search, web_fetch, file_write, file_edit]
+  - path: agents/tier-2-on-demand/meta-agent
+    tier: on-demand
+    capabilities: [file_write, web_fetch, file_edit, file_read, code_search]
+  - path: agents/tier-2-on-demand/power-coordinator
+    tier: on-demand
+    capabilities: [agent_spawn, task_manage, agent_message, file_read, file_write]
+
+skills:
+  - path: skills/pop-analyze-project
+  - path: skills/pop-auto-docs
+  - path: skills/pop-bug-reporter
+  - path: skills/pop-cloud-signup
+  - path: skills/pop-dashboard
+  - path: skills/pop-doc-sync
+  - path: skills/pop-embed-content
+  - path: skills/pop-embed-project
+  - path: skills/pop-mcp-generator
+  - path: skills/pop-plugin-test
+  - path: skills/pop-power-mode
+  - path: skills/pop-project-init
+  - path: skills/pop-project-reference
+  - path: skills/pop-project-templates
+  - path: skills/pop-sandbox
+  - path: skills/pop-skill-generator
+  - path: skills/pop-validation-engine
+
+commands:
+  - path: commands/account.md
+  - path: commands/bug.md
+  - path: commands/dashboard.md
+  - path: commands/plugin.md
+  - path: commands/power.md
+  - path: commands/privacy.md
+  - path: commands/project.md
+  - path: commands/record.md
+  - path: commands/stats.md
+  - path: commands/upstream.md
+
+hooks:
+  pre_tool_use:
+    - script: hooks/pre-tool-use.py
+      matcher: [file_read, file_write, file_edit, code_search, file_search, shell, task_manage, web_fetch, web_search]
+    - script: hooks/chain-validator.py
+      matcher: [task_manage]
+  post_tool_use:
+    - script: hooks/post-tool-use.py
+      matcher: [file_read, file_write, file_edit, code_search, file_search, shell, task_manage, web_fetch, web_search]

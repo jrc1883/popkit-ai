@@ -12,7 +12,7 @@ Features:
 Part of the popkit plugin system - Issue #96
 """
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 # Handle both relative and absolute imports
 try:
@@ -26,9 +26,9 @@ except ImportError:
 
 
 def validate_labels(
-    requested_labels: List[str],
-    cache: Optional[GitHubCache] = None,
-) -> Tuple[List[str], List[str], List[Dict[str, Any]]]:
+    requested_labels: list[str],
+    cache: GitHubCache | None = None,
+) -> tuple[list[str], list[str], list[dict[str, Any]]]:
     """Validate label names against repository labels.
 
     Implements "Check First" pattern - validates BEFORE GitHub API call.
@@ -75,8 +75,8 @@ def validate_labels(
 
 def validate_milestone(
     milestone_title: str,
-    cache: Optional[GitHubCache] = None,
-) -> Tuple[bool, Optional[int], List[str]]:
+    cache: GitHubCache | None = None,
+) -> tuple[bool, int | None, list[str]]:
     """Validate milestone title against repository milestones.
 
     Implements "Check First" pattern - validates BEFORE GitHub API call.
@@ -114,7 +114,7 @@ def validate_milestone(
 def validate_branch(
     branch_name: str,
     allow_creation: bool = True,
-) -> Tuple[bool, bool, Optional[str]]:
+) -> tuple[bool, bool, str | None]:
     """Validate branch name against local git branches.
 
     Implements "Check First" pattern - validates BEFORE git operations.
@@ -167,8 +167,8 @@ def validate_branch(
 
 
 def get_label_suggestions(
-    partial: str, max_suggestions: int = 5, cache: Optional[GitHubCache] = None
-) -> List[str]:
+    partial: str, max_suggestions: int = 5, cache: GitHubCache | None = None
+) -> list[str]:
     """Get label suggestions for autocomplete or user prompts.
 
     Args:
@@ -202,7 +202,7 @@ def get_label_suggestions(
 # =============================================================================
 
 
-def _find_similar_labels(target: str, options: List[str], max_suggestions: int = 3) -> List[str]:
+def _find_similar_labels(target: str, options: list[str], max_suggestions: int = 3) -> list[str]:
     """Find similar labels using Levenshtein distance.
 
     Args:
@@ -270,9 +270,9 @@ def _levenshtein_distance(s1: str, s2: str) -> int:
 
 
 def generate_label_validation_report(
-    requested_labels: List[str],
-    cache: Optional[GitHubCache] = None,
-) -> Dict[str, Any]:
+    requested_labels: list[str],
+    cache: GitHubCache | None = None,
+) -> dict[str, Any]:
     """Generate comprehensive label validation report.
 
     Args:
@@ -319,8 +319,8 @@ def generate_label_validation_report(
 
 def generate_milestone_validation_report(
     milestone_title: str,
-    cache: Optional[GitHubCache] = None,
-) -> Dict[str, Any]:
+    cache: GitHubCache | None = None,
+) -> dict[str, Any]:
     """Generate comprehensive milestone validation report.
 
     Args:

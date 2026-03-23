@@ -7,12 +7,12 @@ for semantic routing in Claude Code.
 
 import re
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 import yaml
 
 
-def validate_agent_files(plugin_root: Path) -> Dict[str, Any]:
+def validate_agent_files(plugin_root: Path) -> dict[str, Any]:
     """
     Validate all agent markdown files in a plugin.
 
@@ -50,7 +50,7 @@ def validate_agent_files(plugin_root: Path) -> Dict[str, Any]:
     return result
 
 
-def validate_agent_file(agent_file: Path) -> Dict[str, Any]:
+def validate_agent_file(agent_file: Path) -> dict[str, Any]:
     """
     Validate a single agent markdown file.
 
@@ -125,7 +125,7 @@ def validate_agent_file(agent_file: Path) -> Dict[str, Any]:
     return result
 
 
-def parse_frontmatter(content: str) -> Dict[str, Any]:
+def parse_frontmatter(content: str) -> dict[str, Any]:
     """
     Parse YAML frontmatter from markdown content.
 
@@ -151,7 +151,7 @@ def parse_frontmatter(content: str) -> Dict[str, Any]:
         return {}
 
 
-def validate_tier_directory(agent_file: Path) -> Dict[str, Any]:
+def validate_tier_directory(agent_file: Path) -> dict[str, Any]:
     """
     Validate that agent is in a proper tier directory.
 
@@ -177,7 +177,7 @@ def validate_tier_directory(agent_file: Path) -> Dict[str, Any]:
     return {"valid": False, "warning": f"Agent not in standard tier directory. Found in: {parent}"}
 
 
-def check_unique_agent_names(agent_files: List[Path]) -> Dict[str, Any]:
+def check_unique_agent_names(agent_files: list[Path]) -> dict[str, Any]:
     """
     Check for duplicate agent names across files.
 

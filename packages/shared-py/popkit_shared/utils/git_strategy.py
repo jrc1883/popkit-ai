@@ -15,7 +15,7 @@ import subprocess
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class BranchingStrategy(Enum):
@@ -35,7 +35,7 @@ class BranchInfo:
 
     name: str
     is_remote: bool
-    last_commit_date: Optional[datetime]
+    last_commit_date: datetime | None
     commit_count: int
     is_merged: bool
 
@@ -46,10 +46,10 @@ class StrategyAnalysis:
 
     detected_strategy: BranchingStrategy
     confidence: float  # 0.0-1.0
-    evidence: List[str]
-    recommendations: List[str]
-    branch_stats: Dict[str, Any]
-    protected_branches: List[str]
+    evidence: list[str]
+    recommendations: list[str]
+    branch_stats: dict[str, Any]
+    protected_branches: list[str]
 
 
 class GitStrategyDetector:
@@ -58,7 +58,7 @@ class GitStrategyDetector:
     def __init__(self, repo_path: str = "."):
         self.repo_path = repo_path
 
-    def _run_git(self, args: List[str]) -> str:
+    def _run_git(self, args: list[str]) -> str:
         """Run git command and return output."""
         result = subprocess.run(
             ["git"] + args,
@@ -69,7 +69,7 @@ class GitStrategyDetector:
         )
         return result.stdout.strip()
 
-    def _run_gh(self, args: List[str]) -> Optional[str]:
+    def _run_gh(self, args: list[str]) -> str | None:
         """Run gh CLI command and return output."""
         try:
             result = subprocess.run(
@@ -83,7 +83,7 @@ class GitStrategyDetector:
         except FileNotFoundError:
             return None
 
-    def get_all_branches(self) -> List[BranchInfo]:
+    def get_all_branches(self) -> list[BranchInfo]:
         """Get all local and remote branches with metadata."""
         branches = []
 
@@ -137,7 +137,7 @@ class GitStrategyDetector:
 
         return branches
 
-    def get_protected_branches(self) -> List[str]:
+    def get_protected_branches(self) -> list[str]:
         """Get list of protected branches from GitHub."""
         protected = ["main", "master"]  # Common defaults
 
@@ -156,7 +156,7 @@ class GitStrategyDetector:
 
         return list(set(protected))
 
-    def analyze_branch_patterns(self, branches: List[BranchInfo]) -> Dict[str, Any]:
+    def analyze_branch_patterns(self, branches: list[BranchInfo]) -> dict[str, Any]:
         """Analyze branch naming patterns and lifecycle."""
         patterns = {
             "feature_branches": 0,
@@ -223,8 +223,8 @@ class GitStrategyDetector:
         return patterns
 
     def detect_strategy(
-        self, patterns: Dict[str, Any]
-    ) -> tuple[BranchingStrategy, float, List[str]]:
+        self, patterns: dict[str, Any]
+    ) -> tuple[BranchingStrategy, float, list[str]]:
         """
         Detect branching strategy based on patterns.
 
@@ -297,8 +297,8 @@ class GitStrategyDetector:
         return detected, confidence, evidence
 
     def generate_recommendations(
-        self, strategy: BranchingStrategy, patterns: Dict[str, Any]
-    ) -> List[str]:
+        self, strategy: BranchingStrategy, patterns: dict[str, Any]
+    ) -> list[str]:
         """Generate recommendations based on detected strategy."""
         recommendations = []
 

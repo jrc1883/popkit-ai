@@ -16,7 +16,6 @@ import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 
 # Load .env file if available (for API keys)
@@ -72,9 +71,9 @@ BATCH_SIZE = 128  # Max texts per request
 class EmbeddingResponse:
     """Response from embedding API."""
 
-    embeddings: List[List[float]]
+    embeddings: list[list[float]]
     model: str
-    usage: Dict[str, int] = field(default_factory=dict)
+    usage: dict[str, int] = field(default_factory=dict)
 
 
 @dataclass
@@ -97,7 +96,7 @@ class EmbeddingUsage:
         self.total_tokens += tokens
         self.total_requests += 1
 
-    def can_request(self, estimated_tokens: int) -> Tuple[bool, float]:
+    def can_request(self, estimated_tokens: int) -> tuple[bool, float]:
         """
         Check if request is allowed.
 
@@ -137,7 +136,7 @@ class VoyageClient:
     """
 
     def __init__(
-        self, api_key: Optional[str] = None, model: str = VOYAGE_MODEL, cache_enabled: bool = True
+        self, api_key: str | None = None, model: str = VOYAGE_MODEL, cache_enabled: bool = True
     ):
         """
         Initialize Voyage client.
@@ -150,14 +149,14 @@ class VoyageClient:
         self.api_key = api_key or os.environ.get("VOYAGE_API_KEY")
         self.model = model
         self.cache_enabled = cache_enabled
-        self._cache: Dict[str, List[float]] = {}
+        self._cache: dict[str, list[float]] = {}
         self._usage = EmbeddingUsage()
 
     # =========================================================================
     # PUBLIC API
     # =========================================================================
 
-    def embed(self, texts: List[str], input_type: str = "document") -> List[List[float]]:
+    def embed(self, texts: list[str], input_type: str = "document") -> list[list[float]]:
         """
         Generate embeddings for a list of texts.
 
@@ -223,7 +222,7 @@ class VoyageClient:
 
         return results
 
-    def embed_single(self, text: str, input_type: str = "document") -> List[float]:
+    def embed_single(self, text: str, input_type: str = "document") -> list[float]:
         """
         Embed a single text string.
 
@@ -236,11 +235,11 @@ class VoyageClient:
         """
         return self.embed([text], input_type)[0]
 
-    def embed_query(self, query: str) -> List[float]:
+    def embed_query(self, query: str) -> list[float]:
         """Shorthand for embedding a search query."""
         return self.embed_single(query, input_type="query")
 
-    def embed_document(self, document: str) -> List[float]:
+    def embed_document(self, document: str) -> list[float]:
         """Shorthand for embedding a document."""
         return self.embed_single(document, input_type="document")
 
@@ -259,7 +258,7 @@ class VoyageClient:
         return len(self._cache)
 
     @property
-    def usage(self) -> Dict[str, int]:
+    def usage(self) -> dict[str, int]:
         """Get current usage stats."""
         return {
             "total_tokens": self._usage.total_tokens,
@@ -270,7 +269,7 @@ class VoyageClient:
     # INTERNAL METHODS
     # =========================================================================
 
-    def _call_api(self, texts: List[str], input_type: str) -> EmbeddingResponse:
+    def _call_api(self, texts: list[str], input_type: str) -> EmbeddingResponse:
         """Make API call to Voyage."""
         headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
 
@@ -295,7 +294,7 @@ class VoyageClient:
             raise RuntimeError(f"Network error: {e.reason}")
 
     def _call_api_with_retry(
-        self, texts: List[str], input_type: str, max_attempts: int = 3, initial_delay: float = 1.0
+        self, texts: list[str], input_type: str, max_attempts: int = 3, initial_delay: float = 1.0
     ) -> EmbeddingResponse:
         """Call API with exponential backoff retry."""
         last_error = None
@@ -348,7 +347,7 @@ class VoyageClient:
 # MODULE-LEVEL FUNCTIONS
 # =============================================================================
 
-_client: Optional[VoyageClient] = None
+_client: VoyageClient | None = None
 
 
 def get_client() -> VoyageClient:
@@ -359,22 +358,22 @@ def get_client() -> VoyageClient:
     return _client
 
 
-def embed(texts: List[str], input_type: str = "document") -> List[List[float]]:
+def embed(texts: list[str], input_type: str = "document") -> list[list[float]]:
     """Convenience function to embed texts."""
     return get_client().embed(texts, input_type)
 
 
-def embed_single(text: str, input_type: str = "document") -> List[float]:
+def embed_single(text: str, input_type: str = "document") -> list[float]:
     """Convenience function to embed single text."""
     return get_client().embed_single(text, input_type)
 
 
-def embed_query(query: str) -> List[float]:
+def embed_query(query: str) -> list[float]:
     """Convenience function to embed a search query."""
     return get_client().embed_query(query)
 
 
-def embed_document(document: str) -> List[float]:
+def embed_document(document: str) -> list[float]:
     """Convenience function to embed a document."""
     return get_client().embed_document(document)
 

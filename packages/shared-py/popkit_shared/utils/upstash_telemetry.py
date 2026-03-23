@@ -39,7 +39,7 @@ import queue
 import threading
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal, Optional
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -128,9 +128,7 @@ class UpstashTelemetryClient:
     Provides methods for real-time streaming, batch sync, and async queue.
     """
 
-    def __init__(
-        self, url: Optional[str] = None, token: Optional[str] = None, rate_limit: bool = True
-    ):
+    def __init__(self, url: str | None = None, token: str | None = None, rate_limit: bool = True):
         """Initialize the telemetry client.
 
         Args:
@@ -149,7 +147,7 @@ class UpstashTelemetryClient:
 
         self.rate_limiter = RateLimiter() if rate_limit else None
         self._async_queue: queue.Queue = queue.Queue(maxsize=1000)
-        self._async_worker: Optional[threading.Thread] = None
+        self._async_worker: threading.Thread | None = None
         self._async_running = False
 
     def _execute(self, *args: str, retry: int = 2) -> Any:
@@ -193,8 +191,8 @@ class UpstashTelemetryClient:
     # =========================================================================
 
     def xadd(
-        self, stream_key: str, fields: Dict[str, str], maxlen: int = DEFAULT_MAXLEN
-    ) -> Optional[str]:
+        self, stream_key: str, fields: dict[str, str], maxlen: int = DEFAULT_MAXLEN
+    ) -> str | None:
         """Add entry to stream with MAXLEN limit.
 
         Args:
@@ -212,7 +210,7 @@ class UpstashTelemetryClient:
         result = self._execute(*args)
         return result if isinstance(result, str) else None
 
-    def xread(self, streams: Dict[str, str], count: int = 10, block: Optional[int] = None) -> List:
+    def xread(self, streams: dict[str, str], count: int = 10, block: int | None = None) -> list:
         """Read from streams.
 
         Args:
@@ -234,8 +232,8 @@ class UpstashTelemetryClient:
         return result if isinstance(result, list) else []
 
     def xrange(
-        self, stream_key: str, min_id: str = "-", max_id: str = "+", count: Optional[int] = None
-    ) -> List:
+        self, stream_key: str, min_id: str = "-", max_id: str = "+", count: int | None = None
+    ) -> list:
         """Get stream entries in range.
 
         Args:
@@ -381,7 +379,7 @@ class UpstashTelemetryClient:
 
     def sync_local_session(
         self, session_id: str, storage: Optional["LocalTelemetryStorage"] = None
-    ) -> Dict[str, int]:
+    ) -> dict[str, int]:
         """Sync a local test session to Upstash.
 
         Reads JSONL files from local storage and streams to Upstash.
@@ -530,9 +528,7 @@ class UpstashTelemetryClient:
     # Query Methods
     # =========================================================================
 
-    def get_session_traces(
-        self, session_id: str, count: Optional[int] = None
-    ) -> List[Dict[str, Any]]:
+    def get_session_traces(self, session_id: str, count: int | None = None) -> list[dict[str, Any]]:
         """Get traces from a session stream.
 
         Args:
@@ -569,9 +565,7 @@ class UpstashTelemetryClient:
 
         return traces
 
-    def get_session_events(
-        self, session_id: str, count: Optional[int] = None
-    ) -> List[Dict[str, Any]]:
+    def get_session_events(self, session_id: str, count: int | None = None) -> list[dict[str, Any]]:
         """Get events from a session stream."""
         stream_key = self._stream_key(session_id, "events")
         entries = self.xrange(stream_key, count=count)
@@ -595,7 +589,7 @@ class UpstashTelemetryClient:
 
         return events
 
-    def get_session_summary(self, session_id: str) -> Dict[str, Any]:
+    def get_session_summary(self, session_id: str) -> dict[str, Any]:
         """Get summary of a session from Upstash streams.
 
         Args:
@@ -635,7 +629,7 @@ class UpstashTelemetryClient:
 # Convenience Functions
 # =============================================================================
 
-_client_instance: Optional[UpstashTelemetryClient] = None
+_client_instance: UpstashTelemetryClient | None = None
 
 
 def get_telemetry_client() -> UpstashTelemetryClient:
@@ -682,7 +676,7 @@ def stream_event_if_available(session_id: str, event: "CustomEvent") -> bool:
         return False
 
 
-def sync_local_session(session_id: str) -> Dict[str, int]:
+def sync_local_session(session_id: str) -> dict[str, int]:
     """Sync a local session to Upstash."""
     if not is_upstash_telemetry_available():
         return {"error": "Upstash not available"}

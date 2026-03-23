@@ -12,7 +12,7 @@ import json
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any
 
 try:
     from .dev_provider_resolver import (
@@ -66,7 +66,7 @@ class DevWorkflowRequest:
 
     task: str
     mode: str = "full"
-    issue_number: Optional[int] = None
+    issue_number: int | None = None
     requested_provider: DevProvider = DevProvider.AUTO
     allow_upstream: bool = True
     requires_popkit_orchestration: bool = False
@@ -80,8 +80,8 @@ class DevWorkflowPlan:
     decision: ProviderDecision
     execution_mode: str  # "native" | "delegated"
     primary_command: str
-    fallback_command: Optional[str] = None
-    notes: List[str] = field(default_factory=list)
+    fallback_command: str | None = None
+    notes: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return {
@@ -96,13 +96,13 @@ class DevWorkflowPlan:
 class DevWorkflowRouter:
     """Resolve provider and build a runnable workflow plan."""
 
-    def __init__(self, resolver: Optional[DevProviderResolver] = None):
+    def __init__(self, resolver: DevProviderResolver | None = None):
         self.resolver = resolver or DevProviderResolver()
 
     def build_plan(
         self,
         request: DevWorkflowRequest,
-        plugin_scan_data: Optional[Any] = None,
+        plugin_scan_data: Any | None = None,
     ) -> DevWorkflowPlan:
         required_capabilities = set()
         if request.requires_popkit_orchestration:
@@ -128,7 +128,7 @@ class DevWorkflowRouter:
             mode=normalized_mode,
             issue_number=request.issue_number,
         )
-        notes: List[str] = []
+        notes: list[str] = []
         if request.task.strip():
             notes.append(f"Task context: {request.task.strip()}")
         if request.issue_number is not None:
@@ -153,7 +153,7 @@ class DevWorkflowRouter:
         )
 
     @staticmethod
-    def _build_popkit_command(task: str, mode: str, issue_number: Optional[int]) -> str:
+    def _build_popkit_command(task: str, mode: str, issue_number: int | None) -> str:
         if issue_number is not None:
             target = f"work #{issue_number}"
         else:
@@ -184,7 +184,7 @@ def format_plan_display(plan: DevWorkflowPlan) -> str:
     return "\n".join(lines)
 
 
-def _load_plugins_json(path: Optional[str]) -> Optional[Any]:
+def _load_plugins_json(path: str | None) -> Any | None:
     if not path:
         return None
 
@@ -195,7 +195,7 @@ def _load_plugins_json(path: Optional[str]) -> Optional[Any]:
     return payload
 
 
-def main(argv: Optional[List[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Resolve and plan hybrid PopKit/feature-dev workflow execution."
     )

@@ -9,7 +9,7 @@ reducing cognitive load by grouping common flag combinations into named profiles
 """
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 @dataclass
@@ -18,7 +18,7 @@ class FlagProfile:
 
     name: str
     description: str
-    flags: Dict[str, Any]  # flag_name -> value
+    flags: dict[str, Any]  # flag_name -> value
     use_case: str
 
 
@@ -60,7 +60,7 @@ class ProfileManager:
     }
 
     @classmethod
-    def get_profile(cls, profile_name: str, command_type: str = "routine") -> Optional[FlagProfile]:
+    def get_profile(cls, profile_name: str, command_type: str = "routine") -> FlagProfile | None:
         """
         Get profile by name for a given command type.
 
@@ -81,7 +81,7 @@ class ProfileManager:
         return None
 
     @classmethod
-    def list_profiles(cls, command_type: str = "routine") -> List[FlagProfile]:
+    def list_profiles(cls, command_type: str = "routine") -> list[FlagProfile]:
         """
         List all available profiles for a command type.
 
@@ -102,8 +102,8 @@ class ProfileManager:
 
     @classmethod
     def apply_profile(
-        cls, profile_name: str, current_flags: Dict[str, Any], command_type: str = "routine"
-    ) -> Dict[str, Any]:
+        cls, profile_name: str, current_flags: dict[str, Any], command_type: str = "routine"
+    ) -> dict[str, Any]:
         """
         Apply a profile to current flags.
 
@@ -145,7 +145,7 @@ class ProfileManager:
         return merged
 
     @classmethod
-    def apply_smart_defaults(cls, flags: Dict[str, Any]) -> Dict[str, Any]:
+    def apply_smart_defaults(cls, flags: dict[str, Any]) -> dict[str, Any]:
         """
         Apply smart default implications.
 

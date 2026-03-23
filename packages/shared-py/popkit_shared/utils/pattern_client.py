@@ -13,8 +13,8 @@ import os
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from .pattern_anonymizer import anonymize_pattern, validate_anonymization
 
@@ -60,13 +60,13 @@ class Pattern:
     content: str
     solution: str
     share_level: str = ShareLevel.PRIVATE
-    platform: Optional[str] = None  # windows, linux, darwin
-    language: Optional[str] = None  # typescript, python, rust, etc.
-    framework: Optional[str] = None  # react, nextjs, django, etc.
-    tags: List[str] = field(default_factory=list)
-    quality_score: Optional[float] = None
+    platform: str | None = None  # windows, linux, darwin
+    language: str | None = None  # typescript, python, rust, etc.
+    framework: str | None = None  # react, nextjs, django, etc.
+    tags: list[str] = field(default_factory=list)
+    quality_score: float | None = None
     votes: int = 0
-    created_at: Optional[str] = None
+    created_at: str | None = None
     _anonymized: bool = False
 
 
@@ -74,7 +74,7 @@ class Pattern:
 class PatternSearchResult:
     """Result from pattern search."""
 
-    patterns: List[Dict[str, Any]]
+    patterns: list[dict[str, Any]]
     total: int
     page: int
     per_page: int
@@ -86,8 +86,8 @@ class PatternSubmitResult:
 
     status: str
     pattern_id: str
-    quality_score: Optional[float] = None
-    message: Optional[str] = None
+    quality_score: float | None = None
+    message: str | None = None
 
 
 # =============================================================================
@@ -109,7 +109,7 @@ class PatternClient:
 
     def __init__(
         self,
-        api_key: Optional[str] = None,
+        api_key: str | None = None,
         api_url: str = POPKIT_API_URL,
         default_share_level: str = ShareLevel.PRIVATE,
     ):
@@ -124,11 +124,11 @@ class PatternClient:
         self.api_key = api_key or os.environ.get("POPKIT_API_KEY")
         self.api_url = api_url.rstrip("/")
         self.default_share_level = default_share_level
-        self._cache: Dict[str, Any] = {}
+        self._cache: dict[str, Any] = {}
 
     def _make_request(
-        self, method: str, endpoint: str, data: Optional[Dict[str, Any]] = None, timeout: int = 30
-    ) -> Dict[str, Any]:
+        self, method: str, endpoint: str, data: dict[str, Any] | None = None, timeout: int = 30
+    ) -> dict[str, Any]:
         """Make HTTP request to API.
 
         Args:
@@ -171,9 +171,9 @@ class PatternClient:
         pattern_type: str,
         content: str,
         solution: str,
-        project_root: Optional[str] = None,
-        share_level: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        project_root: str | None = None,
+        share_level: str | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> PatternSubmitResult:
         """
         Submit a pattern for sharing.
@@ -202,7 +202,7 @@ class PatternClient:
             "content": content,
             "solution": solution,
             "share_level": share_level or self.default_share_level,
-            "created_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            "created_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         }
 
         # Add metadata
@@ -231,10 +231,10 @@ class PatternClient:
     def search_patterns(
         self,
         query: str,
-        pattern_type: Optional[str] = None,
-        platform: Optional[str] = None,
-        language: Optional[str] = None,
-        framework: Optional[str] = None,
+        pattern_type: str | None = None,
+        platform: str | None = None,
+        language: str | None = None,
+        framework: str | None = None,
         min_score: float = 0.0,
         page: int = 1,
         per_page: int = 20,
@@ -283,7 +283,7 @@ class PatternClient:
             per_page=response.get("per_page", per_page),
         )
 
-    def get_pattern(self, pattern_id: str) -> Optional[Dict[str, Any]]:
+    def get_pattern(self, pattern_id: str) -> dict[str, Any] | None:
         """
         Get a specific pattern by ID.
 
@@ -321,8 +321,8 @@ class PatternClient:
             return False
 
     def get_similar_patterns(
-        self, content: str, pattern_type: Optional[str] = None, limit: int = 5
-    ) -> List[Dict[str, Any]]:
+        self, content: str, pattern_type: str | None = None, limit: int = 5
+    ) -> list[dict[str, Any]]:
         """
         Find patterns similar to the given content.
 
@@ -351,7 +351,7 @@ class PatternClient:
             return []
 
     def report_pattern_usage(
-        self, pattern_id: str, success: bool, context: Optional[str] = None
+        self, pattern_id: str, success: bool, context: str | None = None
     ) -> bool:
         """
         Report that a pattern was used.
@@ -377,8 +377,8 @@ class PatternClient:
             return False
 
     def get_trending_patterns(
-        self, pattern_type: Optional[str] = None, platform: Optional[str] = None, limit: int = 10
-    ) -> List[Dict[str, Any]]:
+        self, pattern_type: str | None = None, platform: str | None = None, limit: int = 10
+    ) -> list[dict[str, Any]]:
         """
         Get trending/popular patterns.
 
@@ -422,9 +422,9 @@ def get_pattern_client() -> PatternClient:
 def share_command_correction(
     original: str,
     corrected: str,
-    platform: Optional[str] = None,
-    project_root: Optional[str] = None,
-) -> Optional[str]:
+    platform: str | None = None,
+    project_root: str | None = None,
+) -> str | None:
     """
     Share a command correction pattern.
 
@@ -458,8 +458,8 @@ def share_command_correction(
 
 
 def find_error_solution(
-    error_message: str, language: Optional[str] = None, framework: Optional[str] = None
-) -> Optional[Dict[str, Any]]:
+    error_message: str, language: str | None = None, framework: str | None = None
+) -> dict[str, Any] | None:
     """
     Find a solution for an error message.
 

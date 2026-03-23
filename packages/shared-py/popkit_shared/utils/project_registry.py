@@ -12,8 +12,8 @@ import json
 import os
 import re
 import subprocess
-from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from datetime import UTC, datetime, timedelta
+from typing import Any
 
 # Constants
 # Global plugin data uses ~/.claude/popkit/ (user-level, not project-level)
@@ -58,7 +58,7 @@ def get_projects_path() -> str:
 # =============================================================================
 
 
-def load_registry() -> Dict[str, Any]:
+def load_registry() -> dict[str, Any]:
     """Load the project registry.
 
     Returns:
@@ -70,7 +70,7 @@ def load_registry() -> Dict[str, Any]:
         return {"projects": [], "settings": DEFAULT_SETTINGS.copy()}
 
     try:
-        with open(projects_path, "r", encoding="utf-8") as f:
+        with open(projects_path, encoding="utf-8") as f:
             data = json.load(f)
             # Ensure required keys exist
             if "projects" not in data:
@@ -78,11 +78,11 @@ def load_registry() -> Dict[str, Any]:
             if "settings" not in data:
                 data["settings"] = DEFAULT_SETTINGS.copy()
             return data
-    except (json.JSONDecodeError, IOError):
+    except (OSError, json.JSONDecodeError):
         return {"projects": [], "settings": DEFAULT_SETTINGS.copy()}
 
 
-def save_registry(registry: Dict[str, Any]) -> str:
+def save_registry(registry: dict[str, Any]) -> str:
     """Save the project registry.
 
     Args:
@@ -105,7 +105,7 @@ def save_registry(registry: Dict[str, Any]) -> str:
 # =============================================================================
 
 
-def detect_project_info(path: str) -> Optional[Dict[str, Any]]:
+def detect_project_info(path: str) -> dict[str, Any] | None:
     """Detect project information from a directory.
 
     Args:
@@ -134,11 +134,11 @@ def detect_project_info(path: str) -> Optional[Dict[str, Any]]:
     # Try to get name from package.json
     if has_package:
         try:
-            with open(os.path.join(path, "package.json"), "r", encoding="utf-8") as f:
+            with open(os.path.join(path, "package.json"), encoding="utf-8") as f:
                 pkg = json.load(f)
                 if "name" in pkg:
                     name = pkg["name"]
-        except (json.JSONDecodeError, IOError):
+        except (OSError, json.JSONDecodeError):
             # Best-effort fallback: ignore optional failure.
             pass
 
@@ -164,7 +164,7 @@ def detect_project_info(path: str) -> Optional[Dict[str, Any]]:
             # Best-effort fallback: ignore optional failure.
             pass
 
-    now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    now = datetime.now(UTC).isoformat().replace("+00:00", "Z")
 
     return {
         "name": name,
@@ -180,8 +180,8 @@ def detect_project_info(path: str) -> Optional[Dict[str, Any]]:
 
 
 def discover_projects(
-    search_dirs: Optional[List[str]] = None, max_depth: int = 2
-) -> List[Dict[str, Any]]:
+    search_dirs: list[str] | None = None, max_depth: int = 2
+) -> list[dict[str, Any]]:
     """Auto-discover projects in common locations.
 
     Args:
@@ -234,7 +234,7 @@ def discover_projects(
 # =============================================================================
 
 
-def list_projects() -> List[Dict[str, Any]]:
+def list_projects() -> list[dict[str, Any]]:
     """List all registered projects.
 
     Returns:
@@ -244,7 +244,7 @@ def list_projects() -> List[Dict[str, Any]]:
     return registry.get("projects", [])
 
 
-def get_project(identifier: str) -> Optional[Dict[str, Any]]:
+def get_project(identifier: str) -> dict[str, Any] | None:
     """Get a project by name or path.
 
     Args:
@@ -267,8 +267,8 @@ def get_project(identifier: str) -> Optional[Dict[str, Any]]:
 
 
 def add_project(
-    path: str, tags: Optional[List[str]] = None, update_if_exists: bool = True
-) -> Tuple[bool, str]:
+    path: str, tags: list[str] | None = None, update_if_exists: bool = True
+) -> tuple[bool, str]:
     """Add a project to the registry.
 
     Args:
@@ -311,7 +311,7 @@ def add_project(
     return True, f"Added project: {info['name']}"
 
 
-def remove_project(identifier: str) -> Tuple[bool, str]:
+def remove_project(identifier: str) -> tuple[bool, str]:
     """Remove a project from the registry.
 
     Args:
@@ -338,7 +338,7 @@ def remove_project(identifier: str) -> Tuple[bool, str]:
     return False, f"Project not found: {identifier}"
 
 
-def update_project(identifier: str, updates: Dict[str, Any]) -> Tuple[bool, str]:
+def update_project(identifier: str, updates: dict[str, Any]) -> tuple[bool, str]:
     """Update a project's properties.
 
     Args:
@@ -383,7 +383,7 @@ def touch_project(path: str) -> None:
     """
     path = os.path.abspath(path)
     registry = load_registry()
-    now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    now = datetime.now(UTC).isoformat().replace("+00:00", "Z")
 
     for project in registry["projects"]:
         if os.path.abspath(project.get("path", "")) == path:
@@ -415,7 +415,7 @@ def update_health_score(identifier: str, score: int) -> bool:
     return success
 
 
-def get_projects_by_health(ascending: bool = False) -> List[Dict[str, Any]]:
+def get_projects_by_health(ascending: bool = False) -> list[dict[str, Any]]:
     """Get projects sorted by health score.
 
     Args:
@@ -434,7 +434,7 @@ def get_projects_by_health(ascending: bool = False) -> List[Dict[str, Any]]:
     )
 
 
-def get_unhealthy_projects(threshold: int = 70) -> List[Dict[str, Any]]:
+def get_unhealthy_projects(threshold: int = 70) -> list[dict[str, Any]]:
     """Get projects with health scores below threshold.
 
     Args:
@@ -503,7 +503,7 @@ def remove_tag(identifier: str, tag: str) -> bool:
     return False
 
 
-def get_projects_by_tag(tag: str) -> List[Dict[str, Any]]:
+def get_projects_by_tag(tag: str) -> list[dict[str, Any]]:
     """Get projects with a specific tag.
 
     Args:
@@ -516,7 +516,7 @@ def get_projects_by_tag(tag: str) -> List[Dict[str, Any]]:
     return [p for p in list_projects() if tag_lower in [t.lower() for t in p.get("tags", [])]]
 
 
-def get_all_tags() -> List[str]:
+def get_all_tags() -> list[str]:
     """Get all unique tags across projects.
 
     Returns:
@@ -533,7 +533,7 @@ def get_all_tags() -> List[str]:
 # =============================================================================
 
 
-def get_recent_projects(limit: int = 5) -> List[Dict[str, Any]]:
+def get_recent_projects(limit: int = 5) -> list[dict[str, Any]]:
     """Get most recently active projects.
 
     Args:
@@ -550,7 +550,7 @@ def get_recent_projects(limit: int = 5) -> List[Dict[str, Any]]:
     return sorted_projects[:limit]
 
 
-def get_inactive_projects(days: int = 30) -> List[Dict[str, Any]]:
+def get_inactive_projects(days: int = 30) -> list[dict[str, Any]]:
     """Get projects inactive for more than N days.
 
     Args:
@@ -561,7 +561,7 @@ def get_inactive_projects(days: int = 30) -> List[Dict[str, Any]]:
     """
     from datetime import timedelta
 
-    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+    cutoff = datetime.now(UTC) - timedelta(days=days)
     cutoff_str = cutoff.isoformat().replace("+00:00", "Z")
 
     return [p for p in list_projects() if p.get("lastActive", "") < cutoff_str]
@@ -572,7 +572,7 @@ def get_inactive_projects(days: int = 30) -> List[Dict[str, Any]]:
 # =============================================================================
 
 
-def format_health_indicator(score: Optional[int]) -> str:
+def format_health_indicator(score: int | None) -> str:
     """Format health score as colored indicator.
 
     Args:
@@ -605,7 +605,7 @@ def format_activity(last_active: str) -> str:
 
     try:
         dt = datetime.fromisoformat(last_active.replace("Z", "+00:00"))
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         diff = now - dt
 
         if diff.total_seconds() < 60:
@@ -625,7 +625,7 @@ def format_activity(last_active: str) -> str:
         return "unknown"
 
 
-def format_project_table(projects: List[Dict[str, Any]], show_path: bool = False) -> str:
+def format_project_table(projects: list[dict[str, Any]], show_path: bool = False) -> str:
     """Format projects as an ASCII table.
 
     Args:
@@ -663,7 +663,7 @@ def format_project_table(projects: List[Dict[str, Any]], show_path: bool = False
     return "\n".join(lines)
 
 
-def get_cached_issue_count(project: Dict[str, Any]) -> str:
+def get_cached_issue_count(project: dict[str, Any]) -> str:
     """Get cached GitHub issue count for project.
 
     Args:
@@ -698,7 +698,7 @@ def get_cached_issue_count(project: Dict[str, Any]) -> str:
     return "--"
 
 
-def fetch_project_issues(path: str, timeout: int = 5) -> Optional[int]:
+def fetch_project_issues(path: str, timeout: int = 5) -> int | None:
     """Fetch open issue count from GitHub via gh CLI.
 
     Args:
@@ -726,7 +726,7 @@ def fetch_project_issues(path: str, timeout: int = 5) -> Optional[int]:
         return None
 
 
-def refresh_project_issue_counts(registry: Dict[str, Any]) -> int:
+def refresh_project_issue_counts(registry: dict[str, Any]) -> int:
     """Refresh GitHub issue counts for all projects in registry.
 
     Args:
@@ -757,7 +757,7 @@ def refresh_project_issue_counts(registry: Dict[str, Any]) -> int:
     return updated
 
 
-def format_dashboard(projects: List[Dict[str, Any]]) -> str:
+def format_dashboard(projects: list[dict[str, Any]]) -> str:
     """Format full dashboard display.
 
     Args:

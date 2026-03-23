@@ -13,7 +13,7 @@ import json
 import os
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 # Conflict severity levels
 SEVERITY_HIGH = "high"
@@ -31,7 +31,7 @@ def get_plugins_directory() -> str:
     return os.path.join(home, ".claude", "plugins")
 
 
-def scan_installed_plugins(plugins_dir: Optional[str] = None) -> List[Dict[str, Any]]:
+def scan_installed_plugins(plugins_dir: str | None = None) -> list[dict[str, Any]]:
     """Scan for all installed Claude Code plugins.
 
     Args:
@@ -62,7 +62,7 @@ def scan_installed_plugins(plugins_dir: Optional[str] = None) -> List[Dict[str, 
                 continue
 
         try:
-            with open(manifest_path, "r", encoding="utf-8") as f:
+            with open(manifest_path, encoding="utf-8") as f:
                 manifest = json.load(f)
 
             plugin_info = {
@@ -83,13 +83,13 @@ def scan_installed_plugins(plugins_dir: Optional[str] = None) -> List[Dict[str, 
 
             plugins.append(plugin_info)
 
-        except (json.JSONDecodeError, IOError):
+        except (OSError, json.JSONDecodeError):
             continue
 
     return plugins
 
 
-def scan_plugin_commands(plugin_path: str) -> List[Dict[str, str]]:
+def scan_plugin_commands(plugin_path: str) -> list[dict[str, str]]:
     """Scan for command definitions in a plugin.
 
     Args:
@@ -106,7 +106,7 @@ def scan_plugin_commands(plugin_path: str) -> List[Dict[str, str]]:
 
     for cmd_file in Path(commands_dir).glob("*.md"):
         try:
-            with open(cmd_file, "r", encoding="utf-8") as f:
+            with open(cmd_file, encoding="utf-8") as f:
                 content = f.read()
 
             # Extract command name from filename or frontmatter
@@ -121,13 +121,13 @@ def scan_plugin_commands(plugin_path: str) -> List[Dict[str, str]]:
 
             commands.append({"name": name, "file": str(cmd_file), "description": description})
 
-        except IOError:
+        except OSError:
             continue
 
     return commands
 
 
-def scan_plugin_skills(plugin_path: str) -> List[Dict[str, str]]:
+def scan_plugin_skills(plugin_path: str) -> list[dict[str, str]]:
     """Scan for skill definitions in a plugin.
 
     Args:
@@ -145,7 +145,7 @@ def scan_plugin_skills(plugin_path: str) -> List[Dict[str, str]]:
     # Skills can be SKILL.md in subdirectories
     for skill_file in Path(skills_dir).glob("*/SKILL.md"):
         try:
-            with open(skill_file, "r", encoding="utf-8") as f:
+            with open(skill_file, encoding="utf-8") as f:
                 content = f.read()
 
             # Name from directory
@@ -160,13 +160,13 @@ def scan_plugin_skills(plugin_path: str) -> List[Dict[str, str]]:
 
             skills.append({"name": name, "file": str(skill_file), "description": description})
 
-        except IOError:
+        except OSError:
             continue
 
     return skills
 
 
-def scan_plugin_hooks(plugin_path: str) -> List[Dict[str, Any]]:
+def scan_plugin_hooks(plugin_path: str) -> list[dict[str, Any]]:
     """Scan for hook definitions in a plugin.
 
     Args:
@@ -183,7 +183,7 @@ def scan_plugin_hooks(plugin_path: str) -> List[Dict[str, Any]]:
         return hooks
 
     try:
-        with open(hooks_json, "r", encoding="utf-8") as f:
+        with open(hooks_json, encoding="utf-8") as f:
             config = json.load(f)
 
         for hook in config.get("hooks", []):
@@ -196,14 +196,14 @@ def scan_plugin_hooks(plugin_path: str) -> List[Dict[str, Any]]:
                 }
             )
 
-    except (json.JSONDecodeError, IOError):
+    except (OSError, json.JSONDecodeError):
         # Best-effort fallback: ignore optional failure.
         pass
 
     return hooks
 
 
-def scan_plugin_agents(plugin_path: str) -> List[Dict[str, Any]]:
+def scan_plugin_agents(plugin_path: str) -> list[dict[str, Any]]:
     """Scan for agent definitions in a plugin.
 
     Args:
@@ -220,7 +220,7 @@ def scan_plugin_agents(plugin_path: str) -> List[Dict[str, Any]]:
         return agents
 
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             config = json.load(f)
 
         routing = config.get("routing", {})
@@ -234,14 +234,14 @@ def scan_plugin_agents(plugin_path: str) -> List[Dict[str, Any]]:
                 }
             )
 
-    except (json.JSONDecodeError, IOError):
+    except (OSError, json.JSONDecodeError):
         # Best-effort fallback: ignore optional failure.
         pass
 
     return agents
 
 
-def detect_command_conflicts(plugins: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def detect_command_conflicts(plugins: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Detect command name collisions between plugins.
 
     Args:
@@ -251,7 +251,7 @@ def detect_command_conflicts(plugins: List[Dict[str, Any]]) -> List[Dict[str, An
         List of conflict dicts
     """
     conflicts = []
-    command_map: Dict[str, List[str]] = {}  # command_name -> [plugin_names]
+    command_map: dict[str, list[str]] = {}  # command_name -> [plugin_names]
 
     for plugin in plugins:
         for cmd in plugin["commands"]:
@@ -275,7 +275,7 @@ def detect_command_conflicts(plugins: List[Dict[str, Any]]) -> List[Dict[str, An
     return conflicts
 
 
-def detect_skill_conflicts(plugins: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def detect_skill_conflicts(plugins: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Detect skill name collisions between plugins.
 
     Args:
@@ -285,7 +285,7 @@ def detect_skill_conflicts(plugins: List[Dict[str, Any]]) -> List[Dict[str, Any]
         List of conflict dicts
     """
     conflicts = []
-    skill_map: Dict[str, List[str]] = {}
+    skill_map: dict[str, list[str]] = {}
 
     for plugin in plugins:
         for skill in plugin["skills"]:
@@ -309,7 +309,7 @@ def detect_skill_conflicts(plugins: List[Dict[str, Any]]) -> List[Dict[str, Any]
     return conflicts
 
 
-def detect_hook_conflicts(plugins: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def detect_hook_conflicts(plugins: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Detect hook conflicts (same event, overlapping tools).
 
     Args:
@@ -321,7 +321,7 @@ def detect_hook_conflicts(plugins: List[Dict[str, Any]]) -> List[Dict[str, Any]]
     conflicts = []
 
     # Group hooks by event
-    event_hooks: Dict[str, List[Tuple[str, Dict]]] = {}  # event -> [(plugin_name, hook)]
+    event_hooks: dict[str, list[tuple[str, dict]]] = {}  # event -> [(plugin_name, hook)]
 
     for plugin in plugins:
         for hook in plugin["hooks"]:
@@ -361,7 +361,7 @@ def detect_hook_conflicts(plugins: List[Dict[str, Any]]) -> List[Dict[str, Any]]
     return conflicts
 
 
-def detect_routing_conflicts(plugins: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def detect_routing_conflicts(plugins: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Detect agent routing conflicts (same keywords to different agents).
 
     Args:
@@ -373,7 +373,7 @@ def detect_routing_conflicts(plugins: List[Dict[str, Any]]) -> List[Dict[str, An
     conflicts = []
 
     # Map keywords to (plugin, agent) pairs
-    keyword_map: Dict[str, List[Tuple[str, str]]] = {}
+    keyword_map: dict[str, list[tuple[str, str]]] = {}
 
     for plugin in plugins:
         for agent in plugin["agents"]:
@@ -402,7 +402,7 @@ def detect_routing_conflicts(plugins: List[Dict[str, Any]]) -> List[Dict[str, An
     return conflicts
 
 
-def detect_all_conflicts(plugins: List[Dict[str, Any]]) -> Dict[str, Any]:
+def detect_all_conflicts(plugins: list[dict[str, Any]]) -> dict[str, Any]:
     """Run all conflict detection.
 
     Args:
@@ -434,7 +434,7 @@ def detect_all_conflicts(plugins: List[Dict[str, Any]]) -> Dict[str, Any]:
     }
 
 
-def format_conflict_report(result: Dict[str, Any], plugins: List[Dict[str, Any]]) -> str:
+def format_conflict_report(result: dict[str, Any], plugins: list[dict[str, Any]]) -> str:
     """Format conflict detection result as human-readable report.
 
     Args:
@@ -472,7 +472,7 @@ def format_conflict_report(result: Dict[str, Any], plugins: List[Dict[str, Any]]
     lines.append("")
 
     # Group by type
-    by_type: Dict[str, List] = {}
+    by_type: dict[str, list] = {}
     for conflict in result["conflicts"]:
         ctype = conflict["type"]
         if ctype not in by_type:
@@ -495,7 +495,7 @@ def format_conflict_report(result: Dict[str, Any], plugins: List[Dict[str, Any]]
     return "\n".join(lines)
 
 
-def format_quick_summary(result: Dict[str, Any], plugins: List[Dict[str, Any]]) -> str:
+def format_quick_summary(result: dict[str, Any], plugins: list[dict[str, Any]]) -> str:
     """Format a one-line summary of conflict detection.
 
     Args:
@@ -520,7 +520,7 @@ def format_quick_summary(result: Dict[str, Any], plugins: List[Dict[str, Any]]) 
     return f"Plugin Conflicts: {total} ({', '.join(parts)})"
 
 
-def run_detection(plugins_dir: Optional[str] = None) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
+def run_detection(plugins_dir: str | None = None) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     """Run full plugin conflict detection.
 
     Args:

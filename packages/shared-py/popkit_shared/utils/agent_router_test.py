@@ -7,12 +7,12 @@ Tests agent activation logic based on keywords, file patterns, and error pattern
 import json
 import re
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 
 def test_keyword_routing(
-    config_path: Path, user_query: str, expected_agents: List[str]
-) -> Dict[str, Any]:
+    config_path: Path, user_query: str, expected_agents: list[str]
+) -> dict[str, Any]:
     """
     Test keyword-based agent routing.
 
@@ -81,8 +81,8 @@ def test_keyword_routing(
 
 
 def test_file_pattern_routing(
-    config_path: Path, file_path: str, expected_agents: List[str]
-) -> Dict[str, Any]:
+    config_path: Path, file_path: str, expected_agents: list[str]
+) -> dict[str, Any]:
     """
     Test file pattern-based agent routing.
 
@@ -137,7 +137,7 @@ def test_file_pattern_routing(
     return result
 
 
-def test_confidence_threshold(config_path: Path, min_confidence: float = 0.8) -> Dict[str, Any]:
+def test_confidence_threshold(config_path: Path, min_confidence: float = 0.8) -> dict[str, Any]:
     """
     Test confidence threshold configuration.
 
@@ -177,7 +177,7 @@ def test_confidence_threshold(config_path: Path, min_confidence: float = 0.8) ->
     return result
 
 
-def test_tier_assignment(config_path: Path) -> Dict[str, Any]:
+def test_tier_assignment(config_path: Path) -> dict[str, Any]:
     """
     Test agent tier assignment (Tier 1 always active, Tier 2 on-demand).
 
@@ -228,7 +228,7 @@ def test_tier_assignment(config_path: Path) -> Dict[str, Any]:
     return result
 
 
-def test_agent_definitions_exist(config_path: Path, agents_dir: Path) -> Dict[str, Any]:
+def test_agent_definitions_exist(config_path: Path, agents_dir: Path) -> dict[str, Any]:
     """
     Test that all registered agents have corresponding definition files.
 
@@ -284,7 +284,7 @@ def test_agent_definitions_exist(config_path: Path, agents_dir: Path) -> Dict[st
     return result
 
 
-def get_routing_statistics(config_path: Path) -> Dict[str, Any]:
+def get_routing_statistics(config_path: Path) -> dict[str, Any]:
     """
     Get comprehensive routing statistics from config.
 

@@ -11,7 +11,7 @@ Part of the popkit plugin stateless hook architecture.
 import json
 from dataclasses import dataclass, field, replace
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -36,29 +36,29 @@ class HookContext:
 
     session_id: str
     tool_name: str
-    tool_input: Dict[str, Any]
+    tool_input: dict[str, Any]
 
     # Message history for stateless composition
-    message_history: Tuple[Dict[str, Any], ...] = field(default_factory=tuple)
+    message_history: tuple[dict[str, Any], ...] = field(default_factory=tuple)
 
     # Tool execution state
-    tool_result: Optional[str] = None
-    tool_error: Optional[str] = None
+    tool_result: str | None = None
+    tool_error: str | None = None
 
     # Metadata
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
     environment: str = "development"
 
     # Chain context for multi-hook flows
-    previous_hook: Optional[str] = None
-    hook_outputs: Dict[str, Any] = field(default_factory=dict)
+    previous_hook: str | None = None
+    hook_outputs: dict[str, Any] = field(default_factory=dict)
 
 
 def create_context(
     session_id: str,
     tool_name: str,
-    tool_input: Dict[str, Any],
-    message_history: Optional[List[Dict[str, Any]]] = None,
+    tool_input: dict[str, Any],
+    message_history: list[dict[str, Any]] | None = None,
     **kwargs,
 ) -> HookContext:
     """Create a new hook context.

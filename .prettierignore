@@ -28,6 +28,9 @@ __pycache__/
 *$py.class
 .venv/
 venv/
+.mypy_cache/
+htmlcov/
+*.egg-info/
 
 # GitHub issue templates (custom YAML that Prettier can't parse)
 .github/ISSUE_TEMPLATE/
@@ -38,6 +41,7 @@ venv/
 # Cache
 .cache/
 .temp/
+.pytest_cache/
 
 # Runtime/development files
 .claude/

@@ -17,7 +17,7 @@ Usage:
 import json
 import re
 import sys
-from typing import Any, Dict
+from typing import Any
 
 
 def sanitize_js_booleans(text: str) -> str:
@@ -39,7 +39,7 @@ def sanitize_js_booleans(text: str) -> str:
     return text
 
 
-def read_hook_input(default: Dict[str, Any] = None) -> Dict[str, Any]:
+def read_hook_input(default: dict[str, Any] = None) -> dict[str, Any]:
     """Safely read and parse JSON input from stdin.
 
     Returns:
@@ -79,7 +79,7 @@ def read_hook_input(default: Dict[str, Any] = None) -> Dict[str, Any]:
         return default
 
 
-def write_hook_output(response: Dict[str, Any]) -> None:
+def write_hook_output(response: dict[str, Any]) -> None:
     """Safely write JSON output to stdout.
 
     Args:

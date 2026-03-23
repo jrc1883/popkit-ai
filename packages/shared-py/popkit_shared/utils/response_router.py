@@ -26,7 +26,7 @@ Usage:
 import json
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 # Import workflow engine
 try:
@@ -59,17 +59,17 @@ class RouteResult:
     """Result of routing a user response."""
 
     routed: bool  # Whether response was routed to workflow
-    workflow_id: Optional[str] = None  # Active workflow ID
-    current_step: Optional[str] = None  # Current step ID
-    next_step: Optional[str] = None  # Next step to execute
-    step_type: Optional[str] = None  # Type of next step
-    skill: Optional[str] = None  # Skill to invoke (if step_type=skill)
-    agent: Optional[str] = None  # Agent to use (if step_type=agent)
-    context: Optional[Dict[str, Any]] = None  # Context for next step
-    message: Optional[str] = None  # Guidance message for Claude
-    error: Optional[str] = None  # Error message if routing failed
+    workflow_id: str | None = None  # Active workflow ID
+    current_step: str | None = None  # Current step ID
+    next_step: str | None = None  # Next step to execute
+    step_type: str | None = None  # Type of next step
+    skill: str | None = None  # Skill to invoke (if step_type=skill)
+    agent: str | None = None  # Agent to use (if step_type=agent)
+    context: dict[str, Any] | None = None  # Context for next step
+    message: str | None = None  # Guidance message for Claude
+    error: str | None = None  # Error message if routing failed
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON output."""
         result = {"routed": self.routed}
         if self.workflow_id:
@@ -99,7 +99,7 @@ class RouteResult:
 
 
 def route_user_response(
-    tool_output: Dict[str, Any], question_header: Optional[str] = None
+    tool_output: dict[str, Any], question_header: str | None = None
 ) -> RouteResult:
     """Route an AskUserQuestion response to the active workflow.
 
@@ -215,8 +215,8 @@ def route_user_response(
 
 
 def _match_answer(
-    answers: Dict[str, Any], step: WorkflowStep, required_header: Optional[str]
-) -> Tuple[Optional[str], Optional[str]]:
+    answers: dict[str, Any], step: WorkflowStep, required_header: str | None
+) -> tuple[str | None, str | None]:
     """Match an answer from AskUserQuestion to workflow options.
 
     Args:
@@ -308,7 +308,7 @@ def _build_guidance_message(step: WorkflowStep, workflow: FileWorkflowEngine) ->
 # =============================================================================
 
 
-def get_workflow_status() -> Optional[Dict[str, Any]]:
+def get_workflow_status() -> dict[str, Any] | None:
     """Get the current workflow status for display.
 
     Returns:
@@ -321,7 +321,7 @@ def get_workflow_status() -> Optional[Dict[str, Any]]:
     return workflow.get_summary()
 
 
-def get_pending_decision() -> Optional[Dict[str, Any]]:
+def get_pending_decision() -> dict[str, Any] | None:
     """Get details of pending user decision if any.
 
     Returns:
@@ -369,7 +369,7 @@ def should_route_response(tool_name: str) -> bool:
     return has_active_workflow()
 
 
-def format_hook_output(result: RouteResult) -> Dict[str, Any]:
+def format_hook_output(result: RouteResult) -> dict[str, Any]:
     """Format a RouteResult for hook output.
 
     Produces output suitable for post-tool-use.py hook.

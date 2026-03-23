@@ -11,7 +11,7 @@ Part of PopKit Issue #50 (Phase 2: Generator Improvements).
 import json
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 # =============================================================================
 # DATA CLASSES
@@ -25,10 +25,10 @@ class DetectedPattern:
     name: str  # e.g., "feature-based-organization"
     category: str  # e.g., "architecture", "state", "api", "naming", "testing"
     confidence: float  # 0.0 - 1.0
-    examples: List[str] = field(default_factory=list)  # Relative file paths
+    examples: list[str] = field(default_factory=list)  # Relative file paths
     description: str = ""  # Human-readable explanation
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return asdict(self)
 
@@ -38,7 +38,7 @@ class DetectedPattern:
 # =============================================================================
 
 
-def _find_dirs(root: Path, patterns: List[str]) -> List[Path]:
+def _find_dirs(root: Path, patterns: list[str]) -> list[Path]:
     """Find directories matching any of the glob patterns."""
     found = []
     for pattern in patterns:
@@ -46,7 +46,7 @@ def _find_dirs(root: Path, patterns: List[str]) -> List[Path]:
     return [p for p in found if p.is_dir()]
 
 
-def _find_files(root: Path, patterns: List[str], exclude_dirs: Set[str] = None) -> List[Path]:
+def _find_files(root: Path, patterns: list[str], exclude_dirs: set[str] = None) -> list[Path]:
     """Find files matching any of the glob patterns, excluding certain directories."""
     exclude_dirs = exclude_dirs or {
         "node_modules",
@@ -77,7 +77,7 @@ def _relative_path(path: Path, root: Path) -> str:
         return str(path)
 
 
-def _read_json(path: Path) -> Optional[Dict]:
+def _read_json(path: Path) -> dict | None:
     """Safely read a JSON file."""
     try:
         return json.loads(path.read_text(encoding="utf-8"))
@@ -85,7 +85,7 @@ def _read_json(path: Path) -> Optional[Dict]:
         return None
 
 
-def _has_dependency(package_json: Dict, dep_name: str) -> bool:
+def _has_dependency(package_json: dict, dep_name: str) -> bool:
     """Check if package.json has a dependency."""
     deps = package_json.get("dependencies", {})
     dev_deps = package_json.get("devDependencies", {})
@@ -97,7 +97,7 @@ def _has_dependency(package_json: Dict, dep_name: str) -> bool:
 # =============================================================================
 
 
-def detect_component_patterns(directory: Path) -> List[DetectedPattern]:
+def detect_component_patterns(directory: Path) -> list[DetectedPattern]:
     """
     Detect UI component organization patterns.
 
@@ -178,7 +178,7 @@ def detect_component_patterns(directory: Path) -> List[DetectedPattern]:
 # =============================================================================
 
 
-def detect_api_patterns(directory: Path) -> List[DetectedPattern]:
+def detect_api_patterns(directory: Path) -> list[DetectedPattern]:
     """
     Detect API organization patterns.
 
@@ -306,7 +306,7 @@ def detect_api_patterns(directory: Path) -> List[DetectedPattern]:
 # =============================================================================
 
 
-def detect_state_patterns(directory: Path) -> List[DetectedPattern]:
+def detect_state_patterns(directory: Path) -> list[DetectedPattern]:
     """
     Detect state management patterns.
 
@@ -447,7 +447,7 @@ def detect_state_patterns(directory: Path) -> List[DetectedPattern]:
 # =============================================================================
 
 
-def detect_naming_conventions(directory: Path) -> List[DetectedPattern]:
+def detect_naming_conventions(directory: Path) -> list[DetectedPattern]:
     """
     Detect naming conventions.
 
@@ -541,7 +541,7 @@ def detect_naming_conventions(directory: Path) -> List[DetectedPattern]:
 # =============================================================================
 
 
-def detect_testing_patterns(directory: Path) -> List[DetectedPattern]:
+def detect_testing_patterns(directory: Path) -> list[DetectedPattern]:
     """
     Detect testing patterns.
 
@@ -657,7 +657,7 @@ def detect_testing_patterns(directory: Path) -> List[DetectedPattern]:
 # =============================================================================
 
 
-def detect_frameworks(directory: Path) -> List[DetectedPattern]:
+def detect_frameworks(directory: Path) -> list[DetectedPattern]:
     """
     Detect frameworks and major libraries.
 
@@ -823,7 +823,7 @@ def detect_frameworks(directory: Path) -> List[DetectedPattern]:
 # =============================================================================
 
 
-def analyze_project(directory: Path) -> List[DetectedPattern]:
+def analyze_project(directory: Path) -> list[DetectedPattern]:
     """
     Run all pattern detectors on a directory.
 
