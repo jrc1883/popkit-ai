@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "PopKit modular plugin suite - official marketplace",
-    "version": "1.0.0-beta.10"
+    "version": "1.0.0-beta.12"
   },
   "plugins": [
     {
       "name": "popkit-core",
       "source": "./packages/popkit-core",
-      "description": "PopKit foundation plugin - account management, stats, privacy, Power Mode, and system features",
-      "version": "1.0.0-beta.10",
+      "description": "Core utilities plugin - plugin management, project analysis, Power Mode orchestration, stats, privacy, and meta-features",
+      "version": "1.0.0-beta.12",
       "author": {
         "name": "Joseph Cannon",
         "email": "joseph@thehouseofdeals.com"
@@ -22,13 +22,32 @@
       "repository": "https://github.com/jrc1883/popkit-claude",
       "license": "MIT",
       "keywords": ["popkit", "foundation", "account", "stats", "privacy", "power-mode"],
-      "category": "productivity"
+      "category": "productivity",
+      "skills": [
+        "./skills/pop-analyze-project",
+        "./skills/pop-auto-docs",
+        "./skills/pop-bug-reporter",
+        "./skills/pop-cloud-signup",
+        "./skills/pop-dashboard",
+        "./skills/pop-doc-sync",
+        "./skills/pop-embed-content",
+        "./skills/pop-embed-project",
+        "./skills/pop-mcp-generator",
+        "./skills/pop-plugin-test",
+        "./skills/pop-power-mode",
+        "./skills/pop-project-init",
+        "./skills/pop-project-reference",
+        "./skills/pop-project-templates",
+        "./skills/pop-sandbox",
+        "./skills/pop-skill-generator",
+        "./skills/pop-validation-engine"
+      ]
     },
     {
       "name": "popkit-dev",
       "source": "./packages/popkit-dev",
-      "description": "Complete development workflow plugin - feature development, git operations, GitHub management, and daily routines",
-      "version": "1.0.0-beta.10",
+      "description": "Development workflow plugin - feature development, git operations, GitHub integration, and daily routines",
+      "version": "1.0.0-beta.12",
       "author": {
         "name": "Joseph Cannon",
         "email": "joseph@thehouseofdeals.com"
@@ -37,13 +56,32 @@
       "repository": "https://github.com/jrc1883/popkit-claude",
       "license": "MIT",
       "keywords": ["development", "workflow", "git", "github", "routines"],
-      "category": "productivity"
+      "category": "productivity",
+      "skills": [
+        "./skills/pop-brainstorming",
+        "./skills/pop-changelog-automation",
+        "./skills/pop-complexity-analyzer",
+        "./skills/pop-context-restore",
+        "./skills/pop-executing-plans",
+        "./skills/pop-finish-branch",
+        "./skills/pop-morning",
+        "./skills/pop-next-action",
+        "./skills/pop-nightly",
+        "./skills/pop-routine-measure",
+        "./skills/pop-routine-optimized",
+        "./skills/pop-session-branch",
+        "./skills/pop-session-capture",
+        "./skills/pop-session-resume",
+        "./skills/pop-worktree-manager",
+        "./skills/pop-worktrees",
+        "./skills/pop-writing-plans"
+      ]
     },
     {
       "name": "popkit-ops",
       "source": "./packages/popkit-ops",
-      "description": "PopKit operations plugin - quality assurance, deployment, debugging, and security workflows",
-      "version": "1.0.0-beta.10",
+      "description": "Operations plugin - quality assurance, deployment automation, debugging workflows, and security scanning",
+      "version": "1.0.0-beta.12",
       "author": {
         "name": "Joseph Cannon",
         "email": "joseph@thehouseofdeals.com"
@@ -52,13 +90,28 @@
       "repository": "https://github.com/jrc1883/popkit-claude",
       "license": "MIT",
       "keywords": ["operations", "quality", "deployment", "security", "debugging"],
-      "category": "productivity"
+      "category": "productivity",
+      "skills": [
+        "./skills/pop-assessment-anthropic",
+        "./skills/pop-assessment-architecture",
+        "./skills/pop-assessment-performance",
+        "./skills/pop-assessment-security",
+        "./skills/pop-assessment-ux",
+        "./skills/pop-benchmark-runner",
+        "./skills/pop-code-review",
+        "./skills/pop-deploy-execute",
+        "./skills/pop-deploy-init",
+        "./skills/pop-deploy-rollback",
+        "./skills/pop-deploy-setup",
+        "./skills/pop-deploy-validate",
+        "./skills/pop-systematic-debugging"
+      ]
     },
     {
       "name": "popkit-research",
       "source": "./packages/popkit-research",
-      "description": "PopKit research plugin - knowledge management and research workflows",
-      "version": "1.0.0-beta.10",
+      "description": "Research plugin - knowledge management, research capture, and semantic search for development insights",
+      "version": "1.0.0-beta.12",
       "author": {
         "name": "Joseph Cannon",
         "email": "joseph@thehouseofdeals.com"
@@ -67,7 +120,12 @@
       "repository": "https://github.com/jrc1883/popkit-claude",
       "license": "MIT",
       "keywords": ["research", "knowledge", "documentation"],
-      "category": "productivity"
+      "category": "productivity",
+      "skills": [
+        "./skills/pop-knowledge-lookup",
+        "./skills/pop-research-capture",
+        "./skills/pop-research-merge"
+      ]
     }
   ]
 }

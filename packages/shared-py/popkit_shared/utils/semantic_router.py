@@ -18,9 +18,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-# Add utils to path
-sys.path.insert(0, os.path.dirname(__file__))
-
 from .cloud_agent_search import (
     is_available as cloud_is_available,
 )
@@ -111,7 +108,7 @@ class SemanticRouter:
     def _detect_project_root(self) -> str | None:
         """Auto-detect project root from cwd."""
         try:
-            from embedding_project import get_project_root
+            from .embedding_project import get_project_root
 
             return get_project_root()
         except ImportError:

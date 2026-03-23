@@ -649,7 +649,7 @@ class ResearchIndexManager:
         try:
             # Generate query embedding
             client = VoyageClient(api_key)
-            query_embedding = client.embed_text(query)
+            query_embedding = client.embed_query(query)
 
             # Search embedding store
             store = EmbeddingStore()
@@ -819,7 +819,7 @@ class ResearchIndexManager:
         try:
             # Generate embedding
             client = VoyageClient(api_key)
-            embedding = client.embed_text(entry.searchable_text)
+            embedding = client.embed_document(entry.searchable_text)
 
             # Store in embedding store
             store = EmbeddingStore()

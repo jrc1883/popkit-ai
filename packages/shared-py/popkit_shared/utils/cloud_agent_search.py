@@ -14,6 +14,8 @@ import urllib.error
 import urllib.request
 from dataclasses import dataclass
 
+from popkit_shared import __version__ as POPKIT_VERSION
+
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
@@ -104,7 +106,7 @@ def search_agents(
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
-        "X-PopKit-Version": "0.9.10",
+        "X-PopKit-Version": POPKIT_VERSION,
     }
 
     try:
@@ -166,7 +168,7 @@ def list_agents() -> list[dict]:
 
     headers = {
         "Authorization": f"Bearer {api_key}",
-        "X-PopKit-Version": "0.9.10",
+        "X-PopKit-Version": POPKIT_VERSION,
     }
 
     try:
@@ -199,7 +201,7 @@ def get_agent(name: str) -> dict | None:
 
     headers = {
         "Authorization": f"Bearer {api_key}",
-        "X-PopKit-Version": "0.9.10",
+        "X-PopKit-Version": POPKIT_VERSION,
     }
 
     try:

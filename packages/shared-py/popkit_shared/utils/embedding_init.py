@@ -9,15 +9,11 @@ Part of PopKit Issue #19 (Embeddings Enhancement).
 """
 
 import json
-import os
 import sys
 import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any
-
-# Add utils to path
-sys.path.insert(0, os.path.dirname(__file__))
 
 from .embedding_store import EmbeddingRecord, EmbeddingStore
 from .voyage_client import VoyageClient, is_available
