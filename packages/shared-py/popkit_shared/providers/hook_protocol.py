@@ -11,7 +11,7 @@ Part of the PopKit v2.0 provider-agnostic architecture.
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class HookAction(str, Enum):
@@ -39,12 +39,12 @@ class HookResponse:
     """
 
     action: HookAction = HookAction.CONTINUE
-    message: Optional[str] = None
-    modified_input: Optional[Dict[str, Any]] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    error: Optional[str] = None
+    message: str | None = None
+    modified_input: dict[str, Any] | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
+    error: str | None = None
 
-    def to_claude_code(self) -> Dict[str, Any]:
+    def to_claude_code(self) -> dict[str, Any]:
         """Convert to Claude Code hook response format.
 
         Claude Code expects: {"action": "continue|deny|ask", ...}
@@ -53,7 +53,7 @@ class HookResponse:
         Returns:
             Dict compatible with Claude Code hook protocol
         """
-        response: Dict[str, Any] = {"action": self.action.value}
+        response: dict[str, Any] = {"action": self.action.value}
 
         if self.message:
             response["message"] = self.message
@@ -66,7 +66,7 @@ class HookResponse:
 
         return response
 
-    def to_generic(self) -> Dict[str, Any]:
+    def to_generic(self) -> dict[str, Any]:
         """Convert to generic JSON response format.
 
         For providers that don't have a native hook protocol,
@@ -75,7 +75,7 @@ class HookResponse:
         Returns:
             Dict with universal hook response fields
         """
-        response: Dict[str, Any] = {
+        response: dict[str, Any] = {
             "action": self.action.value,
             "provider": "popkit",
             "version": "2.0",
@@ -95,7 +95,7 @@ class HookResponse:
 
         return response
 
-    def for_provider(self, provider_name: str) -> Dict[str, Any]:
+    def for_provider(self, provider_name: str) -> dict[str, Any]:
         """Convert to a specific provider's format.
 
         Args:
@@ -114,7 +114,7 @@ class HookResponse:
         return formatter()
 
 
-def create_continue(message: Optional[str] = None) -> HookResponse:
+def create_continue(message: str | None = None) -> HookResponse:
     """Create a CONTINUE response."""
     return HookResponse(action=HookAction.CONTINUE, message=message)
 

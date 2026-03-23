@@ -4,8 +4,8 @@
 import json
 import os
 import sys
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 
 def is_test_mode() -> bool:
@@ -13,24 +13,24 @@ def is_test_mode() -> bool:
     return os.getenv("TEST_MODE", "").lower() == "true"
 
 
-def get_test_session_id() -> Optional[str]:
+def get_test_session_id() -> str | None:
     """Get the current test session ID."""
     return os.getenv("TEST_SESSION_ID")
 
 
 def create_event(
-    event_type: str, data: Dict[str, Any], session_id: Optional[str] = None
-) -> Dict[str, Any]:
+    event_type: str, data: dict[str, Any], session_id: str | None = None
+) -> dict[str, Any]:
     """Create a standardized telemetry event."""
     return {
         "type": event_type,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "session_id": session_id or get_test_session_id(),
         "data": data,
     }
 
 
-def emit_event(event: Dict[str, Any]) -> None:
+def emit_event(event: dict[str, Any]) -> None:
     """Emit a telemetry event to stdout."""
     if not is_test_mode():
         return
@@ -42,11 +42,11 @@ def emit_event(event: Dict[str, Any]) -> None:
 
 
 def emit_routing_decision(
-    trigger: Dict[str, Any],
-    candidates: List[Dict[str, Any]],
-    selected: List[str],
-    confidence: Optional[int] = None,
-    reasoning: Optional[str] = None,
+    trigger: dict[str, Any],
+    candidates: list[dict[str, Any]],
+    selected: list[str],
+    confidence: int | None = None,
+    reasoning: str | None = None,
 ) -> None:
     """Emit a routing decision event.
 
@@ -71,7 +71,7 @@ def emit_agent_invocation(
     prompt: str,
     invoked_by: str = "hook",
     background: bool = False,
-    effort: Optional[str] = None,
+    effort: str | None = None,
 ) -> None:
     """Emit an agent invocation start event.
 
@@ -95,9 +95,9 @@ def emit_agent_completion(
     agent_name: str,
     agent_id: str,
     status: str,
-    duration_ms: Optional[int] = None,
-    exit_code: Optional[int] = None,
-    error: Optional[str] = None,
+    duration_ms: int | None = None,
+    exit_code: int | None = None,
+    error: str | None = None,
 ) -> None:
     """Emit an agent invocation completion event.
 
@@ -119,9 +119,9 @@ def emit_agent_completion(
 
 def emit_skill_start(
     skill_name: str,
-    workflow_id: Optional[str] = None,
+    workflow_id: str | None = None,
     invoked_by: str = "agent",
-    activity_id: Optional[str] = None,
+    activity_id: str | None = None,
 ) -> None:
     """Emit a skill start event.
 
@@ -141,12 +141,12 @@ def emit_skill_start(
 
 def emit_skill_complete(
     skill_name: str,
-    workflow_id: Optional[str] = None,
+    workflow_id: str | None = None,
     status: str = "complete",
     tool_calls: int = 0,
-    decisions_made: Optional[List[str]] = None,
-    error: Optional[str] = None,
-    duration_ms: Optional[int] = None,
+    decisions_made: list[str] | None = None,
+    error: str | None = None,
+    duration_ms: int | None = None,
 ) -> None:
     """Emit a skill completion event.
 
@@ -169,11 +169,11 @@ def emit_skill_complete(
 
 def emit_phase_transition(
     workflow_id: str,
-    from_phase: Optional[str],
+    from_phase: str | None,
     to_phase: str,
-    skill_name: Optional[str] = None,
+    skill_name: str | None = None,
     tool_calls_so_far: int = 0,
-    metadata: Optional[Dict[str, Any]] = None,
+    metadata: dict[str, Any] | None = None,
 ) -> None:
     """Emit a workflow phase transition event.
 
@@ -196,9 +196,9 @@ def emit_phase_transition(
 def emit_user_decision(
     decision_id: str,
     question: str,
-    selected_options: List[str],
-    skill_name: Optional[str] = None,
-    workflow_id: Optional[str] = None,
+    selected_options: list[str],
+    skill_name: str | None = None,
+    workflow_id: str | None = None,
 ) -> None:
     """Emit a user decision event.
 
@@ -219,12 +219,12 @@ def emit_user_decision(
 
 def emit_tool_call(
     tool_name: str,
-    tool_input: Dict[str, Any],
-    tool_output: Optional[str] = None,
-    agent_id: Optional[str] = None,
-    agent_name: Optional[str] = None,
-    session_id: Optional[str] = None,
-    error: Optional[str] = None,
+    tool_input: dict[str, Any],
+    tool_output: str | None = None,
+    agent_id: str | None = None,
+    agent_name: str | None = None,
+    session_id: str | None = None,
+    error: str | None = None,
 ) -> None:
     """Emit a tool call event.
 

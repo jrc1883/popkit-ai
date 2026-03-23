@@ -25,14 +25,13 @@ Part of PopKit Issue #19 (Security Hardening).
 """
 
 import re
-from typing import List, Optional, Tuple
 
 # =============================================================================
 # SENSITIVE DATA PATTERNS
 # =============================================================================
 
 # Patterns for common sensitive data (compiled for performance)
-_SENSITIVE_PATTERNS: List[Tuple[str, str]] = [
+_SENSITIVE_PATTERNS: list[tuple[str, str]] = [
     # API Keys and Tokens
     (r"(bearer\s+)[\w\-\.]+", r"\1[REDACTED]"),
     (r"(api[_\-]?key\s*[=:]\s*)[\w\-]+", r"\1[REDACTED]"),
@@ -58,7 +57,7 @@ _SENSITIVE_PATTERNS: List[Tuple[str, str]] = [
 ]
 
 # Compile patterns for better performance
-_COMPILED_PATTERNS: List[Tuple[re.Pattern, str]] = [
+_COMPILED_PATTERNS: list[tuple[re.Pattern, str]] = [
     (re.compile(pattern, re.IGNORECASE), replacement)
     for pattern, replacement in _SENSITIVE_PATTERNS
 ]
@@ -70,7 +69,7 @@ _COMPILED_PATTERNS: List[Tuple[re.Pattern, str]] = [
 
 
 def secure_print(
-    *args, sep: str = " ", end: str = "\n", extra_patterns: Optional[List[str]] = None, **kwargs
+    *args, sep: str = " ", end: str = "\n", extra_patterns: list[str] | None = None, **kwargs
 ) -> None:
     """
     Print with automatic redaction of sensitive data.
@@ -94,7 +93,7 @@ def secure_print(
 
 
 def redact_sensitive(
-    text: str, extra_patterns: Optional[List[str]] = None, case_sensitive: bool = False
+    text: str, extra_patterns: list[str] | None = None, case_sensitive: bool = False
 ) -> str:
     """
     Redact sensitive information from text.

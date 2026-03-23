@@ -17,7 +17,7 @@ import subprocess
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class LabelPriority(Enum):
@@ -36,7 +36,7 @@ class ScoredIssue:
 
     number: int
     title: str
-    labels: List[str]
+    labels: list[str]
     state: str
     created_at: str
     updated_at: str
@@ -51,7 +51,7 @@ class ScoredIssue:
     priority_score: float = 0.0
 
     # Vote breakdown for display
-    vote_breakdown: Dict[str, int] = None
+    vote_breakdown: dict[str, int] = None
 
     def __post_init__(self):
         if self.vote_breakdown is None:
@@ -117,7 +117,7 @@ class PriorityScorer:
     # Epic labels
     EPIC_LABELS = {"epic", "meta", "umbrella", "parent"}
 
-    def __init__(self, weights: Optional[Dict[str, float]] = None, vote_fetcher=None):
+    def __init__(self, weights: dict[str, float] | None = None, vote_fetcher=None):
         """
         Initialize the priority scorer.
 
@@ -186,7 +186,7 @@ class PriorityScorer:
 
         return max(0, min(100, age_score + activity_bonus))
 
-    def calculate_label_score(self, labels: List[str]) -> float:
+    def calculate_label_score(self, labels: list[str]) -> float:
         """
         Calculate priority score from labels.
 
@@ -216,7 +216,7 @@ class PriorityScorer:
 
         return max_priority.value
 
-    def calculate_epic_score(self, labels: List[str], parent_issue: Optional[int] = None) -> float:
+    def calculate_epic_score(self, labels: list[str], parent_issue: int | None = None) -> float:
         """
         Calculate epic association score.
 
@@ -239,7 +239,7 @@ class PriorityScorer:
         return 0.0
 
     def score_issue(
-        self, issue: Dict[str, Any], vote_result=None, parent_epic: Optional[int] = None
+        self, issue: dict[str, Any], vote_result=None, parent_epic: int | None = None
     ) -> ScoredIssue:
         """
         Calculate complete priority score for an issue.
@@ -308,10 +308,10 @@ class PriorityScorer:
 
     def rank_issues(
         self,
-        issues: List[Dict[str, Any]],
-        vote_results: Optional[Dict[int, Any]] = None,
-        epic_map: Optional[Dict[int, int]] = None,
-    ) -> List[ScoredIssue]:
+        issues: list[dict[str, Any]],
+        vote_results: dict[int, Any] | None = None,
+        epic_map: dict[int, int] | None = None,
+    ) -> list[ScoredIssue]:
         """
         Rank a list of issues by priority score.
 
@@ -339,7 +339,7 @@ class PriorityScorer:
         return sorted(scored, key=lambda x: -x.priority_score)
 
     def format_ranked_list(
-        self, scored_issues: List[ScoredIssue], show_components: bool = False, max_items: int = 10
+        self, scored_issues: list[ScoredIssue], show_components: bool = False, max_items: int = 10
     ) -> str:
         """
         Format ranked issues for display.
@@ -385,7 +385,7 @@ class PriorityScorer:
 
 
 # Singleton instance
-_scorer: Optional[PriorityScorer] = None
+_scorer: PriorityScorer | None = None
 
 
 def get_priority_scorer() -> PriorityScorer:
@@ -396,7 +396,7 @@ def get_priority_scorer() -> PriorityScorer:
     return _scorer
 
 
-def fetch_open_issues(limit: int = 20) -> List[Dict]:
+def fetch_open_issues(limit: int = 20) -> list[dict]:
     """Fetch open issues from current repository using gh CLI"""
     try:
         result = subprocess.run(

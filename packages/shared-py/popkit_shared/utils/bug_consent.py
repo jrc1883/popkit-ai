@@ -12,7 +12,7 @@ import sys
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 # Ensure utils directory is in path
 utils_dir = Path(__file__).parent
@@ -38,7 +38,7 @@ class ConsentQuestion:
 
     question: str
     header: str
-    options: List[Dict[str, str]]
+    options: list[dict[str, str]]
     multi_select: bool = False
 
     def to_dict(self) -> dict:
@@ -132,7 +132,7 @@ def get_auto_detect_consent_question() -> ConsentQuestion:
     )
 
 
-def process_share_response(response: str, bug_id: str) -> Dict[str, Any]:
+def process_share_response(response: str, bug_id: str) -> dict[str, Any]:
     """
     Process user response to share consent question.
 
@@ -185,7 +185,7 @@ def process_share_response(response: str, bug_id: str) -> Dict[str, Any]:
     return result
 
 
-def process_consent_level_response(response: str) -> Dict[str, Any]:
+def process_consent_level_response(response: str) -> dict[str, Any]:
     """
     Process user response to consent level question.
 
@@ -229,7 +229,7 @@ def process_consent_level_response(response: str) -> Dict[str, Any]:
     return result
 
 
-def process_auto_detect_response(response: str) -> Dict[str, Any]:
+def process_auto_detect_response(response: str) -> dict[str, Any]:
     """
     Process user response to auto-detect question.
 
@@ -282,7 +282,7 @@ def should_ask_for_sharing(bug_id: str) -> bool:
     return False
 
 
-def get_pending_bugs_for_consent(limit: int = 5) -> List[Dict[str, Any]]:
+def get_pending_bugs_for_consent(limit: int = 5) -> list[dict[str, Any]]:
     """
     Get bugs that need consent for sharing.
 

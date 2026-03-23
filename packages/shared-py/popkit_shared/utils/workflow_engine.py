@@ -39,7 +39,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 # =============================================================================
 # Enums and Constants
@@ -82,18 +82,18 @@ class WorkflowStep:
     id: str  # Unique step identifier
     description: str  # Human-readable description
     step_type: str  # One of StepType values
-    skill: Optional[str] = None  # Skill name (if type=skill)
-    agent: Optional[str] = None  # Agent name (if type=agent)
-    question: Optional[str] = None  # Question text (if type=user_decision)
-    header: Optional[str] = None  # Header for AskUserQuestion
-    options: Optional[List[Dict]] = None  # Options for user_decision
-    agents: Optional[List[Dict]] = None  # Agents to spawn (if type=spawn_agents)
-    wait_for: Optional[str] = None  # "all" or "any" (for spawn_agents)
-    next: Optional[str] = None  # Default next step ID
-    next_map: Optional[Dict[str, str]] = None  # Option ID -> next step ID mapping
+    skill: str | None = None  # Skill name (if type=skill)
+    agent: str | None = None  # Agent name (if type=agent)
+    question: str | None = None  # Question text (if type=user_decision)
+    header: str | None = None  # Header for AskUserQuestion
+    options: list[dict] | None = None  # Options for user_decision
+    agents: list[dict] | None = None  # Agents to spawn (if type=spawn_agents)
+    wait_for: str | None = None  # "all" or "any" (for spawn_agents)
+    next: str | None = None  # Default next step ID
+    next_map: dict[str, str] | None = None  # Option ID -> next step ID mapping
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "WorkflowStep":
+    def from_dict(cls, data: dict[str, Any]) -> "WorkflowStep":
         """Create a WorkflowStep from a dictionary."""
         return cls(
             id=data.get("id", "unknown"),
@@ -122,10 +122,10 @@ class WorkflowDefinition:
     name: str  # Human-readable name
     version: int = 1  # Definition version
     description: str = ""  # Workflow description
-    steps: List[WorkflowStep] = field(default_factory=list)
+    steps: list[WorkflowStep] = field(default_factory=list)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "WorkflowDefinition":
+    def from_dict(cls, data: dict[str, Any]) -> "WorkflowDefinition":
         """Create a WorkflowDefinition from a dictionary."""
         steps = [WorkflowStep.from_dict(s) for s in data.get("steps", [])]
         return cls(
@@ -136,14 +136,14 @@ class WorkflowDefinition:
             steps=steps,
         )
 
-    def get_step(self, step_id: str) -> Optional[WorkflowStep]:
+    def get_step(self, step_id: str) -> WorkflowStep | None:
         """Get a step by ID."""
         for step in self.steps:
             if step.id == step_id:
                 return step
         return None
 
-    def get_first_step(self) -> Optional[WorkflowStep]:
+    def get_first_step(self) -> WorkflowStep | None:
         """Get the first step in the workflow."""
         return self.steps[0] if self.steps else None
 
@@ -160,17 +160,17 @@ class WorkflowState:
     workflow_type: str  # Definition ID (e.g., "feature-development")
     workflow_name: str  # Human-readable name
     current_step: str  # Current step ID
-    completed_steps: List[str] = field(default_factory=list)  # IDs of completed steps
-    pending_events: List[str] = field(default_factory=list)  # Events we're waiting for
-    context: Dict[str, Any] = field(default_factory=dict)  # Accumulated context data
-    step_results: Dict[str, Any] = field(default_factory=dict)  # Results per step
+    completed_steps: list[str] = field(default_factory=list)  # IDs of completed steps
+    pending_events: list[str] = field(default_factory=list)  # Events we're waiting for
+    context: dict[str, Any] = field(default_factory=dict)  # Accumulated context data
+    step_results: dict[str, Any] = field(default_factory=dict)  # Results per step
     status: str = WorkflowStatus.PENDING.value
-    error_message: Optional[str] = None
+    error_message: str | None = None
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
     updated_at: str = field(default_factory=lambda: datetime.now().isoformat())
-    github_issue: Optional[int] = None  # Linked GitHub issue
+    github_issue: int | None = None  # Linked GitHub issue
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "workflow_id": self.workflow_id,
@@ -189,7 +189,7 @@ class WorkflowState:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "WorkflowState":
+    def from_dict(cls, data: dict[str, Any]) -> "WorkflowState":
         """Create a WorkflowState from a dictionary."""
         return cls(
             workflow_id=data.get("workflow_id", "unknown"),
@@ -217,11 +217,11 @@ class WorkflowEvent:
 
     event_id: str  # Event identifier (e.g., "decision-approach")
     event_type: str  # Type: "user_decision", "agent_complete", etc.
-    data: Dict[str, Any]  # Event payload
+    data: dict[str, Any]  # Event payload
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
     source: str = "user"  # Event source: "user", "agent", "system"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "event_id": self.event_id,
@@ -232,7 +232,7 @@ class WorkflowEvent:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "WorkflowEvent":
+    def from_dict(cls, data: dict[str, Any]) -> "WorkflowEvent":
         """Create a WorkflowEvent from a dictionary."""
         return cls(
             event_id=data.get("event_id", "unknown"),
@@ -281,7 +281,7 @@ def _get_active_workflow_file() -> Path:
     return _get_workflows_dir() / "active.json"
 
 
-def _atomic_write_json(path: Path, data: Dict[str, Any]) -> None:
+def _atomic_write_json(path: Path, data: dict[str, Any]) -> None:
     """Write JSON atomically to prevent corruption.
 
     Writes to a temp file first, then renames (atomic on most filesystems).
@@ -319,7 +319,7 @@ class FileWorkflowEngine:
     - {workflow_id}.log - Audit log
     """
 
-    def __init__(self, workflow_id: str, definition: Optional[WorkflowDefinition] = None):
+    def __init__(self, workflow_id: str, definition: WorkflowDefinition | None = None):
         """Initialize the engine for a specific workflow.
 
         Args:
@@ -328,7 +328,7 @@ class FileWorkflowEngine:
         """
         self.workflow_id = workflow_id
         self.definition = definition
-        self._state: Optional[WorkflowState] = None
+        self._state: WorkflowState | None = None
 
         # Load existing state if available
         state_file = _get_workflow_state_file(workflow_id)
@@ -343,9 +343,9 @@ class FileWorkflowEngine:
     def create_workflow(
         cls,
         workflow_id: str,
-        workflow_def: Union[Dict[str, Any], WorkflowDefinition],
-        initial_context: Optional[Dict[str, Any]] = None,
-        github_issue: Optional[int] = None,
+        workflow_def: Union[dict[str, Any], WorkflowDefinition],
+        initial_context: dict[str, Any] | None = None,
+        github_issue: int | None = None,
     ) -> "FileWorkflowEngine":
         """Create a new workflow execution.
 
@@ -418,7 +418,7 @@ class FileWorkflowEngine:
             return None
 
         try:
-            with open(active_file, "r", encoding="utf-8") as f:
+            with open(active_file, encoding="utf-8") as f:
                 data = json.load(f)
             workflow_id = data.get("workflow_id")
             if workflow_id:
@@ -430,7 +430,7 @@ class FileWorkflowEngine:
         return None
 
     @classmethod
-    def list_workflows(cls, status: Optional[str] = None) -> List[Dict[str, Any]]:
+    def list_workflows(cls, status: str | None = None) -> list[dict[str, Any]]:
         """List all workflows, optionally filtered by status.
 
         Args:
@@ -447,7 +447,7 @@ class FileWorkflowEngine:
                 continue
 
             try:
-                with open(state_file, "r", encoding="utf-8") as f:
+                with open(state_file, encoding="utf-8") as f:
                     data = json.load(f)
 
                 if status and data.get("status") != status:
@@ -479,7 +479,7 @@ class FileWorkflowEngine:
         state_file = _get_workflow_state_file(self.workflow_id)
         if state_file.exists():
             try:
-                with open(state_file, "r", encoding="utf-8") as f:
+                with open(state_file, encoding="utf-8") as f:
                     data = json.load(f)
                 self._state = WorkflowState.from_dict(data)
                 # Also load definition if saved
@@ -500,7 +500,7 @@ class FileWorkflowEngine:
                 data["definition"] = self._definition_to_dict()
             _atomic_write_json(state_file, data)
 
-    def _definition_to_dict(self) -> Dict[str, Any]:
+    def _definition_to_dict(self) -> dict[str, Any]:
         """Convert definition to dict for serialization."""
         if not self.definition:
             return {}
@@ -535,7 +535,7 @@ class FileWorkflowEngine:
             active_file, {"workflow_id": self.workflow_id, "set_at": datetime.now().isoformat()}
         )
 
-    def _log(self, event: str, data: Optional[Dict[str, Any]] = None) -> None:
+    def _log(self, event: str, data: dict[str, Any] | None = None) -> None:
         """Append an entry to the workflow log."""
         log_file = _get_workflow_log_file(self.workflow_id)
         entry = {"timestamp": datetime.now().isoformat(), "event": event, "data": data or {}}
@@ -543,7 +543,7 @@ class FileWorkflowEngine:
         with open(log_file, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry) + "\n")
 
-    def get_state(self) -> Optional[WorkflowState]:
+    def get_state(self) -> WorkflowState | None:
         """Get the current workflow state."""
         return self._state
 
@@ -555,7 +555,7 @@ class FileWorkflowEngine:
     # Step Management
     # =========================================================================
 
-    def get_current_step(self) -> Optional[WorkflowStep]:
+    def get_current_step(self) -> WorkflowStep | None:
         """Get the current workflow step.
 
         Returns:
@@ -566,13 +566,13 @@ class FileWorkflowEngine:
 
         return self.definition.get_step(self._state.current_step)
 
-    def get_step(self, step_id: str) -> Optional[WorkflowStep]:
+    def get_step(self, step_id: str) -> WorkflowStep | None:
         """Get a specific step by ID."""
         if not self.definition:
             return None
         return self.definition.get_step(step_id)
 
-    def advance_step(self, step_result: Optional[Dict[str, Any]] = None) -> Optional[WorkflowStep]:
+    def advance_step(self, step_result: dict[str, Any] | None = None) -> WorkflowStep | None:
         """Advance to the next workflow step.
 
         Args:
@@ -666,7 +666,7 @@ class FileWorkflowEngine:
         self._save_state()
         self._log("waiting_for_event", {"event_id": event_id})
 
-    def notify_event(self, event_id: str, data: Dict[str, Any]) -> bool:
+    def notify_event(self, event_id: str, data: dict[str, Any]) -> bool:
         """Notify the workflow of an external event.
 
         Called when a user responds to an AskUserQuestion.
@@ -709,14 +709,14 @@ class FileWorkflowEngine:
         self._save_state()
         return True
 
-    def _store_event(self, event_id: str, data: Dict[str, Any]) -> None:
+    def _store_event(self, event_id: str, data: dict[str, Any]) -> None:
         """Store an event for later processing."""
         events_dir = _get_workflow_events_dir(self.workflow_id)
         event = WorkflowEvent(event_id=event_id, event_type="stored", data=data)
         event_file = events_dir / f"{event_id}.json"
         _atomic_write_json(event_file, event.to_dict())
 
-    def get_pending_event(self, event_id: str) -> Optional[WorkflowEvent]:
+    def get_pending_event(self, event_id: str) -> WorkflowEvent | None:
         """Get a stored event by ID."""
         events_dir = _get_workflow_events_dir(self.workflow_id)
         event_file = events_dir / f"{event_id}.json"
@@ -725,13 +725,13 @@ class FileWorkflowEngine:
             return None
 
         try:
-            with open(event_file, "r", encoding="utf-8") as f:
+            with open(event_file, encoding="utf-8") as f:
                 data = json.load(f)
             return WorkflowEvent.from_dict(data)
         except (json.JSONDecodeError, KeyError):
             return None
 
-    def consume_event(self, event_id: str) -> Optional[WorkflowEvent]:
+    def consume_event(self, event_id: str) -> WorkflowEvent | None:
         """Get and delete a stored event."""
         event = self.get_pending_event(event_id)
         if event:
@@ -744,11 +744,11 @@ class FileWorkflowEngine:
     # Context Management
     # =========================================================================
 
-    def get_context(self) -> Dict[str, Any]:
+    def get_context(self) -> dict[str, Any]:
         """Get the accumulated workflow context."""
         return self._state.context if self._state else {}
 
-    def update_context(self, updates: Dict[str, Any]) -> None:
+    def update_context(self, updates: dict[str, Any]) -> None:
         """Update the workflow context."""
         if self._state:
             self._state.context.update(updates)
@@ -789,7 +789,7 @@ class FileWorkflowEngine:
         active_file = _get_active_workflow_file()
         if active_file.exists():
             try:
-                with open(active_file, "r", encoding="utf-8") as f:
+                with open(active_file, encoding="utf-8") as f:
                     data = json.load(f)
                 if data.get("workflow_id") == self.workflow_id:
                     active_file.unlink()
@@ -821,7 +821,7 @@ class FileWorkflowEngine:
     # Summary
     # =========================================================================
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get a summary of the workflow state."""
         if not self._state:
             return {"status": "not_loaded"}
@@ -849,7 +849,7 @@ class FileWorkflowEngine:
 # =============================================================================
 
 
-def get_active_workflow() -> Optional[FileWorkflowEngine]:
+def get_active_workflow() -> FileWorkflowEngine | None:
     """Get the currently active workflow engine."""
     return FileWorkflowEngine.get_active_workflow()
 
@@ -999,8 +999,8 @@ class UpstashWorkflowEngine:
     def __init__(
         self,
         workflow_id: str,
-        definition: Optional[WorkflowDefinition] = None,
-        api_key: Optional[str] = None,
+        definition: WorkflowDefinition | None = None,
+        api_key: str | None = None,
     ):
         """Initialize the cloud workflow engine.
 
@@ -1012,11 +1012,11 @@ class UpstashWorkflowEngine:
         self.workflow_id = workflow_id
         self.definition = definition
         self.api_key = api_key or os.environ.get("POPKIT_API_KEY")
-        self._cached_status: Optional[Dict[str, Any]] = None
+        self._cached_status: dict[str, Any] | None = None
 
     def _request(
-        self, method: str, endpoint: str, data: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        self, method: str, endpoint: str, data: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """Make authenticated request to PopKit Cloud API.
 
         Args:
@@ -1060,9 +1060,9 @@ class UpstashWorkflowEngine:
     def create_workflow(
         cls,
         workflow_id: str,
-        workflow_def: Union[Dict[str, Any], WorkflowDefinition],
-        initial_context: Optional[Dict[str, Any]] = None,
-        github_issue: Optional[int] = None,
+        workflow_def: Union[dict[str, Any], WorkflowDefinition],
+        initial_context: dict[str, Any] | None = None,
+        github_issue: int | None = None,
         workflow_type: str = "feature-dev",
     ) -> "UpstashWorkflowEngine":
         """Create a new workflow in the cloud.
@@ -1168,7 +1168,7 @@ class UpstashWorkflowEngine:
             pending_events=[],
         )
 
-    def get_current_step(self) -> Optional[WorkflowStep]:
+    def get_current_step(self) -> WorkflowStep | None:
         """Get the current step in the workflow.
 
         Returns:
@@ -1187,7 +1187,7 @@ class UpstashWorkflowEngine:
 
         return self.definition.get_step(current_phase)
 
-    def get_context(self) -> Dict[str, Any]:
+    def get_context(self) -> dict[str, Any]:
         """Get accumulated workflow context from cloud.
 
         Returns:
@@ -1200,7 +1200,7 @@ class UpstashWorkflowEngine:
     # Workflow Control Methods
     # =========================================================================
 
-    def advance_step(self, result: Optional[Dict[str, Any]] = None) -> Optional[WorkflowStep]:
+    def advance_step(self, result: dict[str, Any] | None = None) -> WorkflowStep | None:
         """Advance the workflow to the next step.
 
         Args:
@@ -1241,7 +1241,7 @@ class UpstashWorkflowEngine:
         if self._cached_status:
             self._cached_status["waitingFor"] = event_id
 
-    def notify_event(self, event_id: str, data: Dict[str, Any]) -> bool:
+    def notify_event(self, event_id: str, data: dict[str, Any]) -> bool:
         """Notify the workflow that an event occurred.
 
         Args:
@@ -1284,7 +1284,7 @@ class UpstashWorkflowEngine:
     # Utility Methods
     # =========================================================================
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get workflow summary from cloud.
 
         Returns:
@@ -1324,7 +1324,7 @@ def has_api_key() -> bool:
 
 
 def get_workflow_engine(
-    workflow_id: Optional[str] = None, force_local: bool = False, force_cloud: bool = False
+    workflow_id: str | None = None, force_local: bool = False, force_cloud: bool = False
 ) -> Union[FileWorkflowEngine, UpstashWorkflowEngine, None]:
     """Factory to get the appropriate workflow engine.
 
@@ -1377,9 +1377,9 @@ def get_workflow_engine(
 
 def create_workflow_engine(
     workflow_id: str,
-    workflow_def: Union[Dict[str, Any], WorkflowDefinition],
-    initial_context: Optional[Dict[str, Any]] = None,
-    github_issue: Optional[int] = None,
+    workflow_def: Union[dict[str, Any], WorkflowDefinition],
+    initial_context: dict[str, Any] | None = None,
+    github_issue: int | None = None,
     force_local: bool = False,
     force_cloud: bool = False,
 ) -> Union[FileWorkflowEngine, UpstashWorkflowEngine]:

@@ -19,7 +19,7 @@ import json
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Optional
 
 # Import test telemetry for sandbox testing (Issue #226)
 try:
@@ -42,12 +42,12 @@ class SkillState:
     """State for a single skill execution."""
 
     skill_name: str
-    workflow_id: Optional[str] = None
-    decisions_made: Set[str] = field(default_factory=set)
+    workflow_id: str | None = None
+    decisions_made: set[str] = field(default_factory=set)
     tool_calls: int = 0
     error_occurred: bool = False
-    last_error: Optional[str] = None
-    activity_id: Optional[str] = None  # ID from activity stream
+    last_error: str | None = None
+    activity_id: str | None = None  # ID from activity stream
 
 
 class SkillStateTracker:
@@ -56,8 +56,8 @@ class SkillStateTracker:
     _instance: Optional["SkillStateTracker"] = None
 
     def __init__(self):
-        self.state: Optional[SkillState] = None
-        self._config: Optional[dict] = None
+        self.state: SkillState | None = None
+        self._config: dict | None = None
 
     @classmethod
     def get_instance(cls) -> "SkillStateTracker":
@@ -120,7 +120,7 @@ class SkillStateTracker:
 
         return {}
 
-    def _emit_telemetry_event(self, event_type: str, data: Dict[str, Any]) -> None:
+    def _emit_telemetry_event(self, event_type: str, data: dict[str, Any]) -> None:
         """Emit test telemetry event if in test mode (Issue #226).
 
         Events are only captured during sandbox testing for observability.
@@ -136,7 +136,7 @@ class SkillStateTracker:
             # Don't let telemetry failures break skill tracking
             pass
 
-    def start_skill(self, skill_name: str, workflow_id: Optional[str] = None) -> None:
+    def start_skill(self, skill_name: str, workflow_id: str | None = None) -> None:
         """Called when a skill is invoked via Skill tool.
 
         Publishes 'start' event to activity ledger for real-time awareness.
@@ -157,7 +157,7 @@ class SkillStateTracker:
             {"skill_name": skill_name, "workflow_id": workflow_id, "activity_id": activity_id},
         )
 
-    def end_skill(self, status: str = "complete", output: Optional[Dict[str, Any]] = None) -> None:
+    def end_skill(self, status: str = "complete", output: dict[str, Any] | None = None) -> None:
         """Called when skill completes.
 
         Publishes 'complete' or 'error' event to activity ledger.
@@ -197,7 +197,7 @@ class SkillStateTracker:
 
         self.state = None
 
-    def _publish_activity(self, event_type: str, data: Dict[str, Any]) -> Optional[str]:
+    def _publish_activity(self, event_type: str, data: dict[str, Any]) -> str | None:
         """Publish activity event to storage backend.
 
         Tries to import context_storage lazily to avoid circular imports.
@@ -277,7 +277,7 @@ class SkillStateTracker:
             self.state.error_occurred = True
             self.state.last_error = error_message
 
-    def record_phase_change(self, phase: str, data: Optional[Dict[str, Any]] = None) -> None:
+    def record_phase_change(self, phase: str, data: dict[str, Any] | None = None) -> None:
         """Record a phase change in a multi-phase workflow (Issue #226).
 
         Emits 'phase_change' telemetry event for tracking workflow progress
@@ -304,7 +304,7 @@ class SkillStateTracker:
         """Check if an error occurred during skill execution."""
         return self.state.error_occurred if self.state else False
 
-    def get_pending_completion_decisions(self, include_on_error: bool = False) -> List[dict]:
+    def get_pending_completion_decisions(self, include_on_error: bool = False) -> list[dict]:
         """Get completion decisions that haven't been made yet.
 
         Args:
@@ -333,7 +333,7 @@ class SkillStateTracker:
 
         return pending
 
-    def get_required_decisions(self) -> List[dict]:
+    def get_required_decisions(self) -> list[dict]:
         """Get required completion decisions that haven't been made yet (Issue #183).
 
         Required decisions MUST be presented even on error/early completion.
@@ -353,7 +353,7 @@ class SkillStateTracker:
 
         return required
 
-    def get_error_recovery_decisions(self) -> List[dict]:
+    def get_error_recovery_decisions(self) -> list[dict]:
         """Get decisions specifically for error recovery (Issue #183).
 
         These are decisions marked with on_error=true that should be shown
@@ -385,7 +385,7 @@ class SkillStateTracker:
         """Check if a skill is currently being tracked."""
         return self.state is not None
 
-    def get_active_skill(self) -> Optional[str]:
+    def get_active_skill(self) -> str | None:
         """Get the name of the currently active skill."""
         return self.state.skill_name if self.state else None
 

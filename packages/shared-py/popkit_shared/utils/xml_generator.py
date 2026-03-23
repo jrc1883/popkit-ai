@@ -9,7 +9,7 @@ Used by: user-prompt-submit.py hook
 """
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +109,7 @@ def infer_category(message: str) -> str:
     return "task"
 
 
-def infer_severity(message: str, context: Optional[Dict[str, Any]] = None) -> str:
+def infer_severity(message: str, context: dict[str, Any] | None = None) -> str:
     """
     Infer severity level from message and context.
 
@@ -166,7 +166,7 @@ def infer_severity(message: str, context: Optional[Dict[str, Any]] = None) -> st
     return "medium"
 
 
-def generate_workflow_steps(category: str, context: Optional[Dict[str, Any]] = None) -> str:
+def generate_workflow_steps(category: str, context: dict[str, Any] | None = None) -> str:
     """
     Generate workflow XML based on category and context.
 
@@ -340,7 +340,7 @@ def generate_workflow_steps(category: str, context: Optional[Dict[str, Any]] = N
 
 
 def generate_problem_xml(
-    user_message: str, context: Optional[Dict[str, Any]] = None, validate: bool = False
+    user_message: str, context: dict[str, Any] | None = None, validate: bool = False
 ) -> str:
     """
     Generate <problem> XML from user message.
@@ -400,7 +400,7 @@ def generate_problem_xml(
     return xml
 
 
-def generate_project_context_xml(context: Dict[str, Any], validate: bool = False) -> str:
+def generate_project_context_xml(context: dict[str, Any], validate: bool = False) -> str:
     """
     Generate <project> XML from detected project info.
 
@@ -482,7 +482,7 @@ def generate_project_context_xml(context: Dict[str, Any], validate: bool = False
     return xml
 
 
-def generate_findings_xml(findings: Dict[str, Any], validate: bool = False) -> str:
+def generate_findings_xml(findings: dict[str, Any], validate: bool = False) -> str:
     """
     Generate <findings> XML from tool execution results (Phase 1: XML Integration #517).
 

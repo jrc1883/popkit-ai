@@ -22,7 +22,7 @@ Usage:
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # =============================================================================
 # DATA CLASSES
@@ -37,14 +37,14 @@ class Feature:
     description: str
     level: int  # H1=1, H2=2, etc.
     line_number: int
-    acceptance_criteria: List[str] = field(default_factory=list)
-    dependencies: List[str] = field(default_factory=list)
-    complexity_score: Optional[int] = None
-    complexity_analysis: Optional[Dict[str, Any]] = None
-    tech_notes: Dict[str, str] = field(default_factory=dict)
-    parent_feature: Optional[str] = None
+    acceptance_criteria: list[str] = field(default_factory=list)
+    dependencies: list[str] = field(default_factory=list)
+    complexity_score: int | None = None
+    complexity_analysis: dict[str, Any] | None = None
+    tech_notes: dict[str, str] = field(default_factory=dict)
+    parent_feature: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "title": self.title,
@@ -64,12 +64,12 @@ class Technology:
     """Identified technology from PRD."""
 
     name: str
-    version: Optional[str] = None
+    version: str | None = None
     context: str = ""
     should_research: bool = False
-    research_notes: Optional[str] = None
+    research_notes: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "name": self.name,
@@ -86,13 +86,13 @@ class PRDParseResult:
 
     document_path: str
     title: str
-    features: List[Feature]
-    technologies: List[Technology]
+    features: list[Feature]
+    technologies: list[Technology]
     total_features: int
-    complexity_distribution: Dict[str, int]  # LOW/MEDIUM/HIGH counts
-    metadata: Dict[str, Any]
+    complexity_distribution: dict[str, int]  # LOW/MEDIUM/HIGH counts
+    metadata: dict[str, Any]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "document_path": self.document_path,
@@ -201,7 +201,7 @@ class PRDParser:
         if not path.exists():
             raise FileNotFoundError(f"PRD file not found: {file_path}")
 
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             content = f.read()
 
         return self.parse_content(content, str(path))
@@ -259,13 +259,13 @@ class PRDParser:
         match = re.search(r"^#\s+(.+)$", content, re.MULTILINE)
         return match.group(1).strip() if match else "Untitled PRD"
 
-    def _parse_features(self, content: str) -> List[Feature]:
+    def _parse_features(self, content: str) -> list[Feature]:
         """Parse features hierarchically from markdown headers."""
         features = []
         lines = content.split("\n")
 
         current_feature = None
-        parent_stack: List[tuple] = []  # (level, title)
+        parent_stack: list[tuple] = []  # (level, title)
 
         for i, line in enumerate(lines, 1):
             # Check for header (H1-H4)
@@ -330,9 +330,9 @@ class PRDParser:
     # TECHNOLOGY EXTRACTION
     # =========================================================================
 
-    def _extract_technologies(self, content: str) -> List[Technology]:
+    def _extract_technologies(self, content: str) -> list[Technology]:
         """Extract technology mentions from content."""
-        technologies: Dict[str, Technology] = {}
+        technologies: dict[str, Technology] = {}
 
         for pattern in self.TECH_PATTERNS:
             matches = re.finditer(pattern, content, re.IGNORECASE)
@@ -358,7 +358,7 @@ class PRDParser:
 
         return list(technologies.values())
 
-    def _should_research_tech(self, name: str, version: Optional[str]) -> bool:
+    def _should_research_tech(self, name: str, version: str | None) -> bool:
         """Determine if technology should be researched."""
         # Research if version is specified (likely recent)
         if version:
@@ -393,7 +393,7 @@ class PRDParser:
     # COMPLEXITY ANALYSIS
     # =========================================================================
 
-    def _analyze_feature_complexity(self, features: List[Feature]) -> None:
+    def _analyze_feature_complexity(self, features: list[Feature]) -> None:
         """Analyze complexity for each feature using complexity_scoring module."""
         analyzer = self._get_complexity_analyzer()
 
@@ -423,7 +423,7 @@ class PRDParser:
                 # Silently skip on error
                 pass
 
-    def _calculate_complexity_distribution(self, features: List[Feature]) -> Dict[str, int]:
+    def _calculate_complexity_distribution(self, features: list[Feature]) -> dict[str, int]:
         """Calculate complexity distribution across features."""
         distribution = {"LOW": 0, "MEDIUM": 0, "HIGH": 0, "UNKNOWN": 0}
 
@@ -439,7 +439,7 @@ class PRDParser:
 
         return distribution
 
-    def _calculate_avg_complexity(self, features: List[Feature]) -> Optional[float]:
+    def _calculate_avg_complexity(self, features: list[Feature]) -> float | None:
         """Calculate average complexity score."""
         scores = [f.complexity_score for f in features if f.complexity_score is not None]
 

@@ -94,7 +94,7 @@ class TestCursorConfigGeneration:
         assert config_path.name == "mcp-config.json"
         assert config_path.is_file()
 
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             config = json.load(f)
 
         assert "mcpServers" in config
@@ -212,7 +212,7 @@ class TestCursorInstallUninstall:
         mcp_json = tmp_path / ".cursor" / "mcp.json"
         assert mcp_json.is_file()
 
-        with open(mcp_json, "r", encoding="utf-8") as f:
+        with open(mcp_json, encoding="utf-8") as f:
             config = json.load(f)
 
         assert "mcpServers" in config
@@ -247,7 +247,7 @@ class TestCursorInstallUninstall:
 
         assert result is True
 
-        with open(mcp_json, "r", encoding="utf-8") as f:
+        with open(mcp_json, encoding="utf-8") as f:
             config = json.load(f)
 
         # Both entries should exist
@@ -273,7 +273,7 @@ class TestCursorInstallUninstall:
 
         assert result is True
 
-        with open(mcp_json, "r", encoding="utf-8") as f:
+        with open(mcp_json, encoding="utf-8") as f:
             config = json.load(f)
 
         assert "popkit" in config["mcpServers"]
@@ -299,7 +299,7 @@ class TestCursorInstallUninstall:
 
         assert result is True
 
-        with open(mcp_json, "r", encoding="utf-8") as f:
+        with open(mcp_json, encoding="utf-8") as f:
             config = json.load(f)
 
         assert "popkit" not in config["mcpServers"]

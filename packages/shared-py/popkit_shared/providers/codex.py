@@ -12,7 +12,7 @@ Part of the PopKit v2.0 provider-agnostic architecture.
 import shutil
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from .base import ProviderAdapter, ProviderInfo, ToolMapping
 from .tool_mapping import CODEX_MAPPINGS
@@ -50,14 +50,14 @@ def _format_toml_value(value: Any) -> str:
     return str(value)
 
 
-def _serialize_toml(data: Dict[str, Any]) -> str:
+def _serialize_toml(data: dict[str, Any]) -> str:
     """Serialize a dict to TOML format.
 
     Handles top-level key-value pairs and nested tables (one level deep for
     mcp_servers.NAME style sections). Does not support deeply nested structures
     beyond two levels — sufficient for Codex config.toml.
     """
-    lines: List[str] = []
+    lines: list[str] = []
 
     # Write top-level scalar values first
     for key, value in data.items():
@@ -134,7 +134,7 @@ class CodexAdapter(ProviderAdapter):
             is_available=is_available,
         )
 
-    def generate_config(self, package_dir: Path, output_dir: Path) -> List[Path]:
+    def generate_config(self, package_dir: Path, output_dir: Path) -> list[Path]:
         """Generate Codex-specific configuration.
 
         Creates:
@@ -149,7 +149,7 @@ class CodexAdapter(ProviderAdapter):
             List of generated file paths
         """
         output_dir.mkdir(parents=True, exist_ok=True)
-        generated: List[Path] = []
+        generated: list[Path] = []
 
         # Generate TOML config snippet
         toml_config = self._build_mcp_config()
@@ -165,7 +165,7 @@ class CodexAdapter(ProviderAdapter):
 
         return generated
 
-    def get_tool_mappings(self) -> List[ToolMapping]:
+    def get_tool_mappings(self) -> list[ToolMapping]:
         """Get Codex CLI tool mappings."""
         return CODEX_MAPPINGS
 
@@ -186,7 +186,7 @@ class CodexAdapter(ProviderAdapter):
         config_path = codex_dir / "config.toml"
 
         # Load existing config or start fresh
-        existing: Dict[str, Any] = {}
+        existing: dict[str, Any] = {}
         if config_path.is_file():
             try:
                 with open(config_path, "rb") as f:
@@ -206,7 +206,7 @@ class CodexAdapter(ProviderAdapter):
             with open(config_path, "w", encoding="utf-8") as f:
                 f.write(_serialize_toml(existing))
             return True
-        except IOError:
+        except OSError:
             return False
 
     def uninstall(self, package_name: str) -> bool:
@@ -241,10 +241,10 @@ class CodexAdapter(ProviderAdapter):
             with open(config_path, "w", encoding="utf-8") as f:
                 f.write(_serialize_toml(config))
             return True
-        except IOError:
+        except OSError:
             return False
 
-    def _build_mcp_config(self) -> Dict[str, Any]:
+    def _build_mcp_config(self) -> dict[str, Any]:
         """Build MCP server configuration for Codex CLI.
 
         Returns:
@@ -267,7 +267,7 @@ class CodexAdapter(ProviderAdapter):
             }
         }
 
-    def _generate_agents_md(self, package_dir: Path, output_dir: Path) -> Optional[Path]:
+    def _generate_agents_md(self, package_dir: Path, output_dir: Path) -> Path | None:
         """Generate AGENTS.md from AGENT.md files in the package.
 
         Scans the package for AGENT.md files and creates a unified AGENTS.md
@@ -280,7 +280,7 @@ class CodexAdapter(ProviderAdapter):
         Returns:
             Path to the generated AGENTS.md, or None if no agents found
         """
-        agent_entries: List[Dict[str, str]] = []
+        agent_entries: list[dict[str, str]] = []
 
         for agent_md in sorted(package_dir.rglob("AGENT.md")):
             relative = agent_md.parent.relative_to(package_dir)
@@ -290,7 +290,7 @@ class CodexAdapter(ProviderAdapter):
 
             try:
                 content = agent_md.read_text(encoding="utf-8")
-            except IOError:
+            except OSError:
                 continue
 
             # Extract first line as description (strip heading markers)
@@ -313,7 +313,7 @@ class CodexAdapter(ProviderAdapter):
             return None
 
         # Build AGENTS.md
-        sections: List[str] = [
+        sections: list[str] = [
             "# PopKit Agents",
             "",
             "Auto-generated agent definitions for Codex CLI.",

@@ -13,7 +13,7 @@ import os
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # =============================================================================
 # CONFIGURATION
@@ -49,7 +49,7 @@ class EnhancementResult:
     enhancement_name: str
     current_mode: str
     enhanced_mode: str
-    message: Optional[str] = None
+    message: str | None = None
 
 
 # =============================================================================
@@ -57,7 +57,7 @@ class EnhancementResult:
 # =============================================================================
 
 # Registry of enhancement opportunities (not feature gates!)
-ENHANCEMENTS: Dict[str, EnhancementInfo] = {
+ENHANCEMENTS: dict[str, EnhancementInfo] = {
     # Agent Routing Enhancement
     "agent-routing": EnhancementInfo(
         name="Semantic Agent Routing",
@@ -105,10 +105,10 @@ ENHANCEMENTS: Dict[str, EnhancementInfo] = {
 # API KEY VALIDATION CACHE
 # =============================================================================
 
-_api_key_cache: Dict[str, tuple[bool, float]] = {}
+_api_key_cache: dict[str, tuple[bool, float]] = {}
 
 
-def _get_cached_api_key_status(api_key: str) -> Optional[bool]:
+def _get_cached_api_key_status(api_key: str) -> bool | None:
     """Get cached API key status if still valid."""
     import time
 
@@ -131,7 +131,7 @@ def _cache_api_key_status(api_key: str, is_valid: bool) -> None:
 # =============================================================================
 
 
-def has_api_key(api_key: Optional[str] = None) -> bool:
+def has_api_key(api_key: str | None = None) -> bool:
     """
     Check if user has a valid API key configured.
 
@@ -170,7 +170,7 @@ def has_api_key(api_key: Optional[str] = None) -> bool:
         return False
 
 
-def get_enhancement_info(enhancement_name: str) -> Optional[EnhancementInfo]:
+def get_enhancement_info(enhancement_name: str) -> EnhancementInfo | None:
     """
     Get information about an enhancement.
 
@@ -183,7 +183,7 @@ def get_enhancement_info(enhancement_name: str) -> Optional[EnhancementInfo]:
     return ENHANCEMENTS.get(enhancement_name)
 
 
-def check_enhancement(enhancement_name: str, api_key: Optional[str] = None) -> EnhancementResult:
+def check_enhancement(enhancement_name: str, api_key: str | None = None) -> EnhancementResult:
     """
     Check if an enhancement is available.
 
@@ -237,7 +237,7 @@ Get a free API key: /popkit:cloud signup
     return msg.strip()
 
 
-def get_enhancement_prompt_options(enhancement_name: str) -> Dict[str, Any]:
+def get_enhancement_prompt_options(enhancement_name: str) -> dict[str, Any]:
     """
     Get AskUserQuestion options for an enhancement prompt.
 
@@ -270,7 +270,7 @@ def get_enhancement_prompt_options(enhancement_name: str) -> Dict[str, Any]:
     }
 
 
-def list_enhancements() -> List[EnhancementInfo]:
+def list_enhancements() -> list[EnhancementInfo]:
     """
     List all available enhancements.
 
@@ -305,7 +305,7 @@ def _get_project_id() -> str:
 
 
 def track_enhancement_usage(
-    enhancement_name: str, success: bool = True, api_key: Optional[str] = None
+    enhancement_name: str, success: bool = True, api_key: str | None = None
 ) -> bool:
     """
     Track usage of an enhancement (for analytics only).
@@ -363,7 +363,7 @@ def track_enhancement_usage(
         return False  # Don't fail if tracking fails
 
 
-def get_usage_summary(api_key: Optional[str] = None) -> Dict[str, Any]:
+def get_usage_summary(api_key: str | None = None) -> dict[str, Any]:
     """
     Get usage summary for the current user.
 

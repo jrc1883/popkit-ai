@@ -16,7 +16,7 @@ Part of the PopKit v2.0 provider-agnostic architecture.
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from .base import ProviderAdapter, ProviderInfo, ToolMapping
 from .tool_mapping import COPILOT_MAPPINGS
@@ -68,7 +68,7 @@ class CopilotAdapter(ProviderAdapter):
             is_available=is_available,
         )
 
-    def generate_config(self, package_dir: Path, output_dir: Path) -> List[Path]:
+    def generate_config(self, package_dir: Path, output_dir: Path) -> list[Path]:
         """Generate Copilot-specific configuration.
 
         Creates:
@@ -84,7 +84,7 @@ class CopilotAdapter(ProviderAdapter):
             List of generated file paths
         """
         output_dir.mkdir(parents=True, exist_ok=True)
-        generated: List[Path] = []
+        generated: list[Path] = []
 
         # Generate Copilot CLI MCP config (mcpServers root key)
         copilot_config = self._build_copilot_cli_config(package_dir)
@@ -106,7 +106,7 @@ class CopilotAdapter(ProviderAdapter):
 
         return generated
 
-    def get_tool_mappings(self) -> List[ToolMapping]:
+    def get_tool_mappings(self) -> list[ToolMapping]:
         """Get Copilot tool mappings."""
         return COPILOT_MAPPINGS
 
@@ -179,7 +179,7 @@ class CopilotAdapter(ProviderAdapter):
 
         return success
 
-    def _build_server_entry(self, package_dir: Path) -> Dict[str, Any]:
+    def _build_server_entry(self, package_dir: Path) -> dict[str, Any]:
         """Build the common MCP server entry for PopKit.
 
         Args:
@@ -201,7 +201,7 @@ class CopilotAdapter(ProviderAdapter):
             },
         }
 
-    def _build_copilot_cli_config(self, package_dir: Path) -> Dict[str, Any]:
+    def _build_copilot_cli_config(self, package_dir: Path) -> dict[str, Any]:
         """Build Copilot CLI MCP config (root key: mcpServers).
 
         Args:
@@ -216,7 +216,7 @@ class CopilotAdapter(ProviderAdapter):
             }
         }
 
-    def _build_vscode_config(self, package_dir: Path) -> Dict[str, Any]:
+    def _build_vscode_config(self, package_dir: Path) -> dict[str, Any]:
         """Build VS Code MCP config (root key: servers).
 
         Args:
@@ -235,7 +235,7 @@ class CopilotAdapter(ProviderAdapter):
         self,
         config_path: Path,
         root_key: str,
-        server_config: Dict[str, Any],
+        server_config: dict[str, Any],
         config_root_key: str,
     ) -> bool:
         """Merge a popkit entry into an existing MCP config file.
@@ -249,12 +249,12 @@ class CopilotAdapter(ProviderAdapter):
         Returns:
             True if write succeeded
         """
-        existing: Dict[str, Any] = {}
+        existing: dict[str, Any] = {}
         if config_path.is_file():
             try:
-                with open(config_path, "r", encoding="utf-8") as f:
+                with open(config_path, encoding="utf-8") as f:
                     existing = json.load(f)
-            except (json.JSONDecodeError, IOError):
+            except (OSError, json.JSONDecodeError):
                 existing = {}
 
         if root_key not in existing:
@@ -266,7 +266,7 @@ class CopilotAdapter(ProviderAdapter):
             with open(config_path, "w", encoding="utf-8") as f:
                 json.dump(existing, f, indent=2)
             return True
-        except IOError:
+        except OSError:
             return False
 
     def _remove_mcp_entry(self, config_path: Path, root_key: str) -> bool:
@@ -283,9 +283,9 @@ class CopilotAdapter(ProviderAdapter):
             return False
 
         try:
-            with open(config_path, "r", encoding="utf-8") as f:
+            with open(config_path, encoding="utf-8") as f:
                 config = json.load(f)
-        except (json.JSONDecodeError, IOError):
+        except (OSError, json.JSONDecodeError):
             return False
 
         servers = config.get(root_key, {})
@@ -298,10 +298,10 @@ class CopilotAdapter(ProviderAdapter):
             with open(config_path, "w", encoding="utf-8") as f:
                 json.dump(config, f, indent=2)
             return True
-        except IOError:
+        except OSError:
             return False
 
-    def _generate_copilot_instructions(self, package_dir: Path, output_dir: Path) -> List[Path]:
+    def _generate_copilot_instructions(self, package_dir: Path, output_dir: Path) -> list[Path]:
         """Generate copilot-instructions.md from AGENT.md files.
 
         Scans the package for AGENT.md files and creates a combined
@@ -314,7 +314,7 @@ class CopilotAdapter(ProviderAdapter):
         Returns:
             List of generated instruction file paths
         """
-        generated: List[Path] = []
+        generated: list[Path] = []
 
         # Find all AGENT.md files in the package
         agent_mds = sorted(package_dir.rglob("AGENT.md"))
@@ -322,7 +322,7 @@ class CopilotAdapter(ProviderAdapter):
             return generated
 
         instructions_path = output_dir / "copilot-instructions.md"
-        sections: List[str] = [
+        sections: list[str] = [
             "# Copilot Instructions -- Generated by PopKit\n",
             "",
             "<!-- This file was auto-generated from PopKit agent definitions. -->",
@@ -354,7 +354,7 @@ class CopilotAdapter(ProviderAdapter):
         """
         try:
             content = agent_md_path.read_text(encoding="utf-8")
-        except IOError:
+        except OSError:
             return ""
 
         # Derive a section name from the parent directory

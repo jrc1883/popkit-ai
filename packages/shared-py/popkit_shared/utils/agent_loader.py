@@ -14,7 +14,7 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 from .embedding_store import EmbeddingStore
 from .voyage_client import embed
@@ -35,7 +35,7 @@ ERROR_PATTERN_SIMILARITY = 0.65
 PATTERN_BOOST = 0.1
 
 # Hardcoded fallback keyword map (used when routing_config.json is missing)
-_FALLBACK_KEYWORD_MAP: Dict[str, List[str]] = {
+_FALLBACK_KEYWORD_MAP: dict[str, list[str]] = {
     "bug": ["bug-whisperer"],
     "debug": ["bug-whisperer"],
     "crash": ["bug-whisperer"],
@@ -86,7 +86,7 @@ _FALLBACK_KEYWORD_MAP: Dict[str, List[str]] = {
 }
 
 # Tier assignments for all 24 agents
-TIER_MAP: Dict[str, str] = {
+TIER_MAP: dict[str, str] = {
     # Tier 1 (always active)
     "accessibility-guardian": "tier-1-always-active",
     "api-designer": "tier-1-always-active",
@@ -117,7 +117,7 @@ TIER_MAP: Dict[str, str] = {
 }
 
 
-def _load_routing_config(config_path: Optional[Path] = None) -> Optional[Dict[str, Any]]:
+def _load_routing_config(config_path: Path | None = None) -> dict[str, Any] | None:
     """
     Load routing configuration from JSON file.
 
@@ -158,7 +158,7 @@ class AgentLoader:
         self,
         use_embeddings: bool = True,
         always_include_tier1: bool = True,
-        config_path: Optional[Path] = None,
+        config_path: Path | None = None,
     ):
         """
         Initialize agent loader.
@@ -175,7 +175,7 @@ class AgentLoader:
         if use_embeddings:
             self.store = EmbeddingStore()
 
-    def load(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
+    def load(self, query: str, top_k: int = 5) -> list[dict[str, Any]]:
         """
         Load top relevant agents for a query.
 
@@ -211,7 +211,7 @@ class AgentLoader:
     # FILE PATTERN MATCHING
     # =========================================================================
 
-    def _match_file_patterns(self, file_paths: List[str]) -> List[Dict[str, Any]]:
+    def _match_file_patterns(self, file_paths: list[str]) -> list[dict[str, Any]]:
         """
         Match file paths against agent file pattern configuration.
 
@@ -232,7 +232,7 @@ class AgentLoader:
         if not file_patterns_map:
             return []
 
-        matched_agents: Dict[str, Dict[str, Any]] = {}
+        matched_agents: dict[str, dict[str, Any]] = {}
 
         for file_path in file_paths:
             # Normalize: use forward slashes and get basename for simple matching
@@ -262,7 +262,7 @@ class AgentLoader:
     # ERROR PATTERN MATCHING
     # =========================================================================
 
-    def _match_error_patterns(self, query: str) -> List[Dict[str, Any]]:
+    def _match_error_patterns(self, query: str) -> list[dict[str, Any]]:
         """
         Scan query text for error patterns that indicate specific agent expertise.
 
@@ -283,7 +283,7 @@ class AgentLoader:
         if not error_patterns_map:
             return []
 
-        matched_agents: Dict[str, Dict[str, Any]] = {}
+        matched_agents: dict[str, dict[str, Any]] = {}
 
         for agent_name, patterns in error_patterns_map.items():
             if not isinstance(patterns, list):
@@ -312,7 +312,7 @@ class AgentLoader:
     # =========================================================================
 
     @staticmethod
-    def _extract_file_paths(query: str) -> List[str]:
+    def _extract_file_paths(query: str) -> list[str]:
         """
         Extract file paths from a query string.
 
@@ -327,7 +327,7 @@ class AgentLoader:
         Returns:
             List of extracted file path strings
         """
-        paths: List[str] = []
+        paths: list[str] = []
 
         # Match paths with extensions (word chars, slashes, dots, hyphens)
         path_pattern = r"(?:[\w./\\-]+\.[\w.]+)"
@@ -355,7 +355,7 @@ class AgentLoader:
     # KEYWORD MATCHING (ENHANCED)
     # =========================================================================
 
-    def _match_keywords(self, query: str) -> List[Dict[str, Any]]:
+    def _match_keywords(self, query: str) -> list[dict[str, Any]]:
         """
         Match query against keyword configuration.
 
@@ -378,7 +378,7 @@ class AgentLoader:
             keywords_config = self.routing_config.get("keywords", {})
             # Config format: agent_name -> [keywords]
             # Convert to keyword -> [agents] for matching
-            keyword_to_agents: Dict[str, List[str]] = {}
+            keyword_to_agents: dict[str, list[str]] = {}
             for agent_name, agent_keywords in keywords_config.items():
                 if not isinstance(agent_keywords, list):
                     agent_keywords = [agent_keywords]
@@ -392,7 +392,7 @@ class AgentLoader:
             for kw, agents in _FALLBACK_KEYWORD_MAP.items():
                 keyword_to_agents[kw.lower()] = agents
 
-        matched_agents: Dict[str, Dict[str, Any]] = {}
+        matched_agents: dict[str, dict[str, Any]] = {}
 
         for keyword, agents in keyword_to_agents.items():
             # Multi-word keywords: check if phrase appears in query
@@ -428,8 +428,8 @@ class AgentLoader:
 
     @staticmethod
     def _merge_results(
-        *result_lists: List[Dict[str, Any]],
-    ) -> List[Dict[str, Any]]:
+        *result_lists: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
         """
         Merge multiple result lists, keeping the highest similarity per agent.
 
@@ -443,7 +443,7 @@ class AgentLoader:
         Returns:
             Merged and deduplicated list, sorted by similarity descending
         """
-        merged: Dict[str, Dict[str, Any]] = {}
+        merged: dict[str, dict[str, Any]] = {}
 
         for results in result_lists:
             for agent in results:
@@ -473,7 +473,7 @@ class AgentLoader:
     # MAIN LOADING METHODS
     # =========================================================================
 
-    def _load_with_embeddings(self, query: str, top_k: int) -> List[Dict[str, Any]]:
+    def _load_with_embeddings(self, query: str, top_k: int) -> list[dict[str, Any]]:
         """
         Load agents using semantic search, boosted by pattern matches.
 
@@ -490,7 +490,7 @@ class AgentLoader:
         )
 
         # Convert to agent dicts
-        embedding_agents: List[Dict[str, Any]] = []
+        embedding_agents: list[dict[str, Any]] = []
         for result in results:
             embedding_agents.append(
                 {
@@ -508,7 +508,7 @@ class AgentLoader:
         error_matches = self._match_error_patterns(query)
 
         # Apply boost to embedding results that also match patterns
-        pattern_agent_ids: Set[str] = set()
+        pattern_agent_ids: set[str] = set()
         for match in file_matches + error_matches:
             pattern_agent_ids.add(match["agent_id"])
 
@@ -525,7 +525,7 @@ class AgentLoader:
 
         return agents[:top_k]
 
-    def _load_with_keywords(self, query: str, top_k: int) -> List[Dict[str, Any]]:
+    def _load_with_keywords(self, query: str, top_k: int) -> list[dict[str, Any]]:
         """
         Fallback: Load agents using keyword, file pattern, and error pattern matching.
 
@@ -558,8 +558,8 @@ class AgentLoader:
         return agents[:top_k]
 
     def _ensure_tier1_agents(
-        self, agents: List[Dict[str, Any]], top_k: int
-    ) -> List[Dict[str, Any]]:
+        self, agents: list[dict[str, Any]], top_k: int
+    ) -> list[dict[str, Any]]:
         """Ensure at least 3 Tier 1 agents are included."""
         tier1_agents = [a for a in agents if a["tier"] == "tier-1-always-active"]
 
@@ -595,7 +595,7 @@ class AgentLoader:
         return agents
 
 
-def load_relevant_agents(query: str, top_k: int = 5) -> List[Dict[str, Any]]:
+def load_relevant_agents(query: str, top_k: int = 5) -> list[dict[str, Any]]:
     """
     Load relevant agents for a query (convenience function).
 

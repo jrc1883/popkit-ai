@@ -11,12 +11,12 @@ These utilities create properly-formatted message objects for:
 Part of the popkit plugin stateless hook architecture.
 """
 
-from typing import Any, Dict, List, Union
+from typing import Any, Union
 
 # Type aliases for clarity
-Content = Union[str, List[Dict[str, Any]]]
-Message = Dict[str, Any]
-ContentBlock = Dict[str, Any]
+Content = Union[str, list[dict[str, Any]]]
+Message = dict[str, Any]
+ContentBlock = dict[str, Any]
 
 
 # =============================================================================
@@ -64,7 +64,7 @@ def build_assistant_message(content: Content) -> Message:
 # =============================================================================
 
 
-def build_tool_use_message(tool_use_id: str, name: str, input: Dict[str, Any]) -> Message:
+def build_tool_use_message(tool_use_id: str, name: str, input: dict[str, Any]) -> Message:
     """Create an assistant message containing a tool use block.
 
     This represents Claude deciding to use a tool. The message has role
@@ -149,7 +149,7 @@ def build_tool_result_message(tool_use_id: str, content: str, is_error: bool = F
 # =============================================================================
 
 
-def compose_conversation(messages: List[Message]) -> List[Message]:
+def compose_conversation(messages: list[Message]) -> list[Message]:
     """Compose a list of messages into a valid conversation.
 
     This function validates and returns the messages as a conversation array.
@@ -183,7 +183,7 @@ def compose_conversation(messages: List[Message]) -> List[Message]:
 # =============================================================================
 
 
-def merge_tool_uses(tool_uses: List[Dict[str, Any]]) -> Message:
+def merge_tool_uses(tool_uses: list[dict[str, Any]]) -> Message:
     """Merge multiple tool uses into a single assistant message.
 
     When Claude makes parallel tool calls, they should be in a single
@@ -221,7 +221,7 @@ def merge_tool_uses(tool_uses: List[Dict[str, Any]]) -> Message:
     return {"role": "assistant", "content": content}
 
 
-def merge_tool_results(results: List[Dict[str, Any]]) -> Message:
+def merge_tool_results(results: list[dict[str, Any]]) -> Message:
     """Merge multiple tool results into a single user message.
 
     When responding to parallel tool calls, all results should be in
@@ -259,7 +259,7 @@ def merge_tool_results(results: List[Dict[str, Any]]) -> Message:
     return {"role": "user", "content": content}
 
 
-def extract_tool_use(message: Message) -> List[Dict[str, Any]]:
+def extract_tool_use(message: Message) -> list[dict[str, Any]]:
     """Extract tool use information from an assistant message.
 
     Args:
@@ -289,7 +289,7 @@ def extract_tool_use(message: Message) -> List[Dict[str, Any]]:
     return tool_uses
 
 
-def rebuild_from_history(history: Dict[str, Any]) -> List[Message]:
+def rebuild_from_history(history: dict[str, Any]) -> list[Message]:
     """Rebuild complete message array from a history dict.
 
     This enables stateless operation - given a history dict,
@@ -313,7 +313,7 @@ def rebuild_from_history(history: Dict[str, Any]) -> List[Message]:
         >>> rebuild_from_history(history)
         [user_message, tool_use_message, tool_result_message]
     """
-    messages: List[Message] = []
+    messages: list[Message] = []
 
     # User's original prompt
     if "user_prompt" in history and history["user_prompt"]:
@@ -351,7 +351,7 @@ def build_text_block(text: str) -> ContentBlock:
     return {"type": "text", "text": text}
 
 
-def build_tool_use_block(tool_use_id: str, name: str, input: Dict[str, Any]) -> ContentBlock:
+def build_tool_use_block(tool_use_id: str, name: str, input: dict[str, Any]) -> ContentBlock:
     """Create a tool_use content block.
 
     Args:

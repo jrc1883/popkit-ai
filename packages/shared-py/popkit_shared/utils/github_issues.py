@@ -16,14 +16,14 @@ import re
 import subprocess
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # =============================================================================
 # Issue Parsing - PopKit Guidance Section
 # =============================================================================
 
 
-def fetch_issue(issue_number: int) -> Optional[Dict[str, Any]]:
+def fetch_issue(issue_number: int) -> dict[str, Any] | None:
     """Fetch issue details from GitHub.
 
     Args:
@@ -55,7 +55,7 @@ def fetch_issue(issue_number: int) -> Optional[Dict[str, Any]]:
         return None
 
 
-def parse_popkit_guidance(issue_body: str) -> Dict[str, Any]:
+def parse_popkit_guidance(issue_body: str) -> dict[str, Any]:
     """Parse PopKit Guidance section from issue body.
 
     Extracts workflow configuration from the structured PopKit Guidance section
@@ -173,7 +173,7 @@ def parse_popkit_guidance(issue_body: str) -> Dict[str, Any]:
     return config
 
 
-def get_workflow_config(issue_number: int) -> Dict[str, Any]:
+def get_workflow_config(issue_number: int) -> dict[str, Any]:
     """Get complete workflow configuration for an issue.
 
     Fetches issue from GitHub and parses PopKit Guidance section.
@@ -281,7 +281,7 @@ def get_workflow_config(issue_number: int) -> Dict[str, Any]:
     return result
 
 
-def infer_issue_type(issue: Dict[str, Any]) -> str:
+def infer_issue_type(issue: dict[str, Any]) -> str:
     """Infer issue type from title and labels.
 
     Args:
@@ -316,7 +316,7 @@ def infer_issue_type(issue: Dict[str, Any]) -> str:
     return "unknown"
 
 
-def get_agents_for_issue_type(issue_type: str) -> Dict[str, List[str]]:
+def get_agents_for_issue_type(issue_type: str) -> dict[str, list[str]]:
     """Get suggested agents based on issue type.
 
     Args:
@@ -341,7 +341,7 @@ def get_agents_for_issue_type(issue_type: str) -> Dict[str, List[str]]:
     return agent_map.get(issue_type, agent_map["unknown"])
 
 
-def get_default_phases(issue_type: str) -> List[str]:
+def get_default_phases(issue_type: str) -> list[str]:
     """Get default phases based on issue type.
 
     Args:
@@ -367,7 +367,7 @@ def get_default_phases(issue_type: str) -> List[str]:
     return phase_map.get(issue_type, phase_map["unknown"])
 
 
-def infer_complexity(issue: Dict[str, Any]) -> str:
+def infer_complexity(issue: dict[str, Any]) -> str:
     """Infer complexity from issue labels and content.
 
     Args:
@@ -408,7 +408,7 @@ def infer_complexity(issue: Dict[str, Any]) -> str:
     return "medium"
 
 
-def generate_orchestration_plan(issue: Dict[str, Any]) -> Dict[str, Any]:
+def generate_orchestration_plan(issue: dict[str, Any]) -> dict[str, Any]:
     """Auto-generate orchestration plan when issue lacks PopKit Guidance.
 
     Analyzes the issue to infer type, complexity, phases, and agents.
@@ -646,7 +646,7 @@ def save_lesson_locally(lesson: dict, status_file: Path = None) -> dict:
         # Load existing status
         status = {}
         if status_file.exists():
-            with open(status_file, "r", encoding="utf-8") as f:
+            with open(status_file, encoding="utf-8") as f:
                 status = json.load(f)
 
         # Initialize lessons_learned if not present
@@ -689,7 +689,7 @@ def save_error_locally(error: dict, status_file: Path = None) -> dict:
         # Load existing status
         status = {}
         if status_file.exists():
-            with open(status_file, "r", encoding="utf-8") as f:
+            with open(status_file, encoding="utf-8") as f:
                 status = json.load(f)
 
         # Initialize error_log if not present

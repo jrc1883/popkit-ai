@@ -8,13 +8,14 @@ and spikes during development. Integrates with embeddings for semantic search.
 Part of PopKit Issue #142 (Research Index with Embeddings).
 """
 
+import builtins
 import json
 import os
 import re
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 # =============================================================================
 # CONFIGURATION
@@ -43,21 +44,21 @@ class ResearchEntry:
     content: str
     context: str = ""
     rationale: str = ""
-    alternatives: List[str] = field(default_factory=list)
-    tags: List[str] = field(default_factory=list)
+    alternatives: list[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
     project: str = ""
-    references: List[str] = field(default_factory=list)
-    related_entries: List[str] = field(default_factory=list)
+    references: list[str] = field(default_factory=list)
+    related_entries: list[str] = field(default_factory=list)
     created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
     updated_at: str = field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
-    embedding_id: Optional[str] = None
+    embedding_id: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> "ResearchEntry":
+    def from_dict(cls, d: dict[str, Any]) -> "ResearchEntry":
         """Create from dictionary."""
         # Handle snake_case vs camelCase
         if "createdAt" in d:
@@ -111,17 +112,17 @@ class IndexEntry:
     id: str
     type: str
     title: str
-    tags: List[str]
+    tags: list[str]
     project: str
     created_at: str
-    embedding_id: Optional[str] = None
+    embedding_id: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> "IndexEntry":
+    def from_dict(cls, d: dict[str, Any]) -> "IndexEntry":
         """Create from dictionary."""
         if "createdAt" in d:
             d["created_at"] = d.pop("createdAt")
@@ -140,11 +141,11 @@ class ResearchIndex:
 
     version: str = INDEX_VERSION
     last_updated: str = field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
-    entries: List[IndexEntry] = field(default_factory=list)
-    tag_index: Dict[str, List[str]] = field(default_factory=dict)
-    project_index: Dict[str, List[str]] = field(default_factory=dict)
+    entries: list[IndexEntry] = field(default_factory=list)
+    tag_index: dict[str, list[str]] = field(default_factory=dict)
+    project_index: dict[str, list[str]] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "version": self.version,
@@ -155,7 +156,7 @@ class ResearchIndex:
         }
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> "ResearchIndex":
+    def from_dict(cls, d: dict[str, Any]) -> "ResearchIndex":
         """Create from dictionary."""
         return cls(
             version=d.get("version", INDEX_VERSION),
@@ -175,7 +176,7 @@ class SearchResult:
     rank: int = 0
     match_type: str = "semantic"  # semantic, keyword, tag
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "entry": self.entry.to_dict(),
@@ -201,7 +202,7 @@ class ResearchIndexManager:
     - Keyword/tag search fallback
     """
 
-    def __init__(self, project_root: Optional[str] = None):
+    def __init__(self, project_root: str | None = None):
         """
         Initialize the research index manager.
 
@@ -227,7 +228,7 @@ class ResearchIndexManager:
         """Load index from disk or create new one."""
         if self.index_path.exists():
             try:
-                with open(self.index_path, "r", encoding="utf-8") as f:
+                with open(self.index_path, encoding="utf-8") as f:
                     data = json.load(f)
                 return ResearchIndex.from_dict(data)
             except (json.JSONDecodeError, KeyError):
@@ -333,7 +334,7 @@ class ResearchIndexManager:
 
         return entry.id
 
-    def get(self, entry_id: str) -> Optional[ResearchEntry]:
+    def get(self, entry_id: str) -> ResearchEntry | None:
         """
         Get a research entry by ID.
 
@@ -347,7 +348,7 @@ class ResearchIndexManager:
         if not entry_path.exists():
             return None
 
-        with open(entry_path, "r", encoding="utf-8") as f:
+        with open(entry_path, encoding="utf-8") as f:
             data = json.load(f)
 
         return ResearchEntry.from_dict(data)
@@ -432,11 +433,11 @@ class ResearchIndexManager:
 
     def list(
         self,
-        entry_type: Optional[str] = None,
-        project: Optional[str] = None,
-        tag: Optional[str] = None,
+        entry_type: str | None = None,
+        project: str | None = None,
+        tag: str | None = None,
         limit: int = 20,
-    ) -> List[IndexEntry]:
+    ) -> list[IndexEntry]:
         """
         List research entries with optional filters.
 
@@ -469,7 +470,7 @@ class ResearchIndexManager:
 
         return entries[:limit]
 
-    def list_tags(self) -> Dict[str, int]:
+    def list_tags(self) -> dict[str, int]:
         """
         List all tags with counts.
 
@@ -478,7 +479,7 @@ class ResearchIndexManager:
         """
         return {tag: len(ids) for tag, ids in self._index.tag_index.items()}
 
-    def list_projects(self) -> Dict[str, int]:
+    def list_projects(self) -> dict[str, int]:
         """
         List all projects with counts.
 
@@ -494,10 +495,10 @@ class ResearchIndexManager:
     def search_keywords(
         self,
         query: str,
-        entry_type: Optional[str] = None,
-        project: Optional[str] = None,
+        entry_type: str | None = None,
+        project: str | None = None,
         limit: int = 5,
-    ) -> List[SearchResult]:
+    ) -> builtins.list[SearchResult]:
         """
         Search entries by keywords (fallback when embeddings unavailable).
 
@@ -556,11 +557,11 @@ class ResearchIndexManager:
 
     def search_tags(
         self,
-        tags: List[str],
-        entry_type: Optional[str] = None,
-        project: Optional[str] = None,
+        tags: builtins.list[str],
+        entry_type: str | None = None,
+        project: str | None = None,
         limit: int = 5,
-    ) -> List[SearchResult]:
+    ) -> builtins.list[SearchResult]:
         """
         Search entries by tags.
 
@@ -612,11 +613,11 @@ class ResearchIndexManager:
     def search_semantic(
         self,
         query: str,
-        entry_type: Optional[str] = None,
-        project: Optional[str] = None,
+        entry_type: str | None = None,
+        project: str | None = None,
         limit: int = 5,
         min_similarity: float = 0.6,
-    ) -> List[SearchResult]:
+    ) -> builtins.list[SearchResult]:
         """
         Search entries semantically using embeddings.
 
@@ -696,7 +697,7 @@ class ResearchIndexManager:
     # TAG MANAGEMENT
     # =========================================================================
 
-    def add_tags(self, entry_id: str, tags: List[str]) -> bool:
+    def add_tags(self, entry_id: str, tags: builtins.list[str]) -> bool:
         """
         Add tags to an entry.
 
@@ -719,7 +720,7 @@ class ResearchIndexManager:
 
         return self.update(entry)
 
-    def remove_tags(self, entry_id: str, tags: List[str]) -> bool:
+    def remove_tags(self, entry_id: str, tags: builtins.list[str]) -> bool:
         """
         Remove tags from an entry.
 
@@ -739,7 +740,7 @@ class ResearchIndexManager:
 
         return self.update(entry)
 
-    def set_tags(self, entry_id: str, tags: List[str]) -> bool:
+    def set_tags(self, entry_id: str, tags: builtins.list[str]) -> bool:
         """
         Set tags for an entry (replaces existing).
 
@@ -761,7 +762,7 @@ class ResearchIndexManager:
     # STATISTICS
     # =========================================================================
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> dict[str, Any]:
         """
         Get research index statistics.
 
@@ -785,7 +786,7 @@ class ResearchIndexManager:
     # EMBEDDING MANAGEMENT
     # =========================================================================
 
-    def embed_entry(self, entry_id: str, force: bool = False) -> Optional[str]:
+    def embed_entry(self, entry_id: str, force: bool = False) -> str | None:
         """
         Generate and store embedding for an entry.
 
@@ -849,7 +850,7 @@ class ResearchIndexManager:
         except Exception:
             return None
 
-    def embed_all(self, force: bool = False) -> Tuple[int, int]:
+    def embed_all(self, force: bool = False) -> tuple[int, int]:
         """
         Embed all entries that don't have embeddings.
 
@@ -880,7 +881,7 @@ class ResearchIndexManager:
 # =============================================================================
 
 
-def extract_keywords(text: str) -> List[str]:
+def extract_keywords(text: str) -> list[str]:
     """
     Extract keywords from text for auto-tagging.
 
@@ -957,7 +958,7 @@ def extract_keywords(text: str) -> List[str]:
     return found[:5]  # Limit to 5 tags
 
 
-def get_research_manager(project_root: Optional[str] = None) -> ResearchIndexManager:
+def get_research_manager(project_root: str | None = None) -> ResearchIndexManager:
     """
     Get a research index manager instance.
 

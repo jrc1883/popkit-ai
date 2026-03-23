@@ -26,7 +26,7 @@ Usage:
 
 from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class ComplexityLevel(Enum):
@@ -68,12 +68,12 @@ class ComplexityAnalysis:
     complexity_score: int  # 1-10 final score
     complexity_level: str  # TRIVIAL, SIMPLE, etc.
     recommended_subtasks: int  # Suggested subtask count
-    phase_distribution: Dict[str, int]  # Phase breakdown
-    risk_factors: List[str]  # Risk categories
+    phase_distribution: dict[str, int]  # Phase breakdown
+    risk_factors: list[str]  # Risk categories
     reasoning: str  # Human-readable explanation
     factors: ComplexityFactors  # Detailed factor breakdown
-    estimated_tokens: Dict[str, int]  # Token usage estimates
-    suggested_agents: List[str]  # Recommended agents
+    estimated_tokens: dict[str, int]  # Token usage estimates
+    suggested_agents: list[str]  # Recommended agents
 
     def to_dict(self) -> dict:
         return {
@@ -142,7 +142,7 @@ class ComplexityAnalyzer:
         (9, 10): ["code-architect", "system-designer", "tech-lead", "security-auditor"],
     }
 
-    def __init__(self, weights: Optional[Dict[str, float]] = None):
+    def __init__(self, weights: dict[str, float] | None = None):
         """
         Initialize complexity analyzer.
 
@@ -152,7 +152,7 @@ class ComplexityAnalyzer:
         self.weights = weights or self.DEFAULT_WEIGHTS.copy()
 
     def analyze(
-        self, task_description: str, metadata: Optional[Dict[str, Any]] = None
+        self, task_description: str, metadata: dict[str, Any] | None = None
     ) -> ComplexityAnalysis:
         """
         Analyze task complexity and provide recommendations.
@@ -200,7 +200,7 @@ class ComplexityAnalyzer:
             suggested_agents=suggested_agents,
         )
 
-    def _extract_factors(self, description: str, metadata: Dict[str, Any]) -> ComplexityFactors:
+    def _extract_factors(self, description: str, metadata: dict[str, Any]) -> ComplexityFactors:
         """Extract complexity factors from description and metadata."""
         desc_lower = description.lower()
 
@@ -319,7 +319,7 @@ class ComplexityAnalyzer:
 
         return count
 
-    def _score_keywords(self, text: str, keywords: List[str]) -> float:
+    def _score_keywords(self, text: str, keywords: list[str]) -> float:
         """Score presence of keywords (0-100)."""
         matches = sum(1 for keyword in keywords if keyword in text)
         if matches == 0:
@@ -394,7 +394,7 @@ class ComplexityAnalyzer:
         # Return middle of range
         return (min_tasks + max_tasks) // 2
 
-    def _recommend_phases(self, complexity: int) -> Dict[str, int]:
+    def _recommend_phases(self, complexity: int) -> dict[str, int]:
         """Recommend phase distribution based on complexity."""
         if complexity <= 2:
             # Trivial: minimal phases
@@ -428,7 +428,7 @@ class ComplexityAnalyzer:
                 "documentation": 1,
             }
 
-    def _identify_risks(self, description: str, factors: ComplexityFactors) -> List[str]:
+    def _identify_risks(self, description: str, factors: ComplexityFactors) -> list[str]:
         """Identify risk factors."""
         risks = []
         desc_lower = description.lower()
@@ -448,7 +448,7 @@ class ComplexityAnalyzer:
 
         return risks
 
-    def _estimate_tokens(self, complexity: int) -> Dict[str, int]:
+    def _estimate_tokens(self, complexity: int) -> dict[str, int]:
         """Estimate token usage based on complexity."""
         # Base token estimates for different task types
         if complexity <= 2:
@@ -483,7 +483,7 @@ class ComplexityAnalyzer:
                 "total": 135000,
             }
 
-    def _suggest_agents(self, complexity: int) -> List[str]:
+    def _suggest_agents(self, complexity: int) -> list[str]:
         """Suggest appropriate agents based on complexity."""
         for (min_complexity, max_complexity), agents in self.AGENT_MAPPING.items():
             if min_complexity <= complexity <= max_complexity:
@@ -535,7 +535,7 @@ class ComplexityAnalyzer:
 # Convenience Functions
 # =============================================================================
 
-_analyzer: Optional[ComplexityAnalyzer] = None
+_analyzer: ComplexityAnalyzer | None = None
 
 
 def get_complexity_analyzer() -> ComplexityAnalyzer:
@@ -547,8 +547,8 @@ def get_complexity_analyzer() -> ComplexityAnalyzer:
 
 
 def analyze_complexity(
-    task_description: str, metadata: Optional[Dict[str, Any]] = None
-) -> Dict[str, Any]:
+    task_description: str, metadata: dict[str, Any] | None = None
+) -> dict[str, Any]:
     """
     Analyze task complexity (convenience function).
 

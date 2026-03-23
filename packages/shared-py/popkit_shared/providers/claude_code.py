@@ -12,7 +12,6 @@ Part of the PopKit v2.0 provider-agnostic architecture.
 import json
 import os
 from pathlib import Path
-from typing import List, Optional
 
 from .base import ProviderAdapter, ProviderInfo, ToolMapping
 from .tool_mapping import CLAUDE_CODE_MAPPINGS
@@ -63,7 +62,7 @@ class ClaudeCodeAdapter(ProviderAdapter):
             is_available=has_env or has_settings,
         )
 
-    def generate_config(self, package_dir: Path, output_dir: Path) -> List[Path]:
+    def generate_config(self, package_dir: Path, output_dir: Path) -> list[Path]:
         """Generate Claude Code config (mostly passthrough).
 
         Claude Code reads .claude-plugin/plugin.json directly from
@@ -81,7 +80,7 @@ class ClaudeCodeAdapter(ProviderAdapter):
         # The install() method handles symlinking
         return []
 
-    def get_tool_mappings(self) -> List[ToolMapping]:
+    def get_tool_mappings(self) -> list[ToolMapping]:
         """Get Claude Code tool mappings."""
         return CLAUDE_CODE_MAPPINGS
 
@@ -134,14 +133,14 @@ class ClaudeCodeAdapter(ProviderAdapter):
 
         return False
 
-    def _detect_version(self) -> Optional[str]:
+    def _detect_version(self) -> str | None:
         """Try to detect Claude Code version from settings or env."""
         try:
             settings_path = Path.home() / ".claude" / "settings.json"
             if settings_path.is_file():
-                with open(settings_path, "r", encoding="utf-8") as f:
+                with open(settings_path, encoding="utf-8") as f:
                     settings = json.load(f)
                 return settings.get("version")
-        except (json.JSONDecodeError, IOError):
+        except (OSError, json.JSONDecodeError):
             pass  # Version detection is best-effort; settings may not exist or be readable
         return None

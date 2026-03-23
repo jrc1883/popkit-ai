@@ -28,7 +28,7 @@ import sys
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # Conventional commit type to display name mapping with emojis
 COMMIT_TYPES = {
@@ -76,7 +76,7 @@ class ChangelogGenerator:
     def __init__(self, project_root: Path = None):
         self.project_root = project_root or Path.cwd()
 
-    def run_git(self, args: List[str]) -> str:
+    def run_git(self, args: list[str]) -> str:
         """Run a git command and return output."""
         try:
             result = subprocess.run(
@@ -90,7 +90,7 @@ class ChangelogGenerator:
         except Exception:
             return ""
 
-    def get_latest_tag(self) -> Optional[str]:
+    def get_latest_tag(self) -> str | None:
         """Get the most recent version tag."""
         # Try to get tags that look like versions
         tags = self.run_git(["tag", "-l", "v*", "--sort=-v:refname"])
@@ -98,7 +98,7 @@ class ChangelogGenerator:
             return tags.split("\n")[0]
         return None
 
-    def get_commits_since(self, since_ref: str = None) -> List[Dict[str, Any]]:
+    def get_commits_since(self, since_ref: str = None) -> list[dict[str, Any]]:
         """Get commits since a reference (tag or commit)."""
         if since_ref:
             range_spec = f"{since_ref}..HEAD"
@@ -133,7 +133,7 @@ class ChangelogGenerator:
 
         return commits
 
-    def parse_commit(self, subject: str, body: str = "") -> Optional[Dict[str, Any]]:
+    def parse_commit(self, subject: str, body: str = "") -> dict[str, Any] | None:
         """Parse a conventional commit message."""
         # Check for breaking change first
         is_breaking = "BREAKING CHANGE" in body or "BREAKING CHANGE:" in subject.upper()
@@ -171,21 +171,21 @@ class ChangelogGenerator:
             "breaking": is_breaking,
         }
 
-    def extract_issues(self, text: str) -> List[int]:
+    def extract_issues(self, text: str) -> list[int]:
         """Extract issue/PR numbers from text."""
         # Match #N patterns
         pattern = r"#(\d+)"
         matches = re.findall(pattern, text)
         return sorted(set(int(m) for m in matches))
 
-    def group_commits(self, commits: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
+    def group_commits(self, commits: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
         """Group commits by type."""
         groups = defaultdict(list)
         for commit in commits:
             groups[commit["type"]].append(commit)
         return dict(groups)
 
-    def determine_version_bump(self, commits: List[Dict[str, Any]]) -> str:
+    def determine_version_bump(self, commits: list[dict[str, Any]]) -> str:
         """
         Determine semantic version bump based on commit types.
 
@@ -447,7 +447,7 @@ class ChangelogGenerator:
 
         return "\n".join(lines)
 
-    def format_issue_ranges(self, issues: List[int]) -> str:
+    def format_issue_ranges(self, issues: list[int]) -> str:
         """Format issue numbers, using ranges where consecutive."""
         if not issues:
             return ""
@@ -501,13 +501,13 @@ _No unreleased changes yet._
             try:
                 changelog.write_text(content, encoding="utf-8")
                 return True
-            except IOError:
+            except OSError:
                 return False
         else:
             # Update existing CHANGELOG.md
             try:
                 content = changelog.read_text(encoding="utf-8")
-            except IOError:
+            except OSError:
                 return False
 
             # Find where to insert (after [Unreleased] section and ---)
@@ -522,7 +522,7 @@ _No unreleased changes yet._
                 try:
                     changelog.write_text(updated, encoding="utf-8")
                     return True
-                except IOError:
+                except OSError:
                     return False
             else:
                 # Fallback: insert after first line
@@ -532,7 +532,7 @@ _No unreleased changes yet._
                     try:
                         changelog.write_text(updated, encoding="utf-8")
                         return True
-                    except IOError:
+                    except OSError:
                         return False
 
         return False
@@ -545,7 +545,7 @@ _No unreleased changes yet._
 
         try:
             content = claude_md.read_text(encoding="utf-8")
-        except IOError:
+        except OSError:
             return False
 
         # Generate new entry (old format for CLAUDE.md)
@@ -573,7 +573,7 @@ _No unreleased changes yet._
             try:
                 claude_md.write_text(updated, encoding="utf-8")
                 return True
-            except IOError:
+            except OSError:
                 return False
 
         return False
@@ -591,7 +591,7 @@ _No unreleased changes yet._
         try:
             output_path.write_text(release_notes, encoding="utf-8")
             return True
-        except IOError:
+        except OSError:
             return False
 
     def to_json(self, version: str = None, since_ref: str = None) -> str:

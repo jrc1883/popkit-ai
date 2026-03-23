@@ -17,7 +17,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime
 from enum import IntEnum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class FeedbackRating(IntEnum):
@@ -46,12 +46,12 @@ class FeedbackEntry:
     id: str
     rating: int
     context_type: str
-    context_id: Optional[str]
-    agent_name: Optional[str]
-    command_name: Optional[str]
-    workflow_phase: Optional[str]
-    user_comment: Optional[str]
-    session_id: Optional[str]
+    context_id: str | None
+    agent_name: str | None
+    command_name: str | None
+    workflow_phase: str | None
+    user_comment: str | None
+    session_id: str | None
     tool_call_count: int  # Tool calls since last feedback
     created_at: str
 
@@ -68,7 +68,7 @@ class FeedbackAggregate:
     context_id: str
     avg_rating: float
     total_count: int
-    rating_distribution: Dict[int, int]
+    rating_distribution: dict[int, int]
     updated_at: str
 
 
@@ -82,7 +82,7 @@ class FeedbackStore:
     MIN_TOOL_CALLS_BETWEEN_FEEDBACK = 10
     MAX_DISMISSED_BEFORE_PAUSE = 3
 
-    def __init__(self, db_path: Optional[Path] = None):
+    def __init__(self, db_path: Path | None = None):
         """
         Initialize the feedback store.
 
@@ -203,12 +203,12 @@ class FeedbackStore:
         self,
         rating: int,
         context_type: str,
-        context_id: Optional[str] = None,
-        agent_name: Optional[str] = None,
-        command_name: Optional[str] = None,
-        workflow_phase: Optional[str] = None,
-        user_comment: Optional[str] = None,
-        session_id: Optional[str] = None,
+        context_id: str | None = None,
+        agent_name: str | None = None,
+        command_name: str | None = None,
+        workflow_phase: str | None = None,
+        user_comment: str | None = None,
+        session_id: str | None = None,
         tool_call_count: int = 0,
     ) -> FeedbackEntry:
         """
@@ -321,7 +321,7 @@ class FeedbackStore:
                 ),
             )
 
-    def get_feedback(self, feedback_id: str) -> Optional[FeedbackEntry]:
+    def get_feedback(self, feedback_id: str) -> FeedbackEntry | None:
         """Get a feedback entry by ID"""
         with self._get_connection() as conn:
             row = conn.execute(
@@ -354,12 +354,12 @@ class FeedbackStore:
     def list_feedback(
         self,
         limit: int = 50,
-        context_type: Optional[str] = None,
-        agent_name: Optional[str] = None,
-        min_rating: Optional[int] = None,
-        max_rating: Optional[int] = None,
-        session_id: Optional[str] = None,
-    ) -> List[FeedbackEntry]:
+        context_type: str | None = None,
+        agent_name: str | None = None,
+        min_rating: int | None = None,
+        max_rating: int | None = None,
+        session_id: str | None = None,
+    ) -> list[FeedbackEntry]:
         """List feedback entries with optional filters"""
         query = "SELECT * FROM feedback"
         params = []
@@ -395,7 +395,7 @@ class FeedbackStore:
             rows = conn.execute(query, params).fetchall()
             return [self._row_to_feedback(row) for row in rows]
 
-    def get_aggregate(self, context_type: str, context_id: str) -> Optional[FeedbackAggregate]:
+    def get_aggregate(self, context_type: str, context_id: str) -> FeedbackAggregate | None:
         """Get aggregated feedback for a context"""
         with self._get_connection() as conn:
             row = conn.execute(
@@ -424,7 +424,7 @@ class FeedbackStore:
 
     def get_low_rated_items(
         self, max_avg_rating: float = 1.5, min_count: int = 3
-    ) -> List[FeedbackAggregate]:
+    ) -> list[FeedbackAggregate]:
         """Get items with low average ratings (for review)"""
         with self._get_connection() as conn:
             rows = conn.execute(
@@ -457,7 +457,7 @@ class FeedbackStore:
     # SESSION STATE (Feedback Fatigue Prevention)
     # =========================================================================
 
-    def get_or_create_session(self, session_id: str) -> Dict[str, Any]:
+    def get_or_create_session(self, session_id: str) -> dict[str, Any]:
         """Get or create session state for feedback tracking"""
         with self._get_connection() as conn:
             row = conn.execute(
@@ -625,7 +625,7 @@ class FeedbackStore:
     # STATISTICS
     # =========================================================================
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get overall feedback statistics"""
         with self._get_connection() as conn:
             total = conn.execute("SELECT COUNT(*) FROM feedback").fetchone()[0]
@@ -661,7 +661,7 @@ class FeedbackStore:
                 "feedback_enabled": self.is_feedback_enabled(),
             }
 
-    def get_agent_stats(self) -> List[Dict[str, Any]]:
+    def get_agent_stats(self) -> list[dict[str, Any]]:
         """Get feedback statistics per agent"""
         with self._get_connection() as conn:
             rows = conn.execute("""
@@ -707,7 +707,7 @@ class FeedbackStore:
 
         return len(feedback_list)
 
-    def delete_all_data(self) -> Dict[str, int]:
+    def delete_all_data(self) -> dict[str, int]:
         """Delete all feedback data (GDPR right to be forgotten)"""
         with self._get_connection() as conn:
             feedback_count = conn.execute("SELECT COUNT(*) FROM feedback").fetchone()[0]
@@ -726,7 +726,7 @@ class FeedbackStore:
 
 
 # Singleton instance
-_store: Optional[FeedbackStore] = None
+_store: FeedbackStore | None = None
 
 
 def get_feedback_store() -> FeedbackStore:

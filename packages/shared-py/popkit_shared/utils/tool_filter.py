@@ -8,20 +8,20 @@ Part of Phase 1: Tool Choice Enforcement.
 
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
-def load_agent_config() -> Dict[str, Any]:
+def load_agent_config() -> dict[str, Any]:
     """Load agent configuration with tool_choice settings."""
     config_path = Path(__file__).parent.parent.parent / "agents" / "config.json"
 
-    with open(config_path, "r", encoding="utf-8") as f:
+    with open(config_path, encoding="utf-8") as f:
         return json.load(f)
 
 
 def filter_tools_for_workflow(
-    workflow: str, available_tools: List[str], config: Optional[Dict[str, Any]] = None
-) -> List[str]:
+    workflow: str, available_tools: list[str], config: dict[str, Any] | None = None
+) -> list[str]:
     """
     Filter tools based on workflow requirements.
 
@@ -67,7 +67,7 @@ class ToolFilter:
         enabled: Whether filtering is active (can be disabled for debugging)
     """
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None, enabled: bool = True):
+    def __init__(self, config: dict[str, Any] | None = None, enabled: bool = True):
         """
         Initialize tool filter.
 
@@ -78,7 +78,7 @@ class ToolFilter:
         self.config = config or load_agent_config()
         self.enabled = enabled
 
-    def filter(self, workflow: str, available_tools: List[str]) -> List[str]:
+    def filter(self, workflow: str, available_tools: list[str]) -> list[str]:
         """
         Filter tools for a workflow.
 

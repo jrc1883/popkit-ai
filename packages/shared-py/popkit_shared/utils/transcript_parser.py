@@ -13,19 +13,19 @@ Claude's decision-making process and cost analysis.
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 @dataclass
 class AssistantMessage:
     """Represents an assistant message from the transcript"""
 
-    text_blocks: List[str]
-    thinking_blocks: List[str]
-    tool_uses: List[Dict[str, Any]]
-    usage: Dict[str, int]
+    text_blocks: list[str]
+    thinking_blocks: list[str]
+    tool_uses: list[dict[str, Any]]
+    usage: dict[str, int]
     message_id: str
-    timestamp: Optional[str] = None
+    timestamp: str | None = None
 
 
 @dataclass
@@ -46,7 +46,7 @@ class TokenUsage:
             + self.cache_read_input_tokens
         )
 
-    def to_dict(self) -> Dict[str, int]:
+    def to_dict(self) -> dict[str, int]:
         return {
             "input_tokens": self.input_tokens,
             "output_tokens": self.output_tokens,
@@ -73,12 +73,12 @@ class TranscriptParser:
     """
 
     def __init__(
-        self, transcript_path: str, start_time: Optional[str] = None, end_time: Optional[str] = None
+        self, transcript_path: str, start_time: str | None = None, end_time: str | None = None
     ):
         self.transcript_path = Path(transcript_path)
         self.start_time = start_time
         self.end_time = end_time
-        self.entries: List[Dict[str, Any]] = []
+        self.entries: list[dict[str, Any]] = []
         self._parse()
 
     def _parse(self):
@@ -110,7 +110,7 @@ class TranscriptParser:
                     print(f"Warning: Skipping malformed line {line_num}: {e}")
                     continue
 
-    def get_reasoning_before_tool(self, tool_use_id: str) -> Dict[str, Any]:
+    def get_reasoning_before_tool(self, tool_use_id: str) -> dict[str, Any]:
         """
         Get Claude's reasoning before a specific tool use
 
@@ -154,8 +154,8 @@ class TranscriptParser:
         return self._format_reasoning([], [])
 
     def _format_reasoning(
-        self, text_blocks: List[str], thinking_blocks: List[str]
-    ) -> Dict[str, Any]:
+        self, text_blocks: list[str], thinking_blocks: list[str]
+    ) -> dict[str, Any]:
         """Format reasoning blocks into a structured response"""
         combined_parts = []
 
@@ -172,7 +172,7 @@ class TranscriptParser:
             "combined": "\n\n".join(combined_parts) if combined_parts else "",
         }
 
-    def get_token_usage_for_tool(self, tool_use_id: str) -> Optional[TokenUsage]:
+    def get_token_usage_for_tool(self, tool_use_id: str) -> TokenUsage | None:
         """
         Get token usage for the message containing this tool use
 
@@ -218,7 +218,7 @@ class TranscriptParser:
 
         return total
 
-    def get_all_tool_uses(self) -> List[Dict[str, Any]]:
+    def get_all_tool_uses(self) -> list[dict[str, Any]]:
         """
         Extract all tool uses from the transcript
 
@@ -247,7 +247,7 @@ class TranscriptParser:
 
         return tool_uses
 
-    def get_assistant_messages(self) -> List[AssistantMessage]:
+    def get_assistant_messages(self) -> list[AssistantMessage]:
         """
         Get all assistant messages with their content
 

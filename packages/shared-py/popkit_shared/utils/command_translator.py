@@ -11,7 +11,6 @@ providing cross-platform equivalents for common operations.
 import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
 
 from .platform_detector import PlatformInfo, ShellType, get_platform_info
 
@@ -42,7 +41,7 @@ class CommandTranslation:
     target_shell: ShellType
     category: CommandCategory
     confidence: float  # 0.0 to 1.0
-    notes: Optional[str] = None
+    notes: str | None = None
     requires_quoting: bool = False
 
 
@@ -51,7 +50,7 @@ class CommandTranslator:
 
     # Command translation maps
     # Format: {category: {source_pattern: {target_shell: translation_template}}}
-    TRANSLATION_MAP: Dict[CommandCategory, Dict[str, Dict[ShellType, str]]] = {
+    TRANSLATION_MAP: dict[CommandCategory, dict[str, dict[ShellType, str]]] = {
         CommandCategory.FILE_COPY: {
             "cp": {
                 ShellType.CMD: "copy",
@@ -266,7 +265,7 @@ class CommandTranslator:
     ]
 
     @classmethod
-    def identify_command(cls, command: str) -> Tuple[CommandCategory, str, str]:
+    def identify_command(cls, command: str) -> tuple[CommandCategory, str, str]:
         """
         Identify a command's category and base form.
 
@@ -291,8 +290,8 @@ class CommandTranslator:
     def translate(
         cls,
         command: str,
-        target_shell: Optional[ShellType] = None,
-        source_shell: Optional[ShellType] = None,
+        target_shell: ShellType | None = None,
+        source_shell: ShellType | None = None,
     ) -> CommandTranslation:
         """
         Translate a command to the target shell.
@@ -450,7 +449,7 @@ class CommandTranslator:
         return any(c in args for c in special_chars)
 
     @classmethod
-    def get_all_translations(cls, command: str) -> Dict[ShellType, CommandTranslation]:
+    def get_all_translations(cls, command: str) -> dict[ShellType, CommandTranslation]:
         """
         Get translations for all shell types.
 
@@ -468,8 +467,8 @@ class CommandTranslator:
 
     @classmethod
     def suggest_for_error(
-        cls, command: str, error_message: str, platform_info: Optional[PlatformInfo] = None
-    ) -> Optional[CommandTranslation]:
+        cls, command: str, error_message: str, platform_info: PlatformInfo | None = None
+    ) -> CommandTranslation | None:
         """
         Suggest a translation based on an error message.
 
@@ -512,13 +511,13 @@ class CommandTranslator:
         return None
 
 
-def translate_command(command: str, target_shell: Optional[ShellType] = None) -> str:
+def translate_command(command: str, target_shell: ShellType | None = None) -> str:
     """Convenience function to translate a command"""
     result = CommandTranslator.translate(command, target_shell)
     return result.translated
 
 
-def get_translation_suggestions(command: str) -> List[str]:
+def get_translation_suggestions(command: str) -> list[str]:
     """Get all possible translations for a command"""
     translations = CommandTranslator.get_all_translations(command)
     return [t.translated for t in translations.values() if t.translated != command]

@@ -10,14 +10,14 @@ Part of the popkit plugin system.
 """
 
 import re
-from typing import Any, Dict, Optional
+from typing import Any
 
 # =============================================================================
 # Work Command Parser
 # =============================================================================
 
 
-def parse_work_args(args: str) -> Dict[str, Any]:
+def parse_work_args(args: str) -> dict[str, Any]:
     """Parse /popkit:work command arguments.
 
     Supported formats:
@@ -97,7 +97,7 @@ def parse_work_args(args: str) -> Dict[str, Any]:
 # =============================================================================
 
 
-def parse_issues_args(args: str) -> Dict[str, Any]:
+def parse_issues_args(args: str) -> dict[str, Any]:
     """Parse /popkit:issues command arguments.
 
     Supported formats:
@@ -160,7 +160,7 @@ def parse_issues_args(args: str) -> Dict[str, Any]:
 # =============================================================================
 
 
-def parse_power_args(args: str) -> Dict[str, Any]:
+def parse_power_args(args: str) -> dict[str, Any]:
     """Parse /popkit:power command arguments.
 
     Supported formats:
@@ -240,7 +240,7 @@ def parse_power_args(args: str) -> Dict[str, Any]:
 # =============================================================================
 
 
-def parse_thinking_flags(args: str) -> Dict[str, Any]:
+def parse_thinking_flags(args: str) -> dict[str, Any]:
     """Parse extended thinking flags from arguments.
 
     Supported flags:
@@ -291,7 +291,7 @@ def parse_thinking_flags(args: str) -> Dict[str, Any]:
 # =============================================================================
 
 
-def parse_model_flag(args: str) -> Dict[str, Any]:
+def parse_model_flag(args: str) -> dict[str, Any]:
     """Parse model override flag from arguments.
 
     Supported flags:
@@ -354,7 +354,7 @@ def has_flag(args: str, short: str, long: str) -> bool:
     return False
 
 
-def get_flag_value(args: str, flag: str) -> Optional[str]:
+def get_flag_value(args: str, flag: str) -> str | None:
     """Get the value of a flag.
 
     Args:
@@ -374,7 +374,7 @@ def get_flag_value(args: str, flag: str) -> Optional[str]:
     return None
 
 
-def extract_issue_number(text: str) -> Optional[int]:
+def extract_issue_number(text: str) -> int | None:
     """Extract issue number from various formats.
 
     Formats supported:

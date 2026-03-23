@@ -15,7 +15,6 @@ from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
 
 from .platform_detector import get_platform_info
 
@@ -24,18 +23,18 @@ from .platform_detector import get_platform_info
 class CommandCorrection:
     """A learned command correction"""
 
-    id: Optional[int]
+    id: int | None
     original_command: str
     platform: str
     shell: str
-    error_pattern: Optional[str]
+    error_pattern: str | None
     corrected_command: str
     success_count: int = 0
     failure_count: int = 0
     confidence: float = 0.0
     source: str = "auto"  # 'auto', 'manual', 'community'
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    created_at: str | None = None
+    updated_at: str | None = None
 
     def to_dict(self) -> dict:
         """Convert to dictionary"""
@@ -50,7 +49,7 @@ class CorrectionSuggestion:
     suggested: str
     confidence: float
     source: str
-    reason: Optional[str] = None
+    reason: str | None = None
 
 
 class PatternLearner:
@@ -59,7 +58,7 @@ class PatternLearner:
     DB_VERSION = 1
     DEFAULT_DB_PATH = Path.home() / ".claude" / "config" / "command_patterns.db"
 
-    def __init__(self, db_path: Optional[Path] = None):
+    def __init__(self, db_path: Path | None = None):
         """
         Initialize the pattern learner.
 
@@ -204,9 +203,9 @@ class PatternLearner:
         self,
         original_command: str,
         corrected_command: str,
-        platform: Optional[str] = None,
-        shell: Optional[str] = None,
-        error_pattern: Optional[str] = None,
+        platform: str | None = None,
+        shell: str | None = None,
+        error_pattern: str | None = None,
         source: str = "auto",
     ) -> CommandCorrection:
         """
@@ -326,7 +325,7 @@ class PatternLearner:
                 (correction_id,),
             )
 
-    def get_correction(self, correction_id: int) -> Optional[CommandCorrection]:
+    def get_correction(self, correction_id: int) -> CommandCorrection | None:
         """Get a correction by ID"""
         with self._get_connection() as conn:
             row = conn.execute(
@@ -369,10 +368,10 @@ class PatternLearner:
     def find_suggestions(
         self,
         command: str,
-        platform: Optional[str] = None,
-        shell: Optional[str] = None,
+        platform: str | None = None,
+        shell: str | None = None,
         min_confidence: float = 0.0,
-    ) -> List[CorrectionSuggestion]:
+    ) -> list[CorrectionSuggestion]:
         """
         Find correction suggestions for a command.
 
@@ -461,10 +460,10 @@ class PatternLearner:
     def get_best_suggestion(
         self,
         command: str,
-        platform: Optional[str] = None,
-        shell: Optional[str] = None,
+        platform: str | None = None,
+        shell: str | None = None,
         min_confidence: float = 0.7,
-    ) -> Optional[CorrectionSuggestion]:
+    ) -> CorrectionSuggestion | None:
         """
         Get the best correction suggestion for a command.
 
@@ -481,8 +480,8 @@ class PatternLearner:
         return suggestions[0] if suggestions else None
 
     def get_all_corrections(
-        self, platform: Optional[str] = None, shell: Optional[str] = None, limit: int = 100
-    ) -> List[CommandCorrection]:
+        self, platform: str | None = None, shell: str | None = None, limit: int = 100
+    ) -> list[CommandCorrection]:
         """Get all corrections, optionally filtered by platform/shell"""
         with self._get_connection() as conn:
             query = """
@@ -529,7 +528,7 @@ class PatternLearner:
 
             return cursor.rowcount > 0
 
-    def get_stats(self) -> Dict[str, any]:
+    def get_stats(self) -> dict[str, any]:
         """Get statistics about learned patterns"""
         with self._get_connection() as conn:
             total = conn.execute("SELECT COUNT(*) FROM command_corrections").fetchone()[0]
@@ -603,7 +602,7 @@ class PatternLearner:
 
 
 # Singleton instance
-_learner: Optional[PatternLearner] = None
+_learner: PatternLearner | None = None
 
 
 def get_learner() -> PatternLearner:
@@ -615,7 +614,7 @@ def get_learner() -> PatternLearner:
 
 
 def learn_correction(
-    original: str, corrected: str, error: Optional[str] = None, source: str = "auto"
+    original: str, corrected: str, error: str | None = None, source: str = "auto"
 ) -> CommandCorrection:
     """Convenience function to record a correction"""
     return get_learner().record_correction(
@@ -623,7 +622,7 @@ def learn_correction(
     )
 
 
-def suggest_correction(command: str, min_confidence: float = 0.7) -> Optional[str]:
+def suggest_correction(command: str, min_confidence: float = 0.7) -> str | None:
     """Convenience function to get a correction suggestion"""
     suggestion = get_learner().get_best_suggestion(command, min_confidence=min_confidence)
     return suggestion.suggested if suggestion else None

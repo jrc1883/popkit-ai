@@ -8,13 +8,11 @@ The registry lazily loads adapters and caches detection results.
 Part of the PopKit v2.0 provider-agnostic architecture.
 """
 
-from typing import Dict, List, Optional
-
 from .base import ProviderAdapter, ProviderInfo
 
 # Registry of all known provider adapter classes
-_ADAPTER_CLASSES: Dict[str, type] = {}
-_ADAPTER_INSTANCES: Dict[str, ProviderAdapter] = {}
+_ADAPTER_CLASSES: dict[str, type] = {}
+_ADAPTER_INSTANCES: dict[str, ProviderAdapter] = {}
 
 
 def _ensure_registered() -> None:
@@ -46,7 +44,7 @@ def register_adapter(adapter_class: type) -> None:
     _ADAPTER_INSTANCES[instance.name] = instance
 
 
-def get_adapter(provider_name: str) -> Optional[ProviderAdapter]:
+def get_adapter(provider_name: str) -> ProviderAdapter | None:
     """Get a provider adapter by name.
 
     Args:
@@ -59,7 +57,7 @@ def get_adapter(provider_name: str) -> Optional[ProviderAdapter]:
     return _ADAPTER_INSTANCES.get(provider_name)
 
 
-def list_adapters() -> List[ProviderAdapter]:
+def list_adapters() -> list[ProviderAdapter]:
     """List all registered provider adapters.
 
     Returns:
@@ -69,7 +67,7 @@ def list_adapters() -> List[ProviderAdapter]:
     return list(_ADAPTER_INSTANCES.values())
 
 
-def detect_providers() -> List[ProviderInfo]:
+def detect_providers() -> list[ProviderInfo]:
     """Auto-detect all installed providers.
 
     Runs detection for each registered adapter and returns
@@ -93,7 +91,7 @@ def detect_providers() -> List[ProviderInfo]:
     return results
 
 
-def detect_available_providers() -> Dict[str, ProviderAdapter]:
+def detect_available_providers() -> dict[str, ProviderAdapter]:
     """Detect and return only available provider adapters.
 
     Returns:

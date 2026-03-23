@@ -22,9 +22,9 @@ import json
 import os
 import sys
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # File locking (Unix-only) - fcntl is imported locally where used (lines 184, 192)
 try:
@@ -65,7 +65,7 @@ class SessionRecorder:
         self.recordings_dir = _get_global_plugin_data_dir() / "recordings"
         self.recording_file = None
         self.session_id = None
-        self.events: List[Dict[str, Any]] = []
+        self.events: list[dict[str, Any]] = []
 
         if self.recording_enabled:
             self._init_recording()
@@ -82,7 +82,7 @@ class SessionRecorder:
             try:
                 state = json.loads(state_file.read_text())
                 return state.get("active", False)
-            except (json.JSONDecodeError, IOError):
+            except (OSError, json.JSONDecodeError):
                 # Treat malformed state as disabled recording.
                 pass
 
@@ -126,9 +126,7 @@ class SessionRecorder:
                         self.record_event(
                             {
                                 "type": "session_start",
-                                "timestamp": state.get(
-                                    "started_at", datetime.now(timezone.utc).isoformat()
-                                ),
+                                "timestamp": state.get("started_at", datetime.now(UTC).isoformat()),
                                 "session_id": self.session_id,
                                 "command": command_name,
                                 "working_directory": os.getcwd(),
@@ -139,7 +137,7 @@ class SessionRecorder:
                             }
                         )
                     return
-            except (json.JSONDecodeError, IOError):
+            except (OSError, json.JSONDecodeError):
                 # Fall back to session manager or legacy initialization.
                 pass
 
@@ -168,7 +166,7 @@ class SessionRecorder:
             self.record_event(
                 {
                     "type": "session_start",
-                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "timestamp": datetime.now(UTC).isoformat(),
                     "session_id": self.session_id,
                     "command": command_name,
                     "working_directory": os.getcwd(),
@@ -183,7 +181,7 @@ class SessionRecorder:
     def _load_existing_events(self) -> None:
         """Load existing events from recording file."""
         try:
-            with open(self.recording_file, "r") as f:
+            with open(self.recording_file) as f:
                 if HAS_FCNTL:
                     import fcntl
 
@@ -199,7 +197,7 @@ class SessionRecorder:
         except (json.JSONDecodeError, FileNotFoundError):
             self.events = []
 
-    def _write_initial_event(self, session: Dict[str, Any]) -> None:
+    def _write_initial_event(self, session: dict[str, Any]) -> None:
         """Write initial session_start event."""
         self.record_event(
             {
@@ -212,7 +210,7 @@ class SessionRecorder:
             }
         )
 
-    def record_event(self, event: Dict[str, Any]) -> None:
+    def record_event(self, event: dict[str, Any]) -> None:
         """Record an event to the session log with cross-platform locking."""
         if not self.recording_enabled:
             return
@@ -245,7 +243,7 @@ class SessionRecorder:
                 current_events = []
                 if self.recording_file.exists():
                     try:
-                        with open(self.recording_file, "r") as f:
+                        with open(self.recording_file) as f:
                             data = json.load(f)
                             current_events = data.get("events", [])
                     except (json.JSONDecodeError, FileNotFoundError):
@@ -268,7 +266,7 @@ class SessionRecorder:
                             recording_data["started_at"] = state["started_at"]
                         if "stopped_at" in state:
                             recording_data["stopped_at"] = state["stopped_at"]
-                    except (json.JSONDecodeError, IOError):
+                    except (OSError, json.JSONDecodeError):
                         # Ignore optional state metadata if unreadable.
                         pass
 
@@ -303,7 +301,7 @@ class SessionRecorder:
                     recording_data["started_at"] = state["started_at"]
                 if "stopped_at" in state:
                     recording_data["stopped_at"] = state["stopped_at"]
-            except (json.JSONDecodeError, IOError):
+            except (OSError, json.JSONDecodeError):
                 # Ignore optional state metadata if unreadable.
                 pass
 
@@ -313,16 +311,16 @@ class SessionRecorder:
     def record_tool_call(
         self,
         tool_name: str,
-        parameters: Dict[str, Any],
-        result: Optional[Any] = None,
-        error: Optional[str] = None,
-        duration_ms: Optional[int] = None,
+        parameters: dict[str, Any],
+        result: Any | None = None,
+        error: str | None = None,
+        duration_ms: int | None = None,
     ) -> None:
         """Record a tool invocation."""
         self.record_event(
             {
                 "type": "tool_call",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
                 "tool_name": tool_name,
                 "parameters": parameters,
                 "result": result,
@@ -331,25 +329,25 @@ class SessionRecorder:
             }
         )
 
-    def record_skill_invocation(self, skill_name: str, arguments: Optional[str] = None) -> None:
+    def record_skill_invocation(self, skill_name: str, arguments: str | None = None) -> None:
         """Record a skill invocation."""
         self.record_event(
             {
                 "type": "skill_invocation",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
                 "skill_name": skill_name,
                 "arguments": arguments,
             }
         )
 
     def record_file_read(
-        self, file_path: str, content_summary: Optional[str] = None, relevant: bool = True
+        self, file_path: str, content_summary: str | None = None, relevant: bool = True
     ) -> None:
         """Record reading of an important context file."""
         self.record_event(
             {
                 "type": "file_read",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
                 "file_path": file_path,
                 "content_summary": content_summary,
                 "relevant": relevant,
@@ -357,13 +355,13 @@ class SessionRecorder:
         )
 
     def record_reasoning(
-        self, step: str, reasoning: str, data: Optional[Dict[str, Any]] = None
+        self, step: str, reasoning: str, data: dict[str, Any] | None = None
     ) -> None:
         """Record reasoning/thinking step."""
         self.record_event(
             {
                 "type": "reasoning",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
                 "step": step,
                 "reasoning": reasoning,
                 "data": data or {},
@@ -377,7 +375,7 @@ class SessionRecorder:
         self.record_event(
             {
                 "type": "recommendation",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
                 "recommendation_type": recommendation_type,
                 "command": command,
                 "priority_score": priority_score,
@@ -389,14 +387,14 @@ class SessionRecorder:
         self,
         decision_type: str,
         question: str,
-        options: List[Dict[str, str]],
-        selected: Optional[str] = None,
+        options: list[dict[str, str]],
+        selected: str | None = None,
     ) -> None:
         """Record an AskUserQuestion decision."""
         self.record_event(
             {
                 "type": "decision",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
                 "decision_type": decision_type,
                 "question": question,
                 "options": options,
@@ -411,7 +409,7 @@ class SessionRecorder:
         input_tokens: int,
         output_tokens: int,
         total_tokens: int,
-        tool_details: Optional[List[Dict[str, Any]]] = None,
+        tool_details: list[dict[str, Any]] | None = None,
     ) -> None:
         """
         Record subagent completion with transcript parsing data.
@@ -434,14 +432,14 @@ class SessionRecorder:
                 "total_tokens": total_tokens,
             },
             "tool_details": tool_details or [],
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
         self.record_event(event)
 
     def finalize_recording(
-        self, status: str = "completed", summary: Optional[Dict[str, Any]] = None
-    ) -> Optional[Path]:
+        self, status: str = "completed", summary: dict[str, Any] | None = None
+    ) -> Path | None:
         """Finalize recording and return file path."""
         if not self.recording_enabled:
             return None
@@ -449,7 +447,7 @@ class SessionRecorder:
         self.record_event(
             {
                 "type": "session_end",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
                 "status": status,
                 "total_events": len(self.events),
                 "summary": summary or {},
@@ -460,7 +458,7 @@ class SessionRecorder:
 
 
 # Global singleton instance
-_recorder: Optional[SessionRecorder] = None
+_recorder: SessionRecorder | None = None
 
 
 def get_recorder() -> SessionRecorder:
@@ -480,30 +478,30 @@ def get_recorder() -> SessionRecorder:
 
 def record_tool_call(
     tool_name: str,
-    parameters: Dict[str, Any],
-    result: Optional[Any] = None,
-    error: Optional[str] = None,
-    duration_ms: Optional[int] = None,
+    parameters: dict[str, Any],
+    result: Any | None = None,
+    error: str | None = None,
+    duration_ms: int | None = None,
 ) -> None:
     """Convenience function to record a tool call."""
     get_recorder().record_tool_call(tool_name, parameters, result, error, duration_ms)
 
 
-def record_skill_invocation(skill_name: str, arguments: Optional[str] = None) -> None:
+def record_skill_invocation(skill_name: str, arguments: str | None = None) -> None:
     """Convenience function to record a skill invocation."""
     get_recorder().record_skill_invocation(skill_name, arguments)
 
 
 def record_decision(
-    decision_type: str, question: str, options: List[Dict[str, str]], selected: Optional[str] = None
+    decision_type: str, question: str, options: list[dict[str, str]], selected: str | None = None
 ) -> None:
     """Convenience function to record a decision."""
     get_recorder().record_decision(decision_type, question, options, selected)
 
 
 def finalize_recording(
-    status: str = "completed", summary: Optional[Dict[str, Any]] = None
-) -> Optional[Path]:
+    status: str = "completed", summary: dict[str, Any] | None = None
+) -> Path | None:
     """Convenience function to finalize recording."""
     return get_recorder().finalize_recording(status, summary)
 
@@ -522,7 +520,7 @@ def is_recording_enabled() -> bool:
             state = json.loads(state_file.read_text())
             if state.get("active", False):
                 return True
-        except (json.JSONDecodeError, IOError):
+        except (OSError, json.JSONDecodeError):
             # Ignore malformed state and fall back to environment variable.
             pass
 
@@ -531,13 +529,13 @@ def is_recording_enabled() -> bool:
 
 
 def record_file_read(
-    file_path: str, content_summary: Optional[str] = None, relevant: bool = True
+    file_path: str, content_summary: str | None = None, relevant: bool = True
 ) -> None:
     """Convenience function to record a file read."""
     get_recorder().record_file_read(file_path, content_summary, relevant)
 
 
-def record_reasoning(step: str, reasoning: str, data: Optional[Dict[str, Any]] = None) -> None:
+def record_reasoning(step: str, reasoning: str, data: dict[str, Any] | None = None) -> None:
     """Convenience function to record reasoning."""
     get_recorder().record_reasoning(step, reasoning, data)
 
@@ -555,7 +553,7 @@ def record_subagent_completion(
     input_tokens: int,
     output_tokens: int,
     total_tokens: int,
-    tool_details: Optional[List[Dict[str, Any]]] = None,
+    tool_details: list[dict[str, Any]] | None = None,
 ) -> None:
     """
     Convenience function to record subagent completion.

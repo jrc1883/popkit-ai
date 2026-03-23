@@ -21,7 +21,7 @@ import subprocess
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # =============================================================================
 # DATA CLASSES
@@ -33,9 +33,9 @@ class ToolCall:
     """Represents a single tool call."""
 
     tool_name: str
-    tool_input: Dict[str, Any]
-    tool_output: Optional[str] = None
-    timestamp: Optional[str] = None
+    tool_input: dict[str, Any]
+    tool_output: str | None = None
+    timestamp: str | None = None
     success: bool = True
 
 
@@ -44,29 +44,29 @@ class ErrorInfo:
     """Represents detected error information."""
 
     message: str
-    error_type: Optional[str] = None
-    file_path: Optional[str] = None
-    line_number: Optional[int] = None
-    stack_trace: Optional[str] = None
+    error_type: str | None = None
+    file_path: str | None = None
+    line_number: int | None = None
+    stack_trace: str | None = None
 
 
 @dataclass
 class ProjectContext:
     """Represents project context."""
 
-    language: Optional[str] = None
-    framework: Optional[str] = None
-    services: List[str] = field(default_factory=list)
-    detected_from: Optional[str] = None
+    language: str | None = None
+    framework: str | None = None
+    services: list[str] = field(default_factory=list)
+    detected_from: str | None = None
 
 
 @dataclass
 class GitContext:
     """Represents git context."""
 
-    branch: Optional[str] = None
+    branch: str | None = None
     uncommitted_files: int = 0
-    recent_commits: List[str] = field(default_factory=list)
+    recent_commits: list[str] = field(default_factory=list)
     has_changes: bool = False
 
 
@@ -79,25 +79,25 @@ class BugContext:
     timestamp: str
 
     # Tool calls
-    recent_tools: List[ToolCall] = field(default_factory=list)
-    files_touched: List[str] = field(default_factory=list)
+    recent_tools: list[ToolCall] = field(default_factory=list)
+    files_touched: list[str] = field(default_factory=list)
 
     # Errors
-    errors: List[ErrorInfo] = field(default_factory=list)
+    errors: list[ErrorInfo] = field(default_factory=list)
 
     # State
-    agent_progress: Optional[float] = None
-    current_task: Optional[str] = None
+    agent_progress: float | None = None
+    current_task: str | None = None
 
     # Project
-    project: Optional[ProjectContext] = None
-    git: Optional[GitContext] = None
+    project: ProjectContext | None = None
+    git: GitContext | None = None
 
     # Analysis
-    stuck_patterns: List[str] = field(default_factory=list)
-    suggested_actions: List[str] = field(default_factory=list)
+    stuck_patterns: list[str] = field(default_factory=list)
+    suggested_actions: list[str] = field(default_factory=list)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert to dictionary."""
         return asdict(self)
 
@@ -157,15 +157,15 @@ STUCK_PATTERNS = [
 class BugContextCapture:
     """Captures bug context from session state."""
 
-    def __init__(self, working_dir: Optional[str] = None):
+    def __init__(self, working_dir: str | None = None):
         self.working_dir = working_dir or os.getcwd()
         self.bugs_dir = Path(self.working_dir) / ".claude" / "bugs"
 
     def capture(
         self,
         description: str,
-        recent_tools: Optional[List[Dict]] = None,
-        agent_state: Optional[Dict] = None,
+        recent_tools: list[dict] | None = None,
+        agent_state: dict | None = None,
         verbose: bool = False,
     ) -> BugContext:
         """
@@ -221,7 +221,7 @@ class BugContextCapture:
 
         return file_path
 
-    def list_bugs(self, limit: int = 10) -> List[Dict]:
+    def list_bugs(self, limit: int = 10) -> list[dict]:
         """List locally logged bugs."""
         if not self.bugs_dir.exists():
             return []
@@ -242,7 +242,7 @@ class BugContextCapture:
 
         return bugs
 
-    def get_bug(self, bug_id: str) -> Optional[BugContext]:
+    def get_bug(self, bug_id: str) -> BugContext | None:
         """Get a specific bug by ID."""
         file_path = self.bugs_dir / f"{bug_id}.json"
         if not file_path.exists():
@@ -254,7 +254,7 @@ class BugContextCapture:
         except (json.JSONDecodeError, KeyError):
             return None
 
-    def clear_bugs(self, before: Optional[str] = None, bug_id: Optional[str] = None) -> int:
+    def clear_bugs(self, before: str | None = None, bug_id: str | None = None) -> int:
         """Clear bug logs."""
         if not self.bugs_dir.exists():
             return 0
@@ -298,7 +298,7 @@ class BugContextCapture:
         hash_part = hashlib.md5(hash_input.encode()).hexdigest()[:6]
         return f"bug-{date_part}-{hash_part}"
 
-    def _parse_tool_calls(self, tools: List[Dict], verbose: bool) -> List[ToolCall]:
+    def _parse_tool_calls(self, tools: list[dict], verbose: bool) -> list[ToolCall]:
         """Parse tool calls from raw data."""
         parsed = []
         for t in tools[-10:]:  # Last 10
@@ -317,7 +317,7 @@ class BugContextCapture:
             )
         return parsed
 
-    def _extract_files_touched(self, tools: List[Dict]) -> List[str]:
+    def _extract_files_touched(self, tools: list[dict]) -> list[str]:
         """Extract unique files from tool calls."""
         files = set()
         for t in tools:
@@ -333,7 +333,7 @@ class BugContextCapture:
 
         return list(files)
 
-    def _extract_errors(self, tools: List[Dict]) -> List[ErrorInfo]:
+    def _extract_errors(self, tools: list[dict]) -> list[ErrorInfo]:
         """Extract errors from tool outputs."""
         errors = []
         for t in tools:
@@ -365,7 +365,7 @@ class BugContextCapture:
                 return True
         return False
 
-    def _classify_error(self, message: str) -> Optional[str]:
+    def _classify_error(self, message: str) -> str | None:
         """Classify error type from message."""
         error_types = [
             "TypeError",
@@ -477,7 +477,7 @@ class BugContextCapture:
 
         return ctx
 
-    def _detect_stuck_patterns(self, tools: List[Dict]) -> List[str]:
+    def _detect_stuck_patterns(self, tools: list[dict]) -> list[str]:
         """Detect stuck patterns from tool calls."""
         patterns = []
 
@@ -485,7 +485,7 @@ class BugContextCapture:
             return patterns
 
         # Same file edited 3+ times
-        file_edits: Dict[str, int] = {}
+        file_edits: dict[str, int] = {}
         for t in tools:
             if t.get("tool_name") == "Edit":
                 fp = t.get("tool_input", {}).get("file_path", "")
@@ -496,7 +496,7 @@ class BugContextCapture:
                 patterns.append(f"Same file edited {count} times: {Path(fp).name}")
 
         # Same command run 3+ times
-        command_runs: Dict[str, int] = {}
+        command_runs: dict[str, int] = {}
         for t in tools:
             if t.get("tool_name") == "Bash":
                 cmd = t.get("tool_input", {}).get("command", "")[:50]
@@ -518,7 +518,7 @@ class BugContextCapture:
 
         return list(set(patterns))
 
-    def _generate_suggestions(self, ctx: BugContext) -> List[str]:
+    def _generate_suggestions(self, ctx: BugContext) -> list[str]:
         """Generate suggested actions based on context."""
         suggestions = []
 
@@ -549,7 +549,7 @@ class BugContextCapture:
 
         return suggestions[:5]
 
-    def _dict_to_context(self, data: Dict) -> BugContext:
+    def _dict_to_context(self, data: dict) -> BugContext:
         """Convert dictionary to BugContext."""
         ctx = BugContext(
             id=data["id"], description=data["description"], timestamp=data["timestamp"]
@@ -740,7 +740,7 @@ def format_github_issue(ctx: BugContext) -> str:
 # =============================================================================
 
 
-def share_bug_pattern(ctx: BugContext) -> Optional[Dict[str, Any]]:
+def share_bug_pattern(ctx: BugContext) -> dict[str, Any] | None:
     """
     Share bug pattern to collective learning database.
 
@@ -815,7 +815,7 @@ def share_bug_pattern(ctx: BugContext) -> Optional[Dict[str, Any]]:
         return {"status": "error", "error": str(e)}
 
 
-def search_patterns_for_bug(ctx: BugContext) -> List[Dict[str, Any]]:
+def search_patterns_for_bug(ctx: BugContext) -> list[dict[str, Any]]:
     """
     Search for patterns that might help with this bug.
 

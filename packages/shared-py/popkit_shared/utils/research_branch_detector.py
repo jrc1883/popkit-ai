@@ -22,7 +22,6 @@ Usage:
 import json
 import re
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
 
 from popkit_shared.utils.subprocess_utils import run_git_command
 
@@ -47,12 +46,12 @@ class ResearchBranch:
     topic: str
     created_ago: str
     commit_count: int
-    files_changed: List[str]
+    files_changed: list[str]
     has_docs: bool
-    doc_paths: List[str]
+    doc_paths: list[str]
 
 
-def _run_git(args: List[str]) -> Tuple[bool, str]:
+def _run_git(args: list[str]) -> tuple[bool, str]:
     """Run a git command and return (success, output).
 
     Thin wrapper around subprocess_utils.run_git_command that returns
@@ -81,7 +80,7 @@ def fetch_remotes() -> bool:
     return success
 
 
-def get_research_branches(remote: str = "origin") -> List[ResearchBranch]:
+def get_research_branches(remote: str = "origin") -> list[ResearchBranch]:
     """Detect research branches matching known patterns.
 
     Scans remote branches for names that match Claude Code Web session
@@ -98,7 +97,7 @@ def get_research_branches(remote: str = "origin") -> List[ResearchBranch]:
         branch. Returns an empty list if no branches match or if the
         git command fails.
     """
-    branches: List[ResearchBranch] = []
+    branches: list[ResearchBranch] = []
 
     # Get all remote branches
     success, output = _run_git(["branch", "-r", "--format=%(refname:short)"])
@@ -130,7 +129,7 @@ def get_research_branches(remote: str = "origin") -> List[ResearchBranch]:
     return branches
 
 
-def _analyze_branch(full_name: str, match: re.Match) -> Optional[ResearchBranch]:
+def _analyze_branch(full_name: str, match: re.Match) -> ResearchBranch | None:
     """Analyze a branch to extract research information.
 
     Args:
@@ -222,7 +221,7 @@ def get_branch_content(branch: str, path: str) -> str:
     return output
 
 
-def format_branch_table(branches: List[ResearchBranch]) -> str:
+def format_branch_table(branches: list[ResearchBranch]) -> str:
     """Format research branches as a markdown table.
 
     Args:
@@ -246,7 +245,7 @@ def format_branch_table(branches: List[ResearchBranch]) -> str:
     return "\n".join(lines)
 
 
-def get_branch_content_preview(branch: ResearchBranch, max_lines: int = 50) -> Dict[str, str]:
+def get_branch_content_preview(branch: ResearchBranch, max_lines: int = 50) -> dict[str, str]:
     """Get preview of doc content from a research branch.
 
     Reads the first ``max_lines`` of up to 3 documentation files found
@@ -259,7 +258,7 @@ def get_branch_content_preview(branch: ResearchBranch, max_lines: int = 50) -> D
     Returns:
         Dict mapping file path to truncated content string.
     """
-    previews: Dict[str, str] = {}
+    previews: dict[str, str] = {}
 
     for doc_path in branch.doc_paths[:3]:  # Limit to 3 docs
         try:
@@ -272,7 +271,7 @@ def get_branch_content_preview(branch: ResearchBranch, max_lines: int = 50) -> D
     return previews
 
 
-def parse_research_doc(content: str) -> Dict[str, object]:
+def parse_research_doc(content: str) -> dict[str, object]:
     """Parse a research document to extract structured information.
 
     Extracts YAML-style frontmatter metadata and markdown sections from
@@ -300,7 +299,7 @@ def parse_research_doc(content: str) -> Dict[str, object]:
         strings. Missing fields default to empty strings or
         "P2-medium" for priority.
     """
-    result: Dict[str, object] = {
+    result: dict[str, object] = {
         "title": "",
         "date": "",
         "priority": "P2-medium",
@@ -333,7 +332,7 @@ def parse_research_doc(content: str) -> Dict[str, object]:
 
     # Extract executive summary
     in_summary = False
-    summary_lines: List[str] = []
+    summary_lines: list[str] = []
     for line in lines:
         if "## Executive Summary" in line:
             in_summary = True
@@ -346,7 +345,7 @@ def parse_research_doc(content: str) -> Dict[str, object]:
     result["summary"] = "\n".join(summary_lines).strip()
 
     # Extract implementation tasks
-    tasks: List[str] = []
+    tasks: list[str] = []
     in_tasks = False
     for line in lines:
         if "## Implementation" in line or "## Tasks" in line:
@@ -364,7 +363,7 @@ def parse_research_doc(content: str) -> Dict[str, object]:
     return result
 
 
-def generate_issue_body(branch: ResearchBranch, parsed_docs: List[Dict[str, object]]) -> str:
+def generate_issue_body(branch: ResearchBranch, parsed_docs: list[dict[str, object]]) -> str:
     """Generate a GitHub issue body from research branch content.
 
     Args:

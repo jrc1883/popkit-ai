@@ -17,7 +17,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class ShareStatus(Enum):
@@ -43,14 +43,14 @@ class CapturedBug:
 
     id: str
     error_type: str
-    error_message: Optional[str]
-    error_message_hash: Optional[str]
-    command_pattern: Optional[str]
+    error_message: str | None
+    error_message_hash: str | None
+    command_pattern: str | None
     platform: str
-    shell: Optional[str]
+    shell: str | None
     context_summary: str
-    anonymized_context: Optional[str]
-    raw_context: Optional[str]  # JSON string of full context
+    anonymized_context: str | None
+    raw_context: str | None  # JSON string of full context
     share_status: str
     detection_source: str  # "auto" or "manual"
     confidence: float
@@ -77,7 +77,7 @@ class BugStore:
     DB_VERSION = 1
     DEFAULT_DB_PATH = Path.home() / ".claude" / "config" / "bug_reports.db"
 
-    def __init__(self, db_path: Optional[Path] = None):
+    def __init__(self, db_path: Path | None = None):
         """
         Initialize the bug store.
 
@@ -192,12 +192,12 @@ class BugStore:
         self,
         error_type: str,
         context_summary: str,
-        error_message: Optional[str] = None,
-        command_pattern: Optional[str] = None,
-        platform: Optional[str] = None,
-        shell: Optional[str] = None,
-        anonymized_context: Optional[str] = None,
-        raw_context: Optional[Dict] = None,
+        error_message: str | None = None,
+        command_pattern: str | None = None,
+        platform: str | None = None,
+        shell: str | None = None,
+        anonymized_context: str | None = None,
+        raw_context: dict | None = None,
         detection_source: str = "auto",
         confidence: float = 0.5,
     ) -> CapturedBug:
@@ -262,7 +262,7 @@ class BugStore:
 
         return self.get_bug(bug_id)
 
-    def get_bug(self, bug_id: str) -> Optional[CapturedBug]:
+    def get_bug(self, bug_id: str) -> CapturedBug | None:
         """Get a bug by ID"""
         with self._get_connection() as conn:
             row = conn.execute(
@@ -299,10 +299,10 @@ class BugStore:
     def list_bugs(
         self,
         limit: int = 50,
-        error_type: Optional[str] = None,
-        share_status: Optional[str] = None,
-        since: Optional[str] = None,
-    ) -> List[CapturedBug]:
+        error_type: str | None = None,
+        share_status: str | None = None,
+        since: str | None = None,
+    ) -> list[CapturedBug]:
         """
         List captured bugs with optional filters.
 
@@ -393,9 +393,7 @@ class BugStore:
             conn.execute(f"DELETE FROM captured_bugs WHERE id IN ({placeholders})", ids)
             return len(ids)
 
-    def find_similar(
-        self, error_type: str, error_message: Optional[str] = None
-    ) -> List[CapturedBug]:
+    def find_similar(self, error_type: str, error_message: str | None = None) -> list[CapturedBug]:
         """Find similar bugs by error type and message hash"""
         with self._get_connection() as conn:
             if error_message:
@@ -498,7 +496,7 @@ class BugStore:
     # STATISTICS
     # =========================================================================
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get statistics about captured bugs"""
         with self._get_connection() as conn:
             total = conn.execute("SELECT COUNT(*) FROM captured_bugs").fetchone()[0]
@@ -548,13 +546,13 @@ class BugStore:
 
         return len(bugs)
 
-    def _export_preferences(self) -> Dict[str, str]:
+    def _export_preferences(self) -> dict[str, str]:
         """Export all preferences"""
         with self._get_connection() as conn:
             rows = conn.execute("SELECT key, value FROM consent_preferences").fetchall()
             return {row["key"]: row["value"] for row in rows}
 
-    def delete_all_data(self) -> Dict[str, int]:
+    def delete_all_data(self) -> dict[str, int]:
         """Delete all user data (GDPR right to be forgotten)"""
         with self._get_connection() as conn:
             bugs_count = conn.execute("SELECT COUNT(*) FROM captured_bugs").fetchone()[0]
@@ -576,7 +574,7 @@ class BugStore:
 
 
 # Singleton instance
-_store: Optional[BugStore] = None
+_store: BugStore | None = None
 
 
 def get_bug_store() -> BugStore:

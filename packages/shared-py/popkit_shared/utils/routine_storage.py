@@ -11,8 +11,8 @@ Part of the popkit plugin system.
 import json
 import os
 import re
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from datetime import UTC, datetime
+from typing import Any
 
 # Constants
 ROUTINES_DIR = "routines"
@@ -44,7 +44,7 @@ def get_project_root() -> str:
     return cwd
 
 
-def get_popkit_dir(project_root: Optional[str] = None) -> str:
+def get_popkit_dir(project_root: str | None = None) -> str:
     """Get the plugin data directory path.
 
     Uses CLAUDE_PLUGIN_DATA (CC 2.1.78+) or falls back to .claude/popkit/.
@@ -63,7 +63,7 @@ def get_popkit_dir(project_root: Optional[str] = None) -> str:
     return os.path.join(project_root, ".claude", "popkit")
 
 
-def get_routines_dir(project_root: Optional[str] = None, routine_type: str = "morning") -> str:
+def get_routines_dir(project_root: str | None = None, routine_type: str = "morning") -> str:
     """Get the routines directory for a specific type.
 
     Args:
@@ -77,7 +77,7 @@ def get_routines_dir(project_root: Optional[str] = None, routine_type: str = "mo
     return os.path.join(popkit_dir, ROUTINES_DIR, routine_type)
 
 
-def ensure_directory_structure(project_root: Optional[str] = None) -> str:
+def ensure_directory_structure(project_root: str | None = None) -> str:
     """Create the .claude/popkit directory structure if it doesn't exist.
 
     Args:
@@ -149,7 +149,7 @@ def generate_prefix(project_name: str) -> str:
     return prefix
 
 
-def get_project_name(project_root: Optional[str] = None) -> str:
+def get_project_name(project_root: str | None = None) -> str:
     """Detect project name from package.json, pyproject.toml, or directory name.
 
     Args:
@@ -165,11 +165,11 @@ def get_project_name(project_root: Optional[str] = None) -> str:
     package_json = os.path.join(project_root, "package.json")
     if os.path.exists(package_json):
         try:
-            with open(package_json, "r", encoding="utf-8") as f:
+            with open(package_json, encoding="utf-8") as f:
                 data = json.load(f)
                 if "name" in data:
                     return data["name"]
-        except (json.JSONDecodeError, IOError):
+        except (OSError, json.JSONDecodeError):
             # Best-effort fallback: ignore optional failure.
             pass
 
@@ -177,12 +177,12 @@ def get_project_name(project_root: Optional[str] = None) -> str:
     pyproject = os.path.join(project_root, "pyproject.toml")
     if os.path.exists(pyproject):
         try:
-            with open(pyproject, "r", encoding="utf-8") as f:
+            with open(pyproject, encoding="utf-8") as f:
                 content = f.read()
                 match = re.search(r'name\s*=\s*["\']([^"\']+)["\']', content)
                 if match:
                     return match.group(1)
-        except IOError:
+        except OSError:
             # Best-effort fallback: ignore optional failure.
             pass
 
@@ -195,7 +195,7 @@ def get_project_name(project_root: Optional[str] = None) -> str:
 # =============================================================================
 
 
-def load_config(project_root: Optional[str] = None) -> Dict[str, Any]:
+def load_config(project_root: str | None = None) -> dict[str, Any]:
     """Load the popkit config.json for this project.
 
     Args:
@@ -211,13 +211,13 @@ def load_config(project_root: Optional[str] = None) -> Dict[str, Any]:
         return {}
 
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             return json.load(f)
-    except (json.JSONDecodeError, IOError):
+    except (OSError, json.JSONDecodeError):
         return {}
 
 
-def save_config(config: Dict[str, Any], project_root: Optional[str] = None) -> str:
+def save_config(config: dict[str, Any], project_root: str | None = None) -> str:
     """Save the popkit config.json for this project.
 
     Args:
@@ -236,7 +236,7 @@ def save_config(config: Dict[str, Any], project_root: Optional[str] = None) -> s
     return config_path
 
 
-def initialize_config(project_root: Optional[str] = None) -> Dict[str, Any]:
+def initialize_config(project_root: str | None = None) -> dict[str, Any]:
     """Initialize a new config.json with project defaults.
 
     Args:
@@ -262,7 +262,7 @@ def initialize_config(project_root: Optional[str] = None) -> Dict[str, Any]:
     return config
 
 
-def get_or_create_config(project_root: Optional[str] = None) -> Dict[str, Any]:
+def get_or_create_config(project_root: str | None = None) -> dict[str, Any]:
     """Get existing config or create a new one.
 
     Args:
@@ -282,7 +282,7 @@ def get_or_create_config(project_root: Optional[str] = None) -> Dict[str, Any]:
 # =============================================================================
 
 
-def get_next_routine_id(config: Dict[str, Any], routine_type: str) -> Optional[str]:
+def get_next_routine_id(config: dict[str, Any], routine_type: str) -> str | None:
     """Get the next available routine ID for a type.
 
     Args:
@@ -310,7 +310,7 @@ def get_next_routine_id(config: Dict[str, Any], routine_type: str) -> Optional[s
     return f"{prefix}-{highest + 1}"
 
 
-def list_routines(routine_type: str, project_root: Optional[str] = None) -> List[Dict[str, Any]]:
+def list_routines(routine_type: str, project_root: str | None = None) -> list[dict[str, Any]]:
     """List all routines of a type (including pk).
 
     Args:
@@ -344,8 +344,8 @@ def list_routines(routine_type: str, project_root: Optional[str] = None) -> List
 
 
 def get_routine(
-    routine_id: str, routine_type: str, project_root: Optional[str] = None
-) -> Optional[Dict[str, Any]]:
+    routine_id: str, routine_type: str, project_root: str | None = None
+) -> dict[str, Any] | None:
     """Get a specific routine by ID.
 
     Args:
@@ -363,7 +363,7 @@ def get_routine(
     return None
 
 
-def get_default_routine(routine_type: str, project_root: Optional[str] = None) -> str:
+def get_default_routine(routine_type: str, project_root: str | None = None) -> str:
     """Get the default routine ID for a type.
 
     Args:
@@ -378,7 +378,7 @@ def get_default_routine(routine_type: str, project_root: Optional[str] = None) -
 
 
 def set_default_routine(
-    routine_id: str, routine_type: str, project_root: Optional[str] = None
+    routine_id: str, routine_type: str, project_root: str | None = None
 ) -> bool:
     """Set the default routine for a type.
 
@@ -408,8 +408,8 @@ def create_routine(
     description: str,
     routine_type: str,
     based_on: str = "pk",
-    project_root: Optional[str] = None,
-) -> Tuple[Optional[str], Optional[str]]:
+    project_root: str | None = None,
+) -> tuple[str | None, str | None]:
     """Create a new custom routine.
 
     Args:
@@ -440,7 +440,7 @@ def create_routine(
     )
 
     # Create routine.md
-    now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    now = datetime.now(UTC).isoformat().replace("+00:00", "Z")
     routine_content = f"""---
 id: {routine_id}
 name: {name}
@@ -520,8 +520,8 @@ Total: 100 points
 
 
 def delete_routine(
-    routine_id: str, routine_type: str, project_root: Optional[str] = None
-) -> Tuple[bool, str]:
+    routine_id: str, routine_type: str, project_root: str | None = None
+) -> tuple[bool, str]:
     """Delete a custom routine.
 
     Args:
@@ -571,8 +571,8 @@ def delete_routine(
 
 
 def get_routine_path(
-    routine_id: str, routine_type: str, project_root: Optional[str] = None
-) -> Optional[str]:
+    routine_id: str, routine_type: str, project_root: str | None = None
+) -> str | None:
     """Get the filesystem path to a routine folder.
 
     Args:
@@ -594,7 +594,7 @@ def get_routine_path(
     return None
 
 
-def get_available_slots(routine_type: str, project_root: Optional[str] = None) -> int:
+def get_available_slots(routine_type: str, project_root: str | None = None) -> int:
     """Get number of available routine slots.
 
     Args:
@@ -614,7 +614,7 @@ def get_available_slots(routine_type: str, project_root: Optional[str] = None) -
 # =============================================================================
 
 
-def format_routine_list(routines: List[Dict[str, Any]], routine_type: str) -> str:
+def format_routine_list(routines: list[dict[str, Any]], routine_type: str) -> str:
     """Format a list of routines as a table.
 
     Args:
@@ -642,7 +642,7 @@ def format_routine_list(routines: List[Dict[str, Any]], routine_type: str) -> st
 
 
 def format_startup_banner(
-    routine: Dict[str, Any], routine_type: str, project_name: str, other_ids: List[str]
+    routine: dict[str, Any], routine_type: str, project_name: str, other_ids: list[str]
 ) -> str:
     """Format the startup banner shown when running a routine.
 

@@ -44,14 +44,36 @@ exclude = [
 ]
 
 [tool.ruff.lint]
-# Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default
-# Add isort (`I`) for import sorting
-select = ["E", "F", "I"]
+# Rule groups:
+# E  = pycodestyle (style errors)
+# F  = Pyflakes (logic errors, unused imports)
+# I  = isort (import sorting)
+# S  = flake8-bandit (security) — catches try-except-pass, hardcoded passwords, etc.
+# BLE = flake8-blind-except — catches bare 'except Exception'
+# UP = pyupgrade — modernize syntax for Python 3.11+
+select = ["E", "F", "I", "S110", "BLE", "UP"]
 
 # Ignore specific rules
 ignore = [
-    "E501",  # Line too long (handled by formatter)
+    "E501",   # Line too long (handled by formatter)
+    "BLE001", # Blind except Exception — too strict for existing codebase
+    "UP006",  # Use dict instead of Dict — 235+ existing usages, fix incrementally
+    "UP007",  # Use X | Y for union types — wait until we drop 3.10 compat
+    "UP015",  # Unnecessary open mode "r" — pedantic, not a bug
+    "UP024",  # Replace IOError with OSError — cosmetic alias change
+    "UP035",  # typing.Dict/List deprecated — same as UP006
+    "UP036",  # Version block outdated — codex adapter needs 3.10 compat
+    "UP042",  # Use StrEnum — requires Python 3.11 minimum everywhere
+    "UP045",  # Use X | None instead of Optional — 100+ usages, fix incrementally
 ]
+
+# Treat S110 as warning for existing code — new code should avoid bare try-except-pass
+# UP017 (datetime.UTC) has ~30 usages, fix incrementally
+[tool.ruff.lint.per-file-ignores]
+"hooks/*.py" = ["S110"]                    # Hooks are intentionally best-effort
+"tests/**/*.py" = ["S110", "UP017"]        # Test helpers — fix incrementally
+"popkit_shared/utils/*.py" = ["S110", "UP017"]  # Legacy utils — fix incrementally
+"popkit_shared/storage/*.py" = ["S110"]    # Storage layer — best-effort patterns
 
 [tool.ruff.lint.isort]
 # Use single line imports

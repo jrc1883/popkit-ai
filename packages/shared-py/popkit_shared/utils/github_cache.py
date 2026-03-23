@@ -17,7 +17,7 @@ import json
 import subprocess
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 from urllib.parse import urlparse
 
 # =============================================================================
@@ -41,7 +41,7 @@ class LocalGitHubCache:
     Suitable for single-session use and free tier.
     """
 
-    def __init__(self, cache_dir: Optional[Path] = None):
+    def __init__(self, cache_dir: Path | None = None):
         """Initialize local cache.
 
         Args:
@@ -54,9 +54,9 @@ class LocalGitHubCache:
 
         self.cache_dir = Path(cache_dir)
         self.cache_file = self.cache_dir / "github-cache.json"
-        self._cache_data: Optional[Dict[str, Any]] = None
+        self._cache_data: dict[str, Any] | None = None
 
-    def _load_cache(self) -> Dict[str, Any]:
+    def _load_cache(self) -> dict[str, Any]:
         """Load cache from disk.
 
         Returns:
@@ -69,14 +69,14 @@ class LocalGitHubCache:
             return self._init_cache()
 
         try:
-            with open(self.cache_file, "r", encoding="utf-8") as f:
+            with open(self.cache_file, encoding="utf-8") as f:
                 self._cache_data = json.load(f)
                 return self._cache_data
-        except (json.JSONDecodeError, IOError):
+        except (OSError, json.JSONDecodeError):
             # Corrupted cache, reinitialize
             return self._init_cache()
 
-    def _init_cache(self) -> Dict[str, Any]:
+    def _init_cache(self) -> dict[str, Any]:
         """Initialize empty cache structure.
 
         Returns:
@@ -153,7 +153,7 @@ class LocalGitHubCache:
         except Exception:
             return "unknown"
 
-    def _is_expired(self, updated_at: Optional[str], ttl_minutes: int) -> bool:
+    def _is_expired(self, updated_at: str | None, ttl_minutes: int) -> bool:
         """Check if cache entry is expired.
 
         Args:
@@ -173,7 +173,7 @@ class LocalGitHubCache:
         except ValueError:
             return True
 
-    def get_labels(self, force_refresh: bool = False) -> Optional[List[Dict[str, str]]]:
+    def get_labels(self, force_refresh: bool = False) -> list[dict[str, str]] | None:
         """Get cached labels or None if expired.
 
         Args:
@@ -194,7 +194,7 @@ class LocalGitHubCache:
 
         return cache.get("labels")
 
-    def set_labels(self, labels: List[Dict[str, str]], ttl_minutes: Optional[int] = None) -> None:
+    def set_labels(self, labels: list[dict[str, str]], ttl_minutes: int | None = None) -> None:
         """Set cached labels.
 
         Args:
@@ -208,7 +208,7 @@ class LocalGitHubCache:
             cache["labels_ttl_minutes"] = ttl_minutes
         self._save_cache()
 
-    def get_milestones(self, force_refresh: bool = False) -> Optional[List[Dict[str, Any]]]:
+    def get_milestones(self, force_refresh: bool = False) -> list[dict[str, Any]] | None:
         """Get cached milestones or None if expired.
 
         Args:
@@ -231,7 +231,7 @@ class LocalGitHubCache:
         return cache.get("milestones")
 
     def set_milestones(
-        self, milestones: List[Dict[str, Any]], ttl_minutes: Optional[int] = None
+        self, milestones: list[dict[str, Any]], ttl_minutes: int | None = None
     ) -> None:
         """Set cached milestones.
 
@@ -246,7 +246,7 @@ class LocalGitHubCache:
             cache["milestones_ttl_minutes"] = ttl_minutes
         self._save_cache()
 
-    def get_team_members(self, force_refresh: bool = False) -> Optional[List[str]]:
+    def get_team_members(self, force_refresh: bool = False) -> list[str] | None:
         """Get cached team members or None if expired.
 
         Args:
@@ -267,7 +267,7 @@ class LocalGitHubCache:
 
         return cache.get("team_members")
 
-    def set_team_members(self, team: List[str], ttl_minutes: Optional[int] = None) -> None:
+    def set_team_members(self, team: list[str], ttl_minutes: int | None = None) -> None:
         """Set cached team members.
 
         Args:
@@ -281,7 +281,7 @@ class LocalGitHubCache:
             cache["team_ttl_minutes"] = ttl_minutes
         self._save_cache()
 
-    def get_default_branch(self, force_refresh: bool = False) -> Optional[str]:
+    def get_default_branch(self, force_refresh: bool = False) -> str | None:
         """Get cached default branch or None if expired.
 
         Args:
@@ -335,7 +335,7 @@ class RedisGitHubCache:
     Note: Not yet implemented - placeholder for future enhancement.
     """
 
-    def __init__(self, redis_url: Optional[str] = None):
+    def __init__(self, redis_url: str | None = None):
         """Initialize Redis cache.
 
         Args:
@@ -408,7 +408,7 @@ def ensure_gh_cli() -> None:
 # =============================================================================
 
 
-def fetch_labels_from_github() -> List[Dict[str, str]]:
+def fetch_labels_from_github() -> list[dict[str, str]]:
     """Fetch labels from GitHub API using gh CLI.
 
     Returns:
@@ -430,7 +430,7 @@ def fetch_labels_from_github() -> List[Dict[str, str]]:
         return []
 
 
-def fetch_milestones_from_github(state: str = "open") -> List[Dict[str, Any]]:
+def fetch_milestones_from_github(state: str = "open") -> list[dict[str, Any]]:
     """Fetch milestones from GitHub API using gh CLI.
 
     Args:
@@ -526,7 +526,7 @@ class GitHubCache:
         else:
             self._backend = LocalGitHubCache()
 
-    def get_labels(self, force_refresh: bool = False) -> Optional[List[Dict[str, str]]]:
+    def get_labels(self, force_refresh: bool = False) -> list[dict[str, str]] | None:
         """Get labels from cache or fetch from GitHub."""
         cached = self._backend.get_labels(force_refresh=force_refresh)
         if cached is not None:
@@ -541,7 +541,7 @@ class GitHubCache:
 
     def get_milestones(
         self, state: str = "open", force_refresh: bool = False
-    ) -> Optional[List[Dict[str, Any]]]:
+    ) -> list[dict[str, Any]] | None:
         """Get milestones from cache or fetch from GitHub."""
         cached = self._backend.get_milestones(force_refresh=force_refresh)
         if cached is not None:

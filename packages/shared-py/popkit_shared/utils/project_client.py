@@ -16,7 +16,7 @@ import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # =============================================================================
 # CONFIGURATION
@@ -61,10 +61,10 @@ class ProjectRegistration:
 class ProjectActivity:
     """Activity update for a project."""
 
-    tool_name: Optional[str] = None
-    agent_name: Optional[str] = None
-    command_name: Optional[str] = None
-    health_score: Optional[int] = None
+    tool_name: str | None = None
+    agent_name: str | None = None
+    command_name: str | None = None
+    health_score: int | None = None
     power_mode_active: bool = False
     power_mode_agents: int = 0
 
@@ -97,7 +97,7 @@ class ProjectClient:
     - Multi-project dashboard support
     """
 
-    def __init__(self, api_key: Optional[str] = None, api_url: str = POPKIT_API_URL):
+    def __init__(self, api_key: str | None = None, api_url: str = POPKIT_API_URL):
         """
         Initialize project client.
 
@@ -107,15 +107,15 @@ class ProjectClient:
         """
         self.api_key = api_key or os.environ.get("POPKIT_API_KEY")
         self.api_url = api_url.rstrip("/")
-        self._current_project_id: Optional[str] = None
+        self._current_project_id: str | None = None
 
     # =========================================================================
     # PUBLIC API
     # =========================================================================
 
     def register_project(
-        self, project_path: Optional[str] = None, name: Optional[str] = None, health_score: int = 0
-    ) -> Optional[ProjectRegistration]:
+        self, project_path: str | None = None, name: str | None = None, health_score: int = 0
+    ) -> ProjectRegistration | None:
         """
         Register a project with PopKit Cloud.
 
@@ -159,7 +159,7 @@ class ProjectClient:
         except Exception:
             return None
 
-    def record_activity(self, activity: ProjectActivity, project_id: Optional[str] = None) -> bool:
+    def record_activity(self, activity: ProjectActivity, project_id: str | None = None) -> bool:
         """
         Record activity for a project.
 
@@ -179,7 +179,7 @@ class ProjectClient:
         if not project_id:
             return False
 
-        body: Dict[str, Any] = {}
+        body: dict[str, Any] = {}
 
         if activity.tool_name:
             body["tool_name"] = activity.tool_name
@@ -201,7 +201,7 @@ class ProjectClient:
         except Exception:
             return False
 
-    def list_projects(self, active_only: bool = False) -> List[Dict[str, Any]]:
+    def list_projects(self, active_only: bool = False) -> list[dict[str, Any]]:
         """
         List all registered projects.
 
@@ -222,7 +222,7 @@ class ProjectClient:
         except Exception:
             return []
 
-    def get_project(self, project_id: str) -> Optional[Dict[str, Any]]:
+    def get_project(self, project_id: str) -> dict[str, Any] | None:
         """
         Get details for a specific project.
 
@@ -240,7 +240,7 @@ class ProjectClient:
         except Exception:
             return None
 
-    def get_summary(self) -> Optional[ProjectSummary]:
+    def get_summary(self) -> ProjectSummary | None:
         """
         Get summary statistics across all projects.
 
@@ -295,7 +295,7 @@ class ProjectClient:
         return bool(self.api_key)
 
     @property
-    def current_project_id(self) -> Optional[str]:
+    def current_project_id(self) -> str | None:
         """Get the current registered project ID."""
         return self._current_project_id
 
@@ -304,7 +304,7 @@ class ProjectClient:
     # =========================================================================
 
     def _get_project_info(
-        self, project_path: str, name: Optional[str], health_score: int
+        self, project_path: str, name: str | None, health_score: int
     ) -> ProjectInfo:
         """Extract project information from path."""
         path = Path(project_path).resolve()
@@ -340,17 +340,17 @@ class ProjectClient:
             project_id=project_id, name=name, path_hint=path_hint, health_score=health_score
         )
 
-    def _get(self, endpoint: str, timeout: int = DEFAULT_TIMEOUT) -> Dict[str, Any]:
+    def _get(self, endpoint: str, timeout: int = DEFAULT_TIMEOUT) -> dict[str, Any]:
         """Make GET request to API."""
         return self._request("GET", endpoint, timeout=timeout)
 
     def _post(
-        self, endpoint: str, body: Dict[str, Any], timeout: int = DEFAULT_TIMEOUT
-    ) -> Dict[str, Any]:
+        self, endpoint: str, body: dict[str, Any], timeout: int = DEFAULT_TIMEOUT
+    ) -> dict[str, Any]:
         """Make POST request to API."""
         return self._request("POST", endpoint, body, timeout=timeout)
 
-    def _delete(self, endpoint: str, timeout: int = DEFAULT_TIMEOUT) -> Dict[str, Any]:
+    def _delete(self, endpoint: str, timeout: int = DEFAULT_TIMEOUT) -> dict[str, Any]:
         """Make DELETE request to API."""
         return self._request("DELETE", endpoint, timeout=timeout)
 
@@ -358,9 +358,9 @@ class ProjectClient:
         self,
         method: str,
         endpoint: str,
-        body: Optional[Dict[str, Any]] = None,
+        body: dict[str, Any] | None = None,
         timeout: int = DEFAULT_TIMEOUT,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Make HTTP request to API.
 
@@ -396,7 +396,7 @@ class ProjectClient:
 # MODULE-LEVEL FUNCTIONS
 # =============================================================================
 
-_client: Optional[ProjectClient] = None
+_client: ProjectClient | None = None
 
 
 def get_client() -> ProjectClient:
@@ -408,8 +408,8 @@ def get_client() -> ProjectClient:
 
 
 def register_project(
-    project_path: Optional[str] = None, name: Optional[str] = None, health_score: int = 0
-) -> Optional[ProjectRegistration]:
+    project_path: str | None = None, name: str | None = None, health_score: int = 0
+) -> ProjectRegistration | None:
     """Convenience function to register a project."""
     return get_client().register_project(project_path, name, health_score)
 
@@ -419,12 +419,12 @@ def record_activity(activity: ProjectActivity) -> bool:
     return get_client().record_activity(activity)
 
 
-def list_projects(active_only: bool = False) -> List[Dict[str, Any]]:
+def list_projects(active_only: bool = False) -> list[dict[str, Any]]:
     """Convenience function to list projects."""
     return get_client().list_projects(active_only)
 
 
-def get_summary() -> Optional[ProjectSummary]:
+def get_summary() -> ProjectSummary | None:
     """Convenience function to get summary."""
     return get_client().get_summary()
 

@@ -16,7 +16,7 @@ import subprocess
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # =============================================================================
 # CONFIGURATION
@@ -45,8 +45,8 @@ class CheckpointMetadata:
     created_at: str
     description: str
     tool_calls: int
-    files_modified: List[str]
-    git_ref: Optional[str] = None  # Git commit/stash reference
+    files_modified: list[str]
+    git_ref: str | None = None  # Git commit/stash reference
     is_auto: bool = False  # Auto-created vs manual
 
 
@@ -55,9 +55,9 @@ class CheckpointData:
     """Complete checkpoint data."""
 
     metadata: CheckpointMetadata
-    session_state: Dict[str, Any]
-    file_snapshots: Dict[str, str]  # file_path -> content hash
-    context: Dict[str, Any]  # Agent context/memory
+    session_state: dict[str, Any]
+    file_snapshots: dict[str, str]  # file_path -> content hash
+    context: dict[str, Any]  # Agent context/memory
 
 
 @dataclass
@@ -66,9 +66,9 @@ class RestoreResult:
 
     success: bool
     checkpoint_id: str
-    restored_files: List[str]
-    warnings: List[str]
-    error: Optional[str] = None
+    restored_files: list[str]
+    warnings: list[str]
+    error: str | None = None
 
 
 # =============================================================================
@@ -87,7 +87,7 @@ class CheckpointManager:
     - Rollback support
     """
 
-    def __init__(self, session_id: str, project_path: Optional[str] = None):
+    def __init__(self, session_id: str, project_path: str | None = None):
         """
         Initialize checkpoint manager.
 
@@ -103,8 +103,8 @@ class CheckpointManager:
     def create(
         self,
         description: str,
-        session_state: Optional[Dict[str, Any]] = None,
-        context: Optional[Dict[str, Any]] = None,
+        session_state: dict[str, Any] | None = None,
+        context: dict[str, Any] | None = None,
         is_auto: bool = False,
     ) -> CheckpointMetadata:
         """
@@ -161,7 +161,7 @@ class CheckpointManager:
         timestamp = datetime.now().strftime("%H%M%S")
         return f"checkpoint-{next_num:03d}-{timestamp}"
 
-    def _get_modified_files(self) -> List[str]:
+    def _get_modified_files(self) -> list[str]:
         """Get list of modified files from git."""
         try:
             result = subprocess.run(
@@ -187,7 +187,7 @@ class CheckpointManager:
             pass
         return []
 
-    def _create_git_snapshot(self, description: str) -> Optional[str]:
+    def _create_git_snapshot(self, description: str) -> str | None:
         """Create git stash for backup."""
         try:
             # Create stash with message
@@ -226,7 +226,7 @@ class CheckpointManager:
             pass
         return None
 
-    def _snapshot_files(self, files: List[str]) -> Dict[str, str]:
+    def _snapshot_files(self, files: list[str]) -> dict[str, str]:
         """Create content hashes for files."""
         import hashlib
 
@@ -272,7 +272,7 @@ class CheckpointManager:
                 if checkpoint_file.exists():
                     checkpoint_file.unlink()
 
-    def list_checkpoints(self) -> List[CheckpointMetadata]:
+    def list_checkpoints(self) -> list[CheckpointMetadata]:
         """
         List all checkpoints for this session.
 
@@ -295,7 +295,7 @@ class CheckpointManager:
 
         return checkpoints
 
-    def get_checkpoint(self, checkpoint_id: str) -> Optional[CheckpointData]:
+    def get_checkpoint(self, checkpoint_id: str) -> CheckpointData | None:
         """
         Get a specific checkpoint.
 
@@ -387,7 +387,7 @@ class CheckpointManager:
             warnings=warnings,
         )
 
-    def get_latest(self) -> Optional[CheckpointData]:
+    def get_latest(self) -> CheckpointData | None:
         """Get the most recent checkpoint."""
         checkpoints = self.list_checkpoints()
         if checkpoints:
@@ -397,9 +397,9 @@ class CheckpointManager:
     def auto_checkpoint(
         self,
         trigger: str,
-        session_state: Optional[Dict[str, Any]] = None,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> Optional[CheckpointMetadata]:
+        session_state: dict[str, Any] | None = None,
+        context: dict[str, Any] | None = None,
+    ) -> CheckpointMetadata | None:
         """
         Create automatic checkpoint based on trigger.
 
@@ -437,10 +437,10 @@ class CheckpointManager:
 # MODULE-LEVEL FUNCTIONS
 # =============================================================================
 
-_current_manager: Optional[CheckpointManager] = None
+_current_manager: CheckpointManager | None = None
 
 
-def get_manager(session_id: Optional[str] = None) -> CheckpointManager:
+def get_manager(session_id: str | None = None) -> CheckpointManager:
     """Get or create checkpoint manager."""
     global _current_manager
     if _current_manager is None or (session_id and _current_manager.session_id != session_id):
@@ -461,7 +461,7 @@ def restore_checkpoint(checkpoint_id: str) -> RestoreResult:
     return get_manager().restore(checkpoint_id)
 
 
-def list_checkpoints() -> List[CheckpointMetadata]:
+def list_checkpoints() -> list[CheckpointMetadata]:
     """Convenience function to list checkpoints."""
     return get_manager().list_checkpoints()
 
