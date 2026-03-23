@@ -108,15 +108,10 @@ class SemanticRouter:
     def _detect_project_root(self) -> str | None:
         """Auto-detect project root from cwd."""
         try:
-            from .embedding_project import get_project_root
+            from .frontmatter import get_project_root
 
             return get_project_root()
         except ImportError:
-            # Fallback: look for .claude or .git
-            current = Path.cwd()
-            for path in [current] + list(current.parents):
-                if (path / ".claude").is_dir() or (path / ".git").is_dir():
-                    return str(path)
             return None
 
     def _load_config(self) -> dict[str, Any]:
