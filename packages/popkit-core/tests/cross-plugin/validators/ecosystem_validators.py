@@ -72,8 +72,8 @@ def load_plugin_version(plugin_path: Path) -> str:
             with open(plugin_json, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 return data.get("version", "unknown")
-        except Exception:
-            pass
+        except (json.JSONDecodeError, IOError, KeyError):
+            pass  # Best-effort: fall through to pyproject.toml
 
     # Try pyproject.toml (Python packages like popkit-mcp, popkit-cli)
     pyproject = plugin_path / "pyproject.toml"
@@ -87,8 +87,8 @@ def load_plugin_version(plugin_path: Path) -> str:
                     ver = line.split("=", 1)[1].strip().strip('"').strip("'")
                     if ver:
                         return ver
-        except Exception:
-            pass
+        except (IOError, UnicodeDecodeError):
+            pass  # Best-effort: fall through to "unknown"
 
     return "unknown"
 
