@@ -1,0 +1,113 @@
+name: Publish to PyPI
+
+on:
+  workflow_dispatch:
+    inputs:
+      packages:
+        description: "Packages to publish (comma-separated: shared,mcp,cli,meta or 'all')"
+        required: true
+        default: "all"
+        type: string
+      dry_run:
+        description: "Dry run (build + twine check only, no upload)"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  publish:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install build tools
+        run: pip install --upgrade build twine
+
+      - name: Determine packages to publish
+        id: packages
+        run: |
+          INPUT="${{ inputs.packages }}"
+          if [ "$INPUT" = "all" ]; then
+            echo "shared=true" >> $GITHUB_OUTPUT
+            echo "mcp=true" >> $GITHUB_OUTPUT
+            echo "cli=true" >> $GITHUB_OUTPUT
+            echo "meta=true" >> $GITHUB_OUTPUT
+          else
+            echo "shared=false" >> $GITHUB_OUTPUT
+            echo "mcp=false" >> $GITHUB_OUTPUT
+            echo "cli=false" >> $GITHUB_OUTPUT
+            echo "meta=false" >> $GITHUB_OUTPUT
+            IFS=',' read -ra PKGS <<< "$INPUT"
+            for pkg in "${PKGS[@]}"; do
+              pkg=$(echo "$pkg" | xargs)
+              echo "${pkg}=true" >> $GITHUB_OUTPUT
+            done
+          fi
+
+      # 1. popkit-shared (no PopKit dependencies)
+      - name: Build popkit-shared
+        if: steps.packages.outputs.shared == 'true'
+        run: python -m build packages/shared-py
+
+      - name: Check popkit-shared
+        if: steps.packages.outputs.shared == 'true'
+        run: twine check packages/shared-py/dist/*
+
+      - name: Publish popkit-shared
+        if: steps.packages.outputs.shared == 'true' && inputs.dry_run == false
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: twine upload packages/shared-py/dist/*
+
+      # 2. popkit-mcp (depends on popkit-shared)
+      - name: Build popkit-mcp
+        if: steps.packages.outputs.mcp == 'true'
+        run: python -m build packages/popkit-mcp
+
+      - name: Check popkit-mcp
+        if: steps.packages.outputs.mcp == 'true'
+        run: twine check packages/popkit-mcp/dist/*
+
+      - name: Publish popkit-mcp
+        if: steps.packages.outputs.mcp == 'true' && inputs.dry_run == false
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: twine upload packages/popkit-mcp/dist/*
+
+      # 3. popkit-cli (depends on popkit-shared)
+      - name: Build popkit-cli
+        if: steps.packages.outputs.cli == 'true'
+        run: python -m build packages/popkit-cli
+
+      - name: Check popkit-cli
+        if: steps.packages.outputs.cli == 'true'
+        run: twine check packages/popkit-cli/dist/*
+
+      - name: Publish popkit-cli
+        if: steps.packages.outputs.cli == 'true' && inputs.dry_run == false
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: twine upload packages/popkit-cli/dist/*
+
+      # 4. popkit meta-package (depends on all above)
+      - name: Build popkit
+        if: steps.packages.outputs.meta == 'true'
+        run: python -m build .
+
+      - name: Check popkit
+        if: steps.packages.outputs.meta == 'true'
+        run: twine check dist/*
+
+      - name: Publish popkit
+        if: steps.packages.outputs.meta == 'true' && inputs.dry_run == false
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: twine upload dist/*

@@ -14,7 +14,7 @@ packages = [{include = "popkit_cli"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 pyyaml = "^6.0"
-popkit-shared = {path = "../shared-py", develop = true}
+popkit-shared = "^1.0.0"
 
 [tool.poetry.scripts]
 popkit = "popkit_cli.main:main"
