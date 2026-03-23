@@ -8,15 +8,10 @@ Handles incremental updates and auto-embedding after generation.
 Part of PopKit Issue #46 (Project Embeddings).
 """
 
-import os
-import sys
 import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any
-
-# Add utils to path for local imports
-sys.path.insert(0, os.path.dirname(__file__))
 
 from .embedding_store import EmbeddingRecord, EmbeddingStore
 from .voyage_client import VoyageClient

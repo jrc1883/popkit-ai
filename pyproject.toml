@@ -9,10 +9,7 @@ description = "PopKit - LLM-agnostic developer orchestration engine"
 authors = ["Joseph Cannon <joseph@thehouseofdeals.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [
-    {include = "popkit_cli", from = "packages/popkit-cli"},
-    {include = "popkit_shared", from = "packages/shared-py"},
-]
+packages = [{include = "popkit"}]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -28,14 +25,18 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.11"
+popkit-shared = "^1.0.0"
+popkit-cli = "^1.0.0"
+popkit-mcp = {version = "^1.0.0", optional = true}
 pyyaml = "^6.0"
 filelock = "^3.13.0"
+lxml = {version = "^6.0", optional = true}
 
 [tool.poetry.extras]
 # pip install popkit[mcp]  — includes MCP server
-mcp = ["mcp"]
+mcp = ["popkit-mcp"]
 # pip install popkit[full]  — everything
-full = ["mcp", "lxml"]
+full = ["popkit-mcp", "lxml"]
 
 [tool.poetry.scripts]
 popkit = "popkit_cli.main:main"
