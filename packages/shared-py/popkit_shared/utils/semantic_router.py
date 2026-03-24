@@ -12,11 +12,14 @@ Updated for Issue #101 (Upstash Vector Integration) - Cloud semantic search.
 """
 
 import json
+import logging
 import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+logger = logging.getLogger("popkit.router")
 
 from .cloud_agent_search import (
     is_available as cloud_is_available,
@@ -41,6 +44,11 @@ DEFAULT_MIN_CONFIDENCE = 0.3
 
 # Project item boost (10% boost for project-local items)
 PROJECT_ITEM_BOOST = 0.1
+
+# Confidence levels for non-semantic routing methods
+KEYWORD_MATCH_CONFIDENCE = 0.8
+ERROR_PATTERN_CONFIDENCE = 0.85
+FILE_PATTERN_CONFIDENCE = 0.9
 
 
 # =============================================================================
@@ -120,8 +128,8 @@ class SemanticRouter:
             try:
                 with open(CONFIG_PATH) as f:
                     return json.load(f)
-            except Exception:
-                pass
+            except (json.JSONDecodeError, OSError) as e:
+                logger.warning("Failed to load routing config %s: %s", CONFIG_PATH, e)
         return {}
 
     # =========================================================================
@@ -323,8 +331,7 @@ class SemanticRouter:
             result = cloud_search_agents(query=query, top_k=top_k, min_score=min_confidence)
 
             if result.error:
-                # Log but don't fail - will fall back to local
-                print(f"Cloud search warning: {result.error}", file=sys.stderr)
+                logger.debug("Cloud search returned error, falling back: %s", result.error)
                 return []
 
             # Convert to RoutingResult
@@ -345,7 +352,7 @@ class SemanticRouter:
             return routing_results
 
         except Exception as e:
-            print(f"Cloud routing error: {e}", file=sys.stderr)
+            logger.debug("Cloud routing unavailable, falling back: %s", e)
             return []
 
     def _semantic_route(self, query: str, top_k: int, min_confidence: float) -> list[RoutingResult]:
@@ -408,7 +415,7 @@ class SemanticRouter:
             return routing_results[:top_k]
 
         except Exception as e:
-            print(f"Semantic routing error: {e}", file=sys.stderr)
+            logger.debug("Semantic routing failed, falling back: %s", e)
             return []
 
     def _keyword_route(self, query: str, top_k: int) -> list[RoutingResult]:
@@ -423,7 +430,7 @@ class SemanticRouter:
                     matches.append(
                         RoutingResult(
                             agent=agent,
-                            confidence=0.8,  # Keyword matches get 0.8 confidence
+                            confidence=KEYWORD_MATCH_CONFIDENCE,
                             reason=f"Keyword match: '{keyword}'",
                             method="keyword",
                         )
@@ -444,7 +451,7 @@ class SemanticRouter:
                     results.append(
                         RoutingResult(
                             agent=agent,
-                            confidence=0.9,  # File patterns get 0.9 confidence
+                            confidence=FILE_PATTERN_CONFIDENCE,
                             reason=f"File pattern: '{pattern}'",
                             method="file_pattern",
                         )
@@ -463,7 +470,7 @@ class SemanticRouter:
                     results.append(
                         RoutingResult(
                             agent=agent,
-                            confidence=0.85,  # Error patterns get 0.85 confidence
+                            confidence=ERROR_PATTERN_CONFIDENCE,
                             reason=f"Error pattern: '{pattern}'",
                             method="error_pattern",
                         )
