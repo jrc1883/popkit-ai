@@ -5,7 +5,9 @@ description: Configure PopKit with Cursor, Codex CLI, Copilot, and other MCP cli
 
 # MCP Provider Setup
 
-PopKit works with any MCP-compatible AI coding tool. This guide covers setup for each provider.
+PopKit works with any MCP-compatible AI coding tool. The `popkit-mcp` server exposes PopKit's 50 skills, 24 agents, and 25 commands as standard MCP tools that any client can call. See [Architecture](/concepts/architecture/) for how this fits into PopKit's provider model.
+
+This guide covers setup for each provider.
 
 ## Prerequisites
 

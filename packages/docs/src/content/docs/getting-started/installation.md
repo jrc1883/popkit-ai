@@ -182,4 +182,5 @@ PopKit requires **Claude Code 2.1.33+** for full feature support. Tested and ver
 ## Next Steps
 
 - [Quick Start Guide](/getting-started/quick-start/)
+- [Troubleshooting](/guides/troubleshooting/)
 - [Core Concepts](/concepts/agents/)
