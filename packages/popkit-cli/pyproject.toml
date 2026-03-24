@@ -7,7 +7,7 @@ name = "popkit-cli"
 version = "1.0.0"
 description = "PopKit CLI - install, configure, and manage PopKit across AI coding tools"
 authors = ["Joseph Cannon <joseph@thehouseofdeals.com>"]
-license = "MIT"
+license = "LicenseRef-PolyForm-Noncommercial-1.0.0"
 readme = "README.md"
 packages = [{include = "popkit_cli"}]
 

@@ -155,6 +155,16 @@ Foundation skills for project management, embedding, and plugin operations.
 
 ---
 
+### pop-sandbox
+
+**Description:** E2B Sandbox Manager — provides safe, isolated environments for code execution and testing. Essential for multi-agent swarms to avoid local file conflicts.
+
+```bash
+/popkit-core:pop-sandbox
+```
+
+---
+
 ### pop-project-reference
 
 **Description:** Load cross-project context in monorepos. Lists available workspace projects or loads specific project context. Supports pnpm, npm/yarn, Lerna workspaces.

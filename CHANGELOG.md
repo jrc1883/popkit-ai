@@ -2,7 +2,7 @@
 
 All notable changes to PopKit are documented in this file.
 
-**Versioning:** PopKit uses semantic versioning. Currently in preview (0.x) until stable public launch.
+**Versioning:** PopKit uses semantic versioning. Currently in public beta (1.0.0-beta).
 
 ## [1.0.0-beta.12] - 2026-03-22
 

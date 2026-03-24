@@ -7,7 +7,7 @@ name = "popkit-shared"
 version = "1.0.0"
 description = "Shared utilities for PopKit plugin ecosystem"
 authors = ["Joseph Cannon <joseph@thehouseofdeals.com>"]
-license = "MIT"
+license = "LicenseRef-PolyForm-Noncommercial-1.0.0"
 readme = "README.md"
 packages = [{include = "popkit_shared"}]
 
