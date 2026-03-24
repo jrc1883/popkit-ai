@@ -20,12 +20,11 @@ from popkit_shared.utils.cloud_agent_search import AgentMatch
 from popkit_shared.utils.cloud_agent_search import SearchResult as CloudSearchResult
 from popkit_shared.utils.embedding_store import EmbeddingRecord
 from popkit_shared.utils.embedding_store import SearchResult as EmbeddingSearchResult
-from popkit_shared.utils.semantic_router import (
-    DEFAULT_MIN_CONFIDENCE,
-    PROJECT_ITEM_BOOST,
-    RoutingResult,
-    SemanticRouter,
-)
+
+DEFAULT_MIN_CONFIDENCE = sr_module.DEFAULT_MIN_CONFIDENCE
+PROJECT_ITEM_BOOST = sr_module.PROJECT_ITEM_BOOST
+RoutingResult = sr_module.RoutingResult
+SemanticRouter = sr_module.SemanticRouter
 
 # =============================================================================
 # Helpers
