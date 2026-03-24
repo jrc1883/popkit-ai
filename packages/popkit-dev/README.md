@@ -1,6 +1,6 @@
 # PopKit Dev - Development Workflow Plugin
 
-**Version:** 1.0.0-beta.10
+**Version:** 1.0.0-beta.12
 **Status:** Ready for marketplace publication (Epic #580 Complete)
 
 ## Overview
@@ -66,7 +66,7 @@ PopKit Dev provides 12 specialized skills for development workflows:
 
 **Minimum Requirements**:
 
-- Claude Code 2.0.67+ (for extended thinking and plan mode)
+- Claude Code 2.1.33+ (for extended thinking and plan mode)
 
 ## Architecture
 

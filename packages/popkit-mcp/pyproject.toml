@@ -7,7 +7,7 @@ name = "popkit-mcp"
 version = "1.0.0"
 description = "PopKit MCP Server - exposes skills, agents, and commands as MCP tools"
 authors = ["Joseph Cannon <joseph@thehouseofdeals.com>"]
-license = "MIT"
+license = "LicenseRef-PolyForm-Noncommercial-1.0.0"
 readme = "README.md"
 packages = [{include = "popkit_mcp"}]
 classifiers = [

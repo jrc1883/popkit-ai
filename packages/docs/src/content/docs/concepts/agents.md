@@ -5,7 +5,7 @@ description: Understanding PopKit's tiered agent architecture
 
 # Agent System
 
-PopKit features a sophisticated tiered agent system with 23 specialized agents organized into three tiers.
+PopKit features a sophisticated tiered agent system with 24 specialized agents organized into three tiers.
 
 ## Agent Tiers
 

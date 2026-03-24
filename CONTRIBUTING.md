@@ -89,7 +89,7 @@ Want to create a new command, skill, or agent? See the [Plugin Development Guide
 
 ### Prerequisites
 
-- **Claude Code**: Version 2.0.71+ recommended for full feature support
+- **Claude Code**: Version 2.1.33+ recommended for full feature support
 - **Python**: Python 3.x for running tests and hooks
 - **Git**: For version control
 - **GitHub Account**: To submit pull requests
