@@ -1,11 +1,11 @@
 ---
 title: Agents Reference
-description: Complete reference for all 23 PopKit specialized agents
+description: Complete reference for all 24 PopKit specialized agents
 ---
 
 # Agents Reference
 
-PopKit provides 23 specialized AI agents across 4 plugins. Agents are organized into tiers based on activation frequency.
+PopKit provides 24 specialized AI agents across 4 plugins. Agents are organized into tiers based on activation frequency.
 
 ## Agent Tiers
 
