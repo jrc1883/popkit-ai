@@ -176,7 +176,9 @@ strong {
 
 .sl-link-button[data-variant="primary"],
 a[data-variant="primary"],
-.action.primary {
+.action.primary,
+.hero a.primary,
+.sl-link-button.primary {
   background: linear-gradient(135deg, #0284c7, var(--color-accent)) !important;
   color: #ffffff !important;
   border: none !important;
@@ -227,7 +229,7 @@ a[data-variant="secondary"]:hover,
    Links - High Contrast
    ============================================ */
 
-a {
+a:not([data-variant]):not(.action):not(.sl-link-button) {
   color: var(--color-accent-high) !important;
   text-decoration: underline !important;
   text-decoration-color: rgba(3, 105, 161, 0.4) !important;
@@ -235,17 +237,17 @@ a {
   transition: all var(--transition-fast) !important;
 }
 
-:root[data-theme='dark'] a {
+:root[data-theme='dark'] a:not([data-variant]):not(.action):not(.sl-link-button) {
   color: var(--color-accent) !important;
   text-decoration-color: rgba(56, 189, 248, 0.4) !important;
 }
 
-a:hover {
+a:not([data-variant]):not(.action):not(.sl-link-button):hover {
   color: var(--color-accent) !important;
   text-decoration-color: var(--color-accent) !important;
 }
 
-:root[data-theme='dark'] a:hover {
+:root[data-theme='dark'] a:not([data-variant]):not(.action):not(.sl-link-button):hover {
   color: var(--color-accent-high) !important;
   text-decoration-color: var(--color-accent-high) !important;
 }
@@ -415,7 +417,8 @@ article:hover svg {
    Code Blocks - Professional Styling
    ============================================ */
 
-code {
+/* Inline code only — not code inside pre blocks or expressive-code */
+:not(pre) > code:not(.ec-line *):not([class*="expressive"]) {
   background: var(--color-bg-tertiary) !important;
   color: var(--color-accent-high) !important;
   padding: 0.2em 0.4em !important;
