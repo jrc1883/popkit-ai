@@ -15,6 +15,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+import popkit_shared.utils.semantic_router as sr_module
 from popkit_shared.utils.cloud_agent_search import AgentMatch
 from popkit_shared.utils.cloud_agent_search import SearchResult as CloudSearchResult
 from popkit_shared.utils.embedding_store import EmbeddingRecord
@@ -287,7 +288,7 @@ class TestDetectProjectRoot:
             patch("popkit_shared.utils.semantic_router.is_available", return_value=False),
             patch("popkit_shared.utils.semantic_router.EmbeddingStore", return_value=mock_store),
         ):
-            router = SemanticRouter(project_path="/explicit")
+            _router = SemanticRouter(project_path="/explicit")  # noqa: F841
 
         # Test the fallback logic directly by calling _detect_project_root
         # with a mocked import failure and cwd set to tmp_path
@@ -306,11 +307,7 @@ class TestDetectProjectRoot:
         with (
             patch("popkit_shared.utils.semantic_router.is_available", return_value=False),
             patch("popkit_shared.utils.semantic_router.EmbeddingStore", return_value=mock_store),
-            patch(
-                "popkit_shared.utils.embedding_project.get_project_root",
-                return_value=None,
-            ),
-            patch("pathlib.Path.cwd", return_value=tmp_path),
+            patch.object(SemanticRouter, "_detect_project_root", return_value=None),
         ):
             router = SemanticRouter()
         assert router.project_path is None
@@ -1071,8 +1068,6 @@ class TestModuleLevelFunctions:
     """Test singleton get_router() and convenience functions."""
 
     def test_get_router_returns_singleton(self):
-        import popkit_shared.utils.semantic_router as sr_module
-
         sr_module._router = None  # Reset singleton
 
         with (
@@ -1087,8 +1082,6 @@ class TestModuleLevelFunctions:
         sr_module._router = None  # Clean up
 
     def test_get_router_creates_new_if_none(self):
-        import popkit_shared.utils.semantic_router as sr_module
-
         sr_module._router = None
 
         with (
