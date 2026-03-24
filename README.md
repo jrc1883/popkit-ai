@@ -44,6 +44,8 @@ Example: `/popkit-dev:next` uses `pop-next-action` internally, then adds [mode h
 
 ## Get Started
 
+### Claude Code Plugin (recommended)
+
 ```bash
 # Add the PopKit marketplace
 /plugin marketplace add jrc1883/popkit-claude
@@ -54,6 +56,22 @@ Example: `/popkit-dev:next` uses `pop-next-action` internally, then adds [mode h
 
 # Restart Claude Code, then run your first morning routine:
 /popkit-dev:routine morning
+```
+
+### PyPI (for MCP server or standalone use)
+
+```bash
+# MCP server only — for Cursor, Codex CLI, Copilot, or any MCP client
+pip install popkit-mcp
+popkit-mcp --transport stdio
+
+# Full install — CLI + shared utilities + MCP server
+pip install popkit[full]
+
+# Or install individual packages
+pip install popkit-shared   # Core utilities only
+pip install popkit-cli      # CLI only
+pip install popkit[mcp]     # Core + CLI + MCP server
 ```
 
 ---
@@ -225,7 +243,7 @@ PopKit is modular. Install what you need:
 
 ## Requirements
 
-- Claude Code 2.1.33+ (tested through 2.1.79)
+- Claude Code 2.1.33+ (tested through 2.1.80)
 - Python 3.11+
 - Git
 - GitHub CLI (`gh`) for GitHub integration
