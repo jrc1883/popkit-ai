@@ -123,13 +123,13 @@ Then configure your MCP client to connect via HTTP instead of stdio.
 
 ## Config Reference
 
-| Tool | Format | Global Path | Per-Project Path | Root Key |
-| --- | --- | --- | --- | --- |
-| Cursor | JSON | `~/.cursor/mcp.json` | `.cursor/mcp.json` | `mcpServers` |
-| Codex CLI | TOML | `~/.codex/config.toml` | `.codex/config.toml` | `[mcp_servers.*]` |
-| Copilot CLI | JSON | `~/.copilot/mcp-config.json` | `.vscode/mcp.json` | `mcpServers` |
-| VS Code | JSON | User settings | `.vscode/mcp.json` | `servers` |
-| Claude Code | JSON | `~/.claude.json` | `.mcp.json` | `mcpServers` |
+| Tool        | Format | Global Path                  | Per-Project Path     | Root Key          |
+| ----------- | ------ | ---------------------------- | -------------------- | ----------------- |
+| Cursor      | JSON   | `~/.cursor/mcp.json`         | `.cursor/mcp.json`   | `mcpServers`      |
+| Codex CLI   | TOML   | `~/.codex/config.toml`       | `.codex/config.toml` | `[mcp_servers.*]` |
+| Copilot CLI | JSON   | `~/.copilot/mcp-config.json` | `.vscode/mcp.json`   | `mcpServers`      |
+| VS Code     | JSON   | User settings                | `.vscode/mcp.json`   | `servers`         |
+| Claude Code | JSON   | `~/.claude.json`             | `.mcp.json`          | `mcpServers`      |
 
 ---
 
