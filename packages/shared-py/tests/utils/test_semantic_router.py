@@ -288,7 +288,7 @@ class TestDetectProjectRoot:
             patch("popkit_shared.utils.semantic_router.is_available", return_value=False),
             patch("popkit_shared.utils.semantic_router.EmbeddingStore", return_value=mock_store),
         ):
-            _router = SemanticRouter(project_path="/explicit")  # noqa: F841
+            SemanticRouter(project_path="/explicit")
 
         # Test the fallback logic directly by calling _detect_project_root
         # with a mocked import failure and cwd set to tmp_path
@@ -1095,8 +1095,6 @@ class TestModuleLevelFunctions:
         sr_module._router = None  # Clean up
 
     def test_module_route_delegates_to_router(self):
-        import popkit_shared.utils.semantic_router as sr_module
-
         mock_router = MagicMock()
         mock_router.route.return_value = [
             RoutingResult(agent="a", confidence=0.9, reason="r", method="m")
@@ -1112,8 +1110,6 @@ class TestModuleLevelFunctions:
         sr_module._router = None  # Clean up
 
     def test_module_route_single_delegates_to_router(self):
-        import popkit_shared.utils.semantic_router as sr_module
-
         mock_router = MagicMock()
         mock_router.route_single.return_value = RoutingResult(
             agent="a", confidence=0.9, reason="r", method="m"
