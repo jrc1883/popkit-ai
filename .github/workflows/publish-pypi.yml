@@ -36,19 +36,19 @@ jobs:
         run: |
           INPUT="${{ inputs.packages }}"
           if [ "$INPUT" = "all" ]; then
-            echo "shared=true" >> $GITHUB_OUTPUT
-            echo "mcp=true" >> $GITHUB_OUTPUT
-            echo "cli=true" >> $GITHUB_OUTPUT
-            echo "meta=true" >> $GITHUB_OUTPUT
+            echo "shared=true" >> "$GITHUB_OUTPUT"
+            echo "mcp=true" >> "$GITHUB_OUTPUT"
+            echo "cli=true" >> "$GITHUB_OUTPUT"
+            echo "meta=true" >> "$GITHUB_OUTPUT"
           else
-            echo "shared=false" >> $GITHUB_OUTPUT
-            echo "mcp=false" >> $GITHUB_OUTPUT
-            echo "cli=false" >> $GITHUB_OUTPUT
-            echo "meta=false" >> $GITHUB_OUTPUT
+            echo "shared=false" >> "$GITHUB_OUTPUT"
+            echo "mcp=false" >> "$GITHUB_OUTPUT"
+            echo "cli=false" >> "$GITHUB_OUTPUT"
+            echo "meta=false" >> "$GITHUB_OUTPUT"
             IFS=',' read -ra PKGS <<< "$INPUT"
             for pkg in "${PKGS[@]}"; do
               pkg=$(echo "$pkg" | xargs)
-              echo "${pkg}=true" >> $GITHUB_OUTPUT
+              echo "${pkg}=true" >> "$GITHUB_OUTPUT"
             done
           fi
 
