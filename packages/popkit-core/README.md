@@ -219,7 +219,7 @@ Set `E2B_API_KEY` environment variable (or add to settings.json `env` section).
 - **File-based communication**: Agents share insights via JSON
 - **Sync barriers**: Phase-aware coordination between agents
 
-**Requirements:** Claude Code 2.0.64+, Premium or Pro tier
+**Requirements:** Claude Code 2.1.33+, Premium or Pro tier
 
 ### Other Modes
 
@@ -424,13 +424,13 @@ Privacy levels:
 
 **Minimum Requirements**:
 
-- Claude Code 2.0.67+ (for extended thinking and plan mode)
-- Python 3.8+
+- Claude Code 2.1.33+ (for extended thinking and plan mode)
+- Python 3.11+
 - E2B API key (for Native Swarm sandbox features)
 
 ## Development Status
 
-**Version**: 1.0.0-beta.10
+**Version**: 1.0.0-beta.12
 **Status**: Ready for marketplace publication
 **Epic #580**: Complete - Plugin modularization finished
 

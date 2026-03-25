@@ -14,13 +14,17 @@ on:
         default: false
         type: boolean
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   publish:
     runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
 
@@ -32,19 +36,19 @@ jobs:
         run: |
           INPUT="${{ inputs.packages }}"
           if [ "$INPUT" = "all" ]; then
-            echo "shared=true" >> $GITHUB_OUTPUT
-            echo "mcp=true" >> $GITHUB_OUTPUT
-            echo "cli=true" >> $GITHUB_OUTPUT
-            echo "meta=true" >> $GITHUB_OUTPUT
+            echo "shared=true" >> "$GITHUB_OUTPUT"
+            echo "mcp=true" >> "$GITHUB_OUTPUT"
+            echo "cli=true" >> "$GITHUB_OUTPUT"
+            echo "meta=true" >> "$GITHUB_OUTPUT"
           else
-            echo "shared=false" >> $GITHUB_OUTPUT
-            echo "mcp=false" >> $GITHUB_OUTPUT
-            echo "cli=false" >> $GITHUB_OUTPUT
-            echo "meta=false" >> $GITHUB_OUTPUT
+            echo "shared=false" >> "$GITHUB_OUTPUT"
+            echo "mcp=false" >> "$GITHUB_OUTPUT"
+            echo "cli=false" >> "$GITHUB_OUTPUT"
+            echo "meta=false" >> "$GITHUB_OUTPUT"
             IFS=',' read -ra PKGS <<< "$INPUT"
             for pkg in "${PKGS[@]}"; do
               pkg=$(echo "$pkg" | xargs)
-              echo "${pkg}=true" >> $GITHUB_OUTPUT
+              echo "${pkg}=true" >> "$GITHUB_OUTPUT"
             done
           fi
 

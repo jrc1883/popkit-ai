@@ -1,19 +1,29 @@
 ---
 title: Installation
-description: How to install PopKit plugins for Claude Code
+description: How to install PopKit — Claude Code plugin, PyPI packages, or MCP server
 ---
 
 # Installation
 
-PopKit is published as a GitHub-based marketplace. Install it in two steps:
+PopKit can be installed in three ways depending on your setup:
 
-## Step 1: Add the Marketplace (One-time Setup)
+| Method                 | Best for                                   | Install command                                 |
+| ---------------------- | ------------------------------------------ | ----------------------------------------------- |
+| **Claude Code plugin** | Claude Code users                          | `/plugin marketplace add jrc1883/popkit-claude` |
+| **PyPI (MCP server)**  | Cursor, Codex CLI, Copilot, any MCP client | `pip install popkit-mcp`                        |
+| **PyPI (full)**        | Standalone CLI + all utilities             | `pip install popkit[full]`                      |
+
+---
+
+## Claude Code Plugin (Recommended)
+
+### Step 1: Add the Marketplace (One-time Setup)
 
 ```bash
 /plugin marketplace add jrc1883/popkit-claude
 ```
 
-## Step 2: Install Plugins
+### Step 2: Install Plugins
 
 Install all plugins for full functionality:
 
@@ -27,9 +37,95 @@ Install all plugins for full functionality:
 
 After installation, restart Claude Code and run `/popkit-dev:next` to get started.
 
+---
+
+## PyPI — MCP Server
+
+Install the MCP server for use with Cursor, Codex CLI, GitHub Copilot, or any MCP-compatible client:
+
+```bash
+pip install popkit-mcp
+```
+
+### Usage
+
+```bash
+# Start with stdio transport (default for MCP clients)
+popkit-mcp --transport stdio
+
+# Start with HTTP transport for debugging
+popkit-mcp --transport streamable-http --port 8080
+
+# Specify custom packages directory
+popkit-mcp --packages /path/to/popkit/packages
+```
+
+### MCP Client Configuration
+
+**Cursor** — Add to `~/.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "popkit": {
+      "command": "popkit-mcp",
+      "args": ["--transport", "stdio"]
+    }
+  }
+}
+```
+
+**Codex CLI** — Add to `~/.codex/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "popkit": {
+      "command": "popkit-mcp",
+      "args": ["--transport", "stdio"]
+    }
+  }
+}
+```
+
+### Zero-install with uvx
+
+If you have `uv` installed, you can run the MCP server without installing:
+
+```bash
+uvx popkit-mcp --transport stdio
+```
+
+---
+
+## PyPI — Full Install
+
+Install everything — CLI, shared utilities, and MCP server:
+
+```bash
+# Full install (CLI + utilities + MCP server)
+pip install popkit[full]
+
+# Or install specific components
+pip install popkit           # CLI + shared utilities
+pip install popkit[mcp]      # CLI + utilities + MCP server
+pip install popkit-shared    # Core utilities only
+pip install popkit-cli       # CLI only
+```
+
+### CLI Usage
+
+After installing `popkit` or `popkit-cli`:
+
+```bash
+popkit --help
+```
+
+---
+
 ## For Local Development (Git Clone)
 
-If you've cloned this repository for development and want to test local changes:
+If you've cloned the repository for development and want to test local changes:
 
 ```bash
 # Navigate to the repository root
@@ -46,9 +142,11 @@ Restart Claude Code after installing local plugins.
 
 **Note:** Local installations take precedence over marketplace installations.
 
+---
+
 ## Version Requirements
 
-PopKit requires **Claude Code 2.1.33+** for full feature support. Tested and verified through **CC 2.1.79**.
+PopKit requires **Claude Code 2.1.33+** for full feature support. Tested and verified through **CC 2.1.80**.
 
 | Feature                      | Minimum    | Notes                                           |
 | ---------------------------- | ---------- | ----------------------------------------------- |
@@ -77,7 +175,12 @@ PopKit requires **Claude Code 2.1.33+** for full feature support. Tested and ver
 
 **Recommended**: Always use the latest Claude Code version for best compatibility.
 
+**Python requirement**: Python 3.11+ for PyPI packages.
+
+---
+
 ## Next Steps
 
 - [Quick Start Guide](/getting-started/quick-start/)
+- [Troubleshooting](/guides/troubleshooting/)
 - [Core Concepts](/concepts/agents/)

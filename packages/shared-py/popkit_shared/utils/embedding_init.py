@@ -31,26 +31,7 @@ POPKIT_ROOT = Path(__file__).parent.parent.parent
 # =============================================================================
 
 
-def extract_yaml_frontmatter(content: str) -> dict[str, str]:
-    """Extract YAML frontmatter from markdown file."""
-    if not content.startswith("---"):
-        return {}
-
-    end = content.find("---", 3)
-    if end < 0:
-        return {}
-
-    frontmatter = content[3:end].strip()
-    result = {}
-
-    for line in frontmatter.split("\n"):
-        if ":" in line:
-            key, value = line.split(":", 1)
-            key = key.strip()
-            value = value.strip().strip("\"'")
-            result[key] = value
-
-    return result
+from .frontmatter import extract_yaml_frontmatter  # noqa: E402 — shared utility
 
 
 def extract_skill_descriptions() -> list[dict[str, Any]]:

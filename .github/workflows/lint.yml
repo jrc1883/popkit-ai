@@ -9,10 +9,14 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   ruff-check:
     name: Ruff - Python Linting
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -43,7 +47,7 @@ jobs:
 
   ruff-format:
     name: Ruff - Python Formatting
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -71,7 +75,7 @@ jobs:
 
   eslint:
     name: ESLint - TypeScript Linting
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -97,7 +101,7 @@ jobs:
 
   prettier-check:
     name: Prettier - Code Formatting
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code

@@ -36,59 +36,10 @@ BATCH_SIZE = 50  # items per API call
 
 
 # =============================================================================
-# PROJECT DETECTION
+# SHARED UTILITIES (imported from frontmatter.py)
 # =============================================================================
 
-
-def get_project_root(start_path: str | None = None) -> str | None:
-    """
-    Detect project root by looking for .claude/ directory.
-
-    Args:
-        start_path: Starting path (defaults to cwd)
-
-    Returns:
-        Project root path or None
-    """
-    current = Path(start_path) if start_path else Path.cwd()
-
-    # Walk up the directory tree
-    for path in [current] + list(current.parents):
-        if (path / ".claude").is_dir():
-            return str(path)
-        if (path / ".git").is_dir():
-            # Found git root but no .claude, use this
-            return str(path)
-
-    return None
-
-
-# =============================================================================
-# YAML FRONTMATTER EXTRACTION
-# =============================================================================
-
-
-def extract_yaml_frontmatter(content: str) -> dict[str, str]:
-    """Extract YAML frontmatter from markdown file."""
-    if not content.startswith("---"):
-        return {}
-
-    end = content.find("---", 3)
-    if end < 0:
-        return {}
-
-    frontmatter = content[3:end].strip()
-    result = {}
-
-    for line in frontmatter.split("\n"):
-        if ":" in line:
-            key, value = line.split(":", 1)
-            key = key.strip()
-            value = value.strip().strip("\"'")
-            result[key] = value
-
-    return result
-
+from .frontmatter import extract_yaml_frontmatter, get_project_root  # noqa: E402
 
 # =============================================================================
 # SCANNING FUNCTIONS

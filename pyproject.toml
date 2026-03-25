@@ -7,7 +7,7 @@ name = "popkit"
 version = "1.0.0"
 description = "PopKit - LLM-agnostic developer orchestration engine"
 authors = ["Joseph Cannon <joseph@thehouseofdeals.com>"]
-license = "MIT"
+license = "LicenseRef-PolyForm-Noncommercial-1.0.0"
 readme = "README.md"
 packages = [{include = "popkit"}]
 classifiers = [

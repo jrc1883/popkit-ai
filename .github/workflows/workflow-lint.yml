@@ -22,10 +22,14 @@ permissions:
   contents: read
   pull-requests: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
     name: Validate Workflows
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -106,11 +110,11 @@ jobs:
           curl -fsSL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" | tar -xz -C "$INSTALL_DIR"
           chmod +x "${INSTALL_DIR}/actionlint"
           echo "$INSTALL_DIR" >> "$GITHUB_PATH"
-          actionlint -version
+          "${INSTALL_DIR}/actionlint" -version
 
       - name: Validate workflow syntax with actionlint
         run: |
-          actionlint -color -verbose
+          actionlint -color -verbose -shellcheck="shellcheck -S warning"
 
       - name: Summary
         if: success()
