@@ -19,8 +19,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-logger = logging.getLogger("popkit.router")
-
 from .cloud_agent_search import (
     is_available as cloud_is_available,
 )
@@ -29,6 +27,8 @@ from .cloud_agent_search import (
 )
 from .embedding_store import EmbeddingStore
 from .voyage_client import VoyageClient, is_available
+
+logger = logging.getLogger("popkit.router")
 
 # =============================================================================
 # CONFIGURATION
