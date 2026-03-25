@@ -9,12 +9,16 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   python-tests:
     name: Python Tests (Python ${{ matrix.python-version }})
     runs-on: self-hosted
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
 
@@ -71,7 +75,7 @@ jobs:
     name: TypeScript Tests (Node ${{ matrix.node-version }})
     runs-on: self-hosted
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         node-version: ["20", "22"]
 
