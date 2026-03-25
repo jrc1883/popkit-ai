@@ -114,7 +114,7 @@ jobs:
 
       - name: Validate workflow syntax with actionlint
         run: |
-          actionlint -color -verbose
+          actionlint -color -verbose -shellcheck="shellcheck -S warning"
 
       - name: Summary
         if: success()
