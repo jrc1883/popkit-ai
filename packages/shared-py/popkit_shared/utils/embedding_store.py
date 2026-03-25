@@ -10,12 +10,15 @@ Part of PopKit Issue #19 (Embeddings Enhancement).
 
 import hashlib
 import json
+import logging
 import math
 import sqlite3
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+
+logger = logging.getLogger("popkit.embedding_store")
 
 # =============================================================================
 # CONFIGURATION
@@ -169,8 +172,8 @@ class EmbeddingStore:
             """)
 
             conn.commit()
-        except Exception:
-            pass  # Column already exists or other non-critical error
+        except sqlite3.OperationalError as e:
+            logger.debug("Schema migration skipped (likely already applied): %s", e)
 
     # =========================================================================
     # CRUD OPERATIONS
