@@ -54,6 +54,13 @@ def cmd_update(args: argparse.Namespace) -> int:
     return run_update(args)
 
 
+def cmd_login(args: argparse.Namespace) -> int:
+    """Log in to PopKit Cloud."""
+    from .commands.login import run_login
+
+    return run_login(args)
+
+
 def cmd_version(args: argparse.Namespace) -> int:
     """Show version information."""
     print(f"popkit {__version__}")
@@ -135,6 +142,16 @@ def build_parser() -> argparse.ArgumentParser:
     # status
     status_parser = subparsers.add_parser("status", help="Show system status")
     status_parser.set_defaults(func=cmd_status)
+
+    # login
+    login_parser = subparsers.add_parser("login", help="Log in to PopKit Cloud")
+    login_parser.add_argument(
+        "--key",
+        type=str,
+        default=None,
+        help="API key to store (skip interactive login)",
+    )
+    login_parser.set_defaults(func=cmd_login)
 
     # version
     version_parser = subparsers.add_parser("version", help="Show version info")
