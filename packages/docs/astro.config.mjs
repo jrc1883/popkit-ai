@@ -38,7 +38,7 @@ export default defineConfig({
           autogenerate: { directory: "reference" },
         },
       ],
-      customCss: ["./src/styles/custom.css"],
+      customCss: ["./src/styles/custom.css", "./src/styles/dashboard.css"],
     }),
     react(),
   ],
