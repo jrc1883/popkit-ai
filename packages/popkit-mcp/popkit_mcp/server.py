@@ -732,8 +732,8 @@ def create_server(packages_dir: Optional[Path] = None) -> FastMCP:
                     method="POST",
                 )
                 urlopen(log_req, timeout=2)
-            except Exception:
-                pass  # Analytics is best-effort
+            except Exception:  # noqa: S110
+                pass  # Analytics logging is best-effort, never block routing
 
             # Return routing instructions for the LLM to execute
             lines = [
