@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "popkit"
-version = "1.0.0"
+version = "1.0.1"
 description = "PopKit - LLM-agnostic developer orchestration engine"
 authors = ["Joseph Cannon <joseph@thehouseofdeals.com>"]
 license = "LicenseRef-PolyForm-Noncommercial-1.0.0"
