@@ -608,6 +608,154 @@ def create_server(packages_dir: Optional[Path] = None) -> FastMCP:
             return f"Error reloading registry: {e}"
 
     # =========================================================================
+    # MCP Gateway — Route to Backend MCP Servers
+    # =========================================================================
+
+    @mcp.tool()
+    def list_mcp_servers() -> str:
+        """List all backend MCP servers registered in PopKit Cloud.
+
+        Shows the user's registered MCP servers that PopKit can route to.
+        Servers are registered via the PopKit Cloud API.
+
+        Returns:
+            List of registered servers with names, descriptions, and tools
+        """
+        try:
+            import json
+            from urllib.request import Request, urlopen
+
+            api_key = os.environ.get("POPKIT_API_KEY", "")
+            api_url = os.environ.get("POPKIT_API_URL", "https://api.thehouseofdeals.com")
+
+            if not api_key:
+                return (
+                    "No POPKIT_API_KEY set. Register MCP servers at "
+                    "https://popkit.unjoe.me/getting-started/installation/"
+                )
+
+            req = Request(
+                f"{api_url}/v1/mcp/servers",
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+            )
+
+            with urlopen(req, timeout=5) as resp:
+                data = json.loads(resp.read().decode())
+
+            servers = data.get("servers", [])
+            if not servers:
+                return "No MCP servers registered. Use the PopKit Cloud API to register backend servers."
+
+            lines = [f"## Registered MCP Servers ({len(servers)})", ""]
+            for s in servers:
+                tools = ", ".join(s.get("tools", [])) or "none listed"
+                status = "enabled" if s.get("enabled", True) else "disabled"
+                lines.append(f"### {s['name']} ({status})")
+                lines.append(f"- **Description:** {s.get('description', 'N/A')}")
+                lines.append(f"- **Command:** `{s.get('command', 'N/A')}`")
+                lines.append(f"- **Tools:** {tools}")
+                lines.append(f"- **ID:** {s['id']}")
+                lines.append("")
+
+            return "\n".join(lines)
+        except Exception as e:
+            logger.debug("Failed to list MCP servers: %s", e)
+            return f"Could not fetch MCP servers: {e}"
+
+    @mcp.tool()
+    def route_to_server(server_name: str, action: str, params: str = "{}") -> str:
+        """Route a request to a registered backend MCP server.
+
+        PopKit acts as a gateway, forwarding requests to the appropriate
+        backend MCP server. Use list_mcp_servers to see available servers.
+
+        Args:
+            server_name: Name of the registered server (e.g., "github", "playwright")
+            action: The action/tool to invoke on the server (e.g., "list_prs", "screenshot")
+            params: JSON string of parameters to pass to the tool
+
+        Returns:
+            Instructions for invoking the backend server's tool
+        """
+        try:
+            import json
+            from urllib.request import Request, urlopen
+
+            api_key = os.environ.get("POPKIT_API_KEY", "")
+            api_url = os.environ.get("POPKIT_API_URL", "https://api.thehouseofdeals.com")
+
+            if not api_key:
+                return "No POPKIT_API_KEY set. Cannot route to backend servers."
+
+            # Fetch server config from cloud
+            req = Request(
+                f"{api_url}/v1/mcp/servers",
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+            )
+
+            with urlopen(req, timeout=5) as resp:
+                data = json.loads(resp.read().decode())
+
+            servers = data.get("servers", [])
+            server = next((s for s in servers if s["name"] == server_name), None)
+
+            if not server:
+                available = ", ".join(s["name"] for s in servers)
+                return f"Server '{server_name}' not found. Available: {available}"
+
+            # Log the routing call to cloud analytics (fire-and-forget)
+            import time
+
+            start_time = time.time()
+            try:
+                log_req = Request(
+                    f"{api_url}/v1/analytics/gateway",
+                    data=json.dumps(
+                        {
+                            "server_name": server_name,
+                            "server_id": server.get("id", ""),
+                            "tool_name": action,
+                            "latency_ms": int((time.time() - start_time) * 1000),
+                            "success": True,
+                        }
+                    ).encode(),
+                    headers={
+                        "Authorization": f"Bearer {api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    method="POST",
+                )
+                urlopen(log_req, timeout=2)
+            except Exception:  # noqa: S110
+                pass  # Analytics logging is best-effort, never block routing
+
+            # Return routing instructions for the LLM to execute
+            lines = [
+                f"## Route to {server_name}: {action}",
+                "",
+                f"**Server:** {server['name']}",
+                f"**Command:** `{server.get('command', '')} {' '.join(server.get('args', []))}`",
+                f"**Action:** {action}",
+                f"**Parameters:** {params}",
+                "",
+                "To execute this, the host environment should invoke the backend MCP server ",
+                f"with the tool `{action}` and the provided parameters.",
+                "",
+                f"Available tools on {server_name}: {', '.join(server.get('tools', []))}",
+            ]
+
+            return "\n".join(lines)
+        except Exception as e:
+            logger.debug("Failed to route to server: %s", e)
+            return f"Routing error: {e}"
+
+    # =========================================================================
     # MCP Resources
     # =========================================================================
 
