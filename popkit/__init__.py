@@ -8,4 +8,4 @@ and optionally popkit-mcp. Install with extras for full functionality:
     pip install popkit[full]    # everything
 """
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"

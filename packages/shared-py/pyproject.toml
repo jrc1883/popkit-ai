@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "popkit-shared"
-version = "1.0.0"
+version = "1.0.1"
 description = "Shared utilities for PopKit plugin ecosystem"
 authors = ["Joseph Cannon <joseph@thehouseofdeals.com>"]
 license = "LicenseRef-PolyForm-Noncommercial-1.0.0"
