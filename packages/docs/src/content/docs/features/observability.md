@@ -10,6 +10,7 @@ PopKit's observability feature gives you real-time visibility into what's happen
 Access the observability dashboard at [popkit.thehouseofdeals.com/observe](https://popkit.thehouseofdeals.com/observe) (requires login).
 
 The dashboard shows:
+
 - **Activity Feed**: Real-time stream of events (tool calls, agent starts/ends, errors)
 - **Active Agents**: Which agents are currently working
 - **Tool Usage**: Most frequently used tools
@@ -58,35 +59,37 @@ To verify it's active:
 
 ## Event Types
 
-| Event | Description |
-|-------|-------------|
-| `agent_start` | An agent was spawned |
-| `agent_end` | An agent completed |
-| `tool_call` | A tool was invoked |
-| `tool_result` | A tool returned a result |
-| `error` | An error occurred |
+| Event            | Description              |
+| ---------------- | ------------------------ |
+| `agent_start`    | An agent was spawned     |
+| `agent_end`      | An agent completed       |
+| `tool_call`      | A tool was invoked       |
+| `tool_result`    | A tool returned a result |
+| `error`          | An error occurred        |
 | `workflow_phase` | A workflow phase changed |
 
 ## Pro vs Free
 
-| Feature | Free | Pro |
-|---------|------|-----|
-| Event capture | Yes | Yes |
-| Dashboard access | Yes | Yes |
-| Update method | Polling (3s) | SSE streaming |
-| Event history | Last 50 | Last 1000 |
-| Stats retention | Today only | 7 days |
+| Feature          | Free         | Pro           |
+| ---------------- | ------------ | ------------- |
+| Event capture    | Yes          | Yes           |
+| Dashboard access | Yes          | Yes           |
+| Update method    | Polling (3s) | SSE streaming |
+| Event history    | Last 50      | Last 1000     |
+| Stats retention  | Today only   | 7 days        |
 
 ## Troubleshooting
 
 ### Events Not Appearing
 
 1. **Check API key is set:**
+
    ```bash
    echo $POPKIT_API_KEY
    ```
 
 2. **Check hook is registered:**
+
    ```bash
    claude hooks list
    ```
@@ -108,11 +111,13 @@ The hook is designed to fail silently - it won't block your Claude Code session 
 ## Privacy
 
 Events are scoped to your user account. We capture:
+
 - Tool names and execution times
 - Agent types and session IDs
 - Error status (not error messages)
 
 We do NOT capture:
+
 - Tool inputs/outputs
 - File contents
 - Conversation history

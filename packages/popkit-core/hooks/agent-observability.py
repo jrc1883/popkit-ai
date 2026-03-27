@@ -33,8 +33,8 @@ import json
 import os
 import sys
 from datetime import datetime
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
-from urllib.error import URLError, HTTPError
 
 # =============================================================================
 # CONFIGURATION
@@ -143,7 +143,6 @@ def build_cloud_event(data: dict) -> dict:
 
     # Extract fields
     tool_name = data.get('tool_name', '')
-    tool_input = data.get('tool_input', data.get('tool_args', {}))
     tool_result = data.get('tool_response', data.get('tool_result'))
     session_id = data.get('session_id', os.environ.get('CLAUDE_SESSION_ID', ''))
 
