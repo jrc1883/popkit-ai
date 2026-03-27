@@ -190,9 +190,7 @@ def build_cloud_event(data: dict) -> dict:
 def build_optimus_event(data: dict) -> dict:
     """Build Optimus-format event for legacy support."""
     return {
-        "agentName": data.get(
-            "agent_name", os.environ.get("CLAUDE_AGENT_NAME", "claude")
-        ),
+        "agentName": data.get("agent_name", os.environ.get("CLAUDE_AGENT_NAME", "claude")),
         "activity": f"tool_use:{data.get('tool_name', '')}",
         "metadata": {
             "toolName": data.get("tool_name", ""),
@@ -226,9 +224,7 @@ def main():
         optimus_sent = False
         if OPTIMUS_WS_URL and data.get("tool_name"):
             optimus_event = build_optimus_event(data)
-            optimus_sent = send_to_optimus(
-                f"{OPTIMUS_WS_URL}/api/agent/activity", optimus_event
-            )
+            optimus_sent = send_to_optimus(f"{OPTIMUS_WS_URL}/api/agent/activity", optimus_event)
 
         # Output JSON response (Claude Code hook protocol)
         response = {
