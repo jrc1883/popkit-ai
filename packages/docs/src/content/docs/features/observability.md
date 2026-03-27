@@ -7,7 +7,7 @@ PopKit's observability feature gives you real-time visibility into what's happen
 
 ## Dashboard
 
-Access the observability dashboard at [popkit.thehouseofdeals.com/observe](https://popkit.thehouseofdeals.com/observe) (requires login).
+Access the observability dashboard at [popkit.unjoe.me/observe](https://popkit.unjoe.me/observe) (requires login).
 
 The dashboard shows:
 
@@ -37,7 +37,7 @@ Claude Code → Hook → PopKit Cloud API → Dashboard
 /popkit-core:account login
 ```
 
-Or sign up at [popkit.thehouseofdeals.com/signup](https://popkit.thehouseofdeals.com/signup).
+Or sign up at [popkit.unjoe.me/signup](https://popkit.unjoe.me/signup).
 
 ### 2. Set Environment Variable
 
