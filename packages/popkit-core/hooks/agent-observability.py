@@ -42,30 +42,30 @@ from urllib.request import Request, urlopen
 
 # PopKit Cloud API
 POPKIT_API_URL = os.environ.get(
-    'POPKIT_API_URL',
-    'https://popkit-cloud-api.joseph-cannon.workers.dev'
+    "POPKIT_API_URL", "https://popkit-cloud-api.joseph-cannon.workers.dev"
 )
-POPKIT_API_KEY = os.environ.get('POPKIT_API_KEY', '')
+POPKIT_API_KEY = os.environ.get("POPKIT_API_KEY", "")
 
 # Legacy Optimus support (optional)
-OPTIMUS_WS_URL = os.environ.get('OPTIMUS_WS_URL', '')
+OPTIMUS_WS_URL = os.environ.get("OPTIMUS_WS_URL", "")
 
 # Event type mapping
 EVENT_TYPE_MAP = {
-    'PreToolUse': 'tool_call',
-    'PostToolUse': 'tool_result',
-    'AgentStart': 'agent_start',
-    'AgentEnd': 'agent_end',
-    'Error': 'error',
-    'post-tool-use': 'tool_result',
-    'agent-activation': 'agent_start',
-    'agent-collaboration': 'workflow_phase',
+    "PreToolUse": "tool_call",
+    "PostToolUse": "tool_result",
+    "AgentStart": "agent_start",
+    "AgentEnd": "agent_end",
+    "Error": "error",
+    "post-tool-use": "tool_result",
+    "agent-activation": "agent_start",
+    "agent-collaboration": "workflow_phase",
 }
 
 
 # =============================================================================
 # POPKIT CLOUD API
 # =============================================================================
+
 
 def send_to_popkit_cloud(event: dict) -> bool:
     """Send event to PopKit Cloud API.
@@ -82,12 +82,12 @@ def send_to_popkit_cloud(event: dict) -> bool:
     try:
         url = f"{POPKIT_API_URL}/v1/events"
         headers = {
-            'Authorization': f'Bearer {POPKIT_API_KEY}',
-            'Content-Type': 'application/json',
+            "Authorization": f"Bearer {POPKIT_API_KEY}",
+            "Content-Type": "application/json",
         }
 
-        data = json.dumps(event).encode('utf-8')
-        req = Request(url, data=data, headers=headers, method='POST')
+        data = json.dumps(event).encode("utf-8")
+        req = Request(url, data=data, headers=headers, method="POST")
 
         with urlopen(req, timeout=5) as response:
             return response.status == 201
@@ -103,6 +103,7 @@ def send_to_popkit_cloud(event: dict) -> bool:
 # LEGACY OPTIMUS SUPPORT
 # =============================================================================
 
+
 def send_to_optimus(endpoint: str, data: dict) -> bool:
     """Send data to local Optimus server (legacy support).
 
@@ -113,11 +114,9 @@ def send_to_optimus(endpoint: str, data: dict) -> bool:
 
     try:
         import requests  # Optional dependency for legacy support
+
         response = requests.post(
-            endpoint,
-            json=data,
-            timeout=2,
-            headers={"Content-Type": "application/json"}
+            endpoint, json=data, timeout=2, headers={"Content-Type": "application/json"}
         )
         return response.status_code == 200
     except Exception:
@@ -127,6 +126,7 @@ def send_to_optimus(endpoint: str, data: dict) -> bool:
 # =============================================================================
 # EVENT BUILDING
 # =============================================================================
+
 
 def build_cloud_event(data: dict) -> dict:
     """Build PopKit Cloud event from hook input.
@@ -138,50 +138,50 @@ def build_cloud_event(data: dict) -> dict:
         Event dict conforming to /v1/events schema
     """
     # Determine event type
-    hook_event = data.get('hook_event', data.get('event_type', 'PostToolUse'))
-    event_type = EVENT_TYPE_MAP.get(hook_event, 'tool_result')
+    hook_event = data.get("hook_event", data.get("event_type", "PostToolUse"))
+    event_type = EVENT_TYPE_MAP.get(hook_event, "tool_result")
 
     # Extract fields
-    tool_name = data.get('tool_name', '')
-    tool_result = data.get('tool_response', data.get('tool_result'))
-    session_id = data.get('session_id', os.environ.get('CLAUDE_SESSION_ID', ''))
+    tool_name = data.get("tool_name", "")
+    tool_result = data.get("tool_response", data.get("tool_result"))
+    session_id = data.get("session_id", os.environ.get("CLAUDE_SESSION_ID", ""))
 
     # Agent info (Claude Code 2.0.64+)
-    agent_id = data.get('agent_id', '')
-    agent_type = data.get('agent_type', data.get('agent_name', ''))
+    agent_id = data.get("agent_id", "")
+    agent_type = data.get("agent_type", data.get("agent_name", ""))
 
     # Timing
-    execution_time = data.get('execution_time', 0)
+    execution_time = data.get("execution_time", 0)
     duration = int(execution_time * 1000) if execution_time else None
 
     # Determine status
-    status = 'success'
+    status = "success"
     if tool_result:
         if isinstance(tool_result, dict):
-            if tool_result.get('is_error') or tool_result.get('error'):
-                status = 'error'
-        elif isinstance(tool_result, str) and 'error' in tool_result.lower():
-            status = 'error'
+            if tool_result.get("is_error") or tool_result.get("error"):
+                status = "error"
+        elif isinstance(tool_result, str) and "error" in tool_result.lower():
+            status = "error"
 
     # Build event
     event = {
-        'type': event_type,
-        'timestamp': datetime.utcnow().isoformat() + 'Z',
-        'status': status,
+        "type": event_type,
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "status": status,
     }
 
     if tool_name:
-        event['toolName'] = tool_name
+        event["toolName"] = tool_name
     if agent_id:
-        event['agentId'] = agent_id
+        event["agentId"] = agent_id
     if agent_type:
-        event['agentType'] = agent_type
+        event["agentType"] = agent_type
     if duration is not None:
-        event['duration'] = duration
+        event["duration"] = duration
     if session_id:
-        event['metadata'] = {
-            'sessionId': session_id,
-            'projectPath': os.getcwd(),
+        event["metadata"] = {
+            "sessionId": session_id,
+            "projectPath": os.getcwd(),
         }
 
     return event
@@ -190,13 +190,15 @@ def build_cloud_event(data: dict) -> dict:
 def build_optimus_event(data: dict) -> dict:
     """Build Optimus-format event for legacy support."""
     return {
-        "agentName": data.get('agent_name', os.environ.get("CLAUDE_AGENT_NAME", "claude")),
+        "agentName": data.get(
+            "agent_name", os.environ.get("CLAUDE_AGENT_NAME", "claude")
+        ),
         "activity": f"tool_use:{data.get('tool_name', '')}",
         "metadata": {
-            "toolName": data.get('tool_name', ''),
-            "toolArgs": data.get('tool_input', data.get('tool_args', {})),
-            "executionTime": data.get('execution_time', 0),
-            "success": data.get('tool_result') is not None,
+            "toolName": data.get("tool_name", ""),
+            "toolArgs": data.get("tool_input", data.get("tool_args", {})),
+            "executionTime": data.get("execution_time", 0),
+            "success": data.get("tool_result") is not None,
             "sessionId": os.environ.get("CLAUDE_SESSION_ID", "unknown"),
             "timestamp": datetime.now().isoformat(),
             "projectPath": os.getcwd(),
@@ -207,6 +209,7 @@ def build_optimus_event(data: dict) -> dict:
 # =============================================================================
 # MAIN HOOK ENTRY POINT
 # =============================================================================
+
 
 def main():
     """Main hook entry point - JSON stdin/stdout protocol."""
@@ -221,11 +224,10 @@ def main():
 
         # Send to Optimus (legacy, if configured)
         optimus_sent = False
-        if OPTIMUS_WS_URL and data.get('tool_name'):
+        if OPTIMUS_WS_URL and data.get("tool_name"):
             optimus_event = build_optimus_event(data)
             optimus_sent = send_to_optimus(
-                f"{OPTIMUS_WS_URL}/api/agent/activity",
-                optimus_event
+                f"{OPTIMUS_WS_URL}/api/agent/activity", optimus_event
             )
 
         # Output JSON response (Claude Code hook protocol)
@@ -239,7 +241,11 @@ def main():
         print(json.dumps(response))
 
     except json.JSONDecodeError as e:
-        response = {"action": "continue", "status": "error", "error": f"Invalid JSON: {e}"}
+        response = {
+            "action": "continue",
+            "status": "error",
+            "error": f"Invalid JSON: {e}",
+        }
         print(json.dumps(response))
     except Exception as e:
         response = {"action": "continue", "status": "error", "error": str(e)}
