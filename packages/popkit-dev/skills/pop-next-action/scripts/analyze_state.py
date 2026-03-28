@@ -20,13 +20,13 @@ Output:
 """
 
 import json
+import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from popkit_shared.utils.subprocess_utils import run_command_simple
-
 
 HIGH_PRIORITY_LABELS = {
     "p0-critical",
@@ -85,6 +85,20 @@ def _count_typescript_errors(output: str) -> int:
     return sum(1 for line in output.splitlines() if "error TS" in line)
 
 
+def _typescript_command(*args: str) -> List[str]:
+    """Build a cross-platform TypeScript command invocation."""
+    candidates = ["npx.cmd", "npx.exe", "npx"] if sys.platform.startswith("win") else ["npx"]
+
+    for candidate in candidates:
+        resolved = shutil.which(candidate)
+        if resolved:
+            return [resolved, "tsc", *args]
+
+    # Fallback to the default executable name for the current platform.
+    default_runner = "npx.cmd" if sys.platform.startswith("win") else "npx"
+    return [default_runner, "tsc", *args]
+
+
 def _normalize_label_names(labels: List[Dict[str, Any]]) -> List[str]:
     """Normalize label names for case-insensitive comparison."""
     return [str(label.get("name", "")).strip().lower() for label in labels]
@@ -121,17 +135,13 @@ def analyze_git_state(repo_root: Path) -> Dict[str, Any]:
     }
 
     # Check if git repo (capture_output=True already suppresses stderr)
-    _, is_repo = run_command_simple(
-        ["git", "rev-parse", "--git-dir"], cwd=str(repo_root)
-    )
+    _, is_repo = run_command_simple(["git", "rev-parse", "--git-dir"], cwd=str(repo_root))
     if not is_repo:
         state["is_repo"] = False
         return state
 
     # Get branch
-    branch, ok = run_command_simple(
-        ["git", "branch", "--show-current"], cwd=str(repo_root)
-    )
+    branch, ok = run_command_simple(["git", "branch", "--show-current"], cwd=str(repo_root))
     if ok:
         state["branch"] = branch
 
@@ -140,9 +150,7 @@ def analyze_git_state(repo_root: Path) -> Dict[str, Any]:
         ["git", "status", "--porcelain"], strip_output=False, cwd=str(repo_root)
     )
     if ok and status:
-        files = [
-            _extract_porcelain_path(line) for line in status.split("\n") if line.strip()
-        ]
+        files = [_extract_porcelain_path(line) for line in status.split("\n") if line.strip()]
         files = [path for path in files if path]
         state["uncommitted_count"] = len(files)
         state["uncommitted_files"] = files[:5]  # First 5
@@ -158,17 +166,13 @@ def analyze_git_state(repo_root: Path) -> Dict[str, Any]:
     if ok and "\t" in ahead_behind:
         parts = ahead_behind.split("\t")
         state["behind_count"] = int(parts[0]) if parts[0].isdigit() else 0
-        state["ahead_count"] = (
-            int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 0
-        )
+        state["ahead_count"] = int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 0
 
         if state["ahead_count"] > 0:
             state["urgency"] = max(state["urgency"], "MEDIUM")
 
     # Get recent commits
-    commits, ok = run_command_simple(
-        ["git", "log", "--oneline", "-5"], cwd=str(repo_root)
-    )
+    commits, ok = run_command_simple(["git", "log", "--oneline", "-5"], cwd=str(repo_root))
     if ok:
         state["recent_commits"] = commits.splitlines()[:5]
 
@@ -193,7 +197,7 @@ def analyze_code_state(repo_root: Path) -> Dict[str, Any]:
         # Prefer root TypeScript check if root config exists.
         if (repo_root / "tsconfig.json").exists():
             output, ok = run_command_simple(
-                ["npx", "tsc", "--noEmit", "--pretty", "false"],
+                _typescript_command("--noEmit", "--pretty", "false"),
                 timeout=90,
                 strip_output=False,
                 cwd=str(repo_root),
@@ -210,15 +214,13 @@ def analyze_code_state(repo_root: Path) -> Dict[str, Any]:
             unknown_failure = False
             for tsconfig in tsconfig_files[:3]:
                 output, ok = run_command_simple(
-                    [
-                        "npx",
-                        "tsc",
+                    _typescript_command(
                         "--noEmit",
                         "--pretty",
                         "false",
                         "--project",
                         str(tsconfig),
-                    ],
+                    ),
                     timeout=75,
                     strip_output=False,
                     cwd=str(repo_root),
@@ -249,9 +251,7 @@ def analyze_code_state(repo_root: Path) -> Dict[str, Any]:
         try:
             pkg_json = json.loads((repo_root / "package.json").read_text())
             scripts = pkg_json.get("scripts", {})
-            state["has_lint"] = any(
-                name in scripts for name in ["lint", "lint:ts", "lint:js"]
-            )
+            state["has_lint"] = any(name in scripts for name in ["lint", "lint:ts", "lint:js"])
         except (json.JSONDecodeError, OSError, TypeError):
             state["has_lint"] = False
 
@@ -331,9 +331,7 @@ def analyze_feature_branches(repo_root: Path) -> Dict[str, Any]:
             continue
 
         # Check if it's a feature/fix branch
-        is_feature_branch = any(
-            re.search(pattern, branch) for pattern in branch_patterns
-        )
+        is_feature_branch = any(re.search(pattern, branch) for pattern in branch_patterns)
         if not is_feature_branch:
             continue
 
@@ -386,9 +384,7 @@ def analyze_feature_branches(repo_root: Path) -> Dict[str, Any]:
         ahead_output, _ = run_command_simple(
             ["git", "rev-list", "--count", f"main..{branch}"], cwd=str(repo_root)
         )
-        commits_ahead = (
-            int(ahead_output.strip()) if ahead_output.strip().isdigit() else 0
-        )
+        commits_ahead = int(ahead_output.strip()) if ahead_output.strip().isdigit() else 0
 
         branch_info = {
             "name": branch,
