@@ -5,6 +5,7 @@ popkit provider - Manage AI coding tool provider integrations.
 Commands:
     popkit provider list    Show detected providers
     popkit provider wire    Generate provider configs
+    popkit provider launch  Launch a provider session with PopKit runtime markers
 """
 
 import argparse
@@ -20,8 +21,12 @@ def run_provider(args: argparse.Namespace) -> int:
     elif command == "wire":
         provider_name = getattr(args, "provider", None)
         return _provider_wire(provider_name)
+    elif command == "launch":
+        from .launch import run_launch
+
+        return run_launch(args)
     else:
-        print("Usage: popkit provider [list|wire]")
+        print("Usage: popkit provider [list|wire|launch]")
         return 1
 
 

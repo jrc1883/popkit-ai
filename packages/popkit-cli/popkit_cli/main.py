@@ -8,6 +8,7 @@ Commands:
     popkit install [package]    Install packages to ~/.popkit/
     popkit provider list        Show detected AI coding tool providers
     popkit provider wire        Auto-detect tools, generate configs
+    popkit provider launch      Start a provider session with PopKit launch metadata
     popkit mcp start            Launch the MCP server
     popkit status               Show system status
     popkit version              Show version info
@@ -114,6 +115,41 @@ def build_parser() -> argparse.ArgumentParser:
         help="Wire a specific provider only",
     )
     provider_wire.set_defaults(func=cmd_provider)
+
+    # provider launch
+    provider_launch = provider_sub.add_parser(
+        "launch", help="Launch a provider session with PopKit runtime markers"
+    )
+    provider_launch.add_argument(
+        "provider",
+        type=str,
+        help="Provider to launch (currently: codex)",
+    )
+    provider_launch.add_argument(
+        "--mode",
+        choices=["default", "plan"],
+        default="default",
+        help="Launch mode. 'plan' requests host-managed request_user_input support.",
+    )
+    provider_launch.add_argument(
+        "--command",
+        dest="launch_command",
+        type=str,
+        default=None,
+        help="Initial prompt or command to pass to the provider",
+    )
+    provider_launch.add_argument(
+        "--cd",
+        type=str,
+        default=None,
+        help="Workspace directory to open in the launched provider session",
+    )
+    provider_launch.add_argument(
+        "--print-only",
+        action="store_true",
+        help="Print the resolved launch command without executing it",
+    )
+    provider_launch.set_defaults(func=cmd_provider)
 
     # mcp
     mcp_parser = subparsers.add_parser("mcp", help="MCP server management")
