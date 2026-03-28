@@ -15,6 +15,12 @@ from pathlib import Path
 
 import pytest
 
+from popkit_shared.providers.codex import CodexAdapter
+from popkit_shared.utils.interaction_surface import (
+    InteractionSurface,
+    resolve_runtime_capabilities,
+)
+
 SCRIPT_PATH = (
     Path(__file__).resolve().parent.parent
     / "skills"
@@ -249,6 +255,78 @@ def test_display_output_remains_human_readable(tmp_path):
     assert "## Quick Reference" in display
     assert "**Command:** `/popkit:git commit`" in display
     assert "Next Action" not in display
+
+
+def test_next_action_pilot_contract_returns_decision_spec_for_plan_capable_codex(
+    tmp_path,
+):
+    """Plan-capable Codex should consume the decision-spec path."""
+    state = {
+        "git": {"uncommitted_count": 3, "ahead_count": 0, "urgency": "HIGH"},
+        "code": {"typescript_errors": 0, "urgency": "LOW"},
+        "issues": {"open_count": 0, "issues": [], "urgency": "LOW"},
+        "research": {"has_research_branches": False, "branches": [], "urgency": "LOW"},
+    }
+    adapter = CodexAdapter()
+    launch_spec = adapter.build_launch_spec(
+        mode="plan",
+        env={},
+        host_plan_supported=True,
+    )
+    capabilities = resolve_runtime_capabilities(env=launch_spec.env)
+
+    ranked = recommend_action.rank_actions(recommend_action.calculate_action_scores(state))
+    report = recommend_action.generate_report(
+        ranked,
+        state,
+        runtime="codex",
+        repo_root=tmp_path,
+    )
+
+    rendered = (
+        report["decision_spec"]
+        if capabilities.interaction_surface == InteractionSurface.REQUEST_USER_INPUT
+        else recommend_action.format_report_display(report)
+    )
+
+    assert capabilities.interaction_surface == InteractionSurface.REQUEST_USER_INPUT
+    assert rendered["header"] == "Next Action"
+    assert rendered["source_command"] == "/popkit-dev:next"
+
+
+def test_next_action_pilot_contract_falls_back_to_display_for_default_codex(tmp_path):
+    """Standard Codex launches should stay on the report display path."""
+    state = {
+        "git": {"uncommitted_count": 2, "ahead_count": 1, "urgency": "HIGH"},
+        "code": {"typescript_errors": 0, "urgency": "LOW"},
+        "issues": {"open_count": 0, "issues": [], "urgency": "LOW"},
+        "research": {"has_research_branches": False, "branches": [], "urgency": "LOW"},
+    }
+    adapter = CodexAdapter()
+    launch_spec = adapter.build_launch_spec(
+        mode="default",
+        env={},
+        host_plan_supported=False,
+    )
+    capabilities = resolve_runtime_capabilities(env=launch_spec.env)
+
+    ranked = recommend_action.rank_actions(recommend_action.calculate_action_scores(state))
+    report = recommend_action.generate_report(
+        ranked,
+        state,
+        runtime="codex",
+        repo_root=tmp_path,
+    )
+
+    rendered = (
+        report["decision_spec"]
+        if capabilities.interaction_surface == InteractionSurface.REQUEST_USER_INPUT
+        else recommend_action.format_report_display(report)
+    )
+
+    assert capabilities.interaction_surface == InteractionSurface.PLAIN_TEXT
+    assert isinstance(rendered, str)
+    assert "## Recommended Actions" in rendered
 
 
 if __name__ == "__main__":
