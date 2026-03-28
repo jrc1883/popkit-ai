@@ -10,7 +10,22 @@ Simulates the complete workflow from issue #141:
 5. Includes specific git commands
 """
 
+from importlib.util import module_from_spec, spec_from_file_location
+from pathlib import Path
+
 import pytest
+
+SCRIPT_PATH = (
+    Path(__file__).resolve().parent.parent
+    / "skills"
+    / "pop-next-action"
+    / "scripts"
+    / "recommend_action.py"
+)
+SPEC = spec_from_file_location("pop_next_action_recommend_action", SCRIPT_PATH)
+assert SPEC and SPEC.loader
+recommend_action = module_from_spec(SPEC)
+SPEC.loader.exec_module(recommend_action)
 
 
 def test_complete_workflow_on_protected_branch():
@@ -209,6 +224,31 @@ def test_multiple_priorities_with_protected_branch():
 
     assert recommendations[2]["action"] == "Commit your current work", "Commit should be #3"
     assert recommendations[2]["score"] == 100, f"Expected 100, got {recommendations[2]['score']}"
+
+
+def test_display_output_remains_human_readable(tmp_path):
+    """Display mode should stay on the existing report path."""
+    state = {
+        "git": {"uncommitted_count": 3, "ahead_count": 1, "urgency": "HIGH"},
+        "code": {"typescript_errors": 0, "urgency": "LOW"},
+        "issues": {"open_count": 0, "issues": [], "urgency": "LOW"},
+        "research": {"has_research_branches": False, "branches": [], "urgency": "LOW"},
+    }
+
+    ranked = recommend_action.rank_actions(recommend_action.calculate_action_scores(state))
+    report = recommend_action.generate_report(
+        ranked,
+        state,
+        runtime="both",
+        repo_root=tmp_path,
+    )
+    display = recommend_action.format_report_display(report)
+
+    assert "## Current State" in display
+    assert "## Recommended Actions" in display
+    assert "## Quick Reference" in display
+    assert "**Command:** `/popkit:git commit`" in display
+    assert "Next Action" not in display
 
 
 if __name__ == "__main__":
