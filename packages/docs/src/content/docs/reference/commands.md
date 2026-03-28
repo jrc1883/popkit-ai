@@ -303,6 +303,7 @@ python packages/popkit-ops/skills/pop-cross-model-review/scripts/pr_ready.py --p
 - Scores recommendations by priority
 - Detects branch protection issues
 - Provides actionable commands
+- Can emit a provider-neutral decision spec for host-rendered choice UIs
 
 **Options:** `quick|verbose`
 
@@ -311,6 +312,21 @@ python packages/popkit-ops/skills/pop-cross-model-review/scripts/pr_ready.py --p
 ```bash
 /popkit-dev:next
 /popkit-dev:next verbose
+```
+
+**Interaction surfaces:**
+
+- Default runtime: renders the standard human-readable recommendation report
+- Plan-capable host: can render the same recommendation as `request_user_input`
+- Claude-style runtime: can render the same recommendation through `AskUserQuestion`
+- Skills do not switch an active session into plan mode; the host chooses that
+  surface before launch
+
+**Codex launch examples:**
+
+```bash
+popkit provider launch codex --mode default --command "/popkit-dev:next"
+POPKIT_HOST_CAN_REQUEST_USER_INPUT=1 popkit provider launch codex --mode plan --command "/popkit-dev:next"
 ```
 
 ---

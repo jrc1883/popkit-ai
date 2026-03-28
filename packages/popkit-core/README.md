@@ -29,6 +29,31 @@ PopKit Core provides the foundational meta-features and utilities for the PopKit
 | `/popkit-core:project`   | Project analysis, initialization, and tooling      |
 | `/popkit-core:record`    | Session recording and playback                     |
 
+## Interaction Surfaces
+
+PopKit separates command logic from the UI surface used to present decisions.
+
+- Skills and commands can emit provider-neutral decision specs
+- The host chooses the interaction surface before the session starts
+- An active Codex session cannot be upgraded into plan mode by a skill alone
+
+Runtime fallback order:
+
+1. `request_user_input` when the host explicitly provides plan-capable UI
+2. `AskUserQuestion` when the runtime supports PopKit interactive questions
+3. Plain-text rendering when neither interactive surface is available
+
+Current pilot flow:
+
+```bash
+popkit provider launch codex --mode default --command "/popkit-dev:next"
+POPKIT_HOST_CAN_REQUEST_USER_INPUT=1 popkit provider launch codex --mode plan --command "/popkit-dev:next"
+```
+
+The first launch keeps `/popkit-dev:next` on its normal report output. The
+second launch asks the host to start a plan-capable Codex session so the same
+decision can be rendered through structured user input.
+
 ## Skills
 
 PopKit Core provides 15 specialized skills:
