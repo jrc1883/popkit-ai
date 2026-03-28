@@ -50,6 +50,7 @@ except ImportError:
 
 # Import project activity tracking
 try:
+    from popkit_shared.utils.onboarding import OnboardingManager
     from popkit_shared.utils.project_client import ProjectActivity, ProjectClient
 
     HAS_PROJECT_CLIENT = True
@@ -841,10 +842,38 @@ class PostToolUseHook:
         findings_xml = self.generate_findings_xml(tool_name, analysis, followup_agents, tool_result)
         result["findings_xml"] = findings_xml
 
+        # Persist machine-level onboarding answers before any remote activity checks.
+        onboarding_update = self.persist_onboarding_response(tool_name, tool_result)
+        if onboarding_update:
+            result["onboarding_update"] = onboarding_update
+
         # Track activity in PopKit Cloud (non-blocking)
         self.record_cloud_activity(tool_name, followup_agents)
 
         return result
+
+    def persist_onboarding_response(
+        self, tool_name: str, tool_result: Any
+    ) -> Dict[str, Any] | None:
+        """Persist shared onboarding answers from AskUserQuestion output."""
+        if tool_name != "AskUserQuestion" or not isinstance(tool_result, dict):
+            return None
+
+        answers = tool_result.get("answers", {})
+        if not answers:
+            return None
+
+        try:
+            manager = OnboardingManager()
+            before = manager.get_status_snapshot()
+            after = manager.apply_answers(answers).to_dict()
+
+            if before == after:
+                return None
+
+            return after
+        except Exception:
+            return None
 
     def check_pending_skill_decisions(
         self, tool_name: str, tool_result: str = ""

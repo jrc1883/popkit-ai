@@ -20,6 +20,12 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+SHARED_PY_ROOT = Path(__file__).resolve().parents[4] / "shared-py"
+if str(SHARED_PY_ROOT) not in sys.path:
+    sys.path.insert(0, str(SHARED_PY_ROOT))
+
+from popkit_shared.utils.onboarding import OnboardingManager
+
 # =============================================================================
 # Monorepo Detection
 # =============================================================================
@@ -48,9 +54,7 @@ def detect_monorepo(project_dir: Path) -> Dict[str, Any]:
             result["is_monorepo"] = True
             result["workspace_root"] = str(current)
             result["workspace_type"] = _detect_workspace_type(current)
-            result["projects"] = _list_workspace_projects(
-                current, result["workspace_type"]
-            )
+            result["projects"] = _list_workspace_projects(current, result["workspace_type"])
             break
 
         parent = current.parent
@@ -177,9 +181,7 @@ def detect_stack(project_dir: Path) -> Dict[str, Any]:
     # Detect from pyproject.toml
     if indicators["pyproject_toml"]:
         try:
-            content = (
-                (project_dir / "pyproject.toml").read_text(encoding="utf-8").lower()
-            )
+            content = (project_dir / "pyproject.toml").read_text(encoding="utf-8").lower()
             if "fastapi" in content:
                 result["detected"] = "python-fastapi"
                 result["confidence"] = "high"
@@ -285,13 +287,9 @@ def detect_quality_gates(project_dir: Path) -> Dict[str, Any]:
     existing_tools = []
 
     # Check for existing quality tools
-    if (project_dir / ".eslintrc.json").exists() or (
-        project_dir / ".eslintrc.js"
-    ).exists():
+    if (project_dir / ".eslintrc.json").exists() or (project_dir / ".eslintrc.js").exists():
         existing_tools.append("eslint")
-    if (project_dir / ".prettierrc").exists() or (
-        project_dir / ".prettierrc.json"
-    ).exists():
+    if (project_dir / ".prettierrc").exists() or (project_dir / ".prettierrc.json").exists():
         existing_tools.append("prettier")
     if (project_dir / "tsconfig.json").exists():
         existing_tools.append("typescript")
@@ -361,11 +359,27 @@ def detect_premium_features(project_dir: Path) -> Dict[str, Any]:
         "current_tier": current_tier,
         "features": {
             "power_mode": "available",
-            "semantic_search": "requires_voyage_key"
-            if not has_voyage_key
-            else "available",
+            "semantic_search": "requires_voyage_key" if not has_voyage_key else "available",
             "cloud_sync": "requires_auth" if not is_authenticated else "available",
         },
+    }
+
+
+# =============================================================================
+# Onboarding Detection
+# =============================================================================
+
+
+def detect_onboarding(config_dir: Path | None = None) -> Dict[str, Any]:
+    """Detect pending first-run onboarding questions."""
+    manager = OnboardingManager(config_dir=config_dir)
+    state = manager.load_state()
+    questions = manager.pending_questions()
+
+    return {
+        "state": state.to_dict(),
+        "questions": questions,
+        "question_count": len(questions),
     }
 
 
@@ -374,7 +388,42 @@ def detect_premium_features(project_dir: Path) -> Dict[str, Any]:
 # =============================================================================
 
 
+def _order_quality_options(recommended_level: str) -> List[Dict[str, str]]:
+    """Return quality options with the recommended choice first."""
+    options = {
+        "basic": {
+            "label": "Basic",
+            "description": "Formatting only (Prettier/Ruff). Fast, minimal overhead.",
+        },
+        "standard": {
+            "label": "Standard",
+            "description": "Formatting + linting + type checking. Good balance.",
+        },
+        "strict": {
+            "label": "Strict",
+            "description": "All of Standard + pre-commit hooks + test requirements.",
+        },
+        "enterprise": {
+            "label": "Enterprise",
+            "description": "All of Strict + security scanning + audit logging.",
+        },
+    }
+
+    ordered_keys = [recommended_level]
+    ordered_keys.extend(key for key in options if key != recommended_level)
+
+    result = []
+    for key in ordered_keys:
+        option = options[key].copy()
+        if key == recommended_level:
+            option["label"] = f"{option['label']} (Recommended)"
+        result.append(option)
+
+    return result
+
+
 def generate_questions(
+    onboarding: Dict[str, Any],
     monorepo: Dict[str, Any],
     stack: Dict[str, Any],
     quality: Dict[str, Any],
@@ -391,7 +440,7 @@ def generate_questions(
     Returns:
         List of question configurations for AskUserQuestion
     """
-    questions = []
+    questions = list(onboarding.get("questions", []))
 
     # Question 1: Monorepo (only if detected)
     if monorepo["is_monorepo"]:
@@ -399,7 +448,10 @@ def generate_questions(
         questions.append(
             {
                 "id": "monorepo_config",
-                "question": f"Monorepo detected ({monorepo['workspace_type']}, {project_count} packages). How should PopKit be configured?",
+                "question": (
+                    f"Workspace detected: {monorepo['workspace_type']} monorepo with "
+                    f"{project_count} packages. Where should PopKit keep this project's config?"
+                ),
                 "header": "Workspace",
                 "options": [
                     {
@@ -430,11 +482,16 @@ def generate_questions(
         )
 
     if stack["confidence"] == "high":
-        question_text = f"Detected {stack['detected']}. Confirm or change project type?"
+        question_text = (
+            f"This looks like {stack['detected']}. Keep the detected template or switch "
+            f"project type?"
+        )
     elif stack["confidence"] == "medium":
-        question_text = f"Looks like {stack['detected']}. What type of project is this?"
+        question_text = (
+            f"PopKit found signs of {stack['detected']}. Which project type should it initialize?"
+        )
     else:
-        question_text = "What type of project would you like to initialize?"
+        question_text = "What type of project should PopKit initialize here?"
 
     questions.append(
         {
@@ -448,32 +505,14 @@ def generate_questions(
     # Question 3: Quality Gates
     rec = quality["recommended_level"]
     existing = quality["existing_tools"]
-    existing_str = f" ({', '.join(existing[:3])})" if existing else ""
+    existing_str = f" Detected tools: {', '.join(existing[:3])}." if existing else ""
 
     questions.append(
         {
             "id": "quality_gates",
-            "question": f"What quality gate level?{existing_str}",
+            "question": (f"Which quality gate level should PopKit configure?{existing_str}"),
             "header": "Quality",
-            "options": [
-                {
-                    "label": "Basic" + (" (Recommended)" if rec == "basic" else ""),
-                    "description": "Formatting only (Prettier/Ruff). Fast, minimal overhead.",
-                },
-                {
-                    "label": "Standard"
-                    + (" (Recommended)" if rec == "standard" else ""),
-                    "description": "Formatting + linting + type checking. Good balance.",
-                },
-                {
-                    "label": "Strict" + (" (Recommended)" if rec == "strict" else ""),
-                    "description": "All of Standard + pre-commit hooks + test requirements.",
-                },
-                {
-                    "label": "Enterprise",
-                    "description": "All of Strict + security scanning + audit logging.",
-                },
-            ],
+            "options": _order_quality_options(rec),
         }
     )
 
@@ -520,18 +559,20 @@ def main():
     project_dir = Path(args.dir).resolve()
 
     # Run all detections
+    onboarding = detect_onboarding()
     monorepo = detect_monorepo(project_dir)
     stack = detect_stack(project_dir)
     quality = detect_quality_gates(project_dir)
     premium = detect_premium_features(project_dir)
 
     # Generate questions
-    questions = generate_questions(monorepo, stack, quality, premium)
+    questions = generate_questions(onboarding, monorepo, stack, quality, premium)
 
     result = {
         "operation": "interactive_init",
         "directory": str(project_dir),
         "detection": {
+            "onboarding": onboarding,
             "monorepo": monorepo,
             "stack": stack,
             "quality_gates": quality,

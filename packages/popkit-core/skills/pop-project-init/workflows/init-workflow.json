@@ -16,6 +16,51 @@
           "description": "Detects monorepo, stack, quality tools, and premium features"
         },
         {
+          "id": "onboarding_intro",
+          "name": "First-Run Onboarding",
+          "type": "ask_user_question",
+          "conditional": "detection.onboarding.state.intro_seen == false",
+          "question": "This is the first PopKit setup on this machine. How would you like to continue?",
+          "header": "PopKit intro",
+          "options": [
+            {
+              "label": "Use guided defaults (Recommended)",
+              "value": "guided_defaults",
+              "description": "Continue local-first and choose telemetry separately"
+            },
+            {
+              "label": "Skip intro details",
+              "value": "skip_intro",
+              "description": "Jump straight to telemetry and project setup"
+            }
+          ]
+        },
+        {
+          "id": "telemetry_mode",
+          "name": "Telemetry Choice",
+          "type": "ask_user_question",
+          "conditional": "detection.onboarding.state.telemetry_prompted == false",
+          "question": "Which telemetry mode should this machine use?",
+          "header": "PopKit telemetry",
+          "options": [
+            {
+              "label": "Off - local only (Recommended)",
+              "value": "off",
+              "description": "No background network observability or project registration"
+            },
+            {
+              "label": "Anonymous telemetry",
+              "value": "anonymous",
+              "description": "Remote observability without project identity fields"
+            },
+            {
+              "label": "Community telemetry",
+              "value": "community",
+              "description": "Remote observability with project identity for full insights"
+            }
+          ]
+        },
+        {
           "id": "monorepo_config",
           "name": "Monorepo Configuration",
           "type": "ask_user_question",

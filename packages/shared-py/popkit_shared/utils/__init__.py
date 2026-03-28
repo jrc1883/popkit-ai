@@ -13,6 +13,16 @@ from .github_issues import (
     save_error_locally,
     save_lesson_locally,
 )
+from .onboarding import (
+    INTRO_HEADER,
+    TELEMETRY_HEADER,
+    OnboardingManager,
+    OnboardingState,
+    TelemetryMode,
+    is_onboarding_header,
+    telemetry_allows_project_identity,
+    telemetry_allows_remote,
+)
 
 # Plugin data directory resolution (CC 2.1.78+ CLAUDE_PLUGIN_DATA support)
 from .plugin_data import (
@@ -38,6 +48,15 @@ __all__ = [
     "get_plugin_data_dir",
     "get_plugin_data_subdir",
     "get_global_plugin_data_dir",
+    # Onboarding
+    "OnboardingManager",
+    "OnboardingState",
+    "TelemetryMode",
+    "INTRO_HEADER",
+    "TELEMETRY_HEADER",
+    "is_onboarding_header",
+    "telemetry_allows_remote",
+    "telemetry_allows_project_identity",
     # GitHub Issues
     "create_issue_from_lesson",
     "create_issue_from_validation_failure",

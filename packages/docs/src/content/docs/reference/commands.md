@@ -181,17 +181,18 @@ Core foundation commands for project management and orchestration.
 
 - `status` - View privacy settings
 - `consent` - Manage consent
+- `settings` - Update privacy and telemetry settings
 - `export` - Export data
 - `delete` - Delete data
-- `level` - Set privacy level
 
-**Options:** `strict|moderate|minimal`
+**Settings options:** `level <strict|moderate|minimal>`, `telemetry <off|anonymous|community>`
 
 **Example:**
 
 ```bash
 /popkit-core:privacy status
-/popkit-core:privacy level strict
+/popkit-core:privacy settings level strict
+/popkit-core:privacy settings telemetry anonymous
 ```
 
 ---
