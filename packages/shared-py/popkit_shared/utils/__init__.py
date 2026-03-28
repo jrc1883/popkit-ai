@@ -52,6 +52,14 @@ from .github_issues import (
     save_error_locally,
     save_lesson_locally,
 )
+from .interaction_surface import (
+    DecisionSpec,
+    InteractionSurface,
+    QuestionOption,
+    RuntimeCapabilities,
+    SelectionMode,
+    resolve_runtime_capabilities,
+)
 from .onboarding import (
     INTRO_HEADER,
     TELEMETRY_HEADER,
@@ -133,6 +141,13 @@ __all__ = [
     "has_cloud_api_key",
     "load_cloud_config",
     "resolve_cloud_config",
+    # Interaction surfaces
+    "DecisionSpec",
+    "InteractionSurface",
+    "QuestionOption",
+    "RuntimeCapabilities",
+    "SelectionMode",
+    "resolve_runtime_capabilities",
     # GitHub Issues
     "create_issue_from_lesson",
     "create_issue_from_validation_failure",
