@@ -25,7 +25,7 @@
   "dependencies": {
     "@astrojs/react": "^5.0.1",
     "@astrojs/starlight": "^0.38.1",
-    "astro": "^6.0.4",
+    "astro": "^6.1.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "recharts": "^3.8.1"
