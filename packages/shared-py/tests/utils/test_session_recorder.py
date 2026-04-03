@@ -39,3 +39,29 @@ def test_record_subagent_completion(tmp_path):
     assert event["tool_count"] == 5
     assert event["token_usage"]["total_tokens"] == 2000
     assert len(event["tool_details"]) == 2
+
+
+def test_record_cross_model_review(tmp_path):
+    """Test recording outside-voice review lifecycle events."""
+    os.environ["POPKIT_RECORD"] = "true"
+    recorder = SessionRecorder()
+    recorder.recordings_dir = tmp_path
+    recorder._init_recording()
+
+    recorder.events.clear()
+
+    recorder.record_cross_model_review(
+        "completed",
+        {
+            "requested_by_provider": "claude-code",
+            "reviewer_provider": "codex",
+            "verdict": "approve",
+        },
+    )
+
+    assert len(recorder.events) == 1
+    event = recorder.events[0]
+    assert event["type"] == "cross_model_review_completed"
+    assert event["requested_by_provider"] == "claude-code"
+    assert event["reviewer_provider"] == "codex"
+    assert event["verdict"] == "approve"
