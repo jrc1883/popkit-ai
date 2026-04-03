@@ -1037,8 +1037,7 @@ PopKit's agent routing system provides:
 
 **Next Steps:**
 
-- Review [Package README](../packages/popkit-core/README.md) for agent catalog
-- Explore [Power Mode Configuration](../packages/popkit-core/power-mode/config.json)
-- Test routing with `/popkit-ops:debug routing` (if available)
+- Review the [popkit-core package](https://github.com/jrc1883/popkit-claude/tree/main/packages/popkit-core) for agent catalog
+- Test routing with `/popkit-ops:debug routing`
 - Enable semantic routing with `/popkit-core:project embed`
 - Read agent definitions in `packages/popkit-*/agents/*/AGENT.md`
