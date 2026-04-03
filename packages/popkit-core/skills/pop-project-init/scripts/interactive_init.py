@@ -24,7 +24,8 @@ SHARED_PY_ROOT = Path(__file__).resolve().parents[4] / "shared-py"
 if str(SHARED_PY_ROOT) not in sys.path:
     sys.path.insert(0, str(SHARED_PY_ROOT))
 
-from popkit_shared.utils.onboarding import OnboardingManager
+from popkit_shared.utils.cloud_config import has_cloud_api_key  # noqa: E402
+from popkit_shared.utils.onboarding import OnboardingManager  # noqa: E402
 
 # =============================================================================
 # Monorepo Detection
@@ -337,7 +338,7 @@ def detect_premium_features(project_dir: Path) -> Dict[str, Any]:
     Returns:
         Dict with is_authenticated and available features
     """
-    is_authenticated = bool(os.environ.get("POPKIT_API_KEY"))
+    is_authenticated = has_cloud_api_key()
     has_voyage_key = bool(os.environ.get("VOYAGE_API_KEY"))
 
     plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")

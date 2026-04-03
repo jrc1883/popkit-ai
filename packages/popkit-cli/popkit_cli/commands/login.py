@@ -18,7 +18,12 @@ from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-DEFAULT_API_URL = "https://api.thehouseofdeals.com"
+from popkit_shared.utils.cloud_config import (
+    DEFAULT_API_URL,
+    load_cloud_config,
+    resolve_cloud_config,
+)
+
 CONFIG_DIR = Path.home() / ".popkit"
 CONFIG_FILE = CONFIG_DIR / "cloud-config.json"
 
@@ -52,22 +57,7 @@ def save_config(api_key: str, email: str = "", api_url: str = DEFAULT_API_URL) -
 
 def load_config() -> dict | None:
     """Load saved config from disk. Returns None if not found."""
-    # Check primary location
-    if CONFIG_FILE.exists():
-        try:
-            return json.loads(CONFIG_FILE.read_text())
-        except (json.JSONDecodeError, OSError):
-            pass
-
-    # Check legacy location
-    legacy = Path.home() / ".claude" / "popkit" / "cloud-config.json"
-    if legacy.exists():
-        try:
-            return json.loads(legacy.read_text())
-        except (json.JSONDecodeError, OSError):
-            pass
-
-    return None
+    return load_cloud_config()
 
 
 def get_api_key() -> str | None:
@@ -78,17 +68,8 @@ def get_api_key() -> str | None:
     2. ~/.popkit/cloud-config.json (primary)
     3. ~/.claude/popkit/cloud-config.json (legacy)
     """
-    # 1. Environment variable
-    env_key = os.environ.get("POPKIT_API_KEY", "")
-    if env_key:
-        return env_key
-
-    # 2. Config file
-    config = load_config()
-    if config and config.get("api_key"):
-        return config["api_key"]
-
-    return None
+    api_key, _ = resolve_cloud_config()
+    return api_key or None
 
 
 def run_login(args: argparse.Namespace) -> int:

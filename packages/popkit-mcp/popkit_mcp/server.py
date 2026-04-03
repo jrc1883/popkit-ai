@@ -33,6 +33,8 @@ from typing import Dict, List, Optional
 
 from mcp.server.fastmcp import FastMCP
 
+from popkit_shared.utils.cloud_config import resolve_cloud_config
+
 from .prompts import build_agent_prompt, build_skill_prompt
 from .resources import (
     build_agent_list_resource,
@@ -49,52 +51,6 @@ from .tool_registry import (
 )
 
 logger = logging.getLogger("popkit-mcp")
-
-# =============================================================================
-# Cloud Config Resolution
-# =============================================================================
-
-DEFAULT_API_URL = "https://api.thehouseofdeals.com"
-
-
-def _resolve_cloud_config() -> tuple[str, str]:
-    """Resolve API key and URL from env var or config file.
-
-    Resolution order:
-    1. POPKIT_API_KEY env var (for CI/advanced users)
-    2. ~/.popkit/cloud-config.json (primary — written by `popkit login`)
-    3. ~/.claude/popkit/cloud-config.json (legacy fallback)
-
-    Returns:
-        Tuple of (api_key, api_url). api_key may be empty if not configured.
-    """
-    import json
-
-    # 1. Environment variable
-    api_key = os.environ.get("POPKIT_API_KEY", "")
-    api_url = os.environ.get("POPKIT_API_URL", DEFAULT_API_URL)
-    if api_key:
-        return api_key, api_url
-
-    # 2. Config files
-    config_paths = [
-        Path.home() / ".popkit" / "cloud-config.json",
-        Path.home() / ".claude" / "popkit" / "cloud-config.json",
-    ]
-
-    for config_path in config_paths:
-        if config_path.exists():
-            try:
-                config = json.loads(config_path.read_text())
-                key = config.get("api_key", "")
-                url = config.get("api_url", DEFAULT_API_URL)
-                if key:
-                    return key, url
-            except (json.JSONDecodeError, OSError):
-                continue
-
-    return "", api_url
-
 
 # =============================================================================
 # Content Cache
@@ -671,7 +627,7 @@ def create_server(packages_dir: Optional[Path] = None) -> FastMCP:
             import json
             from urllib.request import Request, urlopen
 
-            api_key, api_url = _resolve_cloud_config()
+            api_key, api_url = resolve_cloud_config()
 
             if not api_key:
                 return (
@@ -729,11 +685,13 @@ def create_server(packages_dir: Optional[Path] = None) -> FastMCP:
             import json
             from urllib.request import Request, urlopen
 
-            api_key = os.environ.get("POPKIT_API_KEY", "")
-            api_url = os.environ.get("POPKIT_API_URL", "https://api.thehouseofdeals.com")
+            api_key, api_url = resolve_cloud_config()
 
             if not api_key:
-                return "No POPKIT_API_KEY set. Cannot route to backend servers."
+                return (
+                    "No PopKit Cloud API key found. Run `popkit login` to authenticate, "
+                    "or visit https://app.popkit.unjoe.me/signup/ to create an account."
+                )
 
             # Fetch server config from cloud
             req = Request(

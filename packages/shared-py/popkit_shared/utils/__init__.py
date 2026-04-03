@@ -7,6 +7,15 @@ Provides shared utilities for popkit hooks including:
 - github_issues: GitHub issue creation from errors and lessons
 """
 
+from .cloud_config import (
+    DEFAULT_API_URL,
+    get_cloud_api_key,
+    get_cloud_api_url,
+    get_cloud_config_paths,
+    has_cloud_api_key,
+    load_cloud_config,
+    resolve_cloud_config,
+)
 from .github_issues import (
     create_issue_from_lesson,
     create_issue_from_validation_failure,
@@ -57,6 +66,14 @@ __all__ = [
     "is_onboarding_header",
     "telemetry_allows_remote",
     "telemetry_allows_project_identity",
+    # Cloud Config
+    "DEFAULT_API_URL",
+    "get_cloud_api_key",
+    "get_cloud_api_url",
+    "get_cloud_config_paths",
+    "has_cloud_api_key",
+    "load_cloud_config",
+    "resolve_cloud_config",
     # GitHub Issues
     "create_issue_from_lesson",
     "create_issue_from_validation_failure",

@@ -16,9 +16,11 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from popkit_shared.utils.context_storage import (
+    CloudAPIContextStorage,
     ContextStorage,
     FileContextStorage,
     get_context_storage,
+    is_cloud_available,
 )
 
 
@@ -279,6 +281,20 @@ class TestGetContextStorage:
         # Both should be valid storage instances
         assert isinstance(storage1, ContextStorage)
         assert isinstance(storage2, ContextStorage)
+
+    def test_is_cloud_available_accepts_saved_login(self):
+        """Saved cloud config should count as available cloud auth."""
+        with patch("popkit_shared.utils.context_storage.has_cloud_api_key", return_value=True):
+            assert is_cloud_available() is True
+
+    def test_prefer_cloud_uses_saved_login_key(self):
+        """Explicit cloud backend requests should honor saved login config."""
+        with patch(
+            "popkit_shared.utils.context_storage.get_cloud_api_key", return_value="pk_saved"
+        ):
+            storage = CloudAPIContextStorage()
+
+        assert storage.api_key == "pk_saved"
 
 
 class TestWorkflowIDSafety:

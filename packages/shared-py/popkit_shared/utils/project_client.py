@@ -18,6 +18,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from .cloud_config import DEFAULT_API_URL, resolve_cloud_config
 from .onboarding import (
     OnboardingManager,
     TelemetryMode,
@@ -29,7 +30,7 @@ from .onboarding import (
 # CONFIGURATION
 # =============================================================================
 
-POPKIT_API_URL = os.environ.get("POPKIT_API_URL", "https://api.thehouseofdeals.com")
+POPKIT_API_URL = DEFAULT_API_URL
 POPKIT_VERSION = "1.0.0"
 
 # Network timeouts (in seconds)
@@ -107,18 +108,19 @@ class ProjectClient:
     def __init__(
         self,
         api_key: str | None = None,
-        api_url: str = POPKIT_API_URL,
+        api_url: str | None = None,
         onboarding_manager: OnboardingManager | None = None,
     ):
         """
         Initialize project client.
 
         Args:
-            api_key: PopKit API key (defaults to POPKIT_API_KEY env var)
-            api_url: PopKit Cloud API URL
+            api_key: PopKit API key (defaults to env var or saved login config)
+            api_url: PopKit Cloud API URL (defaults to env var or saved login config)
         """
-        self.api_key = api_key or os.environ.get("POPKIT_API_KEY")
-        self.api_url = api_url.rstrip("/")
+        resolved_key, resolved_url = resolve_cloud_config()
+        self.api_key = api_key or resolved_key
+        self.api_url = (api_url or resolved_url).rstrip("/")
         self.onboarding = onboarding_manager or OnboardingManager()
         self._current_project_id: str | None = None
 

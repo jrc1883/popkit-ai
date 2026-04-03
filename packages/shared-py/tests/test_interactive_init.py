@@ -273,6 +273,12 @@ class TestDetectPremiumFeatures:
                 result = detect_premium_features(Path(tmpdir))
                 assert result["is_authenticated"] is True
 
+    def test_with_saved_cloud_login(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with patch("interactive_init.has_cloud_api_key", return_value=True):
+                result = detect_premium_features(Path(tmpdir))
+                assert result["is_authenticated"] is True
+
     def test_with_voyage_key(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             with patch.dict(os.environ, {"VOYAGE_API_KEY": "va_test_123"}, clear=True):

@@ -66,3 +66,20 @@ def test_record_activity_skips_when_telemetry_is_off():
 
         assert result is False
         mock_post.assert_not_called()
+
+
+def test_client_reads_saved_cloud_config_when_api_key_not_passed():
+    """Saved login config should activate the project client without exported env vars."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        onboarding = OnboardingManager(Path(tmpdir))
+        onboarding.set_telemetry_mode(TelemetryMode.ANONYMOUS)
+
+        with patch(
+            "popkit_shared.utils.project_client.resolve_cloud_config",
+            return_value=("pk_saved_123", "https://saved.example"),
+        ):
+            client = ProjectClient(onboarding_manager=onboarding)
+
+        assert client.api_key == "pk_saved_123"
+        assert client.api_url == "https://saved.example"
+        assert client.is_available is True
