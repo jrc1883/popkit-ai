@@ -23,8 +23,10 @@ Initialize project with Claude Code configuration. **Never destroys user content
 | Step | When                      | Decision ID        |
 | ---- | ------------------------- | ------------------ |
 | 0    | Plugin conflicts detected | `plugin_conflict`  |
-| 1b   | Monorepo detected         | `monorepo_config`  |
-| 1c   | Stack/framework selection | `stack_selection`  |
+| 1a   | First run on this machine | `onboarding_intro` |
+| 1b   | First telemetry decision  | `telemetry_mode`   |
+| 1c   | Monorepo detected         | `monorepo_config`  |
+| 1d   | Stack/framework selection | `stack_selection`  |
 | 5b   | Quality gate level        | `quality_gates`    |
 | 6    | After directory creation  | `power_mode_setup` |
 | 6b   | If authenticated          | `premium_features` |
@@ -49,9 +51,36 @@ if result["total"] > 0:
 python scripts/interactive_init.py --dir .
 ```
 
-This runs all 4 detections (monorepo, stack, quality, premium) and outputs JSON with detection results and question configurations.
+This runs onboarding detection plus the 4 environment detections (monorepo, stack, quality, premium) and outputs JSON with detection results and question configurations.
 
-### Step 1b: Monorepo Configuration (if detected)
+### Step 1a: First-Run Onboarding (if needed)
+
+Only shown when machine-level onboarding has not been completed yet.
+
+```
+Use AskUserQuestion:
+- question: "This is the first PopKit setup on this machine..."
+- header: "PopKit intro"
+- options:
+  - "Use guided defaults (Recommended)" - Continue local-first and choose telemetry next
+  - "Skip intro details" - Jump straight to telemetry and project setup
+```
+
+### Step 1b: Telemetry Choice (if needed)
+
+Only shown when the machine-level telemetry mode has not been selected yet.
+
+```
+Use AskUserQuestion:
+- question: "PopKit can send background observability signals..."
+- header: "PopKit telemetry"
+- options:
+  - "Off - local only (Recommended)" - No background network observability
+  - "Anonymous telemetry" - Remote observability without project identity
+  - "Community telemetry" - Remote observability with project identity
+```
+
+### Step 1c: Monorepo Configuration (if detected)
 
 Only shown if `interactive_init.py` detects a monorepo workspace.
 
@@ -65,7 +94,7 @@ Use AskUserQuestion:
   - "Both (hybrid)" - Workspace config with app-specific overrides
 ```
 
-### Step 1c: Stack Selection (MANDATORY)
+### Step 1d: Stack Selection (MANDATORY)
 
 Uses detection results to pre-select the most likely option.
 

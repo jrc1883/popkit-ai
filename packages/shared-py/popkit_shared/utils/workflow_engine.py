@@ -41,6 +41,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Optional, Union
 
+from .cloud_config import DEFAULT_API_URL, get_cloud_api_key, get_cloud_api_url, has_cloud_api_key
+
 # =============================================================================
 # Enums and Constants
 # =============================================================================
@@ -987,14 +989,14 @@ class UpstashWorkflowEngine:
     - Built-in observability
 
     Requires:
-    - POPKIT_API_KEY environment variable
+    - PopKit Cloud credentials from `popkit login` or POPKIT_API_KEY
     - Pro tier subscription
 
     Part of Issue #209: Upstash Workflow Integration (Pro Tier)
     """
 
     # API URL (same as other PopKit cloud clients)
-    API_URL = os.environ.get("POPKIT_API_URL", "https://api.thehouseofdeals.com")
+    API_URL = DEFAULT_API_URL
 
     def __init__(
         self,
@@ -1007,11 +1009,12 @@ class UpstashWorkflowEngine:
         Args:
             workflow_id: Unique identifier for this workflow run
             definition: Workflow definition (optional for load operations)
-            api_key: PopKit API key (defaults to POPKIT_API_KEY env var)
+            api_key: PopKit API key (defaults to resolved cloud config)
         """
         self.workflow_id = workflow_id
         self.definition = definition
-        self.api_key = api_key or os.environ.get("POPKIT_API_KEY")
+        self.api_key = api_key or get_cloud_api_key()
+        self.api_url = get_cloud_api_url()
         self._cached_status: dict[str, Any] | None = None
 
     def _request(
@@ -1033,7 +1036,7 @@ class UpstashWorkflowEngine:
         import urllib.error
         import urllib.request
 
-        url = f"{self.API_URL}/v1/workflows{endpoint}"
+        url = f"{self.api_url}/v1/workflows{endpoint}"
         headers = {"Content-Type": "application/json", "User-Agent": "popkit-plugin/1.0.0-beta.1"}
 
         if self.api_key:
@@ -1318,9 +1321,7 @@ def has_api_key() -> bool:
     Returns:
         True if API key is present (all features work regardless)
     """
-    # Check for API key (no longer tier-based, Epic #580, Issue #581)
-    api_key = os.environ.get("POPKIT_API_KEY")
-    return bool(api_key)
+    return has_cloud_api_key()
 
 
 def get_workflow_engine(

@@ -15,11 +15,13 @@ import urllib.request
 from dataclasses import dataclass
 from typing import Any
 
+from .cloud_config import DEFAULT_API_URL, get_cloud_api_key, get_cloud_api_url
+
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
 
-POPKIT_API_URL = os.environ.get("POPKIT_API_URL", "https://api.thehouseofdeals.com")
+POPKIT_API_URL = DEFAULT_API_URL
 
 # Cache API key validation for 5 minutes to reduce API calls
 API_KEY_CACHE_TTL = 300
@@ -141,7 +143,8 @@ def has_api_key(api_key: str | None = None) -> bool:
     Returns:
         True if API key is configured and valid
     """
-    key = api_key or os.environ.get("POPKIT_API_KEY")
+    key = api_key or get_cloud_api_key()
+    api_url = get_cloud_api_url()
 
     if not key:
         return False
@@ -154,7 +157,7 @@ def has_api_key(api_key: str | None = None) -> bool:
     # Validate with API
     # Security: Catch all exceptions to prevent API key leakage in logs
     try:
-        url = f"{POPKIT_API_URL}/v1/health"
+        url = f"{api_url}/v1/health"
         request = urllib.request.Request(
             url, headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
         )
@@ -320,7 +323,8 @@ def track_enhancement_usage(
     """
     from datetime import datetime
 
-    key = api_key or os.environ.get("POPKIT_API_KEY")
+    key = api_key or get_cloud_api_key()
+    api_url = get_cloud_api_url()
     has_key = has_api_key(key)
 
     event = UsageEvent(
@@ -337,7 +341,7 @@ def track_enhancement_usage(
 
     # Security: Catch all exceptions to prevent API key leakage in logs
     try:
-        url = f"{POPKIT_API_URL}/v1/usage/track"
+        url = f"{api_url}/v1/usage/track"
         data = json.dumps(
             {
                 "enhancement": event.enhancement,
@@ -373,13 +377,14 @@ def get_usage_summary(api_key: str | None = None) -> dict[str, Any]:
     Returns:
         Dict with usage statistics
     """
-    key = api_key or os.environ.get("POPKIT_API_KEY")
+    key = api_key or get_cloud_api_key()
+    api_url = get_cloud_api_url()
     if not key:
         return {"error": "No API key configured"}
 
     # Security: Catch all exceptions to prevent API key leakage in logs
     try:
-        url = f"{POPKIT_API_URL}/v1/usage/summary"
+        url = f"{api_url}/v1/usage/summary"
         request = urllib.request.Request(
             url, headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
         )

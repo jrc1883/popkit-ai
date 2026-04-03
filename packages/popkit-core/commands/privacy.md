@@ -1,5 +1,5 @@
 ---
-description: "status | consent | export | delete | level [strict|moderate|minimal]"
+description: "status | consent | settings [level|telemetry|exclude|region|auto-delete] | export | delete"
 argument-hint: "<subcommand> [level]"
 ---
 
@@ -39,8 +39,9 @@ View current privacy settings and consent status.
 ```
 Privacy Status
 ==============
+Telemetry: off
 Consent: Given (2024-12-04)
-Sharing: Enabled
+Project sharing: Enabled
 Level: moderate
 
 Settings:
@@ -55,6 +56,12 @@ Cloud Stats:
   Patterns contributed: 3
   Usage this month: 2,450 tokens
 ```
+
+### Status Semantics
+
+- **Telemetry** is machine-level and stored in `~/.claude/config/popkit/onboarding.json`
+- **Project sharing** is project-level and stored in `.claude/popkit/privacy.json`
+- Changing telemetry does **not** change bug sharing, pattern sharing, or anonymization level
 
 ---
 
@@ -91,11 +98,20 @@ Update privacy settings.
 
 ```
 /popkit-core:privacy settings level <strict|moderate|minimal>
+/popkit-core:privacy settings telemetry <off|anonymous|community>
 /popkit-core:privacy settings exclude project <name>
 /popkit-core:privacy settings exclude pattern <glob>
 /popkit-core:privacy settings region <us|eu>
 /popkit-core:privacy settings auto-delete <days>
 ```
+
+### Telemetry Modes
+
+| Mode        | Description                                                                 |
+| ----------- | --------------------------------------------------------------------------- |
+| `off`       | Local only. No background network observability or project registration.    |
+| `anonymous` | Remote observability without project name, path hint, repo slug, or branch. |
+| `community` | Remote observability with project identity for full cross-project insights. |
 
 ### Anonymization Levels
 
@@ -110,6 +126,12 @@ Update privacy settings.
 ```bash
 # Set strict anonymization
 /popkit-core:privacy settings level strict
+
+# Keep telemetry local-only
+/popkit-core:privacy settings telemetry off
+
+# Allow anonymous remote observability
+/popkit-core:privacy settings telemetry anonymous
 
 # Exclude a project from sharing
 /popkit-core:privacy settings exclude project company-secrets
@@ -214,6 +236,12 @@ This action is **permanent and cannot be undone**. You will be asked to confirm 
 # Give consent to start sharing
 /popkit-core:privacy consent give
 
+# Keep remote telemetry off
+/popkit-core:privacy settings telemetry off
+
+# Allow anonymous observability
+/popkit-core:privacy settings telemetry anonymous
+
 # Set strict anonymization for enterprise
 /popkit-core:privacy settings level strict
 
@@ -268,11 +296,12 @@ For CLI-only workflows, continue using `/popkit-core:privacy` directly:
 
 ## Architecture Integration
 
-| Component        | Integration                   |
-| ---------------- | ----------------------------- |
-| Privacy Module   | `hooks/utils/privacy.py`      |
-| Cloud API        | `/v1/privacy/*` endpoints     |
-| Settings Storage | `.claude/popkit/privacy.json` |
+| Component        | Integration                                         |
+| ---------------- | --------------------------------------------------- |
+| Privacy Module   | `packages/shared-py/popkit_shared/utils/privacy.py` |
+| Onboarding State | `~/.claude/config/popkit/onboarding.json`           |
+| Cloud API        | `/v1/privacy/*` endpoints                           |
+| Settings Storage | `.claude/popkit/privacy.json`                       |
 
 ## Related Commands
 

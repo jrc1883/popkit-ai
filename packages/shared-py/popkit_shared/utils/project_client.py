@@ -18,11 +18,19 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from .cloud_config import DEFAULT_API_URL, resolve_cloud_config
+from .onboarding import (
+    OnboardingManager,
+    TelemetryMode,
+    telemetry_allows_project_identity,
+    telemetry_allows_remote,
+)
+
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
 
-POPKIT_API_URL = os.environ.get("POPKIT_API_URL", "https://api.thehouseofdeals.com")
+POPKIT_API_URL = DEFAULT_API_URL
 POPKIT_VERSION = "1.0.0"
 
 # Network timeouts (in seconds)
@@ -41,8 +49,8 @@ class ProjectInfo:
     """Local project information for registration."""
 
     project_id: str
-    name: str
-    path_hint: str
+    name: str | None
+    path_hint: str | None
     platform: str = field(default_factory=lambda: platform.system().lower())
     popkit_version: str = POPKIT_VERSION
     health_score: int = 0
@@ -97,16 +105,23 @@ class ProjectClient:
     - Multi-project dashboard support
     """
 
-    def __init__(self, api_key: str | None = None, api_url: str = POPKIT_API_URL):
+    def __init__(
+        self,
+        api_key: str | None = None,
+        api_url: str | None = None,
+        onboarding_manager: OnboardingManager | None = None,
+    ):
         """
         Initialize project client.
 
         Args:
-            api_key: PopKit API key (defaults to POPKIT_API_KEY env var)
-            api_url: PopKit Cloud API URL
+            api_key: PopKit API key (defaults to env var or saved login config)
+            api_url: PopKit Cloud API URL (defaults to env var or saved login config)
         """
-        self.api_key = api_key or os.environ.get("POPKIT_API_KEY")
-        self.api_url = api_url.rstrip("/")
+        resolved_key, resolved_url = resolve_cloud_config()
+        self.api_key = api_key or resolved_key
+        self.api_url = (api_url or resolved_url).rstrip("/")
+        self.onboarding = onboarding_manager or OnboardingManager()
         self._current_project_id: str | None = None
 
     # =========================================================================
@@ -129,23 +144,17 @@ class ProjectClient:
         Returns:
             ProjectRegistration or None if registration failed
         """
-        if not self.api_key:
+        if not self.is_available:
             return None
 
         project_path = project_path or os.getcwd()
         project_info = self._get_project_info(project_path, name, health_score)
+        request_body = self._build_registration_payload(project_info)
 
         try:
             response = self._post(
                 "/v1/projects/register",
-                {
-                    "project_id": project_info.project_id,
-                    "name": project_info.name,
-                    "path_hint": project_info.path_hint,
-                    "health_score": project_info.health_score,
-                    "popkit_version": project_info.popkit_version,
-                    "platform": project_info.platform,
-                },
+                request_body,
             )
 
             self._current_project_id = project_info.project_id
@@ -172,7 +181,7 @@ class ProjectClient:
         Returns:
             True if activity was recorded
         """
-        if not self.api_key:
+        if not self.is_available:
             return False
 
         project_id = project_id or self._current_project_id
@@ -291,13 +300,18 @@ class ProjectClient:
 
     @property
     def is_available(self) -> bool:
-        """Check if API key is configured."""
-        return bool(self.api_key)
+        """Check if remote telemetry is configured and enabled."""
+        return bool(self.api_key) and telemetry_allows_remote(self.telemetry_mode)
 
     @property
     def current_project_id(self) -> str | None:
         """Get the current registered project ID."""
         return self._current_project_id
+
+    @property
+    def telemetry_mode(self) -> TelemetryMode:
+        """Get the current machine-level telemetry mode."""
+        return self.onboarding.get_telemetry_mode()
 
     # =========================================================================
     # INTERNAL METHODS
@@ -339,6 +353,23 @@ class ProjectClient:
         return ProjectInfo(
             project_id=project_id, name=name, path_hint=path_hint, health_score=health_score
         )
+
+    def _build_registration_payload(self, project_info: ProjectInfo) -> dict[str, Any]:
+        """Build the registration payload for the current telemetry mode."""
+        body: dict[str, Any] = {
+            "project_id": project_info.project_id,
+            "health_score": project_info.health_score,
+            "popkit_version": project_info.popkit_version,
+            "platform": project_info.platform,
+        }
+
+        if telemetry_allows_project_identity(self.telemetry_mode):
+            if project_info.name is not None:
+                body["name"] = project_info.name
+            if project_info.path_hint is not None:
+                body["path_hint"] = project_info.path_hint
+
+        return body
 
     def _get(self, endpoint: str, timeout: int = DEFAULT_TIMEOUT) -> dict[str, Any]:
         """Make GET request to API."""
@@ -451,8 +482,7 @@ if __name__ == "__main__":
         print("Set: export POPKIT_API_KEY=your-key-here")
         sys.exit(1)
 
-    print("API Key: [REDACTED]")
-    print(f"API URL: {client.api_url}")
+    print("Cloud config: loaded")
 
     # Test project registration
     print("\nTesting project registration...")

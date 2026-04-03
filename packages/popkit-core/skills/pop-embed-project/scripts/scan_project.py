@@ -25,6 +25,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from popkit_shared.utils.cloud_config import has_cloud_api_key
+
 
 def get_project_root() -> Path:
     """Get project root directory."""
@@ -39,9 +41,9 @@ def check_entitlement() -> Dict[str, Any]:
     """
     result = {
         "api_available": bool(os.environ.get("VOYAGE_API_KEY")),
-        "has_api_key": bool(os.environ.get("POPKIT_API_KEY")),
+        "has_api_key": has_cloud_api_key(),
         "allowed": True,  # All features work without API key
-        "enhancement_available": bool(os.environ.get("POPKIT_API_KEY")),
+        "enhancement_available": has_cloud_api_key(),
     }
 
     return result
@@ -227,9 +229,7 @@ def embed_items(items: List[Dict[str, Any]], force: bool = False) -> Dict[str, A
 
     # Batch items (50 per batch)
     batch_size = 50
-    batches = [
-        to_embed[i : i + batch_size] for i in range(0, len(to_embed), batch_size)
-    ]
+    batches = [to_embed[i : i + batch_size] for i in range(0, len(to_embed), batch_size)]
     result["timing"]["batches"] = len(batches)
 
     # Process batches

@@ -18,6 +18,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
+from .onboarding import OnboardingManager, TelemetryMode
+
 # =============================================================================
 # ANONYMIZATION LEVELS
 # =============================================================================
@@ -41,7 +43,7 @@ class PrivacySettings:
     """User privacy settings for collective learning."""
 
     # Sharing controls
-    sharing_enabled: bool = True
+    sharing_enabled: bool = False
     anonymization_level: str = "moderate"
 
     # Consent tracking
@@ -66,10 +68,18 @@ class PrivacySettings:
     @classmethod
     def from_dict(cls, data: dict) -> "PrivacySettings":
         """Create from dictionary."""
+        consent_given = data.get("consent_given", False)
+        if "sharing_enabled" in data:
+            sharing_enabled = data.get("sharing_enabled", False)
+        else:
+            # Legacy files predate explicit sharing_enabled and treated consent
+            # as sufficient to enable sharing.
+            sharing_enabled = bool(consent_given)
+
         return cls(
-            sharing_enabled=data.get("sharing_enabled", True),
+            sharing_enabled=sharing_enabled,
             anonymization_level=data.get("anonymization_level", "moderate"),
-            consent_given=data.get("consent_given", False),
+            consent_given=consent_given,
             consent_timestamp=data.get("consent_timestamp"),
             consent_version=data.get("consent_version", "1.0"),
             excluded_projects=data.get("excluded_projects", []),
@@ -286,10 +296,15 @@ class PrivacyManager:
     Manages user privacy settings and consent.
     """
 
-    def __init__(self, project_dir: str | None = None):
+    def __init__(
+        self,
+        project_dir: str | None = None,
+        onboarding_manager: OnboardingManager | None = None,
+    ):
         self.project_dir = Path(project_dir or os.getcwd())
         self.settings_dir = self.project_dir / ".claude" / "popkit"
         self.settings_file = self.settings_dir / "privacy.json"
+        self.onboarding = onboarding_manager or OnboardingManager()
         self._settings: PrivacySettings | None = None
 
     @property
@@ -321,6 +336,7 @@ class PrivacyManager:
     def give_consent(self) -> None:
         """Record user consent for data sharing."""
         self.settings.consent_given = True
+        self.settings.sharing_enabled = True
         self.settings.consent_timestamp = datetime.now().isoformat()
         self.save_settings()
 
@@ -424,6 +440,26 @@ class PrivacyManager:
             "content_hash": content_hash,
             "original_length": len(content),
             "anonymized_length": len(anonymized),
+        }
+
+    def get_telemetry_mode(self) -> str:
+        """Get the machine-level telemetry mode."""
+        return self.onboarding.get_telemetry_mode().value
+
+    def set_telemetry_mode(self, mode: str | TelemetryMode) -> str:
+        """Set the machine-level telemetry mode."""
+        return self.onboarding.set_telemetry_mode(mode).telemetry_mode
+
+    def get_status_snapshot(self) -> dict[str, Any]:
+        """Return combined project privacy and machine telemetry status."""
+        can_share, share_reason = self.can_share()
+        return {
+            "sharing_enabled": self.settings.sharing_enabled,
+            "consent_given": self.settings.consent_given,
+            "anonymization_level": self.settings.anonymization_level,
+            "telemetry_mode": self.get_telemetry_mode(),
+            "can_share": can_share,
+            "share_reason": share_reason,
         }
 
 
@@ -530,6 +566,7 @@ def main():
     print(f"  Sharing enabled: {manager.settings.sharing_enabled}")
     print(f"  Consent given: {manager.settings.consent_given}")
     print(f"  Level: {manager.settings.anonymization_level}")
+    print(f"  Telemetry mode: {manager.get_telemetry_mode()}")
 
     can_share, reason = manager.can_share()
     print(f"  Can share: {can_share} ({reason})")

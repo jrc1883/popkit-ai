@@ -14,6 +14,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+from popkit_shared.utils.onboarding import OnboardingManager, TelemetryMode
 from popkit_shared.utils.privacy import (
     AnonymizationLevel,
     PrivacyManager,
@@ -42,7 +43,7 @@ class TestPrivacySettings:
     def test_default_settings(self):
         """Test default privacy settings"""
         settings = PrivacySettings()
-        assert settings.sharing_enabled is True
+        assert settings.sharing_enabled is False
         assert settings.anonymization_level == "moderate"
         assert settings.consent_given is False
         assert settings.consent_timestamp is None
@@ -82,8 +83,15 @@ class TestPrivacySettings:
         settings = PrivacySettings.from_dict(data)
 
         assert settings.consent_given is True
-        assert settings.sharing_enabled is True  # default
+        assert settings.sharing_enabled is True  # legacy inference
         assert settings.anonymization_level == "moderate"  # default
+
+    def test_from_dict_defaults_new_install_to_local_only(self):
+        """Test missing sharing flag defaults to local-only when consent is absent."""
+        settings = PrivacySettings.from_dict({})
+
+        assert settings.consent_given is False
+        assert settings.sharing_enabled is False
 
 
 class TestDetectSensitiveData:
@@ -404,7 +412,7 @@ class TestPrivacyManager:
             settings = manager.load_settings()
 
             assert isinstance(settings, PrivacySettings)
-            assert settings.sharing_enabled is True
+            assert settings.sharing_enabled is False
             assert settings.consent_given is False
 
     def test_save_and_load_settings(self):
@@ -431,6 +439,7 @@ class TestPrivacyManager:
             manager.give_consent()
 
             assert manager.settings.consent_given is True
+            assert manager.settings.sharing_enabled is True
             assert manager.settings.consent_timestamp is not None
 
     def test_revoke_consent(self):
@@ -548,6 +557,31 @@ class TestPrivacyManager:
 
             assert anonymized == ""
             assert metadata["excluded"] is True
+
+    def test_status_snapshot_includes_telemetry_mode(self):
+        """Test combined status includes machine-level telemetry."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            onboarding = OnboardingManager(Path(tmpdir) / "config")
+            onboarding.set_telemetry_mode(TelemetryMode.ANONYMOUS)
+            manager = PrivacyManager(tmpdir, onboarding_manager=onboarding)
+
+            snapshot = manager.get_status_snapshot()
+
+            assert snapshot["telemetry_mode"] == "anonymous"
+            assert snapshot["sharing_enabled"] is False
+
+    def test_set_telemetry_mode_updates_onboarding_state(self):
+        """Test telemetry updates are stored in the onboarding file."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            onboarding = OnboardingManager(Path(tmpdir) / "config")
+            manager = PrivacyManager(tmpdir, onboarding_manager=onboarding)
+
+            mode = manager.set_telemetry_mode("community")
+            reloaded = onboarding.load_state()
+
+            assert mode == "community"
+            assert reloaded.telemetry_mode == "community"
+            assert reloaded.telemetry_prompted is True
 
 
 class TestEdgeCases:

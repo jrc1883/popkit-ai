@@ -273,6 +273,10 @@ def register_project_async():
         return None
 
     try:
+        client = ProjectClient()
+        if not client.is_available:
+            return None
+
         # Launch registration in background thread (daemon=True means it won't block process exit)
         thread = threading.Thread(target=_register_project_sync, daemon=True)
         thread.start()
