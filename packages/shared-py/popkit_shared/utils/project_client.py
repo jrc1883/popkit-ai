@@ -482,8 +482,7 @@ if __name__ == "__main__":
         print("Set: export POPKIT_API_KEY=your-key-here")
         sys.exit(1)
 
-    print("API Key: [REDACTED]")
-    print(f"API URL: {client.api_url}")
+    print("Cloud config: loaded")
 
     # Test project registration
     print("\nTesting project registration...")

@@ -645,6 +645,7 @@ if __name__ == "__main__":
 
     # Status
     status = get_storage_status()
-    print(f"Storage status: {status}")
+    assert isinstance(status, dict)
+    print("Storage status: OK")
 
     print("\nAll tests passed!")

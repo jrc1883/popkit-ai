@@ -215,7 +215,7 @@
           "id": "premium_features",
           "name": "Premium Features",
           "type": "ask_user_question",
-          "conditional": "detection.premium.is_authenticated == true || detection.premium.has_voyage_key == true",
+          "conditional": "detection.premium.auth_state == 'available' || detection.premium.voyage_state == 'available'",
           "question": "Which premium features would you like to enable?",
           "header": "Features",
           "multiSelect": true,

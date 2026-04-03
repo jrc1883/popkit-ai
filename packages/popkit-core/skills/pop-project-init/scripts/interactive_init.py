@@ -336,32 +336,20 @@ def detect_premium_features(project_dir: Path) -> Dict[str, Any]:
         project_dir: Path to the project directory
 
     Returns:
-        Dict with is_authenticated and available features
+        Dict with public feature availability states
     """
-    is_authenticated = has_cloud_api_key()
-    has_voyage_key = bool(os.environ.get("VOYAGE_API_KEY"))
-
-    plugin_data = os.environ.get("CLAUDE_PLUGIN_DATA")
-    if plugin_data:
-        config_path = Path(plugin_data) / "config.json"
-    else:
-        config_path = project_dir / ".claude" / "popkit" / "config.json"
-    current_tier = "free"
-    if config_path.exists():
-        try:
-            config = json.loads(config_path.read_text(encoding="utf-8"))
-            current_tier = config.get("tier", "free")
-        except (json.JSONDecodeError, IOError):
-            pass  # Intentionally ignored: defaults to free tier if config unreadable
+    cloud_sync_state = "available" if has_cloud_api_key() else "requires_auth"
+    semantic_search_state = (
+        "available" if bool(os.environ.get("VOYAGE_API_KEY")) else "requires_voyage_key"
+    )
 
     return {
-        "is_authenticated": is_authenticated,
-        "has_voyage_key": has_voyage_key,
-        "current_tier": current_tier,
+        "auth_state": cloud_sync_state,
+        "voyage_state": semantic_search_state,
         "features": {
             "power_mode": "available",
-            "semantic_search": "requires_voyage_key" if not has_voyage_key else "available",
-            "cloud_sync": "requires_auth" if not is_authenticated else "available",
+            "semantic_search": semantic_search_state,
+            "cloud_sync": cloud_sync_state,
         },
     }
 
@@ -517,8 +505,8 @@ def generate_questions(
         }
     )
 
-    # Question 4: Premium Features (only if authenticated)
-    if premium["is_authenticated"] or premium["has_voyage_key"]:
+    # Question 4: Premium Features (only if cloud auth or semantic search is available)
+    if premium["auth_state"] == "available" or premium["voyage_state"] == "available":
         questions.append(
             {
                 "id": "premium_features",

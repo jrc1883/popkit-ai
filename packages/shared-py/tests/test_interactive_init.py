@@ -264,37 +264,37 @@ class TestDetectPremiumFeatures:
         with tempfile.TemporaryDirectory() as tmpdir:
             with patch.dict(os.environ, {}, clear=True):
                 result = detect_premium_features(Path(tmpdir))
-                assert result["is_authenticated"] is False
-                assert result["has_voyage_key"] is False
+                assert result["auth_state"] == "requires_auth"
+                assert result["voyage_state"] == "requires_voyage_key"
 
     def test_with_popkit_api_key(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             with patch.dict(os.environ, {"POPKIT_API_KEY": "pk_test_123"}, clear=True):
                 result = detect_premium_features(Path(tmpdir))
-                assert result["is_authenticated"] is True
+                assert result["auth_state"] == "available"
 
     def test_with_saved_cloud_login(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             with patch("interactive_init.has_cloud_api_key", return_value=True):
                 result = detect_premium_features(Path(tmpdir))
-                assert result["is_authenticated"] is True
+                assert result["auth_state"] == "available"
 
     def test_with_voyage_key(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             with patch.dict(os.environ, {"VOYAGE_API_KEY": "va_test_123"}, clear=True):
                 result = detect_premium_features(Path(tmpdir))
-                assert result["has_voyage_key"] is True
+                assert result["voyage_state"] == "available"
 
-    def test_reads_existing_tier(self):
+    def test_features_reflect_public_availability_states(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            config_dir = Path(tmpdir) / ".claude" / "popkit"
-            config_dir.mkdir(parents=True)
-            config = {"tier": "premium", "version": "1.0"}
-            (config_dir / "config.json").write_text(json.dumps(config))
-
-            with patch.dict(os.environ, {}, clear=True):
+            with patch.dict(
+                os.environ,
+                {"POPKIT_API_KEY": "pk_test_123", "VOYAGE_API_KEY": "va_test_123"},
+                clear=True,
+            ):
                 result = detect_premium_features(Path(tmpdir))
-                assert result["current_tier"] == "premium"
+                assert result["features"]["cloud_sync"] == "available"
+                assert result["features"]["semantic_search"] == "available"
 
 
 # =============================================================================
@@ -344,9 +344,8 @@ class TestGenerateQuestions:
 
     def _make_premium(self, authenticated=False, voyage=False):
         return {
-            "is_authenticated": authenticated,
-            "has_voyage_key": voyage,
-            "current_tier": "free",
+            "auth_state": "available" if authenticated else "requires_auth",
+            "voyage_state": "available" if voyage else "requires_voyage_key",
             "features": {},
         }
 
