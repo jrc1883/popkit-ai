@@ -296,12 +296,12 @@ For CLI-only workflows, continue using `/popkit-core:privacy` directly:
 
 ## Architecture Integration
 
-| Component        | Integration                   |
-| ---------------- | ----------------------------- |
+| Component        | Integration                                         |
+| ---------------- | --------------------------------------------------- |
 | Privacy Module   | `packages/shared-py/popkit_shared/utils/privacy.py` |
-| Onboarding State | `~/.claude/config/popkit/onboarding.json` |
-| Cloud API        | `/v1/privacy/*` endpoints     |
-| Settings Storage | `.claude/popkit/privacy.json` |
+| Onboarding State | `~/.claude/config/popkit/onboarding.json`           |
+| Cloud API        | `/v1/privacy/*` endpoints                           |
+| Settings Storage | `.claude/popkit/privacy.json`                       |
 
 ## Related Commands
 
