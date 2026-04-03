@@ -77,38 +77,6 @@ workflow:
       description: Determine base branch
       type: agent
       agent: code-explorer
-      next: outside_voice_decision
-    - id: outside_voice_decision
-      description: Decide whether to run advisory outside-voice review
-      type: user_decision
-      question: "Run outside-voice advisory review before finishing?"
-      header: "Outside Voice"
-      options:
-        - id: run_now
-          label: "Run now"
-          description: "Get a second opinion from the opposite model family"
-          next: run_outside_voice_review
-        - id: continue_existing
-          label: "Use existing"
-          description: "Continue if this head already has an outside-voice review"
-          next: completion_choice
-        - id: skip
-          label: "Skip"
-          description: "Skip and record that the advisory review was declined"
-          next: record_outside_voice_skip
-      next_map:
-        run_now: run_outside_voice_review
-        continue_existing: completion_choice
-        skip: record_outside_voice_skip
-    - id: run_outside_voice_review
-      description: Run advisory outside-voice review
-      type: skill
-      skill: pop-cross-model-review
-      next: completion_choice
-    - id: record_outside_voice_skip
-      description: Record explicit outside-voice review skip
-      type: skill
-      skill: pop-cross-model-review
       next: completion_choice
     - id: completion_choice
       description: Choose how to complete the branch
@@ -317,41 +285,33 @@ Or ask: "This branch split from main - is that correct?"
 
 ### Step 3: Present Options
 
-### Step 3a: Outside Voice Check
+### Step 3a: Outside Voice Only For PR-Ready
 
-Before presenting the final branch-completion options, check whether the current head already has an outside-voice review:
+Do not block the whole finish-branch flow on outside-voice review. It matters when the user is creating a PR and especially when they want to move a draft PR to ready.
 
-```bash
-python packages/popkit-ops/skills/pop-cross-model-review/scripts/run_review.py --status
-```
+Do not ask about outside voice before presenting the four completion options. First let the user choose merge locally, create PR, keep as-is, or discard.
 
-If no advisory review exists, use AskUserQuestion with:
-
-- `Run now` - execute the cross-model review skill now
-- `Use existing` - continue if the user already has enough review context
-- `Skip` - run `python packages/popkit-ops/skills/pop-cross-model-review/scripts/run_review.py --skip`
-
-If the user chooses `Run now`, execute:
+Use standalone outside-voice review only when the user explicitly wants a second opinion before creating the PR:
 
 ```bash
 python packages/popkit-ops/skills/pop-cross-model-review/scripts/run_review.py
 ```
 
-Optionally add `--publish comment` when finishing against an active PR.
+When the user is taking the PR path, prefer creating or keeping a draft PR until they decide it should become ready.
 
-If the user wants to mark a draft PR ready from this flow, use:
+When the user wants to mark a draft PR ready from this flow, always use the executable helper instead of asking them to manually verify review state:
 
 ```bash
 python packages/popkit-ops/skills/pop-cross-model-review/scripts/pr_ready.py --pr <number>
 ```
 
-If the current head has no advisory artifact yet, either:
+If the current head has no advisory artifact yet, either run the review automatically:
 
 ```bash
 python packages/popkit-ops/skills/pop-cross-model-review/scripts/pr_ready.py --pr <number> --run-review-if-missing --publish comment
 ```
 
-or:
+or record an explicit skip:
 
 ```bash
 python packages/popkit-ops/skills/pop-cross-model-review/scripts/pr_ready.py --pr <number> --skip-outside-voice

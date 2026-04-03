@@ -68,17 +68,13 @@ python packages/popkit-ops/skills/pop-cross-model-review/scripts/pr_ready.py --p
 
 ## Finish-Branch Guidance
 
-Before `/popkit-dev:git pr ready` or `pop-finish-branch` completion:
+During `pop-finish-branch`, do not force outside voice on every completion path.
 
-1. Check status with `--status`.
-2. If no advisory review exists for the current head, ask the user whether to:
-   - Run outside voice now
-   - Skip and record the skip
-   - Continue if they already have sufficient review context
-3. If they choose run:
-   - execute the review or PR-ready script
-   - show the rendered advisory report
-   - optionally publish with `--publish comment` when working against a PR
+- If the user is merging locally, keeping the branch, or discarding work, outside voice is optional.
+- If the user explicitly wants a second opinion before PR creation, run `run_review.py`.
+- If the user is marking a draft PR ready, prefer `pr_ready.py` instead of manual status checks.
+- Use `--run-review-if-missing --publish comment` when you want the helper to run the advisory review and advance the PR in one step.
+- Use `--skip-outside-voice` only when the user explicitly declines the advisory review.
 
 ## Notes
 
