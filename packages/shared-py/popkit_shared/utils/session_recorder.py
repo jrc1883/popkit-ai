@@ -437,6 +437,16 @@ class SessionRecorder:
 
         self.record_event(event)
 
+    def record_cross_model_review(self, status: str, payload: dict[str, Any] | None = None) -> None:
+        """Record an outside-voice advisory review lifecycle event."""
+        self.record_event(
+            {
+                "type": f"cross_model_review_{status}",
+                "timestamp": datetime.now(UTC).isoformat(),
+                **(payload or {}),
+            }
+        )
+
     def finalize_recording(
         self, status: str = "completed", summary: dict[str, Any] | None = None
     ) -> Path | None:
@@ -576,3 +586,10 @@ def record_subagent_completion(
             total_tokens=total_tokens,
             tool_details=tool_details,
         )
+
+
+def record_cross_model_review(status: str, payload: dict[str, Any] | None = None) -> None:
+    """Convenience function to record outside-voice review lifecycle events."""
+    recorder = get_recorder()
+    if recorder:
+        recorder.record_cross_model_review(status, payload)

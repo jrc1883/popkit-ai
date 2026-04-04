@@ -285,6 +285,40 @@ Or ask: "This branch split from main - is that correct?"
 
 ### Step 3: Present Options
 
+### Step 3a: Outside Voice Only For PR-Ready
+
+Do not block the whole finish-branch flow on outside-voice review. It matters when the user is creating a PR and especially when they want to move a draft PR to ready.
+
+Do not ask about outside voice before presenting the four completion options. First let the user choose merge locally, create PR, keep as-is, or discard.
+
+Use standalone outside-voice review only when the user explicitly wants a second opinion before creating the PR:
+
+```bash
+python packages/popkit-ops/skills/pop-cross-model-review/scripts/run_review.py
+```
+
+When the user is taking the PR path, prefer creating or keeping a draft PR until they decide it should become ready.
+
+When the user wants to mark a draft PR ready from this flow, always use the executable helper instead of asking them to manually verify review state:
+
+```bash
+python packages/popkit-ops/skills/pop-cross-model-review/scripts/pr_ready.py --pr <number>
+```
+
+If the current head has no advisory artifact yet, either run the review automatically:
+
+```bash
+python packages/popkit-ops/skills/pop-cross-model-review/scripts/pr_ready.py --pr <number> --run-review-if-missing --publish comment
+```
+
+or record an explicit skip:
+
+```bash
+python packages/popkit-ops/skills/pop-cross-model-review/scripts/pr_ready.py --pr <number> --skip-outside-voice
+```
+
+### Step 3b: Present Options
+
 **ALWAYS use AskUserQuestion** - never present plain text numbered options:
 
 ```
