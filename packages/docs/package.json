@@ -23,7 +23,7 @@
     "npm": ">=9.6.5"
   },
   "dependencies": {
-    "@astrojs/react": "^5.0.1",
+    "@astrojs/react": "^5.0.3",
     "@astrojs/starlight": "^0.38.1",
     "astro": "^6.0.4",
     "react": "^19.2.4",
