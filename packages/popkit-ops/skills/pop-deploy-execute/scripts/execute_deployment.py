@@ -534,7 +534,6 @@ def verify_deployment(
 
     # Check npm package published
     elif target == "npm":
-        npm_config = target_config.get("config", {})
         pkg_json = project_dir / "package.json"
         if pkg_json.exists():
             try:
@@ -593,8 +592,7 @@ def verify_deployment(
         "checks": checks,
         "passed": passed,
         "total": total,
-        "healthy": passed == total
-        or all(c["status"] in ("pass", "skip") for c in checks),
+        "healthy": passed == total or all(c["status"] in ("pass", "skip") for c in checks),
     }
 
 
@@ -683,9 +681,7 @@ def main():
         version = args.version or prep.get("version")
 
         start_time = time.time()
-        result = execute_deployment(
-            project_dir, config, target, target_config, version, args.mode
-        )
+        result = execute_deployment(project_dir, config, target, target_config, version, args.mode)
         duration_ms = int((time.time() - start_time) * 1000)
 
         # Record in history (only for non-dry-run)
