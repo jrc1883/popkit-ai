@@ -1,6 +1,6 @@
 ---
 name: bug-reporter
-description: Capture bug context, generate reports, and optionally create GitHub issues or share patterns
+description: "Capture bug context and generate structured reports, optionally filing GitHub issues or sharing anonymized patterns. Use when the user reports a bug with /popkit:bug or an agent is repeatedly stuck. Do NOT use for feature requests, routine code errors the agent can fix in place, or asking questions about expected behavior."
 ---
 
 # Bug Reporter
@@ -13,6 +13,13 @@ Capture and report bugs with automatic context gathering, local logging, GitHub 
 - Agent encounters repeated errors or gets stuck
 - Need to document an issue for later investigation
 - Want to share a bug pattern with the collective
+
+## When NOT to Use
+
+- **Feature requests** — use the feature-development skill, not this one.
+- **Routine code errors the agent can fix in place** — fix and continue; a bug report is overhead when the failure is understood and resolvable in the same session.
+- **Questions about expected behavior** — answer the question instead of filing a bug.
+- **Security vulnerabilities** — route to `SECURITY.md` disclosure, not the public bug log.
 
 ## Input
 
@@ -60,38 +67,81 @@ Context includes:
 
 ### 3. Generate Report
 
-Format the bug report:
+Bug reports follow a fixed schema. Every named slot is required unless labeled `Optional:`. No free-form fields.
+
+**Schema:**
 
 ```
 Bug Report
 ==========
-ID: bug-2024-12-04-abc123
-Time: 2024-12-04T10:30:00Z
+ID:          bug-<YYYY-MM-DD>-<slug>
+Time:        <ISO-8601>
+Description: <one-sentence user statement; no hedging>
 
+Context:
+  Language:    <detected>
+  Framework:   <detected | none>
+  Branch:      <git branch>
+  Uncommitted: <N files>
+
+Recent Actions:
+  <n>. <tool>: <target> (<status>)
+  ... up to 10 most recent tool calls
+
+Errors Detected:
+  [<ErrorType>] <message>
+  ... one line per distinct error
+
+Stuck Patterns:
+  - <pattern>: <evidence>
+  ... one line per detected pattern, empty list permitted
+
+Suggested Actions:
+  - <imperative verb> <object>
+  ... 1–3 actions, imperative mood only
+
+Optional: Reproduction Steps
+  1. <step>
+  2. <step>
+```
+
+**Example (filled):**
+
+```
+Bug Report
+==========
+ID:          bug-2024-12-04-abc123
+Time:        2024-12-04T10:30:00Z
 Description: Agent got stuck on OAuth flow
 
 Context:
-  Language: TypeScript
-  Framework: Next.js
-  Branch: feature/oauth
+  Language:    TypeScript
+  Framework:   Next.js
+  Branch:      feature/oauth
   Uncommitted: 3 files
 
 Recent Actions:
-  1. Edit src/auth/oauth.ts
-  2. Bash: npm run build (failed)
-  3. Edit src/auth/oauth.ts (same file, 2nd time)
+  1. Edit:  src/auth/oauth.ts (ok)
+  2. Bash:  npm run build (failed)
+  3. Edit:  src/auth/oauth.ts (ok, 2nd edit to same file)
 
 Errors Detected:
   [TypeError] Cannot read property 'token' of undefined
 
 Stuck Patterns:
   - Same file edited 3 times: oauth.ts
-  - Build command failed
+  - Build command failed twice
 
 Suggested Actions:
-  - Consider stepping back and reviewing the approach
-  - Check for null/undefined values
+  - Revert the last two edits to oauth.ts and re-read the module.
+  - Check the refresh-token path for null before property access.
 ```
+
+Suggested-action rules:
+
+- Imperative verbs only (`Revert`, `Check`, `Add`, `Remove`). No `consider`, `try`, `may`, `should`.
+- Each action names a concrete object (a file, function, or test) — not "the approach."
+- Maximum three actions. Rank by estimated unblock time, shortest first.
 
 ### 4. Output Actions
 
