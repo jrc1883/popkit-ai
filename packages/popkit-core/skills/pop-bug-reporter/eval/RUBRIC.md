@@ -1,4 +1,4 @@
-# bug-reporter SKILL.md rubric
+# pop-bug-reporter SKILL.md rubric
 
 7 criteria, 1 point each. Target: 7/7. Partial matches score 0.
 
@@ -10,7 +10,7 @@ This skill is capture-shaped (not audit-shaped), so rubric criteria C5–C10 fro
 
 Pass if **all** of:
 
-- `name` is `bug-reporter`, matches the directory name, and matches `^[a-z0-9-]+$`.
+- `name` is `pop-bug-reporter`, matches the directory name, and matches `^[a-z0-9-]+$`.
 - `description` opens with a directive verb.
 - `description` contains a "Use when …" trigger phrase.
 - `description` contains "Do NOT use for …" with at least one explicit non-goal.
@@ -72,4 +72,4 @@ Pass if:
 
 Total = sum of criteria. Pass = 7/7. Any failing criterion is a gap to fix before the PR lands.
 
-The grader in `eval/GRADER.md` (the template at `packages/popkit-core/docs/skill-template/eval/GRADER.md`) runs against this rubric. Paste the grader output into any PR that modifies `SKILL.md`.
+The sibling grader in `eval/GRADER.md` runs against this rubric. Paste the grader output into any PR that modifies `SKILL.md`.

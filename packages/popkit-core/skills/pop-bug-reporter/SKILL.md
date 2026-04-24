@@ -1,6 +1,6 @@
 ---
-name: bug-reporter
-description: "Capture bug context and generate structured reports, optionally filing GitHub issues or sharing anonymized patterns. Use when the user reports a bug with /popkit:bug or an agent is repeatedly stuck. Do NOT use for feature requests, routine code errors the agent can fix in place, or asking questions about expected behavior."
+name: pop-bug-reporter
+description: "Capture bug context into structured reports. Use when /popkit:bug reports a bug or an agent repeatedly gets stuck. Do NOT use for feature requests, fixable code errors, or expected-behavior questions."
 ---
 
 # Bug Reporter
@@ -86,19 +86,19 @@ Context:
 
 Recent Actions:
   <n>. <tool>: <target> (<status>)
-  ... up to 10 most recent tool calls
+  Repeat for up to 10 most recent tool calls
 
 Errors Detected:
   [<ErrorType>] <message>
-  ... one line per distinct error
+  Repeat once per distinct error, or write "none"
 
 Stuck Patterns:
   - <pattern>: <evidence>
-  ... one line per detected pattern, empty list permitted
+  Repeat once per detected pattern, or write "none"
 
 Suggested Actions:
   - <imperative verb> <object>
-  ... 1–3 actions, imperative mood only
+  Provide 1-3 actions, imperative mood only
 
 Optional: Reproduction Steps
   1. <step>
