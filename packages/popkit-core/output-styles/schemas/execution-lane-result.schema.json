@@ -1,0 +1,119 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Execution Lane Result Schema",
+  "description": "Canonical result emitted by one PopKit execution lane after sandboxed or worktree-based work.",
+  "type": "object",
+  "required": ["objective", "status", "sandboxBackend", "summary", "nextAction", "validation"],
+  "additionalProperties": false,
+  "properties": {
+    "objective": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The user-facing objective the lane attempted."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["planned", "running", "succeeded", "failed", "blocked", "canceled"],
+      "description": "Lifecycle status of the lane."
+    },
+    "sandboxBackend": {
+      "type": "string",
+      "enum": ["none", "local-worktree", "e2b", "vercel-sandbox", "cloudflare-sandbox"],
+      "description": "Execution provider used by the lane."
+    },
+    "branch": {
+      "type": "string",
+      "description": "Git branch used by the lane, when applicable."
+    },
+    "worktreePath": {
+      "type": "string",
+      "description": "Local worktree path used by the lane, when applicable."
+    },
+    "logPath": {
+      "type": "string",
+      "description": "Path to captured lane logs."
+    },
+    "providerRunId": {
+      "type": "string",
+      "description": "External provider run ID, when a hosted sandbox is used."
+    },
+    "commits": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Commit SHAs produced by the lane."
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind", "path"],
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "type": "string",
+            "description": "Artifact type, such as diff, doc, log, screenshot, or eval."
+          },
+          "path": {
+            "type": "string",
+            "description": "Path or URL for the artifact."
+          },
+          "description": {
+            "type": "string",
+            "description": "Short explanation of the artifact."
+          }
+        }
+      },
+      "description": "Artifacts produced by the lane."
+    },
+    "validation": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the test, eval, review, or smoke check."
+          },
+          "status": {
+            "type": "string",
+            "enum": ["not-run", "passed", "failed", "skipped"],
+            "description": "Validation status."
+          },
+          "command": {
+            "type": "string",
+            "description": "Command or check that was run."
+          },
+          "summary": {
+            "type": "string",
+            "description": "Validation summary."
+          }
+        }
+      },
+      "description": "Checks used to verify the lane output."
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Concise summary of what happened."
+    },
+    "nextAction": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Recommended next action for the coordinator or user."
+    },
+    "startedAt": {
+      "type": "string",
+      "description": "ISO-8601 timestamp for when lane execution started."
+    },
+    "completedAt": {
+      "type": "string",
+      "description": "ISO-8601 timestamp for when lane execution completed."
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Provider-specific extension data."
+    }
+  }
+}
