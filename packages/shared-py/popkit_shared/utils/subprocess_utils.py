@@ -17,9 +17,23 @@ Usage:
     output, success = run_command_simple("git status")
 """
 
+import shutil
 import subprocess
 from pathlib import Path
 from typing import Union
+
+
+def _resolve_command_executable(cmd_list: list[str]) -> list[str]:
+    """Resolve command names to executable paths for cross-platform subprocess use."""
+    if not cmd_list:
+        return cmd_list
+
+    executable = cmd_list[0]
+    resolved = shutil.which(executable)
+    if not resolved:
+        return cmd_list
+
+    return [resolved, *cmd_list[1:]]
 
 
 def run_command(
@@ -60,6 +74,9 @@ def run_command(
             cmd_list = cmd.split()
         else:
             cmd_list = cmd
+
+        if isinstance(cmd_list, list) and not shell:
+            cmd_list = _resolve_command_executable(cmd_list)
 
         # Normalize cwd to string if Path
         cwd_str = str(cwd) if cwd else None

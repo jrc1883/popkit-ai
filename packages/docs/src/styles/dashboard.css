@@ -1,0 +1,312 @@
+/* PopKit Observatory Dashboard Styles
+   Uses CSS custom properties for light/dark mode support */
+
+:root {
+  --pk-bg: #ffffff;
+  --pk-card-bg: #f8fafc;
+  --pk-card-bg-inner: #ffffff;
+  --pk-border: #e2e8f0;
+  --pk-text: #0f172a;
+  --pk-text-muted: #64748b;
+  --pk-text-secondary: #475569;
+  --pk-input-bg: #f1f5f9;
+  --pk-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --pk-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+:root[data-theme="dark"] {
+  --pk-bg: #0f172a;
+  --pk-card-bg: #1e293b;
+  --pk-card-bg-inner: #0f172a;
+  --pk-border: #334155;
+  --pk-text: #f8fafc;
+  --pk-text-muted: #94a3b8;
+  --pk-text-secondary: #cbd5e1;
+  --pk-input-bg: #0f172a;
+  --pk-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --pk-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Container */
+.pk-dash {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0.5rem 0 2rem;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Header */
+.pk-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.pk-title {
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+  color: var(--pk-text) !important;
+  margin: 0 !important;
+  letter-spacing: -0.025em;
+}
+
+.pk-subtitle {
+  font-size: 0.85rem !important;
+  color: var(--pk-text-muted) !important;
+  margin: 0.125rem 0 0 0 !important;
+}
+
+/* Buttons */
+.pk-btn-primary {
+  padding: 0.5rem 1.25rem !important;
+  background: linear-gradient(135deg, #0284c7, #0ea5e9) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 999px !important;
+  cursor: pointer;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  text-decoration: none !important;
+  transition: all 200ms ease;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.3);
+}
+
+.pk-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
+}
+
+.pk-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.pk-btn-ghost {
+  padding: 0.375rem 0.875rem !important;
+  background: transparent !important;
+  border: 1px solid var(--pk-border) !important;
+  color: var(--pk-text-muted) !important;
+  border-radius: 6px !important;
+  cursor: pointer;
+  font-size: 0.8rem !important;
+  text-decoration: none !important;
+  transition: all 200ms ease;
+}
+
+.pk-btn-ghost:hover {
+  border-color: #0ea5e9 !important;
+  color: #0ea5e9 !important;
+}
+
+/* Login */
+.pk-login {
+  max-width: 420px;
+  margin: 3rem auto;
+  padding: 2.5rem 2rem;
+  background: var(--pk-card-bg);
+  border-radius: 16px;
+  border: 1px solid var(--pk-border);
+  text-align: center;
+  box-shadow: var(--pk-shadow);
+}
+
+.pk-login-icon {
+  margin-bottom: 1rem;
+}
+
+.pk-login-title {
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+  color: var(--pk-text) !important;
+  margin: 0 0 0.5rem 0 !important;
+}
+
+.pk-login-desc {
+  color: var(--pk-text-muted) !important;
+  margin-bottom: 1.5rem !important;
+  font-size: 0.9rem !important;
+  line-height: 1.5 !important;
+}
+
+.pk-login-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pk-input {
+  flex: 1;
+  padding: 0.5rem 0.75rem !important;
+  background: var(--pk-input-bg) !important;
+  border: 1px solid var(--pk-border) !important;
+  border-radius: 8px !important;
+  color: var(--pk-text) !important;
+  font-size: 0.875rem !important;
+  font-family: "JetBrains Mono", monospace !important;
+  transition: border-color 200ms ease;
+}
+
+.pk-input:focus {
+  border-color: #0ea5e9 !important;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+}
+
+.pk-error {
+  color: #ef4444 !important;
+  font-size: 0.85rem !important;
+  margin-top: 0.75rem !important;
+}
+
+.pk-hint {
+  color: var(--pk-text-muted) !important;
+  font-size: 0.8rem !important;
+  margin-top: 1.25rem !important;
+}
+
+/* Stats Grid */
+.pk-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 640px) {
+  .pk-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.pk-stat {
+  background: var(--pk-card-bg);
+  border: 1px solid var(--pk-border);
+  border-left: 3px solid #0ea5e9;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  box-shadow: var(--pk-shadow);
+  transition: all 200ms ease;
+}
+
+.pk-stat:hover {
+  box-shadow: var(--pk-shadow-hover);
+  transform: translateY(-1px);
+}
+
+.pk-stat-value {
+  font-size: 1.75rem !important;
+  font-weight: 800 !important;
+  line-height: 1.1;
+  margin-bottom: 0.125rem;
+}
+
+.pk-stat-label {
+  font-size: 0.75rem !important;
+  color: var(--pk-text-muted) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+/* Cards */
+.pk-card {
+  background: var(--pk-card-bg);
+  border: 1px solid var(--pk-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--pk-shadow);
+}
+
+.pk-card-title {
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
+  color: var(--pk-text) !important;
+  margin: 0 0 1rem 0 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.pk-empty {
+  color: var(--pk-text-muted) !important;
+  text-align: center;
+  padding: 2rem 0;
+  font-size: 0.9rem !important;
+}
+
+/* Server List */
+.pk-servers {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.75rem;
+}
+
+.pk-server {
+  background: var(--pk-card-bg-inner);
+  border: 1px solid var(--pk-border);
+  border-left: 3px solid #0ea5e9;
+  border-radius: 8px;
+  padding: 1rem;
+  transition: all 200ms ease;
+}
+
+.pk-server:hover {
+  box-shadow: var(--pk-shadow-hover);
+  transform: translateY(-1px);
+}
+
+.pk-server-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.375rem;
+}
+
+.pk-server-name {
+  font-weight: 700 !important;
+  font-size: 1rem !important;
+  color: var(--pk-text) !important;
+  text-transform: capitalize;
+}
+
+.pk-server-status {
+  font-size: 0.7rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.pk-server-status.enabled {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.pk-server-status.disabled {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.pk-server-desc {
+  color: var(--pk-text-muted) !important;
+  font-size: 0.85rem !important;
+  margin-bottom: 0.625rem;
+  line-height: 1.4 !important;
+}
+
+/* Tool Badges */
+.pk-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.pk-tool {
+  background: rgba(14, 165, 233, 0.1);
+  color: #0ea5e9;
+  font-size: 0.7rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  font-weight: 500;
+  font-family: "JetBrains Mono", monospace;
+}

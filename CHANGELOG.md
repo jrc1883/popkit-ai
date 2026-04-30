@@ -4,6 +4,23 @@ All notable changes to PopKit are documented in this file.
 
 **Versioning:** PopKit uses semantic versioning. Currently in public beta (1.0.0-beta).
 
+## [1.0.0-beta.13] - 2026-04-30
+
+### Added
+
+- Execution spine contract for Power Mode runs, including typed execution lanes, validation checks, artifacts, and output style documentation.
+- Power Mode shutdown emission for structured `execution_result` payloads so downstream tools can inspect run status, artifacts, validation, and commits.
+
+### Changed
+
+- Release metadata now points at the current `jrc1883/popkit-ai` repository while preserving the existing `popkit-claude` marketplace name for install compatibility.
+- Python package metadata prepared for `1.0.2` releases across `popkit`, `popkit-shared`, `popkit-cli`, and `popkit-mcp`.
+
+### Fixed
+
+- Windows analyzer subprocess resolution now handles `.CMD` shims correctly via resolved executable paths.
+- Marketplace, plugin, and package manifests are aligned with the current source state for the next public release.
+
 ## [1.0.0-beta.12] - 2026-03-22
 
 ### Added

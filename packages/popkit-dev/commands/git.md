@@ -101,6 +101,32 @@ Pull request management via `gh` CLI.
 
 **Options:** --draft, --base <branch>, --title <text>, --label <labels>, --squash, --rebase, --delete-branch
 
+### Draft To Ready
+
+Before marking a draft PR as ready, use the executable outside-voice-aware ready helper:
+
+```bash
+python packages/popkit-ops/skills/pop-cross-model-review/scripts/pr_ready.py --pr <number>
+```
+
+By default, it refuses to mark the PR ready unless the current head already has an advisory outside-voice review.
+
+If no outside-voice review exists for the current head:
+
+1. Run advisory review automatically and publish/update the PR comment:
+
+   ```bash
+   python packages/popkit-ops/skills/pop-cross-model-review/scripts/pr_ready.py --pr <number> --run-review-if-missing --publish comment
+   ```
+
+2. Or explicitly record a skip:
+
+   ```bash
+   python packages/popkit-ops/skills/pop-cross-model-review/scripts/pr_ready.py --pr <number> --skip-outside-voice
+   ```
+
+The helper then calls `gh pr ready <number>` for you.
+
 ### Label Validation for PR Creation (Issue #96)
 
 **CRITICAL:** Always validate labels BEFORE calling `gh pr create` to prevent errors.
@@ -172,7 +198,27 @@ Invokes **code-reviewer** agent: Gather changes → Analyze (Simplicity/Bugs/Con
 
 **Output:** Categorized issues with confidence scores, file locations, and fix suggestions.
 
-**Options:** --staged, --branch <name>, --pr <number>, --file <path>, --focus <category>, --threshold <score>, --verbose
+**Options:** --staged, --branch <name>, --pr <number>, --file <path>, --focus <category>, --threshold <score>, --verbose, --outside-voice, --target-provider <auto|claude-code|codex>, --publish <none|comment>
+
+### Outside Voice Mode
+
+Use `--outside-voice` to run an advisory review through the opposite model family:
+
+- `claude-code` sessions default to `codex`
+- `codex` sessions default to `claude-code`
+- `--target-provider` overrides the automatic choice
+- `--publish comment` creates or updates a PR comment keyed to the current head SHA
+
+**Implementation path:** `pop-cross-model-review`
+
+**Examples:**
+
+```bash
+/popkit-dev:git review --outside-voice
+/popkit-dev:git review --outside-voice --staged
+/popkit-dev:git review --outside-voice --pr 123 --publish comment
+/popkit-dev:git review --outside-voice --target-provider codex
+```
 
 ---
 

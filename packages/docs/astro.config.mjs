@@ -1,5 +1,6 @@
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
+import react from "@astrojs/react";
 
 // https://astro.build/config
 export default defineConfig({
@@ -12,7 +13,7 @@ export default defineConfig({
         {
           icon: "github",
           label: "GitHub",
-          href: "https://github.com/jrc1883/popkit-claude",
+          href: "https://github.com/jrc1883/popkit-ai",
         },
       ],
       sidebar: [
@@ -37,7 +38,8 @@ export default defineConfig({
           autogenerate: { directory: "reference" },
         },
       ],
-      customCss: ["./src/styles/custom.css"],
+      customCss: ["./src/styles/custom.css", "./src/styles/dashboard.css"],
     }),
+    react(),
   ],
 });

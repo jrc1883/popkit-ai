@@ -181,17 +181,18 @@ Core foundation commands for project management and orchestration.
 
 - `status` - View privacy settings
 - `consent` - Manage consent
+- `settings` - Update privacy and telemetry settings
 - `export` - Export data
 - `delete` - Delete data
-- `level` - Set privacy level
 
-**Options:** `strict|moderate|minimal`
+**Settings options:** `level <strict|moderate|minimal>`, `telemetry <off|anonymous|community>`
 
 **Example:**
 
 ```bash
 /popkit-core:privacy status
-/popkit-core:privacy level strict
+/popkit-core:privacy settings level strict
+/popkit-core:privacy settings telemetry anonymous
 ```
 
 ---
@@ -228,7 +229,7 @@ Development workflow commands for git, issues, and routines.
 - `commit` - Smart commit with auto-generated message (default)
 - `push` - Push with branch protection checks
 - `pr` - Pull request management
-- `review` - Code review with confidence filtering
+- `review` - Code review with confidence filtering or outside-voice advisory review
 - `ci` - GitHub Actions workflow monitoring
 - `release` - Release management with changelogs
 - `publish` - Publish to public repo
@@ -236,15 +237,31 @@ Development workflow commands for git, issues, and routines.
 - `finish` - Complete development flow
 - `analyze-strategy` - Analyze branching strategy
 
-**Options:** `--draft`, `--squash`, `--force-with-lease`, `--amend`
+**Options:** `--draft`, `--squash`, `--force-with-lease`, `--amend`, `--outside-voice`, `--target-provider`, `--publish`
 
 **Example:**
 
 ```bash
 /popkit-dev:git commit
 /popkit-dev:git pr create --draft
+/popkit-dev:git pr ready
 /popkit-dev:git review --staged
+/popkit-dev:git review --outside-voice --pr 123 --publish comment
 /popkit-dev:git analyze-strategy
+```
+
+When using `pr ready`, PopKit now treats outside-voice review as the recommended advisory checkpoint:
+
+- check current-head status first
+- run the opposite-model review if missing
+- or record an explicit skip before continuing
+
+Executable helper:
+
+```bash
+python packages/popkit-ops/skills/pop-cross-model-review/scripts/pr_ready.py --pr 123
+python packages/popkit-ops/skills/pop-cross-model-review/scripts/pr_ready.py --pr 123 --run-review-if-missing --publish comment
+python packages/popkit-ops/skills/pop-cross-model-review/scripts/pr_ready.py --pr 123 --skip-outside-voice
 ```
 
 ---

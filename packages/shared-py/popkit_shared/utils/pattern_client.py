@@ -9,20 +9,20 @@ Part of Issue #95 (Cross-Project Pattern Sharing).
 """
 
 import json
-import os
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
 
+from .cloud_config import DEFAULT_API_URL, resolve_cloud_config
 from .pattern_anonymizer import anonymize_pattern, validate_anonymization
 
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
 
-POPKIT_API_URL = os.environ.get("POPKIT_API_URL", "https://api.thehouseofdeals.com")
+POPKIT_API_URL = DEFAULT_API_URL
 PATTERNS_ENDPOINT = "/api/v1/patterns"
 
 
@@ -110,7 +110,7 @@ class PatternClient:
     def __init__(
         self,
         api_key: str | None = None,
-        api_url: str = POPKIT_API_URL,
+        api_url: str | None = None,
         default_share_level: str = ShareLevel.PRIVATE,
     ):
         """
@@ -121,8 +121,9 @@ class PatternClient:
             api_url: API base URL
             default_share_level: Default sharing level for new patterns
         """
-        self.api_key = api_key or os.environ.get("POPKIT_API_KEY")
-        self.api_url = api_url.rstrip("/")
+        resolved_api_key, resolved_api_url = resolve_cloud_config()
+        self.api_key = api_key or resolved_api_key
+        self.api_url = (api_url or resolved_api_url or POPKIT_API_URL).rstrip("/")
         self.default_share_level = default_share_level
         self._cache: dict[str, Any] = {}
 

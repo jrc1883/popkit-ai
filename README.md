@@ -48,7 +48,7 @@ Example: `/popkit-dev:next` uses `pop-next-action` internally, then adds [mode h
 
 ```bash
 # Add the PopKit marketplace
-/plugin marketplace add jrc1883/popkit-claude
+/plugin marketplace add jrc1883/popkit-ai
 
 # Install the plugins you need
 /plugin install popkit-core@popkit-claude   # Foundation
@@ -57,6 +57,12 @@ Example: `/popkit-dev:next` uses `pop-next-action` internally, then adds [mode h
 # Restart Claude Code, then run your first morning routine:
 /popkit-dev:routine morning
 ```
+
+### VS Code / Copilot (one-click install)
+
+[![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_Server-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=popkit&config=%7B%22command%22%3A%20%22popkit-mcp%22%2C%20%22args%22%3A%20%5B%22--transport%22%2C%20%22stdio%22%5D%7D) [![Install in VS Code Insiders](https://img.shields.io/badge/VS_Code_Insiders-Install_Server-24bfa5?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=popkit&config=%7B%22command%22%3A%20%22popkit-mcp%22%2C%20%22args%22%3A%20%5B%22--transport%22%2C%20%22stdio%22%5D%7D&quality=insiders)
+
+Requires `pip install popkit-mcp` first, then click the badge above.
 
 ### PyPI (for MCP server or standalone use)
 
@@ -260,7 +266,7 @@ PopKit is modular. Install what you need:
 
 ## Status
 
-**Version:** 1.0.0-beta.12
+**Version:** 1.0.0-beta.13
 **Status:** Public beta — core features stable, actively improving
 
 ---

@@ -337,14 +337,18 @@ This plugin is part of the PopKit ecosystem and depends on `popkit-shared`.
 # Manage consent
 /popkit-core:privacy consent
 
+# Configure telemetry mode
+/popkit-core:privacy settings telemetry off
+/popkit-core:privacy settings telemetry anonymous
+
 # Export data
 /popkit-core:privacy export
 
 # Delete data
 /popkit-core:privacy delete
 
-# Set privacy level
-/popkit-core:privacy level strict    # strict | moderate | minimal
+# Set project sharing level
+/popkit-core:privacy settings level strict    # strict | moderate | minimal
 ```
 
 ### Bug Reporting
@@ -404,15 +408,22 @@ See `hooks/hooks.json` for complete hook configuration.
 PopKit Core respects user privacy:
 
 - **Local-first**: All core features work locally without cloud
-- **Opt-in Analytics**: Usage stats are opt-in only
+- **Telemetry Separation**: Machine-level telemetry is separate from project sharing
+- **Opt-in Analytics**: Remote observability is opt-in only
 - **Data Export**: Full data export available anytime
 - **Right to Deletion**: Complete data deletion on request
 
-Privacy levels:
+Telemetry modes:
 
-- **Strict**: No telemetry, no cloud sync
-- **Moderate**: Basic usage stats, opt-in cloud features
-- **Minimal**: All features with maximum data sharing
+- **Off**: No background network observability or project registration
+- **Anonymous**: Remote observability without project identity fields
+- **Community**: Remote observability with project identity for full insights
+
+Project sharing levels:
+
+- **Strict**: Abstract patterns only, no code snippets
+- **Moderate**: Patterns plus generic code (default)
+- **Minimal**: More context preserved for open-source style sharing
 
 ## Dependencies
 
@@ -430,7 +441,7 @@ Privacy levels:
 
 ## Development Status
 
-**Version**: 1.0.0-beta.12
+**Version**: 1.0.0-beta.13
 **Status**: Ready for marketplace publication
 **Epic #580**: Complete - Plugin modularization finished
 

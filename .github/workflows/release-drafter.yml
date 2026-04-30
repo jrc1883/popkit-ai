@@ -29,11 +29,11 @@ concurrency:
 jobs:
   update-release-draft:
     name: Update Release Draft
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - name: Draft release notes
-        uses: release-drafter/release-drafter@v6
+        uses: release-drafter/release-drafter@v7
         with:
           config-name: release-drafter.yml
         env:

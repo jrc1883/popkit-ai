@@ -75,9 +75,15 @@ Add to `~/.copilot/mcp-config.json` (global) or `.vscode/mcp.json` (per-project)
 
 ---
 
-## VS Code (Generic MCP)
+## VS Code / GitHub Copilot
 
-Add to `.vscode/mcp.json` (per-project):
+**One-click install:**
+
+[![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_Server-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=popkit&config=%7B%22command%22%3A%20%22popkit-mcp%22%2C%20%22args%22%3A%20%5B%22--transport%22%2C%20%22stdio%22%5D%7D) [![Install in VS Code Insiders](https://img.shields.io/badge/VS_Code_Insiders-Install_Server-24bfa5?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=popkit&config=%7B%22command%22%3A%20%22popkit-mcp%22%2C%20%22args%22%3A%20%5B%22--transport%22%2C%20%22stdio%22%5D%7D&quality=insiders)
+
+Click the badge to auto-configure PopKit in VS Code. Requires `pip install popkit-mcp` first.
+
+**Manual setup** — add to `.vscode/mcp.json` (per-project):
 
 ```json
 {
@@ -99,7 +105,7 @@ Add to `.vscode/mcp.json` (per-project):
 Claude Code users should install PopKit as a plugin instead of using MCP:
 
 ```bash
-/plugin marketplace add jrc1883/popkit-claude
+/plugin marketplace add jrc1883/popkit-ai
 /plugin install popkit-core@popkit-claude
 ```
 

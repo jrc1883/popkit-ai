@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "popkit-cli"
-version = "1.0.0"
+version = "1.0.2"
 description = "PopKit CLI - install, configure, and manage PopKit across AI coding tools"
 authors = ["Joseph Cannon <joseph@thehouseofdeals.com>"]
 license = "LicenseRef-PolyForm-Noncommercial-1.0.0"
@@ -14,7 +14,7 @@ packages = [{include = "popkit_cli"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 pyyaml = "^6.0"
-popkit-shared = "^1.0.0"
+popkit-shared = "^1.0.2"
 
 [tool.poetry.scripts]
 popkit = "popkit_cli.main:main"

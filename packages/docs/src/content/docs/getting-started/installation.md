@@ -7,11 +7,11 @@ description: How to install PopKit — Claude Code plugin, PyPI packages, or MCP
 
 PopKit can be installed in three ways depending on your setup:
 
-| Method                 | Best for                                   | Install command                                 |
-| ---------------------- | ------------------------------------------ | ----------------------------------------------- |
-| **Claude Code plugin** | Claude Code users                          | `/plugin marketplace add jrc1883/popkit-claude` |
-| **PyPI (MCP server)**  | Cursor, Codex CLI, Copilot, any MCP client | `pip install popkit-mcp`                        |
-| **PyPI (full)**        | Standalone CLI + all utilities             | `pip install popkit[full]`                      |
+| Method                 | Best for                                   | Install command                             |
+| ---------------------- | ------------------------------------------ | ------------------------------------------- |
+| **Claude Code plugin** | Claude Code users                          | `/plugin marketplace add jrc1883/popkit-ai` |
+| **PyPI (MCP server)**  | Cursor, Codex CLI, Copilot, any MCP client | `pip install popkit-mcp`                    |
+| **PyPI (full)**        | Standalone CLI + all utilities             | `pip install popkit[full]`                  |
 
 ---
 
@@ -20,7 +20,7 @@ PopKit can be installed in three ways depending on your setup:
 ### Step 1: Add the Marketplace (One-time Setup)
 
 ```bash
-/plugin marketplace add jrc1883/popkit-claude
+/plugin marketplace add jrc1883/popkit-ai
 ```
 
 ### Step 2: Install Plugins
@@ -36,6 +36,14 @@ Install all plugins for full functionality:
 ```
 
 After installation, restart Claude Code and run `/popkit-dev:next` to get started.
+
+---
+
+## VS Code / GitHub Copilot (one-click)
+
+[![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_Server-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=popkit&config=%7B%22command%22%3A%20%22popkit-mcp%22%2C%20%22args%22%3A%20%5B%22--transport%22%2C%20%22stdio%22%5D%7D) [![Install in VS Code Insiders](https://img.shields.io/badge/VS_Code_Insiders-Install_Server-24bfa5?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=popkit&config=%7B%22command%22%3A%20%22popkit-mcp%22%2C%20%22args%22%3A%20%5B%22--transport%22%2C%20%22stdio%22%5D%7D&quality=insiders)
+
+Requires `pip install popkit-mcp` first, then click the badge above.
 
 ---
 

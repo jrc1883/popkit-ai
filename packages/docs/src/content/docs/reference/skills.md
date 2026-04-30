@@ -1,11 +1,11 @@
 ---
 title: Skills Reference
-description: Complete reference for all 50 PopKit skills
+description: Complete reference for all 51 PopKit skills
 ---
 
 # Skills Reference
 
-PopKit provides 50 reusable skills across 4 plugins. Skills provide specialized automation for common development tasks.
+PopKit provides 51 reusable skills across 4 plugins. Skills provide specialized automation for common development tasks.
 
 ## Invocation Modes
 
@@ -399,7 +399,7 @@ Development workflow skills for git operations, routines, and feature developmen
 
 ---
 
-## popkit-ops (13 skills)
+## popkit-ops (14 skills)
 
 Operations and quality skills for assessments, testing, debugging, and benchmarking.
 
@@ -471,6 +471,19 @@ Operations and quality skills for assessments, testing, debugging, and benchmark
 
 ```bash
 /popkit-ops:pop-code-review
+```
+
+---
+
+### pop-cross-model-review
+
+**Description:** Advisory outside-voice review that runs through the opposite model family when possible, normalizes the result into a stored artifact, and can optionally publish/update a PR comment for the current head SHA.
+
+**Use when:** Before marking a PR ready, during finish-branch flow, or when you want an unbiased second opinion from a different model family.
+
+```bash
+/popkit-ops:pop-cross-model-review
+python packages/popkit-ops/skills/pop-cross-model-review/scripts/run_review.py --pr 123 --publish comment
 ```
 
 ---
