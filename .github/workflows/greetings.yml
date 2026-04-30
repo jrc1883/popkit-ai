@@ -25,7 +25,7 @@ concurrency:
 jobs:
   greeting:
     name: Greet First-Time Contributors
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - name: Greet first-time contributors
