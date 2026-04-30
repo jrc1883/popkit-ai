@@ -66,13 +66,32 @@ def test_shutdown_graceful_exit_updates_state_file(tmp_path):
     assert saved_state["active"] is False
     assert "deactivated_at" in saved_state
     assert saved_state["shutdown"]["graceful_exits"] == ["agent-1"]
+    assert saved_state["execution_result"]["objective"] == "Power Mode session"
+    assert saved_state["execution_result"]["status"] == "succeeded"
+    assert saved_state["execution_result"]["sandboxBackend"] == "none"
+    assert saved_state["execution_result"]["validation"][0]["status"] == "passed"
+    assert saved_state["execution_result_score"]["passedAll"] is True
+    assert summary["execution_result"]["status"] == "succeeded"
 
 
 def test_shutdown_timeout_force_kills_stragglers(tmp_path):
+    state_file = tmp_path / "power-mode-state.json"
+    state_file.write_text(
+        json.dumps(
+            {
+                "active": True,
+                "session_id": "power-123",
+                "objective": "Finish execution spine lane",
+                "mode": "e2b",
+                "started_at": "2026-04-30T00:00:00+00:00",
+            }
+        ),
+        encoding="utf-8",
+    )
     process = AsyncProcess(delay=1.0)
     manager = GracefulShutdownManager(
         {"agent-2": process},
-        state_file=tmp_path / "power-mode-state.json",
+        state_file=state_file,
     )
 
     summary = asyncio.run(manager.shutdown(timeout_seconds=0.01))
@@ -81,6 +100,13 @@ def test_shutdown_timeout_force_kills_stragglers(tmp_path):
     assert summary["forced_exits"] == ["agent-2"]
     assert process.terminate_calls == 1
     assert process.kill_calls == 1
+
+    saved_state = json.loads(state_file.read_text(encoding="utf-8"))
+    assert saved_state["execution_result"]["objective"] == "Finish execution spine lane"
+    assert saved_state["execution_result"]["status"] == "failed"
+    assert saved_state["execution_result"]["sandboxBackend"] == "e2b"
+    assert saved_state["execution_result"]["validation"][0]["status"] == "failed"
+    assert saved_state["execution_result"]["nextAction"] == "Review forced exits before continuing."
 
 
 def test_send_shutdown_request_awaits_async_dispatcher(tmp_path):

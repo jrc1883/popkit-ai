@@ -13,10 +13,19 @@ import logging
 import os
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Awaitable, Callable, Dict, List, Optional
 
+from execution_spine import (
+    ExecutionArtifact,
+    ExecutionStatus,
+    SandboxBackend,
+    ValidationCheck,
+    ValidationStatus,
+    create_execution_lane_result,
+    score_execution_lane_result,
+)
 from lifecycle import AgentLifecycle, AgentState
 from protocol import MessageFactory, ProtocolMessage
 
@@ -30,7 +39,7 @@ DEFAULT_STATE_FILE = (
 
 
 def _utc_timestamp() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def _is_timeout_error(exc: Exception) -> bool:
@@ -47,9 +56,11 @@ class ShutdownSummary:
     request_ids: Dict[str, str] = field(default_factory=dict)
     cleanup_called: bool = False
     events: List[str] = field(default_factory=list)
+    execution_result: Optional[Dict[str, Any]] = None
+    execution_result_score: Optional[Dict[str, Any]] = None
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
+        data: Dict[str, Any] = {
             "total_agents": self.total_agents,
             "graceful_exits": self.graceful_exits,
             "forced_exits": self.forced_exits,
@@ -57,6 +68,11 @@ class ShutdownSummary:
             "cleanup_called": self.cleanup_called,
             "events": self.events,
         }
+        if self.execution_result is not None:
+            data["execution_result"] = self.execution_result
+        if self.execution_result_score is not None:
+            data["execution_result_score"] = self.execution_result_score
+        return data
 
 
 class GracefulShutdownManager:
@@ -194,7 +210,7 @@ class GracefulShutdownManager:
             try:
                 await asyncio.wait_for(wait_fn(), timeout=timeout_seconds)
                 return True
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 return False
 
         try:
@@ -223,7 +239,7 @@ class GracefulShutdownManager:
         try:
             await asyncio.wait_for(asyncio.to_thread(wait_fn), timeout=timeout_seconds)
             return True
-        except asyncio.TimeoutError:
+        except TimeoutError:
             return False
 
     def _send_terminate(self, process: Any, agent: str) -> None:
@@ -273,6 +289,7 @@ class GracefulShutdownManager:
             "forced_exits": list(summary.forced_exits),
             "request_ids": dict(summary.request_ids),
         }
+        self._attach_execution_result(state, summary)
 
         self.state_file.parent.mkdir(parents=True, exist_ok=True)
         self.state_file.write_text(json.dumps(state, indent=2), encoding="utf-8")
@@ -291,3 +308,83 @@ class GracefulShutdownManager:
         summary.cleanup_called = True
         summary.events.append("cleanup:callback")
         logger.debug("Cleanup callback executed")
+
+    def _attach_execution_result(
+        self,
+        state: Dict[str, Any],
+        summary: ShutdownSummary,
+    ) -> None:
+        """Attach the canonical execution result to the final state snapshot."""
+        result = create_execution_lane_result(
+            objective=str(state.get("objective") or "Power Mode session"),
+            sandbox_backend=_sandbox_backend_from_state(state),
+            status=(ExecutionStatus.FAILED if summary.forced_exits else ExecutionStatus.SUCCEEDED),
+            branch=_optional_string(state.get("branch")),
+            worktree_path=_optional_string(state.get("worktree_path")),
+            log_path=_optional_string(state.get("log_path")),
+            provider_run_id=_optional_string(state.get("provider_run_id")),
+            commits=[str(commit) for commit in (state.get("commits") or [])],
+            artifacts=[
+                ExecutionArtifact(
+                    kind="state",
+                    path=str(self.state_file),
+                    description="Power Mode state file updated at shutdown",
+                )
+            ],
+            validation=[
+                ValidationCheck(
+                    name="graceful-shutdown",
+                    status=(
+                        ValidationStatus.FAILED if summary.forced_exits else ValidationStatus.PASSED
+                    ),
+                    summary=(
+                        f"{len(summary.graceful_exits)} graceful exit(s), "
+                        f"{len(summary.forced_exits)} forced exit(s)"
+                    ),
+                )
+            ],
+            summary=(
+                f"Power Mode shutdown completed for {summary.total_agents} agent(s): "
+                f"{len(summary.graceful_exits)} graceful, "
+                f"{len(summary.forced_exits)} forced."
+            ),
+            next_action=(
+                "Review forced exits before continuing."
+                if summary.forced_exits
+                else "Review execution artifacts and continue with the next lane."
+            ),
+            started_at=str(state.get("started_at") or _utc_timestamp()),
+            completed_at=str(state["deactivated_at"]),
+            metadata={
+                "session_id": state.get("session_id"),
+                "mode": state.get("mode"),
+                "issues": state.get("issues") or [],
+                "shutdown": state["shutdown"],
+            },
+        )
+        result_data = result.to_dict()
+        score = score_execution_lane_result(result)
+        state["execution_result"] = result_data
+        state["execution_result_score"] = score
+        summary.execution_result = result_data
+        summary.execution_result_score = score
+
+
+def _sandbox_backend_from_state(state: Dict[str, Any]) -> SandboxBackend:
+    mode = str(state.get("sandbox_backend") or state.get("mode") or "").lower()
+    if "e2b" in mode:
+        return SandboxBackend.E2B
+    if "worktree" in mode or "local" in mode:
+        return SandboxBackend.LOCAL_WORKTREE
+    if "vercel" in mode:
+        return SandboxBackend.VERCEL_SANDBOX
+    if "cloudflare" in mode:
+        return SandboxBackend.CLOUDFLARE_SANDBOX
+    return SandboxBackend.NONE
+
+
+def _optional_string(value: Any) -> Optional[str]:
+    if value is None:
+        return None
+    text = str(value)
+    return text or None
