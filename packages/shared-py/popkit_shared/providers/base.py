@@ -9,13 +9,16 @@ and provider-specific configuration formats.
 Part of the PopKit v2.0 provider-agnostic architecture.
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from ..utils.interaction_surface import InteractionSurface
+if TYPE_CHECKING:
+    from ..utils.interaction_surface import InteractionSurface
 
 
 class ToolCategory(str, Enum):
