@@ -23,6 +23,8 @@ from typing import Any
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
+from .cloud_config import get_cloud_api_key, has_cloud_api_key
+
 # =============================================================================
 # Storage Interface
 # =============================================================================
@@ -475,16 +477,18 @@ class CloudAPIContextStorage(ContextStorage):
     """PopKit Cloud API storage via our Workers endpoint.
 
     Uses the authenticated PopKit Cloud API for team-shared workflows.
-    Requires POPKIT_API_KEY env var.
+    Requires PopKit Cloud credentials from `popkit login` or POPKIT_API_KEY.
     """
 
     API_BASE = "https://api.popkit.dev/v1"
 
     def __init__(self, api_key: str | None = None):
-        self.api_key = api_key or os.environ.get("POPKIT_API_KEY")
+        self.api_key = api_key or get_cloud_api_key()
 
         if not self.api_key:
-            raise ValueError("POPKIT_API_KEY environment variable required.")
+            raise ValueError(
+                "PopKit Cloud API key required. Run `popkit login` or set POPKIT_API_KEY."
+            )
 
     def _api_request(self, method: str, path: str, body: dict | None = None) -> Any:
         """Make authenticated API request."""
@@ -584,7 +588,7 @@ def is_power_mode_available() -> bool:
 
 def is_cloud_available() -> bool:
     """Check if PopKit Cloud storage is available."""
-    return bool(os.environ.get("POPKIT_API_KEY"))
+    return has_cloud_api_key()
 
 
 def get_storage_status() -> dict[str, Any]:
@@ -641,6 +645,7 @@ if __name__ == "__main__":
 
     # Status
     status = get_storage_status()
-    print(f"Storage status: {status}")
+    assert isinstance(status, dict)
+    print("Storage status: OK")
 
     print("\nAll tests passed!")

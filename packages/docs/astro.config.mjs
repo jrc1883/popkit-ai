@@ -13,7 +13,7 @@ export default defineConfig({
         {
           icon: "github",
           label: "GitHub",
-          href: "https://github.com/jrc1883/popkit-claude",
+          href: "https://github.com/jrc1883/popkit-ai",
         },
       ],
       sidebar: [

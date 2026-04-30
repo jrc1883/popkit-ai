@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "popkit"
-version = "1.0.1"
+version = "1.0.2"
 description = "PopKit - LLM-agnostic developer orchestration engine"
 authors = ["Joseph Cannon <joseph@thehouseofdeals.com>"]
 license = "LicenseRef-PolyForm-Noncommercial-1.0.0"
@@ -20,14 +20,14 @@ classifiers = [
 ]
 
 [tool.poetry.urls]
-"Homepage" = "https://github.com/jrc1883/popkit-claude"
-"Repository" = "https://github.com/jrc1883/popkit-claude"
+"Homepage" = "https://github.com/jrc1883/popkit-ai"
+"Repository" = "https://github.com/jrc1883/popkit-ai"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-popkit-shared = "^1.0.0"
-popkit-cli = "^1.0.0"
-popkit-mcp = {version = "^1.0.0", optional = true}
+popkit-shared = "^1.0.2"
+popkit-cli = "^1.0.2"
+popkit-mcp = {version = "^1.0.2", optional = true}
 pyyaml = "^6.0"
 filelock = "^3.13.0"
 lxml = {version = "^6.0", optional = true}

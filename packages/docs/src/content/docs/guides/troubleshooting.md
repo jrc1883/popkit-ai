@@ -106,7 +106,7 @@ Cursor has a limit of approximately 40 tools across all MCP servers. If you have
 3. If popkit-claude isn't listed, re-add it:
 
 ```bash
-/plugin marketplace add jrc1883/popkit-claude
+/plugin marketplace add jrc1883/popkit-ai
 ```
 
 ### Plugin version mismatch
@@ -169,5 +169,5 @@ If agents are failing, run with debug logging:
 
 ## Getting Help
 
-- **GitHub Issues:** [github.com/jrc1883/popkit-claude/issues](https://github.com/jrc1883/popkit-claude/issues)
+- **GitHub Issues:** [github.com/jrc1883/popkit-ai/issues](https://github.com/jrc1883/popkit-ai/issues)
 - **Documentation:** [popkit.unjoe.me](https://popkit.unjoe.me)

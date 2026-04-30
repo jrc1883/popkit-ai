@@ -9,17 +9,18 @@ Part of Issue #152 (Server-Side Premium Skill Execution).
 """
 
 import json
-import os
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
 from typing import Any
 
+from .cloud_config import DEFAULT_API_URL, resolve_cloud_config
+
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
 
-POPKIT_API_URL = os.environ.get("POPKIT_API_URL", "https://api.thehouseofdeals.com")
+POPKIT_API_URL = DEFAULT_API_URL
 POPKIT_VERSION = "1.0.0"
 
 
@@ -86,16 +87,17 @@ class PremiumClient:
     - Premium skill listing
     """
 
-    def __init__(self, api_key: str | None = None, api_url: str = POPKIT_API_URL):
+    def __init__(self, api_key: str | None = None, api_url: str | None = None):
         """
         Initialize premium client.
 
         Args:
-            api_key: PopKit API key (defaults to POPKIT_API_KEY env var)
-            api_url: PopKit Cloud API URL
+            api_key: PopKit API key (defaults to env var or saved login config)
+            api_url: PopKit Cloud API URL (defaults to env var or saved login config)
         """
-        self.api_key = api_key or os.environ.get("POPKIT_API_KEY")
-        self.api_url = api_url.rstrip("/")
+        resolved_key, resolved_url = resolve_cloud_config()
+        self.api_key = api_key or resolved_key
+        self.api_url = (api_url or resolved_url).rstrip("/")
 
     # =========================================================================
     # PUBLIC API
@@ -358,8 +360,7 @@ if __name__ == "__main__":
         print("Set: export POPKIT_API_KEY=your-key-here")
         sys.exit(1)
 
-    print("API Key: [REDACTED]")
-    print(f"API URL: {client.api_url}")
+    print("Cloud config: loaded")
 
     # Test status check
     print("\nTesting status check...")

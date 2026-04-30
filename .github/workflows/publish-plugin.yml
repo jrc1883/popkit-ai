@@ -1,7 +1,7 @@
 # Publish Plugin to Public Repository
 #
 # This workflow syncs packages/plugin/ from the private monorepo to the
-# public jrc1883/popkit-claude repository for open-source distribution.
+# public jrc1883/popkit-ai repository for open-source distribution.
 #
 # NOTE: This workflow now uses a FILTERED publish approach that excludes
 # implementation code (power-mode, templates, hooks/utils). Only declarative
@@ -12,7 +12,7 @@
 # - Push to master when packages/plugin/ changes (optional auto-sync)
 #
 # Required Secrets:
-# - PLUGIN_PUBLIC_REPO_TOKEN: PAT with repo scope for jrc1883/popkit-claude
+# - PLUGIN_PUBLIC_REPO_TOKEN: PAT with repo scope for jrc1883/popkit-ai
 
 name: Publish Plugin
 
@@ -50,7 +50,7 @@ concurrency:
 jobs:
   publish:
     name: Publish to Public Repo
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout monorepo (full history)
@@ -68,7 +68,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PLUGIN_PUBLIC_REPO_TOKEN }}
         run: |
           git remote add plugin-public \
-            "https://x-access-token:${GITHUB_TOKEN}@github.com/jrc1883/popkit-claude.git"
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/jrc1883/popkit-ai.git"
           echo "Remote added: plugin-public"
 
       - name: Prepare filtered plugin content
@@ -96,7 +96,7 @@ jobs:
             echo "=== DRY RUN - No changes will be pushed ==="
             echo ""
             echo "Source: packages/plugin/ (filtered)"
-            echo "Target: jrc1883/popkit-claude (${{ inputs.target_branch || 'main' }})"
+            echo "Target: jrc1883/popkit-ai (${{ inputs.target_branch || 'main' }})"
             echo "Prepared SHA: ${{ steps.prepare.outputs.sha }}"
             echo ""
             echo "Files in filtered content:"
@@ -109,10 +109,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PLUGIN_PUBLIC_REPO_TOKEN }}
         run: |
           TARGET_BRANCH="${{ inputs.target_branch || 'main' }}"
-          echo "Pushing to jrc1883/popkit-claude (${TARGET_BRANCH})..."
+          echo "Pushing to jrc1883/popkit-ai (${TARGET_BRANCH})..."
 
           cd 'public-plugin-staging'
-          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/jrc1883/popkit-claude.git"
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/jrc1883/popkit-ai.git"
           git push origin "HEAD:${TARGET_BRANCH}" --force
 
           echo "Push complete!"
@@ -140,7 +140,7 @@ jobs:
 
           # Create release in public repo
           gh release create "${VERSION}" \
-            --repo 'jrc1883/popkit-claude' \
+            --repo 'jrc1883/popkit-ai' \
             --title "PopKit Claude ${VERSION}" \
             --notes "## What's Changed
 
@@ -149,7 +149,7 @@ jobs:
           ## Installation
 
           \`\`\`
-          /plugin marketplace add jrc1883/popkit-claude
+          /plugin marketplace add jrc1883/popkit-ai
           /plugin install popkit@popkit-claude
           \`\`\`
 
@@ -164,7 +164,7 @@ jobs:
             echo "| Property | Value |"
             echo "|----------|-------|"
             echo "| Source | \`packages/plugin/\` (filtered) |"
-            echo "| Target | \`jrc1883/popkit-claude\` |"
+            echo "| Target | \`jrc1883/popkit-ai\` |"
             echo "| Branch | \`${{ inputs.target_branch || 'main' }}\` |"
             echo "| Version | ${{ inputs.version || 'none' }} |"
             echo "| Dry Run | ${{ inputs.dry_run }} |"
@@ -175,7 +175,7 @@ jobs:
             {
               echo "### Installation"
               echo "\`\`\`"
-              echo "/plugin marketplace add jrc1883/popkit-claude"
+              echo "/plugin marketplace add jrc1883/popkit-ai"
               echo "/plugin install popkit@popkit-claude"
               echo "\`\`\`"
             } >> "$GITHUB_STEP_SUMMARY"

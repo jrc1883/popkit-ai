@@ -37,6 +37,13 @@ class TestAvailability:
         with patch.dict("os.environ", {"POPKIT_API_KEY": "test-key"}):
             assert is_available() is True
 
+    def test_available_with_saved_login(self):
+        with patch(
+            "popkit_shared.utils.cloud_agent_search.resolve_cloud_config",
+            return_value=("pk_saved", "https://saved.example"),
+        ):
+            assert is_available() is True
+
     def test_not_available_without_key(self):
         with patch.dict("os.environ", {}, clear=True):
             assert is_available() is False

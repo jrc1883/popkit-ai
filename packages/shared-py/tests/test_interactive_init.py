@@ -25,6 +25,7 @@ sys.path.insert(0, str(SCRIPT_DIR))
 
 from interactive_init import (  # noqa: E402
     detect_monorepo,
+    detect_onboarding,
     detect_premium_features,
     detect_quality_gates,
     detect_stack,
@@ -263,31 +264,37 @@ class TestDetectPremiumFeatures:
         with tempfile.TemporaryDirectory() as tmpdir:
             with patch.dict(os.environ, {}, clear=True):
                 result = detect_premium_features(Path(tmpdir))
-                assert result["is_authenticated"] is False
-                assert result["has_voyage_key"] is False
+                assert result["auth_state"] == "requires_auth"
+                assert result["voyage_state"] == "requires_voyage_key"
 
     def test_with_popkit_api_key(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             with patch.dict(os.environ, {"POPKIT_API_KEY": "pk_test_123"}, clear=True):
                 result = detect_premium_features(Path(tmpdir))
-                assert result["is_authenticated"] is True
+                assert result["auth_state"] == "available"
+
+    def test_with_saved_cloud_login(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with patch("interactive_init.has_cloud_api_key", return_value=True):
+                result = detect_premium_features(Path(tmpdir))
+                assert result["auth_state"] == "available"
 
     def test_with_voyage_key(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             with patch.dict(os.environ, {"VOYAGE_API_KEY": "va_test_123"}, clear=True):
                 result = detect_premium_features(Path(tmpdir))
-                assert result["has_voyage_key"] is True
+                assert result["voyage_state"] == "available"
 
-    def test_reads_existing_tier(self):
+    def test_features_reflect_public_availability_states(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            config_dir = Path(tmpdir) / ".claude" / "popkit"
-            config_dir.mkdir(parents=True)
-            config = {"tier": "premium", "version": "1.0"}
-            (config_dir / "config.json").write_text(json.dumps(config))
-
-            with patch.dict(os.environ, {}, clear=True):
+            with patch.dict(
+                os.environ,
+                {"POPKIT_API_KEY": "pk_test_123", "VOYAGE_API_KEY": "va_test_123"},
+                clear=True,
+            ):
                 result = detect_premium_features(Path(tmpdir))
-                assert result["current_tier"] == "premium"
+                assert result["features"]["cloud_sync"] == "available"
+                assert result["features"]["semantic_search"] == "available"
 
 
 # =============================================================================
@@ -297,6 +304,19 @@ class TestDetectPremiumFeatures:
 
 class TestGenerateQuestions:
     """Tests for AskUserQuestion configuration generation."""
+
+    def _make_onboarding(self, questions=None):
+        return {
+            "state": {
+                "schema_version": "1.0",
+                "intro_seen": False,
+                "telemetry_prompted": False,
+                "telemetry_mode": "off",
+                "completed_version": None,
+            },
+            "questions": questions or [],
+            "question_count": len(questions or []),
+        }
 
     def _make_monorepo(self, is_monorepo=False, workspace_type=None, projects=None):
         return {
@@ -324,14 +344,14 @@ class TestGenerateQuestions:
 
     def _make_premium(self, authenticated=False, voyage=False):
         return {
-            "is_authenticated": authenticated,
-            "has_voyage_key": voyage,
-            "current_tier": "free",
+            "auth_state": "available" if authenticated else "requires_auth",
+            "voyage_state": "available" if voyage else "requires_voyage_key",
             "features": {},
         }
 
     def test_basic_questions_no_monorepo(self):
         questions = generate_questions(
+            self._make_onboarding(),
             self._make_monorepo(),
             self._make_stack(),
             self._make_quality(),
@@ -346,6 +366,7 @@ class TestGenerateQuestions:
 
     def test_monorepo_adds_question(self):
         questions = generate_questions(
+            self._make_onboarding(),
             self._make_monorepo(is_monorepo=True, workspace_type="pnpm", projects=["a", "b"]),
             self._make_stack(),
             self._make_quality(),
@@ -356,6 +377,7 @@ class TestGenerateQuestions:
 
     def test_premium_adds_question_when_authenticated(self):
         questions = generate_questions(
+            self._make_onboarding(),
             self._make_monorepo(),
             self._make_stack(),
             self._make_quality(),
@@ -366,6 +388,7 @@ class TestGenerateQuestions:
 
     def test_premium_adds_question_when_voyage_key(self):
         questions = generate_questions(
+            self._make_onboarding(),
             self._make_monorepo(),
             self._make_stack(),
             self._make_quality(),
@@ -377,16 +400,18 @@ class TestGenerateQuestions:
     def test_stack_question_text_varies_by_confidence(self):
         # High confidence
         q_high = generate_questions(
+            self._make_onboarding(),
             self._make_monorepo(),
             self._make_stack(detected="nextjs", confidence="high"),
             self._make_quality(),
             self._make_premium(),
         )
         stack_q = next(q for q in q_high if q["id"] == "stack_selection")
-        assert "Confirm" in stack_q["question"]
+        assert "detected template" in stack_q["question"]
 
         # No detection
         q_none = generate_questions(
+            self._make_onboarding(),
             self._make_monorepo(),
             self._make_stack(),
             self._make_quality(),
@@ -397,6 +422,7 @@ class TestGenerateQuestions:
 
     def test_quality_recommended_is_marked(self):
         questions = generate_questions(
+            self._make_onboarding(),
             self._make_monorepo(),
             self._make_stack(),
             self._make_quality(level="standard"),
@@ -408,6 +434,7 @@ class TestGenerateQuestions:
 
     def test_max_4_stack_options(self):
         questions = generate_questions(
+            self._make_onboarding(),
             self._make_monorepo(),
             self._make_stack(),
             self._make_quality(),
@@ -418,6 +445,7 @@ class TestGenerateQuestions:
 
     def test_all_questions_have_required_fields(self):
         questions = generate_questions(
+            self._make_onboarding(),
             self._make_monorepo(is_monorepo=True, workspace_type="pnpm", projects=["a"]),
             self._make_stack(detected="nextjs", confidence="high"),
             self._make_quality(tools=["eslint"], level="standard"),
@@ -429,3 +457,73 @@ class TestGenerateQuestions:
             assert "header" in q
             assert "options" in q
             assert len(q["options"]) >= 2
+
+    def test_onboarding_questions_are_prepended(self):
+        onboarding = self._make_onboarding(
+            questions=[
+                {
+                    "id": "onboarding_intro",
+                    "question": "Intro question",
+                    "header": "PopKit intro",
+                    "options": [
+                        {
+                            "label": "Use guided defaults (Recommended)",
+                            "description": "Local first",
+                        },
+                        {"label": "Skip intro details", "description": "Continue"},
+                    ],
+                },
+                {
+                    "id": "telemetry_mode",
+                    "question": "Telemetry question",
+                    "header": "PopKit telemetry",
+                    "options": [
+                        {"label": "Off - local only (Recommended)", "description": "No remote"},
+                        {"label": "Anonymous telemetry", "description": "Sanitized"},
+                    ],
+                },
+            ]
+        )
+
+        questions = generate_questions(
+            onboarding,
+            self._make_monorepo(),
+            self._make_stack(),
+            self._make_quality(),
+            self._make_premium(),
+        )
+
+        ids = [q["id"] for q in questions[:2]]
+        assert ids == ["onboarding_intro", "telemetry_mode"]
+
+
+class TestDetectOnboarding:
+    """Tests for first-run onboarding detection."""
+
+    def test_first_run_returns_intro_and_telemetry(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            result = detect_onboarding(Path(tmpdir))
+
+            headers = [question["header"] for question in result["questions"]]
+            assert headers == ["PopKit intro", "PopKit telemetry"]
+            assert result["question_count"] == 2
+
+    def test_repeat_run_skips_onboarding(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config_dir = Path(tmpdir)
+            (config_dir / "onboarding.json").write_text(
+                json.dumps(
+                    {
+                        "schema_version": "1.0",
+                        "intro_seen": True,
+                        "telemetry_prompted": True,
+                        "telemetry_mode": "anonymous",
+                        "completed_version": "1.0",
+                    }
+                )
+            )
+
+            result = detect_onboarding(config_dir)
+
+            assert result["questions"] == []
+            assert result["question_count"] == 0

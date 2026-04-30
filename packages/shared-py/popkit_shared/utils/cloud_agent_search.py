@@ -9,18 +9,19 @@ Part of Issue #101 (Upstash Vector Integration).
 """
 
 import json
-import os
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
 
 from popkit_shared import __version__ as POPKIT_VERSION
 
+from .cloud_config import DEFAULT_API_URL, resolve_cloud_config
+
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
 
-POPKIT_API_URL = os.environ.get("POPKIT_API_URL", "https://api.thehouseofdeals.com")
+POPKIT_API_URL = DEFAULT_API_URL
 TIMEOUT_SECONDS = 3  # Fast timeout for responsive UX
 
 
@@ -59,9 +60,10 @@ class SearchResult:
 def is_available() -> bool:
     """Check if cloud agent search is configured.
 
-    Requires POPKIT_API_KEY environment variable.
+    Requires a configured PopKit Cloud API key.
     """
-    return bool(os.environ.get("POPKIT_API_KEY"))
+    api_key, _ = resolve_cloud_config()
+    return bool(api_key)
 
 
 def search_agents(
@@ -86,14 +88,14 @@ def search_agents(
         query-optimizer: 0.85
         performance-optimizer: 0.72
     """
-    api_key = os.environ.get("POPKIT_API_KEY")
+    api_key, api_url = resolve_cloud_config()
 
     if not api_key:
         return SearchResult(
             query=query, matches=[], fallback_to_keywords=True, error="POPKIT_API_KEY not set"
         )
 
-    url = f"{POPKIT_API_URL}/v1/agents/search"
+    url = f"{api_url}/v1/agents/search"
 
     body = {
         "query": query,
@@ -159,12 +161,12 @@ def list_agents() -> list[dict]:
     Returns:
         List of agent info dicts with id, name, tier, description
     """
-    api_key = os.environ.get("POPKIT_API_KEY")
+    api_key, api_url = resolve_cloud_config()
 
     if not api_key:
         return []
 
-    url = f"{POPKIT_API_URL}/v1/agents/list"
+    url = f"{api_url}/v1/agents/list"
 
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -192,12 +194,12 @@ def get_agent(name: str) -> dict | None:
     Returns:
         Agent info dict or None if not found
     """
-    api_key = os.environ.get("POPKIT_API_KEY")
+    api_key, api_url = resolve_cloud_config()
 
     if not api_key:
         return None
 
-    url = f"{POPKIT_API_URL}/v1/agents/{name}"
+    url = f"{api_url}/v1/agents/{name}"
 
     headers = {
         "Authorization": f"Bearer {api_key}",

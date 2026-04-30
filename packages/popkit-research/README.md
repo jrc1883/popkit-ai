@@ -1,6 +1,6 @@
 # PopKit - Research Plugin
 
-**Version:** 1.0.0-beta.12
+**Version:** 1.0.0-beta.13
 **Status:** Research Plugin (Ready for marketplace)
 
 ## Overview

@@ -30,7 +30,7 @@ concurrency:
 jobs:
   stale:
     name: Mark Stale Issues
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - name: Handle stale issues

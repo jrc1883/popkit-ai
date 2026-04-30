@@ -48,6 +48,7 @@ All schemas follow JSON Schema Draft-07 format:
 | `debugging-report.schema.json`           | debugging-report           | bug-whisperer                 |
 | `deployment-report.schema.json`          | deployment-report          | deployment-validator          |
 | `documentation-report.schema.json`       | documentation-report       | documentation-maintainer      |
+| `execution-lane-result.schema.json`      | execution-lane-result      | power-coordinator             |
 | `migration-report.schema.json`           | migration-report           | migration-specialist          |
 | `performance-report.schema.json`         | performance-report         | performance-optimizer         |
 | `power-mode-checkin.schema.json`         | power-mode-checkin         | power-coordinator             |

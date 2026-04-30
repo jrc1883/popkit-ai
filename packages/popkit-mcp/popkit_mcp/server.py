@@ -33,6 +33,8 @@ from typing import Dict, List, Optional
 
 from mcp.server.fastmcp import FastMCP
 
+from popkit_shared.utils.cloud_config import resolve_cloud_config
+
 from .prompts import build_agent_prompt, build_skill_prompt
 from .resources import (
     build_agent_list_resource,
@@ -625,13 +627,12 @@ def create_server(packages_dir: Optional[Path] = None) -> FastMCP:
             import json
             from urllib.request import Request, urlopen
 
-            api_key = os.environ.get("POPKIT_API_KEY", "")
-            api_url = os.environ.get("POPKIT_API_URL", "https://api.thehouseofdeals.com")
+            api_key, api_url = resolve_cloud_config()
 
             if not api_key:
                 return (
-                    "No POPKIT_API_KEY set. Register MCP servers at "
-                    "https://popkit.unjoe.me/getting-started/installation/"
+                    "No PopKit Cloud API key found. Run `popkit login` to authenticate, "
+                    "or visit https://app.popkit.unjoe.me/signup/ to create an account."
                 )
 
             req = Request(
@@ -684,11 +685,13 @@ def create_server(packages_dir: Optional[Path] = None) -> FastMCP:
             import json
             from urllib.request import Request, urlopen
 
-            api_key = os.environ.get("POPKIT_API_KEY", "")
-            api_url = os.environ.get("POPKIT_API_URL", "https://api.thehouseofdeals.com")
+            api_key, api_url = resolve_cloud_config()
 
             if not api_key:
-                return "No POPKIT_API_KEY set. Cannot route to backend servers."
+                return (
+                    "No PopKit Cloud API key found. Run `popkit login` to authenticate, "
+                    "or visit https://app.popkit.unjoe.me/signup/ to create an account."
+                )
 
             # Fetch server config from cloud
             req = Request(

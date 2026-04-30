@@ -23,6 +23,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from .cloud_config import has_cloud_api_key
+
 # =============================================================================
 # DATA CLASSES
 # =============================================================================
@@ -745,12 +747,11 @@ def share_bug_pattern(ctx: BugContext) -> dict[str, Any] | None:
     Share bug pattern to collective learning database.
 
     Anonymizes the bug context and submits it as a pattern.
-    Requires POPKIT_API_KEY environment variable.
+    Requires PopKit Cloud credentials from `popkit login` or POPKIT_API_KEY.
 
     Returns:
         Result dict with status, pattern_id, or None if sharing failed
     """
-    import os
     import sys
 
     # Try to import pattern client
@@ -762,7 +763,7 @@ def share_bug_pattern(ctx: BugContext) -> dict[str, Any] | None:
         return None
 
     # Check for API key
-    if not os.environ.get("POPKIT_API_KEY"):
+    if not has_cloud_api_key():
         return None
 
     try:
@@ -822,7 +823,6 @@ def search_patterns_for_bug(ctx: BugContext) -> list[dict[str, Any]]:
     Returns:
         List of matching patterns with solutions
     """
-    import os
     import sys
 
     # Try to import pattern client
@@ -834,7 +834,7 @@ def search_patterns_for_bug(ctx: BugContext) -> list[dict[str, Any]]:
         return []
 
     # Check for API key
-    if not os.environ.get("POPKIT_API_KEY"):
+    if not has_cloud_api_key():
         return []
 
     try:

@@ -536,6 +536,22 @@ class UserPromptSubmitHook:
             "reviewer said": {"skill": "pop-code-review", "enforcement": "suggest"},
             "code review": {"skill": "pop-code-review", "enforcement": "suggest"},
             "requested changes": {"skill": "pop-code-review", "enforcement": "suggest"},
+            "outside voice": {
+                "skill": "pop-cross-model-review",
+                "enforcement": "suggest",
+            },
+            "second opinion": {
+                "skill": "pop-cross-model-review",
+                "enforcement": "suggest",
+            },
+            "cross-model review": {
+                "skill": "pop-cross-model-review",
+                "enforcement": "suggest",
+            },
+            "different model": {
+                "skill": "pop-cross-model-review",
+                "enforcement": "suggest",
+            },
             # Root Cause
             "root cause": {"skill": "pop-root-cause-tracing", "enforcement": "suggest"},
             "trace": {"skill": "pop-root-cause-tracing", "enforcement": "suggest"},
@@ -981,6 +997,7 @@ class UserPromptSubmitHook:
             "pop-systematic-debugging": "bug investigation (4-phase root cause analysis)",
             "pop-test-driven-development": "test-first approach (RED-GREEN-REFACTOR)",
             "pop-code-review": "code review (giving or receiving feedback)",
+            "pop-cross-model-review": "outside-voice review from a different model family",
             "pop-root-cause-tracing": "tracing data flow to find bug origin",
             "pop-verify-completion": "evidence-based verification before claiming done",
             "pop-brainstorming": "design refinement through Socratic questioning",

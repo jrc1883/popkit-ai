@@ -102,6 +102,47 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
 🤖 Generated with Claude Code
 ```
 
+### Review
+
+**Command**: `/popkit-dev:git review`
+
+**What it does**:
+
+1. Runs the standard PopKit review flow for same-model review by default
+2. Can switch into outside-voice mode with `--outside-voice`
+3. Chooses the opposite model family automatically when possible
+4. Stores a normalized advisory artifact outside the repo
+5. Can publish or update a PR comment keyed to the current head SHA
+
+**Usage**:
+
+```bash
+/popkit-dev:git review --staged
+/popkit-dev:git review --outside-voice
+/popkit-dev:git review --outside-voice --pr 123 --publish comment
+```
+
+### Mark Draft Ready
+
+**Command**: `/popkit-dev:git pr ready`
+
+**Recommended flow**:
+
+1. Use the executable PR-ready helper instead of calling `gh pr ready` directly
+2. Require an outside-voice review artifact for the current head by default
+3. If missing, either run the opposite-model review or record an explicit skip
+4. Optionally publish/update the advisory as a PR comment
+5. Mark the draft PR as ready
+
+**Supporting commands**:
+
+```bash
+python packages/popkit-ops/skills/pop-cross-model-review/scripts/run_review.py --status
+python packages/popkit-ops/skills/pop-cross-model-review/scripts/pr_ready.py --pr 123
+python packages/popkit-ops/skills/pop-cross-model-review/scripts/pr_ready.py --pr 123 --run-review-if-missing --publish comment
+python packages/popkit-ops/skills/pop-cross-model-review/scripts/pr_ready.py --pr 123 --skip-outside-voice
+```
+
 ### Publish
 
 **Command**: `/popkit-dev:git publish`
