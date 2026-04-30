@@ -120,7 +120,7 @@ def run_install(args: argparse.Namespace) -> int:
     if not config_path.exists():
         config_path.write_text(
             "# PopKit Configuration\n"
-            "# See https://github.com/jrc1883/popkit-claude for documentation\n"
+            "# See https://github.com/jrc1883/popkit-ai for documentation\n"
             "\n"
             "version: 2.0\n"
             f"packages_dir: {packages_dir}\n",

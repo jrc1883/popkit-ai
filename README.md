@@ -48,7 +48,7 @@ Example: `/popkit-dev:next` uses `pop-next-action` internally, then adds [mode h
 
 ```bash
 # Add the PopKit marketplace
-/plugin marketplace add jrc1883/popkit-claude
+/plugin marketplace add jrc1883/popkit-ai
 
 # Install the plugins you need
 /plugin install popkit-core@popkit-claude   # Foundation
@@ -266,7 +266,7 @@ PopKit is modular. Install what you need:
 
 ## Status
 
-**Version:** 1.0.0-beta.12
+**Version:** 1.0.0-beta.13
 **Status:** Public beta — core features stable, actively improving
 
 ---
