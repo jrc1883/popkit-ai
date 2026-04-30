@@ -11,8 +11,8 @@ PACKAGES = ROOT.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(PACKAGES / "shared-py"))
 
-from popkit_cli.commands.launch import _host_supports_plan_mode, run_launch
-from popkit_cli.main import build_parser
+from popkit_cli.commands.launch import _host_supports_plan_mode, run_launch  # noqa: E402
+from popkit_cli.main import build_parser  # noqa: E402
 
 
 def test_parser_supports_provider_launch():
