@@ -81,6 +81,10 @@ class ValidationCheck:
         }
 
 
+def _utc_timestamp() -> str:
+    return datetime.now(UTC).isoformat()
+
+
 @dataclass
 class ExecutionLaneResult:
     """Canonical result emitted by one PopKit execution lane."""
@@ -97,7 +101,7 @@ class ExecutionLaneResult:
     commits: List[str] = field(default_factory=list)
     artifacts: List[Union[ExecutionArtifact, Dict[str, str]]] = field(default_factory=list)
     validation: List[Union[ValidationCheck, Dict[str, str]]] = field(default_factory=list)
-    started_at: str = field(default_factory=lambda: _utc_timestamp())
+    started_at: str = field(default_factory=_utc_timestamp)
     completed_at: Optional[str] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
 
@@ -138,10 +142,6 @@ class ExecutionLaneResult:
         }
         data.update({key: value for key, value in optional_fields.items() if value})
         return data
-
-
-def _utc_timestamp() -> str:
-    return datetime.now(UTC).isoformat()
 
 
 def create_execution_lane_result(
