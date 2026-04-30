@@ -14,6 +14,7 @@ from popkit_shared.providers.base import (
 from popkit_shared.providers.codex import CodexAdapter, _format_toml_value, _serialize_toml
 from popkit_shared.providers.registry import get_adapter, list_adapters
 from popkit_shared.providers.tool_mapping import CODEX_MAPPINGS
+from popkit_shared.utils.interaction_surface import InteractionSurface
 
 if sys.version_info >= (3, 11):
     import tomllib
@@ -101,6 +102,8 @@ class TestCodexDetection:
         info = adapter.detect()
         assert isinstance(info, ProviderInfo)
         assert info.name == "codex"
+        assert info.default_interaction_surface == InteractionSurface.PLAIN_TEXT
+        assert info.supports_interaction_surface(InteractionSurface.REQUEST_USER_INPUT)
 
     def test_detect_with_home_dir(self, tmp_path):
         """Detected as available when ~/.codex/ exists."""
@@ -161,6 +164,7 @@ class TestCodexConfigGeneration:
         assert config_path.is_file()
 
         content = config_path.read_text(encoding="utf-8")
+        assert "POPKIT_PROVIDER identifies Codex sessions" in content
         assert "[mcp_servers.popkit]" in content
         assert 'command = "python3"' in content
         assert "startup_timeout_sec = 30" in content
@@ -185,6 +189,7 @@ class TestCodexConfigGeneration:
         server = parsed["mcp_servers"]["popkit"]
         assert server["command"] == "python3"
         assert server["args"] == ["-m", "popkit_mcp.server"]
+        assert server["env"]["POPKIT_PROVIDER"] == "codex"
 
     def test_generate_config_creates_agents_md(self, tmp_path):
         """Generate config creates AGENTS.md from AGENT.md files."""
@@ -316,6 +321,76 @@ class TestCodexToolMappings:
         """Codex CLI does not have native notebook editing."""
         adapter = CodexAdapter()
         assert not adapter.supports_category(ToolCategory.NOTEBOOK_EDIT)
+
+
+class TestCodexLaunchSpec:
+    """Tests for host-owned launch metadata and launch spec generation."""
+
+    def test_launch_metadata_includes_default_and_plan_modes(self):
+        adapter = CodexAdapter()
+
+        metadata = adapter.get_launch_metadata()
+
+        assert metadata["default_mode"] == "default"
+        assert metadata["modes"]["default"]["profile"] == "popkit"
+        assert metadata["modes"]["plan"]["profile"] == "popkit-plan"
+        assert metadata["modes"]["plan"]["config_overrides"] == ['model_reasoning_effort="high"']
+
+    def test_build_launch_spec_defaults_to_plain_text(self, tmp_path):
+        adapter = CodexAdapter()
+
+        spec = adapter.build_launch_spec(
+            mode="default",
+            prompt="/popkit-dev:next",
+            cwd=tmp_path,
+            env={"PATH": "test"},
+            host_plan_supported=False,
+        )
+
+        assert spec.requested_mode == "default"
+        assert spec.actual_mode == "default"
+        assert spec.interaction_surface == InteractionSurface.PLAIN_TEXT
+        assert spec.env["POPKIT_PROVIDER"] == "codex"
+        assert spec.env["POPKIT_INTERACTION_SURFACE"] == "plain_text"
+        assert spec.env["POPKIT_CAN_REQUEST_USER_INPUT"] == "0"
+        assert spec.command[-1] == "/popkit-dev:next"
+
+    def test_build_launch_spec_enables_plan_surface_when_supported(self, tmp_path):
+        adapter = CodexAdapter()
+
+        spec = adapter.build_launch_spec(
+            mode="plan",
+            prompt="/popkit-dev:next",
+            cwd=tmp_path,
+            env={"PATH": "test"},
+            host_plan_supported=True,
+        )
+
+        assert spec.requested_mode == "plan"
+        assert spec.actual_mode == "plan"
+        assert spec.interaction_surface == InteractionSurface.REQUEST_USER_INPUT
+        assert spec.env["POPKIT_INTERACTION_SURFACE"] == "request_user_input"
+        assert spec.env["POPKIT_CAN_REQUEST_USER_INPUT"] == "1"
+        assert spec.warning is None
+        assert ["-c", 'model_reasoning_effort="high"'] == spec.command[3:5]
+
+    def test_build_launch_spec_warns_and_falls_back_when_plan_unsupported(self, tmp_path):
+        adapter = CodexAdapter()
+
+        spec = adapter.build_launch_spec(
+            mode="plan",
+            prompt="/popkit-dev:next",
+            cwd=tmp_path,
+            env={"PATH": "test"},
+            host_plan_supported=False,
+        )
+
+        assert spec.requested_mode == "plan"
+        assert spec.actual_mode == "default"
+        assert spec.interaction_surface == InteractionSurface.PLAIN_TEXT
+        assert spec.env["POPKIT_INTERACTION_SURFACE"] == "plain_text"
+        assert spec.env["POPKIT_CAN_REQUEST_USER_INPUT"] == "0"
+        assert "Falling back to standard launch" in str(spec.warning)
 
 
 # =============================================================================

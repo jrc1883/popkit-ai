@@ -80,7 +80,7 @@ When a `/popkit-*` command wraps a `/pop-*` skill, it typically adds:
 
 Commands detect your current context and adjust behavior:
 
-- **Plan mode**: Commands may gather more information before acting
+- **Plan-intent runtime**: Commands can emit structured decision specs, but the host must choose that interactive surface before the session starts
 - **Quick mode**: Commands skip exploratory steps for faster execution
 - **Power mode**: Commands can delegate to multiple agents in parallel
 
@@ -92,7 +92,7 @@ Commands produce structured output that includes:
 
 - **Scores**: Numerical health indicators (Ready to Code Score, Sleep Score)
 - **Summaries**: What was analyzed or accomplished
-- **Next steps**: Recommended follow-up actions with `AskUserQuestion`
+- **Next steps**: Recommended follow-up actions rendered through `request_user_input`, `AskUserQuestion`, or plain text depending on the runtime
 
 ### Command-Level Guidance
 
@@ -106,6 +106,7 @@ This guidance follows "The PopKit Way" — every command ends with actionable op
 
 ## Next Steps
 
+- Learn about [Interaction Surfaces](/concepts/interaction-surfaces/)
 - Learn about [Hooks](/concepts/hooks/)
 - Explore [Power Mode](/features/power-mode/)
 - Review [Commands Reference](/reference/commands/)

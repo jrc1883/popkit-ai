@@ -23,6 +23,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from popkit_shared.utils.interaction_surface import DecisionSpec, QuestionOption
+
 # Base priority scores
 BASE_PRIORITIES = {
     "fix_build_errors": 90,
@@ -52,15 +54,17 @@ HIGH_PRIORITY_LABELS = {
     "priority:high",
 }
 
+DECISION_SPEC_HEADER = "Next Action"
+DECISION_SPEC_QUESTION = "What should PopKit do next in this repository?"
+DECISION_SPEC_SOURCE_COMMAND = "/popkit-dev:next"
+
 
 def _normalize_labels(labels: List[Dict[str, Any]]) -> List[str]:
     """Normalize issue label names for case-insensitive matching."""
     return [str(label.get("name", "")).strip().lower() for label in labels]
 
 
-def _resolve_repo_root(
-    state: Dict[str, Any], repo_root_arg: Optional[str] = None
-) -> Path:
+def _resolve_repo_root(state: Dict[str, Any], repo_root_arg: Optional[str] = None) -> Path:
     """Resolve repository root for command translation."""
     if repo_root_arg:
         return Path(repo_root_arg).expanduser().resolve()
@@ -88,12 +92,7 @@ def _translate_popkit_command(command: str, repo_root: Path) -> Dict[str, str]:
 
     repo_str = str(repo_root)
     validate_commit_py = (
-        repo_root
-        / "packages"
-        / "shared-py"
-        / "popkit_shared"
-        / "utils"
-        / "validate_commit.py"
+        repo_root / "packages" / "shared-py" / "popkit_shared" / "utils" / "validate_commit.py"
     )
     morning_py = (
         repo_root
@@ -238,6 +237,50 @@ def _build_quick_reference(runtime: str, repo_root: Path) -> List[Dict[str, Any]
     return _annotate_actions_for_runtime(rows, runtime, repo_root)
 
 
+def _action_to_question_option(
+    action: Dict[str, Any],
+    *,
+    recommended: bool,
+) -> QuestionOption:
+    """Convert a ranked action into a provider-neutral decision option."""
+    why = str(action.get("why", "")).strip()
+    benefit = str(action.get("benefit", "")).strip()
+    if why and benefit:
+        separator = "" if why.endswith((".", "!", "?")) else "."
+        description = f"{why}{separator} Benefit: {benefit}"
+    else:
+        description = why or benefit or "Review this recommended action."
+
+    return QuestionOption(
+        id=str(action.get("id", "next_action")),
+        label=str(action.get("name", "Recommended action")),
+        description=description,
+        recommended=recommended,
+        follow_up=str(action.get("command", "")).strip() or None,
+    )
+
+
+def build_decision_spec(report: Dict[str, Any]) -> Dict[str, Any]:
+    """Build a provider-neutral decision spec from a recommendation report."""
+    recommendations = report.get("recommendations", [])[:3]
+    options = [
+        _action_to_question_option(action, recommended=index == 0)
+        for index, action in enumerate(recommendations)
+    ]
+    follow_up = None
+    if recommendations:
+        follow_up = str(recommendations[0].get("command", "")).strip() or None
+
+    spec = DecisionSpec(
+        header=DECISION_SPEC_HEADER,
+        question=DECISION_SPEC_QUESTION,
+        options=options,
+        source_command=DECISION_SPEC_SOURCE_COMMAND,
+        follow_up=follow_up,
+    )
+    return spec.to_dict()
+
+
 def load_state(state_file: Optional[str] = None) -> Dict[str, Any]:
     """Load project state from file or analyze."""
     if state_file and Path(state_file).exists():
@@ -320,9 +363,7 @@ def calculate_action_scores(state: Dict[str, Any]) -> List[Dict[str, Any]]:
                 "name": "Review Stale Local Branches",
                 "command": "git branch -vv",
                 "score": score,
-                "why": (
-                    f"{len(stale_branches)} feature/fix branch(es) track deleted upstreams"
-                ),
+                "why": (f"{len(stale_branches)} feature/fix branch(es) track deleted upstreams"),
                 "what": (
                     "Confirm merged status and delete stale local branches that are no longer needed"
                 ),
@@ -485,24 +526,18 @@ def generate_report(
 ) -> Dict[str, Any]:
     """Generate recommendation report."""
     repo_root = repo_root or _resolve_repo_root(state)
-    recommendations = _annotate_actions_for_runtime(
-        ranked_actions[:5], runtime, repo_root
-    )
+    recommendations = _annotate_actions_for_runtime(ranked_actions[:5], runtime, repo_root)
     report = {
         "runtime": runtime,
         "repo_root": str(repo_root),
         "state_summary": {
             "uncommitted": state.get("git", {}).get("uncommitted_count", 0),
-            "branch_sync": "ahead"
-            if state.get("git", {}).get("ahead_count", 0) > 0
-            else "synced",
+            "branch_sync": "ahead" if state.get("git", {}).get("ahead_count", 0) > 0 else "synced",
             "typescript": (
                 "errors"
                 if state.get("code", {}).get("typescript_errors", 0) > 0
                 else (
-                    "unknown"
-                    if state.get("code", {}).get("typescript_errors", 0) < 0
-                    else "clean"
+                    "unknown" if state.get("code", {}).get("typescript_errors", 0) < 0 else "clean"
                 )
             ),
             "open_issues": state.get("issues", {}).get("open_count", 0),
@@ -511,6 +546,7 @@ def generate_report(
         "recommendations": recommendations,  # Top 5
         "quick_reference": _build_quick_reference(runtime, repo_root),
     }
+    report["decision_spec"] = build_decision_spec(report)
 
     return report
 
@@ -584,7 +620,10 @@ def main():
     )
     parser.add_argument("--state-file", help="Path to state JSON file")
     parser.add_argument(
-        "--format", choices=["json", "display"], default="json", help="Output format"
+        "--format",
+        choices=["json", "display", "decision-spec"],
+        default="json",
+        help="Output format",
     )
     parser.add_argument(
         "--runtime",
@@ -597,6 +636,9 @@ def main():
         help="Repository root path to translate commands against",
     )
     args = parser.parse_args()
+
+    if args.format == "decision-spec" and args.mode != "report":
+        parser.error("--format decision-spec requires --mode report")
 
     result = {
         "operation": f"recommend_action_{args.mode}",
@@ -619,18 +661,17 @@ def main():
 
     elif args.mode in ["rank", "report"]:
         ranked = rank_actions(actions)
-        result["ranked_actions"] = _annotate_actions_for_runtime(
-            ranked, args.runtime, repo_root
-        )
+        result["ranked_actions"] = _annotate_actions_for_runtime(ranked, args.runtime, repo_root)
 
         if args.mode == "report":
-            report = generate_report(
-                ranked, state, runtime=args.runtime, repo_root=repo_root
-            )
+            report = generate_report(ranked, state, runtime=args.runtime, repo_root=repo_root)
             result["report"] = report
 
             if args.format == "display":
                 print(format_report_display(report))
+                return 0
+            if args.format == "decision-spec":
+                print(json.dumps(report["decision_spec"], indent=2))
                 return 0
 
     result["success"] = True

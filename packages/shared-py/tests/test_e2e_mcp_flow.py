@@ -211,6 +211,27 @@ class TestEndToEndProviderConfigGeneration:
         assert "com.popkit.mcp.plist" in names
         assert "Dockerfile" in names
 
+    def test_codex_plan_launch_round_trips_to_request_user_input(self):
+        """Codex launch env should resolve back to the plan-capable surface."""
+        from popkit_shared.providers.codex import CodexAdapter
+        from popkit_shared.utils.interaction_surface import (
+            InteractionSurface,
+            resolve_runtime_capabilities,
+        )
+
+        adapter = CodexAdapter()
+        launch_spec = adapter.build_launch_spec(
+            mode="plan",
+            env={},
+            host_plan_supported=True,
+        )
+        capabilities = resolve_runtime_capabilities(env=launch_spec.env)
+
+        assert launch_spec.actual_mode == "plan"
+        assert capabilities.provider == "codex"
+        assert capabilities.interaction_surface == InteractionSurface.REQUEST_USER_INPUT
+        assert capabilities.can_request_user_input is True
+
 
 @pytest.mark.skipif(not HAS_REAL_PACKAGES, reason="Real packages not available")
 class TestEndToEndPopkitPackageYaml:

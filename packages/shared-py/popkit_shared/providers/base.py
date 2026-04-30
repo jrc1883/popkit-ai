@@ -9,11 +9,16 @@ and provider-specific configuration formats.
 Part of the PopKit v2.0 provider-agnostic architecture.
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from ..utils.interaction_surface import InteractionSurface
 
 
 class ToolCategory(str, Enum):
@@ -78,6 +83,8 @@ class ProviderInfo:
         version: Detected version (if available)
         install_path: Path to the provider's installation
         is_available: Whether the provider is currently usable
+        interaction_surfaces: Supported interaction surfaces for this provider
+        default_interaction_surface: Default surface when the host does not override it
     """
 
     name: str
@@ -85,6 +92,12 @@ class ProviderInfo:
     version: str | None = None
     install_path: Path | None = None
     is_available: bool = True
+    interaction_surfaces: tuple[InteractionSurface, ...] = field(default_factory=tuple)
+    default_interaction_surface: InteractionSurface | None = None
+
+    def supports_interaction_surface(self, surface: InteractionSurface) -> bool:
+        """Check whether the provider can support a given interaction surface."""
+        return surface in self.interaction_surfaces
 
 
 class ProviderAdapter(ABC):

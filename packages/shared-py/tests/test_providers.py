@@ -11,6 +11,7 @@ from popkit_shared.providers.base import (
     ToolMapping,
 )
 from popkit_shared.providers.claude_code import ClaudeCodeAdapter
+from popkit_shared.providers.codex import CodexAdapter
 from popkit_shared.providers.generic_mcp import GenericMCPAdapter
 from popkit_shared.providers.hook_protocol import (
     HookAction,
@@ -28,6 +29,10 @@ from popkit_shared.providers.registry import (
 from popkit_shared.providers.tool_mapping import (
     get_mappings_for_provider,
     translate_tools,
+)
+from popkit_shared.utils.interaction_surface import (
+    InteractionSurface,
+    resolve_runtime_capabilities,
 )
 
 # =============================================================================
@@ -321,3 +326,48 @@ class TestRegistry:
         assert len(providers) >= 1
         names = {p.name for p in providers}
         assert "generic-mcp" in names
+
+
+class TestInteractionSurfaceContract:
+    """Tests for runtime interaction-surface resolution across providers."""
+
+    def test_codex_plan_capable_runtime_resolves_request_user_input(self):
+        """Codex should only advertise plan UI when the host declared it."""
+        adapter = CodexAdapter()
+        launch_spec = adapter.build_launch_spec(
+            mode="plan",
+            env={},
+            host_plan_supported=True,
+        )
+
+        capabilities = resolve_runtime_capabilities(env=launch_spec.env)
+
+        assert capabilities.provider == "codex"
+        assert capabilities.interaction_surface == InteractionSurface.REQUEST_USER_INPUT
+        assert capabilities.can_request_user_input is True
+        assert capabilities.can_ask_user_question is False
+
+    def test_codex_default_runtime_resolves_plain_text(self):
+        """Default Codex launches should stay on the plain-text surface."""
+        adapter = CodexAdapter()
+        launch_spec = adapter.build_launch_spec(
+            mode="default",
+            env={},
+            host_plan_supported=False,
+        )
+
+        capabilities = resolve_runtime_capabilities(env=launch_spec.env)
+
+        assert capabilities.provider == "codex"
+        assert capabilities.interaction_surface == InteractionSurface.PLAIN_TEXT
+        assert capabilities.can_request_user_input is False
+        assert capabilities.can_ask_user_question is False
+
+    def test_claude_runtime_defaults_to_ask_user_question(self):
+        """Claude-style runtimes should still default to AskUserQuestion."""
+        capabilities = resolve_runtime_capabilities(env={"POPKIT_PROVIDER": "claude-code"})
+
+        assert capabilities.provider == "claude-code"
+        assert capabilities.interaction_surface == InteractionSurface.ASK_USER_QUESTION
+        assert capabilities.can_request_user_input is False
+        assert capabilities.can_ask_user_question is True

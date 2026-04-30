@@ -15,6 +15,18 @@ Analyzes current project state and recommends specific popkit commands based on 
 /popkit-dev:next verbose        # Include all context sources
 ```
 
+Hosts that need a structured choice UI can render the same analysis through the
+script-level `decision-spec` format:
+
+```bash
+python packages/popkit-dev/skills/pop-next-action/scripts/recommend_action.py \
+  --mode report \
+  --format decision-spec
+```
+
+That output stays provider-neutral. The host decides whether to render it as
+`request_user_input`, `AskUserQuestion`, or plain text.
+
 ## Architecture Integration
 
 | Component        | Role                                                       |

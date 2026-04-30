@@ -599,7 +599,10 @@ Skills declare their execution context:
 
 ### The PopKit Way
 
-All skills end with `AskUserQuestion` to maintain workflow control. This ensures:
+Skills should end with a clear next-step handoff through the best interaction
+surface the runtime actually supports. In practice, that means PopKit may use
+`request_user_input`, `AskUserQuestion`, or plain-text fallback while keeping
+the workflow contract stable. This ensures:
 
 - Context-aware next action options
 - Continuous workflow engagement
