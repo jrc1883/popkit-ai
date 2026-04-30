@@ -196,7 +196,7 @@ AI-powered development workflows for Claude Code.
 ## Installation
 
 ```
-/plugin marketplace add jrc1883/popkit-claude
+/plugin marketplace add jrc1883/popkit-ai
 /plugin install popkit@popkit-claude
 ```
 
@@ -301,4 +301,4 @@ echo "Commands: $(ls -1 "$OUTPUT_DIR/commands" 2>/dev/null | wc -l)"
 echo "Skills: $(ls -1 "$OUTPUT_DIR/skills" 2>/dev/null | wc -l)"
 echo "Agents: $(find "$OUTPUT_DIR/agents" -name "AGENT.md" 2>/dev/null | wc -l)"
 echo ""
-echo "Ready to push to jrc1883/popkit-claude"
+echo "Ready to push to jrc1883/popkit-ai"

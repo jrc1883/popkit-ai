@@ -105,7 +105,7 @@ Click the badge to auto-configure PopKit in VS Code. Requires `pip install popki
 Claude Code users should install PopKit as a plugin instead of using MCP:
 
 ```bash
-/plugin marketplace add jrc1883/popkit-claude
+/plugin marketplace add jrc1883/popkit-ai
 /plugin install popkit-core@popkit-claude
 ```
 

@@ -7,11 +7,11 @@ description: How to install PopKit — Claude Code plugin, PyPI packages, or MCP
 
 PopKit can be installed in three ways depending on your setup:
 
-| Method                 | Best for                                   | Install command                                 |
-| ---------------------- | ------------------------------------------ | ----------------------------------------------- |
-| **Claude Code plugin** | Claude Code users                          | `/plugin marketplace add jrc1883/popkit-claude` |
-| **PyPI (MCP server)**  | Cursor, Codex CLI, Copilot, any MCP client | `pip install popkit-mcp`                        |
-| **PyPI (full)**        | Standalone CLI + all utilities             | `pip install popkit[full]`                      |
+| Method                 | Best for                                   | Install command                             |
+| ---------------------- | ------------------------------------------ | ------------------------------------------- |
+| **Claude Code plugin** | Claude Code users                          | `/plugin marketplace add jrc1883/popkit-ai` |
+| **PyPI (MCP server)**  | Cursor, Codex CLI, Copilot, any MCP client | `pip install popkit-mcp`                    |
+| **PyPI (full)**        | Standalone CLI + all utilities             | `pip install popkit[full]`                  |
 
 ---
 
@@ -20,7 +20,7 @@ PopKit can be installed in three ways depending on your setup:
 ### Step 1: Add the Marketplace (One-time Setup)
 
 ```bash
-/plugin marketplace add jrc1883/popkit-claude
+/plugin marketplace add jrc1883/popkit-ai
 ```
 
 ### Step 2: Install Plugins

@@ -60,7 +60,7 @@ def run_update(args: argparse.Namespace) -> int:
 
     try:
         result = subprocess.run(
-            ["gh", "api", "repos/jrc1883/popkit-claude/releases/latest", "--jq", ".tag_name"],
+            ["gh", "api", "repos/jrc1883/popkit-ai/releases/latest", "--jq", ".tag_name"],
             capture_output=True,
             text=True,
             timeout=10,
@@ -75,6 +75,6 @@ def run_update(args: argparse.Namespace) -> int:
             print("Could not check for updates. Ensure 'gh' CLI is installed.")
     except (FileNotFoundError, subprocess.TimeoutExpired):
         print("GitHub CLI not available. Check releases at:")
-        print("  https://github.com/jrc1883/popkit-claude/releases")
+        print("  https://github.com/jrc1883/popkit-ai/releases")
 
     return 0

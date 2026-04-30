@@ -123,7 +123,7 @@ template: |
   ## Installation
 
   ```
-  /plugin marketplace add jrc1883/popkit-claude
+  /plugin marketplace add jrc1883/popkit-ai
   /plugin install popkit@popkit-claude
   ```
 

@@ -6,20 +6,20 @@
   },
   "metadata": {
     "description": "PopKit modular plugin suite - official marketplace",
-    "version": "1.0.0-beta.12"
+    "version": "1.0.0-beta.13"
   },
   "plugins": [
     {
       "name": "popkit-core",
       "source": "./packages/popkit-core",
       "description": "Core utilities plugin - plugin management, project analysis, Power Mode orchestration, stats, privacy, and meta-features",
-      "version": "1.0.0-beta.12",
+      "version": "1.0.0-beta.13",
       "author": {
         "name": "Joseph Cannon",
         "email": "joseph@thehouseofdeals.com"
       },
-      "homepage": "https://github.com/jrc1883/popkit-claude",
-      "repository": "https://github.com/jrc1883/popkit-claude",
+      "homepage": "https://github.com/jrc1883/popkit-ai",
+      "repository": "https://github.com/jrc1883/popkit-ai",
       "license": "MIT",
       "keywords": ["popkit", "foundation", "account", "stats", "privacy", "power-mode"],
       "category": "productivity",
@@ -47,13 +47,13 @@
       "name": "popkit-dev",
       "source": "./packages/popkit-dev",
       "description": "Development workflow plugin - feature development, git operations, GitHub integration, and daily routines",
-      "version": "1.0.0-beta.12",
+      "version": "1.0.0-beta.13",
       "author": {
         "name": "Joseph Cannon",
         "email": "joseph@thehouseofdeals.com"
       },
-      "homepage": "https://github.com/jrc1883/popkit-claude",
-      "repository": "https://github.com/jrc1883/popkit-claude",
+      "homepage": "https://github.com/jrc1883/popkit-ai",
+      "repository": "https://github.com/jrc1883/popkit-ai",
       "license": "MIT",
       "keywords": ["development", "workflow", "git", "github", "routines"],
       "category": "productivity",
@@ -81,13 +81,13 @@
       "name": "popkit-ops",
       "source": "./packages/popkit-ops",
       "description": "Operations plugin - quality assurance, deployment automation, debugging workflows, and security scanning",
-      "version": "1.0.0-beta.12",
+      "version": "1.0.0-beta.13",
       "author": {
         "name": "Joseph Cannon",
         "email": "joseph@thehouseofdeals.com"
       },
-      "homepage": "https://github.com/jrc1883/popkit-claude",
-      "repository": "https://github.com/jrc1883/popkit-claude",
+      "homepage": "https://github.com/jrc1883/popkit-ai",
+      "repository": "https://github.com/jrc1883/popkit-ai",
       "license": "MIT",
       "keywords": ["operations", "quality", "deployment", "security", "debugging"],
       "category": "productivity",
@@ -111,13 +111,13 @@
       "name": "popkit-research",
       "source": "./packages/popkit-research",
       "description": "Research plugin - knowledge management, research capture, and semantic search for development insights",
-      "version": "1.0.0-beta.12",
+      "version": "1.0.0-beta.13",
       "author": {
         "name": "Joseph Cannon",
         "email": "joseph@thehouseofdeals.com"
       },
-      "homepage": "https://github.com/jrc1883/popkit-claude",
-      "repository": "https://github.com/jrc1883/popkit-claude",
+      "homepage": "https://github.com/jrc1883/popkit-ai",
+      "repository": "https://github.com/jrc1883/popkit-ai",
       "license": "MIT",
       "keywords": ["research", "knowledge", "documentation"],
       "category": "productivity",

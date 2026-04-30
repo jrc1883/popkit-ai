@@ -1,7 +1,7 @@
 # PopKit Roadmap
 
-**Last Updated:** 2026-03-23
-**Current Version:** 1.0.0-beta.12
+**Last Updated:** 2026-04-30
+**Current Version:** 1.0.0-beta.13
 **Current Focus:** v2 LLM-agnostic orchestration engine — multi-provider support, PyPI publishing, documentation.
 
 ## Principles
