@@ -204,7 +204,7 @@ jobs:
           wranglerVersion: '3.90.0'
 
       - name: Comment preview URL on PR
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         if: steps.preview-availability.outputs.deploy == 'true'
         with:
           script: |
