@@ -294,7 +294,7 @@ jobs:
           echo "Metrics collection: SIMULATED"
 
       - name: Upload results artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: benchmark-results-${{ matrix.task_id }}-popkit-${{ matrix.popkit_enabled }}
           path: benchmark-results/
@@ -347,7 +347,7 @@ jobs:
           echo "analysis_complete=true" >> "$GITHUB_OUTPUT"
 
       - name: Upload analysis artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: benchmark-analysis
           path: benchmark-results/analysis/
@@ -400,7 +400,7 @@ jobs:
           echo "HTML generation: SIMULATED"
 
       - name: Upload report artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: benchmark-reports
           path: docs/benchmark/results/
