@@ -146,6 +146,7 @@ class ProjectConfig:
 
         # Merge overrides into project type
         merged = {**project_type_data, **overrides}
+        self._normalize_cached_commands(merged)
 
         try:
             return ProjectType(
@@ -163,6 +164,18 @@ class ProjectConfig:
         except TypeError as e:
             print(f"[WARN] Failed to build ProjectType from cache: {e}")
             return None
+
+    def _normalize_cached_commands(self, project_type_data: dict[str, Any]) -> None:
+        """Patch known-bad cached command shapes from older detector versions."""
+        package_manager = project_type_data.get("package_manager")
+        if package_manager not in {"npm", "pnpm", "yarn"}:
+            return
+
+        if project_type_data.get("check_installed") == f"{package_manager} list":
+            project_type_data["check_installed"] = f"{package_manager} list --depth=0"
+
+        if project_type_data.get("check_outdated") == f"{package_manager} show --outdated":
+            project_type_data["check_outdated"] = f"{package_manager} outdated"
 
     def cache_project_type(self, project_type: ProjectType) -> bool:
         """

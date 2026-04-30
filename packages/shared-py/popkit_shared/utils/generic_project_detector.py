@@ -133,6 +133,19 @@ class GenericProjectDetector:
         # Python
         elif language == "Python":
             pm = package_manager or "pip"
+            if pm in ("npm", "pnpm", "yarn"):
+                check_installed = f"{pm} list --depth=0"
+                check_outdated = f"{pm} outdated"
+                install_command = f"{pm} install"
+            elif pm == "pip":
+                check_installed = "pip freeze"
+                check_outdated = "pip list --outdated"
+                install_command = "pip install -r requirements.txt"
+            else:
+                check_installed = f"{pm} list"
+                check_outdated = f"{pm} show --outdated"
+                install_command = f"{pm} install"
+
             return ProjectType(
                 primary_language=language,
                 package_manager=pm,
@@ -144,11 +157,9 @@ class GenericProjectDetector:
                     {"name": "api", "port": 8000, "description": "Python API server"},
                     {"name": "database", "port": 5432, "description": "PostgreSQL"},
                 ],
-                check_installed=f"{pm} freeze" if pm == "pip" else f"{pm} list",
-                check_outdated=f"{pm} list --outdated" if pm == "pip" else f"{pm} show --outdated",
-                install_command=f"{pm} install -r requirements.txt"
-                if pm == "pip"
-                else f"{pm} install",
+                check_installed=check_installed,
+                check_outdated=check_outdated,
+                install_command=install_command,
             )
 
         # Rust
