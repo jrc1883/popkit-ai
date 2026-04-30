@@ -16,7 +16,7 @@ concurrency:
 jobs:
   python-tests:
     name: Python Tests (Python ${{ matrix.python-version }})
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: true
       matrix:
@@ -73,7 +73,7 @@ jobs:
 
   typescript-tests:
     name: TypeScript Tests (Node ${{ matrix.node-version }})
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: true
       matrix:
@@ -112,7 +112,7 @@ jobs:
 
   docs-build:
     name: Documentation Build Test
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
