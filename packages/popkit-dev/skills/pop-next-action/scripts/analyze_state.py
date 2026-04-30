@@ -74,10 +74,25 @@ def _find_tsconfig_files(root: Path, limit: int = 20) -> List[Path]:
     for tsconfig in root.rglob("tsconfig.json"):
         if any(part.lower() in excluded for part in tsconfig.parts):
             continue
+        if _is_framework_managed_tsconfig(tsconfig):
+            continue
         results.append(tsconfig)
         if len(results) >= limit:
             break
     return results
+
+
+def _is_framework_managed_tsconfig(tsconfig: Path) -> bool:
+    """Return true for configs that plain tsc cannot check reliably."""
+    try:
+        content = tsconfig.read_text(encoding="utf-8")
+    except OSError:
+        return False
+
+    # Astro projects rely on generated virtual modules such as astro:content.
+    # The docs build validates these projects; plain tsc reports false errors
+    # when generated .astro types are absent in a clean checkout.
+    return "astro/tsconfigs/" in content
 
 
 def _count_typescript_errors(output: str) -> int:
