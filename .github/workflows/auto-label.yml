@@ -29,7 +29,7 @@ jobs:
 
   label-issues:
     name: Label Issues
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     if: github.event_name == 'issues'
 
     steps:
@@ -119,7 +119,7 @@ jobs:
 
   label-prs:
     name: Label PRs
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
 
     steps:
