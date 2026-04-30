@@ -50,7 +50,7 @@ concurrency:
 jobs:
   publish:
     name: Publish to Public Repo
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout monorepo (full history)
