@@ -70,3 +70,22 @@ def test_analyze_code_state_uses_resolved_typescript_command(monkeypatch, tmp_pa
             str(tsconfig),
         ]
     ]
+
+
+def test_analyze_code_state_skips_astro_managed_tsconfig(monkeypatch, tmp_path):
+    """Astro tsconfigs require generated virtual modules, so tsc is noisy."""
+
+    tsconfig = tmp_path / "packages" / "docs" / "tsconfig.json"
+    tsconfig.parent.mkdir(parents=True)
+    tsconfig.write_text('{"extends":"astro/tsconfigs/strict"}')
+
+    def fail_if_called(*args, **kwargs):
+        raise AssertionError("plain tsc should not run for Astro-managed tsconfig")
+
+    monkeypatch.setattr(analyze_state, "run_command_simple", fail_if_called)
+
+    state = analyze_state.analyze_code_state(tmp_path)
+
+    assert state["has_typescript"] is False
+    assert state["typescript_errors"] == 0
+    assert state["typescript_projects_checked"] == 0
