@@ -31,7 +31,7 @@ Runs against everything that survives Tier 1. Lane manifest's `redaction.content
 - `\b\d{4}-\d{4}-\d{4}-\d{4}\b` — credit-card-shaped strings
 - `(?i)\bstudent_(?:id|name|email):` — FERPA-scoped fields
 
-Matches are replaced with `[REDACTED]` plus a 1-byte type hint (e.g., `[REDACTED:age]`) so the verifier can reason about the *kind* of redacted value without seeing the value itself.
+Matches are replaced with `[REDACTED]` plus a 1-byte type hint (e.g., `[REDACTED:age]`) so the verifier can reason about the _kind_ of redacted value without seeing the value itself.
 
 ### Tier 3 — Synthetic-fixtures-only policy (compliance lanes)
 

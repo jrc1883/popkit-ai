@@ -20,7 +20,7 @@ This fixture exists to prove redaction does NOT over-fire. It contains:
 // Pure code, no PII.
 export function applyBudgetTruncation(
   typedMessage: string,
-  attachments: AttachmentForPrompt[],
+  attachments: AttachmentForPrompt[]
 ): BudgetTruncationResult {
   // ... iterative-trim algorithm ...
 }

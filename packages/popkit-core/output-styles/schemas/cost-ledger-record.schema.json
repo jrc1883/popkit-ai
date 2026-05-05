@@ -3,14 +3,7 @@
   "title": "Cost Ledger Record Schema",
   "description": "One JSON record per verifier invocation, appended to ~/.claude/popkit/cost-ledger.jsonl (USER-LOCAL — survives `git clean -fdx` and repo rename). The dispatcher uses this for daily-cap aggregation per lane_id+date. See ~/.claude/plans/verifier-pair-infrastructure-v1.md (Cost caps section). NOT stored under repo .claude/ — that's per-turn artifact territory.",
   "type": "object",
-  "required": [
-    "schema_version",
-    "repo",
-    "lane_id",
-    "session_id",
-    "date",
-    "verdict"
-  ],
+  "required": ["schema_version", "repo", "lane_id", "session_id", "date", "verdict"],
   "properties": {
     "schema_version": {
       "type": "integer",
