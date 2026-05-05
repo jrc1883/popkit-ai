@@ -1,14 +1,14 @@
 {
   "test_id": "hook-stop-protocol",
   "category": "hooks",
-  "name": "Stop Hook Session Cleanup",
-  "description": "Verify stop.py handles session termination and saves logs correctly",
+  "name": "Stop Hook Verifier Dispatcher",
+  "description": "Verify stop.py implements the Phase 1a-ii verifier dispatcher: archives the pending claim ledger written by /checkpoint into a per-turn bundle, writes a status='missing' stub when no checkpoint exists, and never logs raw stdin (privacy).",
   "severity": "critical",
   "hook_file": "hooks/stop.py",
   "test_cases": [
     {
       "case_id": "basic-session-stop",
-      "name": "Basic session termination",
+      "name": "Basic session termination produces a missing-stub bundle",
       "input": {
         "event": "Stop",
         "session_id": "test-session-123",
@@ -19,7 +19,7 @@
         {
           "type": "exit_code",
           "expected": 0,
-          "description": "Should complete successfully"
+          "description": "Stop hook must never block Claude Code on exit"
         },
         {
           "type": "json_valid",
@@ -35,21 +35,23 @@
           "expected": "success"
         },
         {
+          "type": "has_field",
+          "field": "ledger_status"
+        },
+        {
           "type": "duration",
           "max_ms": 5000,
-          "description": "Should complete quickly"
+          "description": "Must stay under hooks.json Stop budget"
         }
       ]
     },
     {
-      "case_id": "log-file-creation",
-      "name": "Session stop creates log file",
+      "case_id": "no-checkpoint-emits-stub-warning",
+      "name": "Missing /checkpoint produces ledger_status='missing'",
       "input": {
         "event": "Stop",
-        "session_id": "test-session-456",
-        "duration": 1800,
-        "tool_count": 42,
-        "error_count": 0
+        "session_id": "test-session-no-ckpt",
+        "duration": 1800
       },
       "assertions": [
         {
@@ -61,15 +63,14 @@
           "field": "stdout"
         },
         {
-          "type": "file_exists",
-          "file": "logs/stop.json",
-          "description": "Should create logs/stop.json"
+          "type": "has_field",
+          "field": "ledger_status"
         }
       ]
     },
     {
-      "case_id": "chat-transcript-save",
-      "name": "Save chat transcript when requested",
+      "case_id": "transcript-not-saved-privacy",
+      "name": "Transcript is NOT persisted (privacy regression guard)",
       "input": {
         "event": "Stop",
         "session_id": "test-session-789",
@@ -87,77 +88,18 @@
         {
           "type": "json_valid",
           "field": "stdout"
-        },
-        {
-          "type": "has_field",
-          "field": "chat_saved"
-        },
-        {
-          "type": "contains",
-          "field": "chat_saved",
-          "expected": true
-        },
-        {
-          "type": "file_exists",
-          "file": "logs/chat.json",
-          "description": "Should save chat transcript"
-        }
-      ]
-    },
-    {
-      "case_id": "no-chat-transcript",
-      "name": "Handles missing transcript gracefully",
-      "input": {
-        "event": "Stop",
-        "session_id": "test-session-no-chat",
-        "save_chat": true
-      },
-      "assertions": [
-        {
-          "type": "exit_code",
-          "expected": 0,
-          "description": "Should not fail even if transcript missing"
-        },
-        {
-          "type": "json_valid",
-          "field": "stdout"
-        },
-        {
-          "type": "contains",
-          "field": "chat_saved",
-          "expected": false
-        }
-      ]
-    },
-    {
-      "case_id": "append-to-existing-log",
-      "name": "Appends to existing stop.json log",
-      "input": {
-        "event": "Stop",
-        "session_id": "test-session-append",
-        "duration": 900,
-        "existing_log": [{ "session_id": "prev-session", "timestamp": "2025-01-01T12:00:00" }]
-      },
-      "assertions": [
-        {
-          "type": "exit_code",
-          "expected": 0
-        },
-        {
-          "type": "json_valid",
-          "field": "stdout"
         }
       ]
     },
     {
       "case_id": "invalid-json-input",
-      "name": "Handles invalid JSON input gracefully",
+      "name": "Handles invalid JSON input gracefully (treats as empty payload)",
       "input": "invalid json{{{",
       "assertions": [
         {
           "type": "exit_code",
           "expected": 0,
-          "description": "Should not block on errors"
+          "description": "Stop hook must never block Claude Code"
         },
         {
           "type": "json_valid",
@@ -166,7 +108,7 @@
         {
           "type": "contains",
           "field": "status",
-          "expected": "error"
+          "expected": "success"
         }
       ]
     },
@@ -192,7 +134,7 @@
     },
     {
       "case_id": "timestamp-added",
-      "name": "Adds timestamp to logged data",
+      "name": "Adds ISO timestamp to response",
       "input": {
         "event": "Stop",
         "session_id": "test-session-time"
@@ -213,13 +155,13 @@
       ]
     }
   ],
-  "dependencies": ["hooks/stop.py", "logs/stop.json", "logs/chat.json"],
+  "dependencies": ["hooks/stop.py"],
   "notes": [
-    "This hook is critical for session cleanup and preventing data loss",
-    "Creates logs directory if it doesn't exist",
-    "Appends to existing stop.json log (doesn't overwrite)",
-    "Optionally saves chat transcripts when requested",
-    "Must not block Claude exit even on errors",
-    "Provides both stderr and stdout output"
+    "Phase 1a-ii dispatcher contract: read pending claim ledger written by /checkpoint, archive into <repo>/.claude/popkit/verifier-bundles/<session_id>/<turn_id>/ledger.json, or write a status='missing' stub if no /checkpoint was called.",
+    "The previous logs/stop.json raw-input dump was a privacy violation flagged by Codex and is removed.",
+    "The previous logs/chat.json transcript save is also removed (same privacy rationale).",
+    "Stop hook must NEVER exit non-zero — Claude Code's Stop pipeline cannot be blocked by hook bugs.",
+    "Bundle directory writes are atomic via .tmp + Path.replace.",
+    "Pending ledger is deleted only after a successful archive."
   ]
 }
