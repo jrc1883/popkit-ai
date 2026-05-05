@@ -49,6 +49,14 @@ DEFAULT_AUTO_CONTINUATION = "none"
 DEFAULT_ON_VERIFIER_UNREACHABLE_NON_COMPLIANCE = "open_with_warning"
 DEFAULT_ON_VERIFIER_UNREACHABLE_COMPLIANCE = "closed_human"
 
+# Routing enums — must mirror lane-manifest.schema.json definitions.
+# Round-8 Codex P1 #1: the loader must reject values outside these sets even
+# when the lane is non-compliance. Without this gate the schema enums are
+# advisory and routing-critical fields can reach dispatcher code as garbage
+# strings.
+ON_VERIFIER_UNREACHABLE_VALUES = {"open_with_warning", "closed_human"}
+AUTO_CONTINUATION_VALUES = {"none", "feedback", "feedback-with-reverify", "human"}
+
 
 class LaneManifestError(ValueError):
     """Raised when a manifest fails validation."""
@@ -196,8 +204,21 @@ def _materialize_lane(
 
     is_compliance = compliance_class in COMPLIANCE_CLOSED_HUMAN
 
-    # Default + enforce: on_verifier_unreachable
+    # Default + enforce: on_verifier_unreachable.
+    # Round-8 P1 #1: validate against the schema enum FIRST, then apply
+    # compliance reconciliation. Validating up front gives clean error
+    # messages on bogus enum values regardless of compliance class, and
+    # closes the gap where non-compliance lanes silently accepted garbage.
     declared_unreachable = lane.get("on_verifier_unreachable")
+    if (
+        declared_unreachable is not None
+        and declared_unreachable not in ON_VERIFIER_UNREACHABLE_VALUES
+    ):
+        raise LaneManifestError(
+            f"lanes[{idx}] ({lane['id']!r}) on_verifier_unreachable="
+            f"{declared_unreachable!r} is not one of "
+            f"{sorted(ON_VERIFIER_UNREACHABLE_VALUES)}"
+        )
     if is_compliance:
         if (
             declared_unreachable is not None
@@ -218,8 +239,13 @@ def _materialize_lane(
             else DEFAULT_ON_VERIFIER_UNREACHABLE_NON_COMPLIANCE
         )
 
-    # Default + enforce: auto_continuation_class
+    # Default + enforce: auto_continuation_class. Same enum-first pattern.
     declared_auto = lane.get("auto_continuation_class")
+    if declared_auto is not None and declared_auto not in AUTO_CONTINUATION_VALUES:
+        raise LaneManifestError(
+            f"lanes[{idx}] ({lane['id']!r}) auto_continuation_class="
+            f"{declared_auto!r} is not one of {sorted(AUTO_CONTINUATION_VALUES)}"
+        )
     if is_compliance:
         if declared_auto is not None and declared_auto != "human":
             raise LaneManifestError(
@@ -254,17 +280,23 @@ def _materialize_lane(
             raise LaneManifestError(
                 f"lanes[{idx}].file_ownership[{j}] must be a non-empty string"
             )
+        # Round-8 P1 #2: absolute file_ownership globs MUST be rejected, not
+        # warned. file_ownership is the safety boundary for parallel work; an
+        # absolute glob like 'C:/repo/apps/**' looks distinct from 'apps/**'
+        # but describes the same tree, and lanes-doctor's overlap detection
+        # cannot canonicalize across that gap (repo_root is a per-loader
+        # concern, not a per-glob concern). Reject at load time so manifest
+        # authors fix the glob to a repo-relative form.
         # Detect absolute paths cross-platform: pathlib.Path.is_absolute() is
         # platform-specific (e.g. '/abs/path' is not absolute on Windows), so
         # also check for POSIX leading-slash and Windows drive-letter prefixes.
         is_posix_abs = glob.startswith("/")
-        is_windows_abs = (
-            len(glob) >= 3 and glob[1] == ":" and glob[2] in {"/", "\\"}
-        )
+        is_windows_abs = len(glob) >= 3 and glob[1] == ":" and glob[2] in {"/", "\\"}
         if Path(glob).is_absolute() or is_posix_abs or is_windows_abs:
-            warnings.append(
+            raise LaneManifestError(
                 f"lanes[{idx}] ({lane['id']!r}) file_ownership[{j}]={glob!r} is an "
-                f"absolute path; lane file_ownership should be repo-relative globs."
+                f"absolute path; file_ownership must be repo-relative globs so "
+                f"overlap detection is well-defined."
             )
 
     # max_rounds bounds — also reject bools (bool is a subclass of int in
@@ -358,9 +390,7 @@ def _materialize_lane(
     return lane
 
 
-def _validate_gate(
-    gate: Any, lane_idx: int, gate_idx: int, lane_id: str
-) -> None:
+def _validate_gate(gate: Any, lane_idx: int, gate_idx: int, lane_id: str) -> None:
     """Type-check a deterministic_gate entry per the lane manifest schema."""
     if not isinstance(gate, dict):
         raise LaneManifestError(

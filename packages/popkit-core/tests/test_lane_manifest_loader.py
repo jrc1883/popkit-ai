@@ -99,9 +99,7 @@ def test_default_injection_for_schema_class(loader, tmp_path):
 @pytest.mark.parametrize(
     "compliance_class", ["audit", "auth", "child-data", "ferpa", "coppa"]
 )
-def test_compliance_lane_rejects_open_with_warning(
-    loader, tmp_path, compliance_class
-):
+def test_compliance_lane_rejects_open_with_warning(loader, tmp_path, compliance_class):
     """Compliance lanes cannot opt out of closed_human."""
     path = _write_manifest(
         tmp_path,
@@ -281,16 +279,38 @@ def test_empty_file_ownership_rejected(loader, tmp_path):
     assert "file_ownership" in str(exc_info.value)
 
 
-def test_absolute_path_in_file_ownership_warns(loader, tmp_path):
+@pytest.mark.parametrize(
+    "absolute_glob",
+    [
+        "/abs/path/**",
+        "C:/repo/apps/**",
+        "c:/repo/apps/**",
+        "C:\\repo\\apps\\**",
+        "//server/share/**",
+    ],
+)
+def test_absolute_path_in_file_ownership_rejected(loader, tmp_path, absolute_glob):
+    """Round-8 P1 #2: absolute file_ownership globs are a safety hazard.
+
+    Lane file_ownership is the safety boundary for parallel work. An
+    absolute glob like ``C:/repo/apps/**`` describes the same tree as
+    ``apps/**`` but lanes-doctor's overlap detector can't canonicalize
+    across that gap, so two lanes with those values would silently bypass
+    overlap detection. The loader must reject absolute paths so manifest
+    authors fix them to repo-relative form.
+    """
     path = _write_manifest(
         tmp_path,
         {
             "version": 1,
-            "lanes": [_minimal_lane(file_ownership=["/abs/path/**"])],
+            "lanes": [_minimal_lane(file_ownership=[absolute_glob])],
         },
     )
-    result = loader.load_lane_manifest(path)
-    assert any("absolute path" in w for w in result.warnings)
+    with pytest.raises(loader.LaneManifestError) as exc_info:
+        loader.load_lane_manifest(path)
+    msg = str(exc_info.value)
+    assert "file_ownership" in msg
+    assert "absolute" in msg.lower() or "repo-relative" in msg.lower()
 
 
 def test_missing_manifest_file_rejected(loader, tmp_path):
@@ -358,9 +378,7 @@ def test_priority_must_be_int(loader, tmp_path):
         tmp_path,
         {
             "version": 1,
-            "lanes": [
-                _minimal_lane(shared_ownership=True, priority="high")
-            ],
+            "lanes": [_minimal_lane(shared_ownership=True, priority="high")],
         },
     )
     with pytest.raises(loader.LaneManifestError):
@@ -385,9 +403,7 @@ def test_deterministic_gates_type_checked(loader, tmp_path):
         tmp_path,
         {
             "version": 1,
-            "lanes": [
-                _minimal_lane(deterministic_gates="not an array")
-            ],
+            "lanes": [_minimal_lane(deterministic_gates="not an array")],
         },
     )
     with pytest.raises(loader.LaneManifestError) as exc_info:
@@ -466,11 +482,7 @@ def test_redaction_paths_must_be_array_of_strings(loader, tmp_path):
         tmp_path,
         {
             "version": 1,
-            "lanes": [
-                _minimal_lane(
-                    redaction={"paths_never_send": "should-be-array"}
-                )
-            ],
+            "lanes": [_minimal_lane(redaction={"paths_never_send": "should-be-array"})],
         },
     )
     with pytest.raises(loader.LaneManifestError):
@@ -482,15 +494,104 @@ def test_redaction_pattern_string_validated(loader, tmp_path):
         tmp_path,
         {
             "version": 1,
-            "lanes": [
-                _minimal_lane(
-                    redaction={"content_redact_patterns": [123]}
-                )
-            ],
+            "lanes": [_minimal_lane(redaction={"content_redact_patterns": [123]})],
         },
     )
     with pytest.raises(loader.LaneManifestError):
         loader.load_lane_manifest(path)
+
+
+# ---------------------------------------------------------------------------
+# Routing enum validation (Codex round-8 P1 #1)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("bogus", ["bogus", 123, "OPEN_WITH_WARNING", "always"])
+def test_on_verifier_unreachable_enum_rejected_for_non_compliance(
+    loader, tmp_path, bogus
+):
+    """Non-compliance lanes must still validate the routing enum.
+
+    Round-8 P1 #1: previously the non-compliance branch copied
+    ``declared_unreachable`` straight onto the lane without checking it
+    against the schema enum, so dispatcher routing could reach garbage
+    values like 'bogus' or 123.
+    """
+    path = _write_manifest(
+        tmp_path,
+        {
+            "version": 1,
+            "lanes": [
+                _minimal_lane(compliance_class="none", on_verifier_unreachable=bogus)
+            ],
+        },
+    )
+    with pytest.raises(loader.LaneManifestError) as exc_info:
+        loader.load_lane_manifest(path)
+    assert "on_verifier_unreachable" in str(exc_info.value)
+
+
+@pytest.mark.parametrize("bogus", ["bogus", 123, "FEEDBACK", "auto"])
+def test_auto_continuation_class_enum_rejected_for_non_compliance(
+    loader, tmp_path, bogus
+):
+    """Non-compliance lanes must still validate the routing enum."""
+    path = _write_manifest(
+        tmp_path,
+        {
+            "version": 1,
+            "lanes": [
+                _minimal_lane(compliance_class="none", auto_continuation_class=bogus)
+            ],
+        },
+    )
+    with pytest.raises(loader.LaneManifestError) as exc_info:
+        loader.load_lane_manifest(path)
+    assert "auto_continuation_class" in str(exc_info.value)
+
+
+@pytest.mark.parametrize("bogus", ["bogus", 123])
+def test_on_verifier_unreachable_enum_rejected_for_compliance(loader, tmp_path, bogus):
+    """Compliance lanes also reject bogus enum values cleanly.
+
+    Before round-8 the compliance branch would surface a 'requires
+    closed_human' message even for a typo'd 'bogus' value. After the
+    fix the enum is validated up front so the error reflects the actual
+    cause.
+    """
+    path = _write_manifest(
+        tmp_path,
+        {
+            "version": 1,
+            "lanes": [
+                _minimal_lane(compliance_class="audit", on_verifier_unreachable=bogus)
+            ],
+        },
+    )
+    with pytest.raises(loader.LaneManifestError) as exc_info:
+        loader.load_lane_manifest(path)
+    assert "on_verifier_unreachable" in str(exc_info.value)
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["none", "feedback", "feedback-with-reverify"],
+)
+def test_non_compliance_accepts_all_auto_continuation_enum_values(
+    loader, tmp_path, value
+):
+    """All schema-permitted enum values pass on a non-compliance lane."""
+    path = _write_manifest(
+        tmp_path,
+        {
+            "version": 1,
+            "lanes": [
+                _minimal_lane(compliance_class="none", auto_continuation_class=value)
+            ],
+        },
+    )
+    result = loader.load_lane_manifest(path)
+    assert result.manifest["lanes"][0]["auto_continuation_class"] == value
 
 
 def test_valid_complex_lane_loads_cleanly(loader, tmp_path):

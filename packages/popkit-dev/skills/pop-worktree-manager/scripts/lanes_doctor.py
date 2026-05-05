@@ -68,11 +68,7 @@ def _load_loader_module():
     # popkit-dev/skills/pop-worktree-manager/scripts/ → popkit-ai root
     repo_root = here.parents[5]
     loader_path = (
-        repo_root
-        / "packages"
-        / "popkit-core"
-        / "scripts"
-        / "lane_manifest_loader.py"
+        repo_root / "packages" / "popkit-core" / "scripts" / "lane_manifest_loader.py"
     )
     return _load_module("lane_manifest_loader", loader_path)
 
@@ -287,7 +283,9 @@ def list_git_worktrees(run_git_command) -> List[Dict[str, str]]:
         elif line.startswith("HEAD "):
             current["commit"] = line[len("HEAD ") :].strip()
         elif line.startswith("branch "):
-            current["branch"] = line[len("branch ") :].strip().replace("refs/heads/", "")
+            current["branch"] = (
+                line[len("branch ") :].strip().replace("refs/heads/", "")
+            )
         elif line.startswith("detached"):
             current["branch"] = "(detached)"
         elif not line.strip() and current:
@@ -303,9 +301,38 @@ def list_git_worktrees(run_git_command) -> List[Dict[str, str]]:
 # ---------------------------------------------------------------------------
 
 
+def _is_absolute_glob(glob: str) -> bool:
+    """Cross-platform absolute-path detection for file_ownership globs.
+
+    Mirrors the loader check (round-8 P1 #2). pathlib.Path.is_absolute()
+    is platform-specific (``/abs/x`` is not absolute on Windows), so we
+    also test POSIX leading-slash and Windows drive-letter prefixes.
+    """
+    if not glob:
+        return False
+    is_posix_abs = glob.startswith("/")
+    is_windows_abs = len(glob) >= 3 and glob[1] == ":" and glob[2] in {"/", "\\"}
+    return Path(glob).is_absolute() or is_posix_abs or is_windows_abs
+
+
 def check_lane_overlap(lanes: List[Dict[str, Any]]) -> List[str]:
-    """Return list of error messages for file_ownership overlap without opt-in."""
+    """Return list of error messages for file_ownership overlap without opt-in.
+
+    Round-8 P1 #2 defense-in-depth: also reject absolute file_ownership
+    globs. The loader rejects them at manifest load, but ``check_lane_overlap``
+    can be called from tests / external scripts with arbitrary lane dicts.
+    Without this guard, ``C:/repo/apps/**`` and ``apps/**`` would describe
+    the same tree but pass through overlap detection unflagged.
+    """
     errors: List[str] = []
+    for lane in lanes:
+        for j, glob in enumerate(lane.get("file_ownership", [])):
+            if isinstance(glob, str) and _is_absolute_glob(glob):
+                errors.append(
+                    f"lane {lane.get('id', '?')!r} file_ownership[{j}]={glob!r} "
+                    f"is an absolute path; file_ownership must be repo-relative "
+                    f"globs so overlap detection is well-defined."
+                )
     for i in range(len(lanes)):
         for j in range(i + 1, len(lanes)):
             a, b = lanes[i], lanes[j]

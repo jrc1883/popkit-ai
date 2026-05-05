@@ -55,9 +55,7 @@ class TestNormalizePath:
         # The double-leading-slash form
         assert doctor.normalize_path("//server/share/path") == "//server/share/path"
         # The Windows UNC form
-        assert (
-            doctor.normalize_path("\\\\server\\share\\path") == "//server/share/path"
-        )
+        assert doctor.normalize_path("\\\\server\\share\\path") == "//server/share/path"
 
     def test_trailing_slash_stripped(self, doctor):
         assert doctor.normalize_path("foo/bar/") == "foo/bar"
@@ -104,7 +102,9 @@ class TestGlobsCanOverlap:
         heuristic missed this.
         """
         assert doctor.globs_can_overlap("apps/*/settings.ts", "apps/shprd/*")
-        assert doctor.globs_can_overlap("packages/*/src/**", "packages/popkit-core/src/foo.py")
+        assert doctor.globs_can_overlap(
+            "packages/*/src/**", "packages/popkit-core/src/foo.py"
+        )
         assert doctor.globs_can_overlap("a/*/c", "a/b/*")
 
     def test_disjoint_inner_segments_do_not_overlap(self, doctor):
@@ -166,6 +166,32 @@ class TestCheckLaneOverlap:
         ]
         errors = doctor.check_lane_overlap(lanes)
         assert len(errors) == 1
+
+    def test_absolute_glob_flagged_even_without_overlap(self, doctor):
+        """Round-8 P1 #2: defense-in-depth.
+
+        The loader rejects absolute file_ownership globs at manifest load,
+        but check_lane_overlap can be called directly with arbitrary lane
+        dicts. Without this guard, ``C:/repo/apps/**`` and ``apps/**`` look
+        distinct to overlap detection even though they describe the same
+        tree.
+        """
+        lanes = [
+            _lane("a", ["C:/repo/apps/**"]),
+            _lane("b", ["apps/**"]),
+        ]
+        errors = doctor.check_lane_overlap(lanes)
+        # Absolute path itself is rejected.
+        assert any("absolute path" in e for e in errors)
+        assert any("'a'" in e for e in errors)
+
+    def test_absolute_posix_glob_flagged(self, doctor):
+        lanes = [
+            _lane("a", ["/abs/path/**"]),
+            _lane("b", ["lib/**"]),
+        ]
+        errors = doctor.check_lane_overlap(lanes)
+        assert any("absolute path" in e for e in errors)
 
 
 # ---------------------------------------------------------------------------
