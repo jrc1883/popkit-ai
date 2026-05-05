@@ -253,12 +253,16 @@ def _validate_changed_file(entry: Any, idx: int) -> None:
         raise CheckpointError(
             f"changed_files[{idx}].path must use forward slashes, got {path!r}"
         )
+    # Round-10 P2: any drive-letter colon prefix on Windows is non-repo-
+    # root-relative, even without a trailing separator. ``C:foo`` resolves
+    # against drive C's current directory, NOT the repo. Reject the whole
+    # ``^[A-Za-z]:`` family.
     if path.startswith("/") or (
-        len(path) >= 3 and path[1] == ":" and path[2] in {"/", "\\"}
+        len(path) >= 2 and path[0].isalpha() and path[1] == ":"
     ):
         raise CheckpointError(
             f"changed_files[{idx}].path must be repo-root-relative, "
-            f"got absolute path {path!r}"
+            f"got absolute or drive-anchored path {path!r}"
         )
     if any(seg == ".." for seg in path.split("/")):
         raise CheckpointError(

@@ -198,6 +198,12 @@ def test_changed_files_path_must_be_non_empty_string(writer, fake_repo):
         "../outside.txt",
         "apps/../../../etc/passwd",
         "packages\\popkit-core\\scripts\\checkpoint_writer.py",
+        # Round-10 P2: drive-relative forms have no separator after the
+        # colon but are still non-repo-relative on Windows.
+        "C:secret.txt",
+        "c:secret.txt",
+        "D:foo/bar.py",
+        "Z:",
     ],
 )
 def test_changed_files_path_rejects_non_repo_relative(writer, fake_repo, bad_path):
