@@ -302,7 +302,7 @@ This is Phase 1 implementation. Future phases will add:
 - **Caching**: Session-level caching for performance
 - **Extensibility**: User-defined detection rules
 
-See [Issue #155](https://github.com/jrc1883/popkit-claude/issues/155) for full roadmap.
+See [Issue #155](https://github.com/jrc1883/popkit-ai/issues/155) for full roadmap.
 
 ## Design Patterns
 
@@ -445,6 +445,6 @@ MIT
 
 ---
 
-**Issue**: [#155 - Tech Stack Detection & Automated Check Recommendations](https://github.com/jrc1883/popkit-claude/issues/155)
+**Issue**: [#155 - Tech Stack Detection & Automated Check Recommendations](https://github.com/jrc1883/popkit-ai/issues/155)
 **Phase**: 1 of 3 (Detection Engine)
 **Status**: ✅ Complete

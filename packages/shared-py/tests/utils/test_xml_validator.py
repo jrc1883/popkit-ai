@@ -221,7 +221,7 @@ class TestProjectContextValidation:
         """Test valid project context XML"""
         xml = """
         <project version="1.0">
-            <name>popkit-claude</name>
+            <name>popkit-ai</name>
             <stack>
                 <technology>Python</technology>
                 <technology>Markdown</technology>

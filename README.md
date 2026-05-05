@@ -51,8 +51,8 @@ Example: `/popkit-dev:next` uses `pop-next-action` internally, then adds [mode h
 /plugin marketplace add jrc1883/popkit-ai
 
 # Install the plugins you need
-/plugin install popkit-core@popkit-claude   # Foundation
-/plugin install popkit-dev@popkit-claude    # Development workflows
+/plugin install popkit-core@popkit-ai   # Foundation
+/plugin install popkit-dev@popkit-ai    # Development workflows
 
 # Restart Claude Code, then run your first morning routine:
 /popkit-dev:routine morning
@@ -241,8 +241,8 @@ PopKit is modular. Install what you need:
 | **popkit-research** | Knowledge capture, research notes, documentation sync                                                                                  |
 
 ```bash
-/plugin install popkit-ops@popkit-claude      # Quality & security
-/plugin install popkit-research@popkit-claude # Knowledge management
+/plugin install popkit-ops@popkit-ai      # Quality & security
+/plugin install popkit-research@popkit-ai # Knowledge management
 ```
 
 ---

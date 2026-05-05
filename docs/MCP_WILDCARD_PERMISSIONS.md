@@ -394,7 +394,7 @@ Users can customize permissions after generation:
 ## References
 
 - [Claude Code CHANGELOG 2.0.70](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md#2070)
-- PopKit Issue [#93](https://github.com/jrc1883/popkit-claude/issues/93)
+- PopKit Issue [#93](https://github.com/jrc1883/popkit-ai/issues/93)
 - [MCP Specification](https://spec.modelcontextprotocol.io/)
 
 ## See Also

@@ -190,7 +190,7 @@ class TestGenerateProjectContextXml:
     def test_generate_complete_project_context(self):
         """Test generating complete project context"""
         context = {
-            "name": "popkit-claude",
+            "name": "popkit-ai",
             "stack": ["Python", "TypeScript", "Markdown"],
             "infrastructure": {"redis": False, "postgres": True, "docker": True},
             "current_work": {"focus": "XML testing strategy", "issue": "Security hardening"},
@@ -199,7 +199,7 @@ class TestGenerateProjectContextXml:
         xml = generate_project_context_xml(context)
 
         assert '<project version="1.0">' in xml
-        assert "<name>popkit-claude</name>" in xml
+        assert "<name>popkit-ai</name>" in xml
         assert "<technology>Python</technology>" in xml
         assert "<technology>TypeScript</technology>" in xml
         assert "<redis>false</redis>" in xml

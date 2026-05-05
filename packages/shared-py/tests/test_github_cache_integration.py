@@ -3,7 +3,7 @@
 Integration test for GitHub cache and validator.
 Demonstrates "Check First" pattern to prevent GitHub API errors.
 
-Run from popkit-claude root:
+Run from popkit-ai root:
     python packages/shared-py/tests/test_github_cache_integration.py
 """
 

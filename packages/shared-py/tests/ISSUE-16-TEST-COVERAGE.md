@@ -325,5 +325,5 @@ All tests passing. Ready to merge and integrate with CI/CD pipeline.
 
 **Author**: Claude Sonnet 4.5
 **Issue**: #16 - Test Coverage for Critical Utility Modules
-**Repository**: popkit-claude
+**Repository**: popkit-ai
 **Branch**: Ready for PR

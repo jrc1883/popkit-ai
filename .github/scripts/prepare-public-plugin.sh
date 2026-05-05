@@ -197,7 +197,7 @@ AI-powered development workflows for Claude Code.
 
 ```
 /plugin marketplace add jrc1883/popkit-ai
-/plugin install popkit@popkit-claude
+/plugin install popkit@popkit-ai
 ```
 
 Then restart Claude Code to activate the plugin.

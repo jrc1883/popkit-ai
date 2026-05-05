@@ -271,7 +271,7 @@ Pushing to remote...
   ✓ Pushed to origin/main
 
 Publishing to public repo...
-  ✓ Published to jrc1883/popkit-claude
+  ✓ Published to jrc1883/popkit-ai
 
 Version 0.2.5 released successfully!
 ```
@@ -351,7 +351,7 @@ Output:
 
 [DRY RUN] Would push to:
   - origin/main
-  - jrc1883/popkit-claude
+  - jrc1883/popkit-ai
 
 No changes made (dry run mode)
 ```

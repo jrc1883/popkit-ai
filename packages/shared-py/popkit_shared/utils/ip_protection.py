@@ -114,7 +114,7 @@ FORBIDDEN_PATTERNS: dict[str, dict] = {
     "private_repo_ref": {
         "pattern": r"jrc1883/popkit(?!\-claude)",
         "severity": "low",
-        "description": "Reference to private repo (not popkit-claude)",
+        "description": "Reference to private repo (not popkit-ai)",
     },
 }
 

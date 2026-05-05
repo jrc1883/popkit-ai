@@ -143,7 +143,7 @@ class TestParseProjectContext:
         """Test parsing project context with all fields"""
         xml = """
         <project version="1.0">
-            <name>popkit-claude</name>
+            <name>popkit-ai</name>
             <stack>
                 <technology>Python</technology>
                 <technology>TypeScript</technology>
@@ -163,7 +163,7 @@ class TestParseProjectContext:
         result = parse_project_context(xml)
 
         assert result is not None
-        assert result["name"] == "popkit-claude"
+        assert result["name"] == "popkit-ai"
         assert len(result["stack"]) == 3
         assert "Python" in result["stack"]
         assert "TypeScript" in result["stack"]

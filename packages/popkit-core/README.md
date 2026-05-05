@@ -268,7 +268,7 @@ This plugin is part of the PopKit ecosystem and depends on `popkit-shared`.
 
 ```bash
 # Install via Claude Code plugin manager
-/plugin install popkit-core@popkit-claude
+/plugin install popkit-core@popkit-ai
 ```
 
 ## Usage Examples

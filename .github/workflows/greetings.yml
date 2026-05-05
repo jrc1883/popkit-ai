@@ -41,9 +41,9 @@ jobs:
             - For feature requests, consider adding your use case to help prioritize
 
             **Helpful resources:**
-            - 📖 [README](https://github.com/jrc1883/popkit-claude#readme) - Quick start guide
-            - 💬 [Discussions](https://github.com/jrc1883/popkit-claude/discussions) - Ask questions
-            - 🐛 [Issue templates](https://github.com/jrc1883/popkit-claude/issues/new/choose) - Report bugs or request features
+            - 📖 [README](https://github.com/jrc1883/popkit-ai#readme) - Quick start guide
+            - 💬 [Discussions](https://github.com/jrc1883/popkit-ai/discussions) - Ask questions
+            - 🐛 [Issue templates](https://github.com/jrc1883/popkit-ai/issues/new/choose) - Report bugs or request features
 
             Thanks for contributing to PopKit! 🎉
           pr_message: |

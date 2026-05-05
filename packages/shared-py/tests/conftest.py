@@ -176,7 +176,7 @@ def sample_project_xml():
     """Valid project context XML for testing"""
     return """
     <project version="1.0">
-      <name>popkit-claude</name>
+      <name>popkit-ai</name>
       <stack>
         <technology>Python</technology>
         <technology>TypeScript</technology>

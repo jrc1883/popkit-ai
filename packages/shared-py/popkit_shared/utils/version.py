@@ -312,7 +312,7 @@ def format_update_notification(release_info: dict[str, Any], current_version: st
     if name and name != f"v{latest}" and name != latest:
         lines.append(f"  Release: {name}")
 
-    lines.extend(["", "  Update with: /plugin update popkit@popkit-claude", "=" * 60, ""])
+    lines.extend(["", "  Update with: /plugin update popkit@popkit-ai", "=" * 60, ""])
 
     return "\n".join(lines)
 

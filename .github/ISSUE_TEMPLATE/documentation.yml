@@ -62,7 +62,7 @@ body:
       description: What does the documentation currently say? (quote or describe)
       placeholder: |
         Currently the README says:
-        "Install with /plugin install popkit@popkit-claude"
+        "Install with /plugin install popkit@popkit-ai"
 
         But this is outdated because...
     validations:
@@ -115,7 +115,7 @@ body:
       placeholder: |
         Example 1:
         ```bash
-        /plugin install popkit-core@popkit-claude
+        /plugin install popkit-core@popkit-ai
         ```
 
         Example 2:

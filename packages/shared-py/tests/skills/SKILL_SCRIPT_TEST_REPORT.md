@@ -655,6 +655,6 @@ These tests cover:
 ---
 
 **Author**: Claude Sonnet 4.5
-**Repository**: popkit-claude
+**Repository**: popkit-ai
 **Branch**: test/skill-script-coverage
 **Date**: 2026-01-11

@@ -1,6 +1,6 @@
 # IP Leak Scanner
-# Runs on the PUBLIC repo (popkit-claude) to detect accidentally leaked IP
-# This workflow should be copied to jrc1883/popkit-claude/.github/workflows/
+# Runs on the PUBLIC repo (popkit-ai) to detect accidentally leaked IP
+# This workflow should be copied to jrc1883/popkit-ai/.github/workflows/
 
 name: IP Leak Scanner
 

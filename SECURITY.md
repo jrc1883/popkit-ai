@@ -27,7 +27,7 @@ PopKit implements multiple layers of security:
 
 Use GitHub's private vulnerability reporting feature:
 
-1. Go to the [Security tab](https://github.com/jrc1883/popkit-claude/security)
+1. Go to the [Security tab](https://github.com/jrc1883/popkit-ai/security)
 2. Click "Report a vulnerability"
 3. Fill out the vulnerability details
 4. Submit privately to maintainers
@@ -67,8 +67,8 @@ Please provide:
 ### Plugin Installation
 
 1. **Verify Source**: Only install PopKit from official sources
-   - GitHub: https://github.com/jrc1883/popkit-claude
-   - Claude Code Marketplace: `@popkit-claude`
+   - GitHub: https://github.com/jrc1883/popkit-ai
+   - Claude Code Marketplace: `@popkit-ai`
 
 2. **Check Integrity**: Review `plugin.json` and hook scripts before installation
 
@@ -99,7 +99,7 @@ If using PopKit Cloud features:
 - **Status**: Active remediation
 - **Impact**: Some utility functions use `subprocess.run(shell=True)`
 - **Timeline**: Fix targeted for v1.0.0 release
-- **Tracking**: https://github.com/jrc1883/popkit-claude/issues/20
+- **Tracking**: https://github.com/jrc1883/popkit-ai/issues/20
 
 ### Plugin Hooks
 
@@ -140,7 +140,7 @@ PopKit follows:
 
 For security questions that aren't vulnerabilities:
 
-- Open a [GitHub Discussion](https://github.com/jrc1883/popkit-claude/discussions)
+- Open a [GitHub Discussion](https://github.com/jrc1883/popkit-ai/discussions)
 - Email: joseph@thehouseofdeals.com
 
 ---

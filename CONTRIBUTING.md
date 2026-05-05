@@ -42,7 +42,7 @@ There are many ways to contribute to PopKit, and all contributions are valued:
 
 Found a bug? Help us fix it!
 
-1. Check if the issue already exists in [GitHub Issues](https://github.com/jrc1883/popkit-claude/issues)
+1. Check if the issue already exists in [GitHub Issues](https://github.com/jrc1883/popkit-ai/issues)
 2. Create a new issue with:
    - Clear, descriptive title
    - Steps to reproduce the bug
@@ -111,8 +111,8 @@ If you're new to open source or PopKit:
 
 ```bash
 # Fork the repository on GitHub, then clone your fork
-git clone https://github.com/YOUR-USERNAME/popkit-claude.git
-cd popkit-claude
+git clone https://github.com/YOUR-USERNAME/popkit-ai.git
+cd popkit-ai
 ```
 
 ### 2. Install Plugins Locally
@@ -357,7 +357,7 @@ git push origin feat/your-feature-name
 
 ### 6. Create Pull Request
 
-1. Go to the [PopKit repository](https://github.com/jrc1883/popkit-claude)
+1. Go to the [PopKit repository](https://github.com/jrc1883/popkit-ai)
 2. Click "New Pull Request"
 3. Select your fork and branch
 4. Fill out the PR template with:
@@ -620,7 +620,7 @@ except Exception as e:
 
 ### Getting Help
 
-- **Issues**: Browse [GitHub Issues](https://github.com/jrc1883/popkit-claude/issues) for questions and discussions
+- **Issues**: Browse [GitHub Issues](https://github.com/jrc1883/popkit-ai/issues) for questions and discussions
 - **Documentation**: Check [CLAUDE.md](CLAUDE.md) for detailed development guide
 - **README**: See [README.md](README.md) for user-facing documentation
 

@@ -1,11 +1,11 @@
 blank_issues_enabled: false
 contact_links:
   - name: Documentation
-    url: https://github.com/jrc1883/popkit-claude/blob/main/README.md
+    url: https://github.com/jrc1883/popkit-ai/blob/main/README.md
     about: Read the PopKit documentation for installation and usage guides
   - name: CLAUDE.md Development Guide
-    url: https://github.com/jrc1883/popkit-claude/blob/main/CLAUDE.md
+    url: https://github.com/jrc1883/popkit-ai/blob/main/CLAUDE.md
     about: Development instructions and architecture documentation
   - name: Get Help
-    url: https://github.com/jrc1883/popkit-claude/discussions
+    url: https://github.com/jrc1883/popkit-ai/discussions
     about: Ask questions and get help from the community
