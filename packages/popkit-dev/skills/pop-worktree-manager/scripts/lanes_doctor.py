@@ -44,11 +44,9 @@ import argparse
 import importlib.util
 import json
 import re
-import shlex
-import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # ---------------------------------------------------------------------------
 # Module-loading helpers (we reuse without making PopKit a package)
@@ -129,38 +127,6 @@ def normalize_path(p: str) -> str:
 # ---------------------------------------------------------------------------
 # Glob overlap (Phase 0 cheap cases)
 # ---------------------------------------------------------------------------
-
-
-def _glob_to_regex(pattern: str) -> re.Pattern[str]:
-    """Compile a glob pattern to a regex for overlap checking.
-
-    Supports the subset PopKit lanes use:
-    - ``*`` matches any character except ``/``
-    - ``**`` matches any character including ``/``
-    - ``?`` matches a single character except ``/``
-    - All other characters match literally (escaped)
-    """
-    p = normalize_path(pattern)
-    out = []
-    i = 0
-    while i < len(p):
-        ch = p[i]
-        if p[i : i + 2] == "**":
-            out.append(".*")
-            i += 2
-            # Consume optional trailing /
-            if i < len(p) and p[i] == "/":
-                i += 1
-        elif ch == "*":
-            out.append("[^/]*")
-            i += 1
-        elif ch == "?":
-            out.append("[^/]")
-            i += 1
-        else:
-            out.append(re.escape(ch))
-            i += 1
-    return re.compile("^" + "".join(out) + "$")
 
 
 def globs_can_overlap(a: str, b: str) -> bool:
@@ -296,15 +262,6 @@ def _patterns_share_any_literal(a: str, b: str) -> bool:
     causes spurious overlap reports for hand-crafted edge-case fixtures.
     """
     return True
-
-# Compatibility shim for any callers that used the old name internally.
-_glob_to_regex = _segment_regex
-# Module-internal alias so the legacy ``_sample_path_from_glob`` name remains
-# discoverable in case a downstream test or doc references it. The new
-# segment-based algorithm doesn't use full-path samples but this keeps the
-# refactor non-breaking for any existing callers.
-def _sample_path_from_glob(p: str) -> str:  # pragma: no cover - legacy shim
-    return _segment_sample(p)
 
 
 # ---------------------------------------------------------------------------

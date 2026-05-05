@@ -49,14 +49,14 @@ For Claude Code users, PopKit also installs as a plugin marketplace with 4 plugi
 
 Each AI coding tool has a dedicated adapter that translates PopKit's abstract capabilities into the tool's native format:
 
-| Provider           | Integration Method          | Config                                      |
-| ------------------ | --------------------------- | ------------------------------------------- |
+| Provider           | Integration Method          | Config                                  |
+| ------------------ | --------------------------- | --------------------------------------- |
 | **Claude Code**    | Plugin marketplace (native) | `/plugin install popkit-core@popkit-ai` |
-| **Cursor**         | MCP server (stdio)          | `~/.cursor/mcp.json`                        |
-| **Codex CLI**      | MCP server (stdio)          | `~/.codex/config.toml`                      |
-| **GitHub Copilot** | MCP server (stdio)          | `~/.copilot/mcp-config.json`                |
-| **VS Code**        | MCP server (stdio)          | `.vscode/mcp.json`                          |
-| **Generic MCP**    | Any MCP-compatible client   | Standard MCP config                         |
+| **Cursor**         | MCP server (stdio)          | `~/.cursor/mcp.json`                    |
+| **Codex CLI**      | MCP server (stdio)          | `~/.codex/config.toml`                  |
+| **GitHub Copilot** | MCP server (stdio)          | `~/.copilot/mcp-config.json`            |
+| **VS Code**        | MCP server (stdio)          | `.vscode/mcp.json`                      |
+| **Generic MCP**    | Any MCP-compatible client   | Standard MCP config                     |
 
 See [MCP Provider Setup](/guides/mcp-providers/) for configuration details.
 
