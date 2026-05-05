@@ -107,8 +107,19 @@ def read_pending_ledger(
             None,
             f"pending_unsupported_schema_version: {data.get('schema_version')!r}",
         )
-    if data.get("status") not in ALLOWED_STATUS:
-        return None, f"pending_unknown_status: {data.get('status')!r}"
+    # Round-12 P2: type-check before set membership. ``value in some_set``
+    # raises TypeError when value is unhashable (e.g. ``[]`` or ``{}``),
+    # which would escape this read path uncontrolled and leave the
+    # pending file in place. Same bug class as round-8 P2 in the
+    # manifest loader.
+    raw_status = data.get("status")
+    if not isinstance(raw_status, str):
+        return (
+            None,
+            f"pending_status_not_string: {type(raw_status).__name__}: {raw_status!r}",
+        )
+    if raw_status not in ALLOWED_STATUS:
+        return None, f"pending_unknown_status: {raw_status!r}"
     structural = _validate_required_ledger_structure(data)
     if structural is not None:
         return None, structural
@@ -138,10 +149,18 @@ def _validate_required_ledger_structure(data: Dict[str, Any]) -> Optional[str]:
                 f"{str_field}={value!r} ({type(value).__name__})"
             )
 
-    if data["stage"] not in ALLOWED_STAGES:
-        return f"pending_unknown_stage: {data['stage']!r}"
-    if data["next_action"] not in ALLOWED_NEXT_ACTIONS:
-        return f"pending_unknown_next_action: {data['next_action']!r}"
+    # Round-12 P2: type-check before set membership; lists/dicts are
+    # unhashable and ``not in`` would raise TypeError otherwise.
+    raw_stage = data["stage"]
+    if not isinstance(raw_stage, str):
+        return f"pending_stage_not_string: {type(raw_stage).__name__}: {raw_stage!r}"
+    if raw_stage not in ALLOWED_STAGES:
+        return f"pending_unknown_stage: {raw_stage!r}"
+    raw_next = data["next_action"]
+    if not isinstance(raw_next, str):
+        return f"pending_next_action_not_string: {type(raw_next).__name__}: {raw_next!r}"
+    if raw_next not in ALLOWED_NEXT_ACTIONS:
+        return f"pending_unknown_next_action: {raw_next!r}"
 
     if not isinstance(data["changed_files"], list):
         return f"pending_changed_files_not_array: {type(data['changed_files']).__name__}"

@@ -246,8 +246,9 @@ def test_pending_missing_any_required_field_rejected(
     assert drop_field in response["missing_reason"]
 
 
-@pytest.mark.parametrize("bad_stage", ["plan-stage", "PLAN", "review", 123, None])
+@pytest.mark.parametrize("bad_stage", ["plan-stage", "PLAN", "review"])
 def test_pending_unknown_stage_rejected(stop, fake_repo, monkeypatch, bad_stage):
+    """String-but-not-in-enum stage values produce pending_unknown_stage."""
     monkeypatch.chdir(fake_repo)
     bad = _valid_pending_ledger()
     bad["stage"] = bad_stage
@@ -257,8 +258,9 @@ def test_pending_unknown_stage_rejected(stop, fake_repo, monkeypatch, bad_stage)
     assert response["missing_reason"].startswith("pending_unknown_stage")
 
 
-@pytest.mark.parametrize("bad_action", ["maybe", "ship-it", 0, None])
+@pytest.mark.parametrize("bad_action", ["maybe", "ship-it"])
 def test_pending_unknown_next_action_rejected(stop, fake_repo, monkeypatch, bad_action):
+    """String-but-not-in-enum next_action values produce pending_unknown_next_action."""
     monkeypatch.chdir(fake_repo)
     bad = _valid_pending_ledger()
     bad["next_action"] = bad_action
@@ -266,6 +268,47 @@ def test_pending_unknown_next_action_rejected(stop, fake_repo, monkeypatch, bad_
     response = stop.dispatch({"session_id": "s"})
     assert response["ledger_status"] == "missing"
     assert response["missing_reason"].startswith("pending_unknown_next_action")
+
+
+# ---------------------------------------------------------------------------
+# Round-12 P2: unhashable enum values must surface as missing-stub, not
+# crash the dispatcher with a raw TypeError.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "field,bad_value,expected_prefix",
+    [
+        ("stage", [], "pending_stage_not_string"),
+        ("stage", {}, "pending_stage_not_string"),
+        ("stage", 123, "pending_stage_not_string"),
+        ("stage", None, "pending_stage_not_string"),
+        ("next_action", [], "pending_next_action_not_string"),
+        ("next_action", {}, "pending_next_action_not_string"),
+        ("next_action", 0, "pending_next_action_not_string"),
+        ("next_action", None, "pending_next_action_not_string"),
+        ("status", [], "pending_status_not_string"),
+        ("status", {}, "pending_status_not_string"),
+        ("status", 1, "pending_status_not_string"),
+    ],
+)
+def test_unhashable_or_non_string_enum_value_handled_cleanly(
+    stop, fake_repo, monkeypatch, field, bad_value, expected_prefix
+):
+    """Round-12 P2: ``value in some_set`` raises TypeError when value is
+    unhashable. The dispatcher must type-check first so the read path
+    fails closed with a structured missing-stub rather than escaping as
+    an uncontrolled exception that leaves the pending slot in place."""
+    monkeypatch.chdir(fake_repo)
+    bad = _valid_pending_ledger()
+    bad[field] = bad_value
+    pending = _write_pending(fake_repo, bad)
+    response = stop.dispatch({"session_id": "s"})
+    assert response["status"] == "success"
+    assert response["ledger_status"] == "missing"
+    assert response["missing_reason"].startswith(expected_prefix)
+    # P2 sibling: the malformed pending must also be deleted after stub.
+    assert not pending.exists()
 
 
 @pytest.mark.parametrize(
