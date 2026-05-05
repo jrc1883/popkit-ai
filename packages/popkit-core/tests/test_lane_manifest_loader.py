@@ -573,6 +573,67 @@ def test_on_verifier_unreachable_enum_rejected_for_compliance(loader, tmp_path, 
     assert "on_verifier_unreachable" in str(exc_info.value)
 
 
+# ---------------------------------------------------------------------------
+# Round-8 P2: unhashable values must surface as LaneManifestError, not raw
+# TypeError. ``value in some_set`` raises TypeError when the left operand
+# is unhashable (e.g. ``[]`` or ``{}``); without a type check first that
+# escapes as an uncontrolled exception and breaks callers like lanes_doctor
+# that catch only LaneManifestError.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "field,bad_value",
+    [
+        ("on_verifier_unreachable", []),
+        ("on_verifier_unreachable", {}),
+        ("on_verifier_unreachable", ["closed_human"]),
+        ("auto_continuation_class", []),
+        ("auto_continuation_class", {}),
+        ("auto_continuation_class", {"value": "feedback"}),
+        ("compliance_class", []),
+        ("compliance_class", {}),
+        ("merge_gate", []),
+        ("merge_gate", {}),
+    ],
+)
+def test_unhashable_enum_value_raises_lane_manifest_error(
+    loader, tmp_path, field, bad_value
+):
+    """Round-8 P2: unhashable inputs must not crash the loader."""
+    lane = _minimal_lane()
+    lane[field] = bad_value
+    path = _write_manifest(tmp_path, {"version": 1, "lanes": [lane]})
+    with pytest.raises(loader.LaneManifestError) as exc_info:
+        loader.load_lane_manifest(path)
+    assert field in str(exc_info.value)
+
+
+def test_unhashable_evidence_artifact_raises_lane_manifest_error(loader, tmp_path):
+    """Round-8 P2: same protection inside _validate_gate."""
+    path = _write_manifest(
+        tmp_path,
+        {
+            "version": 1,
+            "lanes": [
+                _minimal_lane(
+                    deterministic_gates=[
+                        {
+                            "id": "typecheck",
+                            "command": "tsc",
+                            "timeout_seconds": 60,
+                            "evidence_artifact": [],  # unhashable
+                        }
+                    ]
+                )
+            ],
+        },
+    )
+    with pytest.raises(loader.LaneManifestError) as exc_info:
+        loader.load_lane_manifest(path)
+    assert "evidence_artifact" in str(exc_info.value)
+
+
 @pytest.mark.parametrize(
     "value",
     ["none", "feedback", "feedback-with-reverify"],

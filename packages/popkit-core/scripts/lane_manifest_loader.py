@@ -187,7 +187,15 @@ def _materialize_lane(
 
     lane = dict(lane_in)  # shallow copy; we'll mutate to add defaults
 
+    # Round-8 P2: type-check before set membership. ``value in some_set``
+    # raises TypeError when the left operand is unhashable; type-check
+    # first so unhashable inputs surface as LaneManifestError instead.
     compliance_class = lane["compliance_class"]
+    if not isinstance(compliance_class, str):
+        raise LaneManifestError(
+            f"lanes[{idx}] ({lane['id']!r}) compliance_class must be a string, "
+            f"got {type(compliance_class).__name__}: {compliance_class!r}"
+        )
     if compliance_class not in {
         "none",
         "schema",
@@ -209,16 +217,25 @@ def _materialize_lane(
     # compliance reconciliation. Validating up front gives clean error
     # messages on bogus enum values regardless of compliance class, and
     # closes the gap where non-compliance lanes silently accepted garbage.
+    # Round-8 P2: type-check the declared value BEFORE set membership.
+    # ``value in some_set`` raises TypeError when ``value`` is unhashable
+    # (e.g. ``[]`` or ``{}``), which would escape this loader as an
+    # uncontrolled exception and break callers like lanes_doctor that
+    # only catch LaneManifestError.
     declared_unreachable = lane.get("on_verifier_unreachable")
-    if (
-        declared_unreachable is not None
-        and declared_unreachable not in ON_VERIFIER_UNREACHABLE_VALUES
-    ):
-        raise LaneManifestError(
-            f"lanes[{idx}] ({lane['id']!r}) on_verifier_unreachable="
-            f"{declared_unreachable!r} is not one of "
-            f"{sorted(ON_VERIFIER_UNREACHABLE_VALUES)}"
-        )
+    if declared_unreachable is not None:
+        if not isinstance(declared_unreachable, str):
+            raise LaneManifestError(
+                f"lanes[{idx}] ({lane['id']!r}) on_verifier_unreachable must be "
+                f"a string, got {type(declared_unreachable).__name__}: "
+                f"{declared_unreachable!r}"
+            )
+        if declared_unreachable not in ON_VERIFIER_UNREACHABLE_VALUES:
+            raise LaneManifestError(
+                f"lanes[{idx}] ({lane['id']!r}) on_verifier_unreachable="
+                f"{declared_unreachable!r} is not one of "
+                f"{sorted(ON_VERIFIER_UNREACHABLE_VALUES)}"
+            )
     if is_compliance:
         if (
             declared_unreachable is not None
@@ -239,13 +256,22 @@ def _materialize_lane(
             else DEFAULT_ON_VERIFIER_UNREACHABLE_NON_COMPLIANCE
         )
 
-    # Default + enforce: auto_continuation_class. Same enum-first pattern.
+    # Default + enforce: auto_continuation_class. Same enum-first +
+    # type-first pattern as on_verifier_unreachable (round-8 P2).
     declared_auto = lane.get("auto_continuation_class")
-    if declared_auto is not None and declared_auto not in AUTO_CONTINUATION_VALUES:
-        raise LaneManifestError(
-            f"lanes[{idx}] ({lane['id']!r}) auto_continuation_class="
-            f"{declared_auto!r} is not one of {sorted(AUTO_CONTINUATION_VALUES)}"
-        )
+    if declared_auto is not None:
+        if not isinstance(declared_auto, str):
+            raise LaneManifestError(
+                f"lanes[{idx}] ({lane['id']!r}) auto_continuation_class must "
+                f"be a string, got {type(declared_auto).__name__}: "
+                f"{declared_auto!r}"
+            )
+        if declared_auto not in AUTO_CONTINUATION_VALUES:
+            raise LaneManifestError(
+                f"lanes[{idx}] ({lane['id']!r}) auto_continuation_class="
+                f"{declared_auto!r} is not one of "
+                f"{sorted(AUTO_CONTINUATION_VALUES)}"
+            )
     if is_compliance:
         if declared_auto is not None and declared_auto != "human":
             raise LaneManifestError(
@@ -313,11 +339,17 @@ def _materialize_lane(
             f"got {max_rounds!r}"
         )
 
-    # merge_gate enum
-    if lane["merge_gate"] not in {"auto", "human"}:
+    # merge_gate enum (round-8 P2: type-check before set membership)
+    merge_gate = lane["merge_gate"]
+    if not isinstance(merge_gate, str):
+        raise LaneManifestError(
+            f"lanes[{idx}] ({lane['id']!r}) merge_gate must be a string, "
+            f"got {type(merge_gate).__name__}: {merge_gate!r}"
+        )
+    if merge_gate not in {"auto", "human"}:
         raise LaneManifestError(
             f"lanes[{idx}] ({lane['id']!r}) merge_gate must be 'auto' or 'human', "
-            f"got {lane['merge_gate']!r}"
+            f"got {merge_gate!r}"
         )
 
     # Optional fields — type-check each (round-7 P1)
@@ -444,6 +476,13 @@ def _validate_gate(gate: Any, lane_idx: int, gate_idx: int, lane_id: str) -> Non
 
     if "evidence_artifact" in gate:
         artifact = gate["evidence_artifact"]
+        # Round-8 P2: type-check before set membership.
+        if not isinstance(artifact, str):
+            raise LaneManifestError(
+                f"lanes[{lane_idx}] ({lane_id!r}) deterministic_gates[{gate_idx}]."
+                f"evidence_artifact must be a string, got "
+                f"{type(artifact).__name__}: {artifact!r}"
+            )
         if artifact not in {
             "stdout",
             "stderr-on-fail",
