@@ -42,13 +42,28 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
-# Mirrors claim-ledger.schema.json. The dispatcher's only structural
-# expectation when reading the pending file is that schema_version is 1
-# and status is one of the allowed enum values; anything else is treated
-# as missing/corrupt and replaced with a stub. The writer already does
-# the heavy field-by-field validation upstream.
+# Mirrors claim-ledger.schema.json. The dispatcher must validate the full
+# required-field set (round-11 P1: only checking schema_version + status
+# let a {schema_version: 1, status: "normal"} stub through as a "valid"
+# ledger). The writer at /checkpoint already validates these, but the
+# dispatcher defends against interrupted writes, manual edits, and races.
 SCHEMA_VERSION = 1
 ALLOWED_STATUS = {"normal", "missing"}
+ALLOWED_STAGES = {"plan", "code"}
+ALLOWED_NEXT_ACTIONS = {"verify", "merge-ready", "needs-review"}
+# claim-ledger.schema.json's required fields. status/schema_version are
+# checked separately above; the rest must all be present and structurally
+# sound (right type, non-empty for strings, list for arrays).
+_REQUIRED_LEDGER_FIELDS = (
+    "turn_id",
+    "session_id",
+    "lane_id",
+    "stage",
+    "intent",
+    "changed_files",
+    "acceptance_claims",
+    "next_action",
+)
 
 
 def find_repo_root(start: Optional[Path] = None) -> Optional[Path]:
@@ -94,7 +109,46 @@ def read_pending_ledger(
         )
     if data.get("status") not in ALLOWED_STATUS:
         return None, f"pending_unknown_status: {data.get('status')!r}"
+    structural = _validate_required_ledger_structure(data)
+    if structural is not None:
+        return None, structural
     return data, None
+
+
+def _validate_required_ledger_structure(data: Dict[str, Any]) -> Optional[str]:
+    """Round-11 P1: enforce all required claim-ledger fields are present
+    with sensible types BEFORE archive. Returns ``None`` when the ledger
+    is structurally sound, or an audit-friendly reason string when a
+    field is missing / wrong type / empty.
+
+    Defense-in-depth: the writer at /checkpoint already enforces these,
+    but the dispatcher must protect against interrupted writes, manual
+    edits to the pending file, and tampering. Validating here keeps
+    malformed advisory data out of verifier-bundles/.
+    """
+    missing = [k for k in _REQUIRED_LEDGER_FIELDS if k not in data]
+    if missing:
+        return f"pending_missing_required_fields: {missing}"
+
+    for str_field in ("turn_id", "session_id", "lane_id", "intent"):
+        value = data[str_field]
+        if not isinstance(value, str) or not value:
+            return (
+                f"pending_field_must_be_non_empty_string: "
+                f"{str_field}={value!r} ({type(value).__name__})"
+            )
+
+    if data["stage"] not in ALLOWED_STAGES:
+        return f"pending_unknown_stage: {data['stage']!r}"
+    if data["next_action"] not in ALLOWED_NEXT_ACTIONS:
+        return f"pending_unknown_next_action: {data['next_action']!r}"
+
+    if not isinstance(data["changed_files"], list):
+        return f"pending_changed_files_not_array: {type(data['changed_files']).__name__}"
+    if not isinstance(data["acceptance_claims"], list):
+        return f"pending_acceptance_claims_not_array: {type(data['acceptance_claims']).__name__}"
+
+    return None
 
 
 def make_stub_ledger(*, session_id: str, turn_id: str, reason: str) -> Dict[str, Any]:
@@ -229,7 +283,13 @@ def dispatch(input_data: Dict[str, Any]) -> Dict[str, Any]:
         )
         return response
 
-    if response["ledger_status"] == "archived":
+    # Round-11 P2: always remove the pending slot after a successful
+    # bundle write, whether we archived a real ledger or wrote a stub
+    # for a malformed pending file. Leaving a malformed pending file
+    # behind would poison subsequent Stop runs (every dispatch would
+    # archive the same stub) until /checkpoint overwrote it. The slot
+    # is single-use per turn by contract.
+    if response["ledger_status"] in {"archived", "missing"}:
         delete_pending_ledger(repo_root)
 
     return response

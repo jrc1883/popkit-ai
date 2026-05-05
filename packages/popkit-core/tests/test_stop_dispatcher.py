@@ -203,6 +203,150 @@ def test_pending_top_level_not_object_treated_as_missing(stop, fake_repo, monkey
 
 
 # ---------------------------------------------------------------------------
+# Round-11 P1: full required-field validation before archive
+# ---------------------------------------------------------------------------
+
+
+def test_minimal_pending_with_only_envelope_fields_rejected(
+    stop, fake_repo, monkeypatch
+):
+    """The exact Codex repro: ``{schema_version: 1, status: "normal"}``
+    used to slip through as a valid ledger because the dispatcher only
+    checked the envelope fields. Round-11 P1: enforce the full required
+    set before archive."""
+    monkeypatch.chdir(fake_repo)
+    _write_pending(fake_repo, {"schema_version": 1, "status": "normal"})
+    response = stop.dispatch({"session_id": "s"})
+    assert response["ledger_status"] == "missing"
+    assert "pending_missing_required_fields" in response["missing_reason"]
+
+
+@pytest.mark.parametrize(
+    "drop_field",
+    [
+        "turn_id",
+        "session_id",
+        "lane_id",
+        "stage",
+        "intent",
+        "changed_files",
+        "acceptance_claims",
+        "next_action",
+    ],
+)
+def test_pending_missing_any_required_field_rejected(
+    stop, fake_repo, monkeypatch, drop_field
+):
+    monkeypatch.chdir(fake_repo)
+    bad = _valid_pending_ledger()
+    del bad[drop_field]
+    _write_pending(fake_repo, bad)
+    response = stop.dispatch({"session_id": "s"})
+    assert response["ledger_status"] == "missing"
+    assert drop_field in response["missing_reason"]
+
+
+@pytest.mark.parametrize("bad_stage", ["plan-stage", "PLAN", "review", 123, None])
+def test_pending_unknown_stage_rejected(stop, fake_repo, monkeypatch, bad_stage):
+    monkeypatch.chdir(fake_repo)
+    bad = _valid_pending_ledger()
+    bad["stage"] = bad_stage
+    _write_pending(fake_repo, bad)
+    response = stop.dispatch({"session_id": "s"})
+    assert response["ledger_status"] == "missing"
+    assert response["missing_reason"].startswith("pending_unknown_stage")
+
+
+@pytest.mark.parametrize("bad_action", ["maybe", "ship-it", 0, None])
+def test_pending_unknown_next_action_rejected(stop, fake_repo, monkeypatch, bad_action):
+    monkeypatch.chdir(fake_repo)
+    bad = _valid_pending_ledger()
+    bad["next_action"] = bad_action
+    _write_pending(fake_repo, bad)
+    response = stop.dispatch({"session_id": "s"})
+    assert response["ledger_status"] == "missing"
+    assert response["missing_reason"].startswith("pending_unknown_next_action")
+
+
+@pytest.mark.parametrize(
+    "field,bad_value",
+    [
+        ("turn_id", ""),
+        ("turn_id", 123),
+        ("session_id", ""),
+        ("session_id", None),
+        ("lane_id", ""),
+        ("lane_id", []),
+        ("intent", ""),
+        ("intent", {"v": "x"}),
+    ],
+)
+def test_pending_required_string_field_must_be_non_empty(
+    stop, fake_repo, monkeypatch, field, bad_value
+):
+    monkeypatch.chdir(fake_repo)
+    bad = _valid_pending_ledger()
+    bad[field] = bad_value
+    _write_pending(fake_repo, bad)
+    response = stop.dispatch({"session_id": "s"})
+    assert response["ledger_status"] == "missing"
+    assert response["missing_reason"].startswith(
+        "pending_field_must_be_non_empty_string"
+    )
+    assert field in response["missing_reason"]
+
+
+@pytest.mark.parametrize("field", ["changed_files", "acceptance_claims"])
+def test_pending_array_field_must_be_list(stop, fake_repo, monkeypatch, field):
+    monkeypatch.chdir(fake_repo)
+    bad = _valid_pending_ledger()
+    bad[field] = "not-a-list"
+    _write_pending(fake_repo, bad)
+    response = stop.dispatch({"session_id": "s"})
+    assert response["ledger_status"] == "missing"
+    assert field in response["missing_reason"]
+
+
+# ---------------------------------------------------------------------------
+# Round-11 P2: malformed pending must not stay in the slot
+# ---------------------------------------------------------------------------
+
+
+def test_malformed_pending_deleted_after_stub_archive(stop, fake_repo, monkeypatch):
+    """Round-11 P2: the dispatcher must remove a malformed pending file
+    after writing the stub. Otherwise the next Stop run would re-read
+    the same malformed bytes and write another stub, repeatedly."""
+    monkeypatch.chdir(fake_repo)
+    pending = _write_pending(fake_repo, "{not valid json")
+    response = stop.dispatch({"session_id": "s"})
+    assert response["ledger_status"] == "missing"
+    assert not pending.exists(), (
+        "malformed pending file must be removed after stub archive"
+    )
+
+
+def test_no_pending_file_no_delete_attempt(stop, fake_repo, monkeypatch):
+    """When there's no pending file at all, the dispatcher writes a
+    stub and the absent-file delete is a no-op (no error raised)."""
+    monkeypatch.chdir(fake_repo)
+    response = stop.dispatch({"session_id": "s"})
+    assert response["ledger_status"] == "missing"
+    assert response["missing_reason"] == "no_checkpoint_called"
+    # No pending was created in the first place — confirm none now.
+    assert not (fake_repo / ".claude" / "popkit" / "pending-claim-ledger.json").exists()
+
+
+def test_schema_invalid_pending_deleted_after_stub_archive(
+    stop, fake_repo, monkeypatch
+):
+    """Same as P2 but for the structurally-invalid case from P1."""
+    monkeypatch.chdir(fake_repo)
+    pending = _write_pending(fake_repo, {"schema_version": 1, "status": "normal"})
+    stop.dispatch({"session_id": "s"})
+    assert not pending.exists()
+
+
+# ---------------------------------------------------------------------------
 # No-repo path (cwd outside any git repo)
 # ---------------------------------------------------------------------------
 
