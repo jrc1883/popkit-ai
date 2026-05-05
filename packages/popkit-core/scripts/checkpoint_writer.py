@@ -76,6 +76,13 @@ REQUIRED_TOP_LEVEL = (
     "next_action",
 )
 
+# Fields the writer owns and materializes itself. If the user supplies them in
+# the payload we reject any divergent value rather than silently overwriting.
+# Otherwise a confused builder could pass ``status: "missing"`` (only the
+# dispatcher writes that) or ``schema_version: 2`` and never notice the
+# writer overrode it.
+_WRITER_OWNED_FIELDS = ("status", "schema_version", "turn_id", "session_id")
+
 
 class CheckpointError(ValueError):
     """Raised when the input ledger fails validation."""
@@ -102,6 +109,30 @@ def validate_input(payload: Any) -> Dict[str, Any]:
     missing = [k for k in REQUIRED_TOP_LEVEL if k not in payload]
     if missing:
         raise CheckpointError(f"missing required field(s): {', '.join(missing)}")
+
+    # Writer-owned fields: reject any user-supplied value that doesn't match
+    # what the writer would set anyway. Silent override is confusing — a
+    # builder passing ``status: "missing"`` would expect the verifier to see
+    # a stub, not a normal ledger with their other fields in it.
+    if "status" in payload and payload["status"] != "normal":
+        raise CheckpointError(
+            f"status is writer-owned and is always 'normal' from /checkpoint; "
+            f"the dispatcher writes 'missing' stubs. Got {payload['status']!r}; "
+            f"omit the field."
+        )
+    if "schema_version" in payload and payload["schema_version"] != SCHEMA_VERSION:
+        raise CheckpointError(
+            f"schema_version is writer-owned and pinned to {SCHEMA_VERSION}; "
+            f"got {payload['schema_version']!r}. Omit the field."
+        )
+    for field in ("turn_id", "session_id"):
+        if field in payload:
+            raise CheckpointError(
+                f"{field} is writer-owned and supplied via env "
+                f"(CLAUDE_SESSION_ID / POPKIT_SESSION_ID / POPKIT_TURN_ID) or "
+                f"the --{field.replace('_', '-')} CLI flag, not in the payload. "
+                f"Omit the field."
+            )
 
     _require_string(payload, "lane_id", min_len=1)
     _require_string(payload, "intent", min_len=1)
@@ -267,15 +298,30 @@ def materialize_ledger(
 
 
 def write_pending_ledger(ledger: Dict[str, Any], *, repo_root: Path) -> Path:
-    """Atomically write the ledger to ``<repo>/.claude/popkit/pending-claim-ledger.json``."""
+    """Atomically write the ledger to ``<repo>/.claude/popkit/pending-claim-ledger.json``.
+
+    Two parallel ``/checkpoint`` invocations could otherwise collide on a
+    shared ``.tmp`` filename and produce a partial-write corruption. The tmp
+    name carries a fresh UUID + pid so concurrent writers each have their own
+    staging file; ``os.replace`` then races atomically for the target.
+    Last-writer-wins is the documented contract.
+    """
     target_dir = repo_root / ".claude" / "popkit"
     target_dir.mkdir(parents=True, exist_ok=True)
     target = target_dir / "pending-claim-ledger.json"
-    tmp = target.with_suffix(".json.tmp")
-    tmp.write_text(json.dumps(ledger, indent=2), encoding="utf-8")
-    # os.replace is atomic on POSIX and Windows when src + dst are on the
-    # same filesystem; both live under the same `.claude/popkit/` dir.
-    os.replace(tmp, target)
+    tmp = target_dir / f"pending-claim-ledger.{os.getpid()}.{uuid.uuid4().hex}.tmp"
+    try:
+        tmp.write_text(json.dumps(ledger, indent=2), encoding="utf-8")
+        # os.replace is atomic on POSIX and Windows when src + dst are on the
+        # same filesystem; both live under the same `.claude/popkit/` dir.
+        os.replace(tmp, target)
+    finally:
+        # Clean up the tmp on any failure path (success path already moved it).
+        if tmp.exists():
+            try:
+                tmp.unlink()
+            except OSError:
+                pass
     return target
 
 

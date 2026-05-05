@@ -239,6 +239,123 @@ def test_repo_root_detection_raises_when_not_in_repo(writer, tmp_path):
 
 
 # ---------------------------------------------------------------------------
+# Writer-owned fields cannot be supplied in the payload
+# ---------------------------------------------------------------------------
+
+
+def test_user_supplied_status_missing_rejected(writer, fake_repo):
+    """Only the dispatcher writes status='missing'; /checkpoint is normal-only."""
+    payload = _minimal_payload()
+    payload["status"] = "missing"
+    with pytest.raises(writer.CheckpointError) as exc:
+        writer.write_checkpoint(payload, repo_root=fake_repo)
+    assert "status" in str(exc.value)
+    assert "dispatcher" in str(exc.value)
+
+
+def test_user_supplied_status_normal_accepted(writer, fake_repo):
+    """An explicit ``status: "normal"`` matches what the writer sets — accept."""
+    payload = _minimal_payload()
+    payload["status"] = "normal"
+    _, ledger = writer.write_checkpoint(payload, repo_root=fake_repo)
+    assert ledger["status"] == "normal"
+
+
+def test_user_supplied_schema_version_mismatch_rejected(writer, fake_repo):
+    payload = _minimal_payload()
+    payload["schema_version"] = 2
+    with pytest.raises(writer.CheckpointError) as exc:
+        writer.write_checkpoint(payload, repo_root=fake_repo)
+    assert "schema_version" in str(exc.value)
+
+
+def test_user_supplied_schema_version_match_accepted(writer, fake_repo):
+    payload = _minimal_payload()
+    payload["schema_version"] = 1
+    _, ledger = writer.write_checkpoint(payload, repo_root=fake_repo)
+    assert ledger["schema_version"] == 1
+
+
+@pytest.mark.parametrize("field", ["turn_id", "session_id"])
+def test_user_supplied_ids_in_payload_rejected(writer, fake_repo, field):
+    """Round-trip via env / CLI flag, NOT through the payload body."""
+    payload = _minimal_payload()
+    payload[field] = "user-supplied-id"
+    with pytest.raises(writer.CheckpointError) as exc:
+        writer.write_checkpoint(payload, repo_root=fake_repo)
+    assert field in str(exc.value)
+
+
+# ---------------------------------------------------------------------------
+# Env var resolution for ids
+# ---------------------------------------------------------------------------
+
+
+def test_session_id_resolved_from_claude_env(writer, fake_repo, monkeypatch):
+    monkeypatch.setenv("CLAUDE_SESSION_ID", "claude-sess-1")
+    monkeypatch.delenv("POPKIT_SESSION_ID", raising=False)
+    _, ledger = writer.write_checkpoint(_minimal_payload(), repo_root=fake_repo)
+    assert ledger["session_id"] == "claude-sess-1"
+
+
+def test_session_id_falls_back_to_popkit_env(writer, fake_repo, monkeypatch):
+    monkeypatch.delenv("CLAUDE_SESSION_ID", raising=False)
+    monkeypatch.setenv("POPKIT_SESSION_ID", "popkit-sess-2")
+    _, ledger = writer.write_checkpoint(_minimal_payload(), repo_root=fake_repo)
+    assert ledger["session_id"] == "popkit-sess-2"
+
+
+def test_explicit_session_id_overrides_env(writer, fake_repo, monkeypatch):
+    monkeypatch.setenv("CLAUDE_SESSION_ID", "env-sess")
+    _, ledger = writer.write_checkpoint(
+        _minimal_payload(), repo_root=fake_repo, session_id="explicit"
+    )
+    assert ledger["session_id"] == "explicit"
+
+
+def test_turn_id_resolved_from_env(writer, fake_repo, monkeypatch):
+    monkeypatch.setenv("POPKIT_TURN_ID", "turn-from-env")
+    _, ledger = writer.write_checkpoint(_minimal_payload(), repo_root=fake_repo)
+    assert ledger["turn_id"] == "turn-from-env"
+
+
+# ---------------------------------------------------------------------------
+# Concurrency / atomicity
+# ---------------------------------------------------------------------------
+
+
+def test_no_leftover_tmp_files_after_write(writer, fake_repo):
+    """Round-8 P3 prevention: unique tmp names per call get cleaned up."""
+    for i in range(5):
+        writer.write_checkpoint(
+            _minimal_payload(intent=f"call {i}"), repo_root=fake_repo
+        )
+    target_dir = fake_repo / ".claude" / "popkit"
+    leftovers = list(target_dir.glob("*.tmp"))
+    assert leftovers == []
+
+
+def test_tmp_name_unique_per_call(writer, fake_repo, monkeypatch):
+    """Two writers should never collide on the same .tmp filename.
+
+    Stubs out os.replace so we can observe the tmp name without it being
+    moved out from under us.
+    """
+    seen = []
+
+    def fake_replace(src, dst):
+        seen.append(str(src))
+        # Don't actually move; let the test see both writes' tmp paths
+        # by reading them off disk before the cleanup unlink.
+
+    monkeypatch.setattr("os.replace", fake_replace)
+    writer.write_pending_ledger({"x": 1}, repo_root=fake_repo)
+    writer.write_pending_ledger({"x": 2}, repo_root=fake_repo)
+    assert len(seen) == 2
+    assert seen[0] != seen[1]
+
+
+# ---------------------------------------------------------------------------
 # CLI surface
 # ---------------------------------------------------------------------------
 
@@ -285,6 +402,18 @@ def test_cli_main_empty_input_returns_two(writer, fake_repo, monkeypatch, capsys
     captured = capsys.readouterr()
     assert rc == 2
     assert "empty input" in captured.err
+
+
+def test_cli_main_reads_from_input_file(writer, fake_repo, tmp_path, capsys):
+    """``--input <path>`` is the file-based alternative to stdin."""
+    payload_path = tmp_path / "payload.json"
+    payload_path.write_text(json.dumps(_minimal_payload()), encoding="utf-8")
+    rc = writer.main(["--repo-root", str(fake_repo), "--input", str(payload_path)])
+    captured = capsys.readouterr()
+    assert rc == 0
+    out = json.loads(captured.out)
+    assert out["ok"] is True
+    assert out["path"].endswith("pending-claim-ledger.json")
 
 
 class _StringStdin:
