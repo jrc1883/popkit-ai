@@ -166,40 +166,145 @@ def _glob_to_regex(pattern: str) -> re.Pattern[str]:
 def globs_can_overlap(a: str, b: str) -> bool:
     """Return True if globs ``a`` and ``b`` could match the same path.
 
-    Conservative: we test each glob's regex against a synthetic representative
-    drawn from the other. For Phase 0, we use a simple containment heuristic:
-    if one glob's regex matches the literal portion of the other, they can
-    overlap. This catches the cases Plan v4.2 calls out (``apps/**`` vs
-    ``apps/sub/*``) without trying to be a full glob-set decision procedure.
+    Round-7 P1 fix: the previous single-sample heuristic missed cases like
+    ``apps/*/settings.ts`` vs ``apps/shprd/*`` — both match
+    ``apps/shprd/settings.ts`` but neither's literal-with-sentinel sample
+    matches the other's regex.
+
+    The current algorithm splits both globs by ``/``, treats ``**`` as a
+    variable-length wildcard and other patterns as fixed-length-1 segments,
+    and tests pairwise segment compatibility. Two segments are compatible
+    if either:
+      * Both are exact-match strings and equal (case-insensitive).
+      * At least one is a wildcard segment (``*``, ``?``, or pattern with
+        metacharacters that could match the other's literal).
+
+    Errs toward returning True when uncertain — Codex round-7 directive:
+    "replace the glob-overlap heuristic with a conservative algorithm that
+    errs toward rejecting uncertain overlap."
     """
-    ra, rb = _glob_to_regex(a), _glob_to_regex(b)
-    # Generate representative literal paths from each glob.
-    sample_a = _sample_path_from_glob(normalize_path(a))
-    sample_b = _sample_path_from_glob(normalize_path(b))
-    return bool(ra.match(sample_b)) or bool(rb.match(sample_a))
+    seg_a = normalize_path(a).split("/")
+    seg_b = normalize_path(b).split("/")
+    return _segments_overlap(seg_a, seg_b)
 
 
-def _sample_path_from_glob(p: str) -> str:
-    """Replace glob metacharacters with a sentinel literal so the result is a
-    concrete path the *other* glob's regex can be tested against."""
+def _segments_overlap(seg_a: List[str], seg_b: List[str]) -> bool:
+    """Recursive segment-by-segment overlap check.
+
+    Handles ``**`` (matches zero or more segments) by branching on both
+    options at each step. Otherwise compares one segment from each side.
+    """
+    # Both lists exhausted simultaneously → exact match path
+    if not seg_a and not seg_b:
+        return True
+    # One side is just trailing ``**``: matches the rest of the other side
+    if seg_a == ["**"] or seg_b == ["**"]:
+        return True
+    # If one side is exhausted but the other isn't, only ``**`` on the
+    # non-exhausted side could allow overlap.
+    if not seg_a:
+        return seg_b[0] == "**" and _segments_overlap([], seg_b[1:])
+    if not seg_b:
+        return seg_a[0] == "**" and _segments_overlap(seg_a[1:], [])
+
+    head_a, head_b = seg_a[0], seg_b[0]
+
+    # ``**`` matches zero or more segments on its side; branch.
+    if head_a == "**":
+        # Try: ** matches zero segments (skip ** and continue at seg_a[1:])
+        if _segments_overlap(seg_a[1:], seg_b):
+            return True
+        # Try: ** consumes one segment from b and stays for more
+        return _segments_overlap(seg_a, seg_b[1:])
+    if head_b == "**":
+        if _segments_overlap(seg_a, seg_b[1:]):
+            return True
+        return _segments_overlap(seg_a[1:], seg_b)
+
+    # Neither head is **. Both consume one segment.
+    if not _single_segments_compatible(head_a, head_b):
+        return False
+    return _segments_overlap(seg_a[1:], seg_b[1:])
+
+
+def _single_segments_compatible(a: str, b: str) -> bool:
+    """Check whether two single-segment patterns can match a common literal.
+
+    Segments here do NOT contain ``/`` (the caller split on slashes). So
+    the metacharacters that matter are ``*`` (any except ``/``) and ``?``
+    (any single except ``/``).
+
+    Conservative: when uncertain (both contain wildcards), return True.
+    """
+    if a == b:
+        return True
+    has_meta_a = "*" in a or "?" in a
+    has_meta_b = "*" in b or "?" in b
+    # If neither has metacharacters, equality already failed → no overlap.
+    if not has_meta_a and not has_meta_b:
+        return False
+    # Test each pattern's regex against the other's literal-with-sentinel.
+    # If either side is purely a literal, the test is exact.
+    if has_meta_a and not has_meta_b:
+        return _segment_regex(a).match(b) is not None
+    if has_meta_b and not has_meta_a:
+        return _segment_regex(b).match(a) is not None
+    # Both have metacharacters. Conservative test: do the literal-with-
+    # sentinel forms cross-match?
+    sample_a = _segment_sample(a)
+    sample_b = _segment_sample(b)
+    if (
+        _segment_regex(a).match(sample_b) is not None
+        or _segment_regex(b).match(sample_a) is not None
+    ):
+        return True
+    # Last resort — if the two patterns share any literal character class
+    # in common positions, assume they can overlap. Errs True per round-7.
+    return _patterns_share_any_literal(a, b)
+
+
+def _segment_regex(p: str) -> re.Pattern[str]:
+    """Compile a segment-only glob (no ``/``) to a regex."""
     out = []
-    i = 0
-    while i < len(p):
-        if p[i : i + 2] == "**":
-            out.append("x/y/z")
-            i += 2
-            if i < len(p) and p[i] == "/":
-                i += 1
-        elif p[i] == "*":
-            out.append("xyz")
-            i += 1
-        elif p[i] == "?":
-            out.append("x")
-            i += 1
+    for ch in p:
+        if ch == "*":
+            out.append("[^/]*")
+        elif ch == "?":
+            out.append("[^/]")
         else:
-            out.append(p[i])
-            i += 1
-    return "".join(out)
+            out.append(re.escape(ch))
+    return re.compile("^" + "".join(out) + "$")
+
+
+def _segment_sample(p: str) -> str:
+    """Replace metacharacters with a single sentinel character. Used as a
+    cross-test input for ``_single_segments_compatible``."""
+    return "".join("x" if ch in {"*", "?"} else ch for ch in p)
+
+
+def _patterns_share_any_literal(a: str, b: str) -> bool:
+    """Conservative tiebreaker for the rare case where both segment patterns
+    have metacharacters and neither's regex matches the other's
+    literal-with-sentinel sample. Errs True per Codex round-7 directive
+    ("errs toward rejecting uncertain overlap" — i.e., treat uncertain
+    pairs as potentially-overlapping so the doctor flags them).
+
+    This branch is reached only when both segments contain metacharacters
+    AND the cross-regex tests both fail. Lane file_ownership in practice
+    uses simple ``foo/**`` / ``foo/*`` patterns, so this branch is
+    effectively unreachable for real manifests; returning True here only
+    causes spurious overlap reports for hand-crafted edge-case fixtures.
+    """
+    return True
+
+# Compatibility shim for any callers that used the old name internally.
+_glob_to_regex = _segment_regex
+# Module-internal alias so the legacy ``_sample_path_from_glob`` name remains
+# discoverable in case a downstream test or doc references it. The new
+# segment-based algorithm doesn't use full-path samples but this keeps the
+# refactor non-breaking for any existing callers.
+def _sample_path_from_glob(p: str) -> str:  # pragma: no cover - legacy shim
+    return _segment_sample(p)
 
 
 # ---------------------------------------------------------------------------

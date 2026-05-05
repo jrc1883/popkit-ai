@@ -297,3 +297,234 @@ def test_missing_manifest_file_rejected(loader, tmp_path):
     with pytest.raises(loader.LaneManifestError) as exc_info:
         loader.load_lane_manifest(tmp_path / "nonexistent.yml")
     assert "not found" in str(exc_info.value)
+
+
+# ---------------------------------------------------------------------------
+# Type-checking required string fields (Codex round-7 P1)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "field,bad_value",
+    [
+        ("repo", 123),
+        ("repo", ["owner/repo"]),
+        ("repo", ""),
+        ("worktree", ["not-string"]),
+        ("worktree", 42),
+        ("branch", 42),
+        ("branch", None),
+        ("base", False),
+        ("verifier_profile", False),
+        ("verifier_profile", {"name": "docs"}),
+        ("id", 999),
+        ("id", ""),
+    ],
+)
+def test_required_string_field_type_checked(loader, tmp_path, field, bad_value):
+    """Round-7 P1: loader must reject non-string types in required string fields."""
+    lane = _minimal_lane()
+    lane[field] = bad_value
+    path = _write_manifest(tmp_path, {"version": 1, "lanes": [lane]})
+    with pytest.raises(loader.LaneManifestError) as exc_info:
+        loader.load_lane_manifest(path)
+    assert field in str(exc_info.value)
+
+
+def test_max_rounds_bool_rejected(loader, tmp_path):
+    """`True`/`False` are int subclasses in Python; loader must reject them."""
+    path = _write_manifest(
+        tmp_path, {"version": 1, "lanes": [_minimal_lane(max_rounds=True)]}
+    )
+    with pytest.raises(loader.LaneManifestError) as exc_info:
+        loader.load_lane_manifest(path)
+    assert "integer" in str(exc_info.value).lower()
+
+
+def test_shared_ownership_must_be_bool(loader, tmp_path):
+    path = _write_manifest(
+        tmp_path,
+        {
+            "version": 1,
+            "lanes": [_minimal_lane(shared_ownership="yes", priority=1)],
+        },
+    )
+    with pytest.raises(loader.LaneManifestError):
+        loader.load_lane_manifest(path)
+
+
+def test_priority_must_be_int(loader, tmp_path):
+    path = _write_manifest(
+        tmp_path,
+        {
+            "version": 1,
+            "lanes": [
+                _minimal_lane(shared_ownership=True, priority="high")
+            ],
+        },
+    )
+    with pytest.raises(loader.LaneManifestError):
+        loader.load_lane_manifest(path)
+
+
+def test_cost_cap_must_be_non_negative_int(loader, tmp_path):
+    path = _write_manifest(
+        tmp_path,
+        {
+            "version": 1,
+            "lanes": [_minimal_lane(cost_cap_tokens_per_run=-1)],
+        },
+    )
+    with pytest.raises(loader.LaneManifestError):
+        loader.load_lane_manifest(path)
+
+
+def test_deterministic_gates_type_checked(loader, tmp_path):
+    """Round-7 P1: deterministic_gates entries must be objects with proper types."""
+    path = _write_manifest(
+        tmp_path,
+        {
+            "version": 1,
+            "lanes": [
+                _minimal_lane(deterministic_gates="not an array")
+            ],
+        },
+    )
+    with pytest.raises(loader.LaneManifestError) as exc_info:
+        loader.load_lane_manifest(path)
+    assert "deterministic_gates" in str(exc_info.value)
+
+
+def test_deterministic_gate_missing_required_field(loader, tmp_path):
+    path = _write_manifest(
+        tmp_path,
+        {
+            "version": 1,
+            "lanes": [
+                _minimal_lane(
+                    deterministic_gates=[
+                        {"id": "typecheck"}  # missing command + timeout_seconds
+                    ]
+                )
+            ],
+        },
+    )
+    with pytest.raises(loader.LaneManifestError) as exc_info:
+        loader.load_lane_manifest(path)
+    assert "command" in str(exc_info.value) or "timeout" in str(exc_info.value)
+
+
+def test_deterministic_gate_timeout_bounds(loader, tmp_path):
+    path = _write_manifest(
+        tmp_path,
+        {
+            "version": 1,
+            "lanes": [
+                _minimal_lane(
+                    deterministic_gates=[
+                        {
+                            "id": "typecheck",
+                            "command": "tsc",
+                            "timeout_seconds": 9999,  # > 600 max
+                        }
+                    ]
+                )
+            ],
+        },
+    )
+    with pytest.raises(loader.LaneManifestError) as exc_info:
+        loader.load_lane_manifest(path)
+    assert "timeout" in str(exc_info.value).lower()
+
+
+def test_deterministic_gate_unknown_evidence_artifact(loader, tmp_path):
+    path = _write_manifest(
+        tmp_path,
+        {
+            "version": 1,
+            "lanes": [
+                _minimal_lane(
+                    deterministic_gates=[
+                        {
+                            "id": "typecheck",
+                            "command": "tsc",
+                            "timeout_seconds": 60,
+                            "evidence_artifact": "everything",  # not in enum
+                        }
+                    ]
+                )
+            ],
+        },
+    )
+    with pytest.raises(loader.LaneManifestError) as exc_info:
+        loader.load_lane_manifest(path)
+    assert "evidence_artifact" in str(exc_info.value)
+
+
+def test_redaction_paths_must_be_array_of_strings(loader, tmp_path):
+    path = _write_manifest(
+        tmp_path,
+        {
+            "version": 1,
+            "lanes": [
+                _minimal_lane(
+                    redaction={"paths_never_send": "should-be-array"}
+                )
+            ],
+        },
+    )
+    with pytest.raises(loader.LaneManifestError):
+        loader.load_lane_manifest(path)
+
+
+def test_redaction_pattern_string_validated(loader, tmp_path):
+    path = _write_manifest(
+        tmp_path,
+        {
+            "version": 1,
+            "lanes": [
+                _minimal_lane(
+                    redaction={"content_redact_patterns": [123]}
+                )
+            ],
+        },
+    )
+    with pytest.raises(loader.LaneManifestError):
+        loader.load_lane_manifest(path)
+
+
+def test_valid_complex_lane_loads_cleanly(loader, tmp_path):
+    """Sanity check: a fully-populated lane with all optional fields loads."""
+    path = _write_manifest(
+        tmp_path,
+        {
+            "version": 1,
+            "lanes": [
+                _minimal_lane(
+                    issue=1234,
+                    shared_ownership=True,
+                    priority=10,
+                    cost_cap_tokens_per_run=80000,
+                    cost_cap_tokens_per_day=500000,
+                    deterministic_gates=[
+                        {
+                            "id": "typecheck",
+                            "cwd": "apps/shprd",
+                            "command": "pnpm type-check",
+                            "timeout_seconds": 180,
+                            "required": True,
+                            "evidence_artifact": "stdout-tail-50",
+                        }
+                    ],
+                    redaction={
+                        "paths_never_send": ["**/__tests__/fixtures/**"],
+                        "content_redact_patterns": ["age:\\s*\\d+"],
+                    },
+                )
+            ],
+        },
+    )
+    result = loader.load_lane_manifest(path)
+    lane = result.manifest["lanes"][0]
+    assert lane["issue"] == 1234
+    assert lane["deterministic_gates"][0]["timeout_seconds"] == 180

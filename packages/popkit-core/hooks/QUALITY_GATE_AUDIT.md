@@ -21,11 +21,13 @@ This audit is read-only — it changes nothing in `quality-gate.py`. Wrapper cod
 ## 2. Inputs / outputs
 
 **Inputs:**
+
 - stdin: JSON `{ tool_name: str, tool_args: dict, ... }` from PostToolUse.
 - `.claude/quality-gates.json` (config; optional): `{ triggers, gates, options }`.
 - `package.json` / `pyproject.toml` / etc. for auto-detection in `detect_gates()`.
 
 **Outputs:**
+
 - stdout: JSON `{ status: "success" | "block" | "warn", message, ... }` consumed by Claude Code.
 - Side-effect writes to `.claude/quality-gate-state.json`, `.claude/checkpoints/<timestamp>/`, audit-log entries.
 - Exit code: 0 for success, non-zero for hook-block.
@@ -102,12 +104,12 @@ These tests live alongside existing hook tests at `packages/popkit-core/tests/ho
 
 Round-6 #6 directive: align language with ADR 0004 (`power-mode-is-legacy-language.md`). The audit is for `quality-gate.py` specifically (which is NOT power-mode code), but it touches power-mode adjacency:
 
-| Legacy term in `quality-gate.py` | Canonical concept (ADR 0004) | Action |
-|---|---|---|
-| `is_power_mode_active()` | Multi-Agent Coordination active session | Keep the method name (it's external API to other hooks); document the deprecation in the docstring; rename when Phase 4 audits `power-mode/` |
-| `run_lightweight_check()` | Reduced-budget multi-agent gate path | Same |
-| Comment "Power Mode - runs lightweight 15s checks only" (line 24) | Multi-agent-coordination-mode lightweight path | Rewrite at Phase 4 |
-| `.claude/quality-gates.json` config schema | Stays as-is — config schema is repo-stable user surface | No change |
+| Legacy term in `quality-gate.py`                                  | Canonical concept (ADR 0004)                            | Action                                                                                                                                       |
+| ----------------------------------------------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `is_power_mode_active()`                                          | Multi-Agent Coordination active session                 | Keep the method name (it's external API to other hooks); document the deprecation in the docstring; rename when Phase 4 audits `power-mode/` |
+| `run_lightweight_check()`                                         | Reduced-budget multi-agent gate path                    | Same                                                                                                                                         |
+| Comment "Power Mode - runs lightweight 15s checks only" (line 24) | Multi-agent-coordination-mode lightweight path          | Rewrite at Phase 4                                                                                                                           |
+| `.claude/quality-gates.json` config schema                        | Stays as-is — config schema is repo-stable user surface | No change                                                                                                                                    |
 
 The verifier-pair wrapper does NOT introduce any new "power-mode" terminology. It refers to lanes via `lane_id` (Multi-Agent Coordination concept) only.
 
@@ -116,6 +118,7 @@ The verifier-pair wrapper does NOT introduce any new "power-mode" terminology. I
 **Recommendation: WRAP.** `quality-gate.py` is well-designed for its current scope (file-header AUDIT NOTE 2026-03-19 calls out "high value, well-designed"). The verifier-pair work needs only a 30-50 LOC config-source override at `load_config`, plus the per-gate evidence-artifact capture (item 3 above).
 
 **Why not migrate:**
+
 - The hook is 886 LOC of careful state/checkpoint/rollback logic. Re-implementing risks losing edge cases (flaky-test detection, fail-fast semantics, destructive-ops gating).
 - Existing PopKit consumers depend on the current `hooks.json` Stop entry shape. A migration changes the integration surface.
 - The lane-manifest extension is purely additive — the existing config path still works for repos without lane manifests.
@@ -123,6 +126,7 @@ The verifier-pair wrapper does NOT introduce any new "power-mode" terminology. I
 **Migrate condition:** if Phase 4 (Multi-Agent Coordination audit of `power-mode/`) decides to migrate `is_power_mode_active()` and `run_lightweight_check()` to the new contract, `quality-gate.py` updates as a downstream consumer of the new API. That's a Phase 4-or-later concern, not Phase 0/1.
 
 **What the wrapper PR explicitly does NOT do:**
+
 - Doesn't touch `__init__`, `detect_gates`, `run_gate`, `parse_errors`, `check_flaky_tests`, `present_failure_menu`, `create_checkpoint`, `rollback`, `update_manifest`, `cleanup_old_checkpoints`.
 - Doesn't add new state files.
 - Doesn't change the hook timeout.

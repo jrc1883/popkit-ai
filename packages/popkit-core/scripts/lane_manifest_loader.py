@@ -124,6 +124,16 @@ def load_lane_manifest(path: Path, *, repo_root: Optional[Path] = None) -> LoadR
     return LoadResult(manifest=out, warnings=warnings)
 
 
+_REQUIRED_STRING_FIELDS = (
+    "id",
+    "repo",
+    "worktree",
+    "branch",
+    "base",
+    "verifier_profile",
+)
+
+
 def _materialize_lane(
     lane_in: Dict[str, Any],
     idx: int,
@@ -131,7 +141,12 @@ def _materialize_lane(
     warnings: List[str],
     repo_root: Path,
 ) -> Dict[str, Any]:
-    """Validate one lane entry and materialize its loader-applied defaults."""
+    """Validate one lane entry and materialize its loader-applied defaults.
+
+    Round-7 Codex P1: load and enforce types for every required field, not
+    just presence. Without per-field type checks the loader was accepting
+    manifests like ``repo: 123, worktree: ['not-string'], branch: 42``.
+    """
 
     required = (
         "id",
@@ -150,6 +165,17 @@ def _materialize_lane(
         raise LaneManifestError(
             f"lanes[{idx}] missing required field(s): {', '.join(missing)}"
         )
+
+    # Round-7 P1: type-check required string fields BEFORE any other
+    # processing. The schema annotates these as `type: string`; the loader
+    # enforces it.
+    for field in _REQUIRED_STRING_FIELDS:
+        value = lane_in[field]
+        if not isinstance(value, str) or not value:
+            raise LaneManifestError(
+                f"lanes[{idx}].{field} must be a non-empty string, "
+                f"got {type(value).__name__}: {value!r}"
+            )
 
     lane = dict(lane_in)  # shallow copy; we'll mutate to add defaults
 
@@ -241,11 +267,17 @@ def _materialize_lane(
                 f"absolute path; lane file_ownership should be repo-relative globs."
             )
 
-    # max_rounds bounds
+    # max_rounds bounds — also reject bools (bool is a subclass of int in
+    # Python; True/False would otherwise pass the isinstance(int) check)
     max_rounds = lane["max_rounds"]
-    if not isinstance(max_rounds, int) or not 1 <= max_rounds <= 20:
+    if isinstance(max_rounds, bool) or not isinstance(max_rounds, int):
         raise LaneManifestError(
-            f"lanes[{idx}] ({lane['id']!r}) max_rounds must be int in [1, 20], "
+            f"lanes[{idx}] ({lane['id']!r}) max_rounds must be an integer, "
+            f"got {type(max_rounds).__name__}: {max_rounds!r}"
+        )
+    if not 1 <= max_rounds <= 20:
+        raise LaneManifestError(
+            f"lanes[{idx}] ({lane['id']!r}) max_rounds must be in [1, 20], "
             f"got {max_rounds!r}"
         )
 
@@ -256,7 +288,142 @@ def _materialize_lane(
             f"got {lane['merge_gate']!r}"
         )
 
+    # Optional fields — type-check each (round-7 P1)
+    if "issue" in lane:
+        issue = lane["issue"]
+        if isinstance(issue, bool) or not isinstance(issue, int):
+            raise LaneManifestError(
+                f"lanes[{idx}] ({lane['id']!r}) issue must be an integer, "
+                f"got {type(issue).__name__}: {issue!r}"
+            )
+
+    if not isinstance(lane["shared_ownership"], bool):
+        raise LaneManifestError(
+            f"lanes[{idx}] ({lane['id']!r}) shared_ownership must be a boolean, "
+            f"got {type(lane['shared_ownership']).__name__}: {lane['shared_ownership']!r}"
+        )
+
+    if "priority" in lane:
+        priority = lane["priority"]
+        if isinstance(priority, bool) or not isinstance(priority, int):
+            raise LaneManifestError(
+                f"lanes[{idx}] ({lane['id']!r}) priority must be an integer, "
+                f"got {type(priority).__name__}: {priority!r}"
+            )
+
+    for cap_field in ("cost_cap_tokens_per_run", "cost_cap_tokens_per_day"):
+        if cap_field in lane:
+            cap = lane[cap_field]
+            if isinstance(cap, bool) or not isinstance(cap, int) or cap < 0:
+                raise LaneManifestError(
+                    f"lanes[{idx}] ({lane['id']!r}) {cap_field} must be a "
+                    f"non-negative integer, got {type(cap).__name__}: {cap!r}"
+                )
+
+    # deterministic_gates: array of objects with required fields + types
+    if "deterministic_gates" in lane:
+        gates = lane["deterministic_gates"]
+        if not isinstance(gates, list):
+            raise LaneManifestError(
+                f"lanes[{idx}] ({lane['id']!r}) deterministic_gates must be an "
+                f"array, got {type(gates).__name__}"
+            )
+        for g_idx, gate in enumerate(gates):
+            _validate_gate(gate, idx, g_idx, lane["id"])
+
+    # redaction: object with optional arrays of strings
+    if "redaction" in lane:
+        red = lane["redaction"]
+        if not isinstance(red, dict):
+            raise LaneManifestError(
+                f"lanes[{idx}] ({lane['id']!r}) redaction must be an object, "
+                f"got {type(red).__name__}"
+            )
+        for arr_field in ("paths_never_send", "content_redact_patterns"):
+            if arr_field in red:
+                arr = red[arr_field]
+                if not isinstance(arr, list):
+                    raise LaneManifestError(
+                        f"lanes[{idx}] ({lane['id']!r}) redaction.{arr_field} "
+                        f"must be an array of strings, got {type(arr).__name__}"
+                    )
+                for s_idx, s in enumerate(arr):
+                    if not isinstance(s, str):
+                        raise LaneManifestError(
+                            f"lanes[{idx}] ({lane['id']!r}) "
+                            f"redaction.{arr_field}[{s_idx}] must be a string, "
+                            f"got {type(s).__name__}: {s!r}"
+                        )
+
     return lane
+
+
+def _validate_gate(
+    gate: Any, lane_idx: int, gate_idx: int, lane_id: str
+) -> None:
+    """Type-check a deterministic_gate entry per the lane manifest schema."""
+    if not isinstance(gate, dict):
+        raise LaneManifestError(
+            f"lanes[{lane_idx}] ({lane_id!r}) deterministic_gates[{gate_idx}] "
+            f"must be an object, got {type(gate).__name__}"
+        )
+
+    for required_field in ("id", "command"):
+        if required_field not in gate:
+            raise LaneManifestError(
+                f"lanes[{lane_idx}] ({lane_id!r}) deterministic_gates[{gate_idx}] "
+                f"missing required field {required_field!r}"
+            )
+        value = gate[required_field]
+        if not isinstance(value, str) or not value:
+            raise LaneManifestError(
+                f"lanes[{lane_idx}] ({lane_id!r}) deterministic_gates[{gate_idx}]."
+                f"{required_field} must be a non-empty string, "
+                f"got {type(value).__name__}: {value!r}"
+            )
+
+    if "timeout_seconds" not in gate:
+        raise LaneManifestError(
+            f"lanes[{lane_idx}] ({lane_id!r}) deterministic_gates[{gate_idx}] "
+            f"missing required field 'timeout_seconds'"
+        )
+    timeout = gate["timeout_seconds"]
+    if isinstance(timeout, bool) or not isinstance(timeout, int):
+        raise LaneManifestError(
+            f"lanes[{lane_idx}] ({lane_id!r}) deterministic_gates[{gate_idx}]."
+            f"timeout_seconds must be an integer, got {type(timeout).__name__}: "
+            f"{timeout!r}"
+        )
+    if not 1 <= timeout <= 600:
+        raise LaneManifestError(
+            f"lanes[{lane_idx}] ({lane_id!r}) deterministic_gates[{gate_idx}]."
+            f"timeout_seconds must be in [1, 600], got {timeout!r}"
+        )
+
+    if "cwd" in gate and not isinstance(gate["cwd"], str):
+        raise LaneManifestError(
+            f"lanes[{lane_idx}] ({lane_id!r}) deterministic_gates[{gate_idx}].cwd "
+            f"must be a string, got {type(gate['cwd']).__name__}"
+        )
+
+    if "required" in gate and not isinstance(gate["required"], bool):
+        raise LaneManifestError(
+            f"lanes[{lane_idx}] ({lane_id!r}) deterministic_gates[{gate_idx}]."
+            f"required must be a boolean, got {type(gate['required']).__name__}"
+        )
+
+    if "evidence_artifact" in gate:
+        artifact = gate["evidence_artifact"]
+        if artifact not in {
+            "stdout",
+            "stderr-on-fail",
+            "stdout-tail-50",
+            "structured-summary",
+        }:
+            raise LaneManifestError(
+                f"lanes[{lane_idx}] ({lane_id!r}) deterministic_gates[{gate_idx}]."
+                f"evidence_artifact={artifact!r} is not a recognized type"
+            )
 
 
 def _read_yaml_or_json(path: Path) -> Any:

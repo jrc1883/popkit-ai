@@ -96,6 +96,27 @@ class TestGlobsCanOverlap:
         assert doctor.globs_can_overlap("file?.txt", "file1.txt")
         assert not doctor.globs_can_overlap("file?.txt", "filename.txt")
 
+    def test_segment_overlap_with_inner_wildcard(self, doctor):
+        """Round-7 P1: regression for the false-negative Codex flagged.
+
+        ``apps/*/settings.ts`` and ``apps/shprd/*`` both match
+        ``apps/shprd/settings.ts`` but the previous single-sample
+        heuristic missed this.
+        """
+        assert doctor.globs_can_overlap("apps/*/settings.ts", "apps/shprd/*")
+        assert doctor.globs_can_overlap("packages/*/src/**", "packages/popkit-core/src/foo.py")
+        assert doctor.globs_can_overlap("a/*/c", "a/b/*")
+
+    def test_disjoint_inner_segments_do_not_overlap(self, doctor):
+        """Disjoint LITERAL segments at the same depth still don't overlap."""
+        assert not doctor.globs_can_overlap("apps/shprd/**", "apps/portfolio/**")
+        assert not doctor.globs_can_overlap("a/b/c", "a/x/c")
+
+    def test_globstar_zero_segments(self, doctor):
+        """``**`` can match zero segments — overlap with shorter prefix."""
+        assert doctor.globs_can_overlap("apps/**", "apps")
+        assert doctor.globs_can_overlap("**/foo", "foo")
+
 
 # ---------------------------------------------------------------------------
 # Lane overlap policy

@@ -28,5 +28,6 @@ When a claim ledger references this file in `changed_files`, the dispatcher MUST
 ## Test assertion
 
 The Phase 0a redaction-fixture test asserts:
+
 - The verifier-bundle artifact for a turn that touches this file contains the placeholder line.
 - The verifier-bundle does NOT contain `synthetic_alice@example.com` (or any other content from this fixture).

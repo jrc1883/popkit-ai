@@ -12,9 +12,9 @@ The Tier 3 gate runs as a deterministic gate for any lane with `compliance_class
 
 ```yaml
 user:
-  name: Sarah Johnson           # Not test_/fake_/synthetic_/fixture_/example_ prefixed
+  name: Sarah Johnson # Not test_/fake_/synthetic_/fixture_/example_ prefixed
   age: 7
-  email: sarah.johnson@gmail.com   # Not @example.com / @test.invalid / @fixtures.local
+  email: sarah.johnson@gmail.com # Not @example.com / @test.invalid / @fixtures.local
   dob: 2018-03-21
 ```
 
@@ -30,6 +30,7 @@ When the deterministic gate runner encounters this fixture and the active lane h
 ## Test assertion
 
 The Phase 0a redaction-fixture test asserts:
+
 - A simulated lane with `compliance_class: child-data` and a claim ledger touching this fixture causes the gate runner to return `pass: false` for the `synthetic-data-check` gate.
 - The dispatcher's verdict for that turn is `verdict: human`.
 - Codex CLI was NOT invoked (token usage = 0 for this turn in the cost ledger).
