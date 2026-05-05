@@ -245,6 +245,27 @@ def _validate_changed_file(entry: Any, idx: int) -> None:
         raise CheckpointError(
             f"changed_files[{idx}].path must be a non-empty string, got {path!r}"
         )
+    # Round-9 P2: claim-ledger.schema.json says path is "repo-root-relative
+    # with forward-slash separators". Reject anything that violates that
+    # contract at the writer boundary so absolute paths and parent-dir
+    # traversals never reach the dispatcher/verifier as advisory data.
+    if "\\" in path:
+        raise CheckpointError(
+            f"changed_files[{idx}].path must use forward slashes, got {path!r}"
+        )
+    if path.startswith("/") or (
+        len(path) >= 3 and path[1] == ":" and path[2] in {"/", "\\"}
+    ):
+        raise CheckpointError(
+            f"changed_files[{idx}].path must be repo-root-relative, "
+            f"got absolute path {path!r}"
+        )
+    if any(seg == ".." for seg in path.split("/")):
+        raise CheckpointError(
+            f"changed_files[{idx}].path must be repo-root-relative; "
+            f"parent-directory traversal segments are not allowed, "
+            f"got {path!r}"
+        )
     for k in ("added", "removed"):
         if k in entry:
             v = entry[k]
@@ -379,7 +400,25 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    raw = args.input.read_text(encoding="utf-8") if args.input else sys.stdin.read()
+    # Round-9 P3: --input file errors must surface as structured JSON, not
+    # raw FileNotFoundError tracebacks, so the CLI's failure contract is
+    # uniform across stdin and --input.
+    if args.input:
+        try:
+            raw = args.input.read_text(encoding="utf-8")
+        except (FileNotFoundError, IsADirectoryError, PermissionError, OSError) as exc:
+            print(
+                json.dumps(
+                    {
+                        "ok": False,
+                        "error": f"could not read --input {args.input}: {exc}",
+                    }
+                ),
+                file=sys.stderr,
+            )
+            return 2
+    else:
+        raw = sys.stdin.read()
     if not raw.strip():
         print(
             json.dumps(

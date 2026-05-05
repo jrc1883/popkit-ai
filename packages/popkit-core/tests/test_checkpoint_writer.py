@@ -187,6 +187,61 @@ def test_changed_files_path_must_be_non_empty_string(writer, fake_repo):
     assert "path" in str(exc.value)
 
 
+@pytest.mark.parametrize(
+    "bad_path",
+    [
+        "C:/Users/Josep/secret.txt",
+        "c:/Users/Josep/secret.txt",
+        "C:\\Users\\Josep\\secret.txt",
+        "/etc/passwd",
+        "//server/share/file.txt",
+        "../outside.txt",
+        "apps/../../../etc/passwd",
+        "packages\\popkit-core\\scripts\\checkpoint_writer.py",
+    ],
+)
+def test_changed_files_path_rejects_non_repo_relative(writer, fake_repo, bad_path):
+    """Round-9 P2: schema requires repo-root-relative forward-slash paths.
+
+    The writer enforces it so absolute paths, parent-traversal segments,
+    and backslash separators never reach the dispatcher/verifier as
+    advisory data.
+    """
+    with pytest.raises(writer.CheckpointError) as exc:
+        writer.write_checkpoint(
+            _minimal_payload(changed_files=[{"path": bad_path}]),
+            repo_root=fake_repo,
+        )
+    msg = str(exc.value)
+    assert "path" in msg
+    # Error message names the contract violation specifically.
+    assert (
+        "forward slashes" in msg
+        or "repo-root-relative" in msg
+        or "absolute" in msg
+        or "parent-directory" in msg
+    )
+
+
+@pytest.mark.parametrize(
+    "good_path",
+    [
+        "apps/shprd/src/Foo.tsx",
+        "packages/popkit-core/scripts/checkpoint_writer.py",
+        "README.md",
+        "a/b/c/d.txt",
+        # Single-dot is allowed; only `..` segments are dangerous.
+        "./relative-with-dot.txt",
+    ],
+)
+def test_changed_files_path_accepts_repo_relative(writer, fake_repo, good_path):
+    _, ledger = writer.write_checkpoint(
+        _minimal_payload(changed_files=[{"path": good_path}]),
+        repo_root=fake_repo,
+    )
+    assert ledger["changed_files"][0]["path"] == good_path
+
+
 def test_changed_files_added_must_be_non_negative_int(writer, fake_repo):
     """Bool is an int subclass in Python; reject explicitly."""
     with pytest.raises(writer.CheckpointError):
@@ -414,6 +469,36 @@ def test_cli_main_reads_from_input_file(writer, fake_repo, tmp_path, capsys):
     out = json.loads(captured.out)
     assert out["ok"] is True
     assert out["path"].endswith("pending-claim-ledger.json")
+
+
+def test_cli_main_input_missing_file_returns_structured_error(
+    writer, fake_repo, tmp_path, capsys
+):
+    """Round-9 P3: --input on a missing file must not traceback.
+
+    The CLI's failure contract (structured JSON on stderr + non-zero exit)
+    has to apply to the --input surface the same way it applies to stdin.
+    """
+    missing = tmp_path / "does-not-exist.json"
+    rc = writer.main(["--repo-root", str(fake_repo), "--input", str(missing)])
+    captured = capsys.readouterr()
+    assert rc == 2
+    err = json.loads(captured.err)
+    assert err["ok"] is False
+    assert "could not read --input" in err["error"]
+    assert str(missing) in err["error"]
+
+
+def test_cli_main_input_directory_returns_structured_error(
+    writer, fake_repo, tmp_path, capsys
+):
+    """Pointing --input at a directory should also fail closed cleanly."""
+    rc = writer.main(["--repo-root", str(fake_repo), "--input", str(tmp_path)])
+    captured = capsys.readouterr()
+    assert rc == 2
+    err = json.loads(captured.err)
+    assert err["ok"] is False
+    assert "could not read --input" in err["error"]
 
 
 class _StringStdin:
