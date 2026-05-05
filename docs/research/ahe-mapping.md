@@ -1,7 +1,7 @@
 # Applying Agentic Harness Engineering (AHE) to PopKit
 
 > **Status:** Research note. No code changes proposed in this document.
-> **Source paper:** *Agentic Harness Engineering: Observability-Driven Automatic Evolution of Coding-Agent Harnesses* — Lin et al., Fudan / PKU / Qiji Zhifeng, [arXiv:2604.25850](https://arxiv.org/abs/2604.25850), April 2026. Code: [china-qijizhifeng/agentic-harness-engineering](https://github.com/china-qijizhifeng/agentic-harness-engineering).
+> **Source paper:** _Agentic Harness Engineering: Observability-Driven Automatic Evolution of Coding-Agent Harnesses_ — Lin et al., Fudan / PKU / Qiji Zhifeng, [arXiv:2604.25850](https://arxiv.org/abs/2604.25850), April 2026. Code: [china-qijizhifeng/agentic-harness-engineering](https://github.com/china-qijizhifeng/agentic-harness-engineering).
 
 ---
 
@@ -9,9 +9,9 @@
 
 AHE defines a method for automatically evolving the **harness** around a coding agent — system prompts, tool descriptions, tool implementations, middleware, skills, sub-agents, and long-term memory — while the base LLM stays fixed. The loop is driven by three matched observability pillars: **component**, **experience**, and **decision**. Empirically, ten AHE iterations lifted Terminal-Bench 2 pass@1 from **69.7 % → 77.0 %**, beating the human-designed Codex-CLI harness (71.9 %) and self-evolving baselines ACE and TF-GRPO.
 
-**Thesis.** PopKit already supplies roughly 80 % of AHE's substrate. File-based components, a scanning registry, a feedback store, Upstash telemetry, and a hook system are all in place. What's missing is a thin layer that turns those raw signals into a layered evidence corpus, plus a convention for declaring *why* an edit was made and verifying it after the fact. Adding that layer would turn PopKit from a static plugin framework into a self-improving harness — without changing its LLM-agnostic, programmatic-first philosophy.
+**Thesis.** PopKit already supplies roughly 80 % of AHE's substrate. File-based components, a scanning registry, a feedback store, Upstash telemetry, and a hook system are all in place. What's missing is a thin layer that turns those raw signals into a layered evidence corpus, plus a convention for declaring _why_ an edit was made and verifying it after the fact. Adding that layer would turn PopKit from a static plugin framework into a self-improving harness — without changing its LLM-agnostic, programmatic-first philosophy.
 
-This sits naturally inside [`docs/VISION.md`](../VISION.md) Phase 4 (orchestration): once PopKit can route work across providers, AHE gives it a feedback signal to evolve *which* skills and prompts are routed.
+This sits naturally inside [`docs/VISION.md`](../VISION.md) Phase 4 (orchestration): once PopKit can route work across providers, AHE gives it a feedback signal to evolve _which_ skills and prompts are routed.
 
 ---
 
@@ -19,7 +19,7 @@ This sits naturally inside [`docs/VISION.md`](../VISION.md) Phase 4 (orchestrati
 
 ### 2.1 Component observability
 
-> *AHE: every editable harness piece is a file-level artifact, mapped to a failure-pattern class, and revertible.*
+> _AHE: every editable harness piece is a file-level artifact, mapped to a failure-pattern class, and revertible._
 
 - **What PopKit has.** YAML-frontmatter component files (`SKILL.md`, `AGENT.md`, `commands/*.md`); a scanning registry in `packages/popkit-mcp/popkit_mcp/tool_registry.py` (`scan_skills`, `scan_agents`, `scan_commands`); a per-file `version:` field; full git history.
 - **What's missing.** No explicit failure-pattern → component mapping. No central index answering "which component is the canonical home for fixing X?" No rollback affordance beyond `git revert`.
@@ -27,24 +27,24 @@ This sits naturally inside [`docs/VISION.md`](../VISION.md) Phase 4 (orchestrati
 
 ### 2.2 Experience observability
 
-> *AHE: distill millions of raw trajectory tokens into a layered, drill-down evidence corpus that an evolving agent can actually consume.*
+> _AHE: distill millions of raw trajectory tokens into a layered, drill-down evidence corpus that an evolving agent can actually consume._
 
 - **What PopKit has.** A SQLite feedback store at `~/.claude/config/feedback.db` (per-session ratings, `agent_name`, `tool_call_count`); Upstash Redis streams keyed `popkit:*:{session_id}:{traces|decisions|events|meta}`. Hooks (`session-start.py`, `post-tool-use.py`, `chain-metrics.py`, `feedback_hook.py`, `agent-observability.py`) already write to both.
-- **What's missing.** The *layered drill-down corpus*. Today, raw traces and ratings exist but are not joined, aggregated, or indexed by component. A meta-agent has no way to drill from "skill X has the lowest rating" → "here are five representative failing trajectories" → "here is the tool sequence at the failure point."
+- **What's missing.** The _layered drill-down corpus_. Today, raw traces and ratings exist but are not joined, aggregated, or indexed by component. A meta-agent has no way to drill from "skill X has the lowest rating" → "here are five representative failing trajectories" → "here is the tool sequence at the failure point."
 - **Proposed addition.** A periodic aggregator that materialises four layers from existing sources:
 
-  | Layer | Content | Source |
-  |---|---|---|
-  | **L0** | Raw trajectory digests | Upstash streams (compressed mirror in local SQLite for offline queries) |
-  | **L1** | Per-component aggregates: invocation count, completion rate, mean rating, error rate, p50 / p95 duration | `feedback.db` JOIN trajectory data |
-  | **L2** | Failure-class tags | Declared `failure_classes` ∪ LLM-tagged trajectory clusters |
-  | **L3** | Top-K representative trajectories per (component, failure-class) cell | L0 sampled by L2 tag |
+  | Layer  | Content                                                                                                  | Source                                                                  |
+  | ------ | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+  | **L0** | Raw trajectory digests                                                                                   | Upstash streams (compressed mirror in local SQLite for offline queries) |
+  | **L1** | Per-component aggregates: invocation count, completion rate, mean rating, error rate, p50 / p95 duration | `feedback.db` JOIN trajectory data                                      |
+  | **L2** | Failure-class tags                                                                                       | Declared `failure_classes` ∪ LLM-tagged trajectory clusters             |
+  | **L3** | Top-K representative trajectories per (component, failure-class) cell                                    | L0 sampled by L2 tag                                                    |
 
   Reuses `FeedbackStore`, `upstash_telemetry`, and the existing hooks. The new code is the aggregator and a small read API.
 
 ### 2.3 Decision observability
 
-> *AHE: every edit is paired with a self-declared prediction, verified against the next round's task-level outcomes.*
+> _AHE: every edit is paired with a self-declared prediction, verified against the next round's task-level outcomes._
 
 - **What PopKit has.** Nothing structured. Edits to skills / agents / commands today are plain commits with no machine-readable claim about what they were trying to fix.
 - **What's missing.** A **change manifest** that pairs each edit with `{target_failure_class, predicted_metric_delta, verification_window}`, then verifies it.
@@ -60,8 +60,8 @@ This sits naturally inside [`docs/VISION.md`](../VISION.md) Phase 4 (orchestrati
     min_delta: 0.3
   verification:
     window_sessions: 25
-    decided_at: null   # filled after window closes
-    outcome: null      # accepted | reverted | inconclusive
+    decided_at: null # filled after window closes
+    outcome: null # accepted | reverted | inconclusive
   ```
 
   A future `popkit evolve verify` walks open manifests, reads L1 aggregates, and stamps `outcome`.
@@ -70,18 +70,18 @@ This sits naturally inside [`docs/VISION.md`](../VISION.md) Phase 4 (orchestrati
 
 ## 3. Gap table
 
-| AHE concept | PopKit primitive that fits | Exists today | Missing | Effort |
-|---|---|---|---|---|
-| Component substrate | YAML-frontmatter components under `packages/popkit-*/{skills,agents,commands}/` | ✅ | — | none |
-| Component → failure-class index | `tool_registry.py` scan output + new `failure_classes` field | partial | failure-class field; index | S |
-| Raw trajectory storage (L0) | Upstash streams via `upstash_telemetry.py` | ✅ remote | local mirror; retention policy | S |
-| Per-component aggregates (L1) | `feedback.db` (`feedback`, `feedback_aggregates`, `session_state`) | partial | join trajectory ↔ feedback; per-component rollups | M |
-| Failure-class tags (L2) | `failure_classes` + LLM tagging over L0 | ❌ | tagger; storage | M |
-| Drill-down corpus (L3) | Sampled subset of L0, indexed by L2 | ❌ | sampler; read API | S |
-| Change manifest | `CHANGE.yaml` sidecar or `changes.jsonl` | ❌ | convention; writer | S |
-| Verification loop | `popkit evolve verify` reading L1 against manifest | ❌ | CLI; statistical thresholds | M |
-| Evolve sub-agent | New agent under a chosen package; reuses MCP layer | ❌ | agent definition; prompt | M |
-| A/B harness via worktrees | `packages/popkit-dev/` worktree commands | ✅ | wiring to evolve loop | M |
+| AHE concept                     | PopKit primitive that fits                                                      | Exists today | Missing                                           | Effort |
+| ------------------------------- | ------------------------------------------------------------------------------- | ------------ | ------------------------------------------------- | ------ |
+| Component substrate             | YAML-frontmatter components under `packages/popkit-*/{skills,agents,commands}/` | ✅           | —                                                 | none   |
+| Component → failure-class index | `tool_registry.py` scan output + new `failure_classes` field                    | partial      | failure-class field; index                        | S      |
+| Raw trajectory storage (L0)     | Upstash streams via `upstash_telemetry.py`                                      | ✅ remote    | local mirror; retention policy                    | S      |
+| Per-component aggregates (L1)   | `feedback.db` (`feedback`, `feedback_aggregates`, `session_state`)              | partial      | join trajectory ↔ feedback; per-component rollups | M      |
+| Failure-class tags (L2)         | `failure_classes` + LLM tagging over L0                                         | ❌           | tagger; storage                                   | M      |
+| Drill-down corpus (L3)          | Sampled subset of L0, indexed by L2                                             | ❌           | sampler; read API                                 | S      |
+| Change manifest                 | `CHANGE.yaml` sidecar or `changes.jsonl`                                        | ❌           | convention; writer                                | S      |
+| Verification loop               | `popkit evolve verify` reading L1 against manifest                              | ❌           | CLI; statistical thresholds                       | M      |
+| Evolve sub-agent                | New agent under a chosen package; reuses MCP layer                              | ❌           | agent definition; prompt                          | M      |
+| A/B harness via worktrees       | `packages/popkit-dev/` worktree commands                                        | ✅           | wiring to evolve loop                             | M      |
 
 ---
 
@@ -89,7 +89,7 @@ This sits naturally inside [`docs/VISION.md`](../VISION.md) Phase 4 (orchestrati
 
 - **Phase 0 — this doc.** Establish vocabulary, gap analysis, and decisions to defer.
 - **Phase 1 — Observability MVP.** L1/L2/L3 aggregator; `failure_classes` frontmatter field; new MCP tools `popkit_get_skill_stats`, `popkit_get_failure_modes`; `popkit evolve report` CLI command. **No auto-edits.** Useful on its own as a feedback dashboard.
-- **Phase 2 — Decision observability.** Change-manifest convention; `popkit evolve record` and `popkit evolve verify` CLI subcommands. Edits stay human-authored; the system just remembers what each edit was *for* and grades it.
+- **Phase 2 — Decision observability.** Change-manifest convention; `popkit evolve record` and `popkit evolve verify` CLI subcommands. Edits stay human-authored; the system just remembers what each edit was _for_ and grades it.
 - **Phase 3 — Closed loop.** An `evolve` sub-agent that reads the corpus, proposes edits, writes a manifest, applies edits inside a worktree (using existing popkit-dev worktree machinery), runs A/B over K sessions, and accepts or reverts.
 
 Phases 1 and 2 are independently shippable and provide value even if Phase 3 never lands.
