@@ -228,7 +228,10 @@ def delete_pending_ledger(repo_root: Path) -> None:
     try:
         pending.unlink()
     except FileNotFoundError:
-        pass
+        # Already absent — the dispatcher is idempotent here (the missing
+        # case has nothing to delete; the archived case may race with
+        # concurrent cleanup). Nothing to log.
+        return
     except OSError as exc:
         print(
             f"warning: failed to remove pending ledger {pending}: {exc}",
