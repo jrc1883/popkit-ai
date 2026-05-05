@@ -76,12 +76,11 @@ REQUIRED_TOP_LEVEL = (
     "next_action",
 )
 
-# Fields the writer owns and materializes itself. If the user supplies them in
-# the payload we reject any divergent value rather than silently overwriting.
-# Otherwise a confused builder could pass ``status: "missing"`` (only the
-# dispatcher writes that) or ``schema_version: 2`` and never notice the
-# writer overrode it.
-_WRITER_OWNED_FIELDS = ("status", "schema_version", "turn_id", "session_id")
+# Writer-owned fields (documented inline at validate_input where each is
+# rejected explicitly): status, schema_version, turn_id, session_id. The
+# writer materializes them itself; user-supplied divergent values are
+# rejected so a confused builder passing ``status: "missing"`` (only the
+# dispatcher writes that) doesn't silently get a normal ledger.
 
 
 class CheckpointError(ValueError):
@@ -345,8 +344,15 @@ def write_pending_ledger(ledger: Dict[str, Any], *, repo_root: Path) -> Path:
         if tmp.exists():
             try:
                 tmp.unlink()
-            except OSError:
-                pass
+            except OSError as exc:
+                # Best-effort cleanup only: do not fail the write on
+                # unlink issues. The pending file is the contract; a
+                # leftover .tmp will be overwritten by the next call's
+                # unique filename.
+                print(
+                    f"warning: failed to remove temporary file {tmp}: {exc}",
+                    file=sys.stderr,
+                )
     return target
 
 
