@@ -261,6 +261,34 @@ def _validate_finding(finding: Any, idx: int) -> Optional[str]:
             )
         if suggested not in ALLOWED_SUGGESTED_ACTIONS:
             return f"verdict_findings[{idx}].suggested_action_unknown: {suggested!r}"
+    # Defense-in-depth on the optional schema fields. The runner only
+    # produces empty findings today (the hard-fail path uses
+    # ``findings: []``), but validate_verdict is the contract gate for
+    # any verdict ANY caller might produce — including the future
+    # Codex-driven path. Better to fail closed here than to let a
+    # malformed finding reach the dispatcher.
+    if "claim_id" in finding:
+        claim_id = finding["claim_id"]
+        # bool is an int subclass; reject explicitly.
+        if isinstance(claim_id, bool) or not isinstance(claim_id, int):
+            return (
+                f"verdict_findings[{idx}].claim_id_not_integer: "
+                f"{type(claim_id).__name__}: {claim_id!r}"
+            )
+        if claim_id < 0:
+            return f"verdict_findings[{idx}].claim_id_negative: {claim_id!r}"
+    if "file" in finding:
+        f = finding["file"]
+        if not isinstance(f, str) or not f:
+            return (
+                f"verdict_findings[{idx}].file_must_be_non_empty_string: {type(f).__name__}: {f!r}"
+            )
+    if "line" in finding:
+        line = finding["line"]
+        if isinstance(line, bool) or not isinstance(line, int):
+            return f"verdict_findings[{idx}].line_not_integer: {type(line).__name__}: {line!r}"
+        if line < 1:
+            return f"verdict_findings[{idx}].line_below_one: {line!r}"
     return None
 
 

@@ -329,6 +329,58 @@ def test_validate_verdict_finding_message_must_be_non_empty(runner):
     assert "message_must_be_non_empty_string" in runner.validate_verdict(v)
 
 
+@pytest.mark.parametrize(
+    "field,bad_value,expected_substr",
+    [
+        ("claim_id", "first", "claim_id_not_integer"),
+        ("claim_id", True, "claim_id_not_integer"),
+        ("claim_id", -1, "claim_id_negative"),
+        ("file", "", "file_must_be_non_empty_string"),
+        ("file", 42, "file_must_be_non_empty_string"),
+        ("line", "10", "line_not_integer"),
+        ("line", True, "line_not_integer"),
+        ("line", 0, "line_below_one"),
+        ("line", -5, "line_below_one"),
+    ],
+)
+def test_validate_verdict_optional_finding_fields(
+    runner, field, bad_value, expected_substr
+):
+    """Optional schema fields on findings still get type-guarded so the
+    future Codex-driven path can't sneak malformed data past the
+    schema-or-die write gate."""
+    v = runner.make_human_verdict(
+        lane_id="x",
+        ledger_turn_id="t",
+        reason="claim_ledger_missing_or_invalid",
+        rationale="test",
+    )
+    finding = {"severity": "high", "message": "boom", field: bad_value}
+    v["findings"] = [finding]
+    err = runner.validate_verdict(v)
+    assert err is not None and expected_substr in err
+
+
+def test_validate_verdict_optional_finding_fields_accept_valid_values(runner):
+    v = runner.make_human_verdict(
+        lane_id="x",
+        ledger_turn_id="t",
+        reason="claim_ledger_missing_or_invalid",
+        rationale="test",
+    )
+    v["findings"] = [
+        {
+            "severity": "high",
+            "message": "structural finding",
+            "claim_id": 0,
+            "file": "apps/shprd/src/x.ts",
+            "line": 1,
+            "suggested_action": "block",
+        }
+    ]
+    assert runner.validate_verdict(v) is None
+
+
 def test_write_verdict_refuses_malformed(runner, bundle_dir):
     bad = {"schema_version": 1, "verdict": "approved"}
     with pytest.raises(runner.VerdictWriteError):
