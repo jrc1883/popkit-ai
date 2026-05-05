@@ -38,7 +38,7 @@ from __future__ import annotations
 import json
 import sys
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
@@ -123,9 +123,7 @@ def archive_ledger(
     The bundle path mirrors Plan v4.2 Layer 5:
     ``<repo>/.claude/popkit/verifier-bundles/<session_id>/<turn_id>/ledger.json``.
     """
-    bundle_dir = (
-        repo_root / ".claude" / "popkit" / "verifier-bundles" / session_id / turn_id
-    )
+    bundle_dir = repo_root / ".claude" / "popkit" / "verifier-bundles" / session_id / turn_id
     bundle_dir.mkdir(parents=True, exist_ok=True)
     target = bundle_dir / "ledger.json"
     tmp = bundle_dir / f"ledger.{uuid.uuid4().hex}.tmp"
@@ -173,7 +171,7 @@ def dispatch(input_data: Dict[str, Any]) -> Dict[str, Any]:
     """
     session_id = str(input_data.get("session_id") or uuid.uuid4())
     turn_id = str(uuid.uuid4())
-    timestamp = datetime.now(tz=timezone.utc).isoformat()
+    timestamp = datetime.now(tz=UTC).isoformat()
 
     response: Dict[str, Any] = {
         "status": "success",
@@ -218,9 +216,7 @@ def dispatch(input_data: Dict[str, Any]) -> Dict[str, Any]:
         response["ledger_status"] = "archived"
 
     try:
-        target = archive_ledger(
-            ledger, repo_root=repo_root, session_id=session_id, turn_id=turn_id
-        )
+        target = archive_ledger(ledger, repo_root=repo_root, session_id=session_id, turn_id=turn_id)
         response["bundle_path"] = str(target)
     except OSError as exc:
         # Archive write failed — surface the cause but keep exit 0.
@@ -256,8 +252,7 @@ def main() -> int:
         # the dispatcher will write a stub and the verifier will see it.
         input_data = {}
         print(
-            "[popkit-verifier] WARNING: stdin was not valid JSON; "
-            "treating as empty payload.",
+            "[popkit-verifier] WARNING: stdin was not valid JSON; treating as empty payload.",
             file=sys.stderr,
         )
 
@@ -269,7 +264,7 @@ def main() -> int:
         response = {
             "status": "error",
             "error": f"dispatcher_failed: {exc}",
-            "timestamp": datetime.now(tz=timezone.utc).isoformat(),
+            "timestamp": datetime.now(tz=UTC).isoformat(),
         }
         print(
             f"[popkit-verifier] ERROR: dispatcher exception: {exc}",
