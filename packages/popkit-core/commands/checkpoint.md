@@ -17,35 +17,35 @@ and the verifier returns `verdict: "human"` with reason
 
 ## Architecture
 
-| Field | Source |
-| --- | --- |
-| Slash command markdown | `packages/popkit-core/commands/checkpoint.md` (this file) |
-| Writer script | `packages/popkit-core/scripts/checkpoint_writer.py` |
-| Schema | `packages/popkit-core/output-styles/schemas/claim-ledger.schema.json` |
-| Pending location | `<repo>/.claude/popkit/pending-claim-ledger.json` |
+| Field                  | Source                                                                |
+| ---------------------- | --------------------------------------------------------------------- |
+| Slash command markdown | `packages/popkit-core/commands/checkpoint.md` (this file)             |
+| Writer script          | `packages/popkit-core/scripts/checkpoint_writer.py`                   |
+| Schema                 | `packages/popkit-core/output-styles/schemas/claim-ledger.schema.json` |
+| Pending location       | `<repo>/.claude/popkit/pending-claim-ledger.json`                     |
 
 The slash command shells out to the writer script so the validation logic is
 unit-testable independently of the markdown surface (Codex round 6 #3).
 
 ## Required fields
 
-| Field | Type | Notes |
-| --- | --- | --- |
-| `lane_id` | string | Identifier from the active lane manifest. |
-| `stage` | enum: `plan` \| `code` | Plan-stage reviews verify a plan doc; code-stage verifies diffs. |
-| `intent` | string | One-line user-requested goal for this turn. |
-| `changed_files` | array of `{path, added?, removed?}` | Empty array is valid for plan-only turns. |
-| `acceptance_claims` | array of non-empty strings | What this turn's changes are SUPPOSED to satisfy. The verifier validates each claim against the diff. |
-| `next_action` | enum: `verify` \| `merge-ready` \| `needs-review` | Builder's recommendation; the verifier may override. |
+| Field               | Type                                              | Notes                                                                                                 |
+| ------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `lane_id`           | string                                            | Identifier from the active lane manifest.                                                             |
+| `stage`             | enum: `plan` \| `code`                            | Plan-stage reviews verify a plan doc; code-stage verifies diffs.                                      |
+| `intent`            | string                                            | One-line user-requested goal for this turn.                                                           |
+| `changed_files`     | array of `{path, added?, removed?}`               | Empty array is valid for plan-only turns.                                                             |
+| `acceptance_claims` | array of non-empty strings                        | What this turn's changes are SUPPOSED to satisfy. The verifier validates each claim against the diff. |
+| `next_action`       | enum: `verify` \| `merge-ready` \| `needs-review` | Builder's recommendation; the verifier may override.                                                  |
 
 ## Optional fields
 
-| Field | Type |
-| --- | --- |
-| `tests_run` | array of `{name, passed?, failed?}` |
-| `deterministic_gates_observed` | object mapping gate id → `pass` \| `fail` \| `skip` |
-| `compliance_touch` | array of `none` \| `schema` \| `audit` \| `auth` \| `child-data` \| `ferpa` \| `coppa` |
-| `known_gaps` | array of strings — explicitly out-of-scope items |
+| Field                          | Type                                                                                   |
+| ------------------------------ | -------------------------------------------------------------------------------------- |
+| `tests_run`                    | array of `{name, passed?, failed?}`                                                    |
+| `deterministic_gates_observed` | object mapping gate id → `pass` \| `fail` \| `skip`                                    |
+| `compliance_touch`             | array of `none` \| `schema` \| `audit` \| `auth` \| `child-data` \| `ferpa` \| `coppa` |
+| `known_gaps`                   | array of strings — explicitly out-of-scope items                                       |
 
 ## Instructions
 
@@ -57,7 +57,7 @@ When the user runs `/popkit-core:checkpoint`:
 2. **Pipe the payload as JSON to `checkpoint_writer.py`** via subprocess.
    The script validates and writes the pending ledger.
 3. **Surface the result** — on success, the writer prints `{"ok": true,
-   "path": ..., "turn_id": ..., "session_id": ...}` to stdout. On failure
+"path": ..., "turn_id": ..., "session_id": ...}` to stdout. On failure
    it prints `{"ok": false, "error": ...}` to stderr with a non-zero exit
    code.
 
@@ -160,13 +160,13 @@ else:
 
 ## Failure modes
 
-| Symptom | Cause | Fix |
-| --- | --- | --- |
-| `missing required field(s): lane_id` | Forgot to include lane_id | Add `lane_id: <active-lane-id>` from `.claude/lanes.yml`. |
-| `stage must be one of ['code', 'plan']` | Used a different label | Use exactly `code` or `plan`. |
-| `acceptance_claims[N] must be a non-empty string` | Empty bullet | Either remove the bullet or write a real claim. |
-| `could not locate repository root` | Running outside a git repo | Invoke from inside the repo root. |
-| `write failed: ...` | Disk / permissions | Check `<repo>/.claude/popkit/` is writable. |
+| Symptom                                           | Cause                      | Fix                                                       |
+| ------------------------------------------------- | -------------------------- | --------------------------------------------------------- |
+| `missing required field(s): lane_id`              | Forgot to include lane_id  | Add `lane_id: <active-lane-id>` from `.claude/lanes.yml`. |
+| `stage must be one of ['code', 'plan']`           | Used a different label     | Use exactly `code` or `plan`.                             |
+| `acceptance_claims[N] must be a non-empty string` | Empty bullet               | Either remove the bullet or write a real claim.           |
+| `could not locate repository root`                | Running outside a git repo | Invoke from inside the repo root.                         |
+| `write failed: ...`                               | Disk / permissions         | Check `<repo>/.claude/popkit/` is writable.               |
 
 ## Related
 
