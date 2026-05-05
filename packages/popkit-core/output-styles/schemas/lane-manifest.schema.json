@@ -1,0 +1,173 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Lane Manifest Schema",
+  "description": "Per-repo .claude/lanes.yml shape. Declares lanes (issue/branch/worktree/file_ownership/compliance/gates/redaction). The lanes-doctor reconciles this against actual git worktree state. The manifest LOADER (Python or Node) materializes defaults and rejects forbidden combinations — JSON Schema 'default' is annotation only, the loader applies it. See ~/.claude/plans/verifier-pair-infrastructure-v1.md (Lane manifest section + 'on_verifier_unreachable schema defaults' table).",
+  "type": "object",
+  "required": ["version", "lanes"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1,
+      "description": "Manifest schema version. v1 is additive-only."
+    },
+    "lanes": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/lane" }
+    }
+  },
+  "definitions": {
+    "compliance_class": {
+      "type": "string",
+      "enum": ["none", "schema", "audit", "auth", "child-data", "ferpa", "coppa"],
+      "description": "Drives auto-continuation routing. Compliance classes (audit, auth, child-data, ferpa, coppa) MUST have on_verifier_unreachable='closed_human' and auto_continuation_class='human'; the loader rejects malformed manifests at load time."
+    },
+    "auto_continuation_class": {
+      "type": "string",
+      "enum": ["none", "feedback", "feedback-with-reverify", "human"],
+      "description": "What 'feedback' verdicts trigger. 'none' = no auto-action. 'feedback' = apply suggested fix, re-verify. 'feedback-with-reverify' = same but re-runs codegen first (for schema lanes). 'human' = always escalate."
+    },
+    "on_verifier_unreachable": {
+      "type": "string",
+      "enum": ["open_with_warning", "closed_human"],
+      "description": "Behavior when Codex CLI / verifier runner is unreachable. open_with_warning: builder proceeds with a logged warning. closed_human: dispatcher returns verdict='human' with reason='verifier_unreachable_compliance_lane'. Default for compliance_class!=none lanes is closed_human, ENFORCED at load time."
+    },
+    "deterministic_gate": {
+      "type": "object",
+      "required": ["id", "command", "timeout_seconds"],
+      "properties": {
+        "id": { "type": "string" },
+        "cwd": {
+          "type": "string",
+          "description": "Repo-root-relative directory to invoke the command from."
+        },
+        "command": {
+          "type": "string",
+          "description": "Shell command. Lane-specific (PopKit's runner is generic; ElShaddai declares `pnpm -C apps/shprd ...`, portfolio declares Astro/npm checks)."
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 600
+        },
+        "required": {
+          "type": "boolean",
+          "default": true,
+          "description": "If true, gate failure blocks the LLM verifier (no tokens spent). If false, the gate is informational only."
+        },
+        "evidence_artifact": {
+          "type": "string",
+          "enum": ["stdout", "stderr-on-fail", "stdout-tail-50", "structured-summary"],
+          "description": "What the runner captures from this gate's invocation for the bundle."
+        }
+      }
+    },
+    "redaction_config": {
+      "type": "object",
+      "properties": {
+        "paths_never_send": {
+          "type": "array",
+          "description": "Globs of files whose contents must NEVER reach the verifier under any conditions.",
+          "items": { "type": "string" }
+        },
+        "content_redact_patterns": {
+          "type": "array",
+          "description": "Regex patterns. Matches are replaced with [REDACTED] before content reaches the verifier.",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "lane": {
+      "type": "object",
+      "required": [
+        "id",
+        "repo",
+        "worktree",
+        "branch",
+        "base",
+        "file_ownership",
+        "verifier_profile",
+        "compliance_class",
+        "max_rounds",
+        "merge_gate"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Stable lane identifier referenced by claim ledger + cost ledger."
+        },
+        "issue": {
+          "type": "integer",
+          "description": "GitHub issue number (optional — lanes can exist without an issue)."
+        },
+        "repo": {
+          "type": "string",
+          "description": "GitHub repo in 'owner/name' form."
+        },
+        "worktree": {
+          "type": "string",
+          "description": "Absolute path to the git worktree."
+        },
+        "branch": { "type": "string" },
+        "base": {
+          "type": "string",
+          "description": "Base branch this lane is cut from. Usually 'origin/main'."
+        },
+        "file_ownership": {
+          "type": "array",
+          "description": "Globs declaring which files this lane is allowed to modify. lanes-doctor rejects overlap unless shared_ownership=true is declared on both lanes.",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "shared_ownership": {
+          "type": "boolean",
+          "default": false,
+          "description": "Opt-in for overlapping file_ownership. When true, priority MUST also be set."
+        },
+        "priority": {
+          "type": "integer",
+          "description": "Required when shared_ownership=true. Higher integer wins on overlap conflicts."
+        },
+        "verifier_profile": {
+          "type": "string",
+          "description": "Filename (without .md extension) under packages/popkit-core/verifier-rubrics/. Loader reads the rubric per-lane."
+        },
+        "compliance_class": { "$ref": "#/definitions/compliance_class" },
+        "auto_continuation_class": {
+          "$ref": "#/definitions/auto_continuation_class",
+          "default": "none"
+        },
+        "on_verifier_unreachable": {
+          "$ref": "#/definitions/on_verifier_unreachable",
+          "default": "open_with_warning"
+        },
+        "max_rounds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20,
+          "description": "Max verifier round-trips before forced human escalation."
+        },
+        "cost_cap_tokens_per_run": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Pre-estimate refusal threshold per verifier invocation."
+        },
+        "cost_cap_tokens_per_day": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Daily token cap for this lane. When exceeded, dispatcher returns verdict='human' with reason='daily_cost_cap_exceeded'."
+        },
+        "merge_gate": {
+          "type": "string",
+          "enum": ["auto", "human"],
+          "description": "auto: dispatcher can mark PR auto-mergeable. human: PR always requires explicit human merge."
+        },
+        "deterministic_gates": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/deterministic_gate" }
+        },
+        "redaction": { "$ref": "#/definitions/redaction_config" }
+      }
+    }
+  }
+}

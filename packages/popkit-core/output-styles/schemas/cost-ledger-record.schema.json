@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Cost Ledger Record Schema",
+  "description": "One JSON record per verifier invocation, appended to ~/.claude/popkit/cost-ledger.jsonl (USER-LOCAL — survives `git clean -fdx` and repo rename). The dispatcher uses this for daily-cap aggregation per lane_id+date. See ~/.claude/plans/verifier-pair-infrastructure-v1.md (Cost caps section). NOT stored under repo .claude/ — that's per-turn artifact territory.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "repo",
+    "lane_id",
+    "session_id",
+    "date",
+    "verdict"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "repo": {
+      "type": "string",
+      "description": "GitHub repo in 'owner/name' form. Same value used in lane manifest."
+    },
+    "lane_id": { "type": "string" },
+    "session_id": { "type": "string" },
+    "turn_id": {
+      "type": "string",
+      "description": "Optional. Lets cross-reference with the turn's bundle when bundles exist (recent runs)."
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 date (YYYY-MM-DD). Used for per-day aggregation."
+    },
+    "estimated_tokens": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Pre-invocation estimate from the cheap tokenizer pass over the bundle. Recorded even when the run is refused for exceeding cost_cap_tokens_per_run (estimated_tokens > cap, actual_tokens=0, verdict='human')."
+    },
+    "actual_tokens": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Post-run usage from Codex CLI metrics. Zero when the run was refused pre-invocation."
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["pass", "feedback", "block", "human"],
+      "description": "What the verifier returned (or 'human' for pre-invocation refusals)."
+    },
+    "refusal_reason": {
+      "type": "string",
+      "enum": [
+        "daily_cost_cap_exceeded",
+        "per_run_cost_cap_exceeded",
+        "verifier_unreachable_compliance_lane"
+      ],
+      "description": "Set when verdict='human' came from a dispatcher gate rather than the verifier itself."
+    }
+  }
+}

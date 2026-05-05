@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Verifier Result Schema",
+  "description": "Strict JSON the LLM verifier (Codex CLI in plan v4.2) returns. The dispatcher's 'schema-or-die' wrapper validates this output before acting; on parse failure the dispatcher retries once with a stricter prompt, then emits verdict='human' with reason='verifier_output_unparseable'. See ~/.claude/plans/verifier-pair-infrastructure-v1.md (Layer 3).",
+  "type": "object",
+  "required": ["schema_version", "verdict", "lane_id", "ledger_turn_id"],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1,
+      "description": "v1 is additive-only. Unsupported major versions rejected at load time."
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["pass", "feedback", "block", "human"],
+      "description": "pass: no findings, builder continues. feedback: low-risk fixes; auto-continuation depends on lane's compliance_class. block: builder must address findings before next turn. human: escalate, do not retry. Compliance-classed lanes (audit/child-data/auth/ferpa/coppa) MUST always escalate to human; the dispatcher rejects feedback verdicts on those lanes per the routing table."
+    },
+    "lane_id": {
+      "type": "string",
+      "description": "Echoed from the claim ledger so the dispatcher can reconcile."
+    },
+    "ledger_turn_id": {
+      "type": "string",
+      "description": "Echoed from the claim ledger; lets the dispatcher associate this verdict with the right bundle."
+    },
+    "findings": {
+      "type": "array",
+      "description": "Atomic findings. Empty array on verdict='pass'. Non-empty on feedback/block/human.",
+      "items": {
+        "type": "object",
+        "required": ["severity", "message"],
+        "properties": {
+          "severity": {
+            "type": "string",
+            "enum": ["high", "medium", "low"]
+          },
+          "claim_id": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Index into ledger.acceptance_claims that this finding contradicts. Omit for findings unrelated to a specific claim."
+          },
+          "file": {
+            "type": "string",
+            "description": "Repo-root-relative path with forward-slash separators."
+          },
+          "line": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "suggested_action": {
+            "type": "string",
+            "enum": ["block", "feedback", "human"],
+            "description": "Per-finding routing hint. The verdict aggregates these (highest severity wins)."
+          }
+        }
+      }
+    },
+    "rationale": {
+      "type": "string",
+      "description": "Short, redaction-safe summary. Never includes raw user PII or fixture content."
+    },
+    "reason": {
+      "type": "string",
+      "description": "Used with verdict='human'. Standard values: claim_ledger_missing_or_invalid, verifier_output_unparseable, daily_cost_cap_exceeded, verifier_unreachable_compliance_lane.",
+      "enum": [
+        "claim_ledger_missing_or_invalid",
+        "verifier_output_unparseable",
+        "daily_cost_cap_exceeded",
+        "verifier_unreachable_compliance_lane",
+        "compliance_class_blocks_auto_continuation",
+        "max_rounds_reached",
+        "operator_escalation"
+      ]
+    }
+  }
+}

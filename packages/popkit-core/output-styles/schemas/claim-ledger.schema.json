@@ -1,0 +1,135 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Claim Ledger Schema",
+  "description": "Machine-readable record the builder agent writes at end-of-turn (via the /checkpoint slash command) so the verifier can validate atomic claims against git diff + test output without inferring intent from transcript prose. See ~/.claude/plans/verifier-pair-infrastructure-v1.md (plan v4.2, Layer 1). A missing or schema-invalid ledger MUST cause the verifier to return verdict='human' with reason='claim_ledger_missing_or_invalid'.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "turn_id",
+    "session_id",
+    "lane_id",
+    "stage",
+    "intent",
+    "changed_files",
+    "acceptance_claims",
+    "next_action"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1,
+      "description": "Schema version. v1 is additive-only. Loaders reject unsupported major versions with a clear error."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["normal", "missing"],
+      "description": "Special value 'missing' is written by the Stop-hook dispatcher when /checkpoint was not called this turn. The verifier sees status='missing' and returns verdict='human' immediately."
+    },
+    "reason": {
+      "type": "string",
+      "description": "Used with status='missing'. Typical value: 'no_checkpoint_called'."
+    },
+    "turn_id": {
+      "type": "string",
+      "description": "UUID for this turn's bundle. Stable across the dispatcher → verifier handoff."
+    },
+    "session_id": {
+      "type": "string",
+      "description": "UUID for the Claude Code session. Multiple turn_ids share one session_id."
+    },
+    "lane_id": {
+      "type": "string",
+      "description": "Identifier from the active lane manifest. Determines compliance class, gate config, and verifier rubric selection."
+    },
+    "stage": {
+      "type": "string",
+      "enum": ["plan", "code"],
+      "description": "Plan-stage reviews verify a plan document; code-stage reviews verify diffs against the lane's acceptance claims."
+    },
+    "intent": {
+      "type": "string",
+      "minLength": 1,
+      "description": "One-line user-requested goal for this turn. e.g. 'Close Codex chunk-3 review High: subject member must match conversation target'."
+    },
+    "changed_files": {
+      "type": "array",
+      "description": "Files modified this turn. Empty array is valid for plan-stage turns that only edit plan documents.",
+      "items": {
+        "type": "object",
+        "required": ["path"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Repo-root-relative path with forward-slash separators."
+          },
+          "added": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Lines added."
+          },
+          "removed": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Lines removed."
+          }
+        }
+      }
+    },
+    "acceptance_claims": {
+      "type": "array",
+      "description": "Bullet list of what this turn's changes are SUPPOSED to satisfy. Each claim must be independently verifiable from the diff + tests. The verifier validates each claim's claim_id against the diff.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "tests_run": {
+      "type": "array",
+      "description": "Test files executed this turn and their results.",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Test file or suite identifier."
+          },
+          "passed": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "failed": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "deterministic_gates_observed": {
+      "type": "object",
+      "description": "Self-reported gate results from the builder. The verifier re-runs deterministic gates and compares — discrepancy is itself a finding.",
+      "additionalProperties": {
+        "type": "string",
+        "enum": ["pass", "fail", "skip"]
+      }
+    },
+    "compliance_touch": {
+      "type": "array",
+      "description": "Compliance domains this turn's changes touched. Drives auto-continuation routing.",
+      "items": {
+        "type": "string",
+        "enum": ["none", "schema", "audit", "auth", "child-data", "ferpa", "coppa"]
+      }
+    },
+    "known_gaps": {
+      "type": "array",
+      "description": "Things explicitly out of scope for this turn or deferred to a later turn. Surfaces incomplete work.",
+      "items": { "type": "string" }
+    },
+    "next_action": {
+      "type": "string",
+      "enum": ["verify", "merge-ready", "needs-review"],
+      "description": "What the builder thinks should happen next. The verifier may override."
+    }
+  }
+}
