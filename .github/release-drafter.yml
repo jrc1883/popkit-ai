@@ -124,7 +124,7 @@ template: |
 
   ```
   /plugin marketplace add jrc1883/popkit-ai
-  /plugin install popkit@popkit-claude
+  /plugin install popkit@popkit-ai
   ```
 
   **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION

@@ -49,10 +49,10 @@ This plugin provides 6 specialized skills:
 
 ```bash
 # Recommended: Install popkit-core foundation first
-/plugin install popkit-core@popkit-claude
+/plugin install popkit-core@popkit-ai
 
 # Then install operations plugin
-/plugin install popkit-ops@popkit-claude
+/plugin install popkit-ops@popkit-ai
 
 # Or install during development (local)
 /plugin install popkit-ops@file:./packages/popkit-ops
@@ -292,13 +292,13 @@ When you need more capabilities, install additional PopKit plugins:
 
 ```bash
 # For account management and stats
-/plugin install popkit-core@popkit-claude
+/plugin install popkit-core@popkit-ai
 
 # For development workflows
-/plugin install popkit-dev@popkit-claude
+/plugin install popkit-dev@popkit-ai
 
 # For knowledge management
-/plugin install popkit-research@popkit-claude
+/plugin install popkit-research@popkit-ai
 
 # Or install everything
 ```

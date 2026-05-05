@@ -377,6 +377,6 @@ Look for these signs:
 
 ## Resources
 
-- [GitHub Repository](https://github.com/jrc1883/popkit-claude)
-- [Issue Tracker](https://github.com/jrc1883/popkit-claude/issues)
-- [XML User Guide (Full Version)](https://github.com/jrc1883/popkit-claude/blob/main/packages/popkit-core/XML-USER-GUIDE.md)
+- [GitHub Repository](https://github.com/jrc1883/popkit-ai)
+- [Issue Tracker](https://github.com/jrc1883/popkit-ai/issues)
+- [XML User Guide (Full Version)](https://github.com/jrc1883/popkit-ai/blob/main/packages/popkit-core/XML-USER-GUIDE.md)

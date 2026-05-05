@@ -103,7 +103,7 @@ Cursor has a limit of approximately 40 tools across all MCP servers. If you have
 /plugin marketplace list
 ```
 
-3. If popkit-claude isn't listed, re-add it:
+3. If popkit-ai isn't listed, re-add it:
 
 ```bash
 /plugin marketplace add jrc1883/popkit-ai
@@ -120,7 +120,7 @@ If you see unexpected behavior, check your installed version:
 Update to the latest:
 
 ```bash
-/plugin update popkit-core@popkit-claude
+/plugin update popkit-core@popkit-ai
 ```
 
 ---

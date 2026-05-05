@@ -651,7 +651,7 @@ Yes! Follow the structure of existing templates and use standard XML elements:
 - Always include `severity` or `priority` attributes
 - Use clear, descriptive tag names
 
-Share your templates with the community: https://github.com/jrc1883/popkit-claude/discussions
+Share your templates with the community: https://github.com/jrc1883/popkit-ai/discussions
 
 ---
 
@@ -659,7 +659,7 @@ Share your templates with the community: https://github.com/jrc1883/popkit-claud
 
 1. **Try a template** - Copy one of the 4 templates and modify for your use case
 2. **Experiment** - Start with plain text, add XML when complexity increases
-3. **Share feedback** - Let us know what works: https://github.com/jrc1883/popkit-claude/issues/99
+3. **Share feedback** - Let us know what works: https://github.com/jrc1883/popkit-ai/issues/99
 
 ---
 
@@ -672,7 +672,7 @@ Share your templates with the community: https://github.com/jrc1883/popkit-claud
 
 ---
 
-**Questions or feedback?** Open an issue: https://github.com/jrc1883/popkit-claude/issues/99
+**Questions or feedback?** Open an issue: https://github.com/jrc1883/popkit-ai/issues/99
 
 **Want to contribute?** Share your custom templates in Discussions!
 

@@ -55,7 +55,7 @@ PopKit Dev provides 12 specialized skills for development workflows:
 /plugin install popkit-dev@file:./packages/popkit-dev
 
 # Future: Marketplace installation
-/plugin install popkit-dev@popkit-claude
+/plugin install popkit-dev@popkit-ai
 ```
 
 ## Dependencies

@@ -28,7 +28,7 @@
 ## Future
 
 - PopKit Cloud backend (Upstash Vector for semantic agent discovery).
-- Rename from `popkit-claude` to `popkit` (repo and brand).
+- Rename from `popkit-ai` to `popkit` (repo and brand).
 - Cross-platform installer (auto-detect and wire into installed AI tools).
 - See `docs/VISION.md` for the full architectural direction.
 

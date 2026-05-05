@@ -227,7 +227,7 @@ Should we create a GitHub issue to track this? (y/n): y
 Issue Title: Explore new hook types in Claude Code v2.0.5
 
 Issue Created: #219
-URL: https://github.com/jrc1883/popkit-claude/issues/219
+URL: https://github.com/jrc1883/popkit-ai/issues/219
 
 ✅ Research Complete
 Status: pending_research → researched

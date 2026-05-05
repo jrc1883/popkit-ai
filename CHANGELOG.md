@@ -13,7 +13,8 @@ All notable changes to PopKit are documented in this file.
 
 ### Changed
 
-- Release metadata now points at the current `jrc1883/popkit-ai` repository while preserving the existing `popkit-claude` marketplace name for install compatibility.
+- **BREAKING:** Marketplace name renamed from `popkit-claude` to `popkit-ai`. Existing installs that reference `popkit-claude` (e.g., `/plugin install popkit-core@popkit-claude`) need to reinstall via the new name (`/plugin install popkit-core@popkit-ai`).
+- Release metadata now points at the current `jrc1883/popkit-ai` repository.
 - Python package metadata prepared for `1.0.2` releases across `popkit`, `popkit-shared`, `popkit-cli`, and `popkit-mcp`.
 
 ### Fixed
@@ -528,12 +529,12 @@ All test infrastructure and results documented:
 // Before (npm-style - incorrect):
 "repository": {
   "type": "git",
-  "url": "https://github.com/jrc1883/popkit-claude",
+  "url": "https://github.com/jrc1883/popkit-ai",
   "directory": "packages/popkit-core"
 }
 
 // After (Claude Code format - correct):
-"repository": "https://github.com/jrc1883/popkit-claude"
+"repository": "https://github.com/jrc1883/popkit-ai"
 ```
 
 ---
@@ -546,7 +547,7 @@ All test infrastructure and results documented:
 
 - Fixed popkit-dev plugin.json: Removed invalid `pop-project-templates` skill reference
 - Updated all marketplace.json files: Version alignment (beta.1 → beta.3)
-- Fixed repository URLs: Updated from `jrc1883/popkit` to `jrc1883/popkit-claude`
+- Fixed repository URLs: Updated from `jrc1883/popkit` to `jrc1883/popkit-ai`
 - Added installation command to popkit-suite: `/popkit-suite:install` for guided setup
 - Fixed agent count in root README: 19 → 22 (consistent with header)
 
@@ -677,7 +678,7 @@ This release completes comprehensive validation, security hardening, and quality
 ### Bug Fixes
 
 - Fixed plugin.json skill arrays (popkit-core +1, popkit-dev +2 skills)
-- Corrected all marketplace.json repository URLs (jrc1883/popkit → jrc1883/popkit-claude)
+- Corrected all marketplace.json repository URLs (jrc1883/popkit → jrc1883/popkit-ai)
 - Fixed command frontmatter (added missing `name` fields)
 - Replaced placeholder issue numbers (#XXX → tracked issues)
 - Deleted deprecated `agent-context-integration.py` hook
@@ -897,8 +898,8 @@ packages/
 
 Users can now install:
 
-- **Complete suite**: `/plugin install popkit@popkit-claude`
-- **Selective plugins**: `/plugin install popkit-dev@popkit-claude`
+- **Complete suite**: `/plugin install popkit@popkit-ai`
+- **Selective plugins**: `/plugin install popkit-dev@popkit-ai`
 - **Custom combinations**: Mix and match based on needs
 
 #### Backwards Compatibility

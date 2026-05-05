@@ -115,7 +115,7 @@ class TestParsingPerformance:
         """Test project XML parsing speed (<0.5ms target)"""
         xml = """
         <project version="1.0">
-            <name>popkit-claude</name>
+            <name>popkit-ai</name>
             <stack>
                 <technology>Python</technology>
                 <technology>TypeScript</technology>

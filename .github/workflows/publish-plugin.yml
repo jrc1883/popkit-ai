@@ -150,7 +150,7 @@ jobs:
 
           \`\`\`
           /plugin marketplace add jrc1883/popkit-ai
-          /plugin install popkit@popkit-claude
+          /plugin install popkit@popkit-ai
           \`\`\`
 
           ---
@@ -176,7 +176,7 @@ jobs:
               echo "### Installation"
               echo "\`\`\`"
               echo "/plugin marketplace add jrc1883/popkit-ai"
-              echo "/plugin install popkit@popkit-claude"
+              echo "/plugin install popkit@popkit-ai"
               echo "\`\`\`"
             } >> "$GITHUB_STEP_SUMMARY"
           fi

@@ -135,11 +135,11 @@ def test_publish_review_comment_updates_existing(tmp_path, monkeypatch):
         key = tuple(cmd)
         calls.append(key)
         if key == ("gh", "repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner"):
-            return 0, "jrc1883/popkit-claude\n", ""
+            return 0, "jrc1883/popkit-ai\n", ""
         if key == (
             "gh",
             "api",
-            "repos/jrc1883/popkit-claude/issues/361/comments",
+            "repos/jrc1883/popkit-ai/issues/361/comments",
             "--paginate",
             "--slurp",
         ):
@@ -158,7 +158,7 @@ def test_publish_review_comment_updates_existing(tmp_path, monkeypatch):
         if key[:6] == (
             "gh",
             "api",
-            "repos/jrc1883/popkit-claude/issues/comments/17",
+            "repos/jrc1883/popkit-ai/issues/comments/17",
             "--method",
             "PATCH",
             "--raw-field",

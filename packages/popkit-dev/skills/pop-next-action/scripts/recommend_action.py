@@ -77,7 +77,7 @@ def _resolve_repo_root(state: Dict[str, Any], repo_root_arg: Optional[str] = Non
     if (cwd / ".git").exists():
         return cwd
 
-    # Fallback to the popkit-claude repository this script lives in.
+    # Fallback to the popkit-ai repository this script lives in.
     try:
         return Path(__file__).resolve().parents[5]
     except IndexError:
@@ -127,7 +127,7 @@ def _translate_popkit_command(command: str, repo_root: Path) -> Dict[str, str]:
         issue_num = match.group(1)
         return {
             "codex_command": (
-                f"gh issue view {issue_num} -R jrc1883/popkit-claude && "
+                f"gh issue view {issue_num} -R jrc1883/popkit-ai && "
                 f'git -C "{repo_str}" checkout -b feat/issue-{issue_num}'
             ),
             "codex_note": "Creates a local feature branch after loading issue context.",

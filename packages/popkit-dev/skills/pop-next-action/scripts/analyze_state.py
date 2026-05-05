@@ -128,7 +128,7 @@ def _resolve_repo_root(repo_root_arg: Optional[str] = None) -> Path:
     if (cwd / ".git").exists():
         return cwd
 
-    # Fallback to the popkit-claude repository this script lives in.
+    # Fallback to the popkit-ai repository this script lives in.
     try:
         return Path(__file__).resolve().parents[5]
     except IndexError:

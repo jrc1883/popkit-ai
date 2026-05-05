@@ -106,7 +106,7 @@ Claude Code users should install PopKit as a plugin instead of using MCP:
 
 ```bash
 /plugin marketplace add jrc1883/popkit-ai
-/plugin install popkit-core@popkit-claude
+/plugin install popkit-core@popkit-ai
 ```
 
 See [Installation](/getting-started/installation/) for full plugin setup.

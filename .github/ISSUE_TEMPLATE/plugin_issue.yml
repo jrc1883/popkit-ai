@@ -154,7 +154,7 @@ body:
       label: Installation Method
       description: How did you install the plugin?
       options:
-        - Marketplace (/plugin install popkit-*@popkit-claude)
+        - Marketplace (/plugin install popkit-*@popkit-ai)
         - Local directory (/plugin install ./packages/popkit-*)
         - Git clone and local install
     validations:

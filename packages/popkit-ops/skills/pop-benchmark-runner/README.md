@@ -252,7 +252,7 @@ For full benchmark validation:
 
 ## Related Documentation
 
-- [Issue #82](https://github.com/jrc1883/popkit-claude/issues/82) - Original feature request
+- [Issue #82](https://github.com/jrc1883/popkit-ai/issues/82) - Original feature request
 - [docs/VIBE_CODED_BENCHMARK_RESULTS.md](docs/VIBE_CODED_BENCHMARK_RESULTS.md) - Vibe-coded ambiguity benchmark tracking (Issue #84)
 - [SKILL.md](SKILL.md) - Detailed skill documentation
 - [../../commands/benchmark.md](../../commands/benchmark.md) - Command reference

@@ -29,10 +29,10 @@ Install all plugins for full functionality:
 
 ```bash
 # Install all plugins
-/plugin install popkit-core@popkit-claude
-/plugin install popkit-dev@popkit-claude
-/plugin install popkit-ops@popkit-claude
-/plugin install popkit-research@popkit-claude
+/plugin install popkit-core@popkit-ai
+/plugin install popkit-dev@popkit-ai
+/plugin install popkit-ops@popkit-ai
+/plugin install popkit-research@popkit-ai
 ```
 
 After installation, restart Claude Code and run `/popkit-dev:next` to get started.
@@ -137,7 +137,7 @@ If you've cloned the repository for development and want to test local changes:
 
 ```bash
 # Navigate to the repository root
-cd /path/to/popkit-claude
+cd /path/to/popkit-ai
 
 # Install plugins from local directories
 /plugin install ./packages/popkit-core

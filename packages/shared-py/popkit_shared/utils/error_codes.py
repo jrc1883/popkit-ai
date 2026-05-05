@@ -909,13 +909,13 @@ class ErrorResponse:
             >>> print(error["code"])
             E001_JSON_PARSE
             >>> print(error["help_url"])
-            https://github.com/jrc1883/popkit-claude/blob/main/docs/errors/README.md
+            https://github.com/jrc1883/popkit-ai/blob/main/docs/errors/README.md
         """
         recovery = error_code.recovery.copy()
         if additional_recovery:
             recovery.extend(additional_recovery)
 
-        base_url = "https://github.com/jrc1883/popkit-claude/blob/main/docs/errors/README.md"
+        base_url = "https://github.com/jrc1883/popkit-ai/blob/main/docs/errors/README.md"
 
         response = {
             "status": "error",

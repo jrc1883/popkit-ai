@@ -51,7 +51,7 @@ Each AI coding tool has a dedicated adapter that translates PopKit's abstract ca
 
 | Provider           | Integration Method          | Config                                      |
 | ------------------ | --------------------------- | ------------------------------------------- |
-| **Claude Code**    | Plugin marketplace (native) | `/plugin install popkit-core@popkit-claude` |
+| **Claude Code**    | Plugin marketplace (native) | `/plugin install popkit-core@popkit-ai` |
 | **Cursor**         | MCP server (stdio)          | `~/.cursor/mcp.json`                        |
 | **Codex CLI**      | MCP server (stdio)          | `~/.codex/config.toml`                      |
 | **GitHub Copilot** | MCP server (stdio)          | `~/.copilot/mcp-config.json`                |
