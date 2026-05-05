@@ -63,6 +63,7 @@ skills:
 commands:
   - path: commands/account.md
   - path: commands/bug.md
+  - path: commands/checkpoint.md
   - path: commands/dashboard.md
   - path: commands/plugin.md
   - path: commands/power.md
