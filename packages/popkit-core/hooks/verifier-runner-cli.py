@@ -234,6 +234,15 @@ def _validate_ledger_structure(data: Dict[str, Any]) -> Optional[str]:
         for i, g in enumerate(gaps):
             if not isinstance(g, str):
                 return f"ledger_known_gaps[{i}]_not_string: {type(g).__name__}: {g!r}"
+    # Round-14 P2: claim-ledger.schema.json's optional ``reason`` field
+    # must be a string when present (typically used with status='missing'
+    # but the schema allows it on normal ledgers too). Without this guard
+    # a normal ledger with reason: 123 / true / {} sailed past the runner
+    # straight into the deferred-Codex state.
+    if "reason" in data:
+        reason = data["reason"]
+        if not isinstance(reason, str):
+            return f"ledger_reason_not_string: {type(reason).__name__}: {reason!r}"
     return None
 
 
@@ -254,6 +263,12 @@ def _validate_changed_file_entry(entry: Any, idx: int) -> Optional[str]:
             f"ledger_changed_files[{idx}].path_must_be_non_empty_string: "
             f"{type(path).__name__}: {path!r}"
         )
+    # Round-14 P2: same checkpoint_writer rules apply here. The runner
+    # is the last gate before Codex; an edited-in-transit bundle could
+    # carry C:/secret.txt or ../outside.py and slip past until now.
+    path_err = _validate_repo_relative_path(path, prefix=f"ledger_changed_files[{idx}].path")
+    if path_err is not None:
+        return path_err
     for k in ("added", "removed"):
         if k in entry:
             v = entry[k]
@@ -340,14 +355,22 @@ def validate_verdict(verdict: Any) -> Optional[str]:
                 f"verdict_field_must_be_non_empty_string: "
                 f"{required}={value!r} ({type(value).__name__})"
             )
-    if raw_verdict == "human":
-        # reason is required when the schema says so (description-only,
-        # but the runner is the producer here so we hold ourselves to it).
-        reason = verdict.get("reason")
+    # Round-14 P2: verifier-result.schema.json constrains ``reason``
+    # whenever it is present on the verdict, not just for human verdicts.
+    # A pass/feedback/block verdict with reason: 123 / 'bogus_reason'
+    # used to slip past the schema-or-die guard. Now we validate the
+    # field for every verdict shape, AND additionally require it for
+    # human verdicts.
+    if "reason" in verdict:
+        reason = verdict["reason"]
         if not isinstance(reason, str):
-            return f"verdict_human_reason_not_string: {type(reason).__name__}: {reason!r}"
+            return f"verdict_reason_not_string: {type(reason).__name__}: {reason!r}"
         if reason not in ALLOWED_REASONS:
             return f"verdict_unknown_reason: {reason!r}"
+    elif raw_verdict == "human":
+        # human verdicts must always carry a reason — the dispatcher
+        # routes on it (claim_ledger_missing_or_invalid, etc.).
+        return "verdict_human_reason_missing"
     findings = verdict.get("findings", [])
     if not isinstance(findings, list):
         return f"verdict_findings_not_array: {type(findings).__name__}"
@@ -360,22 +383,22 @@ def validate_verdict(verdict: Any) -> Optional[str]:
     return None
 
 
-def _validate_repo_relative_path(path: str, idx: int) -> Optional[str]:
+def _validate_repo_relative_path(path: str, *, prefix: str) -> Optional[str]:
     """Reject absolute / drive-relative / UNC / parent-traversal paths.
 
-    Mirrors checkpoint_writer's changed_files[].path rules so the verifier-
-    result.schema.json contract for findings[].file is enforced consistently.
+    Mirrors checkpoint_writer's changed_files[].path rules so the same
+    contract is enforced everywhere a path string flows through the
+    verifier surface (ledger.changed_files[].path AND verifier-result
+    findings[].file). Caller supplies an audit-friendly ``prefix`` that
+    becomes the leading token in the returned reason string.
     """
     if "\\" in path:
-        return f"verdict_findings[{idx}].file_must_use_forward_slashes: {path!r}"
+        return f"{prefix}_must_use_forward_slashes: {path!r}"
     if path.startswith("/") or (len(path) >= 2 and path[0].isalpha() and path[1] == ":"):
-        return (
-            f"verdict_findings[{idx}].file_must_be_repo_relative: "
-            f"got absolute or drive-anchored path {path!r}"
-        )
+        return f"{prefix}_must_be_repo_relative: got absolute or drive-anchored path {path!r}"
     if any(seg == ".." for seg in path.split("/")):
         return (
-            f"verdict_findings[{idx}].file_must_be_repo_relative: "
+            f"{prefix}_must_be_repo_relative: "
             f"parent-directory traversal segments are not allowed, got {path!r}"
         )
     return None
@@ -434,7 +457,7 @@ def _validate_finding(finding: Any, idx: int) -> Optional[str]:
         # same checkpoint_writer rules so a Codex-produced finding
         # can't route comments / actions against absolute or
         # parent-traversal paths the dispatcher trusts as repo-local.
-        path_err = _validate_repo_relative_path(f, idx)
+        path_err = _validate_repo_relative_path(f, prefix=f"verdict_findings[{idx}].file")
         if path_err is not None:
             return path_err
     if "line" in finding:

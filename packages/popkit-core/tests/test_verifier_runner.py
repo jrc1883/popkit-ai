@@ -618,6 +618,133 @@ def test_validate_verdict_finding_file_accepts_repo_relative(runner, good_path):
     assert runner.validate_verdict(v) is None
 
 
+# ---------------------------------------------------------------------------
+# Round-14 P2: ledger changed_files[].path repo-relative
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "bad_path",
+    [
+        "C:/secret.txt",
+        "C:secret.txt",
+        "/etc/passwd",
+        "//server/share/file.py",
+        "../outside.py",
+        "apps/../../../etc/passwd",
+        "packages\\popkit-core\\x.py",
+    ],
+)
+def test_runner_rejects_non_repo_relative_changed_files_path(
+    runner, bundle_dir, bad_path
+):
+    """Round-14 P2: same checkpoint_writer rules now apply to the
+    runner's deep validation of changed_files[].path. Bundles edited
+    in transit can't carry C:/secret.txt or ../outside.py to the
+    deferred Codex state."""
+    bad = _valid_ledger(changed_files=[{"path": bad_path}])
+    _write_ledger(bundle_dir, bad)
+    response = runner.run(bundle_dir)
+    assert response["verdict"] == "human"
+    assert response["reason"] == "claim_ledger_missing_or_invalid"
+    assert "changed_files" in response["fast_fail_reason"]
+
+
+# ---------------------------------------------------------------------------
+# Round-14 P2: optional ledger reason must be string when present
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("bad_reason", [123, True, {}, [], 0, None])
+def test_runner_rejects_invalid_optional_reason_on_normal_ledger(
+    runner, bundle_dir, bad_reason
+):
+    """Schema says ``reason`` is a string. The runner's optional-field
+    validation skipped it before."""
+    bad = _valid_ledger()
+    bad["reason"] = bad_reason
+    _write_ledger(bundle_dir, bad)
+    response = runner.run(bundle_dir)
+    assert response["verdict"] == "human"
+    assert response["fast_fail_reason"].startswith("ledger_reason_not_string")
+
+
+def test_runner_accepts_string_reason_on_normal_ledger(runner, bundle_dir):
+    """When reason IS a string, the ledger is otherwise valid, and the
+    runner defers as before."""
+    good = _valid_ledger()
+    good["reason"] = "advisory note"
+    _write_ledger(bundle_dir, good)
+    response = runner.run(bundle_dir)
+    assert response["ok"] is True
+    assert response["deferred"] is True
+
+
+# ---------------------------------------------------------------------------
+# Round-14 P2: non-human verdicts also validate optional reason
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("verdict_value", ["pass", "feedback", "block"])
+def test_validate_verdict_non_human_with_invalid_reason_type(runner, verdict_value):
+    """A pass/feedback/block verdict with a non-string ``reason`` used to
+    sail through validate_verdict because the reason check was gated on
+    verdict='human'."""
+    v = runner.make_human_verdict(
+        lane_id="x",
+        ledger_turn_id="t",
+        reason="claim_ledger_missing_or_invalid",
+        rationale="test",
+    )
+    v["verdict"] = verdict_value
+    v["reason"] = 123
+    err = runner.validate_verdict(v)
+    assert err is not None
+    assert "reason_not_string" in err
+
+
+@pytest.mark.parametrize("verdict_value", ["pass", "feedback", "block"])
+def test_validate_verdict_non_human_with_unknown_reason(runner, verdict_value):
+    v = runner.make_human_verdict(
+        lane_id="x",
+        ledger_turn_id="t",
+        reason="claim_ledger_missing_or_invalid",
+        rationale="test",
+    )
+    v["verdict"] = verdict_value
+    v["reason"] = "bogus_reason"
+    err = runner.validate_verdict(v)
+    assert err is not None
+    assert "verdict_unknown_reason" in err
+
+
+def test_validate_verdict_human_missing_reason_rejected(runner):
+    """Human verdicts must always carry a reason — the dispatcher routes
+    on it. A human verdict without one is a contract violation."""
+    v = runner.make_human_verdict(
+        lane_id="x",
+        ledger_turn_id="t",
+        reason="claim_ledger_missing_or_invalid",
+        rationale="test",
+    )
+    del v["reason"]
+    assert runner.validate_verdict(v) == "verdict_human_reason_missing"
+
+
+def test_validate_verdict_non_human_can_omit_reason(runner):
+    """pass / feedback / block verdicts don't require a reason — only
+    type-validate it when present."""
+    v = runner.make_human_verdict(
+        lane_id="x",
+        ledger_turn_id="t",
+        reason="claim_ledger_missing_or_invalid",
+        rationale="test",
+    )
+    v["verdict"] = "pass"
+    del v["reason"]
+    assert runner.validate_verdict(v) is None
+
+
 def test_write_verdict_no_leftover_tmp(runner, bundle_dir):
     v = runner.make_human_verdict(
         lane_id="x",
