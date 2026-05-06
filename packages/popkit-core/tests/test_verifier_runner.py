@@ -388,6 +388,236 @@ def test_write_verdict_refuses_malformed(runner, bundle_dir):
     assert not (bundle_dir / "verdict.json").exists()
 
 
+# ---------------------------------------------------------------------------
+# Round-13 P1: deep ledger validation
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "changed_files",
+    [
+        [{}],  # missing path
+        [{"path": 123}],  # non-string path
+        [{"path": ""}],  # empty path
+        [{"path": "a.py", "added": -1}],  # negative
+        [{"path": "a.py", "added": True}],  # bool
+        [{"path": "a.py", "removed": "lots"}],  # non-int
+        [{"not_an_object": True}],  # missing path
+        ["not-a-dict"],  # entry not object
+    ],
+)
+def test_runner_rejects_invalid_changed_files_entries(
+    runner, bundle_dir, changed_files
+):
+    bad = _valid_ledger(changed_files=changed_files)
+    _write_ledger(bundle_dir, bad)
+    response = runner.run(bundle_dir)
+    assert response["verdict"] == "human"
+    assert response["reason"] == "claim_ledger_missing_or_invalid"
+    assert "changed_files" in response["fast_fail_reason"]
+
+
+@pytest.mark.parametrize(
+    "claims",
+    [
+        [123],  # non-string
+        [""],  # empty
+        ["valid", 42],  # one bad
+        [{"not": "string"}],  # dict instead of string
+        [None],
+    ],
+)
+def test_runner_rejects_invalid_acceptance_claims(runner, bundle_dir, claims):
+    bad = _valid_ledger(acceptance_claims=claims)
+    _write_ledger(bundle_dir, bad)
+    response = runner.run(bundle_dir)
+    assert response["verdict"] == "human"
+    assert "acceptance_claims" in response["fast_fail_reason"]
+
+
+def test_runner_rejects_invalid_tests_run(runner, bundle_dir):
+    bad = _valid_ledger(
+        tests_run=[{"name": "test_x.py", "passed": -1}],
+    )
+    _write_ledger(bundle_dir, bad)
+    response = runner.run(bundle_dir)
+    assert response["verdict"] == "human"
+    assert "tests_run" in response["fast_fail_reason"]
+
+
+def test_runner_rejects_tests_run_missing_name(runner, bundle_dir):
+    bad = _valid_ledger(tests_run=[{"passed": 5}])
+    _write_ledger(bundle_dir, bad)
+    response = runner.run(bundle_dir)
+    assert response["verdict"] == "human"
+    assert "tests_run" in response["fast_fail_reason"]
+
+
+def test_runner_rejects_invalid_deterministic_gates_observed(runner, bundle_dir):
+    bad = _valid_ledger(deterministic_gates_observed={"typecheck": "ok"})
+    _write_ledger(bundle_dir, bad)
+    response = runner.run(bundle_dir)
+    assert response["verdict"] == "human"
+    assert "deterministic_gates_observed" in response["fast_fail_reason"]
+
+
+def test_runner_rejects_deterministic_gates_observed_not_object(runner, bundle_dir):
+    bad = _valid_ledger(deterministic_gates_observed=["not", "an", "object"])
+    _write_ledger(bundle_dir, bad)
+    response = runner.run(bundle_dir)
+    assert response["verdict"] == "human"
+    assert "deterministic_gates_observed" in response["fast_fail_reason"]
+
+
+def test_runner_rejects_invalid_compliance_touch(runner, bundle_dir):
+    bad = _valid_ledger(compliance_touch=["bogus"])
+    _write_ledger(bundle_dir, bad)
+    response = runner.run(bundle_dir)
+    assert response["verdict"] == "human"
+    assert "compliance_touch" in response["fast_fail_reason"]
+
+
+def test_runner_rejects_invalid_known_gaps(runner, bundle_dir):
+    bad = _valid_ledger(known_gaps=[123])
+    _write_ledger(bundle_dir, bad)
+    response = runner.run(bundle_dir)
+    assert response["verdict"] == "human"
+    assert "known_gaps" in response["fast_fail_reason"]
+
+
+# ---------------------------------------------------------------------------
+# Round-13 P2: schema_version bool acceptance
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("bool_value", [True, False])
+def test_runner_rejects_bool_schema_version_in_ledger(runner, bundle_dir, bool_value):
+    """``True == 1`` in Python; the runner must reject bools explicitly so
+    a malformed ledger with ``schema_version: true`` can't slip through."""
+    bad = _valid_ledger()
+    bad["schema_version"] = bool_value
+    _write_ledger(bundle_dir, bad)
+    response = runner.run(bundle_dir)
+    assert response["verdict"] == "human"
+    assert response["fast_fail_reason"].startswith("ledger_schema_version_not_integer")
+
+
+def test_validate_verdict_rejects_bool_schema_version(runner):
+    v = runner.make_human_verdict(
+        lane_id="x",
+        ledger_turn_id="t",
+        reason="claim_ledger_missing_or_invalid",
+        rationale="test",
+    )
+    v["schema_version"] = True
+    assert "verdict_schema_version_not_integer" in runner.validate_verdict(v)
+
+
+# ---------------------------------------------------------------------------
+# Round-13 P2: malformed missing-stub still produces a verdict
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "field,bad_value",
+    [
+        ("lane_id", []),
+        ("lane_id", {}),
+        ("lane_id", 123),
+        ("lane_id", ""),
+        ("turn_id", []),
+        ("turn_id", {}),
+        ("turn_id", 0),
+        ("turn_id", ""),
+    ],
+)
+def test_malformed_missing_stub_still_writes_human_verdict(
+    runner, bundle_dir, field, bad_value
+):
+    """Round-13 P2: the dispatcher's missing-stub path used raw
+    ledger.get(...) values for lane_id/turn_id. A malformed stub with
+    a non-string identifier got rejected by validate_verdict's schema-
+    or-die guard, leaving the bundle with NO verdict file. The runner
+    must route through the safe helpers so a malformed stub still
+    produces a verdict."""
+    stub = {
+        "schema_version": 1,
+        "status": "missing",
+        "reason": "no_checkpoint_called",
+        "session_id": "s",
+        "turn_id": "stub-t",
+        "lane_id": "stub-lane",
+        "stage": "code",
+        "intent": "(stub)",
+        "changed_files": [],
+        "acceptance_claims": [],
+        "next_action": "needs-review",
+    }
+    stub[field] = bad_value
+    _write_ledger(bundle_dir, stub)
+    response = runner.run(bundle_dir)
+    assert response["ok"] is True
+    assert response["verdict"] == "human"
+    assert response["reason"] == "claim_ledger_missing_or_invalid"
+    assert (bundle_dir / "verdict.json").exists()
+
+
+# ---------------------------------------------------------------------------
+# Round-13 P2: findings[].file repo-relative contract
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "bad_path",
+    [
+        "C:/secret.txt",
+        "c:/secret.txt",
+        "C:secret.txt",
+        "C:\\secret.txt",
+        "/etc/passwd",
+        "//server/share/file.py",
+        "../outside.py",
+        "apps/../../../etc/passwd",
+        "packages\\popkit-core\\x.py",
+    ],
+)
+def test_validate_verdict_finding_file_must_be_repo_relative(runner, bad_path):
+    """Round-13 P2: verifier-result.schema.json says findings[].file is
+    repo-root-relative with forward-slash separators. Apply the same
+    rules checkpoint_writer enforces on changed_files[].path."""
+    v = runner.make_human_verdict(
+        lane_id="x",
+        ledger_turn_id="t",
+        reason="claim_ledger_missing_or_invalid",
+        rationale="test",
+    )
+    v["findings"] = [{"severity": "high", "message": "boom", "file": bad_path}]
+    err = runner.validate_verdict(v)
+    assert err is not None
+    assert "file" in err
+    assert "must_use_forward_slashes" in err or "must_be_repo_relative" in err
+
+
+@pytest.mark.parametrize(
+    "good_path",
+    [
+        "apps/shprd/src/Foo.tsx",
+        "packages/popkit-core/scripts/checkpoint_writer.py",
+        "README.md",
+        "./relative-with-dot.txt",
+    ],
+)
+def test_validate_verdict_finding_file_accepts_repo_relative(runner, good_path):
+    v = runner.make_human_verdict(
+        lane_id="x",
+        ledger_turn_id="t",
+        reason="claim_ledger_missing_or_invalid",
+        rationale="test",
+    )
+    v["findings"] = [{"severity": "high", "message": "boom", "file": good_path}]
+    assert runner.validate_verdict(v) is None
+
+
 def test_write_verdict_no_leftover_tmp(runner, bundle_dir):
     v = runner.make_human_verdict(
         lane_id="x",

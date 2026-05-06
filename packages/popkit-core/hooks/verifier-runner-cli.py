@@ -65,6 +65,16 @@ ALLOWED_REASONS = {
 }
 ALLOWED_FINDING_SEVERITIES = {"high", "medium", "low"}
 ALLOWED_SUGGESTED_ACTIONS = {"block", "feedback", "human"}
+ALLOWED_LEDGER_GATE_RESULTS = {"pass", "fail", "skip"}
+ALLOWED_LEDGER_COMPLIANCE_TOUCH = {
+    "none",
+    "schema",
+    "audit",
+    "auth",
+    "child-data",
+    "ferpa",
+    "coppa",
+}
 
 # Mirrors claim-ledger.schema.json's required envelope. The dispatcher
 # already enforces this; the runner re-validates as defense-in-depth so
@@ -110,10 +120,19 @@ def read_ledger(bundle_dir: Path) -> Tuple[Optional[Dict[str, Any]], Optional[st
         return None, f"ledger_invalid_json: {exc}"
     if not isinstance(data, dict):
         return None, "ledger_not_object"
-    if data.get("schema_version") != LEDGER_SCHEMA_VERSION:
+    # Round-13 P2: bool is an int subclass and ``True == 1`` in Python,
+    # so the naive ``!=`` check accepts ``schema_version: true`` as a
+    # valid version 1 ledger. Reject bools first.
+    raw_version = data.get("schema_version")
+    if isinstance(raw_version, bool) or not isinstance(raw_version, int):
         return (
             None,
-            f"ledger_unsupported_schema_version: {data.get('schema_version')!r}",
+            f"ledger_schema_version_not_integer: {type(raw_version).__name__}: {raw_version!r}",
+        )
+    if raw_version != LEDGER_SCHEMA_VERSION:
+        return (
+            None,
+            f"ledger_unsupported_schema_version: {raw_version!r}",
         )
     # Round-12-style type-guard before set membership so unhashable
     # values can't crash the runner.
@@ -166,8 +185,107 @@ def _validate_ledger_structure(data: Dict[str, Any]) -> Optional[str]:
         return f"ledger_unknown_next_action: {raw_next!r}"
     if not isinstance(data["changed_files"], list):
         return f"ledger_changed_files_not_array: {type(data['changed_files']).__name__}"
+    for i, entry in enumerate(data["changed_files"]):
+        cf_err = _validate_changed_file_entry(entry, i)
+        if cf_err is not None:
+            return cf_err
     if not isinstance(data["acceptance_claims"], list):
         return f"ledger_acceptance_claims_not_array: {type(data['acceptance_claims']).__name__}"
+    for i, claim in enumerate(data["acceptance_claims"]):
+        if not isinstance(claim, str) or not claim:
+            return (
+                f"ledger_acceptance_claims[{i}]_must_be_non_empty_string: "
+                f"{type(claim).__name__}: {claim!r}"
+            )
+
+    # Optional fields: type + structural guards matching claim-ledger.schema.json.
+    # Round-13 P1: the schema rejects malformed values here, the runner must
+    # too — bundles edited in transit can carry malformed advisory data the
+    # writer would have rejected.
+    if "tests_run" in data:
+        tr_err = _validate_tests_run(data["tests_run"])
+        if tr_err is not None:
+            return tr_err
+    if "deterministic_gates_observed" in data:
+        gates = data["deterministic_gates_observed"]
+        if not isinstance(gates, dict):
+            return f"ledger_deterministic_gates_observed_not_object: {type(gates).__name__}"
+        for k, v in gates.items():
+            if not isinstance(k, str) or not k:
+                return (
+                    f"ledger_deterministic_gates_observed_key_must_be_non_empty_string: "
+                    f"{type(k).__name__}: {k!r}"
+                )
+            if not isinstance(v, str) or v not in ALLOWED_LEDGER_GATE_RESULTS:
+                return (
+                    f"ledger_deterministic_gates_observed[{k!r}]_unknown: {type(v).__name__}: {v!r}"
+                )
+    if "compliance_touch" in data:
+        ct = data["compliance_touch"]
+        if not isinstance(ct, list):
+            return f"ledger_compliance_touch_not_array: {type(ct).__name__}"
+        for i, c in enumerate(ct):
+            if not isinstance(c, str) or c not in ALLOWED_LEDGER_COMPLIANCE_TOUCH:
+                return f"ledger_compliance_touch[{i}]_unknown: {type(c).__name__}: {c!r}"
+    if "known_gaps" in data:
+        gaps = data["known_gaps"]
+        if not isinstance(gaps, list):
+            return f"ledger_known_gaps_not_array: {type(gaps).__name__}"
+        for i, g in enumerate(gaps):
+            if not isinstance(g, str):
+                return f"ledger_known_gaps[{i}]_not_string: {type(g).__name__}: {g!r}"
+    return None
+
+
+def _validate_changed_file_entry(entry: Any, idx: int) -> Optional[str]:
+    """Round-13 P1 deep validation of changed_files[].
+
+    Mirrors the rules checkpoint_writer enforces at write time so a bundle
+    edited in transit can't sneak malformed advisory data past the
+    runner's defense layer.
+    """
+    if not isinstance(entry, dict):
+        return f"ledger_changed_files[{idx}]_not_object: {type(entry).__name__}"
+    if "path" not in entry:
+        return f"ledger_changed_files[{idx}]_missing_path"
+    path = entry["path"]
+    if not isinstance(path, str) or not path:
+        return (
+            f"ledger_changed_files[{idx}].path_must_be_non_empty_string: "
+            f"{type(path).__name__}: {path!r}"
+        )
+    for k in ("added", "removed"):
+        if k in entry:
+            v = entry[k]
+            # bool is an int subclass; reject explicitly.
+            if isinstance(v, bool) or not isinstance(v, int) or v < 0:
+                return (
+                    f"ledger_changed_files[{idx}].{k}_not_non_negative_integer: "
+                    f"{type(v).__name__}: {v!r}"
+                )
+    return None
+
+
+def _validate_tests_run(tests_run: Any) -> Optional[str]:
+    if not isinstance(tests_run, list):
+        return f"ledger_tests_run_not_array: {type(tests_run).__name__}"
+    for i, t in enumerate(tests_run):
+        if not isinstance(t, dict):
+            return f"ledger_tests_run[{i}]_not_object: {type(t).__name__}"
+        name = t.get("name")
+        if not isinstance(name, str) or not name:
+            return (
+                f"ledger_tests_run[{i}].name_must_be_non_empty_string: "
+                f"{type(name).__name__}: {name!r}"
+            )
+        for k in ("passed", "failed"):
+            if k in t:
+                v = t[k]
+                if isinstance(v, bool) or not isinstance(v, int) or v < 0:
+                    return (
+                        f"ledger_tests_run[{i}].{k}_not_non_negative_integer: "
+                        f"{type(v).__name__}: {v!r}"
+                    )
     return None
 
 
@@ -202,8 +320,14 @@ def validate_verdict(verdict: Any) -> Optional[str]:
     """
     if not isinstance(verdict, dict):
         return f"verdict_not_object: {type(verdict).__name__}"
-    if verdict.get("schema_version") != VERIFIER_RESULT_SCHEMA_VERSION:
-        return f"verdict_unsupported_schema_version: {verdict.get('schema_version')!r}"
+    # Round-13 P2: bool is an int subclass and ``True == 1`` in Python,
+    # so the naive ``!=`` check accepts ``schema_version: true`` as a
+    # valid version 1 verdict. Reject bools first.
+    raw_version = verdict.get("schema_version")
+    if isinstance(raw_version, bool) or not isinstance(raw_version, int):
+        return f"verdict_schema_version_not_integer: {type(raw_version).__name__}: {raw_version!r}"
+    if raw_version != VERIFIER_RESULT_SCHEMA_VERSION:
+        return f"verdict_unsupported_schema_version: {raw_version!r}"
     raw_verdict = verdict.get("verdict")
     if not isinstance(raw_verdict, str):
         return f"verdict_not_string: {type(raw_verdict).__name__}: {raw_verdict!r}"
@@ -233,6 +357,27 @@ def validate_verdict(verdict: Any) -> Optional[str]:
             return finding_err
     if "rationale" in verdict and not isinstance(verdict["rationale"], str):
         return f"verdict_rationale_not_string: {type(verdict['rationale']).__name__}"
+    return None
+
+
+def _validate_repo_relative_path(path: str, idx: int) -> Optional[str]:
+    """Reject absolute / drive-relative / UNC / parent-traversal paths.
+
+    Mirrors checkpoint_writer's changed_files[].path rules so the verifier-
+    result.schema.json contract for findings[].file is enforced consistently.
+    """
+    if "\\" in path:
+        return f"verdict_findings[{idx}].file_must_use_forward_slashes: {path!r}"
+    if path.startswith("/") or (len(path) >= 2 and path[0].isalpha() and path[1] == ":"):
+        return (
+            f"verdict_findings[{idx}].file_must_be_repo_relative: "
+            f"got absolute or drive-anchored path {path!r}"
+        )
+    if any(seg == ".." for seg in path.split("/")):
+        return (
+            f"verdict_findings[{idx}].file_must_be_repo_relative: "
+            f"parent-directory traversal segments are not allowed, got {path!r}"
+        )
     return None
 
 
@@ -283,6 +428,15 @@ def _validate_finding(finding: Any, idx: int) -> Optional[str]:
             return (
                 f"verdict_findings[{idx}].file_must_be_non_empty_string: {type(f).__name__}: {f!r}"
             )
+        # Round-13 P2: verifier-result.schema.json documents file as
+        # "repo-root-relative with forward-slash separators" — same
+        # contract as claim-ledger's changed_files[].path. Apply the
+        # same checkpoint_writer rules so a Codex-produced finding
+        # can't route comments / actions against absolute or
+        # parent-traversal paths the dispatcher trusts as repo-local.
+        path_err = _validate_repo_relative_path(f, idx)
+        if path_err is not None:
+            return path_err
     if "line" in finding:
         line = finding["line"]
         if isinstance(line, bool) or not isinstance(line, int):
@@ -364,13 +518,19 @@ def run(bundle_dir: Path) -> Dict[str, Any]:
     if fail_reason == "ledger_status_missing":
         # The dispatcher already wrote a status='missing' stub for this
         # turn. Same contract: human verdict, claim_ledger_missing_or_invalid.
+        # Round-13 P2: route through the safe helpers so a malformed stub
+        # (lane_id: [], turn_id: {}) still produces a verdict file rather
+        # than write_verdict's schema-or-die guard rejecting and leaving
+        # the bundle without any verdict at all.
+        raw_reason = ledger.get("reason") if isinstance(ledger, dict) else None
+        rationale_reason = raw_reason if isinstance(raw_reason, str) else "unknown"
         verdict = make_human_verdict(
-            lane_id=ledger.get("lane_id", "unknown"),
-            ledger_turn_id=ledger.get("turn_id", "unknown"),
+            lane_id=_safe_lane_id(ledger),
+            ledger_turn_id=_safe_turn_id(ledger, bundle_dir),
             reason="claim_ledger_missing_or_invalid",
             rationale=(
                 f"Stop dispatcher wrote a missing-stub for this turn "
-                f"(reason: {ledger.get('reason', 'unknown')!r}). The builder "
+                f"(reason: {rationale_reason!r}). The builder "
                 f"did not call /checkpoint or the pending ledger was malformed."
             ),
         )
