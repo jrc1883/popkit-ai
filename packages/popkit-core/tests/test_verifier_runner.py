@@ -745,6 +745,106 @@ def test_validate_verdict_non_human_can_omit_reason(runner):
     assert runner.validate_verdict(v) is None
 
 
+# ---------------------------------------------------------------------------
+# Round-15 P2: cross-field consistency between verdict and findings
+# ---------------------------------------------------------------------------
+
+
+def test_validate_verdict_pass_with_findings_rejected(runner):
+    """The schema says findings is empty on verdict='pass'. A
+    contradictory output (pass + non-empty findings) is exactly the
+    boundary future dispatcher routing keys off — reject before write."""
+    v = runner.make_human_verdict(
+        lane_id="x",
+        ledger_turn_id="t",
+        reason="claim_ledger_missing_or_invalid",
+        rationale="test",
+    )
+    v["verdict"] = "pass"
+    del v["reason"]
+    v["findings"] = [{"severity": "high", "message": "still broken"}]
+    err = runner.validate_verdict(v)
+    assert err is not None
+    assert "verdict_pass_with_findings" in err
+
+
+def test_validate_verdict_pass_with_empty_findings_accepted(runner):
+    v = runner.make_human_verdict(
+        lane_id="x",
+        ledger_turn_id="t",
+        reason="claim_ledger_missing_or_invalid",
+        rationale="test",
+    )
+    v["verdict"] = "pass"
+    del v["reason"]
+    v["findings"] = []
+    assert runner.validate_verdict(v) is None
+
+
+@pytest.mark.parametrize("verdict_value", ["feedback", "block"])
+def test_validate_verdict_actionable_without_findings_rejected(runner, verdict_value):
+    """feedback/block verdicts without actionable findings are
+    contradictory — the dispatcher would have nothing to surface."""
+    v = runner.make_human_verdict(
+        lane_id="x",
+        ledger_turn_id="t",
+        reason="claim_ledger_missing_or_invalid",
+        rationale="test",
+    )
+    v["verdict"] = verdict_value
+    del v["reason"]
+    v["findings"] = []
+    err = runner.validate_verdict(v)
+    assert err is not None
+    assert f"verdict_{verdict_value}_without_findings" in err
+
+
+@pytest.mark.parametrize("verdict_value", ["feedback", "block"])
+def test_validate_verdict_actionable_with_findings_accepted(runner, verdict_value):
+    v = runner.make_human_verdict(
+        lane_id="x",
+        ledger_turn_id="t",
+        reason="claim_ledger_missing_or_invalid",
+        rationale="test",
+    )
+    v["verdict"] = verdict_value
+    del v["reason"]
+    v["findings"] = [{"severity": "high", "message": "fix this"}]
+    assert runner.validate_verdict(v) is None
+
+
+def test_validate_verdict_human_with_empty_findings_still_accepted(runner):
+    """Procedural human verdicts (claim_ledger_missing_or_invalid, etc.)
+    intentionally carry no findings — the rationale + reason carry the
+    evidence. This is the make_human_verdict shape and must not regress."""
+    v = runner.make_human_verdict(
+        lane_id="x",
+        ledger_turn_id="t",
+        reason="claim_ledger_missing_or_invalid",
+        rationale="test",
+    )
+    assert v["findings"] == []
+    assert runner.validate_verdict(v) is None
+
+
+def test_write_verdict_refuses_pass_with_findings(runner, bundle_dir):
+    """write_verdict's schema-or-die guard catches the cross-field
+    contradiction before the dispatcher state machine sees it."""
+    v = runner.make_human_verdict(
+        lane_id="x",
+        ledger_turn_id="t",
+        reason="claim_ledger_missing_or_invalid",
+        rationale="test",
+    )
+    v["verdict"] = "pass"
+    del v["reason"]
+    v["findings"] = [{"severity": "high", "message": "boom"}]
+    with pytest.raises(runner.VerdictWriteError) as exc:
+        runner.write_verdict(v, bundle_dir=bundle_dir)
+    assert "verdict_pass_with_findings" in str(exc.value)
+    assert not (bundle_dir / "verdict.json").exists()
+
+
 def test_write_verdict_no_leftover_tmp(runner, bundle_dir):
     v = runner.make_human_verdict(
         lane_id="x",

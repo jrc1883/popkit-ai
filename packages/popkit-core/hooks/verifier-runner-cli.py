@@ -378,6 +378,20 @@ def validate_verdict(verdict: Any) -> Optional[str]:
         finding_err = _validate_finding(finding, i)
         if finding_err is not None:
             return finding_err
+    # Round-15 P2: cross-field consistency. The schema's findings field
+    # description says "Empty array on verdict='pass'. Non-empty on
+    # feedback/block/human." A contradictory verdict (pass with findings,
+    # or feedback/block with no findings) is exactly the boundary the
+    # future dispatcher routing keys off — reject before write so the
+    # dispatcher never has to disambiguate.
+    #
+    # human verdicts are intentionally exempt from the non-empty rule:
+    # the procedural fast-fail path (claim_ledger_missing_or_invalid)
+    # carries its evidence in ``rationale`` and ``reason``, not findings.
+    if raw_verdict == "pass" and findings:
+        return f"verdict_pass_with_findings: got {len(findings)} findings"
+    if raw_verdict in {"feedback", "block"} and not findings:
+        return f"verdict_{raw_verdict}_without_findings"
     if "rationale" in verdict and not isinstance(verdict["rationale"], str):
         return f"verdict_rationale_not_string: {type(verdict['rationale']).__name__}"
     return None
