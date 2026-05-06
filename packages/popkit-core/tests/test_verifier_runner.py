@@ -827,6 +827,93 @@ def test_validate_verdict_human_with_empty_findings_still_accepted(runner):
     assert runner.validate_verdict(v) is None
 
 
+# ---------------------------------------------------------------------------
+# Round-15 P2: rationale must be redaction-safe (no raw user values)
+# ---------------------------------------------------------------------------
+
+
+def test_rationale_strips_raw_path_from_changed_files_repro(runner, bundle_dir):
+    """The exact Codex repro: a malformed ledger whose
+    changed_files[0].path is a sensitive local path. The runner must
+    fast-fail AND must not leak the raw path into the persisted
+    verdict.json's rationale (the schema describes rationale as
+    redaction-safe)."""
+    sensitive = "C:/Users/Josep/secret-child-record.txt"
+    bad = _valid_ledger(changed_files=[{"path": sensitive}])
+    _write_ledger(bundle_dir, bad)
+    response = runner.run(bundle_dir)
+    assert response["verdict"] == "human"
+    # Operator-facing fast_fail_reason still carries the full detail
+    # (this is the runner's response, not the persisted artifact).
+    assert sensitive in response["fast_fail_reason"]
+    # Persisted rationale must NOT carry the raw path.
+    verdict = json.loads(Path(response["verdict_path"]).read_text(encoding="utf-8"))
+    assert sensitive not in verdict["rationale"]
+    # Category prefix is preserved for operator orientation.
+    assert "Ledger fast-fail:" in verdict["rationale"]
+    assert "ledger_changed_files" in verdict["rationale"]
+
+
+def test_rationale_strips_raw_value_from_string_field_repro(runner, bundle_dir):
+    """Same risk applies to any field validator that includes the bad
+    value via ``{!r}`` — intent, lane_id, turn_id all flow through
+    ledger_field_must_be_non_empty_string with the raw value attached."""
+    bad = _valid_ledger(intent="my secret child's medical record summary")
+    bad["intent"] = ""  # actually trip the validator with empty string
+    bad["lane_id"] = ""
+    _write_ledger(bundle_dir, bad)
+    response = runner.run(bundle_dir)
+    assert response["verdict"] == "human"
+    verdict = json.loads(Path(response["verdict_path"]).read_text(encoding="utf-8"))
+    # The category survives; debug detail (the empty-string repr) does not.
+    assert "ledger_field_must_be_non_empty_string" in verdict["rationale"]
+    # No leftover ":" or repr fragments in rationale beyond the
+    # leading "Ledger fast-fail:" prefix.
+    assert verdict["rationale"].count(":") == 1
+
+
+def test_rationale_strips_raw_pending_reason_from_missing_stub(runner, bundle_dir):
+    """The dispatcher's status='missing' stub carries a ``reason`` field
+    whose value can include user content via {!r} from upstream
+    validators (e.g. ``pending_invalid_json: <bad bytes>``). Persisted
+    rationale must keep only the category."""
+    stub = {
+        "schema_version": 1,
+        "status": "missing",
+        "reason": "pending_invalid_json: secret PII content here",
+        "session_id": "s",
+        "turn_id": "t",
+        "lane_id": "stub-lane",
+        "stage": "code",
+        "intent": "(stub)",
+        "changed_files": [],
+        "acceptance_claims": [],
+        "next_action": "needs-review",
+    }
+    _write_ledger(bundle_dir, stub)
+    response = runner.run(bundle_dir)
+    assert response["verdict"] == "human"
+    verdict = json.loads(Path(response["verdict_path"]).read_text(encoding="utf-8"))
+    assert "secret PII content here" not in verdict["rationale"]
+    assert "pending_invalid_json" in verdict["rationale"]
+
+
+def test_redact_for_rationale_helper(runner):
+    assert (
+        runner._redact_for_rationale(
+            "ledger_changed_files[0].path_must_be_repo_relative: "
+            "got absolute or drive-anchored path 'C:/x'"
+        )
+        == "ledger_changed_files[0].path_must_be_repo_relative"
+    )
+    assert (
+        runner._redact_for_rationale("ledger_json_not_found") == "ledger_json_not_found"
+    )
+    assert runner._redact_for_rationale(None) == "unknown"
+    assert runner._redact_for_rationale("") == "unknown"
+    assert runner._redact_for_rationale(":just_detail") == "unknown"
+
+
 def test_write_verdict_refuses_pass_with_findings(runner, bundle_dir):
     """write_verdict's schema-or-die guard catches the cross-field
     contradiction before the dispatcher state machine sees it."""

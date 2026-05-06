@@ -397,6 +397,31 @@ def validate_verdict(verdict: Any) -> Optional[str]:
     return None
 
 
+def _redact_for_rationale(reason: Optional[str]) -> str:
+    """Strip raw user values from a fail-reason category string.
+
+    Round-15 P2: verifier-result.schema.json says rationale is "redaction-
+    safe" — never raw PII or fixture content. The runner's fail_reason
+    strings carry both a category (safe, e.g.
+    ``ledger_changed_files[0].path_must_be_repo_relative``) AND debug
+    detail (potentially unsafe — the offending path/value via ``{!r}``).
+    For the persisted verdict's rationale we keep only the category so a
+    malformed ledger with PII in changed_files[].path doesn't leak the
+    raw path into the verdict artifact.
+
+    The full detail still flows to the runner's CLI response (returned
+    on stdout / consumed by tests and operator tooling), where the
+    operator can debug structural reasons against the bundle they own.
+    """
+    if not reason:
+        return "unknown"
+    # Reasons follow the convention "category: detail" — split at the
+    # first colon. Categories are stable identifiers that don't carry
+    # user data; everything after the first ``:`` is debug context.
+    head = reason.split(":", 1)[0].strip()
+    return head or "unknown"
+
+
 def _validate_repo_relative_path(path: str, *, prefix: str) -> Optional[str]:
     """Reject absolute / drive-relative / UNC / parent-traversal paths.
 
@@ -531,7 +556,11 @@ def run(bundle_dir: Path) -> Dict[str, Any]:
             lane_id=_safe_lane_id(ledger),
             ledger_turn_id=_safe_turn_id(ledger, bundle_dir),
             reason="claim_ledger_missing_or_invalid",
-            rationale=f"Ledger fast-fail: {fail_reason}",
+            # Round-15 P2: persisted rationale must be redaction-safe;
+            # only the fail_reason category goes into the verdict
+            # artifact. The full debug detail rides on
+            # response["fast_fail_reason"] for operator tooling.
+            rationale=f"Ledger fast-fail: {_redact_for_rationale(fail_reason)}",
         )
         try:
             target = write_verdict(verdict, bundle_dir=bundle_dir)
@@ -561,13 +590,18 @@ def run(bundle_dir: Path) -> Dict[str, Any]:
         # the bundle without any verdict at all.
         raw_reason = ledger.get("reason") if isinstance(ledger, dict) else None
         rationale_reason = raw_reason if isinstance(raw_reason, str) else "unknown"
+        # Round-15 P2: same redaction as the structural-fail path. The
+        # dispatcher's stub-reason strings include user values via
+        # ``{!r}`` (e.g. pending_invalid_json: <bad JSON bytes>); we
+        # keep only the category in the persisted rationale.
+        safe_reason_category = _redact_for_rationale(rationale_reason)
         verdict = make_human_verdict(
             lane_id=_safe_lane_id(ledger),
             ledger_turn_id=_safe_turn_id(ledger, bundle_dir),
             reason="claim_ledger_missing_or_invalid",
             rationale=(
                 f"Stop dispatcher wrote a missing-stub for this turn "
-                f"(reason: {rationale_reason!r}). The builder "
+                f"(reason: {safe_reason_category}). The builder "
                 f"did not call /checkpoint or the pending ledger was malformed."
             ),
         )
