@@ -945,6 +945,93 @@ def test_redact_for_rationale_collapses_string_brackets(runner):
     )
 
 
+def test_missing_stub_unrecognized_reason_collapses_to_unknown(runner, bundle_dir):
+    """Round-17 P2 exact repro: status='missing' bypasses structural
+    validation, so ``ledger.reason`` is untrusted. A bare string with
+    no colon (like an email) used to land verbatim in persisted
+    rationale via the colon-split helper. Allowlist known dispatcher
+    categories; collapse anything else."""
+    sensitive = "child-email-jane@example.com"
+    stub = {
+        "schema_version": 1,
+        "status": "missing",
+        "reason": sensitive,
+        "session_id": "s",
+        "turn_id": "t",
+        "lane_id": "stub-lane",
+        "stage": "code",
+        "intent": "(stub)",
+        "changed_files": [],
+        "acceptance_claims": [],
+        "next_action": "needs-review",
+    }
+    _write_ledger(bundle_dir, stub)
+    response = runner.run(bundle_dir)
+    assert response["verdict"] == "human"
+    verdict = json.loads(Path(response["verdict_path"]).read_text(encoding="utf-8"))
+    assert sensitive not in verdict["rationale"]
+    # Falls back to 'unknown' rather than persisting the raw value.
+    assert "unknown" in verdict["rationale"]
+
+
+@pytest.mark.parametrize(
+    "category",
+    [
+        "no_checkpoint_called",
+        "pending_invalid_json",
+        "pending_unknown_status",
+        "pending_missing_required_fields",
+    ],
+)
+def test_missing_stub_known_dispatcher_reason_preserved(runner, bundle_dir, category):
+    """Known dispatcher categories survive — operators retain the
+    diagnostic context for legitimate cases."""
+    stub = {
+        "schema_version": 1,
+        "status": "missing",
+        "reason": f"{category}: detail with sensitive payload",
+        "session_id": "s",
+        "turn_id": "t",
+        "lane_id": "stub-lane",
+        "stage": "code",
+        "intent": "(stub)",
+        "changed_files": [],
+        "acceptance_claims": [],
+        "next_action": "needs-review",
+    }
+    _write_ledger(bundle_dir, stub)
+    response = runner.run(bundle_dir)
+    verdict = json.loads(Path(response["verdict_path"]).read_text(encoding="utf-8"))
+    assert category in verdict["rationale"]
+    # Detail after the colon is dropped per round-15.
+    assert "sensitive payload" not in verdict["rationale"]
+
+
+def test_missing_stub_lookalike_category_collapses_to_unknown(runner, bundle_dir):
+    """A name shaped like the dispatcher's pattern but not in the
+    allowlist still collapses — defense against attacker-crafted
+    near-misses like ``pending_unknown_secret_email``."""
+    stub = {
+        "schema_version": 1,
+        "status": "missing",
+        "reason": "pending_unknown_smuggled_pii: embedded@example.com",
+        "session_id": "s",
+        "turn_id": "t",
+        "lane_id": "stub-lane",
+        "stage": "code",
+        "intent": "(stub)",
+        "changed_files": [],
+        "acceptance_claims": [],
+        "next_action": "needs-review",
+    }
+    _write_ledger(bundle_dir, stub)
+    response = runner.run(bundle_dir)
+    verdict = json.loads(Path(response["verdict_path"]).read_text(encoding="utf-8"))
+    assert "embedded@example.com" not in verdict["rationale"]
+    assert "smuggled" not in verdict["rationale"]
+    assert "unknown" in verdict["rationale"]
+
+
 def test_rationale_strips_user_controlled_gate_key_repro(runner, bundle_dir):
     """Round-16 P2 exact repro: deterministic_gates_observed with a
     user-controlled key containing a child email. The runner must

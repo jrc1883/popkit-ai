@@ -95,6 +95,34 @@ _LEDGER_REQUIRED_FIELDS = (
     "next_action",
 )
 
+# Known categories the Stop dispatcher writes into a status='missing'
+# stub's ``reason`` field. The status='missing' branch intentionally
+# bypasses structural validation, so this allowlist is the redaction
+# fence: anything else gets collapsed to ``unknown`` before reaching
+# persisted rationale (round-17 P2). Mirrors the values produced in
+# packages/popkit-core/hooks/stop.py's read_pending_ledger().
+_KNOWN_DISPATCHER_MISSING_REASONS = {
+    "no_checkpoint_called",
+    "pending_read_failed",
+    "pending_invalid_json",
+    "pending_not_object",
+    "pending_unsupported_schema_version",
+    "pending_status_not_string",
+    "pending_unknown_status",
+    "pending_missing_required_fields",
+    "pending_field_must_be_non_empty_string",
+    "pending_stage_not_string",
+    "pending_unknown_stage",
+    "pending_next_action_not_string",
+    "pending_unknown_next_action",
+    "pending_changed_files_not_array",
+    "pending_acceptance_claims_not_array",
+    # Phase 1a-ii deep-validation reasons (the dispatcher inherits the
+    # runner's same field rules in a future PR).
+    "pending_changed_files_entry_invalid",
+    "pending_acceptance_claims_entry_invalid",
+}
+
 
 class VerdictWriteError(RuntimeError):
     """Raised when the runner can't persist verdict.json."""
@@ -622,7 +650,17 @@ def run(bundle_dir: Path) -> Dict[str, Any]:
         # dispatcher's stub-reason strings include user values via
         # ``{!r}`` (e.g. pending_invalid_json: <bad JSON bytes>); we
         # keep only the category in the persisted rationale.
-        safe_reason_category = _redact_for_rationale(rationale_reason)
+        # Round-17 P2: status='missing' intentionally bypasses ledger
+        # structural validation, so the ``reason`` field is untrusted.
+        # A bare string like ``child-email-jane@example.com`` has no
+        # colon, so the colon-split helper returns the whole value as
+        # the "category". Allowlist known dispatcher categories;
+        # collapse anything else to ``unknown``.
+        redacted_category = _redact_for_rationale(rationale_reason)
+        if redacted_category in _KNOWN_DISPATCHER_MISSING_REASONS:
+            safe_reason_category = redacted_category
+        else:
+            safe_reason_category = "unknown"
         verdict = make_human_verdict(
             lane_id=_safe_lane_id(ledger),
             ledger_turn_id=_safe_turn_id(ledger, bundle_dir),
