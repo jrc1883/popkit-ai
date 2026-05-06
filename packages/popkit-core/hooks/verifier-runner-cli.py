@@ -44,6 +44,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 import uuid
 from pathlib import Path
@@ -218,7 +219,8 @@ def _validate_ledger_structure(data: Dict[str, Any]) -> Optional[str]:
                 )
             if not isinstance(v, str) or v not in ALLOWED_LEDGER_GATE_RESULTS:
                 return (
-                    f"ledger_deterministic_gates_observed[{k!r}]_unknown: {type(v).__name__}: {v!r}"
+                    f"ledger_deterministic_gates_observed_value_unknown: "
+                    f"key={k!r} value={v!r} ({type(v).__name__})"
                 )
     if "compliance_touch" in data:
         ct = data["compliance_touch"]
@@ -397,6 +399,9 @@ def validate_verdict(verdict: Any) -> Optional[str]:
     return None
 
 
+_BRACKET_NON_DIGIT_RE = re.compile(r"\[[^\]]*\]")
+
+
 def _redact_for_rationale(reason: Optional[str]) -> str:
     """Strip raw user values from a fail-reason category string.
 
@@ -412,6 +417,16 @@ def _redact_for_rationale(reason: Optional[str]) -> str:
     The full detail still flows to the runner's CLI response (returned
     on stdout / consumed by tests and operator tooling), where the
     operator can debug structural reasons against the bundle they own.
+
+    Round-15-bis P2: also normalize bracketed dynamic segments. Some
+    validator messages historically embedded user-controlled keys inside
+    ``[...]`` segments BEFORE the colon (e.g.
+    ``ledger_deterministic_gates_observed['child-email@example.com']_unknown``)
+    so splitting at the first colon wasn't enough. Now collapse any
+    bracketed segment whose contents aren't a pure non-negative integer
+    index to ``[*]``. Numeric indexes survive (``changed_files[0]`` →
+    ``changed_files[0]``) so operators retain orientation; everything
+    else (string keys, repr'd PII) collapses.
     """
     if not reason:
         return "unknown"
@@ -419,7 +434,20 @@ def _redact_for_rationale(reason: Optional[str]) -> str:
     # first colon. Categories are stable identifiers that don't carry
     # user data; everything after the first ``:`` is debug context.
     head = reason.split(":", 1)[0].strip()
-    return head or "unknown"
+    if not head:
+        return "unknown"
+    # Defense-in-depth: collapse any bracketed segment that isn't a pure
+    # non-negative integer index. The regex matches ``[contents]``;
+    # _maybe_redact_bracket inspects ``contents`` and returns either the
+    # original (numeric index, kept for orientation) or ``[*]``.
+    return _BRACKET_NON_DIGIT_RE.sub(_maybe_redact_bracket, head) or "unknown"
+
+
+def _maybe_redact_bracket(match: re.Match[str]) -> str:
+    inner = match.group(0)[1:-1]
+    if inner.isdigit():
+        return match.group(0)
+    return "[*]"
 
 
 def _validate_repo_relative_path(path: str, *, prefix: str) -> Optional[str]:

@@ -914,6 +914,55 @@ def test_redact_for_rationale_helper(runner):
     assert runner._redact_for_rationale(":just_detail") == "unknown"
 
 
+def test_redact_for_rationale_collapses_string_brackets(runner):
+    """Round-16 P2: bracketed dynamic segments BEFORE the colon used to
+    leak user-controlled content (validator messages embedded user keys
+    via ``[{k!r}]``). The redaction helper now collapses any non-numeric
+    bracket content to ``[*]``."""
+    # User-controlled key in brackets — collapses.
+    assert (
+        runner._redact_for_rationale(
+            "ledger_dict[child-email-jane@example.com]_unknown: detail"
+        )
+        == "ledger_dict[*]_unknown"
+    )
+    # Single-quoted (Python repr) keys also collapse.
+    assert (
+        runner._redact_for_rationale(
+            "ledger_dict['child-email@example.com']_unknown: detail"
+        )
+        == "ledger_dict[*]_unknown"
+    )
+    # Pure integer indexes survive — operators keep orientation.
+    assert (
+        runner._redact_for_rationale("ledger_changed_files[3].path_unknown: x")
+        == "ledger_changed_files[3].path_unknown"
+    )
+    # Mixed: integer index AND string key — only the string collapses.
+    assert (
+        runner._redact_for_rationale("outer[0].inner[child-email]_unknown: detail")
+        == "outer[0].inner[*]_unknown"
+    )
+
+
+def test_rationale_strips_user_controlled_gate_key_repro(runner, bundle_dir):
+    """Round-16 P2 exact repro: deterministic_gates_observed with a
+    user-controlled key containing a child email. The runner must
+    fast-fail AND must not leak the key into the persisted rationale."""
+    sensitive_key = "child-email-jane@example.com"
+    bad = _valid_ledger(deterministic_gates_observed={sensitive_key: "ok"})
+    _write_ledger(bundle_dir, bad)
+    response = runner.run(bundle_dir)
+    assert response["verdict"] == "human"
+    # Operator-facing fast_fail_reason still carries the full key for
+    # debugging the bundle the operator owns.
+    assert sensitive_key in response["fast_fail_reason"]
+    # Persisted rationale must NOT carry the raw key.
+    verdict = json.loads(Path(response["verdict_path"]).read_text(encoding="utf-8"))
+    assert sensitive_key not in verdict["rationale"]
+    assert "deterministic_gates_observed" in verdict["rationale"]
+
+
 def test_write_verdict_refuses_pass_with_findings(runner, bundle_dir):
     """write_verdict's schema-or-die guard catches the cross-field
     contradiction before the dispatcher state machine sees it."""
